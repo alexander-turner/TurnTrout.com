@@ -101,7 +101,7 @@
     "@babel/cli": "^7.24.6",
     "@babel/core": "^7.24.6",
     "@babel/preset-env": "^7.24.6",
-    "@babel/preset-typescript": "^7.24.1",
+    "@babel/preset-typescript": "^7.24.7",
     "@percy/cli": "^1.28.7",
     "@rollup/plugin-inject": "^5.0.5",
     "@types/cli-spinner": "^0.2.3",
