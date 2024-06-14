@@ -7,9 +7,9 @@ import rehypeRaw from "rehype-raw"
 import { SKIP, visit } from "unist-util-visit"
 import path from "path"
 import { JSResource } from "../../util/resources"
-// @ts-ignore
+// @ts-expect-error
 import calloutScript from "../../components/scripts/callout.inline.ts"
-// @ts-ignore
+// @ts-expect-error
 import checkboxScript from "../../components/scripts/checkbox.inline.ts"
 import { FilePath, pathToRoot, slugTag, slugifyFilePath } from "../../util/path"
 import { toHast } from "mdast-util-to-hast"

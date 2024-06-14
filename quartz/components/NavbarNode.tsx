@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error
 import { QuartzPluginData } from "../plugins/vfile"
 import {
   joinSegments,

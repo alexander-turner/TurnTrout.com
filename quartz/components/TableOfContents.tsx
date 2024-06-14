@@ -3,7 +3,7 @@ import legacyStyle from "./styles/legacyToc.scss"
 import modernStyle from "./styles/toc.scss"
 import { classNames } from "../util/lang"
 
-// @ts-ignore
+// @ts-expect-error
 import script from "./scripts/toc.inline"
 import { i18n } from "../i18n"
 
