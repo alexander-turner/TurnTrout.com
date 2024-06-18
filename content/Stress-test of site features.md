@@ -100,7 +100,9 @@ I chose slanted fractions in order to slightly increase the height of the numera
 - Full-width slashes are used for separators like "cat" / "dog."
 
 # Text styling
+
 _Italics **Bold Italics**_ **Bold** Normal
+
 # Lists
 
 > [!quote] [List of weapons and armour in Middle-earth](https://en.wikipedia.org/wiki/List_of_weapons_and_armour_in_Middle-earth)
