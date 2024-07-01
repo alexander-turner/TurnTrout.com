@@ -125,7 +125,7 @@
     "jest": "^29.7.0",
     "markdown-it": "^14.1.0",
     "markdown-it-emphasis-alt": "^1.0.8",
-    "prettier": "3.2.5",
+    "prettier": "3.3.2",
     "remark-definition-list": "^2.0.0",
     "sourcemap-codec": "^1.4.8",
     "spellchecker-cli": "^6.2.0",
