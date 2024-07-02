@@ -6,24 +6,24 @@ title: I’m that “other fish in the sea”
 authors: Alex
 ---
 
-
 <img id="alex-rainbow-date-me" src="https://assets.turntrout.com/Attachments/croppedAlexRainbow.avif" class="float-right" alt="Alex smiling at the camera. Brightly illuminated with rainbow splashes of color painting the background wall."/>
 
 Many people call me "TurnTrout", but you can call me "Alex". I want to let you in a bit, to let you see a different facet of me than I usually present online.
 
 I was born in '94. Now, I'm a research scientist on [Google DeepMind's](https://deepmind.google/) scalable alignment team in San Francisco. In this document, I'll overview what the intervening time has made of me, as a person.
 
-I'm straight and [ethically non-monogamous](https://en.wikipedia.org/wiki/Ethical_non-monogamy).[^partner] I'm hoping to meet a wonderful woman to be [my best friend](https://en.wikipedia.org/wiki/Wife) through thick and thin. 💕 
+I'm straight and [ethically non-monogamous](https://en.wikipedia.org/wiki/Ethical_non-monogamy).[^partner] I'm hoping to meet a wonderful woman to be [my best friend](https://en.wikipedia.org/wiki/Wife) through thick and thin. 💕
 
 (And by "best friend", I mean "wife.")
 [^partner]: As of summer 2024, I have one partner. She's extremely wonderful, and we've been dating for four years.
+
 # About me
 
 I'm kind, conscientious, and very ready to admit mistakes - maybe I'm _too_ ready, to be honest! Speaking of "honest", I'm also an extremely honest person. I haven't always lived as ethically or as honestly as I would now have preferred, and I'm surely going to make more mistakes, but _god damn_ if I'm not going to live this one life well.
 
 If I make a commitment to you, I keep it, and I'm not particularly afraid of commitments. I'm someone you can rely on.[^perfect] One of my friends described me as "not the kind of person who will put up with \[unethical\] conspiracies."
 
-On the other hand, I do love a good _ethical_ conspiracy. I once hatched an elaborate "welcome back" party for a girlfriend coming back from overseas. I rounded up 18 of her friends and hid them in my apartment so they could all jump out at her. 
+On the other hand, I do love a good _ethical_ conspiracy. I once hatched an elaborate "welcome back" party for a girlfriend coming back from overseas. I rounded up 18 of her friends and hid them in my apartment so they could all jump out at her.
 
 [^perfect]: I mean, I'm not _perfectly_ reliable. I'm just a hum-I mean, I'm just a trout! For example, there recently was a situation where I may have simply forgotten what someone had requested two years prior. But I think I am overall highly reliable - both in terms of faithfulness and in terms of logistics.
 
@@ -112,7 +112,7 @@ Design & art
 : ![I hand-illustrated Bag End from the Shire, with the help of a reference.](https://assets.turntrout.com/Attachments/hobbitImpactHouse.avif)
 
 Writing
-: 
+:
 
 Meditation
 : I used to say "no, isn't this just learning how to wirehead and evoke fake happiness for no reason?". Then I got really, really sad, so I said "screw it." I made the right choice, though I'm still not particularly skilled.
@@ -123,12 +123,15 @@ Reading textbooks
 OK, I've written enough! Get to know me if you want to know more. 🪿
 
 # How compatible are we?
+
 ## Possible dealbreakers
+
 1. I probably (70%) will want kids within the next 5 years.
 2. Ethical non-monogamy is important to me.
 3. I've historically been interested in cis women.
 
 ## What I appreciate in a partner
+
 This isn't a list of _demands_ or anything, just ingredients for a good relationship with me:
 
 - Trustworthiness, high empathy, and emotional maturity
@@ -138,13 +141,14 @@ This isn't a list of _demands_ or anything, just ingredients for a good relation
 - Being good at STEM is also hot
 - Non-avoidant attachment style
 - Reasonably physically fit
-- The kind of girl [^ethical]who would have refused to obey in [the Milgram experiment](https://en.wikipedia.org/wiki/Milgram_experiment) 🥰 
+- The kind of girl [^ethical]who would have refused to obey in [the Milgram experiment](https://en.wikipedia.org/wiki/Milgram_experiment) 🥰
 - Spontaneous and medium-adventurous, but not to the point where you're trying to backflip out of a plane while naked even though it's 10:30PM and we have an early morning the next day...
 - Some dispositional _je ne sais quoi_ which makes me feel at ease.
   [^ethical]: AKA, ethical in the "I'll actually stand up in real life" way and not just ethical in the "I'll talk for hours about the nature of goodness" way.
 
 If this sounds like a nice potential connection, I'd love to:
 <img src="/static/images/posts/berkeley-sunset.jpg" alt="A beautiful orange sunset over the Bay skyline." class="float-right" style="filter: saturate(50%);"/>
+
 1. Take you dancing 💃, or
 2. Have a sunset picnic and eat blueberries, or
 3. Spend a lazy Sunday morning watching the stream run by the [Hidden Cafe](https://www.thehiddencafe.life/).
