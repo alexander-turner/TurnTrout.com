@@ -122,7 +122,10 @@ export default ((userOpts?: Partial<Options>) => {
               class="header-img no-select no-vsc"
               alt=""
             >
-              <source src="https://assets.turntrout.com/static/pond.webm" type="video/webm"></source>
+              <source
+                src="https://assets.turntrout.com/static/pond.webm"
+                type="video/webm"
+              ></source>
             </video>
             {}
             <h2 class="page-title-text">
