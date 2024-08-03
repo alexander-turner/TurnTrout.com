@@ -8,6 +8,7 @@ tags:
   - fiction
   - rationality
 ---
+
 I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
 
 <center><audio src="https://assets.turntrout.com/batman.mp3" controls> </audio></center>
