@@ -6,6 +6,7 @@ tags:
 ---
 
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
+
 # Quotations
 
 > Perhaps one did not want to be loved so much as to be understood.
@@ -58,9 +59,11 @@ In fact, all of the bullet points were written so that the rules were violated. 
 > A man may take to drink because he feels himself to be a failure, and then fail all the more completely because he drinks. It is rather the same thing that is happening to the English language. It becomes ugly and inaccurate because our thoughts are foolish, but the slovenliness of our language makes it easier for us to have foolish thoughts. The point is that the process is reversible.
 
 # Markdown captions for tables and figures
+
 | Left  | Right |
 | :---: | :---: |
 | Lower | text  |
+
 Table: The [`remark-captions`](npmjs.com/package/remark-captions) Node package makes it easy to add captions.
 
 ![[generated-goose.png|Sample image of a majestic goose.]]
@@ -76,6 +79,7 @@ Figure: The most majestic animal known to humanity.
 My `formatting_improvement_html.ts` contains `hyphenReplace`, which prevents clauses from being delimited by hyphens ("`I - like you - object`"). Instead, the build process renders "I - like you - object."
 
 # Section
+
 Test of [mail favicon](mailto:throwaway@turntrout.com) - the `svg` should be floating next to the URL.
 
 ## Subsection
@@ -109,7 +113,9 @@ I chose slanted fractions in order to slightly increase the height of the numera
 - Full-width slashes are used for separators like "cat" / "dog."
 
 # Text styling
+
 _Italics **Bold Italics**_ **Bold** Normal
+
 # Lists
 
 > [!quote] [List of weapons and armour in Middle-earth](https://en.wikipedia.org/wiki/List_of_weapons_and_armour_in_Middle-earth)
@@ -187,6 +193,7 @@ Unordered lists:
 > 1. Hopefully this is bullet number two!
 
 # Images
+
 Before commits are pushed to GitHub, images are converted to AVIF for better compression. JPEGs and PNGs experience a 2-20x compression ratio. I refuse to have an unresponsive site!
 
 # Admonitions
@@ -233,4 +240,3 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 I prefer the flat style of Twitter emoji. This also unifies UX across devices, as emoji are not rendered in a browser- or OS-specific fashion.
 
 🪿😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳🙂‍↕️😏😒🙂‍↔️😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😮‍💨😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🫣🤗🫡🤔🫢🤭🤫🤥😶😶‍🌫️😐😑😬🫨🫠🙄😯😦😧😮😲🥱😴🤤😪😵😵‍💫🫥🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾
-
