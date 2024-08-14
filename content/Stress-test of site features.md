@@ -6,6 +6,7 @@ tags:
 ---
 
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
+
 # Quotations
 
 > Perhaps one did not want to be loved so much as to be understood.
@@ -69,9 +70,10 @@ I have yet to implement the caption functionality for tables.
 | Left  | Right |
 | :---: | :---: |
 | Lower | text  |
+
 Table: This is a table caption.
 
-```typescript 
+```typescript
 /**
  * Replaces number-preceding hyphens with minus signs (−).
  *
@@ -83,6 +85,7 @@ const minusReplace = (text: string): string => {
   return text.replace(numberMatch, "$1−$2")
 }
 ```
+
 Code: Part of [my website processing pipeline](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/minus_sign.ts).
 
 # Smart dash conversion
@@ -95,8 +98,11 @@ Code: Part of [my website processing pipeline](https://github.com/alexander-turn
 My `formatting_improvement_html.ts` contains `hyphenReplace`, which prevents clauses from being delimited by hyphens ("`I - like you - object`"). Instead, the build process renders "I - like you - object."
 
 # SMALLCAPS appear in the table of contents
+
 ## As do "smart quotes"
+
 Test of [mail favicon](mailto:throwaway@turntrout.com) - the `svg` should be floating next to the URL.
+
 ### Subsubsection
 
 # Smallcaps
@@ -126,7 +132,9 @@ I chose slanted fractions in order to slightly increase the height of the numera
 - Full-width slashes are used for separators like "cat" / "dog."
 
 # Text styling
+
 _Italics **Bold Italics**_ **Bold** Normal
+
 # Lists
 
 > [!quote] [List of weapons and armour in Middle-earth](https://en.wikipedia.org/wiki/List_of_weapons_and_armour_in_Middle-earth)
@@ -204,6 +212,7 @@ Unordered lists:
 > 1. Hopefully this is bullet number two!
 
 # Images
+
 Before commits are pushed to GitHub, images are converted to AVIF for better compression. JPEGs and PNGs experience a 2-20x compression ratio. I refuse to have an unresponsive site!
 
 # Admonitions
@@ -250,5 +259,3 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 I prefer the flat style of Twitter emoji. This also unifies UX across devices, as emoji are not rendered in a browser- or OS-specific fashion.
 
 🪿😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳🙂‍↕️😏😒🙂‍↔️😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😮‍💨😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🫣🤗🫡🤔🫢🤭🤫🤥😶😶‍🌫️😐😑😬🫨🫠🙄😯😦😧😮😲🥱😴🤤😪😵😵‍💫🫥🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾
-
-
