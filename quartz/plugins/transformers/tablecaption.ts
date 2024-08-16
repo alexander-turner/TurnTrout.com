@@ -13,21 +13,27 @@ export const TableCaption: QuartzTransformerPlugin = () => {
           const firstChild = node.children[0]
           if (firstChild.type === "text" && firstChild.value.startsWith("^Table: ")) {
             const captionText = firstChild.value.slice(8) // Remove "^Table: "
-            const captionHtml = fromHtml(`<figcaption>${captionText}</figcaption>`, { fragment: true })
-            
+            const captionHtml = fromHtml(`<figcaption>${captionText}</figcaption>`, {
+              fragment: true,
+            })
+
             // Replace the paragraph with a figcaption
             parent!.children.splice(index!, 1, ...captionHtml.children)
-            
+
             // Find the preceding table and wrap it with a figure
-            if (index! > 0 && parent!.children[index! - 1].type === "element" && parent!.children[index! - 1].tagName === "table") {
+            if (
+              index! > 0 &&
+              parent!.children[index! - 1].type === "element" &&
+              parent!.children[index! - 1].tagName === "table"
+            ) {
               const figure: Element = {
                 type: "element",
                 tagName: "figure",
                 properties: {},
                 children: [
                   parent!.children[index! - 1] as Element,
-                  ...captionHtml.children as Element[]
-                ]
+                  ...(captionHtml.children as Element[]),
+                ],
               }
               parent!.children.splice(index! - 1, 2, figure)
             }

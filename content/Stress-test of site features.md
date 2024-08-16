@@ -6,6 +6,7 @@ tags:
 ---
 
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
+
 # Quotations
 
 > Perhaps one did not want to be loved so much as to be understood.
@@ -33,6 +34,7 @@ This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem),
 # $\KaTeX$ math mode
 
 Math coloring is automatically translated to accord with site styling: ${\color{red}x}={\color{blue}y}$. I mean, seriously, who wants to read text that looks like <em><span style="color:#ff0000;">this</span></em>? 🤡
+
 # Smart quotes
 
 I wrote a [`rehype`](https://www.npmjs.com/package/rehype) plugin which scans my website and adjusts quote marks so that they are properly oriented. The plugin also moves around punctuation so that periods are generally inside of quotations while webpage commas are generally outside. For example:
@@ -51,21 +53,21 @@ In fact, all of the bullet points were written so that the rules were violated. 
 - `'` and `"hi"` and `'hi'`
 - `print('honk!')`
 - `print("honk!")`
+
 # Markdown captions for tables and figures
 
-The [`remark-captions`](https://npmjs.com/package/remark-captions) package makes it easy to add captions. 
+The [`remark-captions`](https://npmjs.com/package/remark-captions) package makes it easy to add captions.
 
 ![[https://assets.turntrout.com/static/images/posts/goose-majestic.avif|Sample image of a majestic goose.]]
 Figure: The most _majestic_ animal known to humanity.
-
 
 | Left  | Right |
 | :---: | :---: |
 | Lower | text  |
 
-Table: This is a table caption. *Emphasis* and **bolding** are preserved.
+Table: This is a table caption. _Emphasis_ and **bolding** are preserved.
 
-```typescript 
+```typescript
 /**
  * Replaces number-preceding hyphens with minus signs (−).
  *
@@ -77,7 +79,9 @@ const minusReplace = (text: string): string => {
   return text.replace(numberMatch, "$1−$2")
 }
 ```
+
 Code: Part of [my website processing pipeline](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/minus_sign.ts).
+
 # Smart dash conversion
 
 [Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
@@ -88,8 +92,11 @@ Code: Part of [my website processing pipeline](https://github.com/alexander-turn
 My `formatting_improvement_html.ts` contains `hyphenReplace`, which prevents clauses from being delimited by hyphens ("`I - like you - object`"). Instead, the build process renders "I - like you - object."
 
 # SMALLCAPS appear in the table of contents
+
 ## As do "smart quotes"
+
 Test of [mail favicon](mailto:throwaway@turntrout.com) - the `svg` should be floating next to the URL.
+
 ### Subsubsection
 
 # Smallcaps
@@ -119,7 +126,9 @@ I chose slanted fractions in order to slightly increase the height of the numera
 - Full-width slashes are used for separators like "cat" / "dog."
 
 # Text styling
+
 _Italics **Bold Italics**_ **Bold** Normal
+
 # Lists
 
 > [!quote] [List of weapons and armour in Middle-earth](https://en.wikipedia.org/wiki/List_of_weapons_and_armour_in_Middle-earth)
@@ -197,6 +206,7 @@ Unordered lists:
 > 1. Hopefully this is bullet number two!
 
 # Images
+
 Before commits are pushed to GitHub, images are converted to AVIF for better compression. JPEGs and PNGs experience a 2-20x compression ratio. I refuse to have an unresponsive site!
 
 # Admonitions
@@ -244,5 +254,3 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 I prefer the flat style of Twitter emoji. This also unifies UX across devices, as emoji are not rendered in a browser- or OS-specific fashion.
 
 🪿😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳🙂‍↕️😏😒🙂‍↔️😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😮‍💨😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🫣🤗🫡🤔🫢🤭🤫🤥😶😶‍🌫️😐😑😬🫨🫠🙄😯😦😧😮😲🥱😴🤤😪😵😵‍💫🫥🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾
-
-
