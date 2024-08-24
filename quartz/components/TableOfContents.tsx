@@ -166,14 +166,14 @@ function processTocEntry(entry: TocEntry): Parent {
  */
 function processHtmlAst(htmlAst: any, parent: Parent): void {
   htmlAst.children.forEach((node: any) => {
-    if (node.type === 'text') {
+    if (node.type === "text") {
       processSmallCaps(node.value, parent)
-    } else if (node.type === 'element') {
+    } else if (node.type === "element") {
       const newElement = {
-        type: 'element',
+        type: "element",
         tagName: node.tagName,
         properties: { ...node.properties },
-        children: []
+        children: [],
       } as Element
       parent.children.push(newElement)
       processHtmlAst(node, newElement)

@@ -1,5 +1,5 @@
 ---
-title: 
-permalink: 
+title:
+permalink:
 publish: false
 ---
