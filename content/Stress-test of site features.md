@@ -4,7 +4,9 @@ publish: "true"
 tags:
   - website
 ---
+
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
+
 # Quotations
 
 > Perhaps one did not want to be loved so much as to be understood.
@@ -36,14 +38,16 @@ Math coloring is automatically translated to accord with site styling: ${\color{
 # Spoilers
 
 I couldn't find a `rehype` or `remark` plugin I liked, so I produced my own. This spoiler is unobtrusive and fits in with the broad site aesthetic.
->! Snape kills Dumbledore.
+
+> ! Snape kills Dumbledore.
 
 The following spoiler box is larger:
->! There can even be multiline spoilers! 
+
+> ! There can even be multiline spoilers!
 >
->! This should be in another `<p>` element.
+> ! This should be in another `<p>` element.
 >
->! *This starts with emphasis*.
+> ! _This starts with emphasis_.
 
 # Smart quotes
 
@@ -63,21 +67,21 @@ In fact, all of the bullet points were written so that the rules were violated. 
 - `'` and `"hi"` and `'hi'`
 - `print('honk!')`
 - `print("honk!")`
+
 # Markdown captions for tables and figures
 
-The [`remark-captions`](https://npmjs.com/package/remark-captions) package makes it easy to add captions. 
+The [`remark-captions`](https://npmjs.com/package/remark-captions) package makes it easy to add captions.
 
 ![[https://assets.turntrout.com/static/images/posts/goose-majestic.avif|Sample image of a majestic goose.]]
 Figure: The most _majestic_ animal known to humanity.
-
 
 | Left  | Right |
 | :---: | :---: |
 | Lower | text  |
 
-Table: This is a table caption. *Emphasis* and **bolding** are preserved.
+Table: This is a table caption. _Emphasis_ and **bolding** are preserved.
 
-```typescript 
+```typescript
 /**
  * Replaces number-preceding hyphens with minus signs (−).
  *
@@ -89,7 +93,9 @@ const minusReplace = (text: string): string => {
   return text.replace(numberMatch, "$1−$2")
 }
 ```
+
 Code: Part of [my website processing pipeline](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/minus_sign.ts).
+
 # Smart dash conversion
 
 [Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
@@ -100,8 +106,11 @@ Code: Part of [my website processing pipeline](https://github.com/alexander-turn
 My `formatting_improvement_html.ts` contains `hyphenReplace`, which prevents clauses from being delimited by hyphens ("`I - like you - object`"). Instead, the build process renders "I - like you - object."
 
 # SMALLCAPS appear in the table of contents
+
 ## As do "smart quotes"
+
 Test of [mail favicon](mailto:throwaway@turntrout.com) - the `svg` should be floating next to the URL.
+
 ### Subsubsection
 
 # Smallcaps
@@ -111,9 +120,10 @@ The build process detects acronyms ("HTML") and abbreviations ("100GB") and then
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
 > The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): *Tratado de Libre Comercio de América del Norte*, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): *Accord de libre-échange nord-américain*, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
 
-[^smallcaps]: Here's a footnote![^nested] 
+[^smallcaps]: Here's a footnote![^nested]
 
-	This footnote has multiple paragraphs.
+    This footnote has multiple paragraphs.
+
 [^nested]: And a footnote created within another footnote!
 
 ## Font adjustments
@@ -133,7 +143,9 @@ I chose slanted fractions in order to slightly increase the height of the numera
 - Full-width slashes are used for separators like "cat" / "dog."
 
 # Text styling
+
 _Italics **Bold Italics**_ **Bold** Normal
+
 # Lists
 
 > [!quote] [List of weapons and armour in Middle-earth](https://en.wikipedia.org/wiki/List_of_weapons_and_armour_in_Middle-earth)
@@ -211,6 +223,7 @@ Unordered lists:
 > 1. Hopefully this is bullet number two!
 
 # Images
+
 Before commits are pushed to GitHub, images are converted to AVIF for better compression. JPEGs and PNGs experience a 2-20x compression ratio. I refuse to have an unresponsive site!
 
 # Admonitions
@@ -239,8 +252,6 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 
 > [!idea]
 
-
-
 > [!todo]
 
 > [!question]
@@ -253,9 +264,6 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 
 > [!bug]
 
-
-
-
 > [!success]
 
 # Twemoji
@@ -263,5 +271,3 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 I prefer the flat style of Twitter emoji. This also unifies UX across devices, as emoji are not rendered in a browser- or OS-specific fashion.
 
 🪿😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳🙂‍↕️😏😒🙂‍↔️😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😮‍💨😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🫣🤗🫡🤔🫢🤭🤫🤥😶😶‍🌫️😐😑😬🫨🫠🙄😯😦😧😮😲🥱😴🤤😪😵😵‍💫🫥🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾
-
-

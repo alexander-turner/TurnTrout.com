@@ -100,7 +100,7 @@ export function writeCacheToFile(): void {
   const data = Array.from(urlCache.entries())
     .map(([key, value]) => `${key},${value}`)
     .join("\n")
-  
+
   // Ensure the directory exists
   const dir = path.dirname(FAVICON_URLS_FILE)
   if (!fs.existsSync(dir)) {
