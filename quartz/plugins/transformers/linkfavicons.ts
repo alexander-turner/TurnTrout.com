@@ -3,9 +3,8 @@ import { createLogger } from "./logger_utils"
 import { Readable } from "stream"
 import fs from "fs"
 import path from "path"
-import findGitRoot from 'find-git-root'
-import { fileURLToPath } from 'url'
-
+import findGitRoot from "find-git-root"
+import { fileURLToPath } from "url"
 
 const logger = createLogger("linkfavicons")
 
@@ -19,7 +18,13 @@ export const DEFAULT_PATH = ""
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const gitRoot = findGitRoot(__dirname)
-export const FAVICON_URLS_FILE = path.join(gitRoot, 'quartz', 'plugins', 'transformers', '.faviconUrls.txt')
+export const FAVICON_URLS_FILE = path.join(
+  gitRoot,
+  "quartz",
+  "plugins",
+  "transformers",
+  ".faviconUrls.txt",
+)
 
 export class DownloadError extends Error {
   constructor(message: string) {
@@ -108,9 +113,9 @@ export function writeCacheToFile(): void {
   const data = Array.from(urlCache.entries())
     .map(([key, value]) => `${key},${value}`)
     .join("\n")
-  
+
   // Write the file
-  fs.writeFileSync(FAVICON_URLS_FILE, data, {flag: 'w+'})
+  fs.writeFileSync(FAVICON_URLS_FILE, data, { flag: "w+" })
 }
 
 /**

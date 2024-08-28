@@ -358,15 +358,15 @@ describe("writeCacheToFile", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       FAVICON_URLS_FILE,
-      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",{"flag": "w+"}
-
+      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",
+      { flag: "w+" },
     )
   })
 
   it("should write an empty string if urlCache is empty", () => {
     writeCacheToFile()
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(FAVICON_URLS_FILE, "", {"flag": "w+"})
+    expect(fs.writeFileSync).toHaveBeenCalledWith(FAVICON_URLS_FILE, "", { flag: "w+" })
   })
 })
 
