@@ -125,7 +125,6 @@ This text is 3× larger.`
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
     })
-
   })
 })
 
@@ -142,10 +141,11 @@ describe("editAdmonition", () => {
     expect(editAdmonition(input)).toBe(expected)
   })
 
-  it('should handle complicated edit command', () => {
-    const content = 'The initial version of this post talked about "outer alignment"; I changed this to just talk about _alignment_, because the outer/inner alignment distinction doesn\'t feel relevant here. What matters is how the AI\'s policy impacts us; what matters is [_impact alignment_](/non-obstruction-motivates-corrigibility).'
-    const input = 'Edit: ' + content
-    const expected = '> [!info] Edited after posting\n>\n> ' + content
+  it("should handle complicated edit command", () => {
+    const content =
+      "The initial version of this post talked about \"outer alignment\"; I changed this to just talk about _alignment_, because the outer/inner alignment distinction doesn't feel relevant here. What matters is how the AI's policy impacts us; what matters is [_impact alignment_](/non-obstruction-motivates-corrigibility)."
+    const input = "Edit: " + content
+    const expected = "> [!info] Edited after posting\n>\n> " + content
     expect(editAdmonition(input)).toBe(expected)
   })
 

@@ -118,7 +118,6 @@ Meditation
 Reading textbooks
 : [Yes](./set-theory-textbook-review) [this](./linear-algebra-textbook-review) [is](./first-analysis-textbook-review) [a](./all-of-statistics-textbook-review) [real](./second-analysis-textbook-review) [thing](./functional-analysis-textbook-review) [I](./insights-from-modern-principles-of-economics) [do](./computability-and-logic-textbook-review) [for](./ordinary-differential-equations-textbook-review) [fun](./RL-textbook-review) [sometimes.](./topology-textbook-review)
 
-
 # How compatible are we?
 
 ## Possible dealbreakers

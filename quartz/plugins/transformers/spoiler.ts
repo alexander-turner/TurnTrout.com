@@ -1,10 +1,10 @@
-import { visit } from "unist-util-visit";
+import { visit } from "unist-util-visit"
 import { QuartzTransformerPlugin } from "../types"
-import { Root, Element, Parent, Text } from "hast";
-import { h } from 'hastscript';
+import { Root, Element, Parent, Text } from "hast"
+import { h } from "hastscript"
 
 // Regex to match spoiler syntax
-const SPOILER_REGEX = /^!\s*(.*)/;
+const SPOILER_REGEX = /^!\s*(.*)/
 
 /**
  * Extracts spoiler text from a string.
@@ -12,16 +12,19 @@ const SPOILER_REGEX = /^!\s*(.*)/;
  * @returns Spoiler text or null if not a spoiler
  */
 export function matchSpoilerText(text: string): string | null {
-  const match = text.match(SPOILER_REGEX);
-  return match ? match[1] : null;
+  const match = text.match(SPOILER_REGEX)
+  return match ? match[1] : null
 }
 
 export function createSpoilerNode(content: string | Element[]): Element {
-  return h("div", { className: ["spoiler-container"],     
-    onclick: "this.classList.toggle('revealed')" }, [
-    h("span", { className: ["spoiler-overlay"] }),
-    h("span", { className: ["spoiler-content"]}, content),
-  ]);
+  return h(
+    "div",
+    { className: ["spoiler-container"], onclick: "this.classList.toggle('revealed')" },
+    [
+      h("span", { className: ["spoiler-overlay"] }),
+      h("span", { className: ["spoiler-content"] }, content),
+    ],
+  )
 }
 
 /**
@@ -31,34 +34,34 @@ export function createSpoilerNode(content: string | Element[]): Element {
  * @param parent Parent of the node
  */
 export function modifyNode(node: Element, index: number | undefined, parent: Parent | undefined) {
-  if (index === undefined || parent === undefined) return;
-  if (node?.tagName === 'blockquote') {
-    const spoilerContent: Element[] = [];
-    let isSpoiler = true;
+  if (index === undefined || parent === undefined) return
+  if (node?.tagName === "blockquote") {
+    const spoilerContent: Element[] = []
+    let isSpoiler = true
 
     for (const child of node.children) {
-      if (child.type === 'element' && child.tagName === 'p') {
-        const processedParagraph = processParagraph(child);
+      if (child.type === "element" && child.tagName === "p") {
+        const processedParagraph = processParagraph(child)
         if (processedParagraph) {
-          spoilerContent.push(processedParagraph);
+          spoilerContent.push(processedParagraph)
         } else {
-          isSpoiler = false;
-          break;
+          isSpoiler = false
+          break
         }
-      } else if (child.type === 'text' && child.value.trim() === '!') {
+      } else if (child.type === "text" && child.value.trim() === "!") {
         // Handle empty spoiler lines
-        spoilerContent.push(h('p', {}));
-      } else if (child.type === 'text' && child.value.trim() === '') {
+        spoilerContent.push(h("p", {}))
+      } else if (child.type === "text" && child.value.trim() === "") {
         // Ignore empty text nodes
-        continue;
+        continue
       } else {
-        isSpoiler = false;
-        break;
+        isSpoiler = false
+        break
       }
     }
 
     if (isSpoiler && spoilerContent.length > 0) {
-      parent.children[index] = createSpoilerNode(spoilerContent);
+      parent.children[index] = createSpoilerNode(spoilerContent)
     }
   }
 }
@@ -69,26 +72,26 @@ export function modifyNode(node: Element, index: number | undefined, parent: Par
  * @returns Processed paragraph or null if not a spoiler
  */
 export function processParagraph(paragraph: Element): Element | null {
-  const newChildren: (Text | Element)[] = [];
-  let isSpoiler = false;
+  const newChildren: (Text | Element)[] = []
+  let isSpoiler = false
 
   for (const child of paragraph.children) {
-    if (child.type === 'text') {
-      const spoilerText = matchSpoilerText(child.value);
+    if (child.type === "text") {
+      const spoilerText = matchSpoilerText(child.value)
       if (spoilerText !== null) {
-        isSpoiler = true;
-        newChildren.push({ type: 'text', value: spoilerText });
+        isSpoiler = true
+        newChildren.push({ type: "text", value: spoilerText })
       } else if (isSpoiler) {
-        newChildren.push(child);
+        newChildren.push(child)
       } else {
-        return null;
+        return null
       }
-    } else if (child.type === 'element') {
-      newChildren.push(child);
+    } else if (child.type === "element") {
+      newChildren.push(child)
     }
   }
 
-  return isSpoiler ? { ...paragraph, children: newChildren } : null;
+  return isSpoiler ? { ...paragraph, children: newChildren } : null
 }
 
 /**
@@ -96,17 +99,17 @@ export function processParagraph(paragraph: Element): Element | null {
  * @param tree AST to transform
  */
 export function transformAST(tree: Root): void {
-    visit(tree, "element", modifyNode)
+  visit(tree, "element", modifyNode)
 }
 
 /**
  * Quartz plugin for custom spoiler syntax.
  */
-export const rehypeCustomSpoiler: QuartzTransformerPlugin = () =>  {
-    return {
-      name: "customSpoiler",
-      htmlPlugins() {
-        return [() => transformAST]
-      },
-    }
+export const rehypeCustomSpoiler: QuartzTransformerPlugin = () => {
+  return {
+    name: "customSpoiler",
+    htmlPlugins() {
+      return [() => transformAST]
+    },
   }
+}

@@ -92,36 +92,41 @@ turnDown.prototype.escape = function (string) {
   return string
 }
 
-turndownService.addRule('footnote', {
+turndownService.addRule("footnote", {
   filter: (node) => {
-    return node.nodeName === 'LI' && node.hasAttribute('id') && node.id.startsWith('fn-') && node.classList.contains("footnote-item");
+    return (
+      node.nodeName === "LI" &&
+      node.hasAttribute("id") &&
+      node.id.startsWith("fn-") &&
+      node.classList.contains("footnote-item")
+    )
   },
   replacement: (content, node) => {
     // Turn id=fn-25bChTEETACfS9a4m-2 into id=2
-    const id = node.getAttribute('id').replace(/^fn-.*?(\d+)$/, '$1');
+    const id = node.getAttribute("id").replace(/^fn-.*?(\d+)$/, "$1")
     // Paragraphs after first should start with four spaces, so they appear as multi-paragraph footnotes
-    const footnoteContent = content.trim().replace(/\n\n/g, '\n\n    ');
-    return `[^${id}]: ${footnoteContent}\n\n`;
-  }
-});
+    const footnoteContent = content.trim().replace(/\n\n/g, "\n\n    ")
+    return `[^${id}]: ${footnoteContent}\n\n`
+  },
+})
 
 turndownService.addRule("spoiler", {
   filter: function (node) {
-    return node.classList.contains('spoiler') || node.className.includes("spoiler");
+    return node.classList.contains("spoiler") || node.className.includes("spoiler")
   },
   replacement: function (_content, node) {
-    const paragraphs = node.getElementsByTagName('p');
-    let markdown = '';
+    const paragraphs = node.getElementsByTagName("p")
+    let markdown = ""
     for (let i = 0; i < paragraphs.length; i++) {
-      const paragraphContent = turndownService.turndown(paragraphs[i].innerHTML);
-      markdown += '>! ' + paragraphContent;
+      const paragraphContent = turndownService.turndown(paragraphs[i].innerHTML)
+      markdown += ">! " + paragraphContent
       if (i < paragraphs.length - 1) {
-        markdown += '\n>\n';
+        markdown += "\n>\n"
       }
     }
-    return markdown;
-  }
-});
+    return markdown
+  },
+})
 
 turndownService = turndownService.addRule("math", {
   filter: function (node) {
