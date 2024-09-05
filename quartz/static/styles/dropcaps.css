@@ -41,7 +41,6 @@ article > p:first-of-type .small-caps {
   font-family: "EBGaramondSC" !important;
 }
 
-
 article > p[data-first-letter="f"]::before,
 article > p[data-first-letter="F"]::before {
   padding-left: 0.025em;

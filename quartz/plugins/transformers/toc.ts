@@ -5,7 +5,7 @@ import { visit, SKIP } from "unist-util-visit"
 import Slugger from "github-slugger"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { Node } from "hast"
-import {hasAncestor} from "./formatting_improvement_html"
+import { hasAncestor } from "./formatting_improvement_html"
 
 export interface Options {
   maxDepth: 1 | 2 | 3 | 4 | 5 | 6
@@ -45,7 +45,6 @@ function customToString(node: Node): string {
   return "value" in node ? String(node.value) : ""
 }
 
-
 export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
 ) => {
@@ -68,9 +67,14 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
               let hasFootnotes = false
 
               visit(tree, (node: any) => {
-                if (hasAncestor(node, (anc: any) => {return anc.type === 'blockquote'})) return SKIP
+                if (
+                  hasAncestor(node, (anc: any) => {
+                    return anc.type === "blockquote"
+                  })
+                )
+                  return SKIP
 
-                if (node.type === 'heading' && node.depth <= opts.maxDepth) {
+                if (node.type === "heading" && node.depth <= opts.maxDepth) {
                   const heading = node as Heading
                   let text = applyTextTransforms(customToString(heading))
                   highestDepth = Math.min(highestDepth, heading.depth)
@@ -89,7 +93,6 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                   })
                   logger.info(`Added Footnotes to TOC`)
                 }
-
               })
 
               if (toc.length > 0 && toc.length > opts.minEntries) {

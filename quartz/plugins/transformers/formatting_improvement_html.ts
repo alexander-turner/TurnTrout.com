@@ -251,10 +251,10 @@ export function applyTextTransforms(text: string): string {
   text = hyphenReplace(text)
   try {
     assertSmartQuotesMatch(text)
-  } catch(e: any) {
+  } catch (e: any) {
     console.error(e)
   }
-  
+
   return text
 }
 
@@ -322,7 +322,7 @@ export const applyLinkPunctuation = (node: any, index: number | undefined, paren
     const lastChild = linkNode.children[linkNode.children.length - 1]
     childToModify = lastChild.children[lastChild.children.length - 1]
   }
-  
+
   childToModify.value = childToModify.value + firstChar
   textNode.value = textNode.value.slice(1) // Remove the first char
 }
@@ -337,16 +337,14 @@ export function plusToAmpersand(text: string): string {
   return result
 }
 
-const massTransforms: [RegExp | string, string][] = [
-  [/\b(?:i\.i\.d\.|iid)/gi, "IID"]
-];
+const massTransforms: [RegExp | string, string][] = [[/\b(?:i\.i\.d\.|iid)/gi, "IID"]]
 
 export function massTransformText(text: string): string {
   for (const [pattern, replacement] of massTransforms) {
-    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g");
-    text = text.replace(regex, replacement);
+    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")
+    text = text.replace(regex, replacement)
   }
-  return text;
+  return text
 }
 
 // Node-skipping predicates //
