@@ -15,9 +15,11 @@ hamburger?.addEventListener("click", () => {
 // Handle clicks outside the menu to close it
 document.addEventListener("click", (event) => {
   // Check if the menu is visible and the click is outside the menu and hamburger
-  if (menu?.classList.contains("visible") && 
-      !menu.contains(event.target as Node) && 
-      !hamburger?.contains(event.target as Node)) {
+  if (
+    menu?.classList.contains("visible") &&
+    !menu.contains(event.target as Node) &&
+    !hamburger?.contains(event.target as Node)
+  ) {
     // Hide the menu
     menu.classList.remove("visible")
     // Reset hamburger icon animation

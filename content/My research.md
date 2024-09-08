@@ -16,9 +16,11 @@ As of November 2023, I am a research scientist on Google DeepMind's scalable ali
 # Research areas of sustained focus
 
 ## Gradient routing
-*TBD ☺️*
+
+_TBD ☺️_
 
 ## Steering vectors
+
 _January 2023 through the present._
 
 ## Mechanistic interpretability

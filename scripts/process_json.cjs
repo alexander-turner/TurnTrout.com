@@ -14,8 +14,6 @@ turndownService.addRule("subscript", {
 turndownService.addRule("figure", {
   filter: "figure",
   replacement: function (content, node) {
-    
-
     // Existing logic for regular figures
     const img = node.querySelector("img")
     const figcaption = node.querySelector("figcaption")
@@ -92,63 +90,68 @@ turnDown.prototype.escape = function (string) {
   return string
 }
 
-turndownService.addRule('footnote', {
+turndownService.addRule("footnote", {
   filter: (node) => {
-    return node.nodeName === 'LI' && node.hasAttribute('id') && node.id.startsWith('fn-') && node.classList.contains("footnote-item");
+    return (
+      node.nodeName === "LI" &&
+      node.hasAttribute("id") &&
+      node.id.startsWith("fn-") &&
+      node.classList.contains("footnote-item")
+    )
   },
   replacement: (content, node) => {
     // Turn id=fn-25bChTEETACfS9a4m-2 into id=2
-    const id = node.getAttribute('id').replace(/^fn-.*?(\d+)$/, '$1');
+    const id = node.getAttribute("id").replace(/^fn-.*?(\d+)$/, "$1")
     // Paragraphs after first should start with four spaces, so they appear as multi-paragraph footnotes
-    const footnoteContent = content.trim().replace(/\n\n/g, '\n\n    ');
-    return `[^${id}]: ${footnoteContent}\n\n`;
-  }
-});
+    const footnoteContent = content.trim().replace(/\n\n/g, "\n\n    ")
+    return `[^${id}]: ${footnoteContent}\n\n`
+  },
+})
 
 turndownService.addRule("spoiler", {
   filter: function (node) {
-    return node.classList.contains('spoiler') || node.className.includes("spoiler");
+    return node.classList.contains("spoiler") || node.className.includes("spoiler")
   },
   replacement: function (_content, node) {
-    const paragraphs = node.getElementsByTagName('p');
-    let markdown = '';
+    const paragraphs = node.getElementsByTagName("p")
+    let markdown = ""
     for (let i = 0; i < paragraphs.length; i++) {
-      const paragraphContent = turndownService.turndown(paragraphs[i].innerHTML);
-      markdown += '>! ' + paragraphContent;
+      const paragraphContent = turndownService.turndown(paragraphs[i].innerHTML)
+      markdown += ">! " + paragraphContent
       if (i < paragraphs.length - 1) {
-        markdown += '\n>\n';
+        markdown += "\n>\n"
       }
     }
-    return markdown;
-  }
-});
+    return markdown
+  },
+})
 
 // Make sure to preserve UL structure (in older posts, at least)
-turndownService.addRule('unorderedList', {
-  filter: 'ul',
-  replacement: function(_content, node) {
-    function processListItems(listNode, indent = '') {
-      let result = '';
-      listNode.childNodes.forEach(function(item) {
-        if (item.nodeName === 'LI') {
-          let itemContent = '';
-          item.childNodes.forEach(function(child) {
-            if (child.nodeName === '#text') {
-              itemContent += child.textContent;
-            } else if (child.nodeName === 'UL') {
-              itemContent += '\n' + processListItems(child, indent + '  ');
+turndownService.addRule("unorderedList", {
+  filter: "ul",
+  replacement: function (_content, node) {
+    function processListItems(listNode, indent = "") {
+      let result = ""
+      listNode.childNodes.forEach(function (item) {
+        if (item.nodeName === "LI") {
+          let itemContent = ""
+          item.childNodes.forEach(function (child) {
+            if (child.nodeName === "#text") {
+              itemContent += child.textContent
+            } else if (child.nodeName === "UL") {
+              itemContent += "\n" + processListItems(child, indent + "  ")
             } else {
-              itemContent += turndownService.turndown(child.outerHTML);
+              itemContent += turndownService.turndown(child.outerHTML)
             }
-          });
-          result += indent + '- ' + itemContent + '\n';
+          })
+          result += indent + "- " + itemContent + "\n"
         }
-      });
-      return result;
+      })
+      return result
     }
 
-    return '\n' + processListItems(node) + '\n';
-  }
+    return "\n" + processListItems(node) + "\n"
+  },
 })
 
 turndownService = turndownService.addRule("math", {
