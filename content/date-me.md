@@ -44,7 +44,7 @@ I might not be good at something at first, but I don't quit! In the second year 
 <img  src="https://assets.turntrout.com/static/images/waterfall.avif" alt="Alex waving at the camera near a waterfall."/>
 <figcaption>Hawaiian waterfalls! 🏝️</figcaption>
 </figure>
-That said, I've become a bit less research-focused recently. Somewhat relatedly, I'd become somewhat more anxious than I'd like. At the end of 2023, I realized that I just... wasn't enjoying my life? Since then, I've focused on meditation, intentionality, gratitude, and actually taking breaks. 
+That said, I've become a bit less research-focused recently. Somewhat relatedly, I'd become somewhat more anxious than I'd like. At the end of 2023, I realized that I just... wasn't enjoying my life? Since then, I've focused on meditation, intentionality, gratitude, and actually taking breaks.
 
 When I was younger, I wasn't very social. These days, I love meeting new people! I'm an _ambivert_: sometimes socializing is energizing, but sometimes it's draining. I have a lot of friends who are very precious to me, and I wish I could give each of them the time they each deserve. Sometimes I even look out over a city and wonder at the residents:
 
@@ -123,7 +123,6 @@ Meditation
 Reading textbooks
 : [Yes](./set-theory-textbook-review) [this](./linear-algebra-textbook-review) [is](./first-analysis-textbook-review) [a](./all-of-statistics-textbook-review) [real](./second-analysis-textbook-review) [thing](./functional-analysis-textbook-review) [I](./insights-from-modern-principles-of-economics) [do](./computability-and-logic-textbook-review) [for](./ordinary-differential-equations-textbook-review) [fun](./RL-textbook-review) [sometimes.](./topology-textbook-review)
 
-
 # How compatible are we?
 
 ## Possible dealbreakers
@@ -147,6 +146,7 @@ This isn't a list of _demands_ or anything, just ingredients for a good relation
   [^ethical]: AKA, ethical in the "I'll actually stand up in real life" way and not just ethical in the "I'll talk for hours about the nature of goodness" way.
 
 If this sounds like a nice potential connection, I'd love to:
+
 1. Take you dancing 💃, or
 2. Spend a lazy Sunday morning watching the stream run by the [Hidden Cafe](https://www.thehiddencafe.life/), or
 3. Have a sunset picnic and eat blueberries.
@@ -154,7 +154,6 @@ If this sounds like a nice potential connection, I'd love to:
 <img src="https://assets.turntrout.com/static/images/anime_sunset.avif" alt="An anime rendition of a beautiful orange sunset over the Bay skyline." style="margin-top: 1rem; width: 80%;"/>
 <figcaption>This could be us!</figcaption>
 </figure>
-
 
 OK, I've written enough! Get to know me if you want to know more. 🪿
 

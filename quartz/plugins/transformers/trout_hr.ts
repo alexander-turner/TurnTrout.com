@@ -46,16 +46,21 @@ export const ornamentNode: Element = {
 
 /**
  * Attempts to insert an ornament node before a footnotes section.
- * 
+ *
  * @param {Element} node - The current node being processed.
  * @param {number | undefined} index - The index of the current node in its parent's children array.
  * @param {Parent | undefined} parent - The parent node of the current node.
  * @returns {boolean} True if the ornament was inserted, false otherwise.
  */
-export function maybeInsertOrnament(node: Element, index: number | undefined, parent: Parent | undefined): boolean {
+export function maybeInsertOrnament(
+  node: Element,
+  index: number | undefined,
+  parent: Parent | undefined,
+): boolean {
   // Check if the current node is a footnotes section
   if (
-    parent && index !== undefined &&
+    parent &&
+    index !== undefined &&
     node.tagName === "section" &&
     node.properties?.["dataFootnotes"] !== undefined &&
     (node.properties?.className as Array<String>)?.includes("footnotes")
@@ -63,15 +68,20 @@ export function maybeInsertOrnament(node: Element, index: number | undefined, pa
     // <hr/> looks weird right before the trout hr, so remove it.
     // Check if there's a newline and then an HR preceding
     const prevElement = parent.children[index - 1] as Element | Text
-    if (index > 1 && prevElement.type === 'text' && prevElement.value === "\n" && (parent.children[index-2] as Element).tagName === 'hr') {
+    if (
+      index > 1 &&
+      prevElement.type === "text" &&
+      prevElement.value === "\n" &&
+      (parent.children[index - 2] as Element).tagName === "hr"
+    ) {
       parent.children.splice(index - 2, 1)
-      index--;
+      index--
 
-    // Check if there's an HR right before the footnotes section
-    } else if (index > 0 && (prevElement as Element).tagName === 'hr') {
+      // Check if there's an HR right before the footnotes section
+    } else if (index > 0 && (prevElement as Element).tagName === "hr") {
       // Remove the HR element
-      parent.children.splice(index - 1, 1);
-      index--; // Adjust index after removal
+      parent.children.splice(index - 1, 1)
+      index-- // Adjust index after removal
     }
 
     // If it is, insert the ornament node before the footnotes section
@@ -97,7 +107,7 @@ export function insertOrnamentNode(tree: Root): void {
   if (!footnotesFound) {
     // Check if the last child is an <hr> element
     const lastChild = tree.children[tree.children.length - 1] as Element
-    if (lastChild && lastChild.type === 'element' && lastChild.tagName === 'hr') {
+    if (lastChild && lastChild.type === "element" && lastChild.tagName === "hr") {
       // Remove the last <hr> element
       tree.children.pop()
     }
@@ -110,11 +120,11 @@ export function insertOrnamentNode(tree: Root): void {
  * Quartz transformer plugin for adding a trout ornament HR.
  * @returns {QuartzTransformerPlugin} The plugin object.
  */
-type TreeTransformer = (tree: Root) => void;
+type TreeTransformer = (tree: Root) => void
 type PluginReturn = {
-  name: string;
-  htmlPlugins: () => TreeTransformer[];
-};
+  name: string
+  htmlPlugins: () => TreeTransformer[]
+}
 
 export const TroutOrnamentHr: QuartzTransformerPlugin = (): PluginReturn => {
   return {

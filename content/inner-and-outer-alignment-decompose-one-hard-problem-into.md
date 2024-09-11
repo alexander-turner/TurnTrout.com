@@ -644,4 +644,3 @@ Consider what happens when you train a deep Q-learning network on Pac-Man. I'll 
     However, reality will always “hit back” against bad capabilities. A successful AGI will continually become more capable, even well after value crystallization.
 
 [^16]: This argument works even if _P_ originally penalizes tampering actions. Suppose the agent is grading itself for the average output of the procedure over time (or sum-time-discounted with 𝛾 ≈ 1, or the score at some late future time step, or whatever else; argument should still go through). Then penalizing tampering actions will decrease that average. But since the penalties only apply for a relatively small number of early time steps, the penalties will get drowned out by the benefits of modifying the _P_\-procedure.
-

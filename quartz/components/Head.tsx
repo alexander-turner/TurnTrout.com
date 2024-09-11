@@ -18,14 +18,13 @@ export default (() => {
     const permalink = fileData.permalink || url.href
     const siteImage = "https://assets.turntrout.com/static/images/fb_preview.avif"
 
-
     // Have both square and FB previews TODO check that this works
     let mediaElement = (
       <>
-        <meta property="og:image" content="https://assets.turntrout.com/static/pond.webm"/>
-        <meta property="og:image:width" content="1200"/>
-        <meta property="og:image:height" content="1200"/>
-        
+        <meta property="og:image" content="https://assets.turntrout.com/static/pond.webm" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="1200" />
+
         <meta property="og:image" content={siteImage} />
         <meta
           property="og:image:alt"
@@ -50,7 +49,9 @@ export default (() => {
         <script src="/static/scripts/DOMContentLoaded.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        {fileData.frontmatter?.avoidIndexing && <meta name="robots" content="noindex, noimageindex,nofollow" />}
+        {fileData.frontmatter?.avoidIndexing && (
+          <meta name="robots" content="noindex, noimageindex,nofollow" />
+        )}
 
         <meta property="og:title" content={title} />
         <meta property="og:type" content="article" />

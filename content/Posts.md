@@ -30,7 +30,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 
 > [!quote] Original sequence description
 >
-> You can never have enough books. --  [The Verres family motto](https://hpmor.com/chapter/7)
+> You can never have enough books. -- [The Verres family motto](https://hpmor.com/chapter/7)
 >
 > My journey through the MIRI research guide.
 
@@ -97,6 +97,7 @@ Introductory post: [Reframing Impact](./reframing-impact)
 
 > [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
 > Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
+
 1. [Seeking Power Is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps)
 2. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities)
 3. [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture)
@@ -128,9 +129,10 @@ Introductory post: [Reframing Impact](./reframing-impact)
 4. [Formalizing Policy Modification Corrigibility](formalizing-policy-modification-corrigibility)
 
 ## Shard Theory
-In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_. 
 
-Classical arguments focus on what _the_ goal of an AI will be. Why? There's not a good answer that I've ever heard. Shard theory redirects our attention from fixed single objectives. The basic upshot of shard theory: AIs and humans are well-understood[^experimental] as having a bunch of situationally activated goals -- "shards" of desire and preference. 
+In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_.
+
+Classical arguments focus on what _the_ goal of an AI will be. Why? There's not a good answer that I've ever heard. Shard theory redirects our attention from fixed single objectives. The basic upshot of shard theory: AIs and humans are well-understood[^experimental] as having a bunch of situationally activated goals -- "shards" of desire and preference.
 
 For example, you probably care more about people you can see. Shard theory predicts this outcome. Consider your learned decision-making circuits which bid for actions which care for your friend Bill. These circuits were probably formed when you were able to see Bill (or perhaps the vast majority of your "caring about people" circuits were formed when physically around people). If you can see Bill, that situation is more "similar to the training distribution" for your "caring about Bill" shard. Therefore, the Bill shard is especially likely to fire when you can see him.
 
