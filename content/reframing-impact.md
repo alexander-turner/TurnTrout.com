@@ -20,10 +20,10 @@ publish: true
 title: "Reframing Impact"
 lw-latest-edit: 2021-08-25T18:32:59.440Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "impact-regularization"
   - "AI"
-aliases: 
+aliases:
   - "reframing-impact"
 lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/jlnkhq3volgajzks64sw
@@ -37,18 +37,19 @@ date_published: 09/20/2019
 original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
 ---
-![](https://assets.turntrout.com/static/images/posts/3LocEy9.avif )
+
+![](https://assets.turntrout.com/static/images/posts/3LocEy9.avif)
 ![](https://assets.turntrout.com/static/images/posts/IUOudUK.avif)
-![](https://assets.turntrout.com/static/images/posts/GyP8V1D.avif )
+![](https://assets.turntrout.com/static/images/posts/GyP8V1D.avif)
 ![](https://assets.turntrout.com/static/images/posts/fEqZh8g.avif)
 ![](https://assets.turntrout.com/static/images/posts/wXmF1eX.avif)
-![](https://assets.turntrout.com/static/images/posts/Rjz9usG.avif )
+![](https://assets.turntrout.com/static/images/posts/Rjz9usG.avif)
 ![](https://assets.turntrout.com/static/images/posts/1722a733b38bd3e06602ab967807e30117054d26051c5c84.avif)
-![](https://assets.turntrout.com/static/images/posts/ZppOEZJ.avif )
+![](https://assets.turntrout.com/static/images/posts/ZppOEZJ.avif)
 ​![](https://assets.turntrout.com/static/images/posts/knzoLGJ.avif)
-![](https://assets.turntrout.com/static/images/posts/gsWrwt6.avif )
-[​](​![]\(https://assets.turntrout.com/static/images/posts/kIT2ULN.avif)
-![](https://assets.turntrout.com/static/images/posts/iSqriuT.avif )
+![](https://assets.turntrout.com/static/images/posts/gsWrwt6.avif)
+[​](​![](https://assets.turntrout.com/static/images/posts/kIT2ULN.avif)
+![](https://assets.turntrout.com/static/images/posts/iSqriuT.avif)
 ​![](https://assets.turntrout.com/static/images/posts/p4OkxJ1.avif)
 ![](https://assets.turntrout.com/static/images/posts/nFoDRoL.avif)
 ![](https://assets.turntrout.com/static/images/posts/e6vNG2D.avif)
@@ -95,6 +96,7 @@ So what about:
 #### Notes
 
 - The three sections of this sequence will respectively answer three questions:
+
   1. Why do we think some things are big deals?
   2. Why are capable goal-directed AIs incentivized to catastrophically affect us by default?
   3. How might we build agents without these incentives?
@@ -109,8 +111,9 @@ So what about:
 > If you are given a hammer with which to drive nails at the age of three you may think to yourself, "OK, nice." But if you are given a hard rock with which to drive nails at the age of three, and at the age of four you are given a hammer, you think to yourself, "What a marvellous invention!" You see, you can't really appreciate the solution until you first appreciate the problem.
 
 - My paperclip-Balrog illustration is metaphorical: A good impact measure would hold steadfast against the daunting challenge of formally asking for the right thing from a powerful agent. The illustration does not represent an internal conflict within that agent. As water flows downhill, an impact-penalizing Frank prefers low-impact plans.
+
   - The Balrog drawing is based on [`gonzalokenny`'s amazing work](https://www.deviantart.com/gonzalokenny/art/Gandalf-and-the-Balrog-329465089).
 
 - Some of you may have a different conception of impact; I ask that you grasp the thing that I’m pointing to. In doing so, you might come to see your mental algorithm is the same. Ask not “is this what I initially had in mind?”, but rather “does this make sense to call 'impact'?”.
-> [!thanks] 
-> Thanks to Rohin Shah for suggesting the three key properties. Alison Bowden contributed several small drawings and enormous help with earlier drafts.
+  > [!thanks]
+  > Thanks to Rohin Shah for suggesting the three key properties. Alison Bowden contributed several small drawings and enormous help with earlier drafts.

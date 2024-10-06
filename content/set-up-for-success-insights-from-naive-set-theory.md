@@ -78,4 +78,3 @@ Of all the productivity advice I've read, the most useful involves imbuing your 
 ## Internal Light
 
 If you don't know where to start, I think the internal fire has to be lit first - don't try to force yourself to do this (or anything else) because you "should". "Stop the guilt-based motivation", proudly stake out what you want, and transform your life into a dazzling assortment of activities and tasks imbued with your terminal values, your brightest visions for yourself and the future.
-

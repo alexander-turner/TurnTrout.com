@@ -203,4 +203,3 @@ We can quantify what incoherence is demanded by corrigibility<sub>policy modific
 <hr/>
 
 [^pen]: The AUP penalty term's optimal value functions will pretend the episode doesn't end, so that they reflect the agent's ability to move around (or not, if it's already been force-corrected to a fixed policy.)
-

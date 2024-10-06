@@ -273,7 +273,7 @@ describe("Favicon Utilities", () => {
   describe("ModifyNode", () => {
     it.each([
       ["./shard-theory", TURNTROUT_FAVICON_PATH],
-      ["../shard-theory", TURNTROUT_FAVICON_PATH], 
+      ["../shard-theory", TURNTROUT_FAVICON_PATH],
       ["#test", null],
       ["mailto:test@example.com", MAIL_PATH],
       ["mailto:another@domain.org", MAIL_PATH],
@@ -350,7 +350,10 @@ describe("downloadImage", () => {
   })
 
   it("should throw if fetch response has no body", async () => {
-    const mockResponse = new Response(null, { status: 200, headers: { "Content-Type": "image/png" } })
+    const mockResponse = new Response(null, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
     await runTest(mockResponse, false)
   })
 

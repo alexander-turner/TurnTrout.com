@@ -300,4 +300,3 @@ The plot below also explains the difference in L2 norm between actual `mlp_out` 
 [^8]: Seeing the exponential growth ($\propto$ `mlp_out`) here would not be necessary but would be sufficient as evidence for theory 1 and against theory 2. This is because random vectors might qualitatively differ from typical residual stream activations and not reproduce the typical behaviour. If they _do_ however reproduce the `mlp_out` scaling, this is unlikely to be coincidence.
 [^9]: Note that we used TransformerLens to test all models, which (by default) does a couple of weight-rewriting tricks (such as `fold_ln`, `center_writing_weights`) that do _not_ change the model output, but _might_ affect the regularization.
 [^10]: Randomly resampled `resid_mid` activations, taken from positions 1 to 6 to avoid BOS and padding tokens.
-

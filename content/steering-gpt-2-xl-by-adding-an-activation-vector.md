@@ -795,9 +795,8 @@ Alex gets mileage out of _not_ thinking about the model as "trying to predict ne
 
 Activation additions have _already_ helped us find representations in a model. Activation additions are how we [found the cheese-tracking channels in the maze-solving network, which then let us retarget the network](/understanding-and-controlling-a-maze-solving-policy-network):
 
-> [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
-> <video autoplay loop muted playsinline src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4"></video>
-> 
+> [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network) > <video autoplay loop muted playsinline src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4"></video>
+>
 > Figure: **Locally retargeting the search by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals.
 
 We retargeted the mouse using channels which were present at the layer where "Cheese" − "No cheese" vector was most effective. Therefore, as a matter of historical fact, the cheese vector helped us find important abstractions inside of a model.
@@ -1211,4 +1210,3 @@ Subtracting the cheese vector essentially [makes the agent behave as if the chee
     Furthermore, [Neel Nanda noted that](https://www.lesswrong.com/posts/nmxzr2zsjNtjaHh7x/actually-othello-gpt-has-a-linear-emergent-world) composition worked to some degree:
 
     > It seems to somewhat work for multiple edits - if I flip F5 _and_ F6 in the above game to make G6 illegal, it kinda realises this, though is a weaker effect and is jankier and more fragile.
-

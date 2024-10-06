@@ -25,7 +25,7 @@ export interface ReplaceFnResult {
 
 /**
  * Replaces text in a node based on a regex pattern and a replacement function.
- * 
+ *
  * @param node - The text node to process.
  * @param index - The index of the node in its parent's children array.
  * @param parent - The parent node containing the text node.

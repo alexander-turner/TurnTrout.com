@@ -134,4 +134,3 @@ I'd be excited to see more work on this, but I don't currently plan to do it mys
 
 > [!thanks]
 > Thanks to Andrew Critch for prompting me to flesh out this idea.
-

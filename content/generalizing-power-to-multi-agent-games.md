@@ -21,11 +21,11 @@ title: "Generalizing POWER to multi-agent games"
 lw-latest-edit: 2021-06-06T14:23:13.010Z
 lw-is-linkpost: "false"
 authors: Jacob Stavrianos and Alex Turner
-tags: 
+tags:
   - "understanding-the-world"
   - "AI"
   - "instrumental-convergence"
-aliases: 
+aliases:
   - "generalizing-power-to-multi-agent-games"
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence
@@ -39,11 +39,12 @@ date_published: 03/22/2021
 original_url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 skip_import: true
 ---
+
 > [!thanks] Acknowledgments
 > This article is a writeup of a research project conducted through the [SERI](https://cisac.fsi.stanford.edu/stanford-existential-risks-initiative/content/stanford-existential-risks-initiative) program under the mentorship of [Alex Turner](https://www.lesswrong.com/users/turntrout). I ([Jacob Stavrianos](https://www.lesswrong.com/users/midco)) would like to thank Alex for turning a messy collection of ideas into legitimate research, as well as the wonderful researchers at SERI for guiding the project and putting me in touch with the broader X-risk community.
 
-In the single-agent setting, [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) showed that optimal policies tend to choose actions which pursue "power" (reasonably formalized). In the multi-agent setting, the [Catastrophic Convergence Conjecture](/the-catastrophic-convergence-conjecture) presented intuitions that "most agents" will "fight over resources" when they get "sufficiently advanced." However, it wasn't clear how to formalize that intuition.  
-  
+In the single-agent setting, [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) showed that optimal policies tend to choose actions which pursue "power" (reasonably formalized). In the multi-agent setting, the [Catastrophic Convergence Conjecture](/the-catastrophic-convergence-conjecture) presented intuitions that "most agents" will "fight over resources" when they get "sufficiently advanced." However, it wasn't clear how to formalize that intuition.
+
 This post synthesizes single-agent power dynamics (which we believe is now somewhat well-understood in the MDP setting) with the multi-agent setting. The multi-agent setting is important for AI alignment, since we want to reason clearly about when AI agents disempower humans. Assuming constant-sum games (i.e. maximal misalignment between agents), this post presents a result which echoes the intuitions in the Catastrophic Convergence Conjecture post: as agents become "more advanced", "power" becomes increasingly scarce & constant-sum.
 
 # An illustrative example
@@ -71,12 +72,13 @@ Many attempts have been made to classify the [convergently instrumental goals](h
 Since we'll be working with POWER for the rest of this post, we need a solid definition to build off of. We present a simplified version of the original definition:
 
 > [!definition]
-> Consider a scenario in which an agent has a set of actions $a \in A$  and a distribution $\mathcal{D}$ of reward functions $r: A \to \mathbb{R}$. Then, we define the POWER of that agent as
-> 
+> Consider a scenario in which an agent has a set of actions $a \in A$ and a distribution $\mathcal{D}$ of reward functions $r: A \to \mathbb{R}$. Then, we define the POWER of that agent as
+>
 > $$
 > \text{POWER}_{\mathcal{D}} := \mathbb{E}_{r \sim \mathcal{D}} [\max_{a} r(a))]
 > $$
-As an example, we can rewrite the project example from earlier in terms of POWER. Let your goal for the project be chosen from some distribution $\mathcal{D}$ (maybe you want it done nicely, or fast, or to feature some cool thing that you did, etc). Then, your $\text{POWER}_{\mathcal{D}}$ is the maximum extent to which you can accomplish that goal, in expectation.
+>
+> As an example, we can rewrite the project example from earlier in terms of POWER. Let your goal for the project be chosen from some distribution $\mathcal{D}$ (maybe you want it done nicely, or fast, or to feature some cool thing that you did, etc). Then, your $\text{POWER}_{\mathcal{D}}$ is the maximum extent to which you can accomplish that goal, in expectation.
 
 However, this model of power can't account for the actions of other agents in the environment (what about what your teammates do? Didn't we already show that it matters a lot?). To say more about the example, we'll need a generalization of POWER.
 
@@ -117,14 +119,14 @@ Further, we can define a (Bayesian) Nash Equilibrium to be a strategy profile wh
 ## Formal definition of multi-agent POWER
 
 > [!definition] POWER in a Bayesian game
-> 
+>
 > Fix a strategy profile $\sigma$. We define player $i$'s POWER as
-> 
+>
 > $$
 > \text{POWER}(i,  \sigma) := \mathbb{E}_{t_i} \max_{a_i} f_i(t_i, a_i, \sigma_{-i}))
 > $$
 
- Intuitively, POWER is maximum (expected) reward given a distribution of possible goals. The difference from the single-agent case is that your reward is now influenced by other players' actions (by taking an expectation over opponents' strategy).
+Intuitively, POWER is maximum (expected) reward given a distribution of possible goals. The difference from the single-agent case is that your reward is now influenced by other players' actions (by taking an expectation over opponents' strategy).
 
 # Properties of constant-sum games
 
@@ -132,29 +134,29 @@ As both a preliminary result and a reference point for intuition, we consider th
 
 A zero-sum game is a game in which for every possible outcome of the game, the sum of each player's reward is zero. For Bayesian games, this means that for all type profiles $t = (t_i)$ and action profiles $\mathbf{a}$, we have $\sum_i r_i(t_i, \mathbf{a}) = 0$. Similarly, a _constant-sum game_ is a game satisfying $\sum_i r_i(t_i, \mathbf{a}) = c$ for any choices of $t, \mathbf{a}$.
 
-As a simple example, consider chess; a two-player adversarial game. We let the reward profile be constant, given by "1 if you win, -1 if you lose" (assume black wins in a tie). This game is clearly zero-sum, since exactly one player will win and lose. We could ask the same "how well can you do?" question as before, but the upper-bound of winning is trivial. Instead, we ask "how well can both players simultaneously do?" 
+As a simple example, consider chess; a two-player adversarial game. We let the reward profile be constant, given by "1 if you win, -1 if you lose" (assume black wins in a tie). This game is clearly zero-sum, since exactly one player will win and lose. We could ask the same "how well can you do?" question as before, but the upper-bound of winning is trivial. Instead, we ask "how well can both players simultaneously do?"
 
 Clearly, you can't both simultaneously win. However, we can imagine scenarios where both players have the _power_ to win: in a chess game between two beginners, the optimal strategy for either player will easily win the game. As it turns out, this argument generalizes (we'll even prove it): in a constant-sum game, the sum of each player's POWER $\geq c$, with equality IFF each player responds optimally for all their possible goals ("types"). This condition is equivalent to a Bayesian Nash Equilibrium of the game.
 
 Importantly, this idea suggests a general principle of multi-agent POWER I'll call _power-scarcity:_ in multi-agent games, gaining POWER tends to come at the expense of another player losing POWER. Future research will focus on understanding this phenomenon further and relating it to "how aligned the agents are" in terms of their reward functions.
 
 > [!note] Conservation of POWER in constant-sum games
-> Consider a Bayesian constant-sum game with some strategy profile $\sigma$. Then, $\sum_i \text{POWER}(i, \sigma) \geq c$ with equality IFF  $\sigma$ is a Nash Equilibrium.
-> 
+> Consider a Bayesian constant-sum game with some strategy profile $\sigma$. Then, $\sum_i \text{POWER}(i, \sigma) \geq c$ with equality IFF $\sigma$ is a Nash Equilibrium.
+>
 > **Intuition:** By definition, $\sigma$ _isn't_ a Nash Equilibrium IFF some player $i$'s strategy $\sigma_i$ isn't a best response. In this case, we see that player $i$ has the power to play optimally, but the other players also have the power to capitalize off of player $i$'s mistake (since the game is constant-sum). Thus, the lost reward is "double-counted" in terms of POWER; if no such double-counting exists, then the sum of POWER is just the expected sum of reward, which is $c$ by definition of a constant-sum game.
-> 
-> **Rigorous proof:**  We prove the following for general strategy profiles $\sigma$:
-> 
+>
+> **Rigorous proof:** We prove the following for general strategy profiles $\sigma$:
+>
 > $$
 > \begin{align*} \sum_i \text{Power}(i, \sigma) &= \sum_i \mathbb{E}_{t_i} \max_{a_i} f_i(t_i, a_i, \sigma_{-i})) \\ &\geq \sum_i \mathbb{E}_{t_i} \mathbb{E}_{a_i \sim \sigma_i} f_i(t_i, a_i, \sigma_{-i})) \\ &= \sum_i \mathbb{E}_{t_i} \mathbb{E}_{\mathbf{a} \sim \sigma} r_i(t_i, \mathbf{a})) \\ &= \mathbb{E}_{t} \mathbb{E}_{\mathbf{a} \sim \sigma} \left( \sum_i r_i(t_i, \mathbf{a}) \right) \\ &= \mathbb{E}_{t} \mathbb{E}_{\mathbf{a} \sim \sigma} \left( c \right) \\ &= c \end{align*}
 > $$
-> 
+>
 > Now, we claim that the inequality on line 2 is an equality IFF $\sigma$ is a Nash Equilibrium. To see this, note that for each $i$, we have
-> 
+>
 > $$
 > \max_{a_i} f_i(t_i, a_i, \sigma_{-i}) \geq \mathbb{E}_{a_i \sim \sigma_i} f_i(t_i, a_i, \sigma_{-i})
 > $$
-> 
+>
 > with equality IFF $\sigma_i$ is a best response to $\sigma_{-i}$. Thus, the sum of these inequalities for each player is an equality IFF each $\sigma_i$ is a best response, which is the definition of a Nash Equilibrium. ∎
 
 # Final notes
@@ -163,6 +165,7 @@ To wrap up, I'll elaborate on the implications of this theorem, as well as some 
 
 - It initially seems unintuitive that as players' strategies improve, their collective POWER tends to decrease. The proximate cause of this effect is something like "as your strategy improves, other players lose the power to capitalize off of your mistakes". More work is probably needed to get a clearer picture of this dynamic.
 - We suspect that if all players have identical rewards, then the sum of POWER is equal to the sum of best-case POWER for each player. This gives the appearance of a spectrum with [aligned rewards (common payoff), maximal sum power] on one end and [anti-aligned rewards (constant-sum), constant sum power] on the other. Further research might look into an interpolation between these two extremes, possibly characterized by a correlation metric between reward functions.
+
   - We also plan to generalize POWER to Bayesian stochastic games to account for sequential decision making. Thus, any such metric for comparing reward functions would have to be consistent with such a generalization.
 
 - POWER-scarcity results in terms of Nash Equilibria suggest the following dynamic: as agents get smarter and take available opportunities, POWER becomes increasingly scarce. This matches the intuitions presented in [the Catastrophic Convergence Conjecture](/the-catastrophic-convergence-conjecture), where agents don’t fight over resources until they get sufficiently “advanced.”

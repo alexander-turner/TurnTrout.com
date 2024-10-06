@@ -22,10 +22,10 @@ title: "AI presidents discuss AI alignment agendas"
 lw-latest-edit: 2023-09-09T18:55:38.346Z
 lw-is-linkpost: "true"
 authors: Alex Turner and Garrett Baker
-tags: 
+tags:
   - "AI"
   - "humor"
-aliases: 
+aliases:
   - "ai-presidents-discuss-ai-alignment-agendas"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -47,5 +47,5 @@ The video is also [available on YouTube](https://www.youtube.com/watch?v=02kbWY5
 > None of the presidents fully represent my (`TurnTrout`'s) views.
 
 > [!credits]
-> 
+>
 > `TurnTrout` wrote the script. Garrett Baker helped produce the video after the audio was complete. Thanks to David Udell, Ulisse Mini, Noemi Chulo, and especially Rio Popper for feedback and assistance in writing the script.

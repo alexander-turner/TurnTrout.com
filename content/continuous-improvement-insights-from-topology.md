@@ -38,6 +38,7 @@ date_published: 02/22/2020
 original_url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 skip_import: true
 ---
+
 Sometimes you really like someone, but you can't understand why. By all means, you should have tired of them long ago, but you keep coming back. Welcome, my friend, to [_Topology_](https://www.amazon.com/Topology-2nd-James-Munkres/dp/0131816292).
 
 This book is a good one, but boy was it _slow_ (349 pages at ~30 minutes a page, on average). I just kept coming back, and I was slowly rewarded each time I did.
@@ -55,7 +56,6 @@ Topology is about what it means for things to be "close" in a very abstract and 
 > [Compact](https://en.wikipedia.org/wiki/Compact_space) means small. It is a peculiar kind of small, but at its heart, compactness is a precise way of being small in the mathematical world. The smallness is peculiar because, as in the example of the open and closed intervals $(0,1)$ and $[0,1]$, a set can be made “smaller” (that is, compact) by adding points to it, and it can be made “larger” (non-compact) by taking points away.
 >
 > As a notion of smallness, then, compactness is a bit fraught. It’s a bit unsettling to say that a set can be “smaller” than a set that lies entirely inside it! But I think smallness is a valuable way to see compactness. A set that is compact may be large in area and complicated, but the fact that it is compact means we can interact with it in a finite way using open sets, the building blocks of topology.
-
 
 [Minimum description length says that an explanation is big if its shortest computational specification is long](https://www.readthesequences.com/Occams-Razor). You can have a simple explanation of a very long list of things or of a large universe, and extremely complicated explanations of things easily expressed in natural language (God's source code would be _a lot_ longer than Maxwell's equations).
 
@@ -97,7 +97,7 @@ Continuity in the variables says that paths along the axes converge in the right
 
 ## You only lift once
 
-Suppose $p:C\to Y$ is a [covering map](https://en.wikipedia.org/wiki/Covering_space). One way of understanding [lifts](https://en.wikipedia.org/wiki/Lift_\(mathematics\)) in algebraic topology is that, for some path $f:X\to Y$, the lift $\tilde{f}:X\to C$ is the unique path in the covering space $C$ corresponding to $f=p\circ \tilde{f}$.
+Suppose $p:C\to Y$ is a [covering map](https://en.wikipedia.org/wiki/Covering_space). One way of understanding [lifts](<https://en.wikipedia.org/wiki/Lift_(mathematics)>) in algebraic topology is that, for some path $f:X\to Y$, the lift $\tilde{f}:X\to C$ is the unique path in the covering space $C$ corresponding to $f=p\circ \tilde{f}$.
 
 ![](https://assets.turntrout.com/static/images/posts/psLCumW.avif)
 

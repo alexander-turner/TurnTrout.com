@@ -20,10 +20,10 @@ publish: true
 title: "Deducing Impact"
 lw-latest-edit: 2019-09-24T21:56:15.111Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "understanding-the-world"
   - "impact-regularization"
-aliases: 
+aliases:
   - "deducing-impact"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -39,17 +39,16 @@ date_published: 09/24/2019
 original_url: https://www.lesswrong.com/posts/Qs88fvwnjBevMrbkK/deducing-impact
 skip_import: true
 ---
+
 ![](https://assets.turntrout.com/static/images/posts/lyRy0fS.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/OIDCLpl.avif)
 
-[​](​![]\(https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)![](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)
+[​](​![](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)![](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/G1UgvEf.avif)
 
-![](https://assets.turntrout.com/static/images/posts/lCPSncS.avif )
-
-  
+![](https://assets.turntrout.com/static/images/posts/lCPSncS.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
 
@@ -61,6 +60,6 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/p278IRN.avif)
 
->! The solution comes in the next post! Feel free to discuss amongst yourselves.
+> ! The solution comes in the next post! Feel free to discuss amongst yourselves.
 >
->! Reminder: Your sentence should explain impact from all of the perspectives we discussed (from XYZ to humans).
+> ! Reminder: Your sentence should explain impact from all of the perspectives we discussed (from XYZ to humans).

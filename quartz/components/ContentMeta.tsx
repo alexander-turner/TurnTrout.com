@@ -90,7 +90,11 @@ export const insertFavicon = (imgPath: string | null, node: JSX.Element): JSX.El
 export function renderPublicationInfo(cfg: GlobalConfiguration, fileData: QuartzPluginData) {
   const frontmatter = fileData.frontmatter
   const datePublished = frontmatter?.date_published
-  if (typeof frontmatter?.original_url !== "string" || !datePublished || frontmatter?.hide_metadata) {
+  if (
+    typeof frontmatter?.original_url !== "string" ||
+    !datePublished ||
+    frontmatter?.hide_metadata
+  ) {
     return null
   }
 

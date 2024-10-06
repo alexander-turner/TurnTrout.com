@@ -1,7 +1,6 @@
 import { wrapWithoutTransition } from "./util"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 
-
 const hamburger = document.querySelector(".hamburger")
 const menu = document.querySelector(".menu")
 
@@ -541,43 +540,43 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
    * @param wait The number of milliseconds to delay.
    * @returns A debounced version of the passed function.
    */
-/**
- * Debounce function to limit the rate at which a function can fire.
- * Allows immediate execution on the first call if `immediate` is true.
- * @param func The function to debounce.
- * @param wait The number of milliseconds to delay.
- * @param immediate If true, trigger the function on the leading edge.
- * @returns A debounced version of the passed function.
- */
-function debounce<F extends (...args: any[]) => void>(
-  func: F,
-  wait: number,
-  immediate: boolean = false
-): F {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  return function (this: any, ...args: any[]) {
-    const context = this;
+  /**
+   * Debounce function to limit the rate at which a function can fire.
+   * Allows immediate execution on the first call if `immediate` is true.
+   * @param func The function to debounce.
+   * @param wait The number of milliseconds to delay.
+   * @param immediate If true, trigger the function on the leading edge.
+   * @returns A debounced version of the passed function.
+   */
+  function debounce<F extends (...args: any[]) => void>(
+    func: F,
+    wait: number,
+    immediate: boolean = false,
+  ): F {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    return function (this: any, ...args: any[]) {
+      const context = this
 
-    const later = () => {
-      timeoutId = null;
-      if (!immediate) {
-        func.apply(context, args);
+      const later = () => {
+        timeoutId = null
+        if (!immediate) {
+          func.apply(context, args)
+        }
       }
-    };
 
-    const callNow = immediate && timeoutId === null;
+      const callNow = immediate && timeoutId === null
 
-    if (timeoutId !== null) {
-      clearTimeout(timeoutId);
-    }
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId)
+      }
 
-    timeoutId = setTimeout(later, wait);
+      timeoutId = setTimeout(later, wait)
 
-    if (callNow) {
-      func.apply(context, args);
-    }
-  } as F;
-}
+      if (callNow) {
+        func.apply(context, args)
+      }
+    } as F
+  }
 
   async function onType(e: HTMLElementEventMap["input"]) {
     if (!searchLayout || !index) return
@@ -637,7 +636,7 @@ function debounce<F extends (...args: any[]) => void>(
     await displayResults(finalResults)
   }
 
-  const debouncedOnType = debounce(onType, 50, true);
+  const debouncedOnType = debounce(onType, 50, true)
 
   document.addEventListener("keydown", shortcutHandler)
   window.addCleanup(() => document.removeEventListener("keydown", shortcutHandler))

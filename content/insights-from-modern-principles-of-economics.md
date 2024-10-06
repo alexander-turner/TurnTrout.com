@@ -298,4 +298,3 @@ I haven't seriously looked into these questions yet.
 
 > [!thanks]
 > Thanks to LessWrong for feedback on this post.
-

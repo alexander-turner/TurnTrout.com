@@ -20,12 +20,12 @@ publish: true
 title: "Definitive confirmation of shard theory"
 lw-latest-edit: 2023-04-03T16:23:51.143Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "AI"
   - "postmortems-&-retrospectives"
   - "humor"
   - "shard-theory"
-aliases: 
+aliases:
   - "april-fools-definitive-confirmation-of-shard-theory"
   - "definitive-confirmation-of-shard-theory"
   - "shard-theory-confirmation"

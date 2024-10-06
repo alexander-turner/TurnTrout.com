@@ -393,4 +393,3 @@ I no longer ask "how can I study most effectively?", but rather, "what does it f
 [^1]: Although any shape in the sequence implied by the image does indeed have strictly different area than the circle it approximates (in contrast to $F_n$ and $F$), the analogy may still be helpful.
 [^2]: Please don't wirehead thinking about this.
 [^3]: I'm aware that this section isn't very implementable. I may write more on my post-CFAR experience in the near future.
-

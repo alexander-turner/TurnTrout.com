@@ -140,4 +140,3 @@ Again, I wrote this dialogue to help me think about the issue. It seems to me li
 
 [^1]: When I first wrote this dialogue, I may have swept difficulties under the rug like "[augmenting intelligence may be hard for biological humans to do while preserving their values](https://www.lesswrong.com/posts/EQkELCGiGQwvrrp3L/growing-up-is-hard)." I think the main point should still stand.
 [^2]: We can also swap out "I bring about a good future for my brother" with "my brother brings about a good future for me, and I think that he will do a good job of it, even though he presumably doesn't contain a 'perfect' motivational pointer to my true values."
-

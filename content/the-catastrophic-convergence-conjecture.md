@@ -193,4 +193,3 @@ _Edit_: The initial version of this post talked about "outer alignment"; I chang
 
 [^8]: [Some large reward function classes are probably not alignable](https://www.alignmentforum.org/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want); for example, consider all Markovian linear functionals over a webcam's pixel values.
 [^9]: I disagree with my usage of "aligned _almost never_" on a technical basis: Assuming a finite state and action space and considering the maxentropy reward function distribution, there must be a positive measure set of reward functions for which the/a human-aligned policy is optimal.
-

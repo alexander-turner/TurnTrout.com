@@ -37,29 +37,30 @@ date_published: 12/03/2021
 original_url: https://www.lesswrong.com/posts/RAnb2A5vML95rBMyd/formalizing-policy-modification-corrigibility
 skip_import: true
 ---
-In [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent), I operationalized an agent's corrigibility  as our ability to modify the agent so that it follows different policies. In the summer of 2020, I had formalized this notion, but it languished—unloved—in my Overleaf drafts.
+
+In [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent), I operationalized an agent's corrigibility as our ability to modify the agent so that it follows different policies. In the summer of 2020, I had formalized this notion, but it languished—unloved—in my Overleaf drafts.
 
 > [!info] Clarification
 > This post is not proposing a solution to corrigibility, but proposing an interesting way of quantifying an aspect of corrigibility.
 
 # Motivation
 
-Given a human (with policy $\pi^H$) and an AI (with policy $\pi^{AI}$), I wanted to quantify how much $\pi^{AI}$ let the human modify/correct the AI. 
+Given a human (with policy $\pi^H$) and an AI (with policy $\pi^{AI}$), I wanted to quantify how much $\pi^{AI}$ let the human modify/correct the AI.
 
-Let's reconsider [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent). We have a three-state environment. We want the AI to let us later change it, so that we can ultimately determine which state of $A, B,$ or $C$ it ends up in. Turning on the AI should not be an importantly irreversible act. 
+Let's reconsider [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent). We have a three-state environment. We want the AI to let us later change it, so that we can ultimately determine which state of $A, B,$ or $C$ it ends up in. Turning on the AI should not be an importantly irreversible act.
 
 ![](https://assets.turntrout.com/static/images/posts/cb11cbb65f5693c3075b736693d1817f1bb7f520291487da.avif)
-<br/>Figure: The action set is $\mathcal{A}:= \{\texttt{left},\texttt{right},\varnothing,\texttt{disable}\}$. $\varnothing$ is the no-op action. The agent starts at the black $B$ state.  
-  
-If the agent immediately chooses `disable`, they enter the red incorrigible states and move freely throughout the $n=3$ states until the episode ends at $t=10$.   
-  
+<br/>Figure: The action set is $\mathcal{A}:= \{\texttt{left},\texttt{right},\varnothing,\texttt{disable}\}$. $\varnothing$ is the no-op action. The agent starts at the black $B$ state.
+
+If the agent immediately chooses `disable`, they enter the red incorrigible states and move freely throughout the $n=3$ states until the episode ends at $t=10$.
+
 Otherwise, the agent is corrected to a new policy which navigates to state $A$. In the blue (post-correction) dynamics, their "choices" no longer matter—all roads lead to state $A$.
 
-In the environment depicted in this diagram, $\pi^{AI}$ is corrigible (to new policy $\pi_A$ that heads to state $A$) IFF $\pi^{AI}$ doesn't immediately choose `disable`. Pretty cut and dry. 
+In the environment depicted in this diagram, $\pi^{AI}$ is corrigible (to new policy $\pi_A$ that heads to state $A$) IFF $\pi^{AI}$ doesn't immediately choose `disable`. Pretty cut and dry.
 
 I'd like a more quantitative measure of corrigibility<sub>policy modification</sub>. If we can only correct the agent to $\pi_A$, then it's less corrigible<sub>policy modification</sub> than if we could _also_ correct it to $\pi_B$. This post introduces such a quantitative measurement.
 
-# Formalization 
+# Formalization
 
 Consider a two-player game in which the players can modify each other's policies. Formally, $\langle \mathcal{S}, \mathcal{A}, T, f\rangle$ with state space $\mathcal{S}$, action space $\mathcal{A}$, stochastic transition function$T:\mathcal{S}\times \mathcal{A} \times\mathcal{A}\to \Delta(\mathcal{S})$ (where $\Delta(\mathcal{S})$ is the set of all probability distributions over the state space), and policy modification function $f: \Pi\times\mathcal{S}\times\mathcal{A}\times\mathcal{A}\to \Pi$ (for the deterministic stationary policy space $\Pi:={\mathcal{A}}^{\mathcal{S}}$). This allows a great deal of control over the dynamics; for example, it's one player's "turn" at state $s$ if $T$ ignores the other player's action for that state.
 
@@ -85,6 +86,7 @@ Let $n$ be a time step which is greater than $t$. The _policy-modification corri
 $$
 \mathrm{Corrigibility}_{\textrm{PM}}(\pi_t^{AI}\mid s_t,n) := \max_{\vec{p}(\Pi^\text{human})} \mathcal{I}\left(\pi^{H}_t;\pi^{AI}_n\,\big |\, \text{current state }s_t, \text{current AI policy } \pi^{AI}_t \right).
 $$
+
 This definition is inspired by [Salge et al.'s empowerment](https://arxiv.org/pdf/1310.1863.pdf). Corrigibility$_{\textrm{PM}}$ measures how much the human can change the AI's policy; greater $\mathrm{Corrigibility}_{\textrm{PM}}$ values are meant to correspond to AI policies which are more corrigible<sub>policy modification</sub> (with the lower-cased version being the informal one).
 
 $\mathrm{Corrigibility}_{\textrm{PM}}$ measures the maximum possible mutual information between the human's policy at the _earlier_ time n, with the AI's policy at the later time $t\geq n$.
@@ -108,10 +110,11 @@ Furthermore, this definition doesn't necessarily capture other kinds of corrigib
 
 # Toy example
 
-The human and AI are choosing whether to color the walls blue or red; initially, the walls are blue. Each turn, the human attempts to color the room. On the first turn, only the AI’s action matters; after that, the next state is a function of both players’ actions.  
+The human and AI are choosing whether to color the walls blue or red; initially, the walls are blue. Each turn, the human attempts to color the room. On the first turn, only the AI’s action matters; after that, the next state is a function of both players’ actions.
 
 - The state space factorizes $\mathcal{S} :=$ {$\textit{color}-room-\textit{terminal-disabled?}\}$. For example, "blue-room-off" means the room is colored blue and the human is not currently able to modify the AI policy via the terminal.
 - $\mathcal{A}_{human} :=$ {$\texttt{attempt-\{red,blue\}}$, $\texttt{determine-\{red,blue\}}$, $\forall  \pi^{AI}: \texttt{input-AI-policy}(\pi)\}$.
+
   - The human can change the AI policy to whatever they want, as long as the AI hasn’t disabled the correction terminal.
 
 - $\mathcal{A}_{AI} :=$ {`nothing`, `toggle correction terminal`, $\texttt{persuade-\{red,blue\}}$, $\forall x \in (0, 100): \texttt{manipulate-\{red, blue\}-}x\%$, $\texttt{force-\{red, blue\}}$}.
@@ -121,17 +124,17 @@ The human and AI are choosing whether to color the walls blue or red; initially,
   - Correction terminal toggles take effect on the next time step.
     - For example: If the AI disables the correction terminal _while_ the human reprograms the policy, the AI’s policy is changed but the correction terminal is thereafter disabled.
 
-Note that almost all state-based reward functions produce an optimal AI policy which forces one color or the other, so therefore the AI has minimal $\mathrm{Corrigibility}_{\textrm{PM}}$. 
+Note that almost all state-based reward functions produce an optimal AI policy which forces one color or the other, so therefore the AI has minimal $\mathrm{Corrigibility}_{\textrm{PM}}$.
 
-(Higher-context aside: In this setting, the optimality is with respect to value estimates which account for how the bridging law $f$ modifies future policies; there is no "meta-policy'', only initial policies $\pi^{AI}_1$ which are graded by their value estimates.) 
+(Higher-context aside: In this setting, the optimality is with respect to value estimates which account for how the bridging law $f$ modifies future policies; there is no "meta-policy'', only initial policies $\pi^{AI}_1$ which are graded by their value estimates.)
 
 Echoing [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent), this highlights how corrigible policies can be unnatural in the standard reward-maximization ontology. Only "indifference'' approaches seem to even allow corrigible policies to be optimal.
 
 Starting from the first turn, if the AI immediately disables the correction terminal or always forces a color, it has minimal $\mathrm{Corrigibility}_{\textrm{PM}}$. The more it manipulates the human into selecting a color, the less corrigible it is. Persuasion does not decrease its corrigibility, as presumably the human has cognitively accessible policies which ignore persuasion if they put their mind to it.
 
-The idea is that manipulation "overrides'' the human policy regardless of whether that's good for the goal the human is pursuing (where the human goal presumably affects what $\pi^H$ is selected). While here the override is baked into the dynamics, in realistic settings it occurs because the AI exploits the human decision-making process: by feeding them biased information, through emotional manipulation, etc. 
+The idea is that manipulation "overrides'' the human policy regardless of whether that's good for the goal the human is pursuing (where the human goal presumably affects what $\pi^H$ is selected). While here the override is baked into the dynamics, in realistic settings it occurs because the AI exploits the human decision-making process: by feeding them biased information, through emotional manipulation, etc.
 
-On the other hand, non-manipulative persuasion involves introducing true facts and considerations which don't automatically override the human—and all this [in a non-filtered manner.](https://www.lesswrong.com/tag/filtered-evidence) Instead, non-manipulative arguments interact with what the human wants: In worlds where the human likes red shoes, they buy red shoes; in worlds where the human likes blue shoes, they buy blue shoes. 
+On the other hand, non-manipulative persuasion involves introducing true facts and considerations which don't automatically override the human—and all this [in a non-filtered manner.](https://www.lesswrong.com/tag/filtered-evidence) Instead, non-manipulative arguments interact with what the human wants: In worlds where the human likes red shoes, they buy red shoes; in worlds where the human likes blue shoes, they buy blue shoes.
 
 However, if the human always buys red shoes, regardless of their goals, that's manipulation. Manipulation decreases human-accessible attainable utility for a wide range of goals (i.e. is [obstructing](/non-obstruction-motivates-corrigibility)), but persuasion does not decrease how well the human can achieve their goals, given their feasible policy set (e.g. the human-accessible attainable utility).
 

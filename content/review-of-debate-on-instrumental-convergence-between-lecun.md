@@ -31,24 +31,25 @@ date_published: 01/12/2021
 original_url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 skip_import: true
 ---
-In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#Formalizing-Instrumental-Convergence): proving the existence of instrumental convergence. 
 
-Somehow. 
+In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#Formalizing-Instrumental-Convergence): proving the existence of instrumental convergence.
 
-I needed to find the right definitions first, and I couldn't even _imagine_ what the [final theorems](https://arxiv.org/abs/1912.01683v6) would say. The fall crept up on me... and found my work incomplete. 
+Somehow.
 
-Let me tell you: if there's ever been a time when I wished I'd been months ahead on my research agenda, it was September 26, 2019: the day when world-famous AI experts [debated](https://www.facebook.com/story.php?story_fbid=10156248637927143&id=722677142) whether instrumental convergence was a thing, and whether we should worry about it. 
+I needed to find the right definitions first, and I couldn't even _imagine_ what the [final theorems](https://arxiv.org/abs/1912.01683v6) would say. The fall crept up on me... and found my work incomplete.
+
+Let me tell you: if there's ever been a time when I wished I'd been months ahead on my research agenda, it was September 26, 2019: the day when world-famous AI experts [debated](https://www.facebook.com/story.php?story_fbid=10156248637927143&id=722677142) whether instrumental convergence was a thing, and whether we should worry about it.
 
 The debate unfolded below the link-preview: an imposing robot staring the reader down, a title containing 'Terminator', a byline dismissive of AI risk:
 
 ![](https://assets.turntrout.com/static/images/posts/dont_fear.avif)
-<br/>Figure: [**Don’t Fear the Terminator**](https://blogs.scientificamerican.com/observations/dont-fear-the-terminator/?fbclid=IwAR3bzsKy92K0cRTuJ-E1CTFvRZILWgIRVM5EgzPsoSsYqwOZX8_7LmmZkBw): "Artificial intelligence never needed to evolve, so it didn’t develop the survival instinct that leads to the impulse to dominate others."  
-  
-The byline seemingly [affirms the consequent](https://en.wikipedia.org/wiki/Affirming_the_consequent). "Evolution $\implies$  survival instinct" does not imply "no evolution $\implies$ no survival instinct." That said, the article raises at least one good point: _We_ choose the AI's objective, and so why must that objective incentivize power-seeking?
+<br/>Figure: [**Don’t Fear the Terminator**](https://blogs.scientificamerican.com/observations/dont-fear-the-terminator/?fbclid=IwAR3bzsKy92K0cRTuJ-E1CTFvRZILWgIRVM5EgzPsoSsYqwOZX8_7LmmZkBw): "Artificial intelligence never needed to evolve, so it didn’t develop the survival instinct that leads to the impulse to dominate others."
+
+The byline seemingly [affirms the consequent](https://en.wikipedia.org/wiki/Affirming_the_consequent). "Evolution $\implies$ survival instinct" does not imply "no evolution $\implies$ no survival instinct." That said, the article raises at least one good point: _We_ choose the AI's objective, and so why must that objective incentivize power-seeking?
 
 I wanted to reach out, to say, "hey, here's [a paper](https://arxiv.org/abs/1912.01683v6) formalizing the question you're all confused by!". But it was too early.
 
-Now, at least, I can say what I wanted to say back then: 
+Now, at least, I can say what I wanted to say back then:
 
 This debate about instrumental convergence is really, really confused. I heavily annotated the play-by-play of the debate [in a Google doc](https://docs.google.com/document/d/1Y9ga5lS3c6ilZeZ2v2RLEe3x-io0RLDQsdp0HKorZR8/edit?usp=sharing), mostly checking local validity of claims. (**Most of this review's object-level content is in that document, by the way.**)
 
@@ -62,13 +63,12 @@ While the debate is clearly historically important, I don't think it belongs in 
 > [!quote] [Rob Bensinger's nomination](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell?commentId=yHqJhiWapTtAb4vNM)
 >
 > May be useful to include in the review with some of the comments, or with a postmortem and analysis by Ben (or someone).
-> 
+>
 > I don't think the discussion stands great on its own, but it may be helpful for:
-> 
+>
 > - people familiar with AI alignment who want to better understand some human factors behind 'the field isn't coordinating or converging on safety'.
 > - people new to AI alignment who want to use the views of leaders in the field to help them orient.
 
+I certainly agree with Rob's first bullet point. The debate did show us what certain famous AI researchers thought about instrumental convergence, circa 2019.
 
-I certainly agree with Rob's first bullet point. The debate did show us what certain famous AI researchers thought about instrumental convergence, circa 2019. 
-
-However, I disagree with the second bullet point: reading this debate may _disorient_ a newcomer! While I often found myself agreeing with Russell and Bengio, while LeCun and Zador sometimes made good points, confusion hangs thick in the air. No one realizes that, with respect to a fixed task environment (representing the real world) and their beliefs about what kind of objective function the agent may have, they should be debating the _probability_ that seeking power is optimal (or that power-seeking behavior is _learned_, depending on your threat model). 
+However, I disagree with the second bullet point: reading this debate may _disorient_ a newcomer! While I often found myself agreeing with Russell and Bengio, while LeCun and Zador sometimes made good points, confusion hangs thick in the air. No one realizes that, with respect to a fixed task environment (representing the real world) and their beliefs about what kind of objective function the agent may have, they should be debating the _probability_ that seeking power is optimal (or that power-seeking behavior is _learned_, depending on your threat model).

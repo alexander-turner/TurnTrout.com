@@ -100,18 +100,18 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 ![](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)
 
 > [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
-> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it! 
+> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
 
-1. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities) 
-2. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power) 
-3. [MDP Models Are Determined by the Agent Architecture and the Environment](./MDPs-are-not-subjective) 
-4. [Environmental Structure Can Cause Instrumental Convergence](./environmental-structure-can-cause-instrumental-convergence) 
-5. [A World in Which the Alignment Problem Seems Lower-Stakes](./lower-stakes-alignment-scenario) 
-6. [The More Power at Stake, the Stronger Instrumental Convergence](./quantitative-strength-of-instrumental-convergence) 
-7. [Seeking Power Is Convergently Instrumental in a Broad Class of Environments](./power-seeking-beyond-MDPs) 
-8. [When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives](./instrumental-convergence-via-vnm-preferences) 
-9. [Satisficers Tend to Seek Power: Instrumental Convergence via Retargetability](./satisficers-tend-to-seek-power) 
-10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives) 
+1. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities)
+2. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power)
+3. [MDP Models Are Determined by the Agent Architecture and the Environment](./MDPs-are-not-subjective)
+4. [Environmental Structure Can Cause Instrumental Convergence](./environmental-structure-can-cause-instrumental-convergence)
+5. [A World in Which the Alignment Problem Seems Lower-Stakes](./lower-stakes-alignment-scenario)
+6. [The More Power at Stake, the Stronger Instrumental Convergence](./quantitative-strength-of-instrumental-convergence)
+7. [Seeking Power Is Convergently Instrumental in a Broad Class of Environments](./power-seeking-beyond-MDPs)
+8. [When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives](./instrumental-convergence-via-vnm-preferences)
+9. [Satisficers Tend to Seek Power: Instrumental Convergence via Retargetability](./satisficers-tend-to-seek-power)
+10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives)
 11. [Parametrically Retargetable Decision-Makers Tend to Seek Power](./parametrically-retargetable-power-seeking)
 
 ## Thoughts on Corrigibility

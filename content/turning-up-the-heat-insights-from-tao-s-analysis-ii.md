@@ -38,6 +38,7 @@ date_published: 08/24/2018
 original_url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
 skip_import: true
 ---
+
 It's been too long - a month and a half since my last review, and about three months since _[Analysis I](/first-analysis-textbook-review)_. I've been immersed in my work for CHAI, but reality doesn't grade on a curve, and I want more mathematical firepower.
 
 # Analysis II
@@ -58,7 +59,7 @@ There's a lot I wanted to say here about topology, but I don't think my understa
 
 ## 14: Uniform Convergence
 
-_Pointwise and uniform convergence, the Weierstrass_  $M$_\-test, and uniform approximation by polynomials._
+_Pointwise and uniform convergence, the Weierstrass_ $M$_\-test, and uniform approximation by polynomials._
 
 ### Breaking Point
 
@@ -89,12 +90,14 @@ $$
 \epsilon^{-1}(1-\delta^2)^N&\leq \frac{1}{\sqrt{N}} \leq \int_{-1}^1 (1-x^2)^N\,dx,
 \end{align*}
 $$
+
 with the second inequality already having been proven earlier. Note that although the first inequality is not always true, we can make it so: since $\epsilon$ is fixed and $1-\delta^2 \in (0,1)$, the left-hand side approaches 0 more quickly than $\frac{1}{\sqrt{N}}$ does. Therefore, we can make $N$ as large as necessary; isolating $\epsilon$,
 
 $$
 \epsilon \geq (1-\delta^2)^N\sqrt{N}\\
 \epsilon \geq \sqrt{N} >(1-\delta^2)^N\sqrt{N},
 $$
+
 the second line being a consequence of $1 > (1-\delta^2)^N$. Then set $N$ to be any natural number such that this inequality is satisfied. Finally, we set $c = \frac{1}{\int_{-1}^1 (1-x^2)^N \, dx}$. By construction, these values of $c,N$ satisfy the second and third properties. □
 
 ### Convoluted No Longer
@@ -103,7 +106,7 @@ Those looking for an excellent explanation of convolutions, [look no further](ht
 
 ### Weierstrass Approximation Theorem
 
-_Theorem._ Suppose  $f : [a,b] \to \mathbb{R}$ is continuous and compactly supported on $[a,b]$. Then for every $\epsilon > 0$, there exists a polynomial $P$ such that $\vert\vert P - f\vert\vert_\infty < \epsilon$.
+_Theorem._ Suppose $f : [a,b] \to \mathbb{R}$ is continuous and compactly supported on $[a,b]$. Then for every $\epsilon > 0$, there exists a polynomial $P$ such that $\vert\vert P - f\vert\vert_\infty < \epsilon$.
 
 In other words, any continuous, real-valued $f$ on a finite interval can be approximated with arbitrary precision by polynomials.
 
@@ -122,6 +125,7 @@ Cached thought from my CS undergrad: Exponential functions always end up growing
 $$
 \exp(x):=\sum_{k=0}^\infty \frac{x^k}{k!}.
 $$
+
 $\exp$ has _all_ the degrees, so no polynomial (of necessarily finite degree) could ever hope to compete! This also suggests why $\frac{d}{dx}e^x=e^x$.
 
 ## Complex Exponentiation
@@ -180,6 +184,7 @@ $$
 &=\left\{(x_1, \dots, x_{n-1}, g(x_1,\dots, x_{n-1})): (x_1, \dots, x_{n-1})\in U\right\}.
 \end{align*}
 $$
+
 So, I think what's really going on here is that we're using the derivative at this known zero to locally linearize the manifold we're operating on (similar to Newton's approximation), which lets us have some neighborhood $U$ in which we can derive an implicit function, even if we can't always write it out.
 
 ## 18: Lebesgue Measure
@@ -199,6 +204,7 @@ Suppose $\Omega \subseteq \mathbb{R}^n$ is measurable, and let $f:\Omega \to [0,
 $$
 \int_\Omega f := \sup\left\{\int_\Omega s: s \text{ is simple and non-negative, and minorizes }f\right\}.
 $$
+
 This hews closely to how we defined the _lower_ Riemann integral in Chapter 11; however, we don't need the equivalent of the upper Riemann integral for the Lebesgue integral.
 
 To see why, let's review why Riemann integrability demands the equality of the lower and upper Riemann integrals of a function $g$. Suppose that we integrate over $[0,1]$, and that $g$ is the indicator function for the rationals. As the rationals are dense in the reals, any interval $[a,b]\subseteq[0,1]$ ($b>a$) contains rational numbers, no matter how much the interval shrinks! Therefore, the upper Riemann integral equals 1, while the lower equals 0 (for similar reasons). $g$ _is_ Lebesgue integrable; since it's 0 almost everywhere (as the rationals have 0 measure), its integral is 0.
@@ -210,6 +216,7 @@ In a sense, the Lebesgue integral more cleanly strikes at the heart of what it _
 ## Final Thoughts
 
 Although Tao botches a few exercises and the section on topology, I'm a big fan of _Analysis I_ and _II_. Do note, however, that _II_ is far more difficult than _I_ (not just in content, but in terms of the exercises). He generally provides relevant, appropriately-difficult problems, and is quite adept at helping the reader develop rigorous and intuitive understanding of the material.
+
 ## Tips
 
 - To avoid getting hung up in Chapter 17, this book should be read after a linear algebra text.
@@ -231,7 +238,6 @@ Also, developing mathematical maturity brings with it a more rigorous thought pr
 There's a sense I get where even though I've made immense progress over the past few months, it still _might not be enough_. The standard isn't "am I doing impressive things for my reference class?", but rather the stricter "am I good enough to solve [serious problems](https://80000hours.org/problem-profiles/positively-shaping-artificial-intelligence/) that might not get solved in time otherwise?". This is quite the standard, and even given my textbook and research progress (including the upcoming posts), I don't think I meet it.
 
 In a way, this excites me. I welcome any advice for buckling down further and becoming yet stronger.
-
 
 > [!thanks]
 > Thank you to everyone who has helped me. In particular, `TheMajor` has been incredibly generous with their explanations and encouragement.

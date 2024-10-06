@@ -56,7 +56,7 @@ Figure: Before my thesis defense -- thinking about what I'd done to advance alig
 
 # Mistakes
 
-I think I [got significantly smarter in 2018–2019](/swimming-upstream), and kept learning some in 2020–2021. I _was_ significantly less of a fool in 2021 than I was in 2017. That is important and worth feeling good about. But all things considered, I still made a lot of profound mistakes over the course of my PhD. 
+I think I [got significantly smarter in 2018–2019](/swimming-upstream), and kept learning some in 2020–2021. I _was_ significantly less of a fool in 2021 than I was in 2017. That is important and worth feeling good about. But all things considered, I still made a lot of profound mistakes over the course of my PhD.
 
 ## Social dynamics distracted me from my core mission
 
@@ -182,7 +182,7 @@ I'm not really sure where these two habits go, so I'll put them here. I wish I'd
 >
 > If the actual answer is that you _don't know_, then just _say it_, because it's the truth. Be aware that you don't know.
 
-To close out the "Mistakes" section, I mostly wish I'd expected more from myself. I wish I'd believed myself capable of building an end-to-end picture of the alignment problem, of admitting what I didn't know and what I hadn't thought about, of being able to survive/ignore the harsh winds of criticism and skepticism. 
+To close out the "Mistakes" section, I mostly wish I'd expected more from myself. I wish I'd believed myself capable of building an end-to-end picture of the alignment problem, of admitting what I didn't know and what I hadn't thought about, of being able to survive/ignore the harsh winds of criticism and skepticism.
 
 I did these things eventually, though, and I'm proud of that.
 

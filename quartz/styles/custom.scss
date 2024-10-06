@@ -23,14 +23,13 @@
 }
 
 // The <a> link back up to content is the last child of the <li>
-li[id^="user-content-fn-"] > *{ 
-
+li[id^="user-content-fn-"] > * {
   &:is(blockquote):nth-last-child(2) {
     margin-bottom: $baseMargin;
   }
- &:not(blockquote):nth-last-child(2) {
-  margin-bottom: 0; // Don't have unnecessary space before the <li>
-}
+  &:not(blockquote):nth-last-child(2) {
+    margin-bottom: 0; // Don't have unnecessary space before the <li>
+  }
 }
 
 .footnotes {
@@ -38,7 +37,7 @@ li[id^="user-content-fn-"] > *{
     margin-top: calc(2 * $baseMargin);
   }
 
-  & li { 
+  & li {
     max-width: 100%;
   }
 
@@ -53,16 +52,15 @@ li[id^="user-content-fn-"] > *{
       }
     }
   }
-
 }
 
 // Ensure that last ol of a li has no bottom margin
 li[id^="user-content-fn-"] {
   & > ol {
-  margin-block-end: 0;
+    margin-block-end: 0;
   }
 
-/* Show only the first back arrow in a footnote */
+  /* Show only the first back arrow in a footnote */
   & a[class*="footnote-backref"] {
     display: none; // Hide all by default
   }
@@ -98,7 +96,7 @@ ul {
   padding-left: calc(3 * $baseMargin);
 
   dl & {
-    margin-top: calc(.5 * $baseMargin);
+    margin-top: calc(0.5 * $baseMargin);
   }
 }
 
@@ -108,7 +106,7 @@ dd > ol:first-child {
 }
 
 dd > p:first-child {
-  margin-top: calc(.5 * $baseMargin);
+  margin-top: calc(0.5 * $baseMargin);
 }
 
 .footnotes ol > li::before {
@@ -191,7 +189,8 @@ pre {
 }
 
 // Adjust spacing around lists
-p:has(+ ol), p:has(+ ul) {
+p:has(+ ol),
+p:has(+ ul) {
   margin-bottom: calc(1.5 * $baseMargin);
 }
 
@@ -240,7 +239,8 @@ a {
   }
 }
 
-.footnotes ul, .footnotes ol {
+.footnotes ul,
+.footnotes ol {
   margin-top: $baseMargin;
 }
 
@@ -398,7 +398,9 @@ figcaption,
     color: var(--color-visited);
   }
 
-  dt &, b &, strong & {
+  dt &,
+  b &,
+  strong & {
     font-weight: 500 !important;
     -webkit-font-smoothing: none;
   }
@@ -578,7 +580,8 @@ a.internal.tag-link {
   margin-bottom: 0;
 }
 
-img, video {
+img,
+video {
   width: fit-content;
   max-width: 100%;
   margin-bottom: calc(2 * $baseMargin);
@@ -873,7 +876,7 @@ article[data-use-dropcap="true"] {
 
 .cluster {
   & rect {
-  y: calc(-.5* $baseMargin); 
+    y: calc(-0.5 * $baseMargin);
   }
 
   & .cluster-label {

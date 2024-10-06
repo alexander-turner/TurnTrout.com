@@ -265,4 +265,3 @@ My procedure was “If I need to use a forbidden functionality, then I have to w
 
 [^2]: I just now picked up my phone and stared at it blankly. One month later. Yuck.
 [^3]: Limit \$300 total.
-

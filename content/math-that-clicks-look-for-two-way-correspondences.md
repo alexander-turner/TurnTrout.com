@@ -20,10 +20,10 @@ publish: true
 title: "Math That Clicks: Look for Two-Way Correspondences"
 lw-latest-edit: 2020-10-02T17:19:27.318Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "rationality"
   - "understanding-the-world"
-aliases: 
+aliases:
   - "math-that-clicks-look-for-two-way-correspondences"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -59,7 +59,6 @@ Your stomach rumbles. This guess should be good enough. You tell your would-be r
 >
 > Don't think for a second that having math representing your thoughts means you've necessarily made progress – for the kind of problems I'm thinking about right now, the math has to _sing_ with the elegance of the philosophical insight you're formalizing.
 
-
 I claim that you should create math such that the **math suggests the intuitive concept it's formalizing**. If you obfuscate any suggestive notation and show the math to someone who already knows the intuitive concept, would the concept jump back out at them?
 
 Above, information gain was formalized as increase in credence; roughly,
@@ -67,18 +66,20 @@ Above, information gain was formalized as increase in credence; roughly,
 $$
 \text{Info-gain}(\text{hypothesis, observation}) := P(h \mid o) - P(h).
 $$
+
 Assuming we already know about probability and arithmetic and function notation, what does the obfuscated version bring to mind?
 
 $$
 \text{met32vfs}(\text{e1ht, jt3n}) := P(e1ht \mid jt3n) - P(e1ht).
 $$
+
 When this value is high, you're just becoming more confident in something. What if you gain information that makes you confused?
 
 What if you thought Newtonian mechanics was The Truth, and then [Mercury's perihelion shows up with a super-wack precession](https://en.wikipedia.org/wiki/Tests_of_general_relativity). Are you gonna say you've "lost information about the Newtonian hypothesis" with a straight face? Uh, awkward...
 
 ## Heuristic: show that only your quantity achieves obviously desirable properties
 
-In the case of information, the winner is "[formalize for-sure properties that the quantity should obey](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)#Characterization)", like
+In the case of information, the winner is "[formalize for-sure properties that the quantity should obey](<https://en.wikipedia.org/wiki/Entropy_(information_theory)#Characterization>)", like
 
 1.  The more sure you are something will go a certain way, the less you expect to learn from it, and
 2.  You can't have "negative" information, and
@@ -121,7 +122,5 @@ Strive for clearly correct math, informative names, and unambiguously specified 
 
 <hr/>
 
-
-[^1]: Assuming they actually _are_ flipping a coin with a stationary bias (a Bernoulli process). 
-
-[^2]: And some basic background assumptions, like "the laws of physics are spatially, temporally, and rotationally invariant", etc. 
+[^1]: Assuming they actually _are_ flipping a coin with a stationary bias (a Bernoulli process).
+[^2]: And some basic background assumptions, like "the laws of physics are spatially, temporally, and rotationally invariant", etc.

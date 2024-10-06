@@ -65,7 +65,7 @@ export function noteAdmonition(text: string): string {
 
 const massTransforms: [RegExp | string, string][] = [
   [/\:=/g, "≝"], // mathematical definition symbol
-  [/( |^)L(\d+)\b/g, "$1L<sub style=\"font-variant-numeric: lining-nums;\">$2</sub>"],
+  [/( |^)L(\d+)\b/g, '$1L<sub style="font-variant-numeric: lining-nums;">$2</sub>'],
 ]
 
 export function massTransformText(text: string): string {

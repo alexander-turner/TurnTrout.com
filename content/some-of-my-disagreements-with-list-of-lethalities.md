@@ -221,4 +221,3 @@ Historical reasoning about RL seems quite bad. This is a prime example. In one f
     > "The loss function is used to train the AI, and the loss function represents human values" is akin to saying "a hammer is used to build a house, and the hammer represents the architect's design." Just as a hammer is a tool to facilitate the building process, a loss function is a tool to facilitate the learning process. The hammer doesn't represent the design of the house, it is simply a means to an end. Similarly, the loss function doesn't represent human values, it is simply a means to an end of training the AI to perform a task.
 
     ChatGPT wrote this hammer analogy, given the prompt of a post draft (but the draft didn't include any of my reward-as-chisel analogies).
-

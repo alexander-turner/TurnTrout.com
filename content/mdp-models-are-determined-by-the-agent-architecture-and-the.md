@@ -80,4 +80,3 @@ In Pac-Man, the MDP model is uniquely defined by how we encode states and action
 That's also a claim that we can, in theory, specify reward functions which distinguish between 5 googolplex variants of `red-ghost-game-over`. If that were true, then yes - optimal policies _really would_ tend to "die" immediately, since they'd have so many choices.
 
 The "5 googolplex" claim is both falsifiable and false. Given an agent architecture (specifically, the two encodings), optimal policy tendencies are not subjective. We may be uncertain about the agent's state- and action-encodings, but that doesn't mean we can imagine whatever we want.
-

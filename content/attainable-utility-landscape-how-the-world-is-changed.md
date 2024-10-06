@@ -20,10 +20,10 @@ publish: true
 title: "Attainable Utility Landscape: How The World Is Changed"
 lw-latest-edit: 2020-07-10T22:41:11.251Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "understanding-the-world"
   - "impact-regularization"
-aliases: 
+aliases:
   - "attainable-utility-landscape-how-the-world-is-changed"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -39,6 +39,7 @@ date_published: 02/10/2020
 original_url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
 skip_import: true
 ---
+
 ![](https://assets.turntrout.com/static/images/posts/zLypKDZ.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
@@ -57,9 +58,9 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/Ej0sTdK.avif)
 
->! (This is one interpretation of the prompt, in which you haven't _chosen_ to go to the moon. If you imagined yourself as more prepared, that's also fine.)
+> ! (This is one interpretation of the prompt, in which you haven't _chosen_ to go to the moon. If you imagined yourself as more prepared, that's also fine.)
 >
->! If you were plopped onto the moon, you'd die pretty fast. Maybe the "die as quickly as possible" AU is high, but not much else - not even the "live on the moon" AU! We haven't yet reshaped the AU landscape on the moon to be hospitable to a wide range of goals. [Earth is special like that.](https://www.youtube.com/watch?v=wupToqz1e2g)
+> ! If you were plopped onto the moon, you'd die pretty fast. Maybe the "die as quickly as possible" AU is high, but not much else - not even the "live on the moon" AU! We haven't yet reshaped the AU landscape on the moon to be hospitable to a wide range of goals. [Earth is special like that.](https://www.youtube.com/watch?v=wupToqz1e2g)
 
 ![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
 
@@ -145,11 +146,11 @@ $$
 \left\{\begin{pmatrix}
            0 \\
            0 \\
-           4 \end{pmatrix} 
+           4 \end{pmatrix}
 \right\} \qquad\left\{\begin{pmatrix}
            0 \\
            1 \\
-           3 \end{pmatrix}, 
+           3 \end{pmatrix},
 \begin{pmatrix}
            4-\frac{1}{.4375}\\ \frac{1}{.4375} \\ 0 \end{pmatrix},
 \begin{pmatrix}
@@ -158,16 +159,18 @@ $$
            0 \end{pmatrix}
 \right\}
 
+
 $$
+
 > [!info] Exercise
-> 
+>
 > What can you figure out about the MDP structure? Hint: each entry in the column corresponds to the visitation frequency of a different state; the first entry is always $s_1$, second $s_2$, and third $s_3$.
-> 
-> >! You can figure out _everything_: $\langle \mathcal{S}, \mathcal{A}, T, \gamma \rangle$, up to possibility isomorphism. Solution [here](https://assets.turntrout.com/static/images/posts/5GCZ9oY.avif).
+>
+> > ! You can figure out _everything_: $\langle \mathcal{S}, \mathcal{A}, T, \gamma \rangle$, up to possibility isomorphism. Solution [here](https://assets.turntrout.com/static/images/posts/5GCZ9oY.avif).
 > >
-> >! How? Well, the $L_1$ norm of the possibility vector is always $\frac{1}{1-\gamma}$, so you can deduce $\gamma=.75$ easily. The single possibility state must be isolated, so we can mark that down in our graph. Also, it's in the third entry.
+> > ! How? Well, the $L_1$ norm of the possibility vector is always $\frac{1}{1-\gamma}$, so you can deduce $\gamma=.75$ easily. The single possibility state must be isolated, so we can mark that down in our graph. Also, it's in the third entry.
 > >
-> >! The other two states correspond to the "1" entries in their possibilities, so we can mark that down. The rest follows straightforwardly.
+> > ! The other two states correspond to the "1" entries in their possibilities, so we can mark that down. The rest follows straightforwardly.
 
 > [!info] Theorem
 > Suppose the rewardless MDP $M$ has possibility function $\mathcal{F}$. Given only $\mathcal{F}$,[^2] $M$ can be reconstructed up to possibility isomorphism.
@@ -201,11 +204,10 @@ While understanding opportunity cost may seem like a side-quest, each insight is
 - “Objective impact to a location” means that agents whose plans route through the location tend to be objectively impacted.
 - The landscape is not the territory: [AU is calculated with respect to an agent's _beliefs_](/the-gears-of-impact), not necessarily with respect to what really "could" or will happen.
 
-
-[^1]: The possibility isomorphism is new to my work, as are all other results shared in this post. This apparent lack of basic theory regarding MDPs is strange; even stranger, this absence was actually pointed out in two [published](http://papers.nips.cc/paper/3179-stable-dual-dynamic-programming.pdf) [papers](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=4220813)!
+[^1]:
+    The possibility isomorphism is new to my work, as are all other results shared in this post. This apparent lack of basic theory regarding MDPs is strange; even stranger, this absence was actually pointed out in two [published](http://papers.nips.cc/paper/3179-stable-dual-dynamic-programming.pdf) [papers](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=4220813)!
 
     I find the existing MDP isomorphisms/equivalences to be pretty lacking. The details don't fit in this margin, but perhaps in a paper at some point. If you want to coauthor this (mainly compiling results, finding a venue, and responding to reviews), let me know. Added later: The results are available in the appendices of [my dissertation](https://arxiv.org/abs/2206.11831).
 
-[^2]: In fact, you can reconstruct the environment using only a limited subset of possibilities: the _non-dominated_ possibilities. 
-
-[^3]: As a tensor, the transition function $T$ has size $|\mathcal{A}|\cdot|\mathcal{S}|^2$, while the AU landscape representation only has size $|\mathcal{S}|^2$. However, if you're just representing $T$ as a transition _function_, it has size $|\mathcal{A}|\cdot|\mathcal{S}|$. 
+[^2]: In fact, you can reconstruct the environment using only a limited subset of possibilities: the _non-dominated_ possibilities.
+[^3]: As a tensor, the transition function $T$ has size $|\mathcal{A}|\cdot|\mathcal{S}|^2$, while the AU landscape representation only has size $|\mathcal{S}|^2$. However, if you're just representing $T$ as a transition _function_, it has size $|\mathcal{A}|\cdot|\mathcal{S}|$.

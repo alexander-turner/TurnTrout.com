@@ -20,10 +20,10 @@ publish: true
 title: "The Gears of Impact"
 lw-latest-edit: 2024-08-15T22:30:43.246Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "understanding-the-world"
   - "impact-regularization"
-aliases: 
+aliases:
   - "the-gears-of-impact"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -52,7 +52,7 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/wCRzqox.avif) ![](https://assets.turntrout.com/static/images/posts/BAWF2q1.avif)
 
-![](https://assets.turntrout.com/static/images/posts/UCGx4QR.avif )
+![](https://assets.turntrout.com/static/images/posts/UCGx4QR.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/5YOlvLh.avif)![](https://assets.turntrout.com/static/images/posts/yA8wkQP.avif)![](https://assets.turntrout.com/static/images/posts/QXG2pVK.avif)
 
@@ -66,13 +66,13 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/sMgB7yR.avif)
 
-![](https://assets.turntrout.com/static/images/posts/lQ1jYfB.avif )
+![](https://assets.turntrout.com/static/images/posts/lQ1jYfB.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/b6pDiKi.avif)
 
-[​](​![]\(https://assets.turntrout.com/static/images/posts/iRLXEeH.avif)![](https://assets.turntrout.com/static/images/posts/iRLXEeH.avif)
+[​](​![](https://assets.turntrout.com/static/images/posts/iRLXEeH.avif)![](https://assets.turntrout.com/static/images/posts/iRLXEeH.avif)
 
-![](https://assets.turntrout.com/static/images/posts/uRr6YqY.avif )
+![](https://assets.turntrout.com/static/images/posts/uRr6YqY.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/67uR5SE.avif)![](https://assets.turntrout.com/static/images/posts/PFqi66W.avif)
 
@@ -86,21 +86,20 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/epI7152.avif)
 
-![](https://assets.turntrout.com/static/images/posts/dvVEmBs.avif) [​](​![]\(https://assets.turntrout.com/static/images/posts/HShpS3u.avif)![](https://assets.turntrout.com/static/images/posts/HShpS3u.avif)
+![](https://assets.turntrout.com/static/images/posts/dvVEmBs.avif) [​](​![](https://assets.turntrout.com/static/images/posts/HShpS3u.avif)![](https://assets.turntrout.com/static/images/posts/HShpS3u.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
 
-![](https://assets.turntrout.com/static/images/posts/lDbQW2b.avif )
-
+![](https://assets.turntrout.com/static/images/posts/lDbQW2b.avif)
 
 > [!exercise]
 > Why does instrumental convergence happen? Would it be coherent to imagine a reality without it?
 
 #### Notes
 
-- Here, our descriptive theory relies on our ability to have reasonable beliefs about what we'll do, and how things in the world will affect our later decision-making process. No one knows how to formalize that kind of reasoning, so I'm leaving it a black box: we _somehow _have these reasonable beliefs which are _apparently _used to calculate AU.
-- In technical terms, AU calculated with the "could" criterion would be closer to an optimal value function, while actual AU seems to be an on-policy prediction, _whatever that means _in the embedded context. Felt impact corresponds to TD error.
+- Here, our descriptive theory relies on our ability to have reasonable beliefs about what we'll do, and how things in the world will affect our later decision-making process. No one knows how to formalize that kind of reasoning, so I'm leaving it a black box: we \_somehow \_have these reasonable beliefs which are \_apparently \_used to calculate AU.
+- In technical terms, AU calculated with the "could" criterion would be closer to an optimal value function, while actual AU seems to be an on-policy prediction, \_whatever that means \_in the embedded context. Felt impact corresponds to TD error.
 - Framed as a kind of EU, we plausibly use AU to make decisions.
 - I'm not claiming normatively that "embedded agentic" EU _should_ be AU; I'm simply using "embedded agentic" as an adjective.

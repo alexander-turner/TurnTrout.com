@@ -199,9 +199,7 @@ export function hyphenReplace(text: string) {
   // Handle dashes with potential spaces and optional marker character
   //  Being right after chr is a sufficient condition for being an em
   //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(
-    `((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`,
-  )
+  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
   // Want eg " - " to be replaced with "—"
   const surroundedDash = new RegExp(
     `(?<=[^\\s>]|^)${preDash.source}[~–—\-]+[ ]*(?<markerAfter>${chr}?)[ ]+`,
@@ -209,10 +207,7 @@ export function hyphenReplace(text: string) {
   )
 
   // Replace surrounded dashes with em dash
-  text = text.replace(
-    surroundedDash,
-    `$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>`,
-  )
+  text = text.replace(surroundedDash, `$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>`)
 
   // "Since--as you know" should be "Since—as you know"
   const multipleDashInWords = new RegExp(
@@ -287,7 +282,11 @@ function getLastTextNode(node: Parent): Text | null {
   if (!node) return null
   if (node.type === "text") {
     return node as unknown as Text
-  } else if (node.children && node.children.length > 0 && node.children[node.children.length - 1].type === "text") {
+  } else if (
+    node.children &&
+    node.children.length > 0 &&
+    node.children[node.children.length - 1].type === "text"
+  ) {
     return node.children[node.children.length - 1] as unknown as Text
   } else {
     return null
@@ -337,7 +336,8 @@ export const rearrangeLinkPunctuation = (node: any, index: number | undefined, p
     const firstTextNode: Text | null = getFirstTextNode(linkNode)
     if (firstTextNode && firstTextNode?.type === "text") {
       firstTextNode.value = quoteChar + firstTextNode.value
-    } else { // No text node found in linkNode
+    } else {
+      // No text node found in linkNode
       // Create new text node as first child of linkNode
       const newTextNode = { type: "text", value: quoteChar }
 
@@ -535,7 +535,6 @@ export const improveFormatting: Plugin<[FormattingOptions?]> = (options = {}) =>
           transformElement(node, fullWidthSlashes, toSkip)
         }
       }
-      
     })
 
     // Only apply first letter attribute if not in debug mode

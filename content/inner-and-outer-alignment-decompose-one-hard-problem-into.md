@@ -132,9 +132,7 @@ On the other hand, agents which terminally value diamonds will make decisions on
 
 “The actor needs a grading procedure which, when optimized against, leads to the selection of a diamond-producing plan” is a mistake because agents should not _terminally care about optimizing a grading procedure_. Generating highly evaluated plans should be a _side effect_ of effective cognition towards producing diamonds.
 
-> [!failure]
-> **Consider what the actor cares about** **in this setup. The actor does not care about diamond production. The actor cares about high evaluations from the objective function. These two goals (instrumentally) align if the only actor-imaginable way to get maximal evaluation is to make diamonds.[^important]** 
-> [^important]: This point is important under my current views, but it strikes me as the kind of concept which may require its own post. I’m not sure I know how to communicate this point quickly and reliably at this point in time, but this essay has languished in my drafts for long enough. For now, refer to [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans) and [Alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness) for more intuitions.
+> [!failure] > **Consider what the actor cares about** **in this setup. The actor does not care about diamond production. The actor cares about high evaluations from the objective function. These two goals (instrumentally) align if the only actor-imaginable way to get maximal evaluation is to make diamonds.[^important]** > [^important]: This point is important under my current views, but it strikes me as the kind of concept which may require its own post. I’m not sure I know how to communicate this point quickly and reliably at this point in time, but this essay has languished in my drafts for long enough. For now, refer to [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans) and [Alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness) for more intuitions.
 >
 > **If you inner-align the agent to the evaluative output of a Platonic outer objective, you have guaranteed the agent won’t make decisions on the same basis that you do.** This is because you don’t, on a mechanistic level, terminally value high outputs from that outer objective. This agent will be aligned with you only if you achieve “objective robustness”—i.e. force the agent to make diamonds in order to get high evaluations by the outer objective.
 
@@ -223,7 +221,7 @@ For example, shaping is empirically useful in both [AI](https://openai.com/blog/
 
 ## Be precise when reasoning about outer objectives
 
-I also think that people talk extremely imprecisely and confusingly about “loss functions.” I get a lot of mileage out of being precise—if my idea is right in generality, it is right in specificity, so I might as well start there. I have written: 
+I also think that people talk extremely imprecisely and confusingly about “loss functions.” I get a lot of mileage out of being precise—if my idea is right in generality, it is right in specificity, so I might as well start there. I have written:
 
 > [!quote] [Four usages of "loss" in AI](/four-usages-of-loss-in-ai)
 >
@@ -267,7 +265,7 @@ From my experience with people, I infer that they do not act to maximize some si
 
 More starkly, a soldier [throwing himself on a grenade](https://en.wikipedia.org/wiki/Falling_on_a_grenade) is not acting (either consciously or subconsciously) to most reliably bring about the activation preconditions for some part of his reward system. I infer that he is instead executing lines of cognition chiseled into him by past reinforcement events. He is a value shard-executor, not an inner-aligned reward maximizer. Thus, his values of protecting his friends and patriotism constitute _inner alignment failures_ on the reward circuitry which brought those values into existence.[^8] Those values are not aligned with the goals “represented by” that reward circuitry, nor with the circuitry’s literal output. I think that similar statements hold for values like “caring about one’s family”, “altruism”, and “protecting dogs.”
 
-Therefore, the _**only time human-compatible values have ever arisen, they have done so via inner alignment failures**_.[^9] Conversely, if you aim to “solve” inner alignment, **you are ruling out the only empirically known way to form human-compatible values.** 
+Therefore, the _**only time human-compatible values have ever arisen, they have done so via inner alignment failures**_.[^9] Conversely, if you aim to “solve” inner alignment, **you are ruling out the only empirically known way to form human-compatible values.**
 
 > [!quote] [Quintin Pope](https://www.lesswrong.com/s/rmZt45HAxFFgJ8vEH/p/LxofChCRcQMBE6D3E?commentId=yJJvatcctmQ8iEidN)
 >
@@ -289,8 +287,7 @@ Therefore, the _**only time human-compatible values have ever arisen, they have 
 >
 > **If the true** **solution to AI alignment actually looks anything like "cause a carefully orchestrated inner alignment failure in a simple learning system", then of course our assumptions about the complexity of value formation and the undesirability of inner alignment failures would prevent us from finding such a solution. Alignment would look incredibly difficult because the answer would be outside of the subset of the solution space we'd restricted ourselves to considering.**
 
-
-The above argues that inner alignment is _un_-natural because it runs counter to natural tendencies. I further infer that inner alignment is unnatural partly \_because_ it is anti-natural. We've never seen it happen, we don't know how to make it happen, there are lots of reasons to think it won't happen, and I don't think we need to make it happen.
+The above argues that inner alignment is _un_-natural because it runs counter to natural tendencies. I further infer that inner alignment is unnatural partly \_because\_ it is anti-natural. We've never seen it happen, we don't know how to make it happen, there are lots of reasons to think it won't happen, and I don't think we need to make it happen.
 
 > [!warning]
 > "Cause a carefully orchestrated inner alignment _failure_ in a simple learning system" sounds like we’re trying something “hacky” or “mistake-prone." However, we really aren’t attempting something strange. Rather, we’re talking about the [apparently natural](/shard-theory) way for values to form.
@@ -316,7 +313,7 @@ An agent with lots of values (e.g. coffee and sex and art) will be more likely t
 > - I think there are thresholds at which the AI doesn't care about us sufficiently strongly, and we get no value.
 >   - I might have an "avoid spiders" value which is narrowly contextually activated when I see spiders. But then I think this is silly because spiders are quite interesting, and so I decide to go to exposure therapy and remove this decision-influence. We don't want human values to be outmaneuvered in this way.
 >   - More broadly, I think "value strength" is a loose abstraction which isn't uni-dimensional. It's not "The value is strong" or "The value is weak"; I think values are [contextually activated](/a-shot-at-the-diamond-alignment-problem#The-values-handshake), and so they don't just have a global strength.
-> - Even if you have to get the human-aligned values "perfectly right" in order to avoid Goodharting ([which I don’t believe](/alignment-without-total-robustness)), not having to get \_all_ of the AI's values perfectly right is good news.
+> - Even if you have to get the human-aligned values "perfectly right" in order to avoid Goodharting ([which I don’t believe](/alignment-without-total-robustness)), not having to get \_all\_ of the AI's values perfectly right is good news.
 > - I think these considerations make total alignment failures easier to prevent: As long as human-compatible values are something the AI meaningfully cares about, we survive.
 
 So ultimately, I think “the agent has to exclusively care about this one perfect goal” is dissolved because [alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness). Trying to make an agent only care about one goal seems to go against important grains of effective real-world cognition.
@@ -579,7 +576,7 @@ Evan privately provided another definition which better accounts for the way he 
 
 I then wrote a dialogue with my model of him, which he affirmed as “a pretty reasonable representation.”
 
-**Alex** 
+**Alex**
 : Hm. OK. So it sounds like the outer objective is less of something which grades the agent directly across all situations, and which is safe to optimize _for._ Under your operationalization of the outer alignment training goal, the reward function is more like an artifact which emits reward on training in a way which tightly correlates with getting gold coins on training.
 
 : Suppose I have an embodied AI I’m training via RL (for conceptual simplicity, not realism), and it navigates mazes and reaches a gold coin at the end of each maze. I’ll just watch the agent through one-way glass and see if it looks like it touched the gold coin by legit solving the maze. If it does, I hit the reward button.
@@ -588,18 +585,18 @@ I then wrote a dialogue with my model of him, which he affirmed as “a pretty r
 
 : So even though on training, the reward schedule was unidentifiable from “reward when a metal disk was touched”, that doesn’t matter for our training goal. We just want the AI to learn a certain kind of cognition which we “had in mind” when specifying the outer objective, and it doesn’t matter if the outer objective is “unambiguously representing” the intended goal.
 
-**Alex’s model of Evan** 
+**Alex’s model of Evan**
 : Yup, basically.
 
 **Alex**
 : OK. So in this scenario, though, the actual reward-generating process would in fact be foolable by an AI which replaces the window with an extremely convincing display which showed me a video which made me believe it got gold coins, even though it was actually touching a secret silver coin in the real room. The existence of that adversarial input isn’t a problem, because in this story, we aren’t trying to get the AI to directly optimize the reward-generating process or any of its Cartesian transforms or whatever.
 
-**Alex's model of Evan** 
+**Alex's model of Evan**
 : Well, I guess? If you _assume_ you get the gold-coin AI, you can satisfy the story with such an underdetermined and unhardened outer objective. But I expect in reality you need to supply more reward data to rule out e.g. silver coins, and possibly to disincentivize deception during training. See the RLHF + camera-duping incident.
 
 : So I think the answer is “technically no you don’t _have_ to worry about adversarial inputs to the grading procedure on this definition, but in reality I think you should.”
 
-**Alex** 
+**Alex**
 : I think we’re going to have a separate disagreement on that camera incident which isn’t related to this decomposition, so I’ll just move past that for the moment. If this is the perspective, I don’t disagree with it as much as “have the objective represent what you want as faithfully as possible, maybe even exactly, such that the outer objective is good to optimize for.”
 
 : I think that this decomposition is actually compatible with some shard theory stories, even. It feels like this outer alignment definition is actually pretty lax. It feels more like saying “I want to write down an objective which appears to me to ‘encode’ gold coin-grabbing, and then have that objective entrain a gold coin value in the agent.” And, for chisel = statue reasons, the levers for inner alignment would then have to come from inductive biases (speed / complexity / hyperparameters / whatever), and not the actual feedback signals (which are kinda fixed to match the “represent the gold coin objective”).

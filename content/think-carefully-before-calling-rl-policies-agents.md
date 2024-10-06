@@ -20,10 +20,10 @@ publish: true
 title: "Think carefully before calling RL policies  'agents'"
 lw-latest-edit: 2024-03-27T15:51:32.955Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "AI"
   - "reinforcement-learning"
-aliases: 
+aliases:
   - "think-carefully-before-calling-rl-policies-agents"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -31,6 +31,7 @@ date_published: 06/02/2023
 original_url: https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
 skip_import: true
 ---
+
 I think agentic systems represent most of AI extinction risk. I want to think clearly about what training procedures produce agentic systems. Unfortunately, the field of reinforcement learning has a convention of calling its trained artifacts "agents." This terminology is loaded and inappropriate for my purposes. I advocate instead calling the trained system a "policy." This name is standard, accurate, and neutral.
 
 # Don't assume the conclusion by calling a policy an "agent"

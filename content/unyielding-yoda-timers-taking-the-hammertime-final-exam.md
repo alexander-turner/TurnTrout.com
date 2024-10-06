@@ -69,4 +69,3 @@ At my undergraduate institution, I was incredibly social - I eagerly crossed cli
 After taking a few months leave, I managed to fully recover. I returned to my graduate institution and found my desire to socialize was neutered. This problem plagued me for nearly a year; it is only within the last month that I pinpointed the cause. My attitude towards interpersonal interaction never left the `depressed` state.
 
 Just as the human mind doesn't enforce belief consistency, it won't necessarily propagate attitudinal changes to relevant areas of your life. Do you currently value everything as you would reflectively prefer, or are there holdovers from the past?
-

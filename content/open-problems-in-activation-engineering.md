@@ -22,10 +22,10 @@ title: "Open problems in activation engineering"
 lw-latest-edit: 2023-07-24T21:19:09.733Z
 lw-is-linkpost: "true"
 authors: Alex Turner, Alice Rigg, Lisa Thiergart, Monte MacDiarmid, and Ulisse Mini
-tags: 
+tags:
   - "AI"
   - "activation-engineering"
-aliases: 
+aliases:
   - "open-problems-in-activation-engineering"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -33,12 +33,13 @@ date_published: 07/24/2023
 original_url: https://www.lesswrong.com/posts/JMebqicMD6azB8MwK/open-problems-in-activation-engineering
 skip_import: true
 ---
+
 > [!quote] [Steering GPT-2-XL by adding an activation vector](/gpt2-steering-vectors)  
 > \[We define\] **activation engineering** \[to be\] techniques which steer models by modifying their activations. As a complement to prompt engineering and finetuning, activation engineering is a low-overhead way to steer models at runtime.
 
-These results were recently complemented by [Inference-Time Intervention: Eliciting Truthful Answers from a Language Model](https://www.lesswrong.com/posts/kuQfnotjkQA4Kkfou/inference-time-intervention-eliciting-truthful-answers-from), which doubled TruthfulQA performance by adding a similarly computed activation vector to forward passes! 
+These results were recently complemented by [Inference-Time Intervention: Eliciting Truthful Answers from a Language Model](https://www.lesswrong.com/posts/kuQfnotjkQA4Kkfou/inference-time-intervention-eliciting-truthful-answers-from), which doubled TruthfulQA performance by adding a similarly computed activation vector to forward passes!
 
-We think that activation engineering has a bunch of low-hanging fruit for steering and understanding models. A few open problems from [the list](https://coda.io/@alice-rigg/open-problems-in-activation-engineering): 
+We think that activation engineering has a bunch of low-hanging fruit for steering and understanding models. A few open problems from [the list](https://coda.io/@alice-rigg/open-problems-in-activation-engineering):
 
 - Try decomposing the residual stream activations over a batch of inputs somehow (e.g. PCA). Using the principal directions as activation addition directions, do they seem to capture something meaningful?
 - Take a circuit studied from existing literature on GPT2, or find another one using [ACDC](https://github.com/ArthurConmy/Automatic-Circuit-Discovery/tree/main). Targeting the nodes in these circuits, can you learn anything more about them and generally about how activation additions interact with circuits?

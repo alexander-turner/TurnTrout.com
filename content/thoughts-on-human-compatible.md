@@ -20,9 +20,9 @@ publish: true
 title: "Thoughts on 'Human-Compatible'"
 lw-latest-edit: 2019-12-17T22:27:13.803Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "AI"
-aliases: 
+aliases:
   - "thoughts-on-human-compatible"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
@@ -31,16 +31,16 @@ original_url: https://www.lesswrong.com/posts/FuGDYNvA6qh4qyFah/thoughts-on-huma
 skip_import: true
 ---
 
-> [!quote] [_Human Compatible_](https://www.amazon.com/Human-Compatible-Artificial-Intelligence-Problem/dp/0525558616) 
+> [!quote] [_Human Compatible_](https://www.amazon.com/Human-Compatible-Artificial-Intelligence-Problem/dp/0525558616)
 > The purpose of this book is to explain why \[superintelligence\] might be the last event in human history and how to make sure that it is not... The book is intended for a general audience but will, I hope, be of value in convincing specialists in artificial intelligence to rethink their fundamental assumptions.
 
 Yesterday, I eagerly opened my copy of Stuart Russell's [_Human Compatible_](https://www.amazon.com/Human-Compatible-Artificial-Intelligence-Problem/dp/0525558616) (mirroring his _Center for Human-Compatible AI_, where I've worked the past two summers). I've been curious about Russell's research agenda, and _also_ how Russell argued the case so convincingly as to garner the following acclamations from two Turing Award winners:
 
- >[!quote] Judea Pearl
- > Human Compatible made me a convert to Russell's concerns with our ability to control our upcoming creation—super-intelligent machines. Unlike outside alarmists and futurists, Russell is a leading authority on AI. His new book will educate the public about AI more than any book I can think of, and is a delightful and uplifting read.
- 
- > [!quote] Yoshua Bengio
- > This beautifully written book addresses a fundamental challenge for humanity: increasingly intelligent machines that do what we ask but not what we really intend. Essential reading if you care about our future. 
+> [!quote] Judea Pearl
+> Human Compatible made me a convert to Russell's concerns with our ability to control our upcoming creation—super-intelligent machines. Unlike outside alarmists and futurists, Russell is a leading authority on AI. His new book will educate the public about AI more than any book I can think of, and is a delightful and uplifting read.
+
+> [!quote] Yoshua Bengio
+> This beautifully written book addresses a fundamental challenge for humanity: increasingly intelligent machines that do what we ask but not what we really intend. Essential reading if you care about our future.
 
 Bengio even recently lent a reasoned voice to a [debate on instrumental convergence](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell)!
 
@@ -50,7 +50,7 @@ I think the book will greatly help AI professionals understand key arguments, av
 
 I must admit, it's great to see such a prominent debunking. I still remember, early in my concern about alignment, hearing one professional respond to the entire idea of being concerned about AGI with a lazy _ad hominem_ dismissal. Like, hello? This is our future we're talking about!
 
-But Russell realizes that most people don't intentionally argue in bad faith; he structures his arguments with the understanding and charity required to ease the difficulty of changing one's mind.[^polite] 
+But Russell realizes that most people don't intentionally argue in bad faith; he structures his arguments with the understanding and charity required to ease the difficulty of changing one's mind.[^polite]
 
 [^polite]: Although I wish he'd be [more polite with LeCun](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell), understandable as his frustration may be.
 
@@ -83,7 +83,7 @@ There's also the issue of getting a good enough human mistake model, _and_ figur
 
 Now, it would be pretty silly to reply to an outlined research agenda with "but specific problems X, Y, and Z!", because the whole point of further research is to solve problems. However, my concerns are more structural. Certain AI designs lend themselves to more robustness against things going wrong (in specification, training, or simply having fewer assumptions). It seems to me that the uncertainty-based approach is quite demanding on getting component after component "right enough".
 
-Let me give you an example of something which is intuitively "more robust" to me: 
+Let me give you an example of something which is intuitively "more robust" to me:
 
 > [!quote] [Approval-directed agency](https://www.lesswrong.com/posts/7Hr8t6xwuuxBTqADK/approval-directed-agents-1)
 >

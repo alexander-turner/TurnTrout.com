@@ -115,4 +115,3 @@ EDIT: After talking with Richard Ngo, I now think there's about an 8% chance tha
 
 [^1]: Human values can still be inaccessible to the genome even if the cortex isn’t learned from scratch, but learning-from-scratch is a nice and clean sufficient condition which seems likely to me.
 [^2]: I argue that the genome probably hardcodes neural circuitry which is simple _relative_ to hardcoded “high-status detector” circuitry. Similarly, [the code for a machine learning experiment](https://github.com/leela-zero/leela-zero/tree/next/src) is simple _relative_ to [the neural network it trains](https://arxiv.org/abs/2201.13176).
-

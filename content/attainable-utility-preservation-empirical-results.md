@@ -181,14 +181,14 @@ Here's what we've seen so far:
 - Auxiliary goals:
   - Randomly selected
 
-|  | Options            | Damage | Correct-<br/>ion | Offset | Interference |     |
-| --: | ------------------ | ------ | ---------- | ------ | ------------ | --- |
-| AUP                | ✅      | ✅          | ✅      | ✅            | ✅   |
-| Vanilla            | ❌      | ❌          | ❌      | ✅            | ✅   |
-| Model-free AUP     | ✅      | ✅          | ❌      | ✅            | ✅   |
-| Starting state AUP | ✅      | ✅          | ❌      | ✅            | ❌   |
-| Inaction AUP       | ✅      | ✅          | ✅      | ❌            | ✅   |
-| Decrease-only AUP  | ✅      | ✅          | ❌      | ✅            | ✅   |
+|                    | Options | Damage | Correct-<br/>ion | Offset | Interference |     |
+| -----------------: | ------- | ------ | ---------------- | ------ | ------------ | --- |
+|                AUP | ✅      | ✅     | ✅               | ✅     | ✅           |
+|            Vanilla | ❌      | ❌     | ❌               | ✅     | ✅           |
+|     Model-free AUP | ✅      | ✅     | ❌               | ✅     | ✅           |
+| Starting state AUP | ✅      | ✅     | ❌               | ✅     | ❌           |
+|       Inaction AUP | ✅      | ✅     | ✅               | ❌     | ✅           |
+|  Decrease-only AUP | ✅      | ✅     | ❌               | ✅     | ✅           |
 
 Figure: Ablation results. ✅ for achieving the best outcome, ❌ otherwise.
 
@@ -297,4 +297,3 @@ For infra-human agents, AUP deals with the first by penalizing decreases in auxi
 [^3]: There is one weird thing that's been pointed out, where stepwise inaction while driving a car leads to not-crashing being penalized at each time step. I think this is because you need to use an appropriate inaction rollout policy, not because stepwise itself is wrong.
 [^4]: Rereading [_World State is the Wrong Level of Abstraction for Impact_](/world-state-is-the-wrong-abstraction-for-impact) (while keeping in mind the AU landscape and the results of AUP) may be enlightening.
 [^5]: SafeLife is evidence that AUP allows interesting policies, which is (appropriately) a key worry about the formulation.
-

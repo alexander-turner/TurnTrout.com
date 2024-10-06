@@ -20,8 +20,8 @@ publish: true
 title: "On Being Robust"
 lw-latest-edit: 2020-01-10T03:51:28.406Z
 lw-is-linkpost: "false"
-tags: 
-aliases: 
+tags:
+aliases:
   - "on-being-robust"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -29,6 +29,7 @@ date_published: 01/10/2020
 original_url: https://www.lesswrong.com/posts/eX2aobNp5uCdcpsiK/on-being-robust
 skip_import: true
 ---
+
 > [!thanks]
 > Inspired in part by `Raemon`'s [Being a Robust Agent](https://www.lesswrong.com/posts/2jfiMgKkh7qw9z8Do/being-a-robust-agent).
 
@@ -65,7 +66,5 @@ Again, the point isn't "have good habits and be happy". The point is that I thin
 
 <hr/>
 
-
-[^1]: Ironically, the first draft of this spelled "impostor" as "imposter". 
-
-[^2]: Naturally, I probably fail anyways sometimes, because I'm somewhat biased / unable to achieve full transparency for my thoughts. 
+[^1]: Ironically, the first draft of this spelled "impostor" as "imposter".
+[^2]: Naturally, I probably fail anyways sometimes, because I'm somewhat biased / unable to achieve full transparency for my thoughts.
