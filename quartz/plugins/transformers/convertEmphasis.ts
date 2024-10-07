@@ -66,20 +66,20 @@ export const formatNode = (
  * @returns A function that transforms the AST.
  */
 export const convertEmphasisHelper = (tree: any): void => {
-    const boldRegex = /\*\*(.*?)\*\*/g
-    const italicRegex = /_(.*?)_/g
-    for (const pair of [
-      ["strong", boldRegex],
-      ["em", italicRegex],
-    ]) {
-      const tagName = pair[0]
-      const regex = pair[1]
-      visit(tree, "text", (node: Text, index: number | undefined, parent: Parent | null) => {
-        // Skip processing if the parent node is a code block or inline code
-        if (parent && (["code", "inlineCode", "pre"].includes((parent as any).tagName))) {
-          return
-        }
-        formatNode(node, index, parent, regex as RegExp, tagName as string)
+  const boldRegex = /\*\*(.*?)\*\*/g
+  const italicRegex = /_(.*?)_/g
+  for (const pair of [
+    ["strong", boldRegex],
+    ["em", italicRegex],
+  ]) {
+    const tagName = pair[0]
+    const regex = pair[1]
+    visit(tree, "text", (node: Text, index: number | undefined, parent: Parent | null) => {
+      // Skip processing if the parent node is a code block or inline code
+      if (parent && ["code", "inlineCode", "pre"].includes((parent as any).tagName)) {
+        return
+      }
+      formatNode(node, index, parent, regex as RegExp, tagName as string)
     })
   }
 }

@@ -3,10 +3,7 @@ import { QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { formatTitle } from "../components/component_utils"
 
 import { TagList } from "./TagList"
-import {
-  GetQuartzPath,
-  urlCache,
-} from "../plugins/transformers/linkfavicons"
+import { GetQuartzPath, urlCache } from "../plugins/transformers/linkfavicons"
 import style from "./styles/contentMeta.scss"
 import { ValidLocale } from "../i18n"
 import { GlobalConfiguration } from "../cfg"
@@ -89,7 +86,11 @@ export const insertFavicon = (imgPath: string | null, node: JSX.Element): JSX.El
 export function renderPublicationInfo(cfg: GlobalConfiguration, fileData: QuartzPluginData) {
   const frontmatter = fileData.frontmatter
   const datePublished = frontmatter?.date_published
-  if (typeof frontmatter?.original_url !== "string" || !datePublished || frontmatter?.hide_metadata) {
+  if (
+    typeof frontmatter?.original_url !== "string" ||
+    !datePublished ||
+    frontmatter?.hide_metadata
+  ) {
     return null
   }
 

@@ -14,7 +14,11 @@ import {
 import { rehype } from "rehype"
 import { h } from "hastscript"
 
-function testHtmlFormattingImprovement(inputHTML: string, skipFirstLetter = true, doNotSetFirstLetterAttribute = false) {
+function testHtmlFormattingImprovement(
+  inputHTML: string,
+  skipFirstLetter = true,
+  doNotSetFirstLetterAttribute = false,
+) {
   const options = doNotSetFirstLetterAttribute ? {} : { skipFirstLetter }
   return rehype()
     .data("settings", { fragment: true })
@@ -27,7 +31,7 @@ describe("HTMLFormattingImprovement", () => {
   describe("Quotes", () => {
     it.each([
       ['"This is a quote", she said.', "“This is a quote”, she said."],
-      ['"aren\'t \"groups of functions\". ', "“aren’t “groups of functions.” "],
+      ['"aren\'t "groups of functions". ', "“aren’t “groups of functions.” "],
       ['"This is a quote," she said.', "“This is a quote”, she said."],
       ['"This is a quote!".', "“This is a quote!”."],
       ['"This is a quote?".', "“This is a quote?”."],
@@ -57,7 +61,7 @@ describe("HTMLFormattingImprovement", () => {
       ['with "scope insensitivity":', "with “scope insensitivity”:"],
       ['("the best")', "(“the best”)"],
       ['"\'sup"', "“‘sup”"],
-      ['\'SUP', "‘SUP"],
+      ["'SUP", "‘SUP"],
       ["'the best',", "‘the best’,"],
       ["'I lost the game.'", "‘I lost the game.’"],
       ["I hate you.'\"", "I hate you.’”"],
@@ -73,9 +77,18 @@ describe("HTMLFormattingImprovement", () => {
 
     // Handle HTML inputs
     it.each([
-      ['<p>I love <span class="katex">math</span>".</p>', '<p>I love <span class="katex">math</span>.”</p>'],
-      ['<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>', '<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>'],
-      ['<p>"<span class="katex">H</span>valued alignment metric</p>', '<p>“<span class="katex">H</span>valued alignment metric</p>'],
+      [
+        '<p>I love <span class="katex">math</span>".</p>',
+        '<p>I love <span class="katex">math</span>.”</p>',
+      ],
+      [
+        '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
+        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+      ],
+      [
+        '<p>"<span class="katex">H</span>valued alignment metric</p>',
+        '<p>“<span class="katex">H</span>valued alignment metric</p>',
+      ],
     ])("should handle HTML inputs", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
@@ -122,13 +135,13 @@ describe("HTMLFormattingImprovement", () => {
     it.each([
       [
         '<dl><dt>"Term 1".</dt><dd>Definition 1.</dd></dl>',
-        '<dl><dt>“Term 1.”</dt><dd>Definition 1.</dd></dl>',
+        "<dl><dt>“Term 1.”</dt><dd>Definition 1.</dd></dl>",
       ],
       [
         '<dl><dt>"Quoted term".</dt><dd>"Quoted definition".</dd></dl>',
-        '<dl><dt>“Quoted term.”</dt><dd>“Quoted definition.”</dd></dl>',
+        "<dl><dt>“Quoted term.”</dt><dd>“Quoted definition.”</dd></dl>",
       ],
-    ])('should handle smart quotes and punctuation in definition lists: %s', (input, expected) => {
+    ])("should handle smart quotes and punctuation in definition lists: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
@@ -262,41 +275,43 @@ describe("HTMLFormattingImprovement", () => {
       // Handle en dash number ranges
       ["<p>1-2</p>", "<p>1–2</p>"],
       ["<p>p1-2</p>", "<p>p1–2</p>"], // Page range
-      ["<p>Hi you're a test <code>ABC</code> - file</p>", "<p>Hi you’re a test <code>ABC</code>—file</p>"],
+      [
+        "<p>Hi you're a test <code>ABC</code> - file</p>",
+        "<p>Hi you’re a test <code>ABC</code>—file</p>",
+      ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
 
-    test('replaces multiple dashes within words', () => {
-      expect(hyphenReplace('Since--as you know')).toBe('Since—as you know')
-      expect(hyphenReplace('word---another')).toBe('word—another')
+    test("replaces multiple dashes within words", () => {
+      expect(hyphenReplace("Since--as you know")).toBe("Since—as you know")
+      expect(hyphenReplace("word---another")).toBe("word—another")
     })
 
-    test('handles dashes at the start of a line', () => {
-      expect(hyphenReplace('- This is a list item')).toBe('— This is a list item')
-      expect(hyphenReplace('--- Indented list item')).toBe('— Indented list item')
-      expect(hyphenReplace('Line 1\n- Line 2')).toBe('Line 1\n— Line 2')
+    test("handles dashes at the start of a line", () => {
+      expect(hyphenReplace("- This is a list item")).toBe("— This is a list item")
+      expect(hyphenReplace("--- Indented list item")).toBe("— Indented list item")
+      expect(hyphenReplace("Line 1\n- Line 2")).toBe("Line 1\n— Line 2")
     })
 
-    test('removes spaces around em dashes', () => {
-      expect(hyphenReplace('word — another')).toBe('word—another')
-      expect(hyphenReplace('word—  another')).toBe('word—another')
-      expect(hyphenReplace('word  —another')).toBe('word—another')
+    test("removes spaces around em dashes", () => {
+      expect(hyphenReplace("word — another")).toBe("word—another")
+      expect(hyphenReplace("word—  another")).toBe("word—another")
+      expect(hyphenReplace("word  —another")).toBe("word—another")
     })
 
-    test('handles em dashes at the start of a line', () => {
-      expect(hyphenReplace('—Start of line')).toBe('— Start of line')
-      expect(hyphenReplace('Line 1\n—Line 2')).toBe('Line 1\n— Line 2')
-      expect(hyphenReplace('— Already correct')).toBe('— Already correct')
+    test("handles em dashes at the start of a line", () => {
+      expect(hyphenReplace("—Start of line")).toBe("— Start of line")
+      expect(hyphenReplace("Line 1\n—Line 2")).toBe("Line 1\n— Line 2")
+      expect(hyphenReplace("— Already correct")).toBe("— Already correct")
     })
 
-    test('converts number ranges to en dashes', () => {
-      expect(hyphenReplace('Pages 1-5')).toBe('Pages 1–5')
-      expect(hyphenReplace('2000-2020')).toBe('2000–2020')
-      expect(hyphenReplace('p.10-15')).toBe('p.10–15')
+    test("converts number ranges to en dashes", () => {
+      expect(hyphenReplace("Pages 1-5")).toBe("Pages 1–5")
+      expect(hyphenReplace("2000-2020")).toBe("2000–2020")
+      expect(hyphenReplace("p.10-15")).toBe("p.10–15")
     })
-
   })
   describe("transformParagraph", () => {
     function _getParagraphNode(numChildren: number, value: string = "Hello, world!"): any {
@@ -405,8 +420,10 @@ describe("rearrangeLinkPunctuation", () => {
     })
 
     it("should modify regular links but not footnote links", () => {
-      const input = '<p><a href="https://example.com">Link</a>. <a href="#user-content-fn-2">2</a>.</p>'
-      const expected = '<p><a href="https://example.com">Link.</a> <a href="#user-content-fn-2">2</a>.</p>'
+      const input =
+        '<p><a href="https://example.com">Link</a>. <a href="#user-content-fn-2">2</a>.</p>'
+      const expected =
+        '<p><a href="https://example.com">Link.</a> <a href="#user-content-fn-2">2</a>.</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
@@ -520,30 +537,12 @@ describe("flattenTextNodes and getTextContent", () => {
   const ignoreCode = (n: any) => n.tagName === "code"
 
   const testNodes = {
-    empty: h('', []),
-    simple: h('p', 'Hello, world!'),
-    nested: h('div', [
-      'This is ',
-      h('em', 'emphasized'),
-      ' text.'
-    ]),
-    withCode: h('div', [
-      'This is ',
-      h('code', 'ignored'),
-      ' text.'
-    ]),
-    emptyAndComment: h('div', [
-      h('span'),
-      { type: 'comment', value: 'This is a comment' }
-    ]),
-    deeplyNested: h('div', [
-      'Level 1 ',
-      h('span', [
-        'Level 2 ',
-        h('em', 'Level 3')
-      ]),
-      ' End'
-    ])
+    empty: h("", []),
+    simple: h("p", "Hello, world!"),
+    nested: h("div", ["This is ", h("em", "emphasized"), " text."]),
+    withCode: h("div", ["This is ", h("code", "ignored"), " text."]),
+    emptyAndComment: h("div", [h("span"), { type: "comment", value: "This is a comment" }]),
+    deeplyNested: h("div", ["Level 1 ", h("span", ["Level 2 ", h("em", "Level 3")]), " End"]),
   }
 
   describe("flattenTextNodes", () => {
