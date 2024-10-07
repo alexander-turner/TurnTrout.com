@@ -41,16 +41,22 @@ md_process.helpers.hash_to_slugs = {"abcdef123456": "sample-post"}
 
 def test_strip_referral_url():
     url = "https://www.lesswrong.com/out?url=https%3A%2F%2Fexample.com"
-    assert md_process.strip_referral_url(url) == "https://example.com"
-    assert md_process.strip_referral_url("https://example.com") == ""
+    if md_process.strip_referral_url(url) != "https://example.com":
+        raise AssertionError
+    if md_process.strip_referral_url("https://example.com") != "":
+        raise AssertionError
 
 
 def test_get_metadata():
     metadata = md_process.get_lw_metadata(sample_post)
-    assert metadata["title"] == '"Sample Post"'
-    assert metadata["permalink"] == "/posts/sample-post"
-    assert metadata["publish"] == "true"
-    assert "AI" in metadata["tags"]
+    if metadata["title"] != '"Sample Post"':
+        raise AssertionError
+    if metadata["permalink"] != "/posts/sample-post":
+        raise AssertionError
+    if metadata["publish"] != "true":
+        raise AssertionError
+    if "AI" not in metadata["tags"]:
+        raise AssertionError
 
 
 def test_timestamp_formatting():
@@ -61,49 +67,62 @@ def test_timestamp_formatting():
             "lw-page-url": "https://www.lesswrong.com/posts/abcdef123456",
         }
     )
-    assert formatted_metadata["date_published"] == "01/01/2023"
+    if formatted_metadata["date_published"] != "01/01/2023":
+        raise AssertionError
 
 
 def test_metadata_to_yaml():
     metadata = {"key1": "value1", "key2": ["item1", "item2"], "key3": True}
     yaml = md_process.metadata_to_yaml(metadata)
-    assert "key1: value1" in yaml
-    assert 'key2: \n  - "item1"\n  - "item2"' in yaml
-    assert 'key3: "true"' in yaml
+    if "key1: value1" not in yaml:
+        raise AssertionError
+    if 'key2: \n  - "item1"\n  - "item2"' not in yaml:
+        raise AssertionError
+    if 'key3: "true"' not in yaml:
+        raise AssertionError
 
 
 def test_fix_footnotes():
     text = "This is a test[\\[1\\]](/posts/abc#fn1). And another[\\[2\\]](/posts/abc#fn2).\n1. **[^](/posts/abc#fnref1)** Footnote 1\n2. **[^](/posts/abc#fnref2)** Footnote 2"
     fixed = md_process.fix_footnotes(text)
-    assert "[^1]" in fixed
-    assert "[^2]" in fixed
-    assert "[^1]: Footnote 1" in fixed
-    assert "[^2]: Footnote 2" in fixed
+    if "[^1]" not in fixed:
+        raise AssertionError
+    if "[^2]" not in fixed:
+        raise AssertionError
+    if "[^1]: Footnote 1" not in fixed:
+        raise AssertionError
+    if "[^2]: Footnote 2" not in fixed:
+        raise AssertionError
 
 
 def test_parse_latex():
     md = r"$\begin{align}x &= y\\z &= w\end{align}$"
     parsed = md_process.parse_latex(md)
     print(parsed)
-    assert parsed.startswith("$$\n\\begin{align}")
-    assert parsed.endswith("\\end{align}\n$$")
+    if not parsed.startswith("$$\n\\begin{align}"):
+        raise AssertionError
+    if not parsed.endswith("\\end{align}\n$$"):
+        raise AssertionError
 
 
 def test_remove_prefix_before_slug():
     url = "https://www.lesswrong.com/posts/abcdef123456/sample-post)"
-    assert md_process.remove_prefix_before_slug(url) == "/sample-post)"
+    if md_process.remove_prefix_before_slug(url) != "/sample-post)":
+        raise AssertionError
 
 
 def test_replace_urls_in_markdown():
     md = "Check out [this post](https://www.lesswrong.com/posts/abcdef123456/sample-post)"
     replaced = md_process.replace_urls(md)
-    assert replaced == "Check out [this post](/sample-post)"
+    if replaced != "Check out [this post](/sample-post)":
+        raise AssertionError
 
 
 def test_manual_replace():
     text = "This test passes iff it works."
     replaced = md_process.manual_replace(text)
-    assert "IFF" in replaced
+    if "IFF" not in replaced:
+        raise AssertionError
 
 
 boring_admonition_initial = (
@@ -179,25 +198,29 @@ wiki_citation_target = """> [!quote] Sample, [Wikipedia](https://en.wikipedia.or
 def test_move_citation_to_quote_admonition(md: str, expected: str) -> None:
     moved = md_process.move_citation_to_quote_admonition(md)
 
-    assert moved == expected
+    if moved != expected:
+        raise AssertionError
 
 
 def test_remove_warning():
     text = "Some text\nmoved away from optimal policies and treated reward functions more realistically.**\nActual content"
     removed = md_process.remove_warning(text)
-    assert removed == "Actual content"
+    if removed != "Actual content":
+        raise AssertionError
 
 
 def test_display_math():
     post = {"contents": {"markdown": "$x = y$"}}
     processed = md_process.process_markdown(post["contents"]["markdown"], {})
-    assert "$$\nx = y\n$$" in processed
+    if "$$\nx = y\n$$" not in processed:
+        raise AssertionError
 
 
 def test_remove_number_from_tex():
     text = "$1$ $+1$ $-1$"
     removed = md_process.parse_latex(text)
-    assert removed == "1 +1 -1"
+    if removed != "1 +1 -1":
+        raise AssertionError
 
 def test_remove_mindingourway_links():
     input_text = "Check out [this article](https://mindingourway.com/some-article) for more information."
@@ -205,7 +228,8 @@ def test_remove_mindingourway_links():
     
     result = md_process.manual_replace(input_text)
     
-    assert result == expected_output, f"Expected:\n{expected_output}\n\nGot:\n{result}"
+    if result != expected_output:
+        raise AssertionError(f"Expected:\n{expected_output}\n\nGot:\n{result}")
 
 def test_process_linked_citations():
     input_md = """> [!quote]
@@ -220,7 +244,8 @@ def test_process_linked_citations():
 
     result = md_process.process_linked_citations(input_md)
 
-    assert result.rstrip() == expected_output
+    if result.rstrip() != expected_output:
+        raise AssertionError
 
 def test_inline_footnote_parsing():
     input_text = "$^6$ I do think that this is important."
@@ -228,7 +253,8 @@ def test_inline_footnote_parsing():
     
     result = md_process.fix_footnotes(input_text)
     
-    assert result == expected_output, f"Expected:\n{expected_output}\n\nGot:\n{result}"
+    if result != expected_output:
+        raise AssertionError(f"Expected:\n{expected_output}\n\nGot:\n{result}")
 
 if __name__ == "__main__":
     pytest.main()

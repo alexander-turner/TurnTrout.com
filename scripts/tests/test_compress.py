@@ -23,13 +23,15 @@ def test_avif_file_size_reduction(temp_dir: Path, image_ext: str) -> None:
     # Convert to AVIF
     compress.image(input_file)
     avif_file = input_file.with_suffix(".avif")
-    assert avif_file.exists()  # Check if AVIF file was created
+    if not avif_file.exists():
+        raise AssertionError
 
     avif_size = avif_file.stat().st_size
 
-    assert (
-        avif_size < original_size
-    ), f"AVIF ({avif_file}) size ({avif_size}) not less than half of original {image_ext.upper()} ({original_size} {input_file})"
+    if (
+        avif_size >= original_size
+    ):
+        raise AssertionError(f"AVIF ({avif_file}) size ({avif_size}) not less than half of original {image_ext.upper()} ({original_size} {input_file})")
 
 
 def test_convert_avif_fails_with_non_existent_file(temp_dir: Path) -> None:
@@ -59,7 +61,8 @@ def test_convert_avif_skips_if_avif_already_exists(temp_dir: Path) -> None:
     compress.image(input_file)
     sys.stderr = sys.__stderr__
 
-    assert "Skipping conversion" in stderr_capture.getvalue()
+    if "Skipping conversion" not in stderr_capture.getvalue():
+        raise AssertionError
 
 
 # --- Video Tests ---
@@ -74,10 +77,12 @@ def test_video_conversion(temp_dir: Path, video_ext: str) -> None:
     compress.to_hevc_video(input_file)
 
     mp4_file: Path = input_file.with_suffix(".mp4")
-    assert mp4_file.exists()  # Check if MP4 file was created
-    assert (
+    if not mp4_file.exists():
+        raise AssertionError
+    if not ((
         mp4_file.stat().st_size <= original_size
-    ) or video_ext == ".webm"  # Check if MP4 file is smaller
+    ) or video_ext == ".webm"):
+        raise AssertionError
 
 def test_convert_mp4_fails_with_non_existent_file(temp_dir: Path) -> None:
     input_file = temp_dir / "non_existent_file.mov"
@@ -102,7 +107,8 @@ def test_convert_mp4_skips_if_mp4_already_exists(temp_dir: Path) -> None:
     compress.to_hevc_video(input_file)
     sys.stdout = sys.__stdout__
 
-    assert "Skipping conversion" in stdout_capture.getvalue()
+    if "Skipping conversion" not in stdout_capture.getvalue():
+        raise AssertionError
 
 def test_error_probing_codec(temp_dir: Path) -> None:
     input_file: Path = temp_dir / "test.mp4"
@@ -122,7 +128,8 @@ def test_compress_gif(temp_dir: Path) -> None:
     
     # Check if MP4 file was created
     output_file = input_file.with_suffix(".mp4")
-    assert output_file.exists(), f"MP4 file {output_file} was not created"
+    if not output_file.exists():
+        raise AssertionError(f"MP4 file {output_file} was not created")
     
     # Check if the output file is a valid MP4 with HEVC encoding
     try:
@@ -135,7 +142,8 @@ def test_compress_gif(temp_dir: Path) -> None:
             str(output_file)
         ], capture_output=True, text=True, check=True)
         
-        assert result.stdout.strip() == "hevc", f"Output video codec is not HEVC, got: {result.stdout.strip()}"
+        if result.stdout.strip() != "hevc":
+            raise AssertionError(f"Output video codec is not HEVC, got: {result.stdout.strip()}")
     except subprocess.CalledProcessError as e:
         pytest.fail(f"Error checking MP4 file: {e.stderr}")
     
@@ -154,7 +162,8 @@ def test_compress_gif_preserves_frame_rate(temp_dir: Path) -> None:
     
     # Check if MP4 file was created
     output_file = input_file.with_suffix(".mp4")
-    assert output_file.exists(), f"MP4 file {output_file} was not created"
+    if not output_file.exists():
+        raise AssertionError(f"MP4 file {output_file} was not created")
     
     # Get frame rates for both input and output files
     def get_frame_rate(file_path):
@@ -179,4 +188,5 @@ def test_compress_gif_preserves_frame_rate(temp_dir: Path) -> None:
 
     # Compare frame rates
     relative_error = abs(output_fps - input_fps) / input_fps
-    assert relative_error < 0.01, f"Output frame rate ({output_fps}) differs significantly from input frame rate ({input_fps}). Relative error: {relative_error:.2%}"
+    if relative_error >= 0.01:
+        raise AssertionError(f"Output frame rate ({output_fps}) differs significantly from input frame rate ({input_fps}). Relative error: {relative_error:.2%}")

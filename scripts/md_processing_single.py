@@ -386,7 +386,8 @@ def _get_urls(markdown: str) -> list[str]:
 hash_to_slugs = {}
 def remove_prefix_before_slug(url: str) -> str:
     """Remove the LessWrong URL prefix and convert to internal link."""
-    assert url.endswith(")")
+    if not url.endswith(")"):
+        raise AssertionError
 
     for website_hash, slug in hash_to_slugs.items():
         lw_regex = regex.compile(

@@ -105,8 +105,10 @@ def test_verbose_output(mock_git_root, capsys):
         r2_upload.upload_and_move(test_file, verbose=True)
 
     captured = capsys.readouterr()
-    assert f"Uploading {test_file}" in captured.out
-    assert "Moving original file:" in captured.out
+    if f"Uploading {test_file}" not in captured.out:
+        raise AssertionError
+    if "Moving original file:" not in captured.out:
+        raise AssertionError
 
 
 def test_upload_to_r2_success(mock_git_root, r2_cleanup):
@@ -118,7 +120,8 @@ def test_upload_to_r2_success(mock_git_root, r2_cleanup):
         r2_upload.upload_and_move(test_file)
 
     mock_run.assert_called_once()
-    assert mock_run.call_args[0][0][2] == str(test_file)
+    if mock_run.call_args[0][0][2] != str(test_file):
+        raise AssertionError
     r2_cleanup.append("static/test.jpg")
 
 
@@ -132,7 +135,8 @@ def test_upload_to_r2_success(mock_git_root, r2_cleanup):
     ],
 )
 def test_get_r2_key(input_path, expected_key):
-    assert r2_upload.get_r2_key(Path(input_path)) == expected_key
+    if r2_upload.get_r2_key(Path(input_path)) != expected_key:
+        raise AssertionError
 
 
 @pytest.mark.parametrize(
@@ -213,23 +217,27 @@ def test_upload_and_move(test_media_setup, tmp_path, r2_cleanup, mock_git_root):
     # Check if the file is moved to the correct location with preserved structure
     expected_moved_path = move_to_dir / test_image.relative_to(mock_git_root)
 
-    assert (
+    if not (
         expected_moved_path.exists()
-    ), f"Expected moved file does not exist: {expected_moved_path}"
-    assert not test_image.exists(), f"Original file still exists: {test_image}"
+    ):
+        raise AssertionError(f"Expected moved file does not exist: {expected_moved_path}")
+    if test_image.exists():
+        raise AssertionError(f"Original file still exists: {test_image}")
 
     # Check if the file is moved to the correct location with preserved structure
     expected_moved_path = move_to_dir / test_image.relative_to(mock_git_root)
-    assert subprocess.run(
+    if not subprocess.run(
         ["rclone", "ls", f"r2:{r2_upload.R2_BUCKET_NAME}/static/test.jpg"],
         capture_output=True,
         text=True,
         check=True,
-    ).stdout
+    ).stdout:
+        raise AssertionError
 
     # Check if the file is moved to the correct location with preserved structure
     expected_moved_path = move_to_dir / test_image.relative_to(mock_git_root)
-    assert expected_moved_path.exists() and not test_image.exists()
+    if not (expected_moved_path.exists() and not test_image.exists()):
+        raise AssertionError
 
     for (file_path, _), expected_content in zip(
         md_files,
@@ -240,7 +248,8 @@ def test_upload_and_move(test_media_setup, tmp_path, r2_cleanup, mock_git_root):
             "Standard: ![](https://assets.turntrout.com/static/test.jpg)\nMultiple: ![](https://assets.turntrout.com/static/test.jpg) ![](https://assets.turntrout.com/static/test.jpg)\nNo match: ![](quartz/static/other.jpg)\nInline: This is an inline ![](https://assets.turntrout.com/static/test.jpg) image.",
         ],
     ):
-        assert file_path.read_text().strip() == expected_content.strip()
+        if file_path.read_text().strip() != expected_content.strip():
+            raise AssertionError
 
 
 def test_main_upload_all_custom_filetypes(test_media_setup):
@@ -260,7 +269,8 @@ def test_main_upload_all_custom_filetypes(test_media_setup):
         r2_upload.main()
     md_content: str = (tmp_path / "quartz" / "content" / "test.md").read_text()
     for file in ("file4.png", "file5.jpg"):
-        assert f"https://assets.turntrout.com/static/{file}" in md_content
+        if f"https://assets.turntrout.com/static/{file}" not in md_content:
+            raise AssertionError
 
 
 def test_preserve_path_structure(mock_git_root, tmp_path):
@@ -303,10 +313,10 @@ def test_preserve_path_structure_with_replacement(mock_git_root, tmp_path):
     mock_move.assert_called_once_with(str(static_file), str(expected_moved_path))
 
     updated_md_content = md_file.read_text()
-    assert (
-        "![Test Image](https://assets.turntrout.com/static/images/test_static.jpg)"
-        in updated_md_content
-    )
+    if (
+        "![Test Image](https://assets.turntrout.com/static/images/test_static.jpg)" not in updated_md_content
+    ):
+        raise AssertionError
 
 
 def test_strict_static_path_matching(test_media_setup, mock_git_root):
@@ -330,6 +340,8 @@ def test_strict_static_path_matching(test_media_setup, mock_git_root):
     updated_content = md_file.read_text()
     expected_url = "https://assets.turntrout.com/static/images/test.jpg"
 
-    assert f"![image]({expected_url})" in updated_content
-    assert "![image](a/static/images/test.jpg)" in updated_content, "Incorrect case was unexpectedly modified"
+    if f"![image]({expected_url})" not in updated_content:
+        raise AssertionError
+    if "![image](a/static/images/test.jpg)" not in updated_content:
+        raise AssertionError("Incorrect case was unexpectedly modified")
 

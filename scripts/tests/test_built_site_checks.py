@@ -47,27 +47,35 @@ def temp_site_root(tmp_path):
 
 def test_check_localhost_links(sample_soup):
     result = check_localhost_links(sample_soup)
-    assert result == ['http://localhost:8000']
+    if result != ['http://localhost:8000']:
+        raise AssertionError
 
 def test_check_invalid_anchors(sample_soup, temp_site_root):
     result = check_invalid_anchors(sample_soup, temp_site_root / "test.html", temp_site_root)
-    assert set(result) == {'#invalid-anchor', '/other-page#invalid-anchor'}
+    if set(result) != {'#invalid-anchor', '/other-page#invalid-anchor'}:
+        raise AssertionError
 
 def test_check_problematic_paragraphs(sample_soup):
     result = check_problematic_paragraphs(sample_soup)
     assert len(result) == 3
-    assert 'Table: This is a table description' in result
-    assert 'Figure: This is a figure caption' in result
-    assert 'Code: This is a code snippet' in result
-    assert "Normal paragraph" not in result
-    assert "This is a delayed-paragraph Table: " not in result
+    if 'Table: This is a table description' not in result:
+        raise AssertionError
+    if 'Figure: This is a figure caption' not in result:
+        raise AssertionError
+    if 'Code: This is a code snippet' not in result:
+        raise AssertionError
+    if "Normal paragraph" in result:
+        raise AssertionError
+    if "This is a delayed-paragraph Table: " in result:
+        raise AssertionError
 
 def test_parse_html_file(tmp_path):
     file_path = tmp_path / "test.html"
     file_path.write_text("<html><body><p>Test</p></body></html>")
     result = parse_html_file(file_path)
     assert isinstance(result, BeautifulSoup)
-    assert result.find('p').text == 'Test'
+    if result.find('p').text != 'Test':
+        raise AssertionError
 
 def test_check_file_for_issues(tmp_path):
     file_path = tmp_path / "test.html"
@@ -81,9 +89,12 @@ def test_check_file_for_issues(tmp_path):
     </html>
     """)
     localhost_links, invalid_anchors, problematic_paragraphs = check_file_for_issues(file_path, tmp_path)
-    assert localhost_links == ['https://localhost:8000']
-    assert invalid_anchors == ['#invalid-anchor']
-    assert problematic_paragraphs == ['Table: Test table']
+    if localhost_links != ['https://localhost:8000']:
+        raise AssertionError
+    if invalid_anchors != ['#invalid-anchor']:
+        raise AssertionError
+    if problematic_paragraphs != ['Table: Test table']:
+        raise AssertionError
 
 def test_check_local_media_files(sample_soup, temp_site_root):
     # Create an existing image file
@@ -91,7 +102,8 @@ def test_check_local_media_files(sample_soup, temp_site_root):
     (temp_site_root / "existing-video.mp4").touch()
 
     result = check_local_media_files(sample_soup, temp_site_root / "test.html", temp_site_root)
-    assert set(result) == {'missing-image.png', 'missing-svg.svg'}
+    if set(result) != {'missing-image.png', 'missing-svg.svg'}:
+        raise AssertionError
 
 def test_check_file_for_issues(tmp_path):
     file_path = tmp_path / "test.html"
@@ -107,10 +119,14 @@ def test_check_file_for_issues(tmp_path):
     </html>
     """)
     localhost_links, invalid_anchors, problematic_paragraphs, missing_media_files = check_file_for_issues(file_path, tmp_path)
-    assert localhost_links == ['https://localhost:8000']
-    assert invalid_anchors == ['#invalid-anchor']
-    assert problematic_paragraphs == ['Table: Test table']
-    assert missing_media_files == ['missing-image.jpg']
+    if localhost_links != ['https://localhost:8000']:
+        raise AssertionError
+    if invalid_anchors != ['#invalid-anchor']:
+        raise AssertionError
+    if problematic_paragraphs != ['Table: Test table']:
+        raise AssertionError
+    if missing_media_files != ['missing-image.jpg']:
+        raise AssertionError
 
 @pytest.mark.parametrize("html,expected", [
     ('<img src="local.jpg">', ['local.jpg']),
@@ -123,4 +139,5 @@ def test_check_local_media_files_parametrized(html, expected, temp_site_root):
     soup = BeautifulSoup(html, 'html.parser')
     (temp_site_root / "existing.png").touch()
     result = check_local_media_files(soup, temp_site_root / "test.html", temp_site_root)
-    assert result == expected
+    if result != expected:
+        raise AssertionError

@@ -18,7 +18,8 @@ def test_git_root_is_ancestor(
 
     git_root = script_utils.get_git_root()
     assert git_root is not None
-    assert current_file_path.is_relative_to(git_root)
+    if not current_file_path.is_relative_to(git_root):
+        raise AssertionError
 
 
 @pytest.mark.parametrize("git_exists", [True, False])
@@ -36,7 +37,8 @@ def test_get_git_root(
         )
 
     monkeypatch.setattr(script_utils.subprocess, "run", mock_subprocess_run)
-    assert script_utils.get_git_root() == expected_return
+    if script_utils.get_git_root() != expected_return:
+        raise AssertionError
 
 
 @pytest.mark.parametrize(
@@ -58,17 +60,18 @@ def test_path_relative_to_quartz(
         with pytest.raises(ValueError):
             script_utils.path_relative_to_quartz(Path(input_path))
     else:
-        assert (
-            script_utils.path_relative_to_quartz(Path(input_path))
-            == expected_output
-        )
+        if (
+            script_utils.path_relative_to_quartz(Path(input_path)) != expected_output
+        ):
+            raise AssertionError
 
 
 def test_get_files_no_dir():
     """Test when no directory is provided."""
     result = script_utils.get_files()
     assert isinstance(result, tuple)
-    assert not result  # Empty tuple since no directory was given
+    if result:
+        raise AssertionError
 
 
 @pytest.mark.parametrize(
@@ -101,7 +104,8 @@ def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
 
     # Normalize file paths and compare
     result = [str(p.relative_to(tmp_path)) for p in result]
-    assert sorted(result) == sorted(expected_files)
+    if sorted(result) != sorted(expected_files):
+        raise AssertionError
 
 
 def test_get_files_gitignore(tmp_path):
@@ -122,6 +126,7 @@ def test_get_files_gitignore(tmp_path):
         # Test getting files with gitignore
         result = script_utils.get_files(dir_to_search=tmp_path)
         assert len(result) == 1
-        assert result[0] == md_file
+        if result[0] != md_file:
+            raise AssertionError
     except git.GitCommandError:
         pytest.skip("Git not installed or not in PATH")

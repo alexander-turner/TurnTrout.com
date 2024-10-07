@@ -68,17 +68,20 @@ def test_image_conversion(ext: str, setup_test_env):
         asset_path, md_replacement_dir=test_dir / "content"
     )
 
-    assert avif_path.exists()  # Check if AVIF file was created
+    if not avif_path.exists():
+        raise AssertionError
 
     # Check that name conversion occurred
     with open(content_path, "r") as f:
         file_content = f.read()
-    assert asset_path.exists()
+    if not asset_path.exists():
+        raise AssertionError
 
     target_content: str = "![](static/asset.avif)\n"
     target_content += "[[static/asset.avif]]\n"
     target_content += '<img src="static/asset.avif" alt="shrek"/>\n'
-    assert file_content == target_content
+    if file_content != target_content:
+        raise AssertionError
 
 
 @pytest.mark.parametrize("ext", compress.ALLOWED_VIDEO_EXTENSIONS)
@@ -95,30 +98,33 @@ def test_video_conversion(ext: str, setup_test_env):
         asset_path, md_replacement_dir=Path(setup_test_env), remove_originals=True
     )
 
-    assert mp4_path.exists()
+    if not mp4_path.exists():
+        raise AssertionError
     with open(content_path, "r") as f:
         file_content: str = f.read()
 
     video_tags = "autoplay loop muted playsinline " if ext == ".gif" else ""
     for alt_tag in ("", 'alt="shrek" '):  # The source-tag had an alt
-        assert (
-            f'<video {video_tags}src="static/asset.mp4" {alt_tag}type="video/mp4"><source src="static/asset.mp4" type="video/mp4"></video>'
-            in file_content
-        )
+        if (
+            f'<video {video_tags}src="static/asset.mp4" {alt_tag}type="video/mp4"><source src="static/asset.mp4" type="video/mp4"></video>' not in file_content
+        ):
+            raise AssertionError
 
 
 # Test that it keeps or removes source files
 @pytest.mark.parametrize("remove_originals", [True, False])
 def test_remove_source_files(setup_test_env, remove_originals):
     asset_path = Path(setup_test_env) / "quartz" / "static" / "asset.jpg"
-    assert asset_path.exists()
+    if not asset_path.exists():
+        raise AssertionError
 
     convert_assets.convert_asset(
         asset_path,
         remove_originals=remove_originals,
         md_replacement_dir=Path(setup_test_env),
     )
-    assert asset_path.exists() == (not remove_originals)
+    if asset_path.exists() != (not remove_originals):
+        raise AssertionError
 
 
 def test_strip_metadata(setup_test_env):
@@ -155,10 +161,12 @@ def test_strip_metadata(setup_test_env):
         exif_output = subprocess.check_output(
             ["exiftool", dummy_image.with_suffix(".avif")]
         )
-        assert (
-            "Test Artist" not in exif_output.decode()
-        )  # Check for a specific tag
-        assert "Test Copyright" not in exif_output.decode()
+        if (
+            "Test Artist" in exif_output.decode()
+        ):
+            raise AssertionError
+        if "Test Copyright" in exif_output.decode():
+            raise AssertionError
 
 
 def test_ignores_unsupported_file_types(setup_test_env):
@@ -173,7 +181,8 @@ def test_file_not_found(setup_test_env):
     non_existent_file = Path(setup_test_env) / "quartz/static/non_existent.jpg"
 
     # Ensure the file doesn't actually exist
-    assert not non_existent_file.exists()
+    if non_existent_file.exists():
+        raise AssertionError
 
     # Try to convert the non-existent file and expect a FileNotFoundError
     with pytest.raises(FileNotFoundError, match="File .* not found."):
@@ -209,9 +218,10 @@ def test_ignores_non_static_path(setup_test_env):
     ],
 )
 def test_valid_paths(input_path, expected_output):
-    assert script_utils.path_relative_to_quartz(Path(input_path)) == Path(
+    if script_utils.path_relative_to_quartz(Path(input_path)) != Path(
         expected_output
-    )
+    ):
+        raise AssertionError
 
 
 @pytest.mark.parametrize(
@@ -256,8 +266,10 @@ def test_video_patterns(
 ):
     source_pattern, target_pattern = convert_assets._video_patterns(input_file)
 
-    assert source_pattern == expected_source_pattern
-    assert target_pattern == expected_target_pattern
+    if source_pattern != expected_source_pattern:
+        raise AssertionError
+    if target_pattern != expected_target_pattern:
+        raise AssertionError
 
 
 # Test that newlines are added after video tag when it's followed by a figure caption
@@ -305,7 +317,9 @@ def test_video_figure_caption_formatting(setup_test_env, initial_content):
     
     # Check if the pattern has been correctly modified
     expected_pattern = r"</video>\n\nFigure: This is a caption"
-    assert re.search(expected_pattern, converted_content), f"Expected pattern not found in:\n{converted_content}"
+    if not re.search(expected_pattern, converted_content):
+        raise AssertionError(f"Expected pattern not found in:\n{converted_content}")
 
     # Additional check to ensure there's no <br/> tag left
-    assert "<br/>" not in converted_content, f"<br/> tag still present in:\n{converted_content}"
+    if "<br/>" in converted_content:
+        raise AssertionError(f"<br/> tag still present in:\n{converted_content}")
