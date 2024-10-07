@@ -9,24 +9,24 @@ export var twemoji =
         className: "emoji",
         convert: {
           fromCodePoint: function d(u) {
-            var f = "string" == typeof u ? parseInt(u, 16) : u
+            var f = typeof u == "string" ? parseInt(u, 16) : u
             return f < 65536 ? b(f) : b(55296 + ((f -= 65536) >> 10), 56320 + (1023 & f))
           },
           toCodePoint: p,
         },
         onerror: function d() {
-          this.parentNode && this.parentNode.replaceChild(a(this.alt, !1), this)
+          this.parentNode?.replaceChild(a(this.alt, !1), this)
         },
         parse: function u(f, $) {
           var c
           return (
-            ($ && "function" != typeof $) || ($ = { callback: $ }),
-            ("string" == typeof f ? o : n)(f, {
+            ($ && typeof $ != "function") || ($ = { callback: $ }),
+            (typeof f == "string" ? o : n)(f, {
               callback: $.callback || t,
-              attributes: "function" == typeof $.attributes ? $.attributes : s,
-              base: "string" == typeof $.base ? $.base : d.base,
+              attributes: typeof $.attributes == "function" ? $.attributes : s,
+              base: typeof $.base == "string" ? $.base : d.base,
               ext: $.ext || d.ext,
-              size: $.folder || ("number" == typeof (c = $.size || d.size) ? c + "x" + c : c),
+              size: $.folder || (typeof (c = $.size || d.size) == "number" ? c + "x" + c : c),
               className: $.className || d.className,
               onerror: $.onerror || d.onerror,
             })
@@ -60,7 +60,7 @@ export var twemoji =
       return "".concat(u.base, d, u.ext)
     }
     function r(d) {
-      return p(0 > d.indexOf("‍") ? d.replace($, "") : d)
+      return p(d.indexOf("‍") < 0 ? d.replace($, "") : d)
     }
     function n(d, u) {
       for (
@@ -79,9 +79,9 @@ export var twemoji =
           h,
           g = (function d(u, f) {
             for (var $, c, b = u.childNodes, a = b.length; a--; )
-              3 === (c = ($ = b[a]).nodeType)
+              (c = ($ = b[a]).nodeType) === 3
                 ? f.push($)
-                : 1 !== c || ("ownerSVGElement" in $) || e.test($.nodeName.toLowerCase()) || d($, f)
+                : c !== 1 || ("ownerSVGElement" in $) || e.test($.nodeName.toLowerCase()) || d($, f)
             return f
           })(d, []),
           m = g.length;
@@ -104,7 +104,7 @@ export var twemoji =
             l.setAttribute("draggable", "false"),
             ($ = u.attributes(p, x))))
               $.hasOwnProperty(c) &&
-                0 !== c.indexOf("on") &&
+                c.indexOf("on") !== 0 &&
                 !l.hasAttribute(c) &&
                 l.setAttribute(c, $[c])
             ;(l.className = u.className), (l.alt = p), (l.src = h), (b = !0), _.appendChild(l)
@@ -137,8 +137,8 @@ export var twemoji =
           )),
           (f = u.attributes(d, e))))
             f.hasOwnProperty($) &&
-              0 !== $.indexOf("on") &&
-              -1 === c.indexOf(" " + $ + "=") &&
+              $.indexOf("on") !== 0 &&
+              c.indexOf(" " + $ + "=") === -1 &&
               (c = c.concat(" ", $, '="', _(f[$]), '"'))
           c = c.concat("/>")
         }
@@ -160,7 +160,7 @@ export var twemoji =
         ($ = d.charCodeAt(e++)),
           c
             ? (f.push((65536 + ((c - 55296) << 10) + ($ - 56320)).toString(16)), (c = 0))
-            : 55296 <= $ && $ <= 56319
+            : $ >= 55296 && $ <= 56319
               ? (c = $)
               : f.push($.toString(16))
       return f.join(u || "-")
