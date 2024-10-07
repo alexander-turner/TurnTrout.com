@@ -20,10 +20,10 @@ publish: true
 title: "How I do research"
 lw-latest-edit: 2019-11-20T21:28:11.835Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "rationality"
   - "scholarship-&-learning"
-aliases: 
+aliases:
   - "how-i-do-research"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -31,6 +31,7 @@ date_published: 11/19/2019
 original_url: https://www.lesswrong.com/posts/e3Db4w52hz3NSyYqt/how-i-do-research
 skip_import: true
 ---
+
 > [!warning] Disclaimer
 > As of 2024, this is no longer an accurate representation of how I do research. I do not necessarily consider the examples I gave to be "virtuous" ways to do research (nor do I necessarily renounce them).
 
@@ -59,7 +60,7 @@ Don't formalize your thoughts too early
 Don't ask permission to think big thoughts
 : Don't worry about whether you have the [license](https://www.lesswrong.com/posts/dhj9dhiwhq3DX6W8z/hero-licensing) or background to come up with a solution. When I was starting out, I was too busy being fascinated by the problem to remember that I, you know, wasn't allowed to solve it.
 
-: Obviously, there are common-sense exceptions to this, mostly revolving around trying to run without any feet. It would be pretty silly to think about logical uncertainty without even knowing propositional logic. One of the advantages of immersing myself in a lot of math isn't just knowing more, but knowing what I don't know. 
+: Obviously, there are common-sense exceptions to this, mostly revolving around trying to run without any feet. It would be pretty silly to think about logical uncertainty without even knowing propositional logic. One of the advantages of immersing myself in a lot of math isn't just knowing more, but knowing what I don't know.
 
 : However, I think it's rare to secretly lack the basic skills to even start on the problem at hand. You'll probably know if you are, because all your thoughts keep coming back to the same kind of confusions about a formalism, or something. Then, you look for ways to resolve the confusion (possibly by asking a question on LW or in the MIRIx Discord), find the thing, and get back to work.
 

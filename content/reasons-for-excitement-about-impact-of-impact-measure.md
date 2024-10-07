@@ -20,10 +20,10 @@ publish: true
 title: "Reasons for Excitement about Impact of Impact Measure Research"
 lw-latest-edit: 2020-09-16T18:14:18.659Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "impact-regularization"
   - "AI"
-aliases: 
+aliases:
   - "reasons-for-excitement-about-impact-of-impact-measure"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -39,6 +39,7 @@ date_published: 02/27/2020
 original_url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 skip_import: true
 ---
+
 Can we get impact measurement _right_? Does there exist One Equation To Rule Them All?
 
 I think there’s a decent chance there _isn’t_ a simple airtight way to implement AUP which lines up with AUP<sub>conceptual</sub> , mostly because it’s just incredibly difficult in general to perfectly specify the reward function.
@@ -55,7 +56,7 @@ You might therefore wonder why I’m working on impact measurement.
 
 # Deconfusion
 
-Within Matthew Barnett’s [breakdown of how impact measures could help with alignment](https://www.lesswrong.com/posts/wJK944YqvFwjdbqCP/four-ways-an-impact-measure-could-help-alignment), I'm most excited about _impact measure research as deconfusion_. 
+Within Matthew Barnett’s [breakdown of how impact measures could help with alignment](https://www.lesswrong.com/posts/wJK944YqvFwjdbqCP/four-ways-an-impact-measure-could-help-alignment), I'm most excited about _impact measure research as deconfusion_.
 
 > [!quote] [MIRI's 2018 update](https://intelligence.org/2018/11/22/2018-update-our-new-research-directions/)
 >
@@ -83,7 +84,5 @@ In my opinion, research on AUP has yielded an unusually high rate of deconfusion
 
 <hr/>
 
-
-[^1]: When combined with [our empirical knowledge of the difficulty of reward function specification](https://vkrakovna.wordpress.com/2018/04/02/specification-gaming-examples-in-ai/), you might begin to suspect that there are lots of ways the agent might be incentivized to gain control, many openings through which power-seeking incentives can permeate – and your reward function would have to penalize all of these! If you were initially skeptical, this might make you think that power-seeking behavior may be more difficult to avoid than you initially thought. 
-
-[^2]: If we collectively think more and end up agreeing that AUP<sub>conceptual</sub> solves impact measurement, it would be interesting that you could solve such a complex, messy-looking problem in such a simple way. If, however, [CCC](/the-catastrophic-convergence-conjecture) ends up being false, I think that would also be a new and interesting fact not currently predicted by our models of alignment failure modes. 
+[^1]: When combined with [our empirical knowledge of the difficulty of reward function specification](https://vkrakovna.wordpress.com/2018/04/02/specification-gaming-examples-in-ai/), you might begin to suspect that there are lots of ways the agent might be incentivized to gain control, many openings through which power-seeking incentives can permeate – and your reward function would have to penalize all of these! If you were initially skeptical, this might make you think that power-seeking behavior may be more difficult to avoid than you initially thought.
+[^2]: If we collectively think more and end up agreeing that AUP<sub>conceptual</sub> solves impact measurement, it would be interesting that you could solve such a complex, messy-looking problem in such a simple way. If, however, [CCC](/the-catastrophic-convergence-conjecture) ends up being false, I think that would also be a new and interesting fact not currently predicted by our models of alignment failure modes.

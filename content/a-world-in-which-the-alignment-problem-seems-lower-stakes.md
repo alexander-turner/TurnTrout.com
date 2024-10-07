@@ -20,10 +20,10 @@ publish: true
 title: "A world in which the alignment problem seems lower-stakes"
 lw-latest-edit: 2021-07-08T15:16:27.530Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "instrumental-convergence"
   - "AI"
-aliases: 
+aliases:
   - "a-world-in-which-the-alignment-problem-seems-lower-stakes"
 lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
@@ -39,13 +39,14 @@ date_published: 07/08/2021
 original_url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 skip_import: true
 ---
-The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence). 
+
+The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence).
 
 In [_The Catastrophic Convergence Conjecture_](/the-catastrophic-convergence-conjecture), I wrote:
 
 ![](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)![](https://assets.turntrout.com/static/images/posts/d057729cc125ff7e4c1a99e1fab5c7936fb5cef537b9d02b.avif)
 
-But are there worlds where this isn't true? Consider a world where you supply a utility-maximizing AGI with a utility function. 
+But are there worlds where this isn't true? Consider a world where you supply a utility-maximizing AGI with a utility function.
 
 ![](https://assets.turntrout.com/static/images/posts/46b8706e0cfb81c5b9f90c9d8918201750ba1468a9065979.avif)
 <br/>Figure: The AGI is in a "separate part of the universe"; after the initial specification of the utility function, the left half of the universe evolves independently of the right half. Nothing you can do after specification can affect the AGI's half, and vice versa. No communication can take place between the two halves.
@@ -55,11 +56,12 @@ The only information you have about the other half is your utility. For simplici
 $$
 u_\text{human}(h) = u_\text{human}(h_\text{left})+u_\text{human}(h_\text{right}).
 $$
+
 If the AGI uses something like causal decision theory, then it won't try to kill you, or "seek power" over you. The effects of its actions have no causal influence over what happens in your half of the universe. Your universe's evolution adds a constant term to its expected utility.
 
 (Other decision theories might have it precommit to minimizing human utility unless it attains maximal AGI-utility from the left half of the universe-history, or some other shenanigans. This is beside the point I want to make in this post, but it's important to consider.)
 
-However, the setup is still interesting because 
+However, the setup is still interesting because
 
 1.  [Goodhart's law](https://www.lesswrong.com/posts/EbFABnst8LsidYs5Y/goodhart-taxonomy) still applies: if you give the AGI an incomplete proxy objective, you'll get suboptimal true performance.
 2.  [Value is still complex](https://www.lesswrong.com/tag/complexity-of-value): it's still hard to get the AGI to optimize the right half of the universe for human flourishing.
@@ -70,4 +72,4 @@ Alignment is still _hard_, and we still _want_ to get the AGI to do good things 
 To restate: Bostrom's [original instrumental convergence thesis](https://www.nickbostrom.com/superintelligentwill.pdf) needs to be applied carefully. The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence). I think I sometimes bump into reasoning that feels like "instrumental convergence, smart AI, & humans exist in the universe -> bad things happen to us / the AI finds a way to hurt us"; I think this is usually true, but not necessarily true, and so this extreme example illustrates how the implication can fail.
 
 > [!thanks]
->Thanks to John Wentworth for feedback on this post. Edited to clarify the broader point I'm making.
+> Thanks to John Wentworth for feedback on this post. Edited to clarify the broader point I'm making.

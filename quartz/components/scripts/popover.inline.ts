@@ -115,7 +115,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
       })
       // We want same page links clicked within the popover to move the popover window instead of the main window
       html.querySelectorAll("body a.same-page-link").forEach((link) => {
-        ; (link as HTMLLinkElement).href = escapeLeadingIdNumber((link as HTMLLinkElement).href)
+        ;(link as HTMLLinkElement).href = escapeLeadingIdNumber((link as HTMLLinkElement).href)
         appendToAttr(link, "href", "-popover")
       })
 

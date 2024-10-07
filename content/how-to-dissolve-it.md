@@ -20,10 +20,10 @@ publish: true
 title: "How to Dissolve It"
 lw-latest-edit: 2018-03-07T06:19:22.923Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "rationality"
   - "practical"
-aliases: 
+aliases:
   - "how-to-dissolve-it"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -31,6 +31,7 @@ date_published: 03/07/2018
 original_url: https://www.lesswrong.com/posts/argvWNNHZAz2MeM8C/how-to-dissolve-it
 skip_import: true
 ---
+
 In the last month and a half, I've had more (of what I believe to be) profound, creative insights to technical problems than in the five years prior. For example, I independently came up with the core insight behind [DenseNets](https://arxiv.org/abs/1608.06993) during the second lecture on convolutional neural nets in my Deep Learning class. I've noticed that these insights occur as byproducts of _good processes_ and having a _conducive mindset and physiology_ at that point in time. I'm going to focus on the former in this post.
 
 # End in Mind
@@ -53,6 +54,6 @@ In my experience, proper solution formulations are accompanied by a satisfying m
 
 I can't impart to you the exact feeling of using this technique properly, but I can make its fruits concrete by selecting a few things I've dissolved recently:
 
-- I've observed  $k$ samples from a normal distribution and recorded the mean and variance. New observations are going to come in, and I want to be able to assign some scalar  $c \in [-1,1]$ quantifying how unusual this looks for the distribution.
+- I've observed $k$ samples from a normal distribution and recorded the mean and variance. New observations are going to come in, and I want to be able to assign some scalar $c \in [-1,1]$ quantifying how unusual this looks for the distribution.
 - A binary classifier has observed a bunch of "dog" pictures, and we want it to be able to robustly communicate when it sees something new - knowing what it doesn't know.
 - I'm a reinforcement-learning agent named <span class="corrupted">redacted</span>, and I'd lo_ve t_o fetch things from other parts of your house for you, as quickly as possible.

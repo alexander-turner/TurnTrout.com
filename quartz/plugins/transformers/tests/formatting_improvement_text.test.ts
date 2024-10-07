@@ -26,14 +26,8 @@ describe("TextFormattingImprovement Plugin", () => {
         "This is a sentence[^1]. Another sentence[^2], and more text[^3]!",
         "This is a sentence.[^1] Another sentence,[^2] and more text![^3]",
       ],
-      [
-        "Is this correct[^2]?!",
-        "Is this correct?![^2]",
-      ],
-      [
-        "Is this correct[^2]?!",
-        "Is this correct?![^2]",
-      ],
+      ["Is this correct[^2]?!", "Is this correct?![^2]"],
+      ["Is this correct[^2]?!", "Is this correct?![^2]"],
     ])("Correctly formats footnotes.", (input: string, expected: string): void => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
@@ -202,9 +196,9 @@ describe("Mass transforms", () => {
   it.each([
     ["Let x := 5", "Let x ≝ 5"],
     ["a:=b:=c", "a≝b≝c"],
-    ["L1", "L<sub style=\"font-variant-numeric: lining-nums;\">1</sub>"],
-    ["L10", "L<sub style=\"font-variant-numeric: lining-nums;\">10</sub>"],
-    ["ILO10", "ILO10"]
+    ["L1", 'L<sub style="font-variant-numeric: lining-nums;">1</sub>'],
+    ["L10", 'L<sub style="font-variant-numeric: lining-nums;">10</sub>'],
+    ["ILO10", "ILO10"],
   ])("should perform transforms for %s", (input: string, expected: string) => {
     const result = massTransformText(input)
     expect(result).toBe(expected)

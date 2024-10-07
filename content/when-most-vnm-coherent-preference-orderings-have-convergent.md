@@ -126,4 +126,3 @@ This seems on-track to me. We now know [what instrumental convergence looks like
 > Thanks to Edouard Harris for pointing out that Definition 1 and Lemma 3 were originally incorrect.
 
 [^representative]: In terms of instrumental convergence, positive affine transformation never affects the [optimality probability](/power-seeking-beyond-MDPs#formal-justification) of different lottery sets. So for each (preference ordering) orbit element $\prec_\phi$, it doesn't matter what representative we select from each equivalence class over induced utility functions — so we may as well pick $u \circ \phi$!
-

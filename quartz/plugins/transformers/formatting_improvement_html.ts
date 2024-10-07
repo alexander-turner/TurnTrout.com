@@ -18,14 +18,12 @@ export function flattenTextNodes(
     return []
   }
 
-  if (node.type === 'text') {
+  if (node.type === "text") {
     return [node as Text]
   }
 
-  if (node.type === 'element' && 'children' in node) {
-    return node.children.flatMap((child) =>
-      flattenTextNodes(child, ignoreNode)
-    )
+  if (node.type === "element" && "children" in node) {
+    return node.children.flatMap((child) => flattenTextNodes(child, ignoreNode))
   }
 
   // For other node types (like comments), return an empty array
@@ -207,9 +205,7 @@ export function hyphenReplace(text: string) {
   // Handle dashes with potential spaces and optional marker character
   //  Being right after chr is a sufficient condition for being an em
   //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(
-    `((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`,
-  )
+  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
   // Want eg " - " to be replaced with "—"
   const surroundedDash = new RegExp(
     `(?<=[^\\s>]|^)${preDash.source}[~–—\-]+[ ]*(?<markerAfter>${chr}?)[ ]+`,
@@ -217,10 +213,7 @@ export function hyphenReplace(text: string) {
   )
 
   // Replace surrounded dashes with em dash
-  text = text.replace(
-    surroundedDash,
-    `$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>`,
-  )
+  text = text.replace(surroundedDash, `$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>`)
 
   // "Since--as you know" should be "Since—as you know"
   const multipleDashInWords = new RegExp(
@@ -307,7 +300,11 @@ function getFirstTextNode(node: Parent): Text | null {
  * 4. Identifies the text node after the link
  * 5. Moves acceptable punctuation from after the link to inside it
  */
-export const rearrangeLinkPunctuation = (node: Element, index: number | undefined, parent: Element) => {
+export const rearrangeLinkPunctuation = (
+  node: Element,
+  index: number | undefined,
+  parent: Element,
+) => {
   if (index === undefined || !parent) {
     return
   }
@@ -318,7 +315,7 @@ export const rearrangeLinkPunctuation = (node: Element, index: number | undefine
     linkNode = node
   } else if (node?.children && node.children.length > 0) {
     const lastChild = node.children[node.children.length - 1]
-    if ('tagName' in lastChild && lastChild.tagName === "a") {
+    if ("tagName" in lastChild && lastChild.tagName === "a") {
       linkNode = lastChild
     } else {
       return // No link nearby
@@ -329,7 +326,7 @@ export const rearrangeLinkPunctuation = (node: Element, index: number | undefine
 
   // Skip footnote links
   const href = linkNode.properties?.href
-  if (typeof href === 'string' && href.startsWith("#user-content-fn-")) {
+  if (typeof href === "string" && href.startsWith("#user-content-fn-")) {
     return
   }
 
@@ -342,7 +339,8 @@ export const rearrangeLinkPunctuation = (node: Element, index: number | undefine
     const firstTextNode: Text | null = getFirstTextNode(linkNode)
     if (firstTextNode && firstTextNode?.type === "text") {
       firstTextNode.value = quoteChar + firstTextNode.value
-    } else { // No text node found in linkNode
+    } else {
+      // No text node found in linkNode
       // Create new text node as first child of linkNode
       const newTextNode = { type: "text", value: quoteChar }
 
@@ -354,16 +352,20 @@ export const rearrangeLinkPunctuation = (node: Element, index: number | undefine
   const sibling = parent.children[index + 1]
   let textNode
 
-  if (sibling && 'type' in sibling) {
-    const hasAttrs = 'tagName' in sibling && 'children' in sibling
+  if (sibling && "type" in sibling) {
+    const hasAttrs = "tagName" in sibling && "children" in sibling
     if (sibling.type === "text") {
       textNode = sibling
-    } else if (hasAttrs && TEXT_LIKE_TAGS.includes(sibling.tagName) && sibling.children.length > 0) {
+    } else if (
+      hasAttrs &&
+      TEXT_LIKE_TAGS.includes(sibling.tagName) &&
+      sibling.children.length > 0
+    ) {
       textNode = sibling.children[0]
     }
   }
 
-  if (!textNode || !('value' in textNode) || !textNode.value) {
+  if (!textNode || !("value" in textNode) || !textNode.value) {
     return
   }
 
@@ -373,7 +375,7 @@ export const rearrangeLinkPunctuation = (node: Element, index: number | undefine
     linkNode.children.push({ type: "text", value: "" })
   }
   const lastChild = linkNode.children[linkNode.children.length - 1]
-  if (!('value' in lastChild)) {
+  if (!("value" in lastChild)) {
     return
   }
   while (ACCEPTED_PUNCTUATION.includes(firstChar) && textNode.value.length > 0) {
@@ -420,20 +422,23 @@ export function massTransformText(text: string): string {
  *  Check for ancestors satisfying certain criteria
  */
 interface ElementMaybeWithParent extends Element {
-  parent: ElementMaybeWithParent | null;
+  parent: ElementMaybeWithParent | null
 }
 
-export function hasAncestor(node: ElementMaybeWithParent, ancestorPredicate: (anc: Element) => boolean): boolean {
-  let ancestor: ElementMaybeWithParent | null = node;
+export function hasAncestor(
+  node: ElementMaybeWithParent,
+  ancestorPredicate: (anc: Element) => boolean,
+): boolean {
+  let ancestor: ElementMaybeWithParent | null = node
 
   while (ancestor) {
     if (ancestorPredicate(ancestor)) {
-      return true;
+      return true
     }
-    ancestor = ancestor.parent;
+    ancestor = ancestor.parent
   }
 
-  return false;
+  return false
 }
 
 function isCode(node: Element): boolean {
@@ -481,11 +486,11 @@ interface Options {
 }
 
 function toSkip(node: Element): boolean {
-  if (node.type === 'element') {
-    const elementNode = node as ElementMaybeWithParent;
-    return ['code', 'script', 'style'].includes(elementNode.tagName);
+  if (node.type === "element") {
+    const elementNode = node as ElementMaybeWithParent
+    return ["code", "script", "style"].includes(elementNode.tagName)
   } else {
-    return false;
+    return false
   }
 }
 
@@ -493,7 +498,11 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
   return (tree: Root) => {
     visit(tree, (node, index, parent) => {
       // A direct transform, instead of on the children of a <p> element
-      if (node.type === "text" && node.value && !hasAncestor(parent as ElementMaybeWithParent, isCode)) {
+      if (
+        node.type === "text" &&
+        node.value &&
+        !hasAncestor(parent as ElementMaybeWithParent, isCode)
+      ) {
         replaceRegex(
           node,
           index as number,
@@ -506,7 +515,11 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
               after: "",
             }
           },
-          (_nd: unknown, _idx: number, prnt: Parent & { properties?: { className?: string } }): boolean => {
+          (
+            _nd: unknown,
+            _idx: number,
+            prnt: Parent & { properties?: { className?: string } },
+          ): boolean => {
             const className = prnt.properties?.className
             return !!(className?.includes("fraction") || className?.includes("no-fraction"))
           },
@@ -516,7 +529,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
 
       rearrangeLinkPunctuation(node as Element, index, parent as Element)
       // Parent-less nodes are the root of the article
-      if ((!parent || !('tagName' in parent)) && node.type === "element") {
+      if ((!parent || !("tagName" in parent)) && node.type === "element") {
         transformElement(node, hyphenReplace, toSkip, false)
         transformElement(node, niceQuotes, toSkip, false)
         for (const transform of [
@@ -539,7 +552,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
         // Don't replace slashes in fractions, but give breathing room
         // to others
         const slashPredicate = (n: Element) => {
-          if (typeof n.properties.className === 'string') {
+          if (typeof n.properties.className === "string") {
             return !n.properties.className.includes("fraction") && n?.tagName !== "a"
           } else {
             return false
@@ -549,7 +562,6 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
           transformElement(node, fullWidthSlashes, toSkip)
         }
       }
-
     })
 
     // If skipFirstLetter is not set, or it's set but false, set the attribute

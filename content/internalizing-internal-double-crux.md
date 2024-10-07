@@ -98,4 +98,3 @@ Fire
 <hr/>
 
 [^crux]: Notice how related cruxes can (and should) be resolved in the same session. Resolution cannot happen if any part of you isn't _fully_ on board with whatever agreement you've come to - this feels like a small emptiness in the pit of my stomach, in my experience.
-

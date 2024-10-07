@@ -20,7 +20,6 @@ const REGEX_ACRONYM =
 const REGEX_ABBREVIATION = /(?<number>[\d\,]*\.?\d+)(?<abbreviation>[A-Zk]{1,})/g
 const combinedRegex = new RegExp(`${REGEX_ACRONYM.source}|${REGEX_ABBREVIATION.source}`, "g")
 
-
 export function replaceSCInNode(node: Text, index: number, parent: Parent): void {
   replaceRegex(
     node,

@@ -146,4 +146,3 @@ This new year, I'm going to become a less oblivious, less stupid, and less wrong
 <hr/>
 
 [^1]: I also still want to learn Bayes nets, category theory, get a much deeper understanding of probability theory, provability logic, and decision theory.
-

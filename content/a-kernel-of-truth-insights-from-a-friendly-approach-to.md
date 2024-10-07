@@ -67,6 +67,7 @@ Some part of me _insisted_ that the left-shift mapping
 $$
 (x_1, x_2,… )\mapsto (x_2, x_3,… ) :\ell^{\infty }\rightarrow \ell^{\infty}
 $$
+
 is "non-linear" because it incinerates $x_1$! But wait, brain, this totally _is_ linear, and it's also continuous with respect to the ambient supremum norm!
 
 Formally, a map $T$ is linear when $T(\alpha x + \beta y)=\alpha T(x) +\beta T(y)$.
@@ -97,11 +98,13 @@ But what if we want to differentiate the following function $L$, with range $\ma
 $$
  L(\mathbf{f}):=\int_{0}^{1} (\mathbf{f}(t))^{2} dt.
 $$
+
 How do you differentiate with respect to a function? I'm going to claim that
 
 $$
  L'_{\mathbf{f}}(\mathbf{g})=\int_{0}^{1} 2\mathbf{f}(t)\mathbf{g}(t) dt.
 $$
+
 It's not clear why this is true, or what it even means. Here's an intuition: at any given point, there are uncountably many partial derivatives in the function space $C[a,b]$ – there are many, many "directions" in which we could "push" a function $\mathbf{f}$ around. $L'_{\mathbf{f}}(\mathbf{g})$ gives us the partial derivative at $\mathbf{f}$ with respect to $\mathbf{g}$.
 
 This concept is important because it's what you use to prove e.g. that a line is the shortest continuous path between two points.
@@ -199,9 +202,9 @@ Alex
 > [!info] Edited after posting
 > Back in my [_Topology_ review](/topology-textbook-review), I discussed a similar phenomenon: continuity in multiple input dimensions requires not just continuity in each input variable, but in _all_ sequences converging to the point in question:
 > ![](https://assets.turntrout.com/static/images/posts/k6b4WRE.avif)
-> 
+>
 > > Continuity in the variables says that paths along the axes converge in the right way. But for continuity overall, we need all paths to converge in the right way. Directional continuity when the domain is $\mathbb{R}$ is a special case of this: continuity from below and from above if and only if continuity for all sequences converging topologically to $x$.
-> 
+>
 > Similarly, for a function to be differentiable, the existence of all of its partial derivatives isn't enough – you need derivatives for every possible approach to the point in question. Here, the existence of all of the partials automatically guarantees the derivatives for every possible approach, because there's a partial for every function.
 >
 > here we have the same, except we have (in an infinite-dimenional function space X) infinitely many "partial derivatives". so from that point of view it's not that surprising that a function "having a derivative at $f$" is actually quite rare/complicated.
@@ -257,7 +260,5 @@ And if I didn't have the help of `TheMajor`, I wouldn't have understood the func
 
 I'm probably going to finish up an epidemiology textbook, before moving on to complex analysis, microeconomics, or... something else – who knows!
 
-
-[^1]: Lines $y=mx+b$ ($b\neq 0$) aren't actually linear functions, because they don't go through the origin. Instead, they're affine. 
-
-[^2]: To be more specific, $f + \mathbb{C}g := \{f + \lambda g: \lambda \in \mathbb{C}\}$ is often an [affine subspace](https://en.wikipedia.org/wiki/Affine_space), because the zero function is not necessarily a member. 
+[^1]: Lines $y=mx+b$ ($b\neq 0$) aren't actually linear functions, because they don't go through the origin. Instead, they're affine.
+[^2]: To be more specific, $f + \mathbb{C}g := \{f + \lambda g: \lambda \in \mathbb{C}\}$ is often an [affine subspace](https://en.wikipedia.org/wiki/Affine_space), because the zero function is not necessarily a member.

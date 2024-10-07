@@ -47,4 +47,3 @@ After CFAR, there was a precious week when I channeled myself during these momen
 Weeks passed, and I slowly forgot. My experience of the workshop faded into a collection of moments: quietly gazing at the furious red skyline; laughing and singing despite the iceberg inching closer; hearing, and being heard. Ever-so-close bonds loosened, and then crumbled a bit, their essence blown away into the now-yawning distances between us.
 
 I want to take off the coat.
-

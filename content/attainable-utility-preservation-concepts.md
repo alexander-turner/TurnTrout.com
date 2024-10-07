@@ -20,10 +20,10 @@ publish: true
 title: "Attainable Utility Preservation: Concepts"
 lw-latest-edit: 2020-02-17T05:22:28.687Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "impact-regularization"
   - "AI"
-aliases: 
+aliases:
   - "attainable-utility-preservation-concepts"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -39,6 +39,7 @@ date_published: 02/17/2020
 original_url: https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
 skip_import: true
 ---
+
 ![](https://assets.turntrout.com/static/images/posts/hTnYTsJ.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/gwVocUy.avif) ![](https://assets.turntrout.com/static/images/posts/KPv2beS.avif)

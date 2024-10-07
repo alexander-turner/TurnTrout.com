@@ -33,20 +33,21 @@ skip_import: true
 ---
 
 > [!quote] Quotes
+>
 > > [!quote]Amodei et al., _[Concrete Problems in AI Safety](https://arxiv.org/abs/1606.06565)_
 > >
 > > Suppose a designer wants an RL agent to achieve some goal, like moving a box from one side of a room to the other. Sometimes the most effective way to achieve the goal involves doing something unrelated and destructive to the rest of the environment, like knocking over a vase of water that is in its path. If the agent is given a reward only for moving the box, it will probably knock over the vase.
-> 
+>
 > > [!quote]`TurnTrout`, _[Worrying about the Vase: Whitelisting](/whitelisting-impact-measure)_
-> > 
-> >  Side effect avoidance is a major open problem in AI safety. I present a robust, transferable, easily- and more safely-trainable, partially reward hacking-resistant impact measure.
+> >
+> > Side effect avoidance is a major open problem in AI safety. I present a robust, transferable, easily- and more safely-trainable, partially reward hacking-resistant impact measure.
 
 An _impact measure_ is a means by which change in the world may be evaluated and penalized; such a measure is not a replacement for a utility function, but rather an additional precaution thus overlaid.
 
 While I'm fairly confident that whitelisting contributes meaningfully to short- and mid-term AI safety, I remain skeptical of its [robustness to scale](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale). Should several challenges be overcome, whitelisting may indeed be helpful for excluding swathes of unfriendly AIs from the outcome space. [^1] Furthermore, the approach allows easy shaping of agent behavior in a wide range of situations.
 
 > [!note]
-> Segments of this post are lifted from my paper, whose latest revision may be found [here](https://www.overleaf.com/read/jrrjqzdjtxjp); for Python code, look no further than [this repository](https://github.com/alexander-turner/Whitelist/_Learning). 
+> Segments of this post are lifted from my paper, whose latest revision may be found [here](https://www.overleaf.com/read/jrrjqzdjtxjp); for Python code, look no further than [this repository](https://github.com/alexander-turner/Whitelist/_Learning).
 
 # Summary
 
@@ -70,11 +71,12 @@ These approaches have some problems:
 - Not allowing generative previews, eliminating a means of safely previewing agent preferences (see latent space whitelisting below).
 - Being dominated by random effects throughout the universe at-large; note that nothing about particle distance dictates that it be related to _anything happening on planet Earth_.
 - Equally penalizing breaking and fixing vases (due to the symmetry of the above metric):
-> 	[!quote]Victoria Krakovna, _[Measuring and Avoiding Side Effects Using Reachability](https://vkrakovna.wordpress.com/2018/06/05/measuring-and-avoiding-side-effects-using-relative-reachability/)_
->	
-> 	For example, the agent would be equally penalized for breaking a vase and for preventing a vase from being broken, though the first action is clearly worse. This leads to “overcompensation” (“[offsetting](https://arbital.com/p/low_impact/)") behaviors: when rewarded for preventing the vase from being broken, an agent with a low impact penalty rescues the vase, collects the reward, and then breaks the vase anyway (to get back to the default outcome).
 
-- Not actually _measuring impact _in a meaningful way.
+  >     [!quote]Victoria Krakovna, _[Measuring and Avoiding Side Effects Using Reachability](https://vkrakovna.wordpress.com/2018/06/05/measuring-and-avoiding-side-effects-using-relative-reachability/)_
+  >
+  >     For example, the agent would be equally penalized for breaking a vase and for preventing a vase from being broken, though the first action is clearly worse. This leads to “overcompensation” (“[offsetting](https://arbital.com/p/low_impact/)") behaviors: when rewarded for preventing the vase from being broken, an agent with a low impact penalty rescues the vase, collects the reward, and then breaks the vase anyway (to get back to the default outcome).
+
+- Not actually \_measuring impact \_in a meaningful way.
 
 Whitelisting falls prey to none of these.
 
@@ -108,10 +110,10 @@ Therefore, you avoid breaking vases by default.
 
 Here are some notes to head off confusion:
 
-- We are _not _whitelisting entire states or transitions between them; we whitelist specific changes in our beliefs about the ontological decomposition of the current state.[^3]
+- We are \_not \_whitelisting entire states or transitions between them; we whitelist specific changes in our beliefs about the ontological decomposition of the current state.[^3]
 - The whitelist is in addition to whatever utility or reward function we supply to the agent.
 - Whitelisting is compatible with counterfactual approaches. For example, we might penalize a transition after its "quota" has been surpassed, where the quota is how many times we would have observed that transition had the agent not acted.
-	- This implies the agent will do no worse than taking no action at all. However, this may still be undesirable. This problem will be discussed in further detail.
+  - This implies the agent will do no worse than taking no action at all. However, this may still be undesirable. This problem will be discussed in further detail.
 - The whitelist is provably closed under transitivity.
 - The whitelist is directed; $a\to b \neq b\to a$.
 
@@ -124,6 +126,7 @@ Assume that the agent models objects as points $z \in \mathbb{R}^d$, the $d$\-di
 $$
 \text{Dissimilarity}(z_1, z_2) := \min_{z_{start}, z_{end} \in \textit{whitelist}} \Big[ d(z_1, z_{start}) + d(z_2, z_{end})\Big],
 $$
+
 where $d(\cdot,\cdot)$ is the Euclidean distance.
 
 Basically, the dissimilarity for an observed change is the distance to the closest whitelisted change. Visualizing these changes as one-way wormholes may be helpful.
@@ -138,15 +141,15 @@ Whitelisting asserts that we can effectively encapsulate a large part of what "c
 Nonetheless, we may not be able to perfectly express what it means to have side-effects: the whitelist may be incomplete, the latent space insufficiently granular, and the allowed plans sub-optimal. However, the agent still becomes _more_ robust against:
 
 - Incomplete specification of the utility function.
-	- Likewise, an incomplete whitelist means missed opportunities, but not unsafe behavior.
+  - Likewise, an incomplete whitelist means missed opportunities, but not unsafe behavior.
 - Out-of-distribution situations (as long as the objects therein _roughly_ fit in the provided ontology).
 - Some varieties of reward hacking. For example, equipped with a can of blue spray paint and tasked with finding the shortest path of blue tiles to the goal, a normal agent may learn to paint red tiles blue, while a whitelist-enabled agent would incur penalties for doing so ($\textit{redTile} \to \textit{blueTile} \not \in whitelist$).
 - Dangerous exploration. While this approach does not attempt to achieve _safe exploration _(also acting safely during training), an agent with some amount of foresight will learn to avoid actions which likely lead to non-whitelisted side effects.
-	- I believe that this can be further sharpened using _today's_ machine learning technology, leveraging deep Q-learning to predict both action values and expected transitions.
-		- This allows querying the human about whether particularly-inhibiting transitions belong on the whitelist. For example, if the agent notices that a bunch of otherwise-rewarding plans are being held up by a particular transition, it could ask for permission to add it to the whitelist.
+  - I believe that this can be further sharpened using *today's* machine learning technology, leveraging deep Q-learning to predict both action values and expected transitions.
+    - This allows querying the human about whether particularly-inhibiting transitions belong on the whitelist. For example, if the agent notices that a bunch of otherwise-rewarding plans are being held up by a particular transition, it could ask for permission to add it to the whitelist.
 - Assigning astronomically-large weight to side effects happening throughout the universe. Presumably, we can just have the whitelist include transitions going on out there - we don't care as much about dictating the exact mechanics of distant supernovae.
-	- If an agent _did_ somehow come up with plans that involved blowing up distant stars, that would indeed constitute [astronomical waste](https://nickbostrom.com/astronomical/waste.html).<sup>a triple pun?</sup> Whitelisting doesn't _solve_ the problem of assigning too much weight to events outside our corner of the neighborhood, but it's an improvement.
-		  - Logical uncertainty may be our friend here, such that most reasonable plans incur roughly the same level of interstellar penalty noise.
+  - If an agent *did* somehow come up with plans that involved blowing up distant stars, that would indeed constitute [astronomical waste](https://nickbostrom.com/astronomical/waste.html).<sup>a triple pun?</sup> Whitelisting doesn't *solve* the problem of assigning too much weight to events outside our corner of the neighborhood, but it's an improvement.
+    - Logical uncertainty may be our friend here, such that most reasonable plans incur roughly the same level of interstellar penalty noise.
 
 ## Results
 
@@ -162,13 +165,13 @@ At reasonable levels of noise, the whitelist-enabled agent completed all levels 
 
 > [!example] Assumptions
 > I am not asserting that these assumptions necessarily hold.
-> 
+>
 > - The agent has some world model or set of observations which can be decomposed into a set of discrete objects.
-> 	- Furthermore, there is no need to identify objects on multiple levels (e.g., a forest, a tree in the forest, and that tree's bark need not all be identified concurrently).
-> 	- Not all objects need to be represented - what do we make of a 'field', or the 'sky', or 'the dark places between the stars visible to the naked eye'? Surely, these are not all _objects_.
+>   - Furthermore, there is no need to identify objects on multiple levels (e.g., a forest, a tree in the forest, and that tree's bark need not all be identified concurrently).
+>   - Not all objects need to be represented - what do we make of a 'field', or the 'sky', or 'the dark places between the stars visible to the naked eye'? Surely, these are not all _objects_.
 > - We have an ontology which reasonably describes (directly or indirectly) the vast majority of negative side effects.
-> 	- Indirect descriptions of negative outcomes means that even if an undesirable transition isn't immediately penalized, it generally results in a number of penalties. Think: pollution.
-> 	- Latent space whitelisting: the learned latent space encapsulates most of the relevant side effects. This is a slightly weaker assumption.
+>   - Indirect descriptions of negative outcomes means that even if an undesirable transition isn't immediately penalized, it generally results in a number of penalties. Think: pollution.
+>   - Latent space whitelisting: the learned latent space encapsulates most of the relevant side effects. This is a slightly weaker assumption.
 > - Said ontology remains in place.
 
 # Problems
@@ -240,8 +243,8 @@ Let's step back into the human realm for a moment. Consider some outcome - say, 
 - I set in motion a moderately-complex chain of events which convince someone to start the fire.
 - I provoke a butterfly effect which ends up starting the fire.
 - I provoke a butterfly effect which ends up convincing someone to start a fire which they:
-	- were predisposed to starting.
-	- were not predisposed to starting.
+  - were predisposed to starting.
+  - were not predisposed to starting.
 
 Taken literally, I don't know that there's actually a significant difference in "responsibility" between these outcomes - if I take the action, the effect happens; if I don't, it doesn't. My initial impression is that uncertainty about the results of our actions pushes us to view some effects as "under our control" and some as "out of our hands". Yet, _if_ we had complete knowledge of the outcomes of our actions, and we took an action that landed us in a California-forest-fire world, whom could we blame but ourselves?[^6]
 
@@ -267,31 +270,27 @@ I recommend reading it - it's to-the-point, and he makes good points.
 
 Here are three further thoughts:
 
-- Intuitively-accessible vantage points can help us explore our unstated assumptions and more easily extrapolate outcomes. If less mental work has to be done to put oneself in the scenario, more energy can be dedicated to finding nasty edge cases. For example, it's probably harder to realize [all the things that go wrong with naive impact measures like raw particle displacement](https://intelligence.org/2016/12/28/ai-alignment-why-its-hard-and-where-to-start/#low-impact-agents), since it's just a _weird _frame through which to view the evolution of the world. I've found it to be substantially easier to extrapolate through the frame of something like whitelisting**.**[^7]
-	- I've already adjusted for the fact that one's own ideas are often more familiar and intuitive, and then adjusted for the fact that I probably didn't adjust enough the first time.
+- Intuitively-accessible vantage points can help us explore our unstated assumptions and more easily extrapolate outcomes. If less mental work has to be done to put oneself in the scenario, more energy can be dedicated to finding nasty edge cases. For example, it's probably harder to realize [all the things that go wrong with naive impact measures like raw particle displacement](https://intelligence.org/2016/12/28/ai-alignment-why-its-hard-and-where-to-start/#low-impact-agents), since it's just a \_weird \_frame through which to view the evolution of the world. I've found it to be substantially easier to extrapolate through the frame of something like whitelisting**.**[^7]
+  - I've already adjusted for the fact that one's own ideas are often more familiar and intuitive, and then adjusted for the fact that I probably didn't adjust enough the first time.
 - Imperfect results are often left unstated, wasting time and obscuring useful data. That is, people cannot see what has been tried and what roadblocks were encountered.
-- Promising approaches** **may be conceptually-close to correct solutions. My intuition is that whitelisting actually _almost works_ in the limit in a way that might be important.
+- Promising approaches\*\* \*\*may be conceptually-close to correct solutions. My intuition is that whitelisting actually _almost works_ in the limit in a way that might be important.
 
 # Conclusion
 
 Although somewhat outside the scope of this post, whitelisting permits the concise shaping of reward functions to get behavior that might be difficult to learn using other methods.[^8] This method also seems fairly useful for aligning short- and medium-term agents. While encountering some new challenges, whitelisting ameliorates or solves many problems with previous impact measures.
 
-
 [^1]: Even an idealized form of whitelisting is not _sufficient_ to align an otherwise-unaligned agent. However, the same argument can be made against having an off-switch; if we haven't formally proven the alignment of a seed AI, having more safeguards might be better than throwing out the seatbelt to shed deadweight and get some extra speed. Of course, there are also legitimate arguments to be made on the basis of timelines and optimal time allocation.
-
-[^2]: Humor aside, we would have no luxury of "catching up on alignment theory" if our code doesn't work on the first go - that is, if the AI still functions, yet differently than expected.
+[^2]:
+    Humor aside, we would have no luxury of "catching up on alignment theory" if our code doesn't work on the first go - that is, if the AI still functions, yet differently than expected.
 
     Luckily, humans are great at producing flawless code on the first attempt.
 
 [^3]: A potentially-helpful analogy: similarly to how Bayesian networks decompose the problem of representing a (potentially extremely large) joint probability table to that of specifying a handful of conditional tables, whitelisting attempts to decompose the messy problem of quantifying state change into a set of comprehensible ontological transitions.
-
 [^4]: Technically, at 6,250 words, Eliezer's article falls short of the [7,500 required for "novella" status](https://en.wikipedia.org/wiki/Novella).
-
 [^5]: Is there another name for this?
-
 [^6]: I do think that "responsibility" is an important part of our moral theory, deserving of [rescue](https://arbital.com/p/rescue_utility/).
-
-[^7]: In particular, I found a particular variant of [Murphyjitsu](https://radimentary.wordpress.com/2018/02/07/hammertime-day-10-murphyjitsu/) helpful: I visualized Eliezer commenting "actually, this fails terribly because..." on one of my posts, letting my mind fill in the rest.
+[^7]:
+    In particular, I found a particular variant of [Murphyjitsu](https://radimentary.wordpress.com/2018/02/07/hammertime-day-10-murphyjitsu/) helpful: I visualized Eliezer commenting "actually, this fails terribly because..." on one of my posts, letting my mind fill in the rest.
 
     In my opinion, one of the most important components of doing AI alignment work is iteratively applying Murphyjitsu and Resolve cycles to your ideas.
 

@@ -95,7 +95,7 @@ describe("Favicon Utilities", () => {
         .mockImplementationOnce(() =>
           localPngExists
             ? Promise.resolve({ size: 1000 } as fs.Stats)
-            : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+            : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
         )
         .mockImplementationOnce(() => Promise.resolve({ size: 1000 } as fs.Stats))
     }
@@ -245,16 +245,15 @@ describe("Favicon Utilities", () => {
       it("Should not replace children with [span] if more than one child", () => {
         const node: Element = h("p", {}, [
           "My email is ",
-          h("a",
+          h(
+            "a",
             {
               href: "https://mailto:throwaway@turntrout.com",
-              class: "external"
+              class: "external",
             },
-            [
-              h("code", {}, ["throwaway@turntrout.com"])
-            ]
+            [h("code", {}, ["throwaway@turntrout.com"])],
           ),
-          "."
+          ".",
         ])
 
         insertFavicon(MAIL_PATH, node)
@@ -264,7 +263,7 @@ describe("Favicon Utilities", () => {
         // First child is text (period)
         const expectedChild = h("span", { style: "white-space: nowrap;" }, [
           { type: "text", value: "." },
-          CreateFaviconElement(MAIL_PATH)
+          CreateFaviconElement(MAIL_PATH),
         ])
         expect(lastChild).toMatchObject(expectedChild)
       })
@@ -352,7 +351,10 @@ describe("downloadImage", () => {
   })
 
   it("should throw if fetch response has no body", async () => {
-    const mockResponse = new Response(null, { status: 200, headers: { "Content-Type": "image/png" } })
+    const mockResponse = new Response(null, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
     await runTest(mockResponse, false)
   })
 
@@ -371,7 +373,7 @@ describe("writeCacheToFile", () => {
   beforeEach(() => {
     jest.resetAllMocks()
     urlCache.clear()
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
   })
 
   it("should write the urlCache to file", () => {

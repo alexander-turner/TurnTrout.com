@@ -39,13 +39,14 @@ date_published: 06/03/2018
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 ---
+
 > [!success]
 > One data point for careful planning, the unapologetic pursuit of fulfillment, and success. Of particular interest to up-and-coming AI safety researchers, this post chronicles how I made a change in my PhD program to work more directly on AI safety, overcoming significant institutional pressure in the process.
 
 It's hard to believe how much I've grown and grown up in these last few months, and how nearly every change was borne of deliberate application of the Sequences.
 
 - I left a relationship that wasn't right.
-- I met reality without flinching: the specter of an [impossible, unfair challenge](https://www.lesswrong.com/posts/sYgv4eYH82JEsTD34/beyond-the-reach-of-god); the idea that everything and everyone I care about could _actually be in serious trouble _should no one act; [the realization](https://www.lesswrong.com/posts/HnC29723hm6kJT7KP/critch-on-taking-ai-risk-seriously) that people should do something[^1], and that I am one of those people (are you?).
+- I met reality without flinching: the specter of an [impossible, unfair challenge](https://www.lesswrong.com/posts/sYgv4eYH82JEsTD34/beyond-the-reach-of-god); the idea that everything and everyone I care about could \_actually be in serious trouble \_should no one act; [the realization](https://www.lesswrong.com/posts/HnC29723hm6kJT7KP/critch-on-taking-ai-risk-seriously) that people should do something[^1], and that I am one of those people (are you?).
 - I attended a [CFAR workshop](http://rationality.org/) and experienced incredible new ways of interfacing with myself and others. This granted me such superpowers as (in ascending order): _[permanent insecurity resolution](/internalizing-internal-double-crux)_, _figuring out what I want from major parts of my life and finding a way to reap the benefits with minimal downside_, and _having awesome CFAR friends_.
 - I ventured into the depths of my discomfort zone, returning with the bounty of a new love: a new career.
 - I followed that love, even at risk of my graduate career and tens of thousands of dollars of loans. Although the decision was calculated, you better believe it was still scary.
@@ -60,7 +61,7 @@ I came across several openings, including a summer internship at Berkeley's [Cen
 
 > OK, I'm really skeptical that I can plausibly compete this year, but applying would be a valuable information-gathering move with respect to where I should most focus my efforts.
 
-I opened _[Concrete Problems in AI Safety](https://arxiv.org/abs/1606.06565)_, saw 29 pages of reading, had less than 29 pages of ego to deplete, and sat down. 
+I opened _[Concrete Problems in AI Safety](https://arxiv.org/abs/1606.06565)_, saw 29 pages of reading, had less than 29 pages of ego to deplete, and sat down.
 
 > This is ridiculous. I'm not going to get it.
 >
@@ -111,11 +112,11 @@ I contacted friends on the CFAR staff, interfaced with my university's confident
 > What "obvious" moves can I make to improve my decision-making process? What would I wish I'd done if I just went through with the switch _now_?
 
 - I continued a habit I have cultivated since beginning the Sequences: gravitating towards the arguments of intelligent people who disagree with me, and determining whether they have new information or perspectives I have yet to properly consider. _What would it feel like to be me in a world in which I am totally wrong?_
-	- Example: While reading [the perspectives of attendees](https://futureoflife.org/2017/01/17/principled-ai-discussion-asilomar/) of the '17 Asilomar conference, I noticed that Dan Weld said something I didn't agree with. You would not believe how quickly I clicked his interview.
+  - Example: While reading [the perspectives of attendees](https://futureoflife.org/2017/01/17/principled-ai-discussion-asilomar/) of the '17 Asilomar conference, I noticed that Dan Weld said something I didn't agree with. You would not believe how quickly I clicked his interview.
 - I carefully read the chapter summaries of [_Decisive: How to Make Better Choices in Life and Work_](https://www.amazon.com/Decisive-Make-Better-Choices-Life/dp/0307956393) (having read the book in full earlier this year in anticipation of this kind of scenario).
 - I did a [pre-mortem](https://en.wikipedia.org/wiki/Pre-mortem): "I've switched my research to AI safety. It's one year later, and I now realize this was a terrible move - why?", taking care of the few reasons which surfaced.
 - I internal double crux'ed fundamental emotional conflicts about what could happen, about the importance of my degree to my identity, and about the kind of person I want to become.
-	- I prepared myself to [lose](http://www.hpmor.com/chapter/19), mindful that the objective is _not_ to satisfy that part of me which longs to win debates. Also, idea inoculation and status differentials.
+  - I prepared myself to [lose](http://www.hpmor.com/chapter/19), mindful that the objective is *not* to satisfy that part of me which longs to win debates. Also, idea inoculation and status differentials.
 - I weighed the risks in my mind, squaring my jaw and "mentally staring at each potential negative outcome".
 
 ## Gears Integrity
@@ -148,12 +149,10 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 <hr/>
 
-
 [^1]: My secret to being able to [continuously](/set-theory-textbook-review) [soak](/AI-textbook-review) [up](/linear-algebra-textbook-review) [math](/all-of-statistics-textbook-review) [is](/first-analysis-textbook-review) that I _enjoy it_. However, it wasn't immediately obvious that this would be the case, and only the intensity of my desire to step up actually got me to start studying. Only then, after occupying myself in earnest with those pages of Greek glyphs, did I realize that it's _fun_.
-
 [^2]: This event marked my discovery of the mental movement detailed in _[How to Dissolve It](/how-to-dissolve-it)_; it has since paid further dividends in both novel ideas and clarity of thought.
-
-[^3]: I've since updated away from this being true for humans in practice, but I felt it would be dishonest to edit my thought process after the fact.
+[^3]:
+    I've since updated away from this being true for humans in practice, but I felt it would be dishonest to edit my thought process after the fact.
 
     Additionally, I did not fit any aspect of this story to the Sequences _post factum_; every reference was explicitly considered at the time (e.g. remembering that specific post on how people don't usually give a serious effort _even when everything may be at stake_).
 
@@ -161,19 +160,18 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
     - Speak in terms of the [concrete problems in AI safety](https://arxiv.org/abs/1606.06565) to avoid immediately getting pattern-matched.
     - Frame project ideas (in part) with respect to their relevance to current ML systems.
-	- Explore [all your funding options](http://www.xriskfunding.com), including:
-		-  [OpenPhilanthropy](https://www.openphilanthropy.org/focus/global-catastrophic-risks/potential-risks-advanced-artificial-intelligence/open-philanthropy-project-ai-fellows-program#examples)
-		- [Berkeley Existential Risk Initiative](http://existence.org/)
-		- [Future of Life Institute](https://futureoflife.org/grants-rfp/)
-	    - [Paul Christiano's funding for independent alignment research](https://docs.google.com/document/d/1NIg4OnQyhWGR01fMVTcxpz8jDd68JdDIyQb0ZZyB-go/edit?usp=sharing)
+    - Explore [all your funding options](http://www.xriskfunding.com), including:
+      - [OpenPhilanthropy](https://www.openphilanthropy.org/focus/global-catastrophic-risks/potential-risks-advanced-artificial-intelligence/open-philanthropy-project-ai-fellows-program#examples)
+      - [Berkeley Existential Risk Initiative](http://existence.org/)
+      - [Future of Life Institute](https://futureoflife.org/grants-rfp/)
+        - [Paul Christiano's funding for independent alignment research](https://docs.google.com/document/d/1NIg4OnQyhWGR01fMVTcxpz8jDd68JdDIyQb0ZZyB-go/edit?usp=sharing)
 
-[^5]: I'd like to emphasize that support for AI safety research is quickly becoming more mainstream in the professional AI community, and may soon become the majority position (if it is not already).
+[^5]:
+    I'd like to emphasize that support for AI safety research is quickly becoming more mainstream in the professional AI community, and may soon become the majority position (if it is not already).
 
     Even though ideas are best judged by their merits and not by their popular support, it can be emotionally important in these situations to remember that if you are concerned, you are _not_ on the fringe. For example, 1,273 AI researchers have [publicly declared their support](https://futureoflife.org/ai-principles/) for the Future of Life Institute's AI principles.
 
     > [!quote] [AI Researchers on AI Risk](http://slatestarcodex.com/2015/05/22/ai-researchers-on-ai-risk/) (2015)
-    > 	
-    > 	A survey of AI researchers ([Muller & Bostrom, 2014](http://www.nickbostrom.com/papers/survey.pdf)) finds that on average they expect a 50% chance of human-level AI by 2040 and 90% chance of human-level AI by 2075. On average, 75% believe that superintelligence (“machine intelligence that greatly surpasses the performance of every human in most professions”) will follow within thirty years of human-level AI. There are some reasons to worry about sampling bias based on e.g. people who take the idea of human-level AI seriously being more likely to respond (though see the attempts made to control for such in the survey) but taken seriously it suggests that most AI researchers think there’s a good chance this is something we’ll have to worry about within a generation or two.
-
+    > A survey of AI researchers ([Muller & Bostrom, 2014](http://www.nickbostrom.com/papers/survey.pdf)) finds that on average they expect a 50% chance of human-level AI by 2040 and 90% chance of human-level AI by 2075. On average, 75% believe that superintelligence (“machine intelligence that greatly surpasses the performance of every human in most professions”) will follow within thirty years of human-level AI. There are some reasons to worry about sampling bias based on e.g. people who take the idea of human-level AI seriously being more likely to respond (though see the attempts made to control for such in the survey) but taken seriously it suggests that most AI researchers think there’s a good chance this is something we’ll have to worry about within a generation or two.
 
 [^6]: Objectives are subject to change.

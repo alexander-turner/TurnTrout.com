@@ -10,7 +10,7 @@ const config = {
   coverageDirectory: "coverage",
 
   // A preset that is used as a base for Jest's configuration
-  preset: 'ts-jest',
+  preset: "ts-jest",
 
   // The test environment that will be used for testing
   testEnvironment: "jsdom",
@@ -18,16 +18,22 @@ const config = {
   // A map from regular expressions to paths to transformers
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
-      useESM: true,
-    }],
-    '^.+\\.(js|jsx)$': ['babel-jest', {
-      presets: [
-        ['@babel/preset-env', { targets: { node: 'current' } }],
-        ['@babel/preset-react', { runtime: 'automatic', importSource: 'preact' }]
-      ],
-    }],
+    "^.+\\.(ts|tsx)$": [
+      "ts-jest",
+      {
+        tsconfig: "tsconfig.json",
+        useESM: true,
+      },
+    ],
+    "^.+\\.(js|jsx)$": [
+      "babel-jest",
+      {
+        presets: [
+          ["@babel/preset-env", { targets: { node: "current" } }],
+          ["@babel/preset-react", { runtime: "automatic", importSource: "preact" }],
+        ],
+      },
+    ],
   },
 
   moduleNameMapper: {

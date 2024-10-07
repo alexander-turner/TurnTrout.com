@@ -222,4 +222,3 @@ Learn things quickly, note your confusions, and correct them later when the Anki
 # Conclusion
 
 I knew about the "[read easier textbooks](https://www.lesswrong.com/posts/qwdupkFd6kmeZHYXy/build-small-skills-in-the-right-order)" advice already, but I didn't apply it. Perhaps I just didn't recognize a chance to apply it. The same forces of chaos and entropy and madness which prevented my applying e.g. Luke Muelhauser's advice, may prevent you from applying this post's advice. If you think any of this advice might help you, I recommend setting up a plan _now_ for how and when you'll implement it.
-

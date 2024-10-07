@@ -206,4 +206,3 @@ This bit of basic theory will hopefully allow for things like principled classif
 ---
 
 I had vague pre-theoretic intuitions about "defection", and now I feel more capable of reasoning about what is and isn't a defection. In particular, I'd been confused by the difference between [power-seeking](/seeking-power-is-often-convergently-instrumental-in-mdps) and defection, and now I'm not.
-

@@ -255,4 +255,3 @@ The following problem was admittedly confusing at first, but I had an overwhelmi
     Now, maybe it would have been faster to just learn the math behind diagonalization or some other method of proof, but I think there was tremendous value in learning to fall in love with the process - to commit yourself fully to the joy of discovery and thought.
 
     I can certainly tell you that I wouldn't have made it so far so quickly down the research list if this journey didn't feel like one of the most beautiful things I've ever done.
-

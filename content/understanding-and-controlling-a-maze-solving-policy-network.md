@@ -785,4 +785,3 @@ Understanding, predicting, and controlling goal formation seems like a core chal
     This is because the convolutional nature of the network, and the kernel sizes and strides in particular, mean that convolutional layers can only pass messages one "square" at a time. There's no global attention at all, and no dense linear layers until the very end of the forward pass.
 
     If the cheese were in the middle of the observation, the cheese pixels would affect $10\times 10=100$ activations in this channel at this layer.
-

@@ -61,8 +61,8 @@ Back in MATS 3.0, Stefan had previously noticed this phenomenon in GPT-2-small:
 
 [Basic Facts about Language Model Internals](https://www.lesswrong.com/posts/PDLfpRwSynu73mxGw/basic-facts-about-language-model-internals-1#_Writing_Weights_Grow_Throughout_The_Network_And_Reading_Weights_Are_Constant) also finds a growth in the norms of the attention-out matrices $W_O$ and the norms of MLP out matrices $W_{\rm out}$ ("writing weights"), while they find stable norms for $W_Q$, $W_K$, and $W_{\rm in}$ ("reading weights"):
 
-> [!quote] [Basic Facts about Language Model Internals](https://www.lesswrong.com/posts/PDLfpRwSynu73mxGw/basic-facts-about-language-model-internals-1#_Writing_Weights_Grow_Throughout_The_Network_And_Reading_Weights_Are_Constant) 
-> 
+> [!quote] [Basic Facts about Language Model Internals](https://www.lesswrong.com/posts/PDLfpRwSynu73mxGw/basic-facts-about-language-model-internals-1#_Writing_Weights_Grow_Throughout_The_Network_And_Reading_Weights_Are_Constant)
+>
 > ![https://assets.turntrout.com/static/images/posts/qh8w4tmnimfqrwd5cmtu.avif](https://assets.turntrout.com/static/images/posts/qh8w4tmnimfqrwd5cmtu.avif)
 
 # Comparison of various transformer models
@@ -302,4 +302,3 @@ The plot below also explains the difference in L2 norm between actual `mlp_out` 
 [^8]: Seeing the exponential growth ($\propto$ `mlp_out`) here would not be necessary but would be sufficient as evidence for theory 1 and against theory 2. This is because random vectors might qualitatively differ from typical residual stream activations and not reproduce the typical behaviour. If they _do_ however reproduce the `mlp_out` scaling, this is unlikely to be coincidence.
 [^9]: Note that we used TransformerLens to test all models, which (by default) does a couple of weight-rewriting tricks (such as `fold_ln`, `center_writing_weights`) that do _not_ change the model output, but _might_ affect the regularization.
 [^10]: Randomly resampled `resid_mid` activations, taken from positions 1 to 6 to avoid BOS and padding tokens.
-

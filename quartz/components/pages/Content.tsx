@@ -2,7 +2,8 @@ import { htmlToJsx } from "../../util/jsx"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 import { buildNestedList } from "../TableOfContents"
 import {
-  TURNTROUT_FAVICON_PATH, LESSWRONG_FAVICON_PATH
+  TURNTROUT_FAVICON_PATH,
+  LESSWRONG_FAVICON_PATH,
 } from "../../plugins/transformers/linkfavicons"
 
 const turntroutFavicon = <img src={TURNTROUT_FAVICON_PATH} class="favicon" alt="" />
@@ -94,19 +95,26 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
   )
 }
 
-const lessWrongFavicon = <img src={LESSWRONG_FAVICON_PATH} class="favicon" alt=""/>
+const lessWrongFavicon = <img src={LESSWRONG_FAVICON_PATH} class="favicon" alt="" />
 
 function lessWrongQuestion(url: string): JSX.Element {
-return <blockquote class="callout question" data-callout="question">
-<div class="callout-title">
-                  <div class="callout-icon"></div>
-                  <div class="callout-title-inner"><p>Question</p></div>
+  return (
+    <blockquote class="callout question" data-callout="question">
+      <div class="callout-title">
+        <div class="callout-icon"></div>
+        <div class="callout-title-inner">
+          <p>Question</p>
+        </div>
       </div>
       <p>
-        This was <a href={url} class="external alias" target="_blank" rel="noopener noreferrer">originally posted as a question on LessWrong.</a>
+        This was{" "}
+        <a href={url} class="external alias" target="_blank" rel="noopener noreferrer">
+          originally posted as a question on LessWrong.
+        </a>
         {lessWrongFavicon}
       </p>
     </blockquote>
+  )
 }
 
 export default (() => Content) satisfies QuartzComponentConstructor

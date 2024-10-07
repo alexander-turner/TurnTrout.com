@@ -166,4 +166,3 @@ skip_import: true
 : > \[Google’s Insider Trading Policy\] describes company-wide policies that address the risks of insider trading, **such as a prohibition on any Google employee hedging Google stock**; and periodic blackout windows when no Google employee may trade Google stock.
 :
 : I'll look more into this, but this probably kills most workarounds.
-

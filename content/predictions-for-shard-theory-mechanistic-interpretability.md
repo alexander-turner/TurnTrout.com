@@ -241,4 +241,3 @@ When we statistically analyze a large batch of randomly generated mazes, we will
 Any predictive power of step-distance between the decision square and cheese is an artifact of the shorter chain of "correct" stochastic outcomes required to take the cheese when the step-distance is short. ( ?? %)
 
 [^1]: Excluding trivial patches like "replace layer activations with the activations for an identical maze where the cheese is at the top right corner."
-

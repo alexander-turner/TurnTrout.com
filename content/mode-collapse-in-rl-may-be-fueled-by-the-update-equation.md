@@ -21,17 +21,18 @@ title: "Mode collapse in RL may be fueled by the update equation"
 lw-latest-edit: 2023-06-24T18:23:46.663Z
 lw-is-linkpost: "false"
 authors: Alex Turner and Michael Einhorn
-tags: 
- - "AI"
- - "reinforcement-learning"
-aliases: 
- - "mode-collapse-in-rl-may-be-fueled-by-the-update-equation"
+tags:
+  - "AI"
+  - "reinforcement-learning"
+aliases:
+  - "mode-collapse-in-rl-may-be-fueled-by-the-update-equation"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 06/19/2023
 original_url: https://www.lesswrong.com/posts/A7RgYuYH4HywNeYWD/mode-collapse-in-rl-may-be-fueled-by-the-update-equation
 skip_import: true
 ---
+
 **TL;DR:** We present an advantage variant which, in certain settings, does not train an optimal policy, but instead uses a fixed reward to update a policy a fixed amount from initialization. Non-tabular empirical results seem mixed: The policy doesn't mode-collapse, but has unclear convergence properties.
 
 **Summary:** Many policy gradient methods allow a network to extract arbitrarily many policy updates from a single kind of reinforcement event (e.g. for outputting tokens related to weddings). Alex proposes a slight modification to the advantage equation, called "action-conditioned TD error" (ACTDE). ACTDE ensures that the network doesn't converge to an "optimal" policy (these almost always put infinite logits on a single action). Instead, ACTDE updates the network by a fixed number of logits.
@@ -208,6 +209,7 @@ ACTDE seems to avoid mode collapse in simple tabular setups. We showed that ACTD
 We'd be interested in the results of using RLHF on a language model using ACTDE. Email Michael at [`einhorn.michael1@gmail.com`](mailto:einhorn.michael1@gmail.com) for any questions about the code.
 
 **Contributions:**
+
 - Alex came up with the modified advantage equation, illustrated with toy examples, and wrote most of this post.[^7]
 - Michael implemented and tested PPO, and ACTDE on both prisoner's dilemmas and text adventure games. Code is available at [`trl_textworld`.](https://github.com/MichaelEinhorn/trl-textworld)[^8]
 

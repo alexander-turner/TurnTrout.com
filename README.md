@@ -1,4 +1,4 @@
-# Code health 
+# Code health
 
 Static code analysis by [`DeepSource`](deepsource.com).
 

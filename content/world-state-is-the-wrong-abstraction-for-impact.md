@@ -20,11 +20,11 @@ publish: true
 title: "World State is the Wrong Abstraction for Impact"
 lw-latest-edit: 2020-04-22T21:42:10.102Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "understanding-the-world"
   - "impact-regularization"
   - "AI"
-aliases: 
+aliases:
   - "world-state-is-the-wrong-abstraction-for-impact"
 lw-sequence-title: "Reframing Impact"
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
@@ -40,13 +40,14 @@ date_published: 10/01/2019
 original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 ---
+
 ![](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/bimkCyz.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/uC0LySG.avif)
 
-![](https://assets.turntrout.com/static/images/posts/64N3tKB.avif )
+![](https://assets.turntrout.com/static/images/posts/64N3tKB.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/giAuRyY.avif)
 
@@ -60,9 +61,9 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/u0CMsnj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/UGMcfsy.avif )
+![](https://assets.turntrout.com/static/images/posts/UGMcfsy.avif)
 
-![](https://assets.turntrout.com/static/images/posts/Jidk86s.avif  )
+![](https://assets.turntrout.com/static/images/posts/Jidk86s.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/6Ecn3ug.avif)
 
@@ -74,25 +75,25 @@ skip_import: true
 
 ![](https://assets.turntrout.com/static/images/posts/LYNGAta.avif)
 
-![](https://assets.turntrout.com/static/images/posts/j0pWEA1.avif )
+![](https://assets.turntrout.com/static/images/posts/j0pWEA1.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/BINRNvJ.avif)
 
-![](https://assets.turntrout.com/static/images/posts/C6aYsBj.avif )
+![](https://assets.turntrout.com/static/images/posts/C6aYsBj.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/d9q2zBy.avif)
 
->! These existential crises also muddle our impact algorithm. This isn't what you'd see if impact were primarily about the world state.
+> ! These existential crises also muddle our impact algorithm. This isn't what you'd see if impact were primarily about the world state.
 
 ![](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/q09LBrl.avif)
 
-![](https://assets.turntrout.com/static/images/posts/zVkGE6q.avif  )
+![](https://assets.turntrout.com/static/images/posts/zVkGE6q.avif)
 
-![](https://assets.turntrout.com/static/images/posts/GEwXYwT.avif ) ![](https://assets.turntrout.com/static/images/posts/CPCaLoM.avif)
+![](https://assets.turntrout.com/static/images/posts/GEwXYwT.avif) ![](https://assets.turntrout.com/static/images/posts/CPCaLoM.avif)
 
-![](https://assets.turntrout.com/static/images/posts/wLogljp.avif )
+![](https://assets.turntrout.com/static/images/posts/wLogljp.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/tiKGyYq.avif)
 
@@ -106,10 +107,9 @@ How did we go wrong?
 >
 > When you are faced with an unanswerable question—a question to which it seems impossible to even imagine an answer—there is a simple trick that can turn the question solvable.
 >
-> Asking “Why do I have free will?” or “Do I have free will?” sends you off thinking about tiny details of the laws of physics, so distant from the macroscopic level that you couldn’t begin to see them with the naked eye. And you’re asking “Why is  $X$ the case?” where $X$ may not be coherent, let alone the case.
+> Asking “Why do I have free will?” or “Do I have free will?” sends you off thinking about tiny details of the laws of physics, so distant from the macroscopic level that you couldn’t begin to see them with the naked eye. And you’re asking “Why is $X$ the case?” where $X$ may not be coherent, let alone the case.
 >
 > “Why do I think I have free will?,” in contrast, is guaranteed answerable. You do, in fact, believe you have free will. This belief seems far more solid and graspable than the ephemerality of free will. And there is, in fact, some nice solid chain of cognitive cause and effect leading up to this belief.
-
 
 I think what gets you is asking the question "what things are impactful?" instead of "why do I think things are impactful?". Then, you substitute the easier-feeling question of "how different are these world states?". Your fate is sealed; you've anchored yourself on a Wrong Question.
 
@@ -117,16 +117,16 @@ At least, that's what _I_ did.
 
 > [!exercise]
 > Someone (me, early last year says that impact is closely related to change in object identities.
-> 
+>
 > ![](https://assets.turntrout.com/static/images/posts/pnztldk.avif)
-> 
+>
 > Find at least two scenarios which score as low impact by this rule but as high impact by your intuition, or vice versa.
-> 
+>
 > You have 3 minutes.
-> 
-> >! Gee, let's see... Losing your keys, the torture of humans on Iniron, being locked in a room, flunking a critical test in college, losing a significant portion of your episodic memory, ingesting a pill which makes you think murder is OK, changing your discounting to be completely myopic, having your heart broken, getting really dizzy, losing your sight.
+>
+> > ! Gee, let's see... Losing your keys, the torture of humans on Iniron, being locked in a room, flunking a critical test in college, losing a significant portion of your episodic memory, ingesting a pill which makes you think murder is OK, changing your discounting to be completely myopic, having your heart broken, getting really dizzy, losing your sight.
 > >
-> >! That's three minutes for me, at least (its length reflects how long I spent coming up with ways I had been wrong).
+> > ! That's three minutes for me, at least (its length reflects how long I spent coming up with ways I had been wrong).
 
 ## Appendix: Avoiding Side Effects
 

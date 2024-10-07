@@ -380,4 +380,3 @@ Grader optimization is about how the agent _thinks,_ it's about the way in which
 
 [^5]: Not that I think this has a snowflake's chance in hell of working in time. But it seemed important to show that not all indirect normativity is grader-optimization.
 [^6]: Earlier this year, I [analyzed](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=HFdJShX4F7Hztfxrw) how brute-force plan search might exploit this scheme for using an ELK direct translator.
-

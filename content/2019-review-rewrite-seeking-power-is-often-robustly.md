@@ -21,10 +21,10 @@ publish: true
 title: "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
 lw-latest-edit: 2021-01-02T01:12:51.101Z
 lw-is-linkpost: "true"
-tags: 
+tags:
   - "AI"
   - "instrumental-convergence"
-aliases: 
+aliases:
   - "2019-review-rewrite-seeking-power-is-often-robustly"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -32,22 +32,23 @@ date_published: 12/23/2020
 original_url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
 skip_import: true
 ---
-For the 2019 LessWrong review, I've completely rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated, without sacrificing the broad accessibility or the cute drawings of the original. 
+
+For the 2019 LessWrong review, I've completely rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated, without sacrificing the broad accessibility or the cute drawings of the original.
 
 > [!thanks]
-> Big thanks to `diffractor`, Emma Fickel, Vanessa Kosoy, Steve Omohundro, Neale Ratzlaff, and Mark Xu for reading / giving feedback on this new version. 
+> Big thanks to `diffractor`, Emma Fickel, Vanessa Kosoy, Steve Omohundro, Neale Ratzlaff, and Mark Xu for reading / giving feedback on this new version.
 
 # Self-review
 
 One year later, I remain excited about this post, from its ideas, to its formalisms, to its implications. I think it helps us formally understand [part of the difficulty of the alignment problem](/the-catastrophic-convergence-conjecture). This formalization of power and the [_Attainable Utility Landscape_](/attainable-utility-landscape) have together given me a [novel frame for understanding alignment and corrigibility](/non-obstruction-motivates-corrigibility).
 
-Since last December, I’ve spent several hundred hours expanding the formal results and rewriting [the paper](https://arxiv.org/pdf/1912.01683.pdf); I’ve generalized the theorems, added rigor, and taken great pains to spell out what the theorems do and do not imply. 
+Since last December, I’ve spent several hundred hours expanding the formal results and rewriting [the paper](https://arxiv.org/pdf/1912.01683.pdf); I’ve generalized the theorems, added rigor, and taken great pains to spell out what the theorems do and do not imply.
 
 However, there are a few things I wish I’d gotten right the first time around. Therefore, I’ve restructured and rewritten much of the post. Let’s walk through some of the changes.
 
 ## "Instrumentally convergent" replaced by "robustly instrumental"
 
-[Like](/on-good-formal-definitions) [many](/game-theoretic-definition-of-deception) good things, this terminological shift was prompted by a critique from Andrew Critch. 
+[Like](/on-good-formal-definitions) [many](/game-theoretic-definition-of-deception) good things, this terminological shift was prompted by a critique from Andrew Critch.
 
 Roughly speaking, this work considered an action to be "instrumentally convergent" if it’s very probably optimal, with respect to a probability distribution on a set of reward functions. This definition is natural. You can even find it echoed by Tony Zador in the [_Debate on Instrumental Convergence_](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell):
 
@@ -55,11 +56,11 @@ Roughly speaking, this work considered an action to be "instrumentally convergen
 
 (Zador uses “set of scenarios” instead of “set of reward functions”, but he is implicitly reasoning: “with respect to my beliefs about what kind of objective functions we will implement and what states the agent will confront in deployment, I predict that deadly actions have a negligible probability of being optimal.”)
 
-While discussing this definition of "instrumental convergence", Andrew asked me: “what, exactly, is doing the _converging_? There is no limiting process. Optimal policies just _are_.” 
+While discussing this definition of "instrumental convergence", Andrew asked me: “what, exactly, is doing the _converging_? There is no limiting process. Optimal policies just _are_.”
 
-It would be more appropriate to say that an action is "instrumentally robust" instead of "instrumentally convergent": the instrumentality is _robust_ to the choice of goal. However, I found this to be ambiguous: "instrumentally robust" could be read as “the agent is being robust for instrumental reasons.” 
+It would be more appropriate to say that an action is "instrumentally robust" instead of "instrumentally convergent": the instrumentality is _robust_ to the choice of goal. However, I found this to be ambiguous: "instrumentally robust" could be read as “the agent is being robust for instrumental reasons.”
 
-I settled on "robustly instrumental", rewriting the paper’s introduction as follows: 
+I settled on "robustly instrumental", rewriting the paper’s introduction as follows:
 
 > [!quote] New introduction to the paper
 >
@@ -81,25 +82,25 @@ The original post claimed that “optimal policies tend to seek power”, _perio
 At the time, I’d wondered whether this was still true in general via some other result. The answer is "no’: it _isn’t_ always more probable for optimal policies to navigate towards states which give them more control over the future. Here’s a surprising counterexample which doesn’t even depend on my formalization of "power."
 
 ![](https://assets.turntrout.com/static/images/posts/6e57042283c8eb981b2be10d266bfcf804d06653cfc04809.avif)
-<br/>Figure: The paths are one-directional; the agent can’t go back from **3** to **1**. The agent starts at **1**. Under a certain state reward distribution, the vast majority of agents go _up_ to **2**.   
-  
+<br/>Figure: The paths are one-directional; the agent can’t go back from **3** to **1**. The agent starts at **1**. Under a certain state reward distribution, the vast majority of agents go _up_ to **2**.
+
 However, any reasonable notion of "power" must consider having no future choices (at state **2**) to be less powerful than having one future choice (at state **3**). For more detail, see Section 6 and Appendix B.3 of [the paper](https://arxiv.org/pdf/1912.01683.pdf)
 
 ![](https://assets.turntrout.com/static/images/posts/0cabde68e0eb61a5bb325beab9ddd645139198303d6ae308.avif)
-<br/>Figure: When reward is 
- IID across states according to the quadratic CDF $F(x) := x^2$ on the unit interval, then with respect to reward functions drawn from this distribution, going _up_ has about a 91% chance of being optimal when the discount rate $\gamma = .12$.    
-  
-If you’re curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the _up_ trajectory, we’re checking whether it maximizes discounted return. Therefore, the probability that _up_ is optimal is  
-   
+<br/>Figure: When reward is
+IID across states according to the quadratic CDF $F(x) := x^2$ on the unit interval, then with respect to reward functions drawn from this distribution, going _up_ has about a 91% chance of being optimal when the discount rate $\gamma = .12$.
+
+If you’re curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the _up_ trajectory, we’re checking whether it maximizes discounted return. Therefore, the probability that _up_ is optimal is
+
 $$
 \begin{align*}
 \mathbb{P}_{R\sim\mathcal{D}}\bigg(R(\textbf{2})\geq \max\big(&(1-\gamma) R(\textbf{3}) + (1-\gamma) \gamma R(\textbf{4}) + \gamma^2 R(\textbf{5}),\\
 &(1-\gamma) R(\textbf{3}) + (1-\gamma) \gamma R(\textbf{4}) + \gamma^2 R(\textbf{6})\big)\bigg).
 \end{align*}
 $$
-  
+
 Weighted averages of IID draws from a left-skew distribution will look more Gaussian and therefore have fewer large outliers than the left-skew distribution does. Thus, going _right_ will have a lower optimality probability.
 
 ---
 
-No matter how you cut it, the relationship just isn’t true in general. Instead, [the post](/seeking-power-is-often-convergently-instrumental-in-mdps) now sketches sufficient conditions under which power-seeking behavior is more probably optimal – conditions which are proven in the paper. 
+No matter how you cut it, the relationship just isn’t true in general. Instead, [the post](/seeking-power-is-often-convergently-instrumental-in-mdps) now sketches sufficient conditions under which power-seeking behavior is more probably optimal – conditions which are proven in the paper.

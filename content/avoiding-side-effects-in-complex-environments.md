@@ -22,10 +22,10 @@ title: "Avoiding Side Effects in Complex Environments"
 lw-latest-edit: 2020-12-12T00:43:10.508Z
 lw-is-linkpost: "true"
 authors: Alex Turner and Neale Ratzlaff
-tags: 
+tags:
   - "AI"
   - "impact-regularization"
-aliases: 
+aliases:
   - "avoiding-side-effects-in-complex-environments"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
@@ -33,6 +33,7 @@ date_published: 12/12/2020
 original_url: https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
 skip_import: true
 ---
+
 ![](https://assets.turntrout.com/static/images/posts/2526ca684eae62e8d1fc595b335044d649df02f30f2331b2.avif)
 
 Our most recent AUP paper was accepted to NeurIPS 2020 as a spotlight presentation.
@@ -50,7 +51,7 @@ Here are some slides from our spotlight talk ([publicly available](https://nips.
 
 ![](https://assets.turntrout.com/static/images/posts/fc33883d8d8accf1d88b5281873b491a4656bf87bd738cc7.avif)
 
-![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif )
+![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif)
 <br/>Figure: Before now, side effect avoidance was only demonstrated in tiny tabular domains.
@@ -73,17 +74,18 @@ Here are some slides from our spotlight talk ([publicly available](https://nips.
 ![](https://assets.turntrout.com/static/images/posts/ceedff3b01f8e4dd70c483030f9855e623643aa85c40b226.avif)
 <br/>Figure: Step three: we're done! We have the AUP reward function. Now we just learn to optimize it.
 
-The full paper is [here](https://arxiv.org/pdf/2006.06547.pdf). Our [`github.io` page](https://avoiding-side-effects.github.io) summarizes our results, with a side-by-side comparison of AUP to the baseline for randomly selected levels from the training distribution. The videos show you exactly what's happening, which is why I'm not explaining it here. 
+The full paper is [here](https://arxiv.org/pdf/2006.06547.pdf). Our [`github.io` page](https://avoiding-side-effects.github.io) summarizes our results, with a side-by-side comparison of AUP to the baseline for randomly selected levels from the training distribution. The videos show you exactly what's happening, which is why I'm not explaining it here.
 
 # Open questions
 
-- In _Box _AI safety gridworld, AUP required >5 randomly generated auxiliary reward functions in order to consistently avoid the side effect. It only required one here in order to do well. Why?
+- In \_Box \_AI safety gridworld, AUP required >5 randomly generated auxiliary reward functions in order to consistently avoid the side effect. It only required one here in order to do well. Why?
 - We ran four different sets of randomly generated levels, and ran three model seeds on each. There was a lot of variance across the sets of levels. How often does AUP do relatively worse due to the level generation?
-
 
 ![](https://assets.turntrout.com/static/images/posts/a2648ed5ddce10481462919b3c0008d232082e2eebcea498.avif)
 <br/>Figure: Smoothed episode length curves for each set of randomly generated levels. Lower is better.
-- Why did we only need one latent space dimension for the auxiliary reward function to make sense? Figure 4 suggests that increasing the dimension actually _worsened _side effect score.
+
+- Why did we only need one latent space dimension for the auxiliary reward function to make sense? Figure 4 suggests that increasing the dimension actually \_worsened \_side effect score.
+
   - Wouldn't more features make the auxiliary reward function easier to learn, which makes the AUP penalty function more sensible?
 
 - Compared to the other conditions, AUP did far better on `append-spawn` than on the seemingly easier `prune-still-easy`. But `append-spawn` seems far more difficult. What's up with this?

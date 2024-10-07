@@ -80,7 +80,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                   let text = applyTextTransforms(customToString(heading))
                   text = stripHtml(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
-                  
+
                   const slug = slugify(text)
 
                   toc.push({
@@ -88,7 +88,9 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                     text,
                     slug,
                   })
-                  logger.info(`Added TOC entry: depth=${heading.depth}, text="${text}", slug="${slug}"`)
+                  logger.info(
+                    `Added TOC entry: depth=${heading.depth}, text="${text}", slug="${slug}"`,
+                  )
                 } else if (node.type === "footnoteDefinition") {
                   hasFootnotes = true
                 }

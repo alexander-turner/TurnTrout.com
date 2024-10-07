@@ -20,8 +20,8 @@ publish: true
 title: "Lightness and Unease"
 lw-latest-edit: 2018-03-21T05:24:26.289Z
 lw-is-linkpost: "false"
-tags: 
-aliases: 
+tags:
+aliases:
   - "lightness-and-unease"
 lw-sequence-title: "Becoming Stronger"
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
@@ -37,6 +37,7 @@ date_published: 03/21/2018
 original_url: https://www.lesswrong.com/posts/EvKWNRkJgLosgRDSa/lightness-and-unease
 skip_import: true
 ---
+
 # Light
 
 ## Month 1

@@ -20,11 +20,11 @@ publish: true
 title: "Emotionally Confronting a Probably-Doomed World: Against Motivation Via Dignity Points"
 lw-latest-edit: 2022-04-17T17:24:53.405Z
 lw-is-linkpost: "false"
-tags: 
+tags:
   - "practical"
   - "rationality"
   - "community"
-aliases: 
+aliases:
   - "emotionally-confronting-a-probably-doomed-world-against"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -32,6 +32,7 @@ date_published: 04/10/2022
 original_url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
 skip_import: true
 ---
+
 > [!note]
 > This article was written [in ignorance](/digital-minimalism) of the alignment community’s reaction to Eliezer’s “[Death with Dignity](https://www.lesswrong.com/posts/j9Q8bRmwCgXRYAgcJ/miri-announces-new-death-with-dignity-strategy)” post. The first part of this article responds to how I suspect some people reacted to that post, while the second part is my take on the post itself.
 
@@ -43,7 +44,7 @@ We have been taught what comes next, in this kind of story. Since, by assumption
 
 As `AI_WAIFU` [said](https://www.lesswrong.com/posts/j9Q8bRmwCgXRYAgcJ/miri-announces-new-death-with-dignity-strategy?commentId=QMfBRH3rydbukCosb#comments): “Fuck. That. Noise.”
 
-We do not live in a story. We can, in fact, just assess the situation, and then do what makes the most sense, what makes us strongest and happiest. The expected future of the universe is—by assumption—_sad and horrible_, and yet where is the ideal-agency theorem which says I must be downtrodden and glum about it? 
+We do not live in a story. We can, in fact, just assess the situation, and then do what makes the most sense, what makes us strongest and happiest. The expected future of the universe is—by assumption—_sad and horrible_, and yet where is the ideal-agency theorem which says I must be downtrodden and glum about it?
 
 # Against retreat
 
@@ -66,17 +67,19 @@ Our civilization is incompetent. Gee, that sucks. But we don’t have to suck to
 
 - Set up communal institutions which _actually have good incentives_.
 - Build out infrastructure for alignment research and training, so that smart young people want to try their hand at alignment research.
+
   - Probably more people should skill up as managers, so we can have more capacity via high-quality organizations like Redwood Research. I don’t know how to do this, and cannot offer advice.
 
 - Set up infrastructure in areas where our society is decrepit—can we do better
+
   - on childcare?
   - on healthcare? (amortize the fixed costs of medical tourism over a pool of individuals?)
 
 - Build stronger and better and smarter norms
+
   - around event culture,
   - around dating
     - I applaud Eliezer for funding a community matchmaker last year; I want more people trying ideas!
-
 
 - Brainstorm over and over and over what institutions may help with miracles, and then build them. Offer large cash prizes for ideas which top thinkers agree is valuable.
 
@@ -102,7 +105,6 @@ As for the individual—
 
 <hr/>
 
-
 Along those lines, I want to become as strong as I can. Maybe it won’t be enough to win, but maybe it will. And hot damn, do I want to become strong. Because it’s awesome, because it’s fun, and because I want to win.
 
 Anyways, what do I mean by “strong”? Do I mean that I’ve absorbed lots of textbooks, that I know lots of facts, that I have lots of impressive skills? No. Here, “strong” means strong at _the basics of thinking_:
@@ -113,7 +115,7 @@ Anyways, what do I mean by “strong”? Do I mean that I’ve absorbed lots of 
 
 I think that many people think that becoming more rational involves being _harder on yourself_; imagining yet fiercer and nitpickier critics, and coming out unscathed anyways because you were so paranoid. You checked more boxes, defended against more biases, and examined the evidence even harder.
 
-That’s... not how it works. I may write elsewhere about how _I_ have found it to work. But I will say this: More is possible. 
+That’s... not how it works. I may write elsewhere about how _I_ have found it to work. But I will say this: More is possible.
 
 I used to think I had absorbed the Sequences, that I had acquired most of the available art of rationality, and the rest I would have to build or experience for myself. I was wrong. Early this year, my brain got pinged [in just the right way](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=hhuLBManRziZXbkHo) by Eliezer’s _Mad Investor Chaos_ fiction, and—_click_!
 
@@ -130,20 +132,19 @@ And this is what I have done in a few months. Who could I grow into in ten years
 >
 > When Earth's prospects are that far underwater in the basement of the logistic success curve, it may be hard to feel motivated about continuing to fight, since doubling our chances of survival will only take them from 0% to 0%.
 >
-> That's why I would suggest reframing the problem - especially on an emotional level - to helping humanity die with dignity, or rather, since even this goal is realistically unattainable at this point, die with slightly more dignity than would otherwise be counterfactually obtained. 
-> 
-> ... 
-> 
-> So don't get your heart set on that "not die at all" business. Don't invest all your emotion in a reward you probably won't get. Focus on dying with dignity - that is something you can actually obtain, even in this situation. After all, if you help humanity die with even one more dignity point, you yourself die with one hundred dignity points! Even if your species dies an incredibly undignified death, for you to have helped humanity go down with even slightly more of a real fight, is to die an extremely dignified death. 
-> 
-> ... 
-> 
+> That's why I would suggest reframing the problem - especially on an emotional level - to helping humanity die with dignity, or rather, since even this goal is realistically unattainable at this point, die with slightly more dignity than would otherwise be counterfactually obtained.
+>
+> ...
+>
+> So don't get your heart set on that "not die at all" business. Don't invest all your emotion in a reward you probably won't get. Focus on dying with dignity - that is something you can actually obtain, even in this situation. After all, if you help humanity die with even one more dignity point, you yourself die with one hundred dignity points! Even if your species dies an incredibly undignified death, for you to have helped humanity go down with even slightly more of a real fight, is to die an extremely dignified death.
+>
+> ...
+>
 > But if enough people can contribute enough bits of dignity like that, wouldn't that mean we didn't die at all? Yes, but again, don't get your hopes up. Don't focus your emotions on a goal you're probably not going to obtain. Realistically, we find a handful of projects that contribute a few more bits of counterfactual dignity; get a bunch more not-specifically-expected bad news that makes the first-order object-level situation look even worse (where to second order, of course, the good Bayesians already knew that was how it would go); and then we all die.
-
 
 Again, I am not, in this post, disputing Eliezer’s object-level model. I have supposed he is correct about our probable doom. Obviously, if we are in a probably-doomed world, I will keep that in mind. I do actually want to _win_, and finding winning plans requires entangling my brain with the details of each expected danger. Sharp danger awaits when you lose sight of the fact that reality is allowed to kill you.
 
-_However—_if you work at all like I do, I think this is _not_ how you should interface with yourself or your motivational system.[^2] It is like saying:
+_However—\_if you work at all like I do, I think this is \_not_ how you should interface with yourself or your motivational system.[^2] It is like saying:
 
 > This vault door was professionally secured, and you are no professional burglar. Yes, your mother is starving inside, but you are unlikely to open the door before she dies. Therefore, you should search for _dignified_ plans—plans which let you seize miracles in worlds where the door was installed incorrectly. But please don’t expect to actually open the door. Don’t get your hopes up.
 
@@ -152,26 +153,22 @@ A search for _dignified plans_ is different from a search for plans which _get m
 > [!quote] [Trying to Try](https://www.readthesequences.com/Trying-To-Try)
 >
 > Want to try to make a million dollars? Buy a [lottery ticket](https://www.readthesequences.com/LotteriesAWasteOfHope). Your odds of winning may not be very good, but you did try, and trying was what you wanted. In fact, you tried your _best_, since you only had one dollar left after buying lunch. Maximizing the odds of goal achievement using available resources: is this not intelligence?
-> 
+>
 > It’s only when you want, above all else, to _actually_ flip the switch—without quotation and without consolation prizes just for trying—that you will _actually_ put in the effort to _actually_ maximize the probability.
-> 
+>
 > But if all you want is to “maximize the probability of success using available resources,” then that’s the easiest thing in the world to convince yourself you’ve done. The very first plan you hit upon will serve quite well as “maximizing”—if necessary, you can generate an inferior alternative to prove its optimality. And any tiny resource that you care to put in will be what is “available.” Remember to congratulate yourself on putting in 100% of it!
-> 
+>
 > Don’t try your best. Win, or fail. There is no best.
-
-
-
 
 I hope you do not let this “dignity” orientation cloud your intent to win.[^3] In fact, I think you should lean in the opposite direction, and sharpen your intent. _Search only for plans which actually win, given your best understanding of the AI alignment problem. Be honest with yourself; do not flinch away from reality; do not take your eyes off the goal._
 
 I’m not going to waste my time searching for dignified plans (which maximize humanity's probability of survival). Because I do have a mother in that vault, and a father, and a brother. In fact, there’s a whole damn planet in there. It’s my home, and it’s yours, too. And if we do stare down defeat together—let’s make that remaining time valiant and exciting and awesome.
 
-[^1]: Eliezer wrote: 
-    
-    > We cannot fight at maximum all the time, and some times are more important than others. (Namely, when the logistic success curve seems relatively more sloped; those times are relatively more important.)
-    
-    This is a good point. I am not advocating burnout. This is indeed a resource to conserve for situations closer to the 50% success rate, or for a targeted push at a particularly impactful moment. I _am_ advocating growth and development in a way which is _fun and awesome_, which pushes limits without straining endurance. Perhaps this is not how most people work. But it’s how I can work.
-    
-[^2]: Furthermore, do not "conflate feelings with beliefs". You do not have to believe the future is rosy in order to feel good and strong and healthy and to give the problem everything you’ve got (without pushing to burnout). Feelings are not beliefs! I think of certain feelings as (harder-to-control) _actions_.
+[^1]: Eliezer wrote:
 
+    > We cannot fight at maximum all the time, and some times are more important than others. (Namely, when the logistic success curve seems relatively more sloped; those times are relatively more important.)
+
+    This is a good point. I am not advocating burnout. This is indeed a resource to conserve for situations closer to the 50% success rate, or for a targeted push at a particularly impactful moment. I _am_ advocating growth and development in a way which is _fun and awesome_, which pushes limits without straining endurance. Perhaps this is not how most people work. But it’s how I can work.
+
+[^2]: Furthermore, do not "conflate feelings with beliefs". You do not have to believe the future is rosy in order to feel good and strong and healthy and to give the problem everything you’ve got (without pushing to burnout). Feelings are not beliefs! I think of certain feelings as (harder-to-control) _actions_.
 [^3]: The point is not that Eliezer said “do not ‘try your best’” and now he has pivoted away from win-oriented-thinking, _aha, gotcha!_—The point is that I think the original orientation is wise and healthy and strengthening, and the new orientation is not.

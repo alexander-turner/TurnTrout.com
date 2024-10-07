@@ -21,10 +21,10 @@ title: "Bruce Wayne and the Cost of Inaction"
 lw-latest-edit: 2022-10-03T21:46:11.379Z
 lw-is-linkpost: "false"
 authors: Alex Turner and Josh Turner
-tags: 
+tags:
   - "rationality"
   - "fiction"
-aliases: 
+aliases:
   - "bruce-wayne-and-the-cost-of-inaction"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
@@ -32,6 +32,7 @@ date_published: 09/30/2022
 original_url: https://www.lesswrong.com/posts/9KF28JSTJBqqkmkJZ/bruce-wayne-and-the-cost-of-inaction
 skip_import: true
 ---
+
 I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
 
 <center><audio src="https://assets.turntrout.com/batman.mp3" controls> </audio></center>
