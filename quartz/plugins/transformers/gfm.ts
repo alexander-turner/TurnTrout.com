@@ -63,7 +63,7 @@ export function preprocessSlug(headerText: string): string {
   }
 
   // Remove consecutive hyphens
-  protoSlug = protoSlug.replaceAll(/-+/g, '-')
+  protoSlug = protoSlug.replaceAll(/-+/g, "-")
 
   return protoSlug
 }
@@ -71,7 +71,7 @@ export function preprocessSlug(headerText: string): string {
 export function slugify(headerText: string): string {
   const protoSlug = preprocessSlug(headerText)
   const slug = slugger.slug(protoSlug)
-  return slug.replaceAll(/-+/g, '-')
+  return slug.replaceAll(/-+/g, "-")
 }
 
 export function resetSlugger() {

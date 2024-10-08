@@ -12,24 +12,24 @@ type Page = {
 export type Analytics =
   | null
   | {
-    provider: "plausible"
-    host?: string
-  }
+      provider: "plausible"
+      host?: string
+    }
   | {
-    provider: "google"
-    tagId: string
-  }
+      provider: "google"
+      tagId: string
+    }
   | {
-    provider: "umami"
-    websiteId: string
-    host?: string
-  }
+      provider: "umami"
+      websiteId: string
+      host?: string
+    }
   | {
-    provider: "goatcounter"
-    websiteId: string
-    host?: string
-    scriptSrc?: string
-  }
+      provider: "goatcounter"
+      websiteId: string
+      host?: string
+      scriptSrc?: string
+    }
 
 export interface GlobalConfiguration {
   pageTitle: string

@@ -12,20 +12,20 @@ import { toHast } from "mdast-util-to-hast"
 import { toHtml } from "hast-util-to-html"
 import { PhrasingContent } from "mdast-util-find-and-replace/lib"
 import { capitalize } from "../../util/lang"
-import axios from 'axios';
-import fs from 'fs';
+import axios from "axios"
+import fs from "fs"
 import { PluggableList } from "unified"
 import { findGitRoot } from "./logger_utils"
 import { ElementData } from "hast"
 
-// Script imports 
-import { fileURLToPath } from 'url';
+// Script imports
+import { fileURLToPath } from "url"
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
 
 interface CustomElementData extends ElementData {
-  hName?: string;
-  hProperties?: Record<string, any>;
+  hName?: string
+  hProperties?: Record<string, any>
 }
 
 export interface Options {
@@ -152,27 +152,27 @@ const wikilinkImageEmbedRegex = new RegExp(
 )
 
 // Download mermaid during build
-const MERMAID_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
-const gitRoot = findGitRoot();
+const MERMAID_URL = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"
+const gitRoot = findGitRoot()
 if (!gitRoot) {
-  throw new Error("Git root not found. Aborting Mermaid download.");
+  throw new Error("Git root not found. Aborting Mermaid download.")
 }
-const SCRIPTS_OUTPUT_DIR = path.join(gitRoot, 'quartz', 'static', 'scripts');
-const MERMAID_OUTPUT_FILE = path.join(SCRIPTS_OUTPUT_DIR, 'mermaid.min.js');
+const SCRIPTS_OUTPUT_DIR = path.join(gitRoot, "quartz", "static", "scripts")
+const MERMAID_OUTPUT_FILE = path.join(SCRIPTS_OUTPUT_DIR, "mermaid.min.js")
 
 async function downloadMermaid() {
   try {
-    const response = await axios.get(MERMAID_URL);
+    const response = await axios.get(MERMAID_URL)
     if (!fs.existsSync(SCRIPTS_OUTPUT_DIR)) {
-      fs.mkdirSync(SCRIPTS_OUTPUT_DIR, { recursive: true });
+      fs.mkdirSync(SCRIPTS_OUTPUT_DIR, { recursive: true })
     }
-    fs.writeFileSync(MERMAID_OUTPUT_FILE, response.data);
+    fs.writeFileSync(MERMAID_OUTPUT_FILE, response.data)
   } catch (error) {
-    console.error('Failed to download Mermaid file.');
+    console.error("Failed to download Mermaid file.")
 
     // If we don't have any mermaid file, abort
     if (!fs.existsSync(MERMAID_OUTPUT_FILE)) {
-      throw error;
+      throw error
     }
   }
 }
@@ -181,7 +181,6 @@ const mdastToHtml = (ast: PhrasingContent | Paragraph) => {
   const hast = toHast(ast, { allowDangerousHtml: true })
   return toHtml(hast, { allowDangerousHtml: true })
 }
-
 
 export function markdownPlugins(opts: Options): PluggableList {
   const plugins: PluggableList = []
@@ -225,9 +224,7 @@ export function markdownPlugins(opts: Options): PluggableList {
                   type: "html",
                   value: `<video src="${url}" controls></video>`,
                 }
-              } else if (
-                [".mp3", ".webm", ".wav", ".m4a", ".ogg", ".3gp", ".flac"].includes(ext)
-              ) {
+              } else if ([".mp3", ".webm", ".wav", ".m4a", ".ogg", ".3gp", ".flac"].includes(ext)) {
                 return {
                   type: "html",
                   value: `<audio src="${url}" controls></audio>`,
@@ -242,8 +239,9 @@ export function markdownPlugins(opts: Options): PluggableList {
                 return {
                   type: "html",
                   data: { hProperties: { transclude: true } },
-                  value: `<blockquote class="transclude" data-url="${url}" data-block="${block}"><a href="${url + anchor
-                    }" class="transclude-inner">Transclude of ${url}${block}</a></blockquote>`,
+                  value: `<blockquote class="transclude" data-url="${url}" data-block="${block}"><a href="${
+                    url + anchor
+                  }" class="transclude-inner">Transclude of ${url}${block}</a></blockquote>`,
                 }
               }
 
@@ -399,100 +397,107 @@ export function markdownPlugins(opts: Options): PluggableList {
             const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
 
             const calloutTitle: Element = {
-              type: 'element',
-              tagName: 'div',
+              type: "element",
+              tagName: "div",
               properties: {},
               data: {
-                hName: 'div',
+                hName: "div",
                 hProperties: {
-                  className: ['callout-title']
-                }
+                  className: ["callout-title"],
+                },
               } as unknown as CustomElementData,
               children: [
                 {
-                  type: 'element',
-                  tagName: 'div',
+                  type: "element",
+                  tagName: "div",
                   properties: {},
                   data: {
-                    hName: 'div',
+                    hName: "div",
                     hProperties: {
-                      className: ['callout-icon']
-                    }
+                      className: ["callout-icon"],
+                    },
                   } as unknown as CustomElementData,
-                  children: []
+                  children: [],
                 },
                 {
-                  type: 'element',
-                  tagName: 'div',
+                  type: "element",
+                  tagName: "div",
                   properties: {},
                   data: {
-                    hName: 'div',
+                    hName: "div",
                     hProperties: {
-                      className: ['callout-title-inner']
-                    }
+                      className: ["callout-title-inner"],
+                    },
                   } as unknown as CustomElementData,
                   children: [
                     {
                       type: "text",
                       value: useDefaultTitle ? capitalize(typeString) : titleContent + " ",
                     },
-                    ...firstChild.children.slice(1) as ElementContent[],
+                    ...(firstChild.children.slice(1) as ElementContent[]),
                   ],
                 },
-                ...(collapse ? [{
-                  type: "element",
-                  tagName: 'div',
-                  data: {
-                    hName: 'div',
-                    hProperties: {
-                      className: ['fold-callout-icon']
-                    }
-                  },
-                  children: []
-                }] : []) as unknown as ElementContent[]
-              ]
+                ...((collapse
+                  ? [
+                      {
+                        type: "element",
+                        tagName: "div",
+                        data: {
+                          hName: "div",
+                          hProperties: {
+                            className: ["fold-callout-icon"],
+                          },
+                        },
+                        children: [],
+                      },
+                    ]
+                  : []) as unknown as ElementContent[]),
+              ],
             }
 
             // Create a new content node with the remaining text and other children
             const contentChildren = [
-              ...(remainingText.trim() !== '' ? [{
-                type: 'paragraph',
-                children: [{ type: 'text', value: remainingText }]
-              }] : []),
-              ...node.children.slice(1)
-            ];
+              ...(remainingText.trim() !== ""
+                ? [
+                    {
+                      type: "paragraph",
+                      children: [{ type: "text", value: remainingText }],
+                    },
+                  ]
+                : []),
+              ...node.children.slice(1),
+            ]
 
             // Only create contentNode if there are children to include
-            let contentNode: Element | null = null;
+            let contentNode: Element | null = null
             if (contentChildren.length > 0) {
               contentNode = {
-                type: 'element',
-                tagName: 'div',
+                type: "element",
+                tagName: "div",
                 properties: {},
                 children: contentChildren as ElementContent[],
                 data: {
-                  hName: 'div',
+                  hName: "div",
                   hProperties: {
-                    className: ['callout-content']
+                    className: ["callout-content"],
                   },
-                  position: {
-                  },
+                  position: {},
                 } as ElementData,
-              };
+              }
             }
 
             // Replace the entire blockquote content
-            node.children = [calloutTitle as unknown as BlockContent];
+            node.children = [calloutTitle as unknown as BlockContent]
             if (contentNode) {
-              node.children.push(contentNode as unknown as BlockContent);
+              node.children.push(contentNode as unknown as BlockContent)
             }
 
             const classNames = ["callout", calloutType]
             if (collapse) {
-              classNames.push("is-collapsible");
+              classNames.push("is-collapsible")
             }
             if (defaultState === "collapsed") {
-              classNames.push("is-collapsed");
+              classNames.push("is-collapsed")
             }
 
             // Add properties to base blockquote
@@ -744,14 +749,14 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
       // unwrap video tags which are only children of a paragraph
       plugins.push(() => {
         return (tree: HtmlRoot) => {
-          visit(tree, 'element', (node, index, parent) => {
+          visit(tree, "element", (node, index, parent) => {
             if (
               parent &&
               index !== undefined &&
-              node.tagName === 'p' &&
+              node.tagName === "p" &&
               node.children.length === 1 &&
-              node.children[0].type === 'element' &&
-              node.children[0].tagName === 'video'
+              node.children[0].type === "element" &&
+              node.children[0].tagName === "video"
             ) {
               parent.children.splice(index, 1, node.children[0])
             }
@@ -765,8 +770,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
       const js: JSResource[] = []
 
       if (opts.enableCheckbox) {
-        const checkboxScriptPath = path.join(currentDirPath, '../components/scripts/checkbox.inline.js')
-        const checkboxScript = fs.readFileSync(checkboxScriptPath, 'utf8')
+        const checkboxScriptPath = path.join(
+          currentDirPath,
+          "../components/scripts/checkbox.inline.js",
+        )
+        const checkboxScript = fs.readFileSync(checkboxScriptPath, "utf8")
         js.push({
           script: checkboxScript,
           loadTime: "afterDOMReady",
@@ -775,8 +783,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
       }
 
       if (opts.callouts) {
-        const calloutScriptPath = path.join(currentDirPath, '../components/scripts/callout.inline.js')
-        const calloutScript = fs.readFileSync(calloutScriptPath, 'utf8')
+        const calloutScriptPath = path.join(
+          currentDirPath,
+          "../components/scripts/callout.inline.js",
+        )
+        const calloutScript = fs.readFileSync(calloutScriptPath, "utf8")
         js.push({
           script: calloutScript,
           loadTime: "afterDOMReady",

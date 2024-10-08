@@ -6,7 +6,6 @@ interface FetchResult {
   frontmatter: Element
 }
 
-
 const hamburger = document.querySelector(".hamburger")
 const menu = document.querySelector(".menu")
 
@@ -195,8 +194,9 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
     })
     .join(" ")
 
-  return `${startIndex === 0 ? "" : "..."}${slice}${endIndex === tokenizedText.length - 1 ? "" : "..."
-    }`
+  return `${startIndex === 0 ? "" : "..."}${slice}${
+    endIndex === tokenizedText.length - 1 ? "" : "..."
+  }`
 }
 
 function escapeRegExp(text: string) {
@@ -425,8 +425,9 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
     itemTile.href = resolveUrl(slug).toString()
 
     content = replaceEmojiConvertArrows(content)
-    itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${enablePreview && window.innerWidth > 600 ? "" : `<p>${content}</p>`
-      }`
+    itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${
+      enablePreview && window.innerWidth > 600 ? "" : `<p>${content}</p>`
+    }`
     itemTile.addEventListener("click", (event) => {
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       hideSearch()
@@ -544,29 +545,29 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
   function debounce<F extends (...args: [KeyboardEvent]) => void>(
     func: F,
     wait: number,
-    immediate = false
+    immediate = false,
   ): F {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
     return function (this: Window, ...args: [KeyboardEvent]) {
       const later = () => {
-        timeoutId = null;
+        timeoutId = null
         if (!immediate) {
-          func.apply(this, args);
+          func.apply(this, args)
         }
-      };
+      }
 
-      const callNow = immediate && timeoutId === null;
+      const callNow = immediate && timeoutId === null
 
       if (timeoutId !== null) {
-        clearTimeout(timeoutId);
+        clearTimeout(timeoutId)
       }
 
-      timeoutId = setTimeout(later, wait);
+      timeoutId = setTimeout(later, wait)
 
       if (callNow) {
-        func.apply(this, args);
+        func.apply(this, args)
       }
-    } as F;
+    } as F
   }
 
   async function onType(e: HTMLElementEventMap["input"]) {
@@ -627,7 +628,7 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
     await displayResults(finalResults)
   }
 
-  const debouncedOnType = debounce(onType, 50, true);
+  const debouncedOnType = debounce(onType, 50, true)
 
   document.addEventListener("keydown", shortcutHandler)
   window.addCleanup(() => document.removeEventListener("keydown", shortcutHandler))
@@ -707,7 +708,7 @@ const scrollDisplayUpdate = () => {
   prevScrollPos = currentScrollPos
 }
 
-  // Event listeners
-  ;["scroll", "touchmove"].forEach((event: string) => {
-    window.addEventListener(event, scrollDisplayUpdate)
-  })
+// Event listeners
+;["scroll", "touchmove"].forEach((event: string) => {
+  window.addEventListener(event, scrollDisplayUpdate)
+})
