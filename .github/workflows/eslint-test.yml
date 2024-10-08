@@ -1,0 +1,15 @@
+name: Lint
+on: [push]
+jobs:
+  eslint_check:
+    name: Prepare action
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout action must run prior to eslint check
+    - name: Checkout 
+      uses: actions/checkout@v1
+    - name: Lint
+      uses: Krizzu/eslint-check-action@v1.1.0
+      with:
+        ghToken: ${{ secrets.GITHUB_TOKEN }}
+        eslintConfig: "eslint.config.js"
