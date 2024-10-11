@@ -117,7 +117,7 @@
     opacity 0.3s ease,
     visibility 0.3s ease;
 
-  // $fullPageWidth is 1580px, but for some reason it isn't working 
+  // $fullPageWidth is 1580px, but for some reason it isn't working
   //  so I manually set the breakpoint to 1580px
   @media all and (max-width: 1580px) {
     display: none !important;

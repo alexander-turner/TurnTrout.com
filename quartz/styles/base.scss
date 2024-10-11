@@ -478,7 +478,7 @@ dt {
 }
 
 dd {
-  margin-bottom: calc(.5 * $baseMargin);
+  margin-bottom: calc(0.5 * $baseMargin);
   margin-top: calc(0.5 * $baseMargin);
 }
 
@@ -540,7 +540,8 @@ ol ul {
   margin-top: calc(0.5 * $baseMargin);
 }
 
-ol, ul {
+ol,
+ul {
   margin-top: calc(1 * $baseMargin);
 }
 

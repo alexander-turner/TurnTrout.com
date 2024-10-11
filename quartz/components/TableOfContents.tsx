@@ -50,7 +50,9 @@ const logger = createLogger("TableOfContents")
  * @param props.fileData - Data for the current file.
  * @returns The rendered table of contents or null if disabled.
  */
-export const CreateTableOfContents: QuartzComponent = ({ fileData }: QuartzComponentProps): JSX.Element | null => {
+export const CreateTableOfContents: QuartzComponent = ({
+  fileData,
+}: QuartzComponentProps): JSX.Element | null => {
   logger.info(`Rendering TableOfContents for file: ${fileData.filePath}`)
 
   if (!fileData.toc || fileData.frontmatter?.toc === "false") {
@@ -273,7 +275,6 @@ export function elementToJsx(elt: RootContent): JSX.Element {
 
   return <></>
 }
-
 
 CreateTableOfContents.css = modernStyle
 CreateTableOfContents.afterDOMLoaded = `

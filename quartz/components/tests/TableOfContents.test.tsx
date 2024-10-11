@@ -1,234 +1,231 @@
 /**
-* @jest-environment jsdom
-*/
+ * @jest-environment jsdom
+ */
 
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
-import { QuartzComponentProps } from "../types";
-import { render } from "@testing-library/react";
-import React from 'react';
-import { Parent } from 'hast'
-import { TocEntry } from '../../plugins/transformers/toc';
-import { CreateTableOfContents, processHtmlAst, processSmallCaps, processTocEntry, processKatex, buildNestedList } from "../TableOfContents";
-import { h } from 'hastscript'
+import { jest, describe, it, expect, beforeEach } from "@jest/globals"
+import { QuartzComponentProps } from "../types"
+import { render } from "@testing-library/react"
+import React from "react"
+import { Parent } from "hast"
+import { TocEntry } from "../../plugins/transformers/toc"
+import {
+  CreateTableOfContents,
+  processHtmlAst,
+  processSmallCaps,
+  processTocEntry,
+  processKatex,
+  buildNestedList,
+} from "../TableOfContents"
+import { h } from "hastscript"
 
 // Mock the createLogger function
-jest.mock('../../plugins/transformers/logger_utils', () => ({
+jest.mock("../../plugins/transformers/logger_utils", () => ({
   createLogger: () => ({
     info: jest.fn(),
     debug: jest.fn(),
   }),
-}));
+}))
 
 let parent: Parent
 beforeEach(() => {
-    parent = { type: 'element', tagName: 'div', children: [] } as Parent
+  parent = { type: "element", tagName: "div", children: [] } as Parent
 })
 
-describe('processKatex', () => {
-  it('should output katex node', () => {
-    const latex = 'E = mc^2'
+describe("processKatex", () => {
+  it("should output katex node", () => {
+    const latex = "E = mc^2"
     processKatex(latex, parent)
 
     expect(parent.children).toHaveLength(1)
-    expect(parent.children[0]).toHaveProperty('tagName', 'span')
-    expect(parent.children[0]).toHaveProperty('properties.className', ['katex-toc'])
+    expect(parent.children[0]).toHaveProperty("tagName", "span")
+    expect(parent.children[0]).toHaveProperty("properties.className", ["katex-toc"])
     // The value itself is HTML so it's clunky to test
   })
 })
 
-describe('processSmallCaps', () => {
+describe("processSmallCaps", () => {
   beforeEach(() => {
-    parent = { type: 'element', tagName: 'div', children: [] } as Parent;
-  });
+    parent = { type: "element", tagName: "div", children: [] } as Parent
+  })
 
-  it('processes small caps correctly', () => {
-    processSmallCaps('Test SMALLCAPS', parent);
+  it("processes small caps correctly", () => {
+    processSmallCaps("Test SMALLCAPS", parent)
     expect(parent.children).toMatchObject([
-      { type: 'text', value: 'Test ' },
+      { type: "text", value: "Test " },
       {
-        type: 'element',
-        tagName: 'abbr',
-        properties: { className: ['small-caps'] },
-        children: [{ type: 'text', value: 'SMALLCAPS' }]
-      }
-    ]);
-  });
-
-  it('handles text without small caps', () => {
-    processSmallCaps('No small caps here', parent);
-    expect(parent.children).toMatchObject([
-      { type: 'text', value: 'No small caps here' }
-    ]);
-  });
-
-  it('handles multiple small caps', () => {
-    processSmallCaps('^SMALLCAPS-A normal SMALLCAPS-B', parent);
-    expect(parent.children).toMatchObject([
-      { type: 'text', value: '^' },
-      {
-        type: 'element',
-        tagName: 'abbr',
-        properties: { className: ['small-caps'] },
-        children: [{ type: 'text', value: 'SMALLCAPS-A' }]
+        type: "element",
+        tagName: "abbr",
+        properties: { className: ["small-caps"] },
+        children: [{ type: "text", value: "SMALLCAPS" }],
       },
-      { type: 'text', value: ' normal ' },
-      {
-        type: 'element',
-        tagName: 'abbr',
-        properties: { className: ['small-caps'] },
-        children: [{ type: 'text', value: 'SMALLCAPS-B' }]
-      }
-    ]);
-  });
+    ])
+  })
 
-  it('handles parent with existing children', () => {
+  it("handles text without small caps", () => {
+    processSmallCaps("No small caps here", parent)
+    expect(parent.children).toMatchObject([{ type: "text", value: "No small caps here" }])
+  })
+
+  it("handles multiple small caps", () => {
+    processSmallCaps("^SMALLCAPS-A normal SMALLCAPS-B", parent)
+    expect(parent.children).toMatchObject([
+      { type: "text", value: "^" },
+      {
+        type: "element",
+        tagName: "abbr",
+        properties: { className: ["small-caps"] },
+        children: [{ type: "text", value: "SMALLCAPS-A" }],
+      },
+      { type: "text", value: " normal " },
+      {
+        type: "element",
+        tagName: "abbr",
+        properties: { className: ["small-caps"] },
+        children: [{ type: "text", value: "SMALLCAPS-B" }],
+      },
+    ])
+  })
+
+  it("handles parent with existing children", () => {
     parent.children = [
       {
-        type: 'element',
-        tagName: 'span',
-        properties: { className: ['number-prefix'] },
-        children: [{ type: 'text', value: '8: ' }]
+        type: "element",
+        tagName: "span",
+        properties: { className: ["number-prefix"] },
+        children: [{ type: "text", value: "8: " }],
       },
-    ];
+    ]
 
-    processSmallCaps('Estimating the CDF and Statistical Functionals', parent);
+    processSmallCaps("Estimating the CDF and Statistical Functionals", parent)
 
     expect(parent.children).toMatchObject([
       {
-        type: 'element',
-        tagName: 'span',
-        properties: { className: ['number-prefix'] },
-        children: [{ type: 'text', value: '8: ' }]
+        type: "element",
+        tagName: "span",
+        properties: { className: ["number-prefix"] },
+        children: [{ type: "text", value: "8: " }],
       },
-      { type: 'text', value: 'Estimating the ' },
+      { type: "text", value: "Estimating the " },
       {
-        type: 'element',
-        tagName: 'abbr',
-        properties: { className: ['small-caps'] },
-        children: [{ type: 'text', value: 'CDF' }]
+        type: "element",
+        tagName: "abbr",
+        properties: { className: ["small-caps"] },
+        children: [{ type: "text", value: "CDF" }],
       },
-      { type: 'text', value: ' and Statistical Functionals' },
-    ]);
-  });
+      { type: "text", value: " and Statistical Functionals" },
+    ])
+  })
 })
 
-describe('processTocEntry', () => {
-  it('should process a TOC entry correctly into a hast node', () => {
-      const entry: TocEntry = { depth: 1, text: 'Test Heading', slug: 'test-heading' };
+describe("processTocEntry", () => {
+  it("should process a TOC entry correctly into a hast node", () => {
+    const entry: TocEntry = { depth: 1, text: "Test Heading", slug: "test-heading" }
 
-      const result = processTocEntry(entry) 
+    const result = processTocEntry(entry)
 
-      expect(result.type).toBe('element');
-      expect(result.children[0] as Parent).toHaveProperty('value', 'Test Heading');
-    });
+    expect(result.type).toBe("element")
+    expect(result.children[0] as Parent).toHaveProperty("value", "Test Heading")
+  })
 })
 
-describe('processHtmlAst', () => {
-  let parent: Parent;
+describe("processHtmlAst", () => {
+  let parent: Parent
 
   beforeEach(() => {
-    parent = h('div') as Parent;
-  });
+    parent = h("div") as Parent
+  })
 
-  it('should process text nodes without leading numbers', () => {
-    const htmlAst = h(null, [
-      { type: 'text', value: 'Simple text' }
-    ]);
+  it("should process text nodes without leading numbers", () => {
+    const htmlAst = h(null, [{ type: "text", value: "Simple text" }])
 
-    processHtmlAst(htmlAst, parent);
+    processHtmlAst(htmlAst, parent)
 
-    expect(parent.children).toHaveLength(1);
-    expect(parent.children[0]).toMatchObject({ type: 'text', value: 'Simple text' });
-  });
+    expect(parent.children).toHaveLength(1)
+    expect(parent.children[0]).toMatchObject({ type: "text", value: "Simple text" })
+  })
 
-  it('should process text nodes with leading numbers', () => {
-    const htmlAst = h(null, [
-      { type: 'text', value: '1: Chapter One' }
-    ]);
+  it("should process text nodes with leading numbers", () => {
+    const htmlAst = h(null, [{ type: "text", value: "1: Chapter One" }])
 
-    processHtmlAst(htmlAst, parent);
+    processHtmlAst(htmlAst, parent)
 
-    expect(parent.children).toHaveLength(2);
+    expect(parent.children).toHaveLength(2)
     expect(parent.children[0]).toMatchObject({
-      type: 'element',
-      tagName: 'span',
-      properties: { className: ['number-prefix'] },
-      children: [{ type: 'text', value: '1: ' }]
-    });
-    expect(parent.children[1]).toMatchObject({ type: 'text', value: 'Chapter One' });
-  });
+      type: "element",
+      tagName: "span",
+      properties: { className: ["number-prefix"] },
+      children: [{ type: "text", value: "1: " }],
+    })
+    expect(parent.children[1]).toMatchObject({ type: "text", value: "Chapter One" })
+  })
 
-  it('should process nested elements', () => {
-    const htmlAst = h(null, [
-      h('p', 'Nested text')
-    ]);
+  it("should process nested elements", () => {
+    const htmlAst = h(null, [h("p", "Nested text")])
 
-    processHtmlAst(htmlAst, parent);
+    processHtmlAst(htmlAst, parent)
 
-    expect(parent.children).toHaveLength(1);
+    expect(parent.children).toHaveLength(1)
     expect(parent.children[0]).toMatchObject({
-      type: 'element',
-      tagName: 'p',
+      type: "element",
+      tagName: "p",
       properties: {},
-      children: [{ type: 'text', value: 'Nested text' }]
-    });
-  });
+      children: [{ type: "text", value: "Nested text" }],
+    })
+  })
 
-  it('should process mixed content', () => {
+  it("should process mixed content", () => {
     const htmlAst = h(null, [
-      { type: 'text', value: '2: Introduction' },
-      h('em', 'emphasized'),
-      { type: 'text', value: ' and normal text' }
-    ]);
+      { type: "text", value: "2: Introduction" },
+      h("em", "emphasized"),
+      { type: "text", value: " and normal text" },
+    ])
 
-    processHtmlAst(htmlAst, parent);
+    processHtmlAst(htmlAst, parent)
 
-    expect(parent.children).toHaveLength(4);
+    expect(parent.children).toHaveLength(4)
     expect(parent.children[0]).toMatchObject({
-      type: 'element',
-      tagName: 'span',
-      properties: { className: ['number-prefix'] },
-      children: [{ type: 'text', value: '2: ' }]
-    });
-    expect(parent.children[1]).toMatchObject({ type: 'text', value: 'Introduction' });
+      type: "element",
+      tagName: "span",
+      properties: { className: ["number-prefix"] },
+      children: [{ type: "text", value: "2: " }],
+    })
+    expect(parent.children[1]).toMatchObject({ type: "text", value: "Introduction" })
     expect(parent.children[2]).toMatchObject({
-      type: 'element',
-      tagName: 'em',
+      type: "element",
+      tagName: "em",
       properties: {},
-      children: [{ type: 'text', value: 'emphasized' }]
-    });
-    expect(parent.children[3]).toMatchObject({ type: 'text', value: ' and normal text' });
-  });
+      children: [{ type: "text", value: "emphasized" }],
+    })
+    expect(parent.children[3]).toMatchObject({ type: "text", value: " and normal text" })
+  })
 
-  it('should handle small caps in text', () => {
-    const htmlAst = h(null, [
-      { type: 'text', value: 'Text with SMALLCAPS' }
-    ]);
+  it("should handle small caps in text", () => {
+    const htmlAst = h(null, [{ type: "text", value: "Text with SMALLCAPS" }])
 
-    processHtmlAst(htmlAst, parent);
+    processHtmlAst(htmlAst, parent)
 
-    expect(parent.children).toHaveLength(2);
-    expect(parent.children[0]).toMatchObject({ type: 'text', value: 'Text with ' });
+    expect(parent.children).toHaveLength(2)
+    expect(parent.children[0]).toMatchObject({ type: "text", value: "Text with " })
     expect(parent.children[1]).toMatchObject({
-      type: 'element',
-      tagName: 'abbr',
-      properties: { className: ['small-caps'] },
-      children: [{ type: 'text', value: 'SMALLCAPS' }]
-    });
-  });
-});
+      type: "element",
+      tagName: "abbr",
+      properties: { className: ["small-caps"] },
+      children: [{ type: "text", value: "SMALLCAPS" }],
+    })
+  })
+})
 
 // Mock the createLogger function
-jest.mock('../../plugins/transformers/logger_utils', () => ({
+jest.mock("../../plugins/transformers/logger_utils", () => ({
   createLogger: () => ({
     info: jest.fn(),
     debug: jest.fn(),
     warn: jest.fn(),
   }),
-}));
+}))
 
-describe('buildNestedList', () => {
-  it('should build a nested list for headings up to depth 3', () => {
+describe("buildNestedList", () => {
+  it("should build a nested list for headings up to depth 3", () => {
     const entries = [
       { depth: 1, text: "Heading 1", slug: "heading-1" },
       { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
@@ -241,15 +238,15 @@ describe('buildNestedList', () => {
     // Instead of rendering, let's check the structure directly
     expect(result).toHaveLength(1)
     const firstItem = result[0]
-    expect(firstItem.props.children[1].type).toBe('ul')
+    expect(firstItem.props.children[1].type).toBe("ul")
     expect(firstItem.props.children[1].props.children).toHaveLength(2)
-  });
-});
+  })
+})
 
-describe('afterDOMLoaded Script Attachment', () => {
-  it('should have an afterDOMLoaded script assigned', () => {
-    expect(CreateTableOfContents.afterDOMLoaded).toBeDefined();
-    expect(typeof CreateTableOfContents.afterDOMLoaded).toBe('string');
-    expect(CreateTableOfContents.afterDOMLoaded).toContain('document.addEventListener(\'nav\'');
-  });
-});
+describe("afterDOMLoaded Script Attachment", () => {
+  it("should have an afterDOMLoaded script assigned", () => {
+    expect(CreateTableOfContents.afterDOMLoaded).toBeDefined()
+    expect(typeof CreateTableOfContents.afterDOMLoaded).toBe("string")
+    expect(CreateTableOfContents.afterDOMLoaded).toContain("document.addEventListener('nav'")
+  })
+})
