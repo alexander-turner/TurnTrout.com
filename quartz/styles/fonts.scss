@@ -134,8 +134,8 @@ $fonts-dir: "/static/styles/fonts";
 @include font-face("EBGaramondInitialsF1", "EBGaramond/EBGaramond-InitialsF1", ".woff2");
 @include font-face("EBGaramondInitialsF2", "EBGaramond/EBGaramond-InitialsF2", ".woff2");
 @font-face {
-  font-family: 'EBGaramondItalic';
-  src: url('#{$fonts-dir}/EBGaramond/EBGaramond08-Italic.woff2') format('woff2');
+  font-family: "EBGaramondItalic";
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond08-Italic.woff2") format("woff2");
   font-weight: normal;
   font-style: italic;
   font-optical-sizing: auto;

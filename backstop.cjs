@@ -1,6 +1,7 @@
-const scenarios = require("./backstop/scenarios.cjs"); // eslint-disable-line 
+const scenarios = require("./backstop/scenarios.cjs") // eslint-disable-line
 
-module.exports = { // eslint-disable-line no-undef
+module.exports = {
+  // eslint-disable-line no-undef
   id: "backstop_default",
   viewports: [
     {
