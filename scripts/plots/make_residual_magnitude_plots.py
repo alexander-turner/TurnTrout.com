@@ -38,8 +38,61 @@ def line_plot(
     )
     return fig
 
+
+def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Magnitude by Layer Number",
+    xaxis_title="log10 Residual Stream norm", yaxis_title="Percentage of residual streams") -> go.Figure:
+    """Plot a histogram of the residual stream magnitudes for each layer
+    of the network."""
+    assert (
+        "Magnitude" in df.columns
+    ), "Dataframe must have a 'Magnitude' column"
+
+    # Get the number of unique activation locations
+    num_unique_activation_locations = df["Activation Location"].nunique()
+
+    # Generate a color list that is long enough to accommodate all unique activation locations
+    extended_rainbow = (
+        px.colors.sequential.Rainbow * num_unique_activation_locations
+    )
+    color_list = extended_rainbow[:num_unique_activation_locations][::-1]
+
+    if cols != 'all':
+        unique_cols = list(df["Activation Location"].unique())
+        # get indices in unique_cols of values in cols
+        cols_colors = [unique_cols.index(col) for col in cols]
+        color_list = [color_list[i] for i in cols_colors]
+        df = df[df["Activation Location"].isin(cols)]
+
+    df["LogMagnitude"] = np.log10(df["Magnitude"])
+
+
+    fig = px.histogram(
+        df,
+        x="LogMagnitude",
+        color="Activation Location",
+        marginal="rug",
+        histnorm="percent",
+        nbins=100,
+        opacity=0.5,
+        barmode="overlay",
+        color_discrete_sequence=color_list,
+    )
+
+    fig.update_layout(
+        legend_title_text="Before Layer Index",
+        title=title,
+        xaxis_title=xaxis_title,
+        yaxis_title=yaxis_title,
+    )
+
+    return fig
+
 model_name = "gpt2-xl"
 figs:list[go.Figure] = []
+
+df_magnitude_by_layer = pd.read_csv('scripts/plots/fig1.csv')
+figs.append(magnitude_histogram(df_magnitude_by_layer))
+
 for use_log in (True, False):
     fig = line_plot(
         df,
@@ -53,4 +106,4 @@ for use_log in (True, False):
 
 for i, fig in enumerate(figs):
     with open(f'content/plots/residual_magnitude_{i+1}.html', 'x') as f:
-        fig.write_html(file=f, include_plotlyjs='/static/scripts/plotly.min.js', div_id=f'plot{i}', full_html=False)
+        fig.write_html(file=f, include_plotlyjs='/static/scripts/plotly.min.js', div_id=f'plot{i+1}', full_html=False)

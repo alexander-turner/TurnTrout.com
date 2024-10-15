@@ -1,3 +1,5 @@
+# This is a test file for developing residual magnitude plots
+
 # %%
 import pandas as pd
 from dash import Dash, ctx, dcc, html, Input, Output, callback
@@ -10,15 +12,6 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
-
-# %%
-
-DF_COLS: list[str] = [
-    "Prompt",
-    "Activation Location",
-    "Activation Name",
-    "Magnitude",
-]
 
 # %%
 
@@ -73,9 +66,9 @@ def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Mag
 
 # %%
 
-# set working directory to directory of this script
+# set working directory to project root
 import os
-
+os.chdir('../..')
 df = pd.read_csv('scripts/plots/fig1.csv')
 fig = magnitude_histogram(df)
 # fig.show()
@@ -115,3 +108,7 @@ def update_checklist(value):
 
 if __name__ == '__main__':
     app.run(debug=True, port='8052')
+
+print(app.scripts.config.serve_locally)
+
+# %%
