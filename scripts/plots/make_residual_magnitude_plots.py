@@ -1,10 +1,15 @@
+# %%
 import pandas as pd
 from dash import Dash, dcc, html, dash_table
+import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import json
+import os
 
-df = pd.read_csv('scripts/plots/fig2.csv')
+data_dir = 'scripts/plots'
+df = pd.read_csv(f'{data_dir}/fig2.csv')
 
 # from https://colab.research.google.com/drive/1Z6AgGpPpnGY43DT58vl_Wvqmyw-KRfqY?usp=sharing#scrollTo=865d29bf
 def line_plot(
@@ -90,7 +95,7 @@ def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Mag
 model_name = "gpt2-xl"
 figs:list[go.Figure] = []
 
-df_magnitude_by_layer = pd.read_csv('scripts/plots/fig1.csv')
+df_magnitude_by_layer = pd.read_csv(f'{data_dir}/fig1.csv')
 figs.append(magnitude_histogram(df_magnitude_by_layer))
 
 for use_log in (True, False):
@@ -104,6 +109,18 @@ for use_log in (True, False):
     fig.update_layout(width=600, height=450)
     figs.append(fig)
 
+post_name = 'residual_magnitude'
+
+# make directory for post
+os.makedirs(f'content/plots/{post_name}', exist_ok=True)
+
 for i, fig in enumerate(figs):
-    with open(f'content/plots/residual_magnitude_{i+1}.html', 'x') as f:
-        fig.write_html(file=f, include_plotlyjs='/static/scripts/plotly.min.js', div_id=f'plot{i+1}', full_html=False)
+    with open(f'content/plots/{post_name}/plot{i+1}.json', 'w') as f:
+        plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        f.write(plot_json)
+
+with open(f'{data_dir}/plot_template.js') as f:
+    template = f.read()
+
+with open(f"content/plots/{post_name}/load_plots.js", 'w') as f:
+    f.write(template.replace('POSTNAME', post_name).replace('NUMPLOTS', str(len(figs))))
