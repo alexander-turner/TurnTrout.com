@@ -2,10 +2,13 @@ import { QuartzTransformerPlugin } from "../types"
 import { createLogger } from "./logger_utils"
 import { Root, Heading } from "mdast"
 import { visit, SKIP } from "unist-util-visit"
-import Slugger from "github-slugger"
-import { applyTextTransforms } from "./formatting_improvement_html"
+import { slugify, resetSlugger } from "./gfm"
+import {
+  applyTextTransforms,
+  hasAncestor,
+  ElementMaybeWithParent,
+} from "./formatting_improvement_html"
 import { Node } from "hast"
-import {hasAncestor} from "./formatting_improvement_html"
 
 export interface Options {
   maxDepth: 1 | 2 | 3 | 4 | 5 | 6
@@ -15,8 +18,8 @@ export interface Options {
 }
 
 const defaultOptions: Options = {
-  maxDepth: 3,
-  minEntries: 0,
+  maxDepth: 2,
+  minEntries: 1,
   showByDefault: true,
   collapseByDefault: false,
 }
@@ -33,8 +36,6 @@ function logTocEntry(entry: TocEntry) {
   logger.debug(`TOC Entry: depth=${entry.depth}, text="${entry.text}", slug="${entry.slug}"`)
 }
 
-const slugAnchor = new Slugger()
-
 function customToString(node: Node): string {
   if ((node.type === "inlineMath" || node.type === "math") && "value" in node) {
     return node.type === "inlineMath" ? `$${node.value}$` : `$$${node.value}$$`
@@ -45,6 +46,9 @@ function customToString(node: Node): string {
   return "value" in node ? String(node.value) : ""
 }
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "")
+}
 
 export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
@@ -57,42 +61,52 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
     markdownPlugins() {
       return [
         () => {
-          return async (tree: Root, file) => {
+          return (tree: Root, file) => {
+            resetSlugger()
             const display = file.data.frontmatter?.enableToc ?? opts.showByDefault
             logger.debug(`Processing file: ${file.path}, TOC display: ${display}`)
 
             if (display) {
-              slugAnchor.reset()
               const toc: TocEntry[] = []
               let highestDepth: number = opts.maxDepth
               let hasFootnotes = false
 
-              visit(tree, (node: any) => {
-                if (hasAncestor(node, (anc: any) => {return anc.type === 'blockquote'})) return SKIP
+              visit(tree, (node: Node) => {
+                if (
+                  hasAncestor(node as ElementMaybeWithParent, (anc: Node) => {
+                    return anc.type === "blockquote"
+                  })
+                )
+                  return SKIP
 
-                if (node.type === 'heading' && node.depth <= opts.maxDepth) {
+                if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
                   const heading = node as Heading
                   let text = applyTextTransforms(customToString(heading))
+                  text = stripHtml(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
+
+                  const slug = slugify(text)
+
                   toc.push({
                     depth: heading.depth,
                     text,
-                    slug: slugAnchor.slug(text),
+                    slug,
                   })
-                  logger.info(`Added TOC entry: depth=${heading.depth}, text="${text}"`)
+                  logger.info(
+                    `Added TOC entry: depth=${heading.depth}, text="${text}", slug="${slug}"`,
+                  )
                 } else if (node.type === "footnoteDefinition") {
                   hasFootnotes = true
                 }
-
               })
-            if (hasFootnotes) {
-              toc.push({
-                depth: 1,
-                text: "Footnotes",
-                slug: "footnote-label",
-              })
-              logger.info(`Added Footnotes to TOC`)
-            }
+              if (hasFootnotes) {
+                toc.push({
+                  depth: 1,
+                  text: "Footnotes",
+                  slug: "footnote-label",
+                })
+                logger.info(`Added Footnotes to TOC`)
+              }
 
               if (toc.length > 0 && toc.length > opts.minEntries) {
                 const adjustedToc = toc.map((entry) => ({

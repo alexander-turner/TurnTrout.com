@@ -1,4 +1,5 @@
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+import React from "react"
 import style from "./styles/header.scss"
 
 const Header: QuartzComponent = ({ children }: QuartzComponentProps) => {

@@ -1,4 +1,3 @@
-// @ts-ignore
 import { QuartzPluginData } from "../plugins/vfile"
 import {
   joinSegments,
@@ -8,6 +7,7 @@ import {
   SimpleSlug,
   FilePath,
 } from "../util/path"
+import React from "react"
 
 type OrderEntries = "sort" | "filter" | "map"
 
@@ -187,7 +187,7 @@ export function NavbarNode({ node, opts, fullPath, fileData }: NavbarNodeProps) 
           {node.name !== "" && (
             // Node with entire folder
             // Render svg button + folder name, then children
-            <div class="folder-container">
+            <div className="folder-container">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="12"
@@ -195,10 +195,10 @@ export function NavbarNode({ node, opts, fullPath, fileData }: NavbarNodeProps) 
                 viewBox="5 8 14 8"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="folder-icon"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="folder-icon"
               >
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
@@ -208,26 +208,26 @@ export function NavbarNode({ node, opts, fullPath, fileData }: NavbarNodeProps) 
                   <a
                     href={resolveRelative(fileData.slug!, folderPath as SimpleSlug)}
                     data-for={node.name}
-                    class="folder-title"
+                    className="folder-title"
                   >
                     {node.displayName}
                   </a>
                 ) : (
-                  <button class="folder-button">
-                    <span class="folder-title">{node.displayName}</span>
+                  <button className="folder-button">
+                    <span className="folder-title">{node.displayName}</span>
                   </button>
                 )}
               </div>
             </div>
           )}
           {/* Recursively render children of folder */}
-          <div class={`folder-outer ${node.depth === 0 || isDefaultOpen ? "open" : ""}`}>
+          <div className={`folder-outer ${node.depth === 0 || isDefaultOpen ? "open" : ""}`}>
             <ul
               // Inline style for left folder paddings
               style={{
                 paddingLeft: node.name !== "" ? "1.4rem" : "0",
               }}
-              class="content"
+              className="content"
               data-folderul={folderPath}
             >
               {node.children.map((childNode, i) => (

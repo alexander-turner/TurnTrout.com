@@ -35,7 +35,7 @@ def get_files(
         tuple[Path, ...]: A tuple of all matching files in the content directory of the
             Git repository. Filters out ignored files if a Git repository is found.
     """
-    files = []
+    files: list[Path] = []
     if dir_to_search is not None:
         for filetype in filetypes_to_match:
             files.extend(dir_to_search.rglob(f"*{filetype}"))
@@ -43,9 +43,7 @@ def get_files(
             try:
                 root = get_git_root()
                 repo = git.Repo(root)
-                files = list(
-                    filter(lambda file: not file in repo.ignored(file), files)
-                )
+                files = list(filter(lambda file: not file in repo.ignored(file), files))
             except git.GitCommandError:
                 pass  # Ignore errors
     return tuple(files)

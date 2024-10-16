@@ -1,5 +1,10 @@
+/**
+ * @jest-environment node
+ */
 import { jest } from "@jest/globals"
+import { h } from "hastscript"
 import { PassThrough } from "stream"
+import { Element } from "hast"
 
 import fsExtra from "fs-extra"
 import path from "path"
@@ -27,7 +32,9 @@ import fs from "fs"
 jest.mock("stream/promises")
 
 beforeAll(async () => {
-  jest.spyOn(fs, "createWriteStream").mockReturnValue(new PassThrough() as any)
+  jest
+    .spyOn(fs, "createWriteStream")
+    .mockReturnValue(new PassThrough() as unknown as fs.WriteStream)
 })
 
 let tempDir: string
@@ -45,7 +52,7 @@ afterEach(async () => {
 jest.mock("./linkfavicons", () => {
   const actual = jest.requireActual("./linkfavicons")
   return {
-    ...(actual as any),
+    ...(actual as unknown as Record<string, unknown>),
     urlCache: new Map(),
   }
 })
@@ -55,11 +62,7 @@ describe("Favicon Utilities", () => {
     const hostname = "example.com"
     const avifUrl = "https://assets.turntrout.com/static/images/external-favicons/example_com.avif"
 
-    const mockFetchAndFs = (
-      avifStatus: number,
-      localPngExists: boolean,
-      googleStatus: number = 200,
-    ) => {
+    const mockFetchAndFs = (avifStatus: number, localPngExists: boolean, googleStatus = 200) => {
       let responseBodyAVIF = ""
       if (avifStatus === 200) {
         responseBodyAVIF = "Mock image content"
@@ -90,7 +93,7 @@ describe("Favicon Utilities", () => {
         .mockImplementationOnce(() =>
           localPngExists
             ? Promise.resolve({ size: 1000 } as fs.Stats)
-            : Promise.reject({ code: "ENOENT" }),
+            : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
         )
         .mockImplementationOnce(() => Promise.resolve({ size: 1000 } as fs.Stats))
     }
@@ -114,6 +117,25 @@ describe("Favicon Utilities", () => {
       const expected = GetQuartzPath(hostname)
       mockFetchAndFs(avifStatus, localPngExists)
       expect(await MaybeSaveFavicon(hostname)).toBe(expected)
+    })
+
+    it("should not write local files to URL cache", async () => {
+      const localPath = GetQuartzPath(hostname)
+
+      jest.spyOn(global, "fetch").mockRejectedValue(new Error("CDN not available"))
+
+      // Mock fs.promises.stat to succeed for local file
+      jest.spyOn(fs.promises, "stat").mockResolvedValue({} as fs.Stats)
+
+      urlCache.clear()
+
+      const result = await MaybeSaveFavicon(hostname)
+
+      expect(result).toBe(localPath)
+      expect(urlCache.size).toBe(0)
+
+      // Check that the URL cache doesn't contain the local path
+      expect(urlCache.has(localPath)).toBe(false)
     })
   })
 
@@ -153,7 +175,7 @@ describe("Favicon Utilities", () => {
       [null, false],
       ["/valid/path.png", true],
     ])("should insert favicon correctly when imgPath is %s", (imgPath, shouldInsert) => {
-      const node = { children: [] }
+      const node = { children: [], type: "element", tagName: "div", properties: {} } as Element
       insertFavicon(imgPath, node)
       expect(node.children.length).toBe(shouldInsert ? 1 : 0)
     })
@@ -162,7 +184,7 @@ describe("Favicon Utilities", () => {
       const imgPath = "/test/favicon.png"
 
       it("should create a span with the last 4 characters and favicon for long text", () => {
-        const node = { children: [{ type: "text", value: "Long text content" }] }
+        const node = { children: [{ type: "text", value: "Long text content" }] } as Element
         insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
@@ -176,7 +198,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should create a span with all characters and favicon for short text", () => {
-        const node = { children: [{ type: "text", value: "1234" }] }
+        const node = { children: [{ type: "text", value: "1234" }] } as Element
         insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(1)
@@ -189,7 +211,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should create a span with up to 4 characters for medium-length text", () => {
-        const node = { children: [{ type: "text", value: "Medium" }] }
+        const node = { children: [{ type: "text", value: "Medium" }] } as Element
         insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
@@ -203,7 +225,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should not create a span for nodes without text content", () => {
-        const node = { children: [{ type: "element", tagName: "div" }] }
+        const node = { children: [{ type: "element", tagName: "div" }] } as Element
         insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
@@ -211,7 +233,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should handle empty text nodes correctly", () => {
-        const node = { children: [{ type: "text", value: "" }] }
+        const node = { children: [{ type: "text", value: "" }] } as Element
         insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
@@ -219,31 +241,29 @@ describe("Favicon Utilities", () => {
       })
 
       it("Should not replace children with [span] if more than one child", () => {
-        const node = {
-          tag: "p",
-          children: [
-            "My email is ",
+        const node: Element = h("p", {}, [
+          "My email is ",
+          h(
+            "a",
             {
-              tag: "a",
-              attributes: {
-                href: "https://mailto:throwaway@turntrout.com",
-                class: "external",
-              },
-              children: [
-                {
-                  tag: "code",
-                  children: ["throwaway@turntrout.com"],
-                },
-              ],
+              href: "https://mailto:throwaway@turntrout.com",
+              class: "external",
             },
-            ".",
-          ],
-        }
+            [h("code", {}, ["throwaway@turntrout.com"])],
+          ),
+          ".",
+        ])
 
         insertFavicon(MAIL_PATH, node)
 
-        expect(node.children.length).toBe(4)
-        expect(node.children[3]).toMatchObject(CreateFaviconElement(MAIL_PATH))
+        expect(node.children.length).toBe(3)
+        const lastChild = node.children[node.children.length - 1]
+        // First child is text (period)
+        const expectedChild = h("span", { style: "white-space: nowrap;" }, [
+          { type: "text", value: "." },
+          CreateFaviconElement(MAIL_PATH),
+        ])
+        expect(lastChild).toMatchObject(expectedChild)
       })
     })
   })
@@ -251,7 +271,7 @@ describe("Favicon Utilities", () => {
   describe("ModifyNode", () => {
     it.each([
       ["./shard-theory", TURNTROUT_FAVICON_PATH],
-      ["../shard-theory", null],
+      ["../shard-theory", TURNTROUT_FAVICON_PATH],
       ["#test", null],
       ["mailto:test@example.com", MAIL_PATH],
       ["mailto:another@domain.org", MAIL_PATH],
@@ -260,7 +280,8 @@ describe("Favicon Utilities", () => {
         tagName: "a",
         properties: { href },
         children: [],
-      }
+        type: "element",
+      } as Element
 
       await ModifyNode(node)
       if (expectedPath === null) {
@@ -328,7 +349,10 @@ describe("downloadImage", () => {
   })
 
   it("should throw if fetch response has no body", async () => {
-    const mockResponse = new Response("", { status: 200, headers: { "Content-Type": "image/png" } })
+    const mockResponse = new Response(null, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
     await runTest(mockResponse, false)
   })
 
@@ -340,6 +364,33 @@ describe("downloadImage", () => {
   it("should handle fetch errors", async () => {
     const mockError = new Error("Network error")
     await runTest(mockError, false)
+  })
+
+  it("should create directory structure if it doesn't exist", async () => {
+    const url = "https://example.com/image.png"
+    const imagePath = path.join(tempDir, "nested", "directory", "structure", "image.png")
+    const mockContent = "Mock image content"
+    const mockResponse = new Response(mockContent, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
+
+    jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
+
+    await expect(downloadImage(url, imagePath)).resolves.toBe(true)
+
+    const fileExists = await fsExtra.pathExists(imagePath)
+    expect(fileExists).toBe(true)
+
+    if (fileExists) {
+      const content = await fsExtra.readFile(imagePath, "utf-8")
+      expect(content).toBe(mockContent)
+    }
+
+    // Check if the directory structure was created
+    const dirStructure = path.dirname(imagePath)
+    const dirExists = await fsExtra.pathExists(dirStructure)
+    expect(dirExists).toBe(true)
   })
 })
 
@@ -358,15 +409,15 @@ describe("writeCacheToFile", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       FAVICON_URLS_FILE,
-      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",{"flag": "w+"}
-
+      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",
+      { flag: "w+" },
     )
   })
 
   it("should write an empty string if urlCache is empty", () => {
     writeCacheToFile()
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(FAVICON_URLS_FILE, "", {"flag": "w+"})
+    expect(fs.writeFileSync).toHaveBeenCalledWith(FAVICON_URLS_FILE, "", { flag: "w+" })
   })
 })
 
@@ -417,74 +468,5 @@ describe("readFaviconUrls", () => {
     expect(result.size).toBe(2)
     expect(result.get("example.com")).toBe("https://example.com/favicon.ico")
     expect(result.get("test.com")).toBe("https://test.com/favicon.png")
-  })
-
-  const runTest = async (
-    mockResponse: Response | Error,
-    expectedResult: boolean,
-    expectedFileContent?: string,
-  ) => {
-    const url = "https://example.com/image.png"
-    const imagePath = path.join(tempDir, "image.png")
-
-    if (mockResponse instanceof Error) {
-      jest.spyOn(global, "fetch").mockRejectedValueOnce(mockResponse)
-    } else {
-      jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
-      jest.spyOn(fs, "createWriteStream").mockReturnValue(fsExtra.createWriteStream(imagePath))
-    }
-
-    if (expectedResult) {
-      await expect(downloadImage(url, imagePath)).resolves.not.toThrow()
-    } else {
-      await expect(downloadImage(url, imagePath)).rejects.toThrow()
-    }
-
-    expect(global.fetch).toHaveBeenCalledTimes(1)
-    expect(global.fetch).toHaveBeenCalledWith(url)
-
-    if (expectedFileContent !== undefined) {
-      const fileExists = await fsExtra.pathExists(imagePath)
-      expect(fileExists).toBe(true)
-      if (fileExists) {
-        const content = await fsExtra.readFile(imagePath, "utf-8")
-        expect(content).toBe(expectedFileContent)
-      }
-    } else {
-      const fileExists = await fsExtra.pathExists(imagePath)
-      expect(fileExists).toBe(false)
-    }
-  }
-
-  it("should download image successfully", async () => {
-    const mockContent = "Mock image content"
-    const mockResponse = new Response(mockContent, {
-      status: 200,
-      headers: { "Content-Type": "image/png" },
-    })
-    await runTest(mockResponse, true, mockContent)
-  })
-
-  it("should throw if fetch response is not ok", async () => {
-    const mockResponse = new Response("Mock image content", {
-      status: 404,
-      headers: { "Content-Type": "image/png" },
-    })
-    await runTest(mockResponse, false)
-  })
-
-  it("should throw if fetch response has no body", async () => {
-    const mockResponse = new Response("", { status: 200, headers: { "Content-Type": "image/png" } })
-    await runTest(mockResponse, false)
-  })
-
-  it("should throw if header is wrong", async () => {
-    const mockResponse = new Response("Fake", { status: 200, headers: { "Content-Type": "txt" } })
-    await runTest(mockResponse, false)
-  })
-
-  it("should handle fetch errors", async () => {
-    const mockError = new Error("Network error")
-    await runTest(mockError, false)
   })
 })

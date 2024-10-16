@@ -37,8 +37,8 @@ export const Citations: QuartzTransformerPlugin<Partial<Options> | undefined> = 
       // Transform the HTML of the citattions; add data-no-popover property to the citation links
       // using https://github.com/syntax-tree/unist-util-visit as they're just anochor links
       plugins.push(() => {
-        return (tree, _file) => {
-          visit(tree, "element", (node, index, parent) => {
+        return (tree) => {
+          visit(tree, "element", (node) => {
             if (node.tagName === "a" && node.properties?.href?.startsWith("#bib")) {
               node.properties["data-no-popover"] = true
             }

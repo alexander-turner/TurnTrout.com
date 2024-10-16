@@ -40,11 +40,11 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
-    async getDependencyGraph(ctx, content, _resources) {
+    async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       // Build dependency graph for tag pages
-      for (const [_tree, file] of content) {
+      for (const [, file] of content) {
         const sourcePath = file.data.filePath!
         const tags = (file.data.frontmatter?.tags ?? []).flatMap(getAllSegmentPrefixes)
         // If the file has at least one tag, it is used in the tag index page

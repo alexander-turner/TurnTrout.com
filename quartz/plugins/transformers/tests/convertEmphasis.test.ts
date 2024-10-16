@@ -1,3 +1,4 @@
+import { Root } from "mdast-util-find-and-replace/lib"
 import { formatNode, convertEmphasisHelper } from "../convertEmphasis"
 import { Text, Parent } from "mdast"
 
@@ -106,11 +107,14 @@ describe("formatNode", () => {
     })
   })
 
+  interface CodeNode extends Parent {
+    tagName: "code"
+  }
   it("should not apply emphasis within code blocks", () => {
     const codeNode: Text = { type: "text", value: "const example = formatting_improvement_html" }
-    const parent: any = { type: "element", tagName: "code", children: [codeNode] }
+    const parent: CodeNode = { type: "element", tagName: "code", children: [codeNode] }
 
-    convertEmphasisHelper(parent)
+    convertEmphasisHelper(parent as Root)
 
     expect(parent.children).toHaveLength(1)
     expect(parent.children[0]).toEqual(codeNode)

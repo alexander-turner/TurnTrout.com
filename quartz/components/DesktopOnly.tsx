@@ -1,5 +1,5 @@
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
-
+import React from "react"
 export default ((component?: QuartzComponent) => {
   if (component) {
     const Component = component
@@ -13,6 +13,6 @@ export default ((component?: QuartzComponent) => {
     DesktopOnly.css = component?.css
     return DesktopOnly
   } else {
-    return () => <></>
+    return () => null
   }
 }) satisfies QuartzComponentConstructor

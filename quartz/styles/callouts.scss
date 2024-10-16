@@ -11,14 +11,28 @@
   }
   --bg: color-mix(in srgb, var(--color) 4%, var(--base));
   background-color: var(--bg);
+  scrollbar-color: var(--lightergray) var(--bg);
   border-radius: 5px;
+  margin: 1rem 0;
   padding: 0 1rem;
-  overflow-y: hidden;
+  overflow: hidden; // Ensure content doesn't overflow during transition
   transition: max-height 0.3s ease;
   box-sizing: border-box;
 
   & > *:nth-child(2) {
     margin-top: 0;
+  }
+
+  & .callout-content {
+    margin-bottom: calc(2 * $baseMargin);
+
+    & p:first-child {
+      margin-top: 0;
+    }
+
+    & p:last-child {
+      margin-bottom: 0;
+    }
   }
 
   --callout-icon-note: url('data:image/svg+xml; utf8, <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="2" x2="22" y2="6"></line><path d="M7.5 20.5 19 9l-4-4L3.5 16.5 2 22z"></path></svg>');
@@ -38,6 +52,9 @@
   --callout-icon-goose: url("https://assets.turntrout.com/static/images/goose.svg");
   --callout-icon-fold: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="6 9 12 15 18 9"%3E%3C/polyline%3E%3C/svg%3E');
   --callout-icon-thanks: url("https://assets.turntrout.com/static/images/heart.svg");
+  --callout-icon-tag: url("https://assets.turntrout.com/static/images/tag.svg");
+  --callout-icon-link: url("https://assets.turntrout.com/static/images/link.svg");
+  --callout-icon-math: url("https://assets.turntrout.com/static/images/math.svg");
 
   // Gray by default
   &[data-callout] {
@@ -55,6 +72,9 @@
   &[data-callout="question"] {
     --color: color-mix(in srgb, var(--yellow) 70%, var(--dark));
     --callout-icon: var(--callout-icon-question);
+    & .callout-icon {
+      -webkit-mask-position-y: 3.25px;
+    }
   }
   &[data-callout="todo"] {
     --color: color-mix(in srgb, var(--yellow) 70%, var(--dark));
@@ -113,10 +133,27 @@
 
   &[data-callout="example"] {
     --callout-icon: var(--callout-icon-example);
+    margin-right: calc(0.25 * $baseMargin);
+    & .callout-icon {
+      -webkit-mask-position-y: 5.5px; // Make sure this is centered
+    }
   }
 
   &[data-callout="quote"] {
     --callout-icon: var(--callout-icon-quote);
+  }
+
+  &[data-callout="tag"] {
+    --callout-icon: var(--callout-icon-tag);
+  }
+
+  &[data-callout="link"] {
+    --callout-icon: var(--callout-icon-link);
+    margin-right: calc(0.25 * $baseMargin);
+  }
+
+  &[data-callout="math"] {
+    --callout-icon: var(--callout-icon-math);
   }
 
   :root[saved-theme="dark"] & {
@@ -144,16 +181,52 @@
   &.is-collapsed > .callout-title > .fold-callout-icon {
     transform: rotateZ(-90deg);
   }
+
+  &.is-collapsible {
+    > .callout-content {
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+    }
+  }
+
+  &.is-collapsed {
+    > .callout-content {
+      display: none;
+      max-height: 0 !important;
+    }
+  }
+}
+
+// These tags should generally be less bright
+.callout-metadata {
+  background-color: var(--base); // "see-through"
+  --border: color-mix(in srgb, var(--color) 30%, var(--base));
+
+  .callout-content {
+    margin-bottom: calc($baseMargin);
+  }
+
+  & > .callout-content > *:last-child {
+    margin-bottom: 0;
+  }
+  & > .callout-content > *:first-child {
+    margin-top: 0;
+  }
 }
 
 .callout-title {
   display: flex;
   align-items: flex-start;
   gap: 5px;
-  padding: 1rem 0;
-  // color: var(--color);
+  margin: calc(2 * $baseMargin) 0;
+  margin-bottom: calc(1.5 * $baseMargin);
 
   --icon-size: 18px;
+
+  .callout-metadata & {
+    margin-top: calc($baseMargin);
+    margin-bottom: calc($baseMargin);
+  }
 
   & .fold-callout-icon {
     transition: transform 0.15s ease;
@@ -162,11 +235,20 @@
     --callout-icon: var(--callout-icon-fold);
   }
 
-  & > .callout-title-inner > p {
+  & > .callout-title-inner {
     margin: 0;
     color: var(--color);
 
-    & a {
+    .callout-metadata & {
+      color: var(--gray);
+    }
+
+    & p {
+      margin: 0;
+    }
+
+    & a,
+    & p {
       color: inherit;
     }
   }
@@ -189,15 +271,26 @@
     // Align with the text
     mask-position: none;
     -webkit-mask-position: none;
-    -webkit-mask-position-y: 5px;
+    -webkit-mask-position-y: 5.5px;
   }
 
   .callout-title-inner {
     font-weight: $semiBoldWeight;
     font-variant-numeric: lining-nums;
+    & .small-caps {
+      font-variant-numeric: normal;
+    }
+
+    & sup {
+      font-variant-numeric: normal;
+    }
 
     & a {
       font-weight: inherit;
     }
   }
+}
+
+.footnotes .callout {
+  padding-bottom: calc(2 * $baseMargin);
 }

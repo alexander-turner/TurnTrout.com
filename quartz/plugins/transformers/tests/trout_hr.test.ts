@@ -23,7 +23,7 @@ describe('maybeInsertOrnament', () => {
   it('should insert ornament before footnotes section', () => {
     tree.children = [
       { type: 'element', tagName: 'section', properties: { className: ['footnotes'], 'dataFootnotes': true }, children: [] }
-    ];
+    ] as HastElement[];
 
     const beforeNode = tree.children[0]
     maybeInsertOrnament(tree.children[0] as HastElement, 0, tree);
@@ -53,7 +53,7 @@ describe('maybeInsertOrnament', () => {
   it('should remove hr proceeded by newline and insert ornament before footnotes section', () => {
     tree.children = [
       { type: 'element', tagName: 'hr' },
-      {type: 'text', value: '\n'},
+      { type: 'text', value: '\n' },
       { type: 'element', tagName: 'section', properties: { className: ['footnotes'], 'dataFootnotes': true }, children: [] }
     ] as HastElement[];
 
@@ -100,12 +100,101 @@ describe('insertOrnamentNode', () => {
     insertOrnamentNode(tree as Root);
 
     expect(tree.children).toHaveLength(3);
-    
+
     // Check that existing elements weren't changed
-    expect(tree.children[0]).toBe(existingElements[0]);
-    expect(tree.children[1]).toBe(existingElements[1]);
+    expect(tree.children[0]).toStrictEqual(existingElements[0]);
+    expect(tree.children[1]).toStrictEqual(existingElements[1]);
 
     // Check the appended ornament node
-    expect(tree.children[2]).toBe(ornamentNode)
+    expect(tree.children[2]).toStrictEqual(ornamentNode)
+  });
+});
+
+// Add these new tests at the end of the file:
+
+describe('Appendix functionality', () => {
+  let tree: Root;
+
+  beforeEach(() => {
+    tree = { type: 'root', children: [] } as Root;
+  });
+
+  it.each([
+    ['h1', 'Appendix: Additional Information'],
+    ['h2', 'Appendix: Further Reading'],
+  ])('should insert ornament before %s element with direct text child starting with "Appendix"', (tagName, content) => {
+    const appendixHeading = {
+      type: 'element',
+      tagName,
+      children: [{ type: 'text', value: content }]
+    } as HastElement;
+    tree.children = [
+      { type: 'element', tagName: 'p', children: [] },
+      appendixHeading
+    ] as HastElement[];
+
+    maybeInsertOrnament(appendixHeading, 1, tree);
+
+    expect(tree.children).toHaveLength(3);
+    expect(tree.children[1]).toStrictEqual(ornamentNode);
+    expect(tree.children[2]).toStrictEqual(appendixHeading);
+  });
+
+  it('should insert ornament before heading with anchor element starting with "Appendix"', () => {
+    const appendixHeading = {
+      type: 'element',
+      tagName: 'h2',
+      children: [{
+        type: 'element',
+        tagName: 'a',
+        children: [{ type: 'text', value: 'Appendix: Open questions I have' }]
+      }]
+    } as HastElement;
+    tree.children = [
+      { type: 'element', tagName: 'p', children: [] },
+      appendixHeading
+    ] as HastElement[];
+
+    maybeInsertOrnament(appendixHeading, 1, tree);
+
+    expect(tree.children).toHaveLength(3);
+    expect(tree.children[1]).toStrictEqual(ornamentNode);
+    expect(tree.children[2]).toStrictEqual(appendixHeading);
+  });
+
+  it('should not insert ornament before heading not starting with "Appendix"', () => {
+    const normalHeading = {
+      type: 'element',
+      tagName: 'h1',
+      children: [{ type: 'text', value: 'Normal Heading' }]
+    } as HastElement;
+    tree.children = [
+      { type: 'element', tagName: 'p', children: [] },
+      normalHeading
+    ] as HastElement[];
+
+    maybeInsertOrnament(normalHeading, 1, tree);
+
+    expect(tree.children).toHaveLength(2);
+    expect(tree.children[1]).toStrictEqual(normalHeading);
+  });
+
+  it('should insert ornament before "Appendix" heading when both heading and footnotes are present', () => {
+    const appendixHeading = {
+      type: 'element',
+      tagName: 'h1',
+      children: [{ type: 'text', value: 'Appendix: Additional Information' }]
+    } as HastElement;
+    tree.children = [
+      { type: 'element', tagName: 'p', children: [] },
+      appendixHeading,
+      { type: 'element', tagName: 'section', properties: { className: ['footnotes'], 'dataFootnotes': true }, children: [] }
+    ] as HastElement[];
+
+    insertOrnamentNode(tree);
+
+    expect(tree.children).toHaveLength(4);
+    expect(tree.children[1]).toStrictEqual(ornamentNode);
+    expect(tree.children[2]).toStrictEqual(appendixHeading);
   });
 });

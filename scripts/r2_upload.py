@@ -7,14 +7,20 @@ import re
 from typing import Optional, Sequence
 import os
 
+
+# Add this function at the beginning of the file
+def get_home_directory():
+    return os.environ.get("HOME", os.path.expanduser("~"))
+
+
 try:
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils
+    import utils as script_utils  # type: ignore
 
 R2_BASE_URL: str = "https://assets.turntrout.com"
 R2_BUCKET_NAME: str = "turntrout"
-R2_MEDIA_DIR: Path = Path("$HOME/Downloads/website-media-r2")
+R2_MEDIA_DIR: Path = Path(get_home_directory()) / "Downloads" / "website-media-r2"
 
 
 def get_r2_key(filepath: Path) -> str:
@@ -28,7 +34,7 @@ def upload_and_move(
     file_path: Path,
     verbose: bool = False,
     replacement_dir: Optional[Path] = None,
-    move_to_dir: Optional[Path] = R2_MEDIA_DIR,
+    move_to_dir: Optional[Path] = None,
 ) -> None:
     """
     Upload a file to R2 storage and update references.
@@ -43,6 +49,9 @@ def upload_and_move(
         RuntimeError: If the rclone command fails.
         FileNotFoundError: If the original file cannot be moved.
     """
+    if move_to_dir is None:
+        move_to_dir = R2_MEDIA_DIR
+
     if "quartz/" not in str(file_path):
         raise ValueError("Error: File path does not contain 'quartz/'.")
     if not file_path.is_file():
@@ -76,7 +85,7 @@ def upload_and_move(
         escaped_original_path: str = re.escape(str(relative_original_path))
         escaped_relative_subpath: str = re.escape(str(relative_subpath))
         new_content: str = re.sub(
-            rf"(?:\.?/)?(?:{escaped_original_path}|{escaped_relative_subpath})",
+            rf"(?<=[\(\"])(?:\.?/)?(?:{escaped_original_path}|{escaped_relative_subpath})",
             r2_address,
             file_content,
         )
@@ -88,7 +97,7 @@ def upload_and_move(
             print(f"Moving original file: {file_path}")
         # Create the directory structure in the target location
         git_root = script_utils.get_git_root()
-        relative_path = file_path.relative_to(git_root)
+        relative_path = file_path.relative_to(str(git_root))
         target_path = move_to_dir / relative_path
         target_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(file_path), str(target_path))
@@ -130,13 +139,14 @@ def main() -> None:
     parser.add_argument("file", type=Path, nargs="?", help="File to upload")
     args = parser.parse_args()
 
+    files_to_upload: Sequence[Path] = []
     if args.all_asset_dir:
-        files_to_upload: Sequence[Path] = script_utils.get_files(
+        files_to_upload = script_utils.get_files(
             args.all_asset_dir,
             args.filetypes,
         )
     elif args.file:
-        files_to_upload: Sequence[Path] = [args.file]
+        files_to_upload = [args.file]
     else:
         parser.error("Either --all-asset-dir or a file must be specified")
 
@@ -151,4 +161,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

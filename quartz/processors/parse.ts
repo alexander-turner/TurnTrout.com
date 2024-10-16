@@ -16,13 +16,16 @@ import { BuildCtx } from "../util/ctx"
 import { visit } from "unist-util-visit"
 import { Root } from "hast"
 import { remarkDefinitionList, defListHastHandlers } from "remark-definition-list"
+import rehypeMermaid from "rehype-mermaid"
 // @ts-expect-error: no types
 const remarkCaptions = (await import("remark-captions")).default
 
 // https://github.com/zestedesavoir/zmarkdown/issues/490
 const remarkCaptionsCodeFix = () => (tree: Root) => {
-  visit(tree, "figure", (figure: any) => {
-    delete figure.value
+  visit(tree, "figure", (figure: Element) => {
+    if ("value" in figure) {
+      delete figure.value
+    }
   })
 }
 
@@ -41,6 +44,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
     .use(remarkCaptions)
     .use(remarkCaptionsCodeFix)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })
+    .use(rehypeMermaid)
     .use(transformers.filter((p) => p.htmlPlugins).flatMap((plugin) => plugin.htmlPlugins!(ctx)))
 }
 
@@ -50,7 +54,7 @@ function* chunks<T>(arr: T[], n: number) {
   }
 }
 
-async function transpileWorkerScript() {
+function transpileWorkerScript() {
   // transpile worker script
   const cacheFile = "./.quartz-cache/transpiled-worker.mjs"
   const fp = "./quartz/worker.ts"
@@ -68,11 +72,11 @@ async function transpileWorkerScript() {
       {
         name: "css-and-scripts-as-text",
         setup(build) {
-          build.onLoad({ filter: /\.scss$/ }, (_) => ({
+          build.onLoad({ filter: /\.scss$/ }, () => ({
             contents: "",
             loader: "text",
           }))
-          build.onLoad({ filter: /\.inline\.(ts|js)$/ }, (_) => ({
+          build.onLoad({ filter: /\.inline\.(ts|js)$/ }, () => ({
             contents: "",
             loader: "text",
           }))
@@ -125,7 +129,7 @@ const clamp = (num: number, min: number, max: number) =>
 export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<ProcessedContent[]> {
   const { argv } = ctx
   const perf = new PerfTimer()
-  const log = new QuartzLogger(argv.verbose)
+  const log = new QuartzLogger()
 
   // rough heuristics: 128 gives enough time for v8 to JIT and optimize parsing code paths
   const CHUNK_SIZE = 128

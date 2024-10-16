@@ -1,7 +1,7 @@
 @use "../../styles/variables" as *;
 .toc-title {
   margin-top: 0;
-  margin-bottom: $baseMargin;
+  margin-bottom: calc(0.5 * $baseMargin);
   & a {
     text-decoration: none;
   }
@@ -16,7 +16,8 @@ ol.overflow {
   clear: both;
 }
 
-#toc-content {
+#toc-content,
+#toc-content-mobile {
   list-style: none;
   overflow: visible;
   max-height: none;
@@ -53,15 +54,18 @@ ol.overflow {
       padding-bottom: calc(0.5 * $baseMargin);
       overflow-y: visible;
 
+      &:first-child {
+        padding-top: calc(0.5 * $baseMargin);
+      }
+
       &:last-child {
         padding-bottom: 0;
-        margin-bottom: calc(0.5 * $baseMargin);
+        margin-bottom: calc(0.25 * $baseMargin);
       }
 
       & > a {
         text-decoration: none;
         color: var(--gray);
-        transition: all 100ms ease-in-out;
 
         // Navigation frame is within this section
         &.active {
@@ -70,5 +74,12 @@ ol.overflow {
         }
       }
     }
+  }
+}
+
+.center #toc-content-mobile {
+  & a,
+  & a:visited {
+    color: var(--dark);
   }
 }

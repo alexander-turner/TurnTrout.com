@@ -4,15 +4,19 @@ hide_authors: "true"
 hide_metadata: "true"
 title: Posts
 no_dropcap: "true"
+permalink: posts
+aliases:
+  - Posts
+hideSubscriptionLinks: false
 ---
 
-# Most recent posts
-
-# TurnTrout's favorites
+# My favorite posts
 
 1. [Looking back on my alignment PhD](/alignment-phd)
 2. [The shard theory of human values](/shard-theory)
 3. [Bruce Wayne and the cost of inaction](/bruce-wayne-and-the-cost-of-inaction)
+4. [Formalizing “defection” using game theory](/what-counts-as-defection.md)
+5. [You should read "Harry Potter and the Methods of Rationality"](/read-hpmor)
 
 # Explore by tag
 
@@ -26,18 +30,19 @@ In early 2018, I became convinced that [the AI alignment problem](https://en.wik
 
 I didn't remember much formal math or computer science, but I wanted to give my all anyways. I started reading textbooks. I started reading _a lot_ of textbooks.
 
-![](test_library.png)
-
 > [!quote] Original sequence description
 >
-> You can never have enough books. --  [The Verres family motto](https://hpmor.com/chapter/7)
+> >[!quote] [The Verres family motto](https://hpmor.com/chapter/7)
+> > You can never have enough books. 
 >
 > My journey through the MIRI research guide.
+
+![](https://assets.turntrout.com/static/images/posts/test_library.avif)
 
 1. [Set Up for Success: Insights from "Naïve Set Theory"](/set-up-for-success-insights-from-naive-set-theory)
 2. [Lightness and Unease](./lightness-and-unease.md)
 3. [The Art of the Artificial: Insights from "Artificial Intelligence: A Modern Approach"](./the-art-of-the-artificial-insights-from-artificial.md)
-4. [The First Rung: Insights from "Linear Algebra Done Right"](the-first-rung-insights-from-linear-algebra-done-right.md)
+4. [The First Rung: Insights from "Linear Algebra Done Right"](/the-first-rung-insights-from-linear-algebra-done-right.md)
 5. [Internalizing Internal Double Crux](./internalizing-internal-double-crux.md)
 6. [Confounded No Longer: Insights from "All of Statistics"](./confounded-no-longer-insights-from-all-of-statistics.md)
 7. [Into the Kiln: Insights from Tao's "Analysis I"](/into-the-kiln-insights-from-tao-s-analysis-i.md)
@@ -59,7 +64,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 > [!quote] Original sequence description
 > Why do some things seem like really big deals to us? Do most agents best achieve their goals by seeking power? How might we avert catastrophic incentives in the utility maximization framework?
 
-![](reframing-impact-card.png)
+![](https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif)
 
 Introductory post: [Reframing Impact](./reframing-impact)
 
@@ -87,35 +92,35 @@ Introductory post: [Reframing Impact](./reframing-impact)
 5. [Conclusion to "Reframing Impact"](./conclusion-to-reframing-impact)
 
 ## The Causes of Power-Seeking and Instrumental Convergence
-> [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
-> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
+
+This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture).
 
 > [!quote] Original sequence description
-> Instrumental convergence posits that smart goal-directed agents will tend to take certain actions (eg gain resources, stay alive) in order to achieve their goals. These actions seem to involve taking power *from* humans. Human disempowerment seems like a key part of how AI might go very, very wrong.
+> Instrumental convergence posits that smart goal-directed agents will tend to take certain actions (e.g. gain resources, stay alive) in order to achieve their goals. These actions seem to involve taking power *from* humans. Human disempowerment seems like a key part of how AI might go very, very wrong.
 >
 > But where does instrumental convergence come from? When does it occur, and how strongly? And what does the math look like?
 
-![](power-seeking-AI.png)
+![](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)
 
-1. [Seeking Power Is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps)
-2. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities)
-3. [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture)
-4. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power)
-5. [MDP Models Are Determined by the Agent Architecture and the Environment](./MDPs-are-not-subjective)
-6. [Environmental Structure Can Cause Instrumental Convergence](./environmental-structure-can-cause-instrumental-convergence)
-7. [A World in Which the Alignment Problem Seems Lower-Stakes](./lower-stakes-alignment-scenario)
-8. [The More Power at Stake, the Stronger Instrumental Convergence](./quantitative-strength-of-instrumental-convergence)
-9. [Seeking Power Is Convergently Instrumental in a Broad Class of Environments](./power-seeking-beyond-MDPs)
-10. [When Most VNM-Coherent Preference Orderings Have Convergent](./instrumental-convergence-via-vnm-preferences)
-11. [Satisficers Tend to Seek Power: Instrumental Convergence via Retargetability](./satisficers-tend-to-seek-power)
-12. [A Certain Formalization of Corrigibility Is VNM-Incoherent](./a-certain-formalization-of-corrigibility-is-vnm-incoherent)
-13. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives)
-14. [Parametrically Retargetable Decision-Makers Tend to Seek Power](./parametrically-retargetable-power-seeking)
+> [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
+> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it! 
+
+1. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities) 
+2. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power) 
+3. [MDP Models Are Determined by the Agent Architecture and the Environment](./MDPs-are-not-subjective) 
+4. [Environmental Structure Can Cause Instrumental Convergence](./environmental-structure-can-cause-instrumental-convergence) 
+5. [A World in Which the Alignment Problem Seems Lower-Stakes](./lower-stakes-alignment-scenario) 
+6. [The More Power at Stake, the Stronger Instrumental Convergence](./quantitative-strength-of-instrumental-convergence) 
+7. [Seeking Power Is Convergently Instrumental in a Broad Class of Environments](./power-seeking-beyond-MDPs) 
+8. [When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives](./instrumental-convergence-via-vnm-preferences) 
+9. [Satisficers Tend to Seek Power: Instrumental Convergence via Retargetability](./satisficers-tend-to-seek-power) 
+10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives) 
+11. [Parametrically Retargetable Decision-Makers Tend to Seek Power](./parametrically-retargetable-power-seeking)
 
 ## Thoughts on Corrigibility
 
-<figure class="float-right" style="margin-top:-1rem">
-<img src="./asset_staging/hal_9000.png" alt="" loading="lazy">
+<figure class="float-right desktop-only" style="margin-top:-1rem; width: 80%;">
+<img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="" loading="lazy" style="width: 80%;">
 </figure>
 
 > [!quote] Original sequence description
@@ -125,12 +130,13 @@ Introductory post: [Reframing Impact](./reframing-impact)
 1. [Non-Obstruction: A Simple Concept Motivating Corrigibility](./non-obstruction-motivates-corrigibility)
 2. [Corrigibility As Outside View](./corrigibility-as-outside-view)
 3. [A Certain Formalization of Corrigibility is VNM-Incoherent](./a-certain-formalization-of-corrigibility-is-vnm-incoherent)
-4. [Formalizing Policy Modification Corrigibility](formalizing-policy-modification-corrigibility)
+4. [Formalizing Policy Modification Corrigibility](./formalizing-policy-modification-corrigibility)
 
 ## Shard Theory
-In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_. 
 
-Classical arguments focus on what _the_ goal of an AI will be. Why? There's not a good answer that I've ever heard. Shard theory redirects our attention from fixed single objectives. The basic upshot of shard theory: AIs and humans are well-understood[^experimental] as having a bunch of situationally activated goals -- "shards" of desire and preference. 
+In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_.
+
+Classical arguments focus on what _the_ goal of an AI will be. Why? There's not a good answer that I've ever heard. Shard theory redirects our attention from fixed single objectives. The basic upshot of shard theory: AIs and humans are well-understood[^experimental] as having a bunch of situationally activated goals -- "shards" of desire and preference.
 
 For example, you probably care more about people you can see. Shard theory predicts this outcome. Consider your learned decision-making circuits which bid for actions which care for your friend Bill. These circuits were probably formed when you were able to see Bill (or perhaps the vast majority of your "caring about people" circuits were formed when physically around people). If you can see Bill, that situation is more "similar to the training distribution" for your "caring about Bill" shard. Therefore, the Bill shard is especially likely to fire when you can see him.
 
@@ -138,7 +144,7 @@ For example, you probably care more about people you can see. Shard theory predi
 
 Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-without-total-robustness). The stronger their "aligned shards", the more human welfare weighs on their decision-making. We're playing a game of inches, so let's play to win.
 
-![](human_shards.png)
+![](https://assets.turntrout.com/static/images/posts/human_shards.avif)
 
 1. [Humans Provide an Untapped Wealth of Evidence About Alignment](./humans-provide-alignment-evidence)
 2. [Human Values & Biases Are Inaccessible to the Genome](./human-values-and-biases-are-inaccessible-to-the-genome)
@@ -157,7 +163,7 @@ Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-w
 
 My work with my MATS 3.0 scholars, [Ulisse Mini](https://uli.rocks) and [Peli Grietzer](https://thegradientpub.substack.com/p/peli-grietzer-a-mathematized-philosophy)!
 
-![](shard_mouse.png)
+![](https://assets.turntrout.com/static/images/posts/shard_mouse.avif)
 Figure: A [mouse with cheese subshards](https://imgur.com/a/doRBRs4).
 
 > [!quote] Original sequence description

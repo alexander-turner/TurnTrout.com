@@ -6,8 +6,8 @@ import { QuartzTransformerPlugin } from "../types"
  * @param {string} text
  * @returns {string} The modified string
  */
-const minusReplace = (text: string): string => {
-  const numberMatch = /(^|\s)\-(\s?\d*\.?\d+)/g
+export const minusReplace = (text: string): string => {
+  const numberMatch = /(^|[\s(])-(\s?\d*\.?\d+)/g
   return text.replace(numberMatch, "$1−$2")
 }
 

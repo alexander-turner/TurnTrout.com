@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
+import json
+import os
+import tempfile
 import argparse
 import sys
 import subprocess
 from pathlib import Path
-from typing import Collection
 
-IMAGE_QUALITY: int = 56  # Default quality (higher is larger file size but better quality)
-ALLOWED_IMAGE_EXTENSIONS: Collection[str] = (".jpg", ".jpeg", ".png")
+IMAGE_QUALITY: int = (
+    56  # Default quality (higher is larger file size but better quality)
+)
+ALLOWED_IMAGE_EXTENSIONS: set[str] = {".jpg", ".jpeg", ".png"}
 
 
 def image(image_path: Path, quality: int = IMAGE_QUALITY) -> None:
@@ -42,28 +46,23 @@ def image(image_path: Path, quality: int = IMAGE_QUALITY) -> None:
         raise RuntimeError(f"Error during conversion: {e}") from e
 
 
-ALLOWED_VIDEO_EXTENSIONS: Collection[str] = (
+ALLOWED_VIDEO_EXTENSIONS: set[str] = {
     ".gif",
     ".mov",
     ".mp4",
     ".webm",
     ".avi",
     ".mpeg",
-)
+}
 
-ALLOWED_EXTENSIONS: Collection[str] = (
-    ALLOWED_IMAGE_EXTENSIONS + ALLOWED_VIDEO_EXTENSIONS
-)
+ALLOWED_EXTENSIONS: set[str] = ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
 
 
-VIDEO_QUALITY: int = 23  # Default quality (0-51). Lower is better but slower.
-def video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
-    """Converts a video to mp4 format using ffmpeg with HEVC encoding if not already HEVC.
+VIDEO_QUALITY: int = 28  # Default quality (0-51). Lower is better but slower.
 
-    Args:
-        video_path: The path to the video file.
-        quality: The HEVC quality (0-51). Lower is better but slower.
-    """
+
+def to_hevc_video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
+    """Converts a video to mp4 format using ffmpeg with HEVC encoding, if not already HEVC."""
     if not video_path.is_file():
         raise FileNotFoundError(f"Error: Input file '{video_path}' not found.")
 
@@ -75,13 +74,17 @@ def video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
     # Check if the input is already HEVC encoded
     probe_cmd = [
         "ffprobe",
-        "-v", "error",
-        "-select_streams", "v:0",
-        "-show_entries", "stream=codec_name",
-        "-of", "default=noprint_wrappers=1:nokey=1",
-        str(video_path)
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=codec_name",
+        "-of",
+        "default=noprint_wrappers=1:nokey=1",
+        str(video_path),
     ]
-    
+
     try:
         codec = subprocess.check_output(probe_cmd, universal_newlines=True).strip()
     except subprocess.CalledProcessError as e:
@@ -93,7 +96,7 @@ def video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
 
     # Determine output path
     output_path = video_path.with_suffix(".mp4")
-    if video_path.suffix.lower() == '.mp4':
+    if video_path.suffix.lower() == ".mp4":
         temp_output_path = video_path.with_stem(video_path.stem + "_temp")
     else:
         temp_output_path = output_path
@@ -104,20 +107,30 @@ def video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
         else:
             # Single pass encoding
             subprocess.run(
-            [
-                "ffmpeg",
-                "-i", str(video_path),
-                "-c:v",  "libx265",
-                "-preset", "slow",
-                "-crf", str(quality),
-                "-c:a", "copy",  # Copy audio without re-encoding
-                "-tag:v", "hvc1",  # For better compatibility with Apple devices
-                "-movflags", "+faststart",
-                "-colorspace", "bt709",
-                str(temp_output_path)
-            ],
-            check=True,
-        )
+                [
+                    "ffmpeg",
+                    "-i",
+                    str(video_path),
+                    "-c:v",
+                    "libx265",
+                    "-preset",
+                    "slow",
+                    "-crf",
+                    str(quality),
+                    "-c:a",
+                    "copy",  # Copy audio without re-encoding
+                    "-tag:v",
+                    "hvc1",  # For better compatibility with Apple devices
+                    "-movflags",
+                    "+faststart",
+                    "-colorspace",
+                    "bt709",
+                    "-v",
+                    "error",
+                    str(temp_output_path),
+                ],
+                check=True,
+            )
 
         # If we're overwriting the original file, replace it now
         if output_path == video_path:
@@ -125,43 +138,89 @@ def video(video_path: Path, quality: int = VIDEO_QUALITY) -> None:
             temp_output_path.rename(output_path)
 
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Error during conversion: {e.stderr}") from e
+        raise RuntimeError(f"Error during conversion: {e}") from e
     finally:
-        original_path = output_path.with_name(output_path.name + "_original")
+        # TODO this doesn't always work
+        original_path = output_path.with_suffix(output_path.suffix + "_original")
+
         if original_path.exists():
             original_path.unlink()
 
     print(f"Successfully converted {video_path} to HEVC: {output_path}")
 
+
 def _compress_gif(gif_path: Path, quality: int = VIDEO_QUALITY) -> None:
     """
-    Compress a GIF file to an MP4 video.
-
-    This function converts a GIF file to an MP4 video using FFmpeg. It extracts frames
-    from the GIF, converts them to an MP4 video with the specified quality, and then
-    cleans up the temporary files.
+    Compress a GIF file to an MP4 video, preserving the original frame rate.
     """
-    # Extract frames from GIF
-    subprocess.run([
-        "ffmpeg",
-        "-i", str(gif_path),
-        f"{gif_path.parent / gif_path.stem}_%03d.png"
-    ], check=True)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
 
-    try:
-        # Convert frames to MP4
-        output_path = gif_path.with_suffix(".mp4")
-        subprocess.run([
-            "ffmpeg",
-            "-i", f"{gif_path.parent / gif_path.stem}_%03d.png",
-            "-c:v", "libx265",
-            "-crf", str(quality),
-            "-pix_fmt", "yuv420p", # Chroma subsampling
-            str(output_path)
-        ], check=True)
-    finally: # Clean up temporary PNG files
-        for png_file in gif_path.parent.glob(f"{gif_path.stem}_*.png"):
-            png_file.unlink()
+        # Get the frame rate of the original GIF
+        probe_cmd = [
+            "ffprobe",
+            "-v",
+            "quiet",
+            "-print_format",
+            "json",
+            "-show_streams",
+            str(gif_path),
+        ]
+        probe_output = subprocess.check_output(probe_cmd, universal_newlines=True)
+        probe_data = json.loads(probe_output)
+
+        # Extract the frame rate, defaulting to 10 if not found
+        frame_rate = 10
+        for stream in probe_data.get("streams", []):
+            if stream.get("codec_type") == "video":
+                avg_frame_rate = stream.get("avg_frame_rate", "10/1")
+                num, den = map(int, avg_frame_rate.split("/"))
+                frame_rate = int(num / den) if den != 0 else 10
+                break
+
+        # Extract frames from GIF
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i",
+                str(gif_path),
+                "-vsync",
+                "0",
+                f"{temp_path / 'frame_%04d.png'}",
+            ],
+            check=True,
+        )
+
+        try:
+            # Convert frames to MP4
+            output_path = gif_path.with_suffix(".mp4")
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-framerate",
+                    str(frame_rate),
+                    "-i",
+                    f"{temp_path / 'frame_%04d.png'}",
+                    "-c:v",
+                    "libx265",
+                    "-crf",
+                    str(quality),
+                    "-vf",
+                    "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-loop",
+                    "0",  # Loop the video indefinitely
+                    "-v",
+                    "error",
+                    str(output_path),
+                ],
+                check=True,
+            )
+
+            print(f"Successfully converted {gif_path} to MP4: {output_path}")
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Error during conversion: {e}") from e
 
 
 if __name__ == "__main__":
@@ -173,22 +232,22 @@ if __name__ == "__main__":
         "-q",
         "--quality",
         type=int,
-        default=QUALITY,
+        default=None,
         help="Quality (0-100 for images)",
-    )
-    parser.add_argument(
-        "-t",
-        "--type",
-        type=str,
-        default="image",
-        help="Type of asset to compress (image or video)",
     )
 
     args: argparse.Namespace = parser.parse_args()
-
-    if args.type == "image":
-        image(args.path, args.quality)
-    elif args.type == "video":
-        video(args.path, args.quality)
+    if args.path.suffix.lower() in ALLOWED_IMAGE_EXTENSIONS:
+        arg_type = "image"
+    elif args.path.suffix.lower() in ALLOWED_VIDEO_EXTENSIONS:
+        arg_type = "video"
     else:
-        raise ValueError(f"Error: Unsupported file type '{args.type}'. Supported types are: image or video.")
+        raise ValueError(f"Error: Unsupported file type '{args.path.suffix}'.")
+
+    if args.quality is None:
+        args.quality = IMAGE_QUALITY if arg_type == "image" else VIDEO_QUALITY
+
+    if arg_type == "image":
+        image(args.path, args.quality)
+    elif arg_type == "video":
+        to_hevc_video(args.path, args.quality)

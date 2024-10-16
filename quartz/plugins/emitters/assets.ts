@@ -24,7 +24,7 @@ export const Assets: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    async getDependencyGraph(ctx, _content, _resources) {
+    async getDependencyGraph(ctx) {
       const { argv, cfg } = ctx
       const graph = new DepGraph<FilePath>()
       const fps = await filesToCopy(argv, cfg)
@@ -38,7 +38,7 @@ export const Assets: QuartzEmitterPlugin = () => {
       return graph
     },
 
-    async emit({ argv, cfg }, _content, _resources): Promise<FilePath[]> {
+    async emit({ argv, cfg }): Promise<FilePath[]> {
       const assetsPath = argv.output
       const fps = await filesToCopy(argv, cfg)
       const res: FilePath[] = []

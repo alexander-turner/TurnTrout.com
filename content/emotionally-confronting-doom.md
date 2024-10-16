@@ -1,5 +1,0 @@
----
-title: 
-permalink: 
-publish: false
----

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck I don't want to check this file, not mine
 export var twemoji =
   (function () /*! Copyright Twitter Inc. and other contributors. Licensed under MIT */ {
     "use strict"
@@ -9,7 +9,7 @@ export var twemoji =
         className: "emoji",
         convert: {
           fromCodePoint: function d(u) {
-            var f = "string" == typeof u ? parseInt(u, 16) : u
+            let f = "string" == typeof u ? parseInt(u, 16) : u
             return f < 65536 ? b(f) : b(55296 + ((f -= 65536) >> 10), 56320 + (1023 & f))
           },
           toCodePoint: p,
@@ -18,7 +18,7 @@ export var twemoji =
           this.parentNode && this.parentNode.replaceChild(a(this.alt, !1), this)
         },
         parse: function u(f, $) {
-          var c
+          let c
           return (
             ($ && "function" != typeof $) || ($ = { callback: $ }),
             ("string" == typeof f ? o : n)(f, {
@@ -35,7 +35,7 @@ export var twemoji =
         replace: l,
         test: function d(u) {
           f.lastIndex = 0
-          var $ = f.test(u)
+          const $ = f.test(u)
           return (f.lastIndex = 0), $
         },
       },
@@ -117,7 +117,7 @@ export var twemoji =
     }
     function o(d, u) {
       return l(d, function (d) {
-        var f,
+        let f,
           $,
           c = d,
           e = r(d),
@@ -155,7 +155,8 @@ export var twemoji =
       return String(d).replace(f, u)
     }
     function p(d, u) {
-      for (var f = [], $ = 0, c = 0, e = 0; e < d.length; )
+      const f = []
+      for (let $ = 0, c = 0, e = 0; e < d.length; )
         ($ = d.charCodeAt(e++)),
           c
             ? (f.push((65536 + ((c - 55296) << 10) + ($ - 56320)).toString(16)), (c = 0))

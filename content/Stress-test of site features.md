@@ -5,6 +5,7 @@ tags:
   - website
 ---
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
+
 # Quotations
 
 > Perhaps one did not want to be loved so much as to be understood.
@@ -44,6 +45,24 @@ The following spoiler box is larger:
 >! This should be in another `<p>` element.
 >
 >! *This starts with emphasis*.
+
+# Mermaid diagrams
+```mermaid
+flowchart TD
+    EV["Entire video"]:::blue
+    AS["Action sequence"]:::orange
+    H["Human"]:::red
+    HQF["$$e=mc^2$$"]:::black
+    Q["Question(s)"]:::black
+    A["Answer(s)"]:::black
+
+    EV --> H
+    AS --> H
+    H --> HQF
+    Q --> HQF
+    HQF --> A
+```
+Code: An example [Mermaid](https://mermaid.js.org/) diagram. Mermaid even supports $\KaTeX$!
 
 # Smart quotes
 
@@ -175,7 +194,7 @@ _Italics **Bold Italics**_ **Bold** Normal
 >   <dt>Bow</dt>
 >   <dd>
 >     <ul>
->       <li>Noldorin Sindarin: <span className="elvish">peng</span> also poetically <span className="elvish">cû</span> ("arch")</li>
+>       <li>Noldorin Sindarin: <span className="elvish">peng</span> also poetically <span className="elvish">cû</span> (“arch”)</li>
 >       <li>Quenya: <span className="elvish">quinga</span></li>
 >     </ul>
 >   </dd>
@@ -226,7 +245,11 @@ Before commits are pushed to GitHub, images are converted to AVIF for better com
 > [!quote]
 > A man may take to drink because he feels himself to be a failure, and then fail all the more completely because he drinks. It is rather the same thing that is happening to the English language. It becomes ugly and inaccurate because our thoughts are foolish, but the slovenliness of our language makes it easier for us to have foolish thoughts. The point is that the process is reversible.
 
-> [!tip] [This dummy link should be colored according to the admonition type.](test-page)
+> [!quote]- Hagrid
+> 
+> Yer a wizard, Harry. And I'm in what they call er "collapsing admonition."
+
+> [!tip] [This dummy link should be colored according to the admonition type.](/test-page)
 >
 > > What is above all needed is to let the meaning choose the word, and not the other way about. In prose, the worst thing one can do with words is to surrender to them. When you think of a concrete object, you think wordlessly, and then, if you want to describe the thing you have been visualising, you probably hunt about till you find the exact words that seem to fit it. When you think of something abstract you are more inclined to use words from the start, and unless you make a conscious effort to prevent it, the existing dialect will come rushing in and do the job for you, at the expense of blurring or even changing your meaning.
 > >

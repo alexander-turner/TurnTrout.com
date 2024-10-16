@@ -3,7 +3,7 @@ import { twemoji } from "./modules/twemoji.min"
 import { h } from "hastscript"
 import { Plugin } from "unified"
 import { Node } from "unist"
-import { Element, Text } from "hast"
+import { Element, Parent, Text } from "hast"
 
 export const PLACEHOLDER = "__EMOJI_PLACEHOLDER__"
 export const EMOJI_REPLACEMENT = "⤴"
@@ -95,7 +95,7 @@ export function processTree(tree: Node): Node {
   visit(
     tree,
     "text",
-    (node: Text, _index: number, parent: any) => {
+    (node: Text, _index: number, parent: Parent) => {
       const twemojiContent = replaceEmojiConvertArrows(node.value)
 
       if (twemojiContent !== node.value) {

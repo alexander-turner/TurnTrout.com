@@ -1,16 +1,20 @@
-import pytest
+"""
+Test the utilities used for running the tests :)
+"""
+
 import subprocess
-import git
 from pathlib import Path
 from typing import Optional
+import pytest
+import git
 from .. import utils as script_utils
-
-# pyright: reportPrivateImportUsage = false
-
 
 def test_git_root_is_ancestor(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """
+    Test that the found git root is an ancestor of the current file.
+    """
     monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
     current_file_path = tmp_path / "tests" / "test_utils.py"
     current_file_path.parent.mkdir(parents=True)
@@ -22,7 +26,7 @@ def test_git_root_is_ancestor(
 
 
 @pytest.mark.parametrize("git_exists", [True, False])
-def test_get_git_root(
+def test_find_git_root(
     git_exists: bool, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     expected_output = "/path/to/git/root" if git_exists else ""
@@ -109,7 +113,7 @@ def test_get_files_gitignore(tmp_path):
     try:
         # Create a git repository
         repo = git.Repo.init(tmp_path)
-        with open(tmp_path / ".gitignore", "w") as f:
+        with open(tmp_path / ".gitignore", "w", encoding="utf-8") as f:
             f.write("*.txt\n")  # Ignore text files
 
         md_file = tmp_path / "test.md"

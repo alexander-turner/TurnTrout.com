@@ -3,7 +3,7 @@ import { Spinner } from "cli-spinner"
 export class QuartzLogger {
   verbose: boolean
   spinner: Spinner | undefined
-  constructor(verbose: boolean) {
+  constructor() {
     this.verbose = true
   }
 

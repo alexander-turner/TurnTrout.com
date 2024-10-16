@@ -6,6 +6,7 @@ from .. import convert_assets
 from . import utils as test_utils
 from .. import utils as script_utils
 import subprocess
+import re
 
 
 # --- Pytest Fixtures ---
@@ -31,9 +32,7 @@ def setup_test_env(tmp_path):
 
     # Create video assets for testing and add references to markdown files
     for ext in compress.ALLOWED_VIDEO_EXTENSIONS:
-        test_utils.create_test_video(
-            tmp_path / "quartz/static" / f"asset{ext}"
-        )
+        test_utils.create_test_video(tmp_path / "quartz/static" / f"asset{ext}")
         with open(tmp_path / "content" / f"{ext.lstrip('.')}.md", "a") as file:
             file.write(f"![](static/asset{ext})\n")
             file.write(f"[[static/asset{ext}]]\n")
@@ -63,9 +62,7 @@ def test_image_conversion(ext: str, setup_test_env):
     avif_path: Path = asset_path.with_suffix(".avif")
     content_path = Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
 
-    convert_assets.convert_asset(
-        asset_path, md_replacement_dir=test_dir / "content"
-    )
+    convert_assets.convert_asset(asset_path, md_replacement_dir=test_dir / "content")
 
     assert avif_path.exists()  # Check if AVIF file was created
 
@@ -84,19 +81,17 @@ def test_image_conversion(ext: str, setup_test_env):
 def test_video_conversion(ext: str, setup_test_env):
     asset_path: Path = Path(setup_test_env) / "quartz/static" / f"asset{ext}"
     mp4_path: Path = asset_path.with_suffix(".mp4")
-    content_path: Path = (
-        Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
-    )
+    content_path: Path = Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
     with open(content_path, "r") as f:
         file_content: str = f.read()
 
     convert_assets.convert_asset(
-        asset_path, md_replacement_dir=Path(setup_test_env)
+        asset_path, md_replacement_dir=Path(setup_test_env), remove_originals=True
     )
 
     assert mp4_path.exists()
     with open(content_path, "r") as f:
-        file_content: str = f.read()
+        file_content = f.read()
 
     video_tags = "autoplay loop muted playsinline " if ext == ".gif" else ""
     for alt_tag in ("", 'alt="shrek" '):  # The source-tag had an alt
@@ -106,29 +101,27 @@ def test_video_conversion(ext: str, setup_test_env):
         )
 
 
-def test_remove_source_files(setup_test_env):
+# Test that it keeps or removes source files
+@pytest.mark.parametrize("remove_originals", [True, False])
+def test_remove_source_files(setup_test_env, remove_originals):
     asset_path = Path(setup_test_env) / "quartz" / "static" / "asset.jpg"
     assert asset_path.exists()
 
     convert_assets.convert_asset(
         asset_path,
-        remove_originals=True,
+        remove_originals=remove_originals,
         md_replacement_dir=Path(setup_test_env),
     )
-    assert not asset_path.exists()
+    assert asset_path.exists() == (not remove_originals)
 
 
 def test_strip_metadata(setup_test_env):
-    dummy_image: Path = (
-        Path(setup_test_env) / "quartz/static/asset_with_exif.jpg"
-    )
+    dummy_image: Path = Path(setup_test_env) / "quartz/static/asset_with_exif.jpg"
     test_utils.create_test_image(dummy_image, "32x32")
 
     # Simulate adding metadata using exiftool
     with mock.patch("subprocess.run") as mock_exiftool:
-        mock_exiftool.return_value = subprocess.CompletedProcess(
-            args=[], returncode=0
-        )
+        mock_exiftool.return_value = subprocess.CompletedProcess(args=[], returncode=0)
         subprocess.run(
             [
                 "exiftool",
@@ -152,9 +145,7 @@ def test_strip_metadata(setup_test_env):
         exif_output = subprocess.check_output(
             ["exiftool", dummy_image.with_suffix(".avif")]
         )
-        assert (
-            "Test Artist" not in exif_output.decode()
-        )  # Check for a specific tag
+        assert "Test Artist" not in exif_output.decode()  # Check for a specific tag
         assert "Test Copyright" not in exif_output.decode()
 
 
@@ -162,7 +153,9 @@ def test_ignores_unsupported_file_types(setup_test_env):
     asset_path = Path(setup_test_env) / "quartz/static/unsupported.txt"
 
     with pytest.raises(ValueError):
-        convert_assets.convert_asset(asset_path, md_replacement_dir=Path(setup_test_env) / "content")
+        convert_assets.convert_asset(
+            asset_path, md_replacement_dir=Path(setup_test_env) / "content"
+        )
 
 
 def test_file_not_found(setup_test_env):
@@ -181,14 +174,18 @@ def test_ignores_non_quartz_path(setup_test_env):
     asset_path = Path(setup_test_env) / "file.png"
 
     with pytest.raises(ValueError, match="quartz.*directory"):
-        convert_assets.convert_asset(asset_path, md_replacement_dir=Path(setup_test_env) / "content")
+        convert_assets.convert_asset(
+            asset_path, md_replacement_dir=Path(setup_test_env) / "content"
+        )
 
 
 def test_ignores_non_static_path(setup_test_env):
     asset_path = Path(setup_test_env) / "quartz" / "file.png"
 
     with pytest.raises(ValueError, match="static.*subdirectory"):
-        convert_assets.convert_asset(asset_path, md_replacement_dir=Path(setup_test_env) / "content")
+        convert_assets.convert_asset(
+            asset_path, md_replacement_dir=Path(setup_test_env) / "content"
+        )
 
 
 @pytest.mark.parametrize(
@@ -228,6 +225,7 @@ def test_invalid_paths(input_path, error_message):
     with pytest.raises(ValueError, match=error_message):
         script_utils.path_relative_to_quartz(Path(input_path))
 
+
 @pytest.mark.parametrize(
     "input_file, expected_source_pattern, expected_target_pattern",
     [
@@ -235,17 +233,23 @@ def test_invalid_paths(input_path, error_message):
             Path("animation.gif"),
             r"\!?\[\]\((?P<link_parens>[^\)]*)animation\.gif\)|"
             r"\!?\[\[(?P<link_brackets>[^\)]*)animation\.gif\]\]|"
-            r'<img (?P<earlyTagInfo>[^>]*)src="(?P<link_tag>[^\)]*)animation\.gif"(?P<tagInfo>[^>]*)(?P<endVideoTagInfo>)/?>', 
+            r'<img (?P<earlyTagInfo>[^>]*)src="(?P<link_tag>[^\)]*)animation\.gif"(?P<tagInfo>[^>]*)(?P<endVideoTagInfo>)/?>',
             r'<video autoplay loop muted playsinline src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4"\g<earlyTagInfo>\g<tagInfo> type="video/mp4"\g<endVideoTagInfo>><source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" type="video/mp4"></video>',
         ),
-        ] + [
+    ]
+    + [
         (
             Path(f"video{ext}"),
             rf"\!?\[\]\((?P<link_parens>[^\)]*)video\{ext}\)|"
             rf"\!?\[\[(?P<link_brackets>[^\)]*)video\{ext}\]\]|"
-            r'<video (?P<earlyTagInfo>[^>]*)src="(?P<link_tag>[^\)]*)video' + ext + '"(?P<tagInfo>[^>]*)(?:type="video/'+ext.lstrip('.') + '")?(?P<endVideoTagInfo>[^>]*(?=/))/?>',
+            r'<video (?P<earlyTagInfo>[^>]*)src="(?P<link_tag>[^\)]*)video'
+            + ext
+            + '"(?P<tagInfo>[^>]*)(?:type="video/'
+            + ext.lstrip(".")
+            + '")?(?P<endVideoTagInfo>[^>]*(?=/))/?>',
             r'<video src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4"\g<earlyTagInfo>\g<tagInfo> type="video/mp4"\g<endVideoTagInfo>><source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" type="video/mp4"></video>',
-        ) for ext in ['.webm', '.mov', '.avi', '.mp4']
+        )
+        for ext in [".webm", ".mov", ".avi", ".mp4"]
     ],
 )
 def test_video_patterns(
@@ -255,3 +259,59 @@ def test_video_patterns(
 
     assert source_pattern == expected_source_pattern
     assert target_pattern == expected_target_pattern
+
+
+# Test that newlines are added after video tag when it's followed by a figure caption
+import pytest
+
+
+@pytest.mark.parametrize(
+    "initial_content",
+    [
+        """
+    Some content before
+    
+    </video>
+    <br/>Figure: This is a caption
+    
+    Some content after
+    """,
+        """
+    Some content before
+    
+    </video>
+    Figure: This is a caption
+    
+    Some content after
+    """,
+    ],
+)
+def test_video_figure_caption_formatting(setup_test_env, initial_content):
+    test_dir = Path(setup_test_env)
+    content_dir = test_dir / "content"
+
+    # Create a test markdown file with the pattern we want to change
+    test_md = content_dir / "test_video_figure.md"
+    test_md.write_text(initial_content)
+
+    # Create a dummy video file
+    dummy_video = test_dir / "quartz/static/test_video.mp4"
+    test_utils.create_test_video(dummy_video)
+
+    # Run the conversion
+    convert_assets.convert_asset(dummy_video, md_replacement_dir=content_dir)
+
+    # Read the content of the file after conversion
+    with open(test_md, "r") as f:
+        converted_content = f.read()
+
+    # Check if the pattern has been correctly modified
+    expected_pattern = r"</video>\n\nFigure: This is a caption"
+    assert re.search(
+        expected_pattern, converted_content
+    ), f"Expected pattern not found in:\n{converted_content}"
+
+    # Additional check to ensure there's no <br/> tag left
+    assert (
+        "<br/>" not in converted_content
+    ), f"<br/> tag still present in:\n{converted_content}"

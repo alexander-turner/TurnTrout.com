@@ -1,5 +1,6 @@
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 import path from "path"
+import React from "react"
 
 import style from "../styles/listPage.scss"
 import { PageList } from "../PageList"
@@ -46,11 +47,11 @@ export default ((opts?: Partial<FolderContentOptions>) => {
         : htmlToJsx(fileData.filePath!, tree)
 
     return (
-      <div class={classes}>
+      <div className={classes}>
         <article>
           <p>{content}</p>
         </article>
-        <div class="page-listing">
+        <div className="page-listing">
           {options.showFolderCount && (
             <p>
               {i18n(cfg.locale).pages.folderContent.itemsUnderFolder({

@@ -52,9 +52,9 @@ describe("Abbreviations", () => {
   }
 })
 
-describe("Acronyms", () => {
+describe("All-caps tests", () => {
   // Test: These should be wrapped in <abbr> tags
-  const textIn: Array<string> = ["AUP", "FBI", "TL;DR", "CHAI", "ALÉNA", "CCC"]
+  const textIn: Array<string> = ["AUP", "FBI", "TL;DR", "CHAI", "ALÉNA", "CCC", "ELROND'S", "ELROND’S"]
   for (const text of textIn) {
     it(`should wrap ${text} in <abbr> tags`, () => {
       const processedHtml: string = testTagAcronymsHTML(`<p>${text}</p>`)

@@ -4,11 +4,11 @@ permalink: date-me
 title: I'm that "other fish in the sea"
 authors: Alex
 avoidIndexing: '"true"'
+hideSubscriptionLinks: true
 ---
-
 <img id="alex-rainbow-date-me" src="https://assets.turntrout.com/Attachments/croppedAlexRainbow.avif" class="float-right" alt="Alex smiling at the camera. Brightly illuminated with rainbow splashes of color painting the background wall."/>
 
-Many people call me "TurnTrout", but you can call me "Alex". I want to let you in a bit, to let you see a different facet of me than I usually present online.
+Many people know me as "TurnTrout", but you can call me "Alex". I want to let you see a different facet of me than I usually present online.
 
 I was born in '94. Now, I'm a research scientist on [Google DeepMind's](https://deepmind.google/) scalable alignment team in San Francisco. In this document, I'll overview what the intervening time has made of me, as a person.
 
@@ -53,9 +53,9 @@ When I was younger, I wasn't very social. These days, I love meeting new people!
 	<figcaption>Part of me wishes I could meet and deeply understand each and every person here. Each pinpoint of light is shining for a <em>reason</em>, it was put there <em>by another person</em>.</figcaption>
 </figure>
 
-So, I care a lot about people - both in the abstract and personally. I've never yelled at anyone in my life (except, you know, I probably did as a young kid, but I don't remember that well). I am pretty goofy if I trust and feel comfy around someone.
+So, I care a lot about people - both in the abstract and personally. I've never yelled at anyone in my life (except, you know, I probably did as a young kid, but I don't remember that well).  I'm also a vegan who cares about animals. 🪿🐟
 
-I think I'd jive well with someone more spontaneous and daring, since I tend to be more planned and conservative. Well, I'm _usually_ more conservative:
+I am pretty goofy if I trust and feel comfy around someone. I think I'd jive well with someone more spontaneous and daring, since I tend to be more planned and conservative. Well, I'm _usually_ more conservative:
 <img src="https://assets.turntrout.com/static/images/skydiving.avif" alt="Alex excitedly looking out of a plane, getting ready to jump."/>
 
 # What I like doing
@@ -130,7 +130,6 @@ Reading textbooks
 
 1. I probably (70%) will want kids within the next 5 years.
 2. Ethical non-monogamy is important to me.
-3. I've historically been interested in cis women.
 
 ## What I appreciate in a partner
 
@@ -142,7 +141,6 @@ This isn't a list of _demands_ or anything, just ingredients for a good relation
 - Confidence is hot
 - Being good at STEM is also hot
 - Non-avoidant attachment style
-- Reasonably physically fit
 - The kind of girl [^ethical]who would have refused to obey in [the Milgram experiment](https://en.wikipedia.org/wiki/Milgram_experiment) 🥰
 - Spontaneous and medium-adventurous, but not to the point where you're trying to backflip out of a plane while naked even though it's 10:30PM and we have an early morning the next day...
 - Some dispositional _je ne sais quoi_ which makes me feel at ease.
@@ -162,4 +160,4 @@ OK, I've written enough! Get to know me if you want to know more. 🪿
 
 # Contact
 
-If you think we might be compatible, email me at [alex@turntrout.com](mailto:alex@turntrout.com)! (You can just say hello and a paragraph about yourself, no pressure to send an elaborate message.)
+If you think we might be compatible, email me at [`alex@turntrout.com`](mailto:alex@turntrout.com)! (You can just say hello and a paragraph about yourself, no pressure to send an elaborate message.)

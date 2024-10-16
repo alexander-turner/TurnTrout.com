@@ -1,9 +1,9 @@
-import { promises } from "fs"
+import fs, { promises } from "fs"
 import path from "path"
 import esbuild from "esbuild"
+import process from "node:process"
 import chalk from "chalk"
 import { sassPlugin } from "esbuild-sass-plugin"
-import fs from "fs"
 import { intro, outro, select, text } from "@clack/prompts"
 import { rimraf } from "rimraf"
 import chokidar from "chokidar"
@@ -14,7 +14,6 @@ import serveHandler from "serve-handler"
 import { WebSocketServer } from "ws"
 import { randomUUID } from "crypto"
 import { Mutex } from "async-mutex"
-import { CreateArgv } from "./args.js"
 import {
   exitIfCancel,
   escapePath,
@@ -31,6 +30,9 @@ import {
   cacheFile,
   cwd,
 } from "./constants.js"
+import { generate } from "critical"
+import glob from "glob-promise"
+import PQueue from "p-queue"
 
 /**
  * Handles `npx quartz create`
@@ -50,37 +52,18 @@ export async function handleCreate(argv) {
     if (setupStrategy !== "new") {
       // Error handling
       if (!sourceDirectory) {
-        outro(
-          chalk.red(
-            `Setup strategies (arg '${chalk.yellow(
-              `-${CreateArgv.strategy.alias[0]}`,
-            )}') other than '${chalk.yellow(
-              "new",
-            )}' require content folder argument ('${chalk.yellow(
-              `-${CreateArgv.source.alias[0]}`,
-            )}') to be set`,
-          ),
+        throw new Error(
+          "Setup strategies other than 'new' require content folder argument to be set",
         )
-        process.exit(1)
       } else {
         if (!fs.existsSync(sourceDirectory)) {
-          outro(
-            chalk.red(
-              `Input directory to copy/symlink 'content' from not found ('${chalk.yellow(
-                sourceDirectory,
-              )}', invalid argument "${chalk.yellow(`-${CreateArgv.source.alias[0]}`)})`,
-            ),
+          throw new Error(
+            `Input directory to copy/symlink 'content' from not found ('${sourceDirectory}')`,
           )
-          process.exit(1)
         } else if (!fs.lstatSync(sourceDirectory).isDirectory()) {
-          outro(
-            chalk.red(
-              `Source directory to copy/symlink 'content' from is not a directory (found file at '${chalk.yellow(
-                sourceDirectory,
-              )}', invalid argument ${chalk.yellow(`-${CreateArgv.source.alias[0]}`)}")`,
-            ),
+          throw new Error(
+            `Source directory to copy/symlink 'content' from is not a directory (found file at '${sourceDirectory}')`,
           )
-          process.exit(1)
         }
       }
     }
@@ -230,7 +213,7 @@ export async function handleBuild(argv) {
     jsxImportSource: "preact",
     packages: "external",
     metafile: true,
-    sourcemap: true,
+    sourcemap: false,
     sourcesContent: false,
     plugins: [
       sassPlugin({
@@ -291,9 +274,7 @@ export async function handleBuild(argv) {
     }
 
     const result = await ctx.rebuild().catch((err) => {
-      console.error(`${chalk.red("Couldn't parse Quartz configuration:")} ${fp}`)
-      console.log(`Reason: ${chalk.grey(err)}`)
-      process.exit(1)
+      throw new Error(`Couldn't parse Quartz configuration: ${fp}\nReason: ${err}`)
     })
     release()
 
@@ -315,6 +296,11 @@ export async function handleBuild(argv) {
 
     cleanupBuild = await buildQuartz(argv, buildMutex, clientRefresh)
     clientRefresh()
+
+    // Inline critical CSS after the build (would delay serving too much)
+    if (!argv.serve) {
+      await inlineCriticalCSS(argv.output)
+    }
   }
 
   if (argv.serve) {
@@ -429,6 +415,106 @@ export async function handleBuild(argv) {
   } else {
     await build(() => {})
     ctx.dispose()
+  }
+}
+
+const LARGE_FILE_THRESHOLD = 256 * 1024 // 256 KB
+const CONCURRENT_OPERATIONS = 5
+const TIMEOUT = 10 * 60 * 1000 // 10 minutes
+const SKIP_FILES = ["gpt2-steering-vectors"]
+
+async function inlineCriticalCSS(outputDir) {
+  console.log("Starting Critical CSS generation process...")
+  const queue = new PQueue({ concurrency: CONCURRENT_OPERATIONS })
+  let completedFiles = 0
+  let totalFiles = 0
+
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("Operation timed out")), TIMEOUT)
+  })
+
+  const processPromise = (async () => {
+    try {
+      const files = await glob(`${outputDir}/**.html`)
+      totalFiles = files.length
+      console.log(`Found ${totalFiles} HTML files to process.`)
+
+      await Promise.all(
+        files.map((file) =>
+          queue.add(async () => {
+            try {
+              if (SKIP_FILES.some((skip) => file.includes(skip))) {
+                console.log(`Skipping ${file}`)
+                return
+              }
+              await processFile(outputDir, file)
+              completedFiles++
+              console.log(`Progress: ${completedFiles}/${totalFiles} files processed`)
+            } catch (error) {
+              console.error(`Error processing ${file}:`, error)
+            }
+          }),
+        ),
+      )
+
+      console.log("All files processed. Waiting for queue to empty...")
+      await queue.onIdle()
+      console.log("Queue is empty. Process complete.")
+      // deepsource-ignore-next-line
+      process.exit(0)
+    } catch (error) {
+      console.error("Error in inlineCriticalCSS:", error)
+    }
+  })()
+
+  try {
+    await Promise.race([processPromise, timeoutPromise])
+  } catch (error) {
+    if (error.message === "Operation timed out") {
+      throw new Error("The operation timed out. Force exiting...")
+    } else {
+      throw error
+    }
+  }
+}
+
+async function processFile(outputDir, file) {
+  const stats = await fs.promises.stat(file)
+  const fileSize = stats.size
+
+  console.log(`Processing ${file} (${fileSize} bytes)`)
+
+  if (fileSize > LARGE_FILE_THRESHOLD) {
+    console.log(`Large file detected: ${file}. Ignoring.`)
+  } else {
+    await generateCriticalCSS(outputDir, file)
+  }
+}
+
+async function generateCriticalCSS(outputDir, file) {
+  try {
+    console.log(`Generating critical CSS for ${file}`)
+    await generate({
+      inline: true,
+      base: outputDir,
+      src: path.relative(outputDir, file),
+      target: path.relative(outputDir, file),
+      width: 1300,
+      height: 900,
+      penthouse: {
+        unstableKeepBrowserAlive: true,
+        puppeteer: {
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        },
+      },
+      css: [
+        path.join(outputDir, "index.css"),
+        path.join(outputDir, "static", "styles", "katex.min.css"),
+      ],
+    })
+    console.log(`Critical CSS inlined for ${file}`)
+  } catch (error) {
+    console.error(`Error generating critical CSS for ${file}:`, error)
   }
 }
 

@@ -13,10 +13,14 @@
     padding: $baseMargin;
     background-color: var(--light);
 
-    & li > a {
-      color: var(--gray);
-      transition: opacity 0.5s ease-out;
-      text-decoration: none;
+    & li {
+      text-align: right;
+
+      & > a {
+        color: var(--gray);
+        transition: opacity 0.5s ease-out;
+        text-decoration: none;
+      }
     }
   }
   // Desktop
@@ -191,28 +195,6 @@
   @media all and (max-width: $fullPageWidth) {
     box-shadow: 0 7px 4px 0 #5c5f7752;
     clip-path: inset(0px 0px -1500px 0px);
-  }
-}
-
-// Default to non-safari video
-#header-gif {
-  display: none;
-}
-
-#header-video {
-  display: block;
-}
-
-// Safari-specific styles
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  /* Safari only override */
-  ::i-block-chrome,
-  #header-gif {
-    display: block;
-  }
-  ::i-block-chrome,
-  #header-video {
-    display: none;
   }
 }
 

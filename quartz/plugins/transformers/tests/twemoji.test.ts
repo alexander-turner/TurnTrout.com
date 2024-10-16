@@ -1,16 +1,12 @@
-import { visit } from "unist-util-visit"
 import { h } from "hastscript"
-import { Node, Parent } from "unist"
-import { Element, Text } from "hast"
+import { jest } from "@jest/globals"
+import { Element } from "hast"
+import { Node } from "unist"
 import {
-  PLACEHOLDER,
-  EMOJI_REPLACEMENT,
   TWEMOJI_BASE_URL,
-  EMOJIS_TO_REPLACE,
   TwemojiOptions,
   createTwemojiCallback,
   parseAttributes,
-  replaceEmoji,
   createNodes,
   processTree,
 } from "../twemoji"
@@ -21,25 +17,18 @@ interface CustomNode extends UnistNode {
   value?: string
 }
 
-function createEmoji(path: string, originalChar: any): any {
+function createEmoji(path: string, originalChar: string): Element {
   if (!path.endsWith(".svg")) {
     throw new Error("Only SVGs are supported")
   }
-  return {
-    type: "element",
-    tagName: "img",
-    children: [],
-    properties: {
-      alt: originalChar,
-      className: ["emoji"],
-      draggable: "false",
-      src: `${TWEMOJI_BASE_URL}${path}`,
-    },
-  }
+  return h("img", {
+    alt: originalChar,
+    className: ["emoji"],
+    draggable: "false",
+    src: `${TWEMOJI_BASE_URL}${path}`,
+  })
 }
 
-// Mock the twemoji module
-import { jest } from "@jest/globals"
 jest.mock("../modules/twemoji.min", () => ({
   twemoji: {
     parse: jest.fn((content: string) =>
@@ -53,7 +42,7 @@ type TwemojiCallback = (icon: string, options: TwemojiOptions) => string
 describe("Twemoji functions", () => {
   describe("createTwemojiCallback", () => {
     it("should return the correct URL", () => {
-      const mockCallback: TwemojiCallback = jest.fn((icon, options) => `mock-${icon}`)
+      const mockCallback: TwemojiCallback = jest.fn((icon) => `mock-${icon}`)
       const options: TwemojiOptions = { folder: "svg", ext: ".svg", callback: mockCallback }
       const result = createTwemojiCallback("1f600", options)
       expect(result).toBe(`${TWEMOJI_BASE_URL}1f600.svg`)
@@ -73,7 +62,7 @@ describe("Twemoji functions", () => {
     })
   })
 
-  function createEmoji(path: string, originalChar: string): any {
+  function createEmoji(path: string, originalChar: string): Element {
     if (!path.endsWith(".svg")) {
       throw new Error("Only SVGs are supported")
     }

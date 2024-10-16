@@ -1,23 +1,27 @@
 import { visit } from "unist-util-visit"
 import { createLogger } from "./logger_utils"
 import { Readable } from "stream"
+import { ReadableStream } from "stream/web"
+import { Element, Root, Text } from "hast"
 import fs from "fs"
 import path from "path"
-import { fileURLToPath } from 'url'
-
+import { fileURLToPath } from "url"
+import { pipeline } from "stream/promises"
 
 const logger = createLogger("linkfavicons")
 
 export const MAIL_PATH = "https://assets.turntrout.com/static/images/mail.svg"
 export const TURNTROUT_FAVICON_PATH =
   "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
+export const LESSWRONG_FAVICON_PATH =
+  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.avif"
 const QUARTZ_FOLDER = "quartz"
 const FAVICON_FOLDER = "static/images/external-favicons"
 export const DEFAULT_PATH = ""
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-export const FAVICON_URLS_FILE = path.join(__dirname, '.faviconUrls.txt')
+export const FAVICON_URLS_FILE = path.join(__dirname, ".faviconUrls.txt")
 
 export class DownloadError extends Error {
   constructor(message: string) {
@@ -33,7 +37,7 @@ export class DownloadError extends Error {
  * @param imagePath - The local file path where the image should be saved.
  * @returns A Promise that resolves to true if the download was successful. Otherwise, it throws a DownloadError.
  */
-export async function downloadImage(url: string, imagePath: string): Promise<Boolean> {
+export async function downloadImage(url: string, imagePath: string): Promise<boolean> {
   logger.info(`Attempting to download image from ${url} to ${imagePath}`)
   const response = await fetch(url)
 
@@ -55,9 +59,15 @@ export async function downloadImage(url: string, imagePath: string): Promise<Boo
     throw new DownloadError(`No response body: ${url}`)
   }
 
-  const body = Readable.fromWeb(response.body as any)
+  const body = Readable.fromWeb(response.body as ReadableStream)
 
-  await fs.promises.writeFile(imagePath, body)
+  try {
+    // Create the directory if it doesn't exist
+    await fs.promises.mkdir(path.dirname(imagePath), { recursive: true })
+    await pipeline(body, fs.createWriteStream(imagePath))
+  } catch (err) {
+    throw new DownloadError(`Failed to write image to ${imagePath}: ${err}`)
+  }
 
   const stats = await fs.promises.stat(imagePath)
 
@@ -91,7 +101,7 @@ const defaultCache = new Map<string, string>([[TURNTROUT_FAVICON_PATH, TURNTROUT
 export function createUrlCache(): Map<string, string> {
   return new Map(defaultCache)
 }
-export let urlCache = createUrlCache()
+export const urlCache = createUrlCache()
 const faviconUrls = await readFaviconUrls()
 for (const [basename, url] of faviconUrls) {
   if (!urlCache.has(basename)) {
@@ -106,9 +116,9 @@ export function writeCacheToFile(): void {
   const data = Array.from(urlCache.entries())
     .map(([key, value]) => `${key},${value}`)
     .join("\n")
-  
+
   // Write the file
-  fs.writeFileSync(FAVICON_URLS_FILE, data, {flag: 'w+'})
+  fs.writeFileSync(FAVICON_URLS_FILE, data, { flag: "w+" })
 }
 
 /**
@@ -171,7 +181,6 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   try {
     await fs.promises.stat(localPngPath)
     logger.info(`Local PNG found for ${hostname}: ${faviconPath}`)
-    urlCache.set(faviconPath, faviconPath)
     return faviconPath
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
@@ -180,7 +189,6 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
       logger.info(`Attempting to download favicon from Google: ${googleFaviconURL}`)
       if (await downloadImage(googleFaviconURL, localPngPath)) {
         logger.info(`Successfully downloaded favicon for ${hostname}`)
-        urlCache.set(faviconPath, faviconPath)
         return faviconPath
       }
     }
@@ -192,9 +200,9 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   return DEFAULT_PATH
 }
 
-export interface FaviconNode {
-  type: string
-  tagName: string
+export interface FaviconNode extends Element {
+  type: "element"
+  tagName: "img" | "span"
   children: Element[]
   properties: {
     src: string
@@ -231,49 +239,62 @@ export function CreateFaviconElement(urlString: string, description = ""): Favic
  * @param imgPath - The path to the favicon image.
  * @param node - The node to insert the favicon into.
  */
-export function insertFavicon(imgPath: string | null, node: any): void {
+export function insertFavicon(imgPath: string | null, node: Element): void {
   logger.debug(`Inserting favicon: ${imgPath}`)
   if (imgPath === null) {
     logger.debug("No favicon to insert")
     return
   }
 
-  const imgElement = CreateFaviconElement(imgPath)
+  const toAppend: FaviconNode = CreateFaviconElement(imgPath)
+
+  const maybeSpliceTextResult = maybeSpliceText(node, toAppend)
+  if (maybeSpliceTextResult) {
+    logger.debug("Appending favicon directly to node")
+    node.children.push(maybeSpliceTextResult)
+  }
+}
+
+export function maybeSpliceText(node: Element, toAppend: FaviconNode): Element | null {
   const lastChild = node.children[node.children.length - 1]
 
-  if (lastChild && lastChild.type === "text" && lastChild.value) {
-    logger.debug(`Last child is text: "${lastChild.value}"`)
-    const textContent = lastChild.value
-    const toSpace = ["!", "?", "|", "]"] // Glyphs where top-right corner occupied
-    if (toSpace.includes(textContent.at(-1))) {
-      imgElement.properties.style = "margin-left: 0.05rem;"
-    }
+  if (lastChild && lastChild.type === "text") {
+    const lastChildText = lastChild as Text
 
-    const charsToRead = Math.min(4, textContent.length)
-    const lastFourChars = textContent.slice(-charsToRead)
-    lastChild.value = textContent.slice(0, -charsToRead)
+    if (lastChildText.value) {
+      logger.debug(`Last child is text: "${lastChildText.value}"`)
+      const textContent = lastChildText.value
+      const toSpace = ["!", "?", "|", "]"] // Glyphs where top-right corner occupied
 
-    const span = {
-      type: "element",
-      tagName: "span",
-      children: [{ type: "text", value: lastFourChars }, imgElement],
-      properties: {
-        style: "white-space: nowrap;",
-      },
+      if (toSpace.includes(textContent.at(-1)!)) {
+        // Adjust the style of the appended element
+        toAppend.properties = toAppend.properties || {}
+        toAppend.properties.style = "margin-left: 0.05rem;"
+      }
+
+      const charsToRead = Math.min(4, textContent.length)
+      const lastFourChars = textContent.slice(-charsToRead)
+      lastChildText.value = textContent.slice(0, -charsToRead)
+
+      const span: Element = {
+        type: "element",
+        tagName: "span",
+        properties: {
+          style: "white-space: nowrap;",
+        },
+        children: [{ type: "text", value: lastFourChars } as Text, toAppend],
+      }
+      toAppend = span as FaviconNode
+
+      // Replace entire text with span if all text was moved
+      if (lastFourChars === textContent) {
+        node.children.pop()
+        logger.debug("Replacing last four chars with span")
+      }
     }
-    // If the text content is the same as the last four characters,
-    // replace the text with the span so we don't have an extra (empty) text node.
-    if (lastFourChars === textContent && node.children.length === 1) {
-      logger.debug("Replacing entire text with span")
-      node.children = [span]
-    } else {
-      logger.debug("Appending span to existing text")
-      node.children.push(span)
-    }
-  } else {
-    logger.debug("Appending favicon directly to node")
-    node.children.push(imgElement)
   }
+
+  return toAppend
 }
 
 /**
@@ -282,7 +303,7 @@ export function insertFavicon(imgPath: string | null, node: any): void {
  * @param node - The node to modify.
  * @returns A Promise that resolves when the modification is complete.
  */
-export async function ModifyNode(node: any): Promise<void> {
+export async function ModifyNode(node: Element): Promise<void> {
   logger.info(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
     logger.debug("Node is not an anchor or has no href, skipping")
@@ -291,6 +312,10 @@ export async function ModifyNode(node: any): Promise<void> {
 
   let href = node.properties.href
   logger.debug(`Processing href: ${href}`)
+  if (typeof href !== "string") {
+    logger.debug("Href is not a string, skipping")
+    return
+  }
 
   if (href.includes("mailto:")) {
     logger.info("Inserting mail icon for mailto link")
@@ -301,7 +326,9 @@ export async function ModifyNode(node: any): Promise<void> {
   const isInternalBody = href.startsWith("#")
   if (isInternalBody) {
     // Append same-page-link to class list
-    if (node.properties.className) {
+    if (typeof node.properties.className === "string") {
+      node.properties.className += " same-page-link"
+    } else if (Array.isArray(node.properties.className)) {
       node.properties.className.push("same-page-link")
     } else {
       node.properties.className = ["same-page-link"]
@@ -309,7 +336,12 @@ export async function ModifyNode(node: any): Promise<void> {
     return
   }
 
-  const samePage = node.properties.className?.includes("same-page-link")
+  // Check if same-page-link
+  const samePage =
+    (typeof node.properties.className === "string" &&
+      node.properties.className.includes("same-page-link")) ||
+    (Array.isArray(node.properties.className) &&
+      node.properties.className.includes("same-page-link"))
   const isAsset = /\.(png|jpg|jpeg)$/.test(href)
 
   if (samePage || isAsset) {
@@ -317,16 +349,17 @@ export async function ModifyNode(node: any): Promise<void> {
     return
   }
 
-  if (href.startsWith("./")) {
-    logger.debug("Converting relative link to absolute")
-    href = href.slice(2)
+  if (!href.startsWith("http")) {
+    if (href.startsWith("./")) {
+      href = href.slice(2)
+    } else if (href.startsWith("../")) {
+      href = href.slice(3)
+    }
     href = "https://www.turntrout.com/" + href
-  } else if (href.startsWith("..")) {
-    logger.debug("Skipping parent directory link")
-    return
   }
+
   try {
-    let finalURL = new URL(href)
+    const finalURL = new URL(href)
     logger.info(`Final URL: ${finalURL.href}`)
 
     const imgPath = await MaybeSaveFavicon(finalURL.hostname)
@@ -355,11 +388,11 @@ export const AddFavicons = () => {
     htmlPlugins() {
       return [
         () => {
-          return async (tree: any) => {
+          return async (tree: Root) => {
             logger.info("Starting favicon processing")
-            const nodesToProcess: any[] = []
+            const nodesToProcess: Element[] = []
 
-            visit(tree, "element", (node: any) => {
+            visit(tree, "element", (node: Element) => {
               if (node.tagName === "a" && node.properties.href) {
                 logger.debug(`Found anchor node: ${node.properties.href}`)
                 nodesToProcess.push(node)

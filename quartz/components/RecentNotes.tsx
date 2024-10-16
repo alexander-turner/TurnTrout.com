@@ -7,7 +7,7 @@ import { Date, getDate } from "./Date"
 import { GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
 import { classNames } from "../util/lang"
-
+import React from "react"
 interface Options {
   title?: string
   limit: number
@@ -34,33 +34,33 @@ export default ((userOpts?: Partial<Options>) => {
     const pages = allFiles.filter(opts.filter).sort(opts.sort)
     const remaining = Math.max(0, pages.length - opts.limit)
     return (
-      <div class={classNames(displayClass, "recent-notes")}>
+      <div className={classNames(displayClass, "recent-notes")}>
         <h3>{opts.title ?? i18n(cfg.locale).components.recentNotes.title}</h3>
-        <ul class="recent-ul">
+        <ul className="recent-ul">
           {pages.slice(0, opts.limit).map((page) => {
             const title = page.frontmatter?.title ?? i18n(cfg.locale).propertyDefaults.title
             const tags = page.frontmatter?.tags ?? []
 
             return (
-              <li class="recent-li">
-                <div class="section">
-                  <div class="desc">
+              <li className="recent-li" key={page.slug}>
+                <div className="section">
+                  <div className="desc">
                     <h3>
-                      <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                      <a href={resolveRelative(fileData.slug!, page.slug!)} className="internal">
                         {title}
                       </a>
                     </h3>
                   </div>
                   {page.dates && (
-                    <p class="meta">
+                    <p className="meta">
                       <Date date={getDate(cfg, page)!} locale={cfg.locale} />
                     </p>
                   )}
-                  <ul class="tags">
+                  <ul className="tags">
                     {tags.map((tag) => (
-                      <li>
+                      <li key={tag}>
                         <a
-                          class="internal tag-link"
+                          className="internal tag-link"
                           href={resolveRelative(fileData.slug!, `tags/${tag}` as FullSlug)}
                         >
                           {tag}

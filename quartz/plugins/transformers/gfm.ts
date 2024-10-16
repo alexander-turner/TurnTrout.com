@@ -32,7 +32,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
     htmlPlugins() {
       if (opts.linkHeadings) {
         return [
-          rehypeSlug,
+          slugFunction,
           [
             rehypeAutolinkHeadings,
             {
@@ -52,18 +52,30 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
   }
 }
 
-// Slight misalignment between this and LessWrong slugger behavior
-//  For compatibility, preserve certain characters in the slug
 const slugger = new GithubSlugger()
 
 export function preprocessSlug(headerText: string): string {
-  const charsToConvert = ["'", "’", "/"]
+  const charsToConvert = ["'", "’", "/", "&", "—", "‘"]
 
   let protoSlug = headerText
   for (const char of charsToConvert) {
     protoSlug = protoSlug.replaceAll(new RegExp(char, "g"), "-")
   }
+
+  // Remove consecutive hyphens
+  protoSlug = protoSlug.replaceAll(/-+/g, '-')
+
   return protoSlug
+}
+
+export function slugify(headerText: string): string {
+  const protoSlug = preprocessSlug(headerText)
+  const slug = slugger.slug(protoSlug)
+  return slug.replaceAll(/-+/g, '-')
+}
+
+export function resetSlugger() {
+  slugger.reset()
 }
 
 /**
@@ -78,9 +90,10 @@ export function slugFunction() {
 
     visit(tree, "element", function (node: Element) {
       if (headingRank(node) && !node.properties.id) {
-        const protoSlug = preprocessSlug(toString(node))
-        node.properties.id = slugger.slug(protoSlug)
+        node.properties.id = slugify(toString(node))
       }
     })
+
+    rehypeSlug()(tree)
   }
 }

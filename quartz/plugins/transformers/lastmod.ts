@@ -12,8 +12,8 @@ const defaultOptions: Options = {
   priority: ["frontmatter", "git", "filesystem"],
 }
 
-function coerceDate(fp: string, d: any): Date {
-  const dt = new Date(d)
+function coerceDate(fp: string, d: MaybeDate): Date {
+  const dt = new Date(d as string)
   const invalidDate = isNaN(dt.getTime()) || dt.getTime() === 0
   if (invalidDate && d !== undefined) {
     console.log(
@@ -54,7 +54,7 @@ export const CreatedModifiedDate: QuartzTransformerPlugin<Partial<Options> | und
                 modified ||= file.data.frontmatter["last-modified"] as MaybeDate
                 const dateStr = file.data.frontmatter.date_published || undefined
                 // const publishedTime = new Date(dateStr).getTime()
-                published ||= (new Date(dateStr).getTime() as MaybeDate) || undefined
+                published ||= (new Date(dateStr as string).getTime() as MaybeDate) || undefined
               } else if (source === "git") {
                 if (!repo) {
                   // Get a reference to the main git repo.

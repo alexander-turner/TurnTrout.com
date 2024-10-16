@@ -28,7 +28,6 @@ document.addEventListener("nav", () => {
         )
       }
       button.addEventListener("click", onClick)
-      window.addCleanup(() => button.removeEventListener("click", onClick))
       els[i].prepend(button)
     }
   }

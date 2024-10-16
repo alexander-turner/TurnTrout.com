@@ -16,7 +16,7 @@ section {
   box-sizing: border-box;
   background-color: var(--light);
   font-family: var(--font-text);
-  color: var(--darkgray);
+  color: var(--dark);
 }
 
 /* Define the scrollbar style */
@@ -169,10 +169,6 @@ hr.desktop-only {
     & li > *:last-child {
       margin-bottom: 0;
     }
-
-    p > strong {
-      color: var(--dark);
-    }
   }
 
   & > #quartz-body {
@@ -252,6 +248,7 @@ hr.desktop-only {
     margin-left: auto;
     margin-right: auto;
     width: $pageWidth;
+
     @media all and (max-width: $fullPageWidth) {
       width: initial;
       margin-left: 0;
@@ -328,6 +325,17 @@ thead {
   }
 }
 
+li {
+  width: fit-content;
+  max-width: fit-content;
+
+  // This is for the site nav menu
+  .menu & {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -337,7 +345,8 @@ h6,
 #toc-content li {
   // Oldstyle is too small for headers
   &::first-letter,
-  & span {
+  & span,
+  .number-prefix {
     font-variant-numeric: lining-nums;
   }
   // color: var(--color-header);
@@ -398,7 +407,6 @@ pre {
     counter-increment: line 0;
     display: grid;
     padding: 0.5rem 0;
-    overflow-x: scroll;
 
     & [data-highlighted-chars] {
       background-color: var(--highlight);
@@ -458,12 +466,6 @@ a > code {
     padding: calc(3 * $baseMargin);
     border-collapse: collapse;
   }
-
-  .footnote & {
-    margin-left: $baseMargin;
-    margin-right: $baseMargin;
-    font-size: var(--font-size-90);
-  }
 }
 
 .table-container:first-child > table {
@@ -476,7 +478,8 @@ dt {
 }
 
 dd {
-  margin-bottom: calc(2 * $baseMargin);
+  margin-bottom: calc(0.5 * $baseMargin);
+  margin-top: calc(0.5 * $baseMargin);
 }
 
 th {
@@ -487,6 +490,7 @@ th {
 
 td {
   padding: calc(0.5 * $baseMargin) calc(1.5 * $baseMargin);
+  vertical-align: top;
 }
 
 tr {
@@ -531,6 +535,16 @@ video {
   }
 }
 
+ul ul,
+ol ul {
+  margin-top: calc(0.5 * $baseMargin);
+}
+
+ol,
+ul {
+  margin-top: calc(1 * $baseMargin);
+}
+
 .katex {
   overflow-x: auto;
   overflow-y: hidden;
@@ -546,5 +560,5 @@ video {
 
 // Nested ol and ul should have margin before them
 ol:not(ol > ol):not(li > ol) {
-  margin-top: calc(2 * $baseMargin);
+  margin-top: calc(1.5 * $baseMargin);
 }

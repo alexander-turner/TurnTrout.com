@@ -4,6 +4,7 @@ import { QuartzPluginData } from "../plugins/vfile"
 import { Date, getDate } from "./Date"
 import { QuartzComponent, QuartzComponentProps } from "./types"
 import { GlobalConfiguration } from "../cfg"
+import React from "react"
 
 export function byDateAndAlphabetical(
   cfg: GlobalConfiguration,
@@ -37,30 +38,31 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit }: Pr
   }
 
   return (
-    <ul class="section-ul">
+    <ul className="section-ul">
       {list.map((page) => {
         const title = page.frontmatter?.title
         let tags = page.frontmatter?.tags ?? []
         tags = tags.sort((a, b) => b.length - a.length)
 
         return (
-          <li class="section-li">
-            <div class="section">
+          <li className="section-li" key={page.slug}>
+            <div className="section">
               {page.dates && (
-                <p class="meta">
+                <p className="meta">
                   <Date date={getDate(cfg, page)!} locale={cfg.locale} />
                 </p>
               )}
-              <div class="desc">
+              <div className="desc">
                 <h3>
-                  <a href={resolveRelative(fileData.slug!, page.slug!)} class="internal">
+                  <a href={resolveRelative(fileData.slug!, page.slug!)} className="internal">
                     {title}
                   </a>
                 </h3>
-                <ul class="tags">
+                <ul className="tags">
                   {tags.map((tag) => (
                     <a
-                      class="internal tag-link"
+                      key={tag}
+                      className="internal tag-link"
                       style="width:200%"
                       href={resolveRelative(fileData.slug!, `tags/${tag}` as FullSlug)}
                     >

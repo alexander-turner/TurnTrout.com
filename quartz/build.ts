@@ -109,7 +109,7 @@ async function startServing(
   // cache file parse results
   const contentMap = new Map<FilePath, ProcessedContent>()
   for (const content of initialContent) {
-    const [_tree, vfile] = content
+    const [, vfile] = content
     contentMap.set(vfile.data.filePath!, content)
   }
 
@@ -242,7 +242,7 @@ async function partialRebuildFromEntrypoint(
       }
 
       const files = [...contentMap.values()].filter(
-        ([_node, vfile]) => !toRemove.has(vfile.data.filePath!),
+        ([, vfile]) => !toRemove.has(vfile.data.filePath!),
       )
 
       const emittedFps = await emitter.emit(ctx, files, staticResources)
@@ -373,7 +373,7 @@ async function rebuildFromEntrypoint(
     ctx.allSlugs = [...new Set([...initialSlugs, ...trackedSlugs])]
     const parsedContent = await parseMarkdown(ctx, filesToRebuild)
     for (const content of parsedContent) {
-      const [_tree, vfile] = content
+      const [, vfile] = content
       contentMap.set(vfile.data.filePath!, content)
     }
 

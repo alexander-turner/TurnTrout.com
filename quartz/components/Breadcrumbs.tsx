@@ -3,6 +3,7 @@ import breadcrumbsStyle from "./styles/breadcrumbs.scss"
 import { FullSlug, SimpleSlug, joinSegments, resolveRelative } from "../util/path"
 import { QuartzPluginData } from "../plugins/vfile"
 import { classNames } from "../util/lang"
+import React from "react"
 
 type CrumbData = {
   displayName: string
@@ -62,7 +63,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
   }: QuartzComponentProps) => {
     // Hide crumbs on root if enabled
     if (disableBreadcrumbs || (options.hideOnRoot && fileData.slug === "index")) {
-      return <></>
+      return null
     }
 
     // Format entry for root element
@@ -124,9 +125,9 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
     }
 
     return (
-      <nav class={classNames(displayClass, "breadcrumb-container")} aria-label="breadcrumbs">
+      <nav className={classNames(displayClass, "breadcrumb-container")} aria-label="breadcrumbs">
         {crumbs.map((crumb, index) => (
-          <div class="breadcrumb-element">
+          <div className="breadcrumb-element" key={index}>
             <a href={crumb.path}>{crumb.displayName}</a>
             {index !== crumbs.length - 1 && <p>{` ${options.spacerSymbol} `}</p>}
           </div>

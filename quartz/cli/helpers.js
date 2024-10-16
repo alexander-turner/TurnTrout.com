@@ -1,4 +1,5 @@
 import { isCancel, outro } from "@clack/prompts"
+import process from "node:process"
 import chalk from "chalk"
 import { contentCacheFolder } from "./constants.js"
 import { spawnSync } from "child_process"

@@ -9,8 +9,8 @@ try:
     from . import compress
     from . import utils as script_utils
 except ImportError:
-    import compress
-    import utils as script_utils
+    import compress  # type: ignore
+    import utils as script_utils  # type: ignore
 
 
 def _video_patterns(input_file: Path) -> tuple[str, str]:
@@ -38,7 +38,7 @@ def _video_patterns(input_file: Path) -> tuple[str, str]:
         )
     else:
         # Pattern for <video> tags (used for other video formats)
-        tag_pattern: str = (
+        tag_pattern = (
             rf'<video (?P<earlyTagInfo>[^>]*)src="{tag_link_pattern}{input_file.stem}{input_file.suffix}"'
             rf'(?P<tagInfo>[^>]*)(?:type="video/{input_file.suffix[1:]}")?(?P<endVideoTagInfo>[^>]*(?=/))/?>'
         )
@@ -107,7 +107,7 @@ def convert_asset(
 
     elif input_file.suffix in compress.ALLOWED_VIDEO_EXTENSIONS:
         output_file = input_file.with_suffix(".mp4")
-        compress.video(input_file)
+        compress.to_hevc_video(input_file)
 
         original_pattern, replacement_pattern = _video_patterns(input_file)
 
@@ -120,6 +120,12 @@ def convert_asset(
         with open(md_file, "r", encoding="utf-8") as file:
             content = file.read()
         content = re.sub(original_pattern, replacement_pattern, content)
+
+        # Add a second pass to handle the </video><br/>Figure: pattern
+        content = re.sub(
+            r"</video>\s*(<br/?>)?\s*Figure:", "</video>\n\nFigure:", content
+        )
+
         with open(md_file, "w", encoding="utf-8") as file:
             file.write(content)
 
@@ -131,12 +137,12 @@ def convert_asset(
             check=False,  # Apparently info still gets removed so OK to not check?
         )
 
-    if remove_originals:
+    if remove_originals and input_file.suffix not in (".mp4", ".avif"):
         input_file.unlink()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+def main():
+    parser = argparse.ArgumentParser(description="Convert assets to optimized formats.")
     parser.add_argument(
         "-r",
         "--remove-originals",
@@ -154,16 +160,28 @@ if __name__ == "__main__":
         "--asset-directory",
         help="Directory containing assets to convert",
     )
+    parser.add_argument(
+        "--ignore-files", nargs="+", help="List of files to ignore during conversion"
+    )
     args = parser.parse_args()
     args.asset_directory = Path(args.asset_directory) if args.asset_directory else None
 
-    for asset in script_utils.get_files(
+    assets = script_utils.get_files(
         dir_to_search=args.asset_directory,
         filetypes_to_match=compress.ALLOWED_EXTENSIONS,
-    ):
+    )
+
+    for asset in assets:
+        if args.ignore_files and asset.name in args.ignore_files:
+            print(f"Ignoring file: {asset}")
+            continue
         convert_asset(
             asset,
             remove_originals=args.remove_originals,
             strip_metadata=args.strip_metadata,
             md_replacement_dir=Path("content/"),
         )
+
+
+if __name__ == "__main__":
+    main()

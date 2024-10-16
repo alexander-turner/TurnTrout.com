@@ -8,7 +8,7 @@ import { BuildCtx } from "../util/ctx"
 export async function emitContent(ctx: BuildCtx, content: ProcessedContent[]) {
   const { argv, cfg } = ctx
   const perf = new PerfTimer()
-  const log = new QuartzLogger(ctx.argv.verbose)
+  const log = new QuartzLogger()
 
   log.start("Emitting output files")
 

@@ -22,6 +22,69 @@
   color: var(--dark);
 }
 
+// The <a> link back up to content is the last child of the <li>
+li[id^="user-content-fn-"] > * {
+  &:is(blockquote):nth-last-child(2) {
+    margin-bottom: $baseMargin;
+  }
+  &:not(blockquote):nth-last-child(2) {
+    margin-bottom: 0; // Don't have unnecessary space before the <li>
+  }
+}
+
+.footnotes {
+  & ul {
+    margin-top: calc(2 * $baseMargin);
+  }
+
+  & li {
+    max-width: 100%;
+  }
+
+  // Ordered lists in footnotes should start at 1, 2, 3, etc.
+  & li ol {
+    counter-reset: list;
+
+    & li {
+      counter-increment: list;
+      &::before {
+        content: counter(list) ".";
+      }
+    }
+  }
+}
+
+// Ensure that last ol of a li has no bottom margin
+li[id^="user-content-fn-"] {
+  & > ol {
+    margin-block-end: 0;
+  }
+
+  /* Show only the first back arrow in a footnote */
+  & a[class*="footnote-backref"] {
+    display: none; // Hide all by default
+  }
+
+  & > p:last-child > a[class*="footnote-backref"]:last-child,
+  & > a[class*="footnote-backref"]:last-child {
+    display: inline-block; // Show the last backref
+    color: color-mix(in srgb, var(--color-link) 70%, transparent);
+    text-decoration: none;
+    background-color: transparent;
+    font-family: "DejaVuSerifCondensed-Bold", serif;
+    vertical-align: top;
+  }
+}
+
+// When scrolling back to a footnote, scroll up farther than default
+a[id*="fnref-"] {
+  scroll-margin-top: calc(2 * $baseMargin);
+
+  @media all and (max-width: $fullPageWidth) {
+    scroll-margin-top: calc(7 * $baseMargin);
+  }
+}
+
 em {
   font-style: italic;
   font-family: var(--font-text-italic);
@@ -31,11 +94,34 @@ ol,
 ul {
   margin-block-end: calc(2 * $baseMargin);
   padding-left: calc(3 * $baseMargin);
+
+  dl & {
+    margin-top: calc(0.5 * $baseMargin);
+  }
 }
 
 dd > ul:first-child,
 dd > ol:first-child {
   margin-top: 0;
+}
+
+dd {
+  margin-block-start: 0;
+  margin-top: 0;
+  margin-bottom: calc(2 * $baseMargin);
+  margin-block-end: calc(2 * $baseMargin);
+
+  & > p:first-child {
+    margin-top: 0;
+  }
+}
+
+.footnotes ol > li::before {
+  margin-right: calc(0.25 * $baseMargin);
+}
+
+ul li::marker {
+  color: var(--gray);
 }
 
 ol {
@@ -79,6 +165,11 @@ ol {
     display: block;
     counter-increment: footnote; // Increment the footnote counter for each matching li
     margin-bottom: $baseMargin; // Add a bottom margin to the list items
+    text-indent: 0px;
+
+    &:before {
+      margin-left: calc(-0.25 * $baseMargin);
+    }
 
     // Make the backref arrows look nice
     & .data-footnote-backref {
@@ -112,6 +203,12 @@ pre {
   background-color: transparent;
   color: inherit;
   font-size: 0.81em;
+}
+
+// Adjust spacing around lists
+p:has(+ ol),
+p:has(+ ul) {
+  margin-bottom: calc(1.5 * $baseMargin);
 }
 
 /* Wrap links properly */
@@ -159,6 +256,11 @@ a {
   }
 }
 
+.footnotes ul,
+.footnotes ol {
+  margin-top: $baseMargin;
+}
+
 audio {
   width: 85%;
 }
@@ -176,17 +278,21 @@ sup {
 }
 
 .trout-ornament {
-  // Override the darkmode filter for the trout -- TODO reexamine
   width: 3rem;
   margin-top: calc(2 * $baseMargin);
+  margin-bottom: calc(2 * $baseMargin);
   filter: light-dark(none, invert(66%)) !important;
   opacity: light-dark(0.5, 1);
 }
 
-.temporary-transition * {
+// Dark <-> Light
+.temporary-transition *,
+.temporary-transition .mermaid * {
   transition:
     background-color 1s ease-in-out,
-    border-color 1s ease-in-out !important;
+    border-color 1s ease-in-out,
+    fill 1s ease-in-out,
+    stroke 1s ease-in-out !important;
 }
 
 // Hide video speed controller
@@ -246,7 +352,7 @@ figure,
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: calc(0.75 * $baseMargin);
+    // margin-bottom: calc(0.75 * $baseMargin);
   }
 
   & + figure {
@@ -263,7 +369,7 @@ figure,
     margin-top: $baseMargin;
   }
   .popover & {
-    margin-top: $baseMargin !important;
+    margin-top: calc(1.5 * $baseMargin) !important;
   }
 }
 
@@ -274,6 +380,9 @@ figure > img {
 figcaption {
   margin-top: 0em; /* Space above the caption */
   position: relative;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 img,
@@ -309,6 +418,13 @@ figcaption,
   &:visited {
     color: var(--color-visited);
   }
+
+  dt &,
+  b &,
+  strong & {
+    font-weight: 500 !important;
+    -webkit-font-smoothing: none;
+  }
 }
 
 .no-select {
@@ -330,6 +446,16 @@ img.favicon {
   margin-top: -20%;
   mix-blend-mode: normal !important;
 
+  // Make favicons align properly with headings
+  h1 &,
+  h2 &,
+  h3 &,
+  h4 &,
+  h5 &,
+  h6 & {
+    vertical-align: 65%;
+  }
+
   &[src$="mail.svg"],
   &[src$="favicon.ico"] {
     // Computed to match var(--dark) using https://codepen.io/sosuke/pen/Pjoqqp
@@ -340,9 +466,36 @@ img.favicon {
     }
   }
 
-  &[src$="arbital_com.avif"] {
+  &[src$="arbital_com.avif"],
+  &[src$="aaai_org.avif"] {
     :root[saved-theme="light"] & {
       filter: brightness(0.3);
+    }
+  }
+
+  // Gray logos made white on dark mode
+  &[src$="alignmentforum_org.avif"],
+  &[src$="ai-alignment_com.avif"] {
+    :root[saved-theme="dark"] & {
+      filter: brightness(3); // Make it brighter
+    }
+  }
+
+  // Black github icon gets light background
+  &[src$="github_com.avif"] {
+    :root[saved-theme="dark"] & {
+      background-color: var(--dark);
+    }
+  }
+
+  &[src$="turntrout-favicons/favicon.ico"] {
+    // Light mode
+    :root[saved-theme="light"] & {
+      filter: contrast(15%);
+    }
+    // Dark mode
+    :root[saved-theme="dark"] & {
+      filter: invert(91%) sepia(6%) saturate(4418%) hue-rotate(185deg) brightness() contrast(50%);
     }
   }
 }
@@ -394,15 +547,14 @@ svg.fold-icon {
   }
 }
 
+// Tags section in the metadata
 .tags {
   color: var(--gray);
   list-style: none;
   display: inline-block;
-  margin-top: $baseMargin;
   padding-left: 0;
   padding-right: $baseMargin;
   overflow-wrap: normal;
-  margin-bottom: 0px;
 
   & a.tag-link {
     color: var(--gray);
@@ -429,7 +581,8 @@ hr {
   h5,
   h6,
   p,
-  a {
+  a,
+  li {
     // Don't make popover text gray
     &:not(* .popover-inner *) {
       color: var(--gray);
@@ -447,21 +600,33 @@ a.internal.tag-link {
   font-size: 0.71em;
 }
 
-.authors {
+.authors p {
   color: var(--gray);
+
+  & a {
+    color: inherit;
+  }
   margin-top: 0;
+  margin-bottom: 0;
 }
 
-img {
-  max-width: 87.5%;
+img,
+video {
+  width: fit-content;
+  max-width: 100%;
   margin-bottom: calc(2 * $baseMargin);
 
-  article > p & {
+  article > p &,
+  article > &,
+  article > figure &,
+  figure > & {
     margin-left: auto;
     margin-right: auto;
     display: block;
   }
+}
 
+img {
   &.inline-img {
     display: inline;
     width: 0.9rem;
@@ -473,7 +638,7 @@ img {
   }
   .callout &:not(.favicon),
   dd & {
-    width: 100%;
+    width: fit-content;
   }
 }
 
@@ -556,15 +721,51 @@ hr {
   max-width: 97.5%; // Looks weird if it extends all the way to the right
 }
 
+.sequenceLinks-divider {
+  color: var(--lightgray);
+  height: calc(8 * $baseMargin);
+  margin-top: calc(2 * $baseMargin);
+  margin-left: $baseMargin;
+  margin-right: $baseMargin;
+  border-left-style: solid;
+  border-left-width: 1px;
+}
+
+.sequenceLinks-postNavigation {
+  width: 45%;
+}
+.sequence-nav {
+  display: flex;
+  justify-content: space-between;
+
+  & a {
+    flex: 0 0 auto;
+  }
+
+  & .prev-post {
+    margin-right: auto;
+  }
+  & .next-post {
+    margin-left: auto;
+  }
+}
+
 // Fixing issue where eqn numbers overlap with katex math
 //  https://github.com/KaTeX/KaTeX/issues/3066
 .katex-html {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 3px;
   .base {
     margin: 0 auto;
   }
+}
+
+.vlist-r:last-of-type {
+  // For some reason, the last one messes up katex sub on safari (eg https://turntrout.com/statistics-of-a-maze-solving-network#statistically-informed-impressions)
+  display: none;
+}
+
+p:has(> .katex) {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .katex-html:has(span.tag) {
@@ -593,7 +794,6 @@ hr {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.35s ease;
 
   &::after {
     content: "Hover to show";
@@ -608,7 +808,12 @@ hr {
 .spoiler-content {
   filter: blur(8px);
   opacity: 0.5;
-  transition: filter 0.3s ease;
+
+  // Safari needs this
+  & > * {
+    filter: inherit;
+    opacity: inherit;
+  }
 }
 
 .spoiler-container:hover .spoiler-overlay,
@@ -626,6 +831,7 @@ hr {
 }
 
 article[data-use-dropcap="true"] {
+  --dropcap-vertical-offset: 0.15rem;
   & > p:first-of-type {
     position: relative;
     min-height: 4.2rem;
@@ -634,7 +840,7 @@ article[data-use-dropcap="true"] {
     content: attr(data-first-letter);
     text-transform: uppercase;
     position: absolute;
-    top: 0;
+    top: var(--dropcap-vertical-offset);
     left: 0;
     font-size: 4rem;
     line-height: 1;
@@ -643,6 +849,7 @@ article[data-use-dropcap="true"] {
   }
 
   & > p:first-of-type::first-letter {
+    padding-top: var(--dropcap-vertical-offset);
     text-transform: uppercase;
     font-style: normal !important;
     float: left;
@@ -673,4 +880,109 @@ article[data-use-dropcap="true"] {
   & > p[data-first-letter="F"]::before {
     padding-left: 0.025em;
   }
+}
+
+// Add indent after the first line
+.center li,
+#backlinks li,
+.popover-inner li {
+  text-indent: calc(-0.25 * $baseMargin);
+}
+
+// Make sure the bullet points don't feel choked
+.center li,
+.popover-inner li {
+  margin-bottom: calc(0.5 * $baseMargin);
+}
+
+#backlinks {
+  position: relative;
+
+  & li {
+    &::marker {
+      color: var(--lightgray);
+    }
+    & a {
+      text-decoration-thickness: 0.2px;
+      background-color: transparent;
+      color: var(--gray);
+    }
+  }
+}
+
+// Mermaid
+.edgeLabel > div,
+.edgeLabel > p {
+  align-items: baseline !important;
+  background-color: transparent !important;
+}
+
+.cluster {
+  & rect {
+    transform: translateY(calc(-0.5 * $baseMargin));
+  }
+
+  & .cluster-label {
+    font-weight: bolder;
+  }
+}
+
+// Edge labels
+.edgeLabel > .label > foreignObject > div {
+  background-color: var(--lightergray) !important;
+  padding-left: $baseMargin !important;
+  padding-right: $baseMargin !important;
+  padding-top: $baseMargin !important;
+  padding-bottom: $baseMargin !important;
+  opacity: 1 !important;
+
+  border-radius: 5px !important;
+
+  &:has(.edgeLabel:empty) {
+    display: none !important;
+    background-color: transparent !important;
+  }
+}
+
+.label span {
+  color: var(--dark) !important;
+}
+
+.flowchart-link {
+  stroke: var(--lightgray) !important;
+}
+
+.manifold-embed {
+  position: relative;
+  width: 100%;
+  height: 18rem;
+  max-width: 35rem;
+  border-radius: 5px;
+}
+
+.after-article-components {
+  & p {
+    margin-bottom: $baseMargin; // Less separation than usual
+  }
+
+  & img.favicon {
+    &[src*="rss.svg"] {
+      filter: saturate(0.6); // Give it some color, unlike normal favicons
+    }
+    &[src*="substack_com"] {
+      filter: saturate(0.45); // Give it some color, unlike normal favicons
+    }
+  }
+}
+
+#subscription-and-contact {
+  border-radius: 5px;
+  border: 1px solid var(--gray);
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }

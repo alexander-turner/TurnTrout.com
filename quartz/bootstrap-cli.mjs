@@ -10,8 +10,9 @@ import {
 } from "./cli/handlers.js"
 import { CommonArgv, BuildArgv, CreateArgv, SyncArgv } from "./cli/args.js"
 import { version } from "./cli/constants.js"
+import process from "node:process"
 
-yargs(hideBin(process.argv))
+void yargs(hideBin(process.argv))
   .scriptName("quartz")
   .version(version)
   .usage("$0 <cmd> [args]")

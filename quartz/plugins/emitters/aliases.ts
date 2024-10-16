@@ -9,11 +9,11 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
   getQuartzComponents() {
     return []
   },
-  async getDependencyGraph(ctx, content, _resources) {
+  async getDependencyGraph(ctx, content) {
     const graph = new DepGraph<FilePath>()
 
     const { argv } = ctx
-    for (const [_tree, file] of content) {
+    for (const [, file] of content) {
       const dir = path.posix.relative(argv.directory, path.dirname(file.data.filePath!))
       const aliases = file.data.frontmatter?.aliases ?? []
       const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
@@ -34,11 +34,11 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
     return graph
   },
-  async emit(ctx, content, _resources): Promise<FilePath[]> {
+  async emit(ctx, content): Promise<FilePath[]> {
     const { argv } = ctx
     const fps: FilePath[] = []
 
-    for (const [_tree, file] of content) {
+    for (const [, file] of content) {
       const ogSlug = simplifySlug(file.data.slug!)
       const dir = path.posix.relative(argv.directory, path.dirname(file.data.filePath!))
       const aliases = file.data.frontmatter?.aliases ?? []

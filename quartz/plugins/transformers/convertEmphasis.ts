@@ -1,7 +1,7 @@
 import { QuartzTransformerPlugin } from "../types"
-import { Plugin } from "unified"
 import { visit } from "unist-util-visit"
 import { Text, Parent, PhrasingContent } from "mdast"
+import { Root } from "remark-frontmatter/lib"
 
 /**
  * Processes a single text node and converts emphasis syntax to the corresponding node type.
@@ -16,7 +16,7 @@ import { Text, Parent, PhrasingContent } from "mdast"
 export const formatNode = (
   node: Text,
   index: number | undefined,
-  parent: Parent | null,
+  parent: Parent | undefined,
   regex: RegExp,
   tag: string,
 ) => {
@@ -38,8 +38,8 @@ export const formatNode = (
       newNodes.push({
         type: "element",
         tagName: tag,
-        children: [{ type: "text", value: content } as Text],
-      } as any)
+        children: [{ type: "text", value: content }],
+      } as unknown as PhrasingContent)
 
       lastIndex = offset + fullMatch.length
       return fullMatch // This return is not used, it's just to satisfy TypeScript
@@ -65,21 +65,26 @@ export const formatNode = (
  *
  * @returns A function that transforms the AST.
  */
-export const convertEmphasisHelper = (tree: any): void => {
-    const boldRegex = /\*\*(.*?)\*\*/g
-    const italicRegex = /_(.*?)_/g
-    for (const pair of [
-      ["strong", boldRegex],
-      ["em", italicRegex],
-    ]) {
-      const tagName = pair[0]
-      const regex = pair[1]
-      visit(tree, "text", (node: Text, index: number | undefined, parent: Parent | null) => {
-        // Skip processing if the parent node is a code block or inline code
-        if (parent && (["code", "inlineCode", "pre"].includes((parent as any).tagName))) {
-          return
-        }
-        formatNode(node, index, parent, regex as RegExp, tagName as string)
+export const convertEmphasisHelper = (tree: Root): void => {
+  const boldRegex = /\*\*(.*?)\*\*/g
+  const italicRegex = /_(.*?)_/g
+  for (const pair of [
+    ["strong", boldRegex],
+    ["em", italicRegex],
+  ]) {
+    const tagName = pair[0]
+    const regex = pair[1]
+    visit(tree, "text", (node: Text, index: number | undefined, parent: Parent | undefined) => {
+      // Skip processing if the parent node is a code block or inline code
+      if (
+        parent &&
+        "tagName" in parent &&
+        typeof parent.tagName === "string" &&
+        ["code", "inlineCode", "pre"].includes(parent.tagName)
+      ) {
+        return
+      }
+      formatNode(node, index, parent, regex as RegExp, tagName as string)
     })
   }
 }

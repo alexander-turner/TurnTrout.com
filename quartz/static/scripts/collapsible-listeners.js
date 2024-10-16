@@ -4,12 +4,6 @@ function collapseHandler() {
 
   content?.classList.toggle("active")
   foldIcon.setAttribute("aria-expanded", content.classList.contains("active"))
-
-  if (content) {
-    content.style.maxHeight = content.classList.contains("active")
-      ? content.scrollHeight + "px"
-      : null
-  }
 }
 
 document.addEventListener("nav", function () {
@@ -18,8 +12,5 @@ document.addEventListener("nav", function () {
   for (let collapsible of collapsibles) {
     const title = collapsible.querySelector(".collapsible-title")
     title.addEventListener("click", collapseHandler.bind(collapsible))
-    window.addCleanup(() => {
-      title.removeEventListener("click", collapseHandler.bind(collapsible))
-    })
   }
 })

@@ -3,10 +3,6 @@ import type { QuartzTransformerPlugin } from "../types"
 import type { Element } from "hast"
 import type { Root } from "mdast"
 
-interface Options {
-  colorMapping: Record<string, string>
-}
-
 const colorMapping: Record<string, string> = {
   pink: "var(--pink)",
   red: "var(--red)",
@@ -75,7 +71,7 @@ function innerFunc() {
  * @param opts - Options for the transformer
  * @returns A QuartzTransformerPlugin that replaces color names with CSS variables
  */
-export const ColorVariables: QuartzTransformerPlugin<Options> = (_opts) => {
+export const ColorVariables: QuartzTransformerPlugin = () => {
   return {
     name: "ColorVariables",
     htmlPlugins() {

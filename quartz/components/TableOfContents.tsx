@@ -5,14 +5,12 @@
  */
 
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+import React from "react"
 import { createLogger } from "../plugins/transformers/logger_utils"
 import modernStyle from "./styles/toc.scss"
-import { classNames } from "../util/lang"
-import { RootContent, Parent, Text, Element } from "hast"
+import { RootContent, Parent, Text, Element, Root } from "hast"
 import { replaceSCInNode } from "../plugins/transformers/tagacronyms"
 import { TocEntry } from "../plugins/transformers/toc"
-// @ts-expect-error
-import script from "./scripts/toc.inline"
 import katex from "katex"
 import { fromHtml } from "hast-util-from-html"
 
@@ -21,10 +19,11 @@ import { fromHtml } from "hast-util-from-html"
  * @param text - The text to process.
  * @param parent - The parent node to add the processed text to.
  */
-function processSmallCaps(text: string, parent: Parent): void {
+export function processSmallCaps(text: string, parent: Parent): void {
+  const insertIndex = parent.children.length
   const textNode = { type: "text", value: text } as Text
   parent.children.push(textNode)
-  replaceSCInNode(textNode, 0, parent)
+  replaceSCInNode(textNode, insertIndex, parent)
 }
 
 /**
@@ -32,7 +31,7 @@ function processSmallCaps(text: string, parent: Parent): void {
  * @param latex - The LaTeX content to process.
  * @param parent - The parent node to add the processed LaTeX to.
  */
-function processKatex(latex: string, parent: Parent): void {
+export function processKatex(latex: string, parent: Parent): void {
   const html = katex.renderToString(latex, { throwOnError: false })
   const katexNode = {
     type: "element",
@@ -49,10 +48,9 @@ const logger = createLogger("TableOfContents")
  *
  * @param props - The component props.
  * @param props.fileData - Data for the current file.
- * @param props.displayClass - CSS class for controlling display.
  * @returns The rendered table of contents or null if disabled.
  */
-const TableOfContents: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
+export const CreateTableOfContents: QuartzComponent = ({ fileData }: QuartzComponentProps): JSX.Element | null => {
   logger.info(`Rendering TableOfContents for file: ${fileData.filePath}`)
 
   if (!fileData.toc || fileData.frontmatter?.toc === "false") {
@@ -62,16 +60,12 @@ const TableOfContents: QuartzComponent = ({ fileData, displayClass }: QuartzComp
     return null
   }
 
-  const title = fileData.frontmatter?.title
-  logger.debug(`Title for TOC: ${title}`)
-
-  const toc = addListItem(fileData.toc, 0)
-  logger.debug(`Generated TOC items: ${toc.length}`)
+  const toc = buildNestedList(fileData.toc, 0, 0)[0]
 
   return (
-    <div id="table-of-contents" className={classNames(displayClass)}>
+    <div id="table-of-contents" className="desktop-only">
       <h6 className="toc-title">
-        <a href="#">{title}</a>
+        <a href="#">Table of Contents</a>
       </h6>
       <div id="toc-content">
         <ul className="overflow">{toc}</ul>
@@ -81,53 +75,78 @@ const TableOfContents: QuartzComponent = ({ fileData, displayClass }: QuartzComp
 }
 
 /**
- * Recursively generates list items for the table of contents.
+ * Recursively builds a nested list for the table of contents.
  *
- * @param remainingEntries - The remaining TOC entries to process.
+ * @param entries - The TOC entries to process.
+ * @param currentIndex - The current index in the entries array.
  * @param currentDepth - The current depth in the TOC hierarchy.
- * @returns An array of JSX elements representing the TOC items.
+ * @returns A tuple containing an array of JSX elements and the next index to process.
  */
-function addListItem(remainingEntries: TocEntry[], currentDepth: number): JSX.Element[] {
-  logger.debug(
-    `addListItem called with ${remainingEntries.length} entries at depth ${currentDepth}`,
-  )
+export function buildNestedList(
+  entries: TocEntry[],
+  currentIndex = 0,
+  currentDepth = entries[0]?.depth || 0,
+): [JSX.Element[], number] {
+  const listItems: JSX.Element[] = []
+  const totalEntries = entries.length
+  let index = currentIndex
 
-  if (remainingEntries.length === 0) {
-    logger.debug("No remaining entries, returning empty array")
-    return []
-  }
+  while (index < totalEntries) {
+    const entry = entries[index]
 
-  let result: JSX.Element[] = []
-  while (remainingEntries.length > 0) {
-    const tocEntry = remainingEntries[0]
-    logger.debug(`Processing TOC entry: ${JSON.stringify(tocEntry)}`)
-
-    if (tocEntry.depth > currentDepth) {
-      logger.debug(`Starting new sublist at depth ${tocEntry.depth}`)
-      result.push(
-        <ul key={`sublist-${tocEntry.slug}`}>{addListItem(remainingEntries, tocEntry.depth)}</ul>,
-      )
-    } else if (tocEntry.depth < currentDepth) {
-      logger.debug(`Ending sublist, returning to depth ${tocEntry.depth}`)
+    if (entry.depth < currentDepth) {
       break
+    } else if (entry.depth > currentDepth) {
+      const [nestedListItems, nextIndex] = buildNestedList(entries, index, entry.depth)
+      if (listItems.length > 0) {
+        const lastItem = listItems[listItems.length - 1]
+        listItems[listItems.length - 1] = (
+          <li key={`li-${index}`}>
+            {lastItem.props.children}
+            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+          </li>
+        )
+      } else {
+        listItems.push(
+          <li key={`li-${index}`}>
+            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+          </li>,
+        )
+      }
+      index = nextIndex
     } else {
-      remainingEntries.shift()
-      const entryParent: Parent = processTocEntry(tocEntry)
-      const children = entryParent.children.map(elementToJsx)
-      let li = (
-        <li key={tocEntry.slug} className={`depth-${tocEntry.depth}`}>
-          <a href={`#${tocEntry.slug}`} data-for={tocEntry.slug}>
-            {children}
-          </a>
-        </li>
-      )
-      logger.debug(`Added list item for "${tocEntry.text}" at depth ${tocEntry.depth}`)
-      result.push(li)
+      listItems.push(<li key={`li-${index}`}>{toJSXListItem(entry)}</li>)
+      index++
     }
   }
 
-  logger.debug(`Returning ${result.length} list items`)
-  return result
+  return [listItems, index]
+}
+
+/**
+ * Generates the table of contents as a nested list.
+ *
+ * @param entries - The TOC entries to process.
+ * @returns A JSX element representing the nested TOC.
+ */
+export function addListItem(entries: TocEntry[]): JSX.Element {
+  logger.debug(`addListItem called with ${entries.length} entries`)
+
+  const [listItems] = buildNestedList(entries)
+  logger.debug(`Returning ${listItems.length} JSX elements`)
+  return <ul>{listItems}</ul>
+}
+
+/**
+ * Converts a TocEntry to a JSX list item element.
+ */
+export function toJSXListItem(entry: TocEntry): JSX.Element {
+  const entryParent: Parent = processTocEntry(entry)
+  return (
+    <a href={`#${entry.slug}`} data-for={entry.slug}>
+      {entryParent.children.map(elementToJsx)}
+    </a>
+  )
 }
 
 /**
@@ -136,7 +155,7 @@ function addListItem(remainingEntries: TocEntry[], currentDepth: number): JSX.El
  * @param entry - The TOC entry to process.
  * @returns A Parent object representing the processed entry.
  */
-function processTocEntry(entry: TocEntry): Parent {
+export function processTocEntry(entry: TocEntry): Parent {
   logger.debug(`Processing TOC entry: ${entry.text}`)
   const parent = { type: "element", tagName: "span", properties: {}, children: [] } as Parent
 
@@ -164,19 +183,43 @@ function processTocEntry(entry: TocEntry): Parent {
  * @param htmlAst - The HTML AST to process.
  * @param parent - The parent node to add processed nodes to.
  */
-function processHtmlAst(htmlAst: any, parent: Parent): void {
-  htmlAst.children.forEach((node: any) => {
-    if (node.type === 'text') {
-      processSmallCaps(node.value, parent)
-    } else if (node.type === 'element') {
+export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
+  htmlAst.children.forEach((node: RootContent) => {
+    if (node.type === "text") {
+      const textValue = node.value
+      const regex = /^(\d+:\s*)(.*)$/
+      const match = textValue.match(regex)
+      if (match) {
+        // Leading numbers and colon found
+        const numberPart = match[1]
+        const restText = match[2]
+
+        // Create span for numberPart
+        const numberSpan = {
+          type: "element",
+          tagName: "span",
+          properties: { className: ["number-prefix"] },
+          children: [{ type: "text", value: numberPart }],
+        } as Element
+        parent.children.push(numberSpan)
+
+        // Process the rest of the text
+        if (restText) {
+          processSmallCaps(restText, parent)
+        }
+      } else {
+        // No leading numbers, process as usual
+        processSmallCaps(textValue, parent)
+      }
+    } else if (node.type === "element") {
       const newElement = {
-        type: 'element',
+        type: "element",
         tagName: node.tagName,
         properties: { ...node.properties },
-        children: []
+        children: [],
       } as Element
       parent.children.push(newElement)
-      processHtmlAst(node, newElement)
+      processHtmlAst(node as Element, newElement)
     }
   })
 }
@@ -187,7 +230,7 @@ function processHtmlAst(htmlAst: any, parent: Parent): void {
  * @param elt - The HAST element to convert.
  * @returns The converted JSX element.
  */
-function elementToJsx(elt: RootContent): JSX.Element {
+export function elementToJsx(elt: RootContent): JSX.Element {
   logger.debug(`Converting element to JSX: ${JSON.stringify(elt)}`)
 
   switch (elt.type) {
@@ -199,40 +242,73 @@ function elementToJsx(elt: RootContent): JSX.Element {
         const className = (elt.properties?.className as string[])?.join(" ") || ""
         return <abbr className={className}>{abbrText}</abbr>
       } else if (elt.tagName === "span") {
-        if ((elt.properties?.className as string[])?.includes("katex-toc")) {
+        const classNames = (elt.properties?.className as string[]) || []
+        if (classNames.includes("katex-toc")) {
           return (
             <span
               className="katex-toc"
               dangerouslySetInnerHTML={{ __html: (elt.children[0] as { value: string }).value }}
             />
           )
+        } else if (classNames.includes("number-prefix")) {
+          // Render the number-prefix span
+          return <span className="number-prefix">{elt.children.map(elementToJsx)}</span>
         } else {
-          // Handle other span elements (e.g., those created by processSmallCaps)
+          // Handle other spans
           return <span>{elt.children.map(elementToJsx)}</span>
         }
       }
-      // Add more cases here as needed for other element types you expect
+      // Handle other element types if needed
       break
 
     case "comment":
     case "doctype":
-      // These types are typically ignored in JSX rendering
+      // Ignore these types in rendering
       return <></>
 
     default:
-      // Gracefully handle unexpected node types
       logger.warn(`Unexpected node type encountered: ${elt.type}`)
       return <></>
   }
 
-  // This should never be reached due to the switch cases, but TypeScript requires it
   return <></>
 }
 
-TableOfContents.css = modernStyle
-TableOfContents.afterDOMLoaded = script
 
-export default ((_opts?: any): QuartzComponent => {
+CreateTableOfContents.css = modernStyle
+CreateTableOfContents.afterDOMLoaded = `
+document.addEventListener('nav', function() {
+  const sections = document.querySelectorAll(".center h1, .center h2");
+  const navLinks = document.querySelectorAll("#toc-content a");
+
+  function updateActiveLink() {
+    let currentSection = "";
+    const scrollPosition = window.scrollY + window.innerHeight / 4;
+
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop;
+      if (scrollPosition >= sectionTop) {
+        currentSection = section.id;
+      }
+    });
+
+    navLinks.forEach((link) => {
+      link.classList.remove("active");
+      const slug = link.getAttribute('href').split("#")[1];
+      if (currentSection && slug === currentSection) {
+        link.classList.add("active");
+      }
+    });
+  }
+
+  window.addEventListener("scroll", updateActiveLink);
+
+  // Initial call to set active link on page load
+  updateActiveLink();
+});
+`
+
+export default ((): QuartzComponent => {
   logger.info("TableOfContents component initialized")
-  return TableOfContents
+  return CreateTableOfContents
 }) satisfies QuartzComponentConstructor

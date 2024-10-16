@@ -1,19 +1,21 @@
+/* eslint-disable react/no-unknown-property */
+// (For the spa-preserve attribute)
+
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
-import { pathToRoot } from "../util/path"
+import { FullSlug, pathToRoot, resolveRelative } from "../util/path"
 import navbarStyle from "./styles/navbar.scss"
 
-// @ts-ignore
+// @ts-expect-error Not a module but a script
 import script from "./scripts/navbar.inline"
-import { Options } from "./NavbarNode"
 import { headerVideoContainer } from "./PageTitle"
-import { classNames } from "../util/lang"
+import React from "react"
 import { i18n } from "../i18n"
 
-let darkMode = (
-  <span class="darkmode no-select">
-    <p class="description desktop-only hidden">Dark mode</p>
-    <input class="toggle" id="darkmode-toggle" type="checkbox" tabIndex={-1} />
-    <label id="toggle-label-light" for="darkmode-toggle" tabIndex={-1}>
+const darkMode = (
+  <span className="darkmode no-select">
+    <p className="description desktop-only hidden">Dark mode</p>
+    <input className="toggle" id="darkmode-toggle" type="checkbox" tabIndex={-1} />
+    <label id="toggle-label-light" htmlFor="darkmode-toggle" tabIndex={-1}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -28,7 +30,7 @@ let darkMode = (
         <path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path>
       </svg>
     </label>
-    <label id="toggle-label-dark" for="darkmode-toggle" tabIndex={-1}>
+    <label id="toggle-label-dark" htmlFor="darkmode-toggle" tabIndex={-1}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -47,8 +49,8 @@ let darkMode = (
 )
 
 const searchHTML = (
-  <div class="search" id="nav-searchbar" alt="Menu search bar">
-    <div class="no-select" id="search-icon">
+  <div className="search" id="nav-searchbar" alt="Menu search bar">
+    <div className="no-select" id="search-icon">
       <p>Search</p>
       <div></div>
       <svg
@@ -60,8 +62,8 @@ const searchHTML = (
       >
         <title id="title">Search</title>
         <desc id="desc">Search</desc>
-        <g class="search-path" fill="none">
-          <path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4" />
+        <g className="search-path" fill="none">
+          <path strokeLinecap="square" d="M18.5 18.3l-5.4-5.4" />
           <circle cx="8" cy="8" r="7" />
         </g>
       </svg>
@@ -69,23 +71,25 @@ const searchHTML = (
   </div>
 )
 
-export default ((userOpts?: Partial<Options>) => {
-  const Navbar: QuartzComponent = ({
-    cfg,
-    _allFiles,
-    displayClass,
-    fileData,
-  }: QuartzComponentProps) => {
-    const pages = cfg.navbar.pages
+type Page = {
+  slug: string
+  title: string
+}
+
+export default (() => {
+  const Navbar: QuartzComponent = ({ cfg, fileData }: QuartzComponentProps) => {
+    const pages: Page[] = "pages" in cfg.navbar ? (cfg.navbar.pages as Page[]) : []
+    const currentSlug = fileData.slug!
+
+    const links = pages.map((page: Page) => (
+      <li key={page.slug}>
+        <a href={resolveRelative(currentSlug, page.slug as FullSlug)}>{page.title}</a>
+      </li>
+    ))
 
     const title = cfg?.pageTitle ?? i18n(cfg.locale).propertyDefaults.title
     const baseDir = pathToRoot(fileData.slug!)
 
-    const links = pages.map((page) => (
-      <li key={page.slug}>
-        <a href={page.slug}>{page.title}</a>
-      </li>
-    ))
     const pageLinks = (
       <nav className="menu">
         <ul>{links}</ul>
@@ -93,10 +97,10 @@ export default ((userOpts?: Partial<Options>) => {
     )
     return (
       <>
-        <div id="navbar" className={classNames(displayClass, "navbar")}>
+        <div id="navbar" className="navbar" spa-preserve>
           <div id="navbar-left">
             {headerVideoContainer}
-            <h2 class="page-title-text">
+            <h2 className="page-title-text">
               <a href={baseDir} id="page-title-text">
                 {title}
               </a>

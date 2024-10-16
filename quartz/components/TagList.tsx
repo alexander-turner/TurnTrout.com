@@ -1,6 +1,8 @@
-import { slugTag, FullSlug } from "../util/path"
+import { slugTag } from "../util/path"
+import React from "react"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { classNames } from "../util/lang"
+import { QuartzPluginData } from "../plugins/vfile"
 
 // For rendering the tags for a user
 export const formatTag = (tag: string): string => {
@@ -13,23 +15,23 @@ export const formatTag = (tag: string): string => {
   return tag
 }
 
-export const getTags = (fileData: any) => {
+export const getTags = (fileData: QuartzPluginData) => {
   let tags = fileData.frontmatter?.tags || []
   tags = tags.map(formatTag)
   return tags.sort((a: string, b: string) => b.length - a.length)
 }
 
 export const TagList: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
-  let tags = getTags(fileData)
+  const tags = getTags(fileData)
   if (tags && tags.length > 0) {
     return (
-      <ul class={classNames(displayClass, "tags")}>
+      <ul className={classNames(displayClass, "tags")}>
         {tags.map((tag: string) => {
           const tagSlug = slugTag(tag)
           const linkDest = `/tags/${tagSlug}`
           return (
             <li key={tag}>
-              <a href={linkDest} class="internal tag-link">
+              <a href={linkDest} className="internal tag-link">
                 {tag}
               </a>
             </li>

@@ -1,9 +1,9 @@
 import { FilePath, FullSlug, joinSegments } from "../../util/path"
 import { QuartzEmitterPlugin } from "../types"
 
-// @ts-ignore
+// @ts-expect-error Not a module but a script
 import spaRouterScript from "../../components/scripts/spa.inline"
-// @ts-ignore
+// @ts-expect-error Not a module but a script
 import popoverScript from "../../components/scripts/popover.inline"
 import styles from "../../styles/custom.scss"
 import popoverStyle from "../../components/styles/popover.scss"
@@ -136,7 +136,6 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
   } else {
     componentResources.afterDOMLoaded.push(`
       window.spaNavigate = (url, _) => window.location.assign(url)
-      window.addCleanup = () => {}
       const event = new CustomEvent("nav", { detail: { url: document.body.dataset.slug } })
       document.dispatchEvent(event)
     `)
@@ -151,10 +150,10 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    async getDependencyGraph(_ctx, _content, _resources) {
+    async getDependencyGraph() {
       return new DepGraph<FilePath>()
     },
-    async emit(ctx, _content, _resources): Promise<FilePath[]> {
+    async emit(ctx): Promise<FilePath[]> {
       const promises: Promise<FilePath>[] = []
       const cfg = ctx.cfg.configuration
       // component specific scripts and styles

@@ -17,7 +17,7 @@ const defaultOptions: Options = {
   language: "yaml",
 }
 
-function coalesceAliases(data: { [key: string]: any }, aliases: string[]) {
+function coalesceAliases(data: { [key: string]: string[] }, aliases: string[]) {
   for (const alias of aliases) {
     if (data[alias] !== undefined && data[alias] !== null) return data[alias]
   }
@@ -71,13 +71,13 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
               data.title = file.stem ?? i18n(cfg.configuration.locale).propertyDefaults.title
             }
 
-            const tags = coerceToArray(coalesceAliases(data, ["tags", "tag"]))
+            const tags = coerceToArray(coalesceAliases(data, ["tags", "tag"])!)
             const lowerCaseTags = tags?.map((tag: string) => transformTag(tag))
             if (tags) data.tags = [...new Set(lowerCaseTags!.map((tag: string) => slugTag(tag)))]
 
-            const aliases = coerceToArray(coalesceAliases(data, ["aliases", "alias"]))
+            const aliases = coerceToArray(coalesceAliases(data, ["aliases", "alias"])!)
             if (aliases) data.aliases = aliases
-            const cssclasses = coerceToArray(coalesceAliases(data, ["cssclasses", "cssclass"]))
+            const cssclasses = coerceToArray(coalesceAliases(data, ["cssclasses", "cssclass"])!)
             if (cssclasses) data.cssclasses = cssclasses
 
             // fill in frontmatter

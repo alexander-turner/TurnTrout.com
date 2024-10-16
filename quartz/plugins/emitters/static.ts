@@ -9,7 +9,7 @@ export const Static: QuartzEmitterPlugin = () => ({
   getQuartzComponents() {
     return []
   },
-  async getDependencyGraph({ argv, cfg }, _content, _resources) {
+  async getDependencyGraph({ argv, cfg }) {
     const graph = new DepGraph<FilePath>()
 
     const staticPath = joinSegments(QUARTZ, "static")
@@ -23,7 +23,7 @@ export const Static: QuartzEmitterPlugin = () => ({
 
     return graph
   },
-  async emit({ argv, cfg }, _content, _resources): Promise<FilePath[]> {
+  async emit({ argv, cfg }): Promise<FilePath[]> {
     const staticPath = joinSegments(QUARTZ, "static")
     const fps = await glob("**", staticPath, cfg.configuration.ignorePatterns)
 

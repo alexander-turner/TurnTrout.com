@@ -53,28 +53,6 @@ export default {
     tableOfContents: {
       title: "Table of Contents",
     },
-    contentMeta: {
-      authors: ({ authors }) => `Authors: ${authors}`,
-      readingTime: ({ minutes }) => {
-        const hours = Math.floor(minutes / 60)
-        const remainingMinutes = minutes % 60
-
-        let timeString = ""
-
-        if (hours > 0) {
-          timeString += `${hours} hour` // Add hours (with plural if needed)
-          if (remainingMinutes > 0) {
-            timeString += " " // Add separator if we also have minutes
-          }
-        }
-
-        if (remainingMinutes > 0) {
-          timeString += `${remainingMinutes} minute` // Add minutes
-        }
-
-        return timeString + " read"
-      },
-    },
   },
   pages: {
     rss: {

@@ -1,7 +1,8 @@
-// @ts-ignore
+// @ts-expect-error Not a module but a script
 import clipboardScript from "./scripts/clipboard.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+import React from "react"
 
 const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   // The children are the three main sections of the page: left, center, and right bars
@@ -14,11 +15,11 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
 }
 
 const searchInterface = (
-  <div class="search" alt="Displays search results.">
+  <div className="search" alt="Displays search results.">
     <div id="search-container">
       <div id="search-space">
         <input
-          autocomplete="off"
+          autoComplete="off"
           id="search-bar"
           name="search"
           type="text"

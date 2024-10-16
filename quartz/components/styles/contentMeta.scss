@@ -6,6 +6,10 @@
   font-size: var(--text-size-90);
   color: var(--gray);
 
+  & .callout-content ul {
+    margin-block-start: 0;
+  }
+
   &[show-comma="true"] {
     > span:not(:last-child) {
       margin-right: 8px;

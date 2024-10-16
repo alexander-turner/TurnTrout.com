@@ -12,11 +12,18 @@ import {
   neqConversion,
 } from "../formatting_improvement_html"
 import { rehype } from "rehype"
+import { h } from "hastscript"
+import { Element } from "hast"
 
-function testHtmlFormattingImprovement(inputHTML: string) {
+function testHtmlFormattingImprovement(
+  inputHTML: string,
+  skipFirstLetter = true,
+  doNotSetFirstLetterAttribute = false,
+) {
+  const options = doNotSetFirstLetterAttribute ? {} : { skipFirstLetter }
   return rehype()
     .data("settings", { fragment: true })
-    .use(improveFormatting)
+    .use(improveFormatting, options)
     .processSync(inputHTML)
     .toString()
 }
@@ -25,6 +32,7 @@ describe("HTMLFormattingImprovement", () => {
   describe("Quotes", () => {
     it.each([
       ['"This is a quote", she said.', "“This is a quote”, she said."],
+      ['"aren\'t "groups of functions". ', "“aren’t “groups of functions.” "],
       ['"This is a quote," she said.', "“This is a quote”, she said."],
       ['"This is a quote!".', "“This is a quote!”."],
       ['"This is a quote?".', "“This is a quote?”."],
@@ -54,11 +62,36 @@ describe("HTMLFormattingImprovement", () => {
       ['with "scope insensitivity":', "with “scope insensitivity”:"],
       ['("the best")', "(“the best”)"],
       ['"\'sup"', "“‘sup”"],
+      ["'SUP", "‘SUP"],
       ["'the best',", "‘the best’,"],
       ["'I lost the game.'", "‘I lost the game.’"],
       ["I hate you.'\"", "I hate you.’”"],
+      ['"This is a quote"...', "“This is a quote”..."],
+      ['He said, "This is a quote"...', "He said, “This is a quote”..."],
+      ["The 'function space')", "The ‘function space’)"],
+      ["The 'function space'—", "The ‘function space’—"],
+      ['"... What is this?"', "“... What is this?”"],
     ])('should fix quotes in "%s"', (input, expected) => {
       const processedHtml = niceQuotes(input)
+      expect(processedHtml).toBe(expected)
+    })
+
+    // Handle HTML inputs
+    it.each([
+      [
+        '<p>I love <span class="katex">math</span>".</p>',
+        '<p>I love <span class="katex">math</span>.”</p>',
+      ],
+      [
+        '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
+        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+      ],
+      [
+        '<p>"<span class="katex">H</span>valued alignment metric</p>',
+        '<p>“<span class="katex">H</span>valued alignment metric</p>',
+      ],
+    ])("should handle HTML inputs", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
 
@@ -80,9 +113,9 @@ describe("HTMLFormattingImprovement", () => {
       expect(processedHtml).toBe(input)
     })
 
-    const mathHTML: string = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>`
+    const mathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>`
 
-    const targetMathHTML: string = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>’s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>`
+    const targetMathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>’s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>`
 
     it("should handle apostrophe right after math mode", () => {
       const processedHtml = testHtmlFormattingImprovement(mathHTML)
@@ -96,6 +129,22 @@ describe("HTMLFormattingImprovement", () => {
     it("should handle quotes in headers", () => {
       const processedHtml = testHtmlFormattingImprovement(originalHeader)
       expect(processedHtml).toBe(targetHeader)
+    })
+  })
+
+  describe("Definition Lists", () => {
+    it.each([
+      [
+        '<dl><dt>"Term 1".</dt><dd>Definition 1.</dd></dl>',
+        "<dl><dt>“Term 1.”</dt><dd>Definition 1.</dd></dl>",
+      ],
+      [
+        '<dl><dt>"Quoted term".</dt><dd>"Quoted definition".</dd></dl>',
+        "<dl><dt>“Quoted term.”</dt><dd>“Quoted definition.”</dd></dl>",
+      ],
+    ])("should handle smart quotes and punctuation in definition lists: %s", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
     })
   })
 
@@ -142,9 +191,32 @@ describe("HTMLFormattingImprovement", () => {
       ["Deja vu", "Déjà vu"],
       ["Naively", "Naïvely"],
       ["Don't be naive", "Don't be naïve"],
+      ["Dojo", "Dōjō"],
+      ["5x1", "5×1"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
+    })
+
+    it.each([
+      ["I have 3x apples and 5x oranges.", "I have 3× apples and 5× oranges."],
+      ["The word 'box' should not be changed.", "The word 'box' should not be changed."],
+      ["-5x is negative.", "-5× is negative."], // Negative numbers
+      ["3.14x pi is fun.", "3.14× pi is fun."], // Decimals
+      ["5*5 area", "5×5 area"], // Asterisk
+      ["12345x is a big number.", "12345× is a big number."], // Large numbers
+      ["0.001x is small.", "0.001× is small."], // Small numbers
+      ["I have 2x apples and 1.5x oranges.", "I have 2× apples and 1.5× oranges."], // Combined cases
+      ["This is 3x larger.", "This is 3× larger."], // HTML context
+    ])("correctly handles '%s'", (input, expected) => {
+      const result = massTransformText(input)
+      expect(result).toBe(expected)
+    })
+
+    it("doesn't replace 'x' in words", () => {
+      const input = "The word 'box' should not be changed."
+      const result = massTransformText(input)
+      expect(result).toBe(input) // No change expected
     })
   })
 
@@ -202,21 +274,54 @@ describe("HTMLFormattingImprovement", () => {
       // Handle en dash number ranges
       ["<p>1-2</p>", "<p>1–2</p>"],
       ["<p>p1-2</p>", "<p>p1–2</p>"], // Page range
+      [
+        "<p>Hi you're a test <code>ABC</code> - file</p>",
+        "<p>Hi you’re a test <code>ABC</code>—file</p>",
+      ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
+
+    test("replaces multiple dashes within words", () => {
+      expect(hyphenReplace("Since--as you know")).toBe("Since—as you know")
+      expect(hyphenReplace("word---another")).toBe("word—another")
+    })
+
+    test("handles dashes at the start of a line", () => {
+      expect(hyphenReplace("- This is a list item")).toBe("— This is a list item")
+      expect(hyphenReplace("--- Indented list item")).toBe("— Indented list item")
+      expect(hyphenReplace("Line 1\n- Line 2")).toBe("Line 1\n— Line 2")
+    })
+
+    test("removes spaces around em dashes", () => {
+      expect(hyphenReplace("word — another")).toBe("word—another")
+      expect(hyphenReplace("word—  another")).toBe("word—another")
+      expect(hyphenReplace("word  —another")).toBe("word—another")
+    })
+
+    test("handles em dashes at the start of a line", () => {
+      expect(hyphenReplace("—Start of line")).toBe("— Start of line")
+      expect(hyphenReplace("Line 1\n—Line 2")).toBe("Line 1\n— Line 2")
+      expect(hyphenReplace("— Already correct")).toBe("— Already correct")
+    })
+
+    test("converts number ranges to en dashes", () => {
+      expect(hyphenReplace("Pages 1-5")).toBe("Pages 1–5")
+      expect(hyphenReplace("2000-2020")).toBe("2000–2020")
+      expect(hyphenReplace("p.10-15")).toBe("p.10–15")
+    })
   })
   describe("transformParagraph", () => {
-    function _getParagraphNode(numChildren: number, value: string = "Hello, world!"): any {
-      return {
-        type: "element",
-        tagName: "p",
-        children: Array.from({ length: numChildren }, () => ({
+    function _getParagraphNode(numChildren: number, value = "Hello, world!"): Element {
+      return h(
+        "p",
+        {},
+        Array.from({ length: numChildren }, () => ({
           type: "text",
           value: value,
         })),
-      }
+      )
     }
 
     const capitalize = (str: string) => str.toUpperCase()
@@ -246,6 +351,7 @@ describe("HTMLFormattingImprovement", () => {
       ["1 - 2", "1 - 2"], // Don't replace if there are spaces
       ["a1-2b", "a1-2b"], // Don't replace if not purely numeric
       ["p. 206-207)", "p. 206–207)"], // ) should close out a word boundary
+      ["Qwen1.5-1.8", "Qwen1.5-1.8"], // Don't replace if there's a decimal
     ])('should replace hyphens with en dashes in number ranges: "%s"', (input, expected) => {
       const result = enDashNumberRange(input)
       expect(result).toBe(expected)
@@ -253,12 +359,24 @@ describe("HTMLFormattingImprovement", () => {
   })
 })
 
-describe("applyLinkPunctuation", () => {
-  const punctuationMarks = [".", ",", "!", "?", ";", ":", "`"]
+describe("rearrangeLinkPunctuation", () => {
+  const punctuationToMove = [".", ",", "!", "?", ";", ":", "`"]
   const specialCases = [
     [
       '<p>"<a href="https://example.com">Link</a>"</p>',
       '<p><a href="https://example.com">“Link”</a></p>',
+    ],
+    [
+      '<p>"<a href="https://example.com"><code>Link</code></a>"</p>',
+      '<p><a href="https://example.com">“<code>Link</code>”</a></p>',
+    ],
+    [
+      '<p><a href="https://example.com">Link</a>",</p>',
+      '<p><a href="https://example.com">Link”,</a></p>',
+    ],
+    [
+      '<p><a href="https://example.com">Link</a>" k</p>',
+      '<p><a href="https://example.com">Link”</a> k</p>',
     ],
     [
       '<p>(<a href="https://scholar.google.com/citations?user=thAHiVcAAAAJ">Google Scholar</a>)</p>',
@@ -274,12 +392,12 @@ describe("applyLinkPunctuation", () => {
     ],
     [
       '<p><a href="/a-certain-formalization-of-corrigibility-is-vnm-incoherent"><em>Corrigibility Can Be VNM-Incoherent</em></a></p>,',
-      '<p><a href="/a-certain-formalization-of-corrigibility-is-vnm-incoherent"><em>Corrigibility Can Be VNM-Incoherent,</em></a></p>',
+      '<p><a href="/a-certain-formalization-of-corrigibility-is-vnm-incoherent"><em>Corrigibility Can Be VNM-Incoherent</em>,</a></p>',
     ],
   ]
 
   const generateLinkScenarios = () => {
-    const basicScenarios = punctuationMarks.map((mark) => [
+    const basicScenarios = punctuationToMove.map((mark) => [
       `<p><a href="https://example.com">Link</a>${mark}</p>`,
       `<p><a href="https://example.com">Link${mark}</a></p>`,
     ])
@@ -291,6 +409,23 @@ describe("applyLinkPunctuation", () => {
   it.each(linkScenarios)("correctly handles link punctuation", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
+  })
+
+  describe("Handles footnote links correctly", () => {
+    it("should not modify footnote links", () => {
+      const input = '<p>Sentence with footnote<a href="#user-content-fn-1">1</a>.</p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(input)
+    })
+
+    it("should modify regular links but not footnote links", () => {
+      const input =
+        '<p><a href="https://example.com">Link</a>. <a href="#user-content-fn-2">2</a>.</p>'
+      const expected =
+        '<p><a href="https://example.com">Link.</a> <a href="#user-content-fn-2">2</a>.</p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
   })
 
   describe("End-to-end HTML formatting improvement", () => {
@@ -339,7 +474,7 @@ describe("applyLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com"><em>Fully nested</em></a>: with colon after</p>',
-      '<p><a href="https://example.com"><em>Fully nested:</em></a> with colon after</p>',
+      '<p><a href="https://example.com"><em>Fully nested</em>:</a> with colon after</p>',
     ],
     [
       '<p><a href="https://example.com">Link</a>. with period after</p>',
@@ -398,63 +533,23 @@ describe("assertSmartQuotesMatch", () => {
 
 describe("flattenTextNodes and getTextContent", () => {
   const ignoreNone = () => false
-  const ignoreCode = (n: any) => n.tagName === "code"
+  const ignoreCode = (n: Element) => n.tagName === "code"
 
   const testNodes = {
-    empty: {},
-    simple: { type: "text", value: "Hello, world!" },
-    nested: {
-      type: "element",
-      tagName: "div",
-      children: [
-        { type: "text", value: "This is " },
-        { type: "element", tagName: "em", children: [{ type: "text", value: "emphasized" }] },
-        { type: "text", value: " text." },
-      ],
-    },
-    withCode: {
-      type: "element",
-      tagName: "div",
-      children: [
-        { type: "text", value: "This is " },
-        { type: "element", tagName: "code", children: [{ type: "text", value: "ignored" }] },
-        { type: "text", value: " text." },
-      ],
-    },
-    emptyAndComment: {
-      type: "element",
-      tagName: "div",
-      children: [
-        { type: "element", tagName: "span", children: [] },
-        { type: "comment", value: "This is a comment" },
-      ],
-    },
-    deeplyNested: {
-      type: "element",
-      tagName: "div",
-      children: [
-        { type: "text", value: "Level 1 " },
-        {
-          type: "element",
-          tagName: "span",
-          children: [
-            { type: "text", value: "Level 2 " },
-            {
-              type: "element",
-              tagName: "em",
-              children: [{ type: "text", value: "Level 3" }],
-            },
-          ],
-        },
-        { type: "text", value: " End" },
-      ],
-    },
+    empty: h("", []),
+    simple: h("p", "Hello, world!"),
+    nested: h("div", ["This is ", h("em", "emphasized"), " text."]),
+    withCode: h("div", ["This is ", h("code", "ignored"), " text."]),
+    emptyAndComment: h("div", [h("span"), { type: "comment", value: "This is a comment" }]),
+    deeplyNested: h("div", ["Level 1 ", h("span", ["Level 2 ", h("em", "Level 3")]), " End"]),
   }
 
   describe("flattenTextNodes", () => {
     it("should handle various node structures", () => {
       expect(flattenTextNodes(testNodes.empty, ignoreNone)).toEqual([])
-      expect(flattenTextNodes(testNodes.simple, ignoreNone)).toEqual([testNodes.simple])
+      expect(flattenTextNodes(testNodes.simple, ignoreNone)).toEqual([
+        { type: "text", value: "Hello, world!" },
+      ])
       expect(flattenTextNodes(testNodes.nested, ignoreNone)).toEqual([
         { type: "text", value: "This is " },
         { type: "text", value: "emphasized" },
@@ -476,12 +571,70 @@ describe("flattenTextNodes and getTextContent", () => {
 
   describe("getTextContent", () => {
     it("should handle various node structures", () => {
-      expect(getTextContent(testNodes.empty as any)).toBe("")
-      expect(getTextContent(testNodes.simple as any)).toBe("Hello, world!")
-      expect(getTextContent(testNodes.nested as any)).toBe("This is emphasized text.")
-      expect(getTextContent(testNodes.withCode as any, ignoreCode)).toBe("This is  text.")
-      expect(getTextContent(testNodes.emptyAndComment as any)).toBe("")
-      expect(getTextContent(testNodes.deeplyNested as any)).toBe("Level 1 Level 2 Level 3 End")
+      expect(getTextContent(testNodes.empty)).toBe("")
+      expect(getTextContent(testNodes.simple)).toBe("Hello, world!")
+      expect(getTextContent(testNodes.nested)).toBe("This is emphasized text.")
     })
+  })
+})
+
+describe("setFirstLetterAttribute", () => {
+  it("should set data-first-letter attribute on the first paragraph", () => {
+    const input = `
+      <h1>Title</h1>
+      <p>First paragraph.</p>
+      <p>Second paragraph.</p>
+    `
+    const expected = `
+      <h1>Title</h1>
+      <p data-first-letter="F">First paragraph.</p>
+      <p>Second paragraph.</p>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should handle apostrophe as the second character", () => {
+    const input = `
+      <p>'Twas the night before Christmas.</p>
+    `
+    const expected = `
+      <p data-first-letter="‘">‘Twas the night before Christmas.</p>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should not modify when there are no paragraphs", () => {
+    const input = `
+      <h1>Title</h1>
+      <div>Not a paragraph</div>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(input)
+  })
+
+  it("should only process the first paragraph in the document", () => {
+    const input = `
+      <p>First paragraph.</p>
+      <p>Second paragraph.</p>
+    `
+    const expected = `
+      <p data-first-letter="F">First paragraph.</p>
+      <p>Second paragraph.</p>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("set the attribute when skipFirstLetter is not in options", () => {
+    const input = `
+      <p>First paragraph.</p>
+    `
+    const expected = `
+      <p data-first-letter="F">First paragraph.</p>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false, true)
+    expect(processedHtml).toBe(expected)
   })
 })

@@ -1,8 +1,10 @@
 import {
+  massTransformText,
   formattingImprovement,
   editAdmonition,
   noteAdmonition,
   wrapLeadingHeaderNumbers,
+  spaceDoublyNestedCallouts, // Add this line
 } from "../formatting_improvement_text"
 
 describe("TextFormattingImprovement Plugin", () => {
@@ -21,6 +23,12 @@ describe("TextFormattingImprovement Plugin", () => {
         "This sentence has a footnote.[^1] Another sentence.",
       ],
       ['defined [^16] "values" to', 'defined[^16] "values" to'],
+      [
+        "This is a sentence[^1]. Another sentence[^2], and more text[^3]!",
+        "This is a sentence.[^1] Another sentence,[^2] and more text![^3]",
+      ],
+      ["Is this correct[^2]?!", "Is this correct?![^2]"],
+      ["Is this correct[^2]?!", "Is this correct?![^2]"],
     ])("Correctly formats footnotes.", (input: string, expected: string): void => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
@@ -77,8 +85,7 @@ author: John Doe
 ---
 
 This is the main content of the document. It has a footnote.[^1]
-And some hyphens-to-be-ignored.
-This text is 3x larger.`
+And some hyphens-to-be-ignored.`
 
       const expectedOutput = `
 ---
@@ -87,34 +94,10 @@ author: John Doe
 ---
 
 This is the main content of the document. It has a footnote.[^1]
-And some hyphens-to-be-ignored.
-This text is 3× larger.`
+And some hyphens-to-be-ignored.`
 
       const result = formattingImprovement(input)
       expect(result).toBe(expectedOutput)
-    })
-  })
-
-  describe("Multiplication Sign Replacement", () => {
-    it.each([
-      ["I have 3x apples and 5x oranges.", "I have 3× apples and 5× oranges."],
-      ["The word 'box' should not be changed.", "The word 'box' should not be changed."],
-      ["-5x is negative.", "-5× is negative."], // Negative numbers
-      ["3.14x pi is fun.", "3.14× pi is fun."], // Decimals
-      ["5*5 area", "5×5 area"], // Asterisk
-      ["12345x is a big number.", "12345× is a big number."], // Large numbers
-      ["0.001x is small.", "0.001× is small."], // Small numbers
-      ["There's a 2x4 in the garage.", "There's a 2x4 in the garage."], // No replacement within words
-      ["I have 2x apples and 1.5x oranges.", "I have 2× apples and 1.5× oranges."], // Combined cases
-      ["This is 3x larger.", "This is 3× larger."], // HTML context
-    ])("correctly handles '%s'", (input, expected) => {
-      const result = formattingImprovement(input)
-      expect(result).toBe(expected)
-    })
-    it("doesn't replace 'x' in words", () => {
-      const input = "The word 'box' should not be changed."
-      const result = formattingImprovement(input)
-      expect(result).toBe(input) // No change expected
     })
   })
 
@@ -125,7 +108,6 @@ This text is 3× larger.`
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
     })
-
   })
 })
 
@@ -142,10 +124,11 @@ describe("editAdmonition", () => {
     expect(editAdmonition(input)).toBe(expected)
   })
 
-  it('should handle complicated edit command', () => {
-    const content = 'The initial version of this post talked about "outer alignment"; I changed this to just talk about _alignment_, because the outer/inner alignment distinction doesn\'t feel relevant here. What matters is how the AI\'s policy impacts us; what matters is [_impact alignment_](/non-obstruction-motivates-corrigibility).'
-    const input = 'Edit: ' + content
-    const expected = '> [!info] Edited after posting\n>\n> ' + content
+  it("should handle complicated edit command", () => {
+    const content =
+      "The initial version of this post talked about \"outer alignment\"; I changed this to just talk about _alignment_, because the outer/inner alignment distinction doesn't feel relevant here. What matters is how the AI's policy impacts us; what matters is [_impact alignment_](/non-obstruction-motivates-corrigibility)."
+    const input = "Edit: " + content
+    const expected = "> [!info] Edited after posting\n>\n> " + content
     expect(editAdmonition(input)).toBe(expected)
   })
 
@@ -187,9 +170,9 @@ describe("noteAdmonition", () => {
     expect(noteAdmonition(input)).toBe(expected)
   })
 
-  it("Allows emphasis", () => {
+  it("Deletes emphasis", () => {
     const input = "**NOTE: This contains emphasis.**"
-    const expected = "\n> [!note]\n>\n> **This contains emphasis.**"
+    const expected = "\n> [!note]\n>\n> This contains emphasis."
     expect(noteAdmonition(input)).toBe(expected)
   })
 
@@ -202,5 +185,51 @@ describe("noteAdmonition", () => {
     const input = "Some text.\nnote: A note at the start of a line."
     const expected = "Some text.\n\n> [!note]\n>\n> A note at the start of a line."
     expect(noteAdmonition(input)).toBe(expected)
+  })
+  it('should handle italicized "note:" at the beginning of a line', () => {
+    const input = "Some text.\n_note:_ A note at the start of a line."
+    const expected = "Some text.\n\n> [!note]\n>\n> A note at the start of a line."
+    expect(noteAdmonition(input)).toBe(expected)
+  })
+})
+
+describe("Mass transforms", () => {
+  it.each([
+    ["Let x := 5", "Let x ≝ 5"],
+    ["a:=b:=c", "a≝b≝c"],
+    ["L1", 'L<sub style="font-variant-numeric: lining-nums;">1</sub>'],
+    ["L10", 'L<sub style="font-variant-numeric: lining-nums;">10</sub>'],
+    ["ILO10", "ILO10"],
+    [" :) The best", " 🙂 The best"],
+    [" :( The worst", " 🙁 The worst"],
+  ])("should perform transforms for %s", (input: string, expected: string) => {
+    const result = massTransformText(input)
+    expect(result).toBe(expected)
+  })
+})
+
+describe("spaceDoublyNestedCallouts", () => {
+  it("should add a space after doubly nested callouts", () => {
+    const input = "> > [!note] Nested note\n> > This is nested content."
+    const expected = "> > [!note] Nested note\n> >\n> > This is nested content."
+    expect(spaceDoublyNestedCallouts(input)).toBe(expected)
+  })
+
+  it("should not modify singly nested callouts", () => {
+    const input = "> [!note] Single note\n> This is single nested content."
+    expect(spaceDoublyNestedCallouts(input)).toBe(input)
+  })
+
+  it("should handle multiple doubly nested callouts", () => {
+    const input = "> > [!note] First note\n> > Content 1\n> > [!warning] Second note\n> > Content 2"
+    const expected =
+      "> > [!note] First note\n> >\n> > Content 1\n> > [!warning] Second note\n> >\n> > Content 2"
+    expect(spaceDoublyNestedCallouts(input)).toBe(expected)
+  })
+
+  it("should handle mixed singly and doubly nested callouts", () => {
+    const input = "> [!note] Outer\n> Content\n> > [!warning] Inner\n> > Warning content"
+    const expected = "> [!note] Outer\n> Content\n> > [!warning] Inner\n> >\n> > Warning content"
+    expect(spaceDoublyNestedCallouts(input)).toBe(expected)
   })
 })

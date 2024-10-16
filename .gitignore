@@ -20,9 +20,7 @@ replit.nix
 backstop/backstop_data/bitmaps*
 backstop/backstop_data/html_report
 prettierrc
-content/test page.md
 *tmp.ts
-Untitled.md
 content/drafts/**
 coverage
 *log
@@ -30,19 +28,9 @@ coverage
 
 # Media files
 quartz/static/images/external-favicons/*.png
-content/asset_staging/*
-# *.jpg
-# *.jpeg
-# *.avif
-# *.gif
-# *.webp
+# content/asset_staging/*
 *.avif_original
 
-# *.webm
-# *.mp4
-# *.mov
-# *.mkv
-# *.mp3
 *test.md
 
 content/drafts
@@ -51,4 +39,3 @@ content/drafts
 .aider
 .aider*
 *.faviconUrls.txt
-content/import/*

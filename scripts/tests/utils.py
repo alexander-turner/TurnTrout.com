@@ -1,5 +1,9 @@
 from pathlib import Path
 import subprocess
+from typing import Optional
+from PIL import Image 
+import numpy as np
+
 
 def create_test_image(path: Path, size: str) -> None:
     """
@@ -20,7 +24,7 @@ def create_test_image(path: Path, size: str) -> None:
     subprocess.run(["magick", "-size", size, "xc:red", str(path)], check=True)
 
 
-def create_test_video(path: Path, codec: str = None) -> None:
+def create_test_video(path: Path, codec: Optional[str] = None) -> None:
     """
     Creates a test video using FFmpeg.
 
@@ -43,9 +47,12 @@ def create_test_video(path: Path, codec: str = None) -> None:
     """
     base_command = [
         "ffmpeg",
-        "-f", "lavfi",  # Use the 'lavfi' input format for generating test content
-        "-i", "rgbtestsrc",  # Use the RGB test source pattern
-        "-t", "1",  # Set the duration to 1 second
+        "-f",
+        "lavfi",  # Use the 'lavfi' input format for generating test content
+        "-i",
+        "rgbtestsrc",  # Use the RGB test source pattern
+        "-t",
+        "1",  # Set the duration to 1 second
     ]
 
     if codec:
@@ -54,8 +61,18 @@ def create_test_video(path: Path, codec: str = None) -> None:
     base_command.append(str(path))
 
     subprocess.run(
-        base_command,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=True
+        base_command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+    )
+
+
+def create_test_gif(file_path, duration=1, size=(100, 100), fps=10):
+    """Create a test GIF file."""
+    frames = []
+    for i in range(duration * fps):
+        array = np.random.rand(size[1], size[0], 3) * 255
+        image = Image.fromarray(array.astype("uint8")).convert("RGB")
+        frames.append(image)
+
+    frames[0].save(
+        file_path, save_all=True, append_images=frames[1:], duration=1000 // fps, loop=0
     )

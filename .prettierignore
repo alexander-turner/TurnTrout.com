@@ -1,3 +1,5 @@
 public
+**.md
+**.min.*
 node_modules
 .quartz-cache

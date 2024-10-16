@@ -4,29 +4,33 @@
  */
 
 import { QuartzTransformerPlugin } from "../types"
-import { numberRegex, mdLinkRegex } from "./utils"
+import { mdLinkRegex } from "./utils"
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
-const footnoteRegex = /(\S) (\[\^.*?\])(?![:\(]) ?/g
-const footnoteReplacement = "$1$2 "
+const footnoteSpacingRegex = /(\S) (\[\^.*?\])(?![:(]) ?/g
+const footnoteSpacingReplacement = "$1$2 "
+
+// New regex for moving footnotes after punctuation
+const footnotePunctuationRegex = /(\S)(\[\^.*?\])([.,;!?]+)/g
+const footnotePunctuationReplacement = "$1$3$2"
 
 /**
- * Adjusts the spacing around footnotes at the end of sentences.
+ * Adjusts the spacing around footnotes and moves them after punctuation.
  * @param text - The input text to process.
- * @returns The text with improved footnote spacing.
+ * @returns The text with improved footnote formatting.
  */
-const footnoteEndOfSentence = (text: string) => {
-  let tighterText = text.replace(footnoteRegex, footnoteReplacement)
-  return tighterText
+const improveFootnoteFormatting = (text: string) => {
+  let improvedText = text.replace(footnoteSpacingRegex, footnoteSpacingReplacement)
+  improvedText = improvedText.replace(footnotePunctuationRegex, footnotePunctuationReplacement)
+  return improvedText
 }
 
 // Regular expression for edit/note patterns
 const editPattern =
-  /^\s*(?<emph1>[\*_]*)(edit|eta|note),?\s*\(?(?<date>\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})\)?(?<emph2>[\*_]*:[\*_]*) (?<text>.*)[\*_]*/gim
+  /^\s*(?<emph1>[*_]*)(edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPattern = "> [!info] Edited on $<date>\n>\n> $<text>"
 
-const editPatternNoDate =
-  /^\s*(?<emph1>[\*_]*)(edit|eta|note)(?<emph2>[\*_]*:[\*_]*) (?<text>.*)[\*_]*/gim
+const editPatternNoDate = /^\s*(?<emph1>[*_]*)(edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPatternNoDate = "> [!info] Edited after posting\n>\n> $<text>"
 
 /**
@@ -40,13 +44,19 @@ export function editAdmonition(text: string): string {
   return text
 }
 
+const NESTED_CALLOUT_REGEX_NO_SPACE = new RegExp(/^(> *> *\[!.*$\n)(?!> *> *\n)/gm)
+const TARGET_REGEX_WITH_SPACE = "$1> >\n"
+export function spaceDoublyNestedCallouts(text: string): string {
+  return text.replaceAll(NESTED_CALLOUT_REGEX_NO_SPACE, TARGET_REGEX_WITH_SPACE)
+}
+
 // Wrap e.g. header "# 10" in lining nums
 export function wrapLeadingHeaderNumbers(text: string): string {
   return text.replace(/(?<=# )(\d+)/g, '<span style="font-variant-numeric: lining-nums;">$1</span>')
 }
 
 // Regular expression for note patterns
-const notePattern = /^\s*(?<emph1>[\*_]*)note: (?<text>.*)(?<emph2>[\*_]*)/gim
+const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim
 
 /**
  * Converts note patterns to admonition blocks.
@@ -54,7 +64,22 @@ const notePattern = /^\s*(?<emph1>[\*_]*)note: (?<text>.*)(?<emph2>[\*_]*)/gim
  * @returns The text with note patterns converted to admonitions.
  */
 export function noteAdmonition(text: string): string {
-  text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $1$2$3")
+  text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>")
+  return text
+}
+
+const massTransforms: [RegExp | string, string][] = [
+  [/:=/g, "≝"], // mathematical definition symbol
+  [/( |^)L(\d+)\b/g, '$1L<sub style="font-variant-numeric: lining-nums;">$2</sub>'],
+  [/ :\) /gm, " 🙂 "], // Smiling face
+  [/ :\( /gm, " 🙁 "], // Frowning face
+]
+
+export function massTransformText(text: string): string {
+  for (const [pattern, replacement] of massTransforms) {
+    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")
+    text = text.replace(regex, replacement)
+  }
   return text
 }
 
@@ -89,13 +114,14 @@ export const formattingImprovement = (text: string) => {
   // Format the content (non-YAML part)
   let newContent = content.replaceAll(/(\u00A0|&nbsp;)/g, " ") // Remove NBSP
 
-  newContent = footnoteEndOfSentence(newContent)
-  newContent = newContent.replace(new RegExp(`(${numberRegex.source})[x\\*]\\b`, "g"), "$1×") // Pretty multiplication
-  newContent = concentrateEmphasisAroundLinks(newContent)
-  newContent = newContent.replace(/ *\,/g, ",") // Remove space before commas
+  newContent = improveFootnoteFormatting(newContent)
+  newContent = newContent.replace(/ *,/g, ",") // Remove space before commas
   newContent = editAdmonition(newContent)
   newContent = noteAdmonition(newContent)
+  newContent = spaceDoublyNestedCallouts(newContent)
+  newContent = concentrateEmphasisAroundLinks(newContent)
   newContent = wrapLeadingHeaderNumbers(newContent)
+  newContent = massTransformText(newContent)
 
   // Ensure that bulleted lists display properly
   newContent = newContent.replaceAll("\\-", "-")

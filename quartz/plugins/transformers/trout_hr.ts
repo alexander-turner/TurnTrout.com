@@ -10,6 +10,7 @@ export const ornamentNode: Element = {
   tagName: "div",
   properties: {
     style: "align-items:center;display:flex;justify-content:center;",
+    id: "trout-ornament",
   },
   children: [
     {
@@ -45,33 +46,63 @@ export const ornamentNode: Element = {
 }
 
 /**
- * Attempts to insert an ornament node before a footnotes section.
- * 
+ * Attempts to insert an ornament node before a heading that starts with "Appendix" or before footnotes.
+ *
  * @param {Element} node - The current node being processed.
  * @param {number | undefined} index - The index of the current node in its parent's children array.
  * @param {Parent | undefined} parent - The parent node of the current node.
  * @returns {boolean} True if the ornament was inserted, false otherwise.
  */
-export function maybeInsertOrnament(node: Element, index: number | undefined, parent: Parent | undefined): boolean {
+export function maybeInsertOrnament(
+  node: Element,
+  index: number | undefined,
+  parent: Parent | undefined,
+): boolean {
+  if (!parent || index === undefined) return false;
+
+  // Check for "Appendix" headings
+  if (node.tagName === "h1" || node.tagName === "h2") {
+    const startsWithAppendix = (text: string) => text.toLowerCase().startsWith("appendix");
+
+    // Check direct text children
+    if (node.children[0]?.type === "text" && startsWithAppendix(node.children[0].value)) {
+      parent.children.splice(index, 0, ornamentNode);
+      return true;
+    }
+
+    // Check link element
+    if (node.children[0]?.type === "element" && node.children[0].tagName === "a") {
+      const anchorText = node.children[0].children[0];
+      if (anchorText?.type === "text" && startsWithAppendix(anchorText.value)) {
+        parent.children.splice(index, 0, ornamentNode);
+        return true;
+      }
+    }
+  }
+
   // Check if the current node is a footnotes section
   if (
-    parent && index !== undefined &&
     node.tagName === "section" &&
     node.properties?.["dataFootnotes"] !== undefined &&
-    (node.properties?.className as Array<String>)?.includes("footnotes")
+    (node.properties?.className as Array<string>)?.includes("footnotes")
   ) {
     // <hr/> looks weird right before the trout hr, so remove it.
     // Check if there's a newline and then an HR preceding
     const prevElement = parent.children[index - 1] as Element | Text
-    if (index > 1 && prevElement.type === 'text' && prevElement.value === "\n" && (parent.children[index-2] as Element).tagName === 'hr') {
+    if (
+      index > 1 &&
+      prevElement.type === "text" &&
+      prevElement.value === "\n" &&
+      (parent.children[index - 2] as Element).tagName === "hr"
+    ) {
       parent.children.splice(index - 2, 1)
-      index--;
+      index--
 
-    // Check if there's an HR right before the footnotes section
-    } else if (index > 0 && (prevElement as Element).tagName === 'hr') {
+      // Check if there's an HR right before the footnotes section
+    } else if (index > 0 && (prevElement as Element).tagName === "hr") {
       // Remove the HR element
-      parent.children.splice(index - 1, 1);
-      index--; // Adjust index after removal
+      parent.children.splice(index - 1, 1)
+      index-- // Adjust index after removal
     }
 
     // If it is, insert the ornament node before the footnotes section
@@ -83,21 +114,21 @@ export function maybeInsertOrnament(node: Element, index: number | undefined, pa
 
 /**
  * Inserts the ornament node into the tree.
- * @param {Root} tree - The AST tree to modify.
+ * @param {Root} tree - The AST to modify.
  */
 export function insertOrnamentNode(tree: Root): void {
-  let footnotesFound = false
+  let ornamentInserted = false;
 
   visit(tree, "element", (node: Element, index: number | undefined, parent: Parent | undefined) => {
-    if (!footnotesFound) {
-      footnotesFound = maybeInsertOrnament(node, index, parent)
+    if (!ornamentInserted) {
+      ornamentInserted = maybeInsertOrnament(node, index, parent);
     }
-  })
+  });
 
-  if (!footnotesFound) {
+  if (!ornamentInserted) {
     // Check if the last child is an <hr> element
     const lastChild = tree.children[tree.children.length - 1] as Element
-    if (lastChild && lastChild.type === 'element' && lastChild.tagName === 'hr') {
+    if (lastChild && lastChild.type === "element" && lastChild.tagName === "hr") {
       // Remove the last <hr> element
       tree.children.pop()
     }
@@ -110,11 +141,11 @@ export function insertOrnamentNode(tree: Root): void {
  * Quartz transformer plugin for adding a trout ornament HR.
  * @returns {QuartzTransformerPlugin} The plugin object.
  */
-type TreeTransformer = (tree: Root) => void;
+type TreeTransformer = (tree: Root) => void
 type PluginReturn = {
-  name: string;
-  htmlPlugins: () => TreeTransformer[];
-};
+  name: string
+  htmlPlugins: () => TreeTransformer[]
+}
 
 export const TroutOrnamentHr: QuartzTransformerPlugin = (): PluginReturn => {
   return {

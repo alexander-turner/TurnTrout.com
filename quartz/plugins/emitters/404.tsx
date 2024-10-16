@@ -5,7 +5,7 @@ import { pageResources, renderPage } from "../../components/renderPage"
 import { FullPageLayout } from "../../cfg"
 import { FilePath, FullSlug } from "../../util/path"
 import { sharedPageComponents } from "../../../quartz.layout"
-import { NotFound, PageTitle } from "../../components"
+import { NotFound } from "../../components"
 import { defaultProcessedContent } from "../vfile"
 import { write } from "./helpers"
 import { i18n } from "../../i18n"
@@ -27,7 +27,7 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return [Head, Body, pageBody, Footer]
     },
-    async getDependencyGraph(_ctx, _content, _resources) {
+    async getDependencyGraph() {
       return new DepGraph<FilePath>()
     },
     async emit(ctx, _content, resources): Promise<FilePath[]> {

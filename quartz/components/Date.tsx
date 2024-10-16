@@ -1,6 +1,7 @@
 import { GlobalConfiguration } from "../cfg"
 import { ValidLocale } from "../i18n"
 import { QuartzPluginData } from "../plugins/vfile"
+import React from "react"
 
 interface Props {
   date: Date
@@ -22,7 +23,7 @@ export function formatDate(d: Date, locale: ValidLocale = "en-US"): string {
   return d.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
-    day: "2-digit",
+    day: "numeric",
   })
 }
 

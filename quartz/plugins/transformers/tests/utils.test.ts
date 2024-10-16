@@ -12,7 +12,7 @@ describe("replaceRegex", () => {
     const parent: Parent = { type: "span", children: [node] }
     const regex = /\bfox\b/g
 
-    const replaceFn = (_match: RegExpMatchArray): ReplaceFnResult => ({
+    const replaceFn = (): ReplaceFnResult => ({
       before: "",
       replacedMatch: "clever fox",
       after: "",
@@ -33,7 +33,7 @@ describe("replaceRegex", () => {
     const regex = /apple/g
 
     // Reuse the ReplaceFnResult type
-    const replaceFn = (_match: RegExpMatchArray): ReplaceFnResult => ({
+    const replaceFn = (): ReplaceFnResult => ({
       before: "",
       replacedMatch: "fruit",
       after: "",
@@ -44,7 +44,7 @@ describe("replaceRegex", () => {
     expect(parent.children).toEqual([
       h("span", "fruit"),
       createNode(" banana "),
-      h("span", createNode("fruit")),
+      h("span", [createNode("fruit")]),
     ])
   })
 
@@ -52,10 +52,9 @@ describe("replaceRegex", () => {
     const node = createNode("Hello world!")
     const parent = { type: "span", children: [node] } as Parent
     const regex = /world/g
-    // @ts-expect-error
-    const replaceFn = jest.fn().mockImplementation((match: RegExpMatchArray): ReplaceFnResult => {
-      return { before: "", replacedMatch: match[0].toUpperCase(), after: "" }
-    }) as jest.Mock<(match: RegExpMatchArray) => ReplaceFnResult>
+    const replaceFn = jest.fn().mockImplementation((match: unknown): ReplaceFnResult => {
+      return { before: "", replacedMatch: (match as RegExpMatchArray)[0].toUpperCase(), after: "" }
+    }) as jest.MockedFunction<(match: RegExpMatchArray) => ReplaceFnResult>
 
     replaceRegex(node, 0, parent, regex, replaceFn, () => true)
 

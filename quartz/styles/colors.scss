@@ -64,4 +64,21 @@
   --lightestgray: color-mix(in srgb, transparent 90%, var(--lightgray));
 
   --color-link: light-dark(color-mix(in srgb, var(--secondary) 30%, var(--dark)), var(--secondary));
+  @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
+    --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--light));
+    --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--light));
+  }
+}
+
+// Mermaid
+@each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
+  rect {
+    color: var(--dark) !important;
+    fill: var(--light) !important;
+    stroke: var(--lightgray) !important;
+  }
+  .#{$color} > rect {
+    fill: var(--background-#{$color}) !important;
+    stroke: var(--border-#{$color}) !important;
+  }
 }
