@@ -32,6 +32,10 @@ original_url: https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-
 skip_import: true
 ---
 
+<script src="/static/scripts/plotly.min.js"></script>
+
+<script src="/plots/residual_magnitude/load_plots.js"></script>
+
 For a range of language models and a range of input prompts, the norm of each residual stream grows exponentially over the forward pass, with average per-layer growth rate of about 1.045 in GPT-2-XL. We show a bunch of evidence for this. We discuss to what extent different weights and parts of the network are responsible.
 
 We find that some model weights increase exponentially as a function of layer number. We finally note our current favored explanation: Due to LayerNorm, it's hard to cancel out existing residual stream features, but easy to overshadow existing features by just making new features 4.5% larger.
@@ -46,12 +50,12 @@ We find that some model weights increase exponentially as a function of layer nu
 
 Alex noticed exponential growth in the contents of GPT-2-XL's residual streams. He ran dozens of prompts through the model, plotted for each layer the distribution of residual stream norms in a histogram, and found exponential growth in the L2 norm of the residual streams:
 
-![](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
+<div id="plot1" class="plot-container"> </div>
 <br/>Figure: We had GPT-4 generate dozens of strings which "look like they could have been in GPT-2's training corpus", in addition to a few hand-written strings. We ran these strings through the model and recorded the norms of each residual stream, across layers and sequence positions (except for position 0, which is EOS padding, discussed later). GPT-2-XL has 48 layers in total.
 
 Here's the norm of each residual stream for a specific prompt:
 
-![](https://assets.turntrout.com/static/images/posts/hpgem17ggmbpgnwcvdut.avif)
+<div id="plot2" class="plot-container"> </div>
 <br/>Figure: Token position 0 (`<endoftext>`) behaves differently, which is why we exclude it from the averaged plots.
 
 Back in MATS 3.0, Stefan had previously noticed this phenomenon in GPT-2-small:

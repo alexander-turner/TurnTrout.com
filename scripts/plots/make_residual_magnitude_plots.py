@@ -109,6 +109,12 @@ for use_log in (True, False):
     fig.update_layout(width=600, height=450)
     figs.append(fig)
 
+for fig in figs:
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        font = dict(color = '#707080')
+    )
+
 post_name = 'residual_magnitude'
 
 # make directory for post
