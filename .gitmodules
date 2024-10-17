@@ -1,3 +1,6 @@
 [submodule "import-website-data"]
 	path = import-website-data
 	url = https://github.com/alexander-turner/import-website-data
+[submodule "scripts/plots/melbo-ortho"]
+	path = scripts/plots/melbo-ortho
+	url = https://github.com/g-w1/melbo-ortho.git
