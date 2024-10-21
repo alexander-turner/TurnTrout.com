@@ -62,9 +62,9 @@ def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Mag
 # set working directory to project root
 import os
 os.chdir('../..')
-df = pd.read_csv('scripts/plots/fig1.csv')
-fig = magnitude_histogram(df)
-# fig.show()
+df_fig1 = pd.read_csv('scripts/plots/fig1.csv')
+fig1 = magnitude_histogram(df_fig1)
+
 
 # %%
 
@@ -72,7 +72,7 @@ app = Dash(__name__)
 
 app.layout = html.Div(
     [
-        dcc.Graph(figure=fig, id='magnitude-histogram'),
+        dcc.Graph(figure=fig1, id='magnitude-histogram'),
         dcc.Checklist(["Show all layers"], id='all-layers-checklist', value=['Show all layers']),
         html.Label("Choose a layer"),
         dcc.Slider(5, 45, 5,
@@ -87,15 +87,15 @@ app.layout = html.Div(
     Output('magnitude-histogram', 'figure'),
     Input('my-slider', 'value'),
     Input('all-layers-checklist', 'value'))
-def update_output(slider_value, checklist_value):
+def update_output(slider_value, _checklist_value):
     if ctx.triggered_id == 'my-slider':
-        return magnitude_histogram(df, cols=[slider_value])
+        return magnitude_histogram(df_fig1, cols=[slider_value])
     else:
-        return magnitude_histogram(df, cols='all')
+        return magnitude_histogram(df_fig1, cols='all')
 
 @callback(
-    Output('all-layers-checklist', '_value'),
-    Input('my-slider', '_value'))
+    Output('all-layers-checklist', 'value'),
+    Input('my-slider', 'value'))
 def update_checklist(_value):
     return []
 
