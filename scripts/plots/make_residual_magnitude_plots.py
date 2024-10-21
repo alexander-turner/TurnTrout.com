@@ -9,7 +9,7 @@ import json
 import os
 
 data_dir = 'scripts/plots'
-df = pd.read_csv(f'{data_dir}/fig2.csv')
+source_df = pd.read_csv(f'{data_dir}/fig2.csv')
 
 # from https://colab.research.google.com/drive/1Z6AgGpPpnGY43DT58vl_Wvqmyw-KRfqY?usp=sharing#scrollTo=865d29bf
 def line_plot(
@@ -99,18 +99,18 @@ df_magnitude_by_layer = pd.read_csv(f'{data_dir}/fig1.csv')
 figs.append(magnitude_histogram(df_magnitude_by_layer))
 
 for use_log in (True, False):
-    fig = line_plot(
-        df,
+    single_fig = line_plot(
+        source_df,
         log_y=use_log,
         title=f"Residual Stream Norm by Layer Number in {model_name}",
         color="Token",
         legend_title_text="Token"
     )
-    fig.update_layout(width=600, height=450)
-    figs.append(fig)
+    single_fig.update_layout(width=600, height=450)
+    figs.append(single_fig)
 
-for fig in figs:
-    fig.update_layout(
+for single_fig in figs:
+    single_fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)',
         font = dict(color = '#707080')
     )
@@ -120,9 +120,9 @@ post_name = 'residual_magnitude'
 # make directory for post
 os.makedirs(f'content/plots/{post_name}', exist_ok=True)
 
-for i, fig in enumerate(figs):
+for i, single_fig in enumerate(figs):
     with open(f'content/plots/{post_name}/plot{i+1}.json', 'w') as f:
-        plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        plot_json = json.dumps(single_fig, cls=plotly.utils.PlotlyJSONEncoder)
         f.write(plot_json)
 
 with open(f'{data_dir}/plot_template.js') as f:
