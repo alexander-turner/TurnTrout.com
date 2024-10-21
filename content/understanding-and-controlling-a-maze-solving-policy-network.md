@@ -1,46 +1,52 @@
 ---
 permalink: understanding-and-controlling-a-maze-solving-policy-network
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
-lw-is-question: "false"
-lw-posted-at: 2023-03-11T18:59:56.223Z
-lw-last-modification: 2024-09-04T23:53:40.034Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
+lw-is-question: 'false'
+lw-posted-at: 2023-03-11T18:59:56.223000Z
+lw-last-modification: 2024-09-04T23:53:40.034000Z
 lw-curation-date: None
-lw-frontpage-date: 2023-03-11T21:48:52.544Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2023-03-11T21:48:52.544000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 27
 lw-base-score: 328
 lw-vote-count: 129
 af-base-score: 139
 af-num-comments-on-upload: 22
 publish: true
-title: "Understanding and controlling a maze-solving policy network"
-lw-latest-edit: 2023-06-07T01:47:42.456Z
-lw-is-linkpost: "false"
+title: Understanding and controlling a maze-solving policy network
+lw-latest-edit: 2023-06-07T01:47:42.456000Z
+lw-is-linkpost: 'false'
 authors: Alex Turner, Peli Grietzer, Ulisse Mini, Monte MacDiarmid, and David Udell
 tags:
-  - "AI"
-  - "mats-program"
-  - "shard-theory"
-  - "activation-engineering"
+- AI
+- mats-program
+- shard-theory
+- activation-engineering
 aliases:
-  - "understanding-and-controlling-a-maze-solving-policy-network"
-lw-sequence-title: "Interpreting a Maze-Solving Network"
+- understanding-and-controlling-a-maze-solving-policy-network
+lw-sequence-title: Interpreting a Maze-Solving Network
 lw-sequence-image-grid: sequencesgrid/fu4vhd1ud5y4niijbicd
 lw-sequence-image-banner: sequences/hvtmmyas8pxbcm28wpvv
 sequence-link: posts#interpreting-a-maze-solving-network
 prev-post-slug: predictions-for-shard-theory-mechanistic-interpretability
-prev-post-title: "Predictions for shard theory mechanistic interpretability results"
+prev-post-title: Predictions for shard theory mechanistic interpretability results
 next-post-slug: top-right-steering-vector
-next-post-title: "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: 'Maze-solving agents: Add a top-right vector, make the agent go to
+  the top-right'
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 03/11/2023
-original_url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
+original_url: 
+  https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2hm7tfnx.png
+description: A deep dive into the surprising behavior of a maze-solving AI agent and
+  how its goals can be manipulated.
 ---
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4"></video>

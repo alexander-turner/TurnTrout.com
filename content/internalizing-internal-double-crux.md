@@ -1,29 +1,30 @@
 ---
 permalink: internalizing-internal-double-crux
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
-lw-is-question: "false"
-lw-posted-at: 2018-04-30T18:23:14.653Z
-lw-last-modification: 2020-04-11T17:25:47.614Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
+lw-is-question: 'false'
+lw-posted-at: 2018-04-30T18:23:14.653000Z
+lw-last-modification: 2020-04-11T17:25:47.614000Z
 lw-curation-date: None
 lw-frontpage-date: None
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 12
 lw-base-score: 35
 lw-vote-count: 25
 af-base-score: 7
 af-num-comments-on-upload: 0
 publish: true
-title: "Internalizing Internal Double Crux"
-lw-latest-edit: 2020-04-11T17:25:47.908Z
-lw-is-linkpost: "false"
+title: Internalizing Internal Double Crux
+lw-latest-edit: 2020-04-11T17:25:47.908000Z
+lw-is-linkpost: 'false'
 tags:
 aliases:
-  - "internalizing-internal-double-crux"
-lw-sequence-title: "Becoming Stronger"
+- internalizing-internal-double-crux
+lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
@@ -31,11 +32,14 @@ prev-post-slug: linear-algebra-textbook-review
 prev-post-title: "The First Rung: Insights from 'Linear Algebra Done Right'"
 next-post-slug: all-of-statistics-textbook-review
 next-post-title: "Confounded No Longer: Insights from 'All of Statistics'"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/30/2018
-original_url: https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
+original_url: 
+  https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
 skip_import: true
+description: 'Overcoming self-doubt: How emotionally-charged internal dialogue helped
+  resolve long-held anxieties and limiting beliefs.'
 ---
 
 > In sciences such as [psychology](https://en.wikipedia.org/wiki/Psychology) and [sociology](https://en.wikipedia.org/wiki/Sociology), internalization involves the integration of attitudes, values, standards and the opinions of others into one's own identity or sense of self.

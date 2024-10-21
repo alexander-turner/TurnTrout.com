@@ -1,16 +1,17 @@
 ---
 permalink: first-analysis-textbook-review
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
-lw-is-question: "false"
-lw-posted-at: 2018-06-01T18:16:32.616Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
+lw-is-question: 'false'
+lw-posted-at: 2018-06-01T18:16:32.616000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-06-02T14:37:25.414Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-06-02T14:37:25.414000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 8
 lw-base-score: 28
 lw-vote-count: 22
@@ -18,24 +19,29 @@ af-base-score: 8
 af-num-comments-on-upload: 0
 publish: true
 title: "Into the Kiln: Insights from Tao's 'Analysis I'"
-lw-latest-edit: 2018-06-01T18:16:32.616Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2018-06-01T18:16:32.616000Z
+lw-is-linkpost: 'false'
 tags:
 aliases:
-  - "into-the-kiln-insights-from-tao-s-analysis-i"
-lw-sequence-title: "Becoming Stronger"
+- into-the-kiln-insights-from-tao-s-analysis-i
+lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: all-of-statistics-textbook-review
 prev-post-title: "Confounded No Longer: Insights from 'All of Statistics'"
 next-post-slug: swimming-upstream
-next-post-title: "Swimming Upstream: A Case Study in Instrumental Rationality"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: 'Swimming Upstream: A Case Study in Instrumental Rationality'
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 06/01/2018
-original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
+original_url: 
+  https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
+card_image: 
+  https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4
+description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural
+  numbers to Riemann integrals. Rigorous yet accessible.
 ---
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.

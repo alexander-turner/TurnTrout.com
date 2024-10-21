@@ -1,34 +1,36 @@
 ---
 permalink: gpt3-gems
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
-lw-is-question: "false"
-lw-posted-at: 2020-07-23T00:46:36.815Z
-lw-last-modification: 2021-09-07T18:18:25.204Z
+lw-is-question: 'false'
+lw-posted-at: 2020-07-23T00:46:36.815000Z
+lw-last-modification: 2021-09-07T18:18:25.204000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-07-23T01:11:21.309Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-07-23T01:11:21.309000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 10
 lw-base-score: 33
 lw-vote-count: 20
 af-base-score: 0
 af-num-comments-on-upload: 0
 publish: true
-title: "GPT-3 Gems"
-lw-latest-edit: 2021-09-07T18:18:27.363Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-aliases: 
-  - "gpt-3-gems"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: GPT-3 Gems
+lw-latest-edit: 2021-09-07T18:18:27.363000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+aliases:
+- gpt-3-gems
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 07/23/2020
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
+description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite
+  interactions with this intriguing, flawed network."
 ---
 GPT-3 is captivating, and not just because of its [potential reasoning abilities](/to-what-extent-is-gpt3-capable-of-reasoning). This post will be a living collection of my favorite experiences with the network. 
 

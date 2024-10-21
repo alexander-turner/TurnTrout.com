@@ -1,43 +1,46 @@
 ---
 permalink: the-gears-of-impact
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-impact
-lw-is-question: "false"
-lw-posted-at: 2019-10-07T14:44:51.212Z
+lw-is-question: 'false'
+lw-posted-at: 2019-10-07T14:44:51.212000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2019-10-07T06:10:45.213Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2019-10-07T06:10:45.213000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 16
 lw-base-score: 54
 lw-vote-count: 18
 af-base-score: 18
 af-num-comments-on-upload: 0
 publish: true
-title: "The Gears of Impact"
-lw-latest-edit: 2024-08-15T22:30:43.246Z
-lw-is-linkpost: "false"
-tags: 
-  - "understanding-the-world"
-  - "impact-regularization"
-aliases: 
-  - "the-gears-of-impact"
-lw-sequence-title: "Reframing Impact"
+title: The Gears of Impact
+lw-latest-edit: 2024-08-15T22:30:43.246000Z
+lw-is-linkpost: 'false'
+tags:
+- understanding-the-world
+- impact-regularization
+aliases:
+- the-gears-of-impact
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: world-state-is-the-wrong-abstraction-for-impact
-prev-post-title: "World State is the Wrong Abstraction for Impact"
+prev-post-title: World State is the Wrong Abstraction for Impact
 next-post-slug: seeking-power-is-often-convergently-instrumental-in-mdps
-next-post-title: "Seeking Power is Often Convergently Instrumental in MDPs"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Seeking Power is Often Convergently Instrumental in MDPs
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 10/07/2019
 original_url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-impact
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/PFqi66W.png
+description: 'Impact reframed: a gears-level view of how and why some things seem
+  important to us.'
 ---
 
 ![](https://assets.turntrout.com/static/images/posts/hKhkvwg.avif)

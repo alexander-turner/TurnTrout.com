@@ -1,45 +1,49 @@
 ---
 permalink: seeking-power-is-often-convergently-instrumental-in-mdps
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
 lw-linkpost-url: https://arxiv.org/abs/1912.01683
-lw-is-question: "false"
-lw-posted-at: 2019-12-05T02:33:34.321Z
-lw-last-modification: 2024-03-02T01:17:28.210Z
+lw-is-question: 'false'
+lw-posted-at: 2019-12-05T02:33:34.321000Z
+lw-last-modification: 2024-03-02T01:17:28.210000Z
 lw-curation-date: None
-lw-frontpage-date: 2019-12-05T02:41:26.857Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2019-12-05T02:41:26.857000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 39
 lw-base-score: 162
 lw-vote-count: 60
 af-base-score: 55
 af-num-comments-on-upload: 34
 publish: true
-title: "Seeking Power is Often Convergently Instrumental in MDPs"
-lw-latest-edit: 2023-05-16T20:14:29.355Z
-lw-is-linkpost: "true"
+title: Seeking Power is Often Convergently Instrumental in MDPs
+lw-latest-edit: 2023-05-16T20:14:29.355000Z
+lw-is-linkpost: 'true'
 authors: Alex Turner and Logan Riggs
-tags: 
-  - "AI"
-  - "instrumental-convergence"
-aliases: 
-  - "seeking-power-is-often-convergently-instrumental-in-mdps"
+tags:
+- AI
+- instrumental-convergence
+aliases:
+- seeking-power-is-often-convergently-instrumental-in-mdps
 lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/wrl3ovxbyttoztdxwmjb
 lw-sequence-image-banner: sequences/gv2nqrg0pb0srtodlgbg
 sequence-link: posts#reframing-impact
 prev-post-slug: the-gears-of-impact
-prev-post-title: "The Gears of Impact"
+prev-post-title: The Gears of Impact
 next-post-slug: attainable-utility-landscape
-next-post-title: "Attainable Utility Landscape: How The World Is Changed"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: 'Attainable Utility Landscape: How The World Is Changed'
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 12/05/2019
-original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
+original_url: 
+  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.png
+description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
 ---
 
 In 2008, Steve Omohundro's foundational paper [The Basic AI Drives](https://selfawaresystems.files.wordpress.com/2008/01/ai_drives_final.pdf) conjectured that superintelligent goal-directed AIs might be incentivized to gain significant amounts of power in order to better achieve their goals. Omohundro's conjecture bears out in [toy models](https://intelligence.org/2015/11/26/new-paper-formalizing-convergent-instrumental-goals/), and the supporting philosophical arguments are intuitive. In 2019, the conjecture was even [debated by well-known AI researchers](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell).

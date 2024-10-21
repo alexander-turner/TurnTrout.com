@@ -1,41 +1,45 @@
 ---
 permalink: non-obstruction-motivates-corrigibility
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
-lw-is-question: "false"
-lw-posted-at: 2020-11-21T19:35:40.445Z
-lw-last-modification: 2021-11-11T23:19:59.481Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
+lw-is-question: 'false'
+lw-posted-at: 2020-11-21T19:35:40.445000Z
+lw-last-modification: 2021-11-11T23:19:59.481000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-11-21T20:59:46.829Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-11-21T20:59:46.829000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 20
 lw-base-score: 74
 lw-vote-count: 24
 af-base-score: 32
 af-num-comments-on-upload: 18
 publish: true
-title: "Non-Obstruction: A Simple Concept Motivating Corrigibility"
-lw-latest-edit: 2021-11-11T23:20:03.125Z
-lw-is-linkpost: "false"
+title: 'Non-Obstruction: A Simple Concept Motivating Corrigibility'
+lw-latest-edit: 2021-11-11T23:20:03.125000Z
+lw-is-linkpost: 'false'
 tags:
-  - corrigibility
-  - AI
+- corrigibility
+- AI
 aliases:
-  - non-obstruction-a-simple-concept-motivating-corrigibility
+- non-obstruction-a-simple-concept-motivating-corrigibility
 lw-sequence-title: Thoughts on Corrigibility
 lw-sequence-image-grid: sequencesgrid/yuauvyzko4ttusbzpkkz
 lw-sequence-image-banner: sequences/ww73ub24plfayownucjk
 sequence-link: posts#thoughts-on-corrigibility
 next-post-slug: corrigibility-as-outside-view
 next-post-title: Corrigibility as outside view
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 11/21/2020
-original_url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
+original_url: 
+  https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
 skip_import: true
+description: "Non-obstruction: how do we design AI that doesn't limit our ability
+  to achieve our goals, even if we misspecified its programming?"
 ---
 I present a unified mathematical frame for understanding corrigibility’s _benefits_, what it “is”, and what it isn’t. This frame is precisely understood by graphing the human overseer’s ability to achieve various goals (their [_attainable utility (AU) landscape_](/attainable-utility-landscape)). I argue that corrigibility’s benefits are secretly a form of counterfactual alignment (alignment with a set of goals the human may want to pursue). 
 

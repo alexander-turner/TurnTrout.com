@@ -1,43 +1,46 @@
 ---
 permalink: value-impact
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/TxcYSRQ9giC6zmKov/value-impact
-lw-is-question: "false"
-lw-posted-at: 2019-09-23T00:47:12.991Z
+lw-is-question: 'false'
+lw-posted-at: 2019-09-23T00:47:12.991000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2019-09-23T05:20:26.521Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2019-09-23T05:20:26.521000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 10
 lw-base-score: 70
 lw-vote-count: 28
 af-base-score: 22
 af-num-comments-on-upload: 3
 publish: true
-title: "Value Impact"
-lw-latest-edit: 2019-09-23T00:47:13.121Z
-lw-is-linkpost: "false"
+title: Value Impact
+lw-latest-edit: 2019-09-23T00:47:13.121000Z
+lw-is-linkpost: 'false'
 tags:
-  - "understanding-the-world"
-  - "impact-regularization"
+- understanding-the-world
+- impact-regularization
 aliases:
-  - "value-impact"
-lw-sequence-title: "Reframing Impact"
+- value-impact
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: reframing-impact
-prev-post-title: "Reframing Impact"
+prev-post-title: Reframing Impact
 next-post-slug: deducing-impact
-next-post-title: "Deducing Impact"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Deducing Impact
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 09/23/2019
 original_url: https://www.lesswrong.com/posts/TxcYSRQ9giC6zmKov/value-impact
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/D6Bhmv6.png
+description: Impact is objectively important to agents, no matter their goals. Even
+  robots hoarding pebbles care about a meteor strike.
 ---
 
 ![](https://assets.turntrout.com/static/images/posts/lG9je1g.avif)

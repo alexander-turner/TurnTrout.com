@@ -1,39 +1,43 @@
 ---
 permalink: shard-theory-confirmed
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
-lw-is-question: "false"
-lw-posted-at: 2023-04-01T07:27:23.096Z
-lw-last-modification: 2023-04-03T16:23:50.515Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
+lw-is-question: 'false'
+lw-posted-at: 2023-04-01T07:27:23.096000Z
+lw-last-modification: 2023-04-03T16:23:50.515000Z
 lw-curation-date: None
-lw-frontpage-date: 2023-04-01T19:34:16.770Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2023-04-01T19:34:16.770000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 7
 lw-base-score: 166
 lw-vote-count: 105
 af-base-score: 57
 af-num-comments-on-upload: 0
 publish: true
-title: "Definitive confirmation of shard theory"
-lw-latest-edit: 2023-04-03T16:23:51.143Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "postmortems-&-retrospectives"
-  - "humor"
-  - "shard-theory"
-aliases: 
-  - "april-fools-definitive-confirmation-of-shard-theory"
-  - "definitive-confirmation-of-shard-theory"
-  - "shard-theory-confirmation"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: Definitive confirmation of shard theory
+lw-latest-edit: 2023-04-03T16:23:51.143000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- postmortems-&-retrospectives
+- humor
+- shard-theory
+aliases:
+- april-fools-definitive-confirmation-of-shard-theory
+- definitive-confirmation-of-shard-theory
+- shard-theory-confirmation
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/01/2023
-original_url: https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
+original_url: 
+  https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
 skip_import: true
+description: Shard theory, once speculative, is definitively confirmed by gpt-neox-20b.
+  Time to stop arguing and start experimenting.
 ---
 
 I've written a lot about [[shard theory]] over the last year. I've poured dozens of hours into theorycrafting, communication, and LessWrong comment threads. I pored over theoretical alignment concerns with exquisite care and worry. I even read a few things that weren't blog posts on LessWrong.[^1]  In other words, I went _all out._

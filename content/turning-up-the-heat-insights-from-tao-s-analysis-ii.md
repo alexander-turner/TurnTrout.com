@@ -1,16 +1,17 @@
 ---
 permalink: second-analysis-textbook-review
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
-lw-is-question: "false"
-lw-posted-at: 2018-08-24T17:54:54.344Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
+lw-is-question: 'false'
+lw-posted-at: 2018-08-24T17:54:54.344000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-08-25T06:41:47.323Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-08-25T06:41:47.323000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 6
 lw-base-score: 36
 lw-vote-count: 11
@@ -18,25 +19,28 @@ af-base-score: 0
 af-num-comments-on-upload: 0
 publish: true
 title: "Turning Up the Heat: Insights from Tao's 'Analysis II'"
-lw-latest-edit: 2018-08-24T17:54:54.344Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2018-08-24T17:54:54.344000Z
+lw-is-linkpost: 'false'
 tags:
-  - summaries
+- summaries
 aliases:
-  - turning-up-the-heat-insights-from-tao-s-analysis-ii
+- turning-up-the-heat-insights-from-tao-s-analysis-ii
 lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: RL-textbook-review
-prev-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+prev-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning:
+  An Introduction'"
 next-post-slug: computability-and-logic-textbook-review
 next-post-title: And My Axiom! Insights from 'Computability and Logic'
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 08/24/2018
-original_url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
+original_url: 
+  https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
 skip_import: true
+description: "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools."
 ---
 It's been too long - a month and a half since my last review, and about three months since _[Analysis I](/first-analysis-textbook-review)_. I've been immersed in my work for CHAI, but reality doesn't grade on a curve, and I want more mathematical firepower.
 

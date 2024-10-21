@@ -1,16 +1,17 @@
 ---
 permalink: a-certain-formalization-of-corrigibility-is-vnm-incoherent
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
-lw-is-question: "false"
-lw-posted-at: 2021-11-20T00:30:48.961Z
-lw-last-modification: 2023-05-16T20:35:48.377Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
+lw-is-question: 'false'
+lw-posted-at: 2021-11-20T00:30:48.961000Z
+lw-last-modification: 2023-05-16T20:35:48.377000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-11-20T01:43:19.194Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-11-20T01:43:19.194000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 24
 lw-base-score: 67
 lw-vote-count: 24
@@ -18,14 +19,14 @@ af-base-score: 35
 af-num-comments-on-upload: 21
 publish: true
 title: A Certain Formalization of Corrigibility Is VNM-Incoherent
-lw-latest-edit: 2023-05-16T20:35:50.264Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2023-05-16T20:35:50.264000Z
+lw-is-linkpost: 'false'
 tags:
-  - corrigibility
-  - AI
-  - instrumental-convergence
+- corrigibility
+- AI
+- instrumental-convergence
 aliases:
-  - a-certain-formalization-of-corrigibility-is-vnm-incoherent
+- a-certain-formalization-of-corrigibility-is-vnm-incoherent
 lw-sequence-title: Thoughts on Corrigibility
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
@@ -34,11 +35,14 @@ prev-post-slug: corrigibility-as-outside-view
 prev-post-title: Corrigibility as Outside View
 next-post-slug: formalizing-policy-modification-corrigibility
 next-post-title: Formalizing Policy-Modification Corrigibility
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 11/20/2021
-original_url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
+original_url: 
+  https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
 skip_import: true
+description: Formal analysis showing that, for agents optimizing a reward function,
+  corrigibility is rare and perhaps even incoherent.
 ---
 
 <hr/>
@@ -191,7 +195,8 @@ And in worlds where the agent gets corrected to $\pi_\text{correct: C}$ by defau
 
 Again, I don't think AUP is a solution. But I think there's something important happening here which allows evasion of the usual coherence requirements. AUP leverages information about human preferences which is present in the dynamics itself.
 
-**Project: Corrigibility as functional constraints.** I think it's easy to get bogged down in handwavy, imprecise thinking about objectives in complex environments. But any solution to corrigibility<sub>policy modification</sub> should probably solve this simple environment (and if not—articulate exactly why not). Write down what the agent's acceptable corrigible policy set is for each set of environment dynamics, solve for these behavioral constraints, and see what kind of reasoning and functional constraints come out the other side.
+> [!idea] Project: Corrigibility as functional constraints
+> I think it's easy to get bogged down in handwavy, imprecise thinking about objectives in complex environments. But any solution to corrigibility<sub>policy modification</sub> should probably solve this simple environment (and if not—articulate exactly why not). Write down what the agent's acceptable corrigible policy set is for each set of environment dynamics, solve for these behavioral constraints, and see what kind of reasoning and functional constraints come out the other side.
 
 # Conclusion
 
@@ -199,8 +204,6 @@ We can quantify what incoherence is demanded by corrigibility<sub>policy modific
 
 > [!thanks]
 > Thanks to NPCollapse and Justis Mills for suggestions.
-
-<hr/>
 
 [^pen]: The AUP penalty term's optimal value functions will pretend the episode doesn't end, so that they reflect the agent's ability to move around (or not, if it's already been force-corrected to a fixed policy.)
 

@@ -8,27 +8,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..built_site_checks import (
-        check_localhost_links,
-        check_invalid_anchors,
-        check_problematic_paragraphs,
-        parse_html_file,
-        check_file_for_issues,
-        check_local_media_files,
-        check_blockquote_elements,
-        check_asset_references,
-    )
+    from ..built_site_checks import *
 else:
-    from built_site_checks import (
-        check_localhost_links,
-        check_invalid_anchors,
-        check_problematic_paragraphs,
-        parse_html_file,
-        check_file_for_issues,
-        check_local_media_files,
-        check_blockquote_elements,
-        check_asset_references,
-    )
+    from built_site_checks import *
 
 
 @pytest.fixture
@@ -51,6 +33,17 @@ def sample_html():
         <img src="missing-image.png" alt="Missing Image">
         <video src="existing-video.mp4"></video>
         <svg src="missing-svg.svg"></svg>
+    </body>
+    </html>
+    """
+
+
+@pytest.fixture
+def sample_html_with_katex_errors():
+    return """
+    <html>
+    <body>
+        <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text" style="color:#cc0000;"><span class="mord" style="color:#cc0000;">\\rewavcxx</span></span></span></span></span>
     </body>
     </html>
     """
@@ -107,6 +100,12 @@ def test_check_problematic_paragraphs(sample_soup):
     assert "Code: This is a code snippet" in result
     assert "Normal paragraph" not in result
     assert "This is a delayed-paragraph Table: " not in result
+
+
+def test_check_katex_elements_for_errors(sample_html_with_katex_errors):
+    html = BeautifulSoup(sample_html_with_katex_errors, "html.parser")
+    result = check_katex_elements_for_errors(html)
+    assert result == ["\\rewavcxx"]
 
 
 def test_parse_html_file(tmp_path):

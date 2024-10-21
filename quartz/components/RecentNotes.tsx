@@ -3,7 +3,7 @@ import { FullSlug, SimpleSlug, resolveRelative } from "../util/path"
 import { QuartzPluginData } from "../plugins/vfile"
 import { byDateAndAlphabetical } from "./PageList"
 import style from "./styles/recentNotes.scss"
-import { Date, getDate } from "./Date"
+import { DateElement } from "./Date"
 import { GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
 import { classNames } from "../util/lang"
@@ -53,7 +53,13 @@ export default ((userOpts?: Partial<Options>) => {
                   </div>
                   {page.dates && (
                     <p className="meta">
-                      <Date date={getDate(cfg, page)!} locale={cfg.locale} />
+                      <DateElement
+                        cfg={cfg}
+                        fileData={page as QuartzPluginData}
+                        monthFormat="long"
+                        includeOrdinalSuffix={true}
+                        formatOrdinalSuffix={true}
+                      />
                     </p>
                   )}
                   <ul className="tags">

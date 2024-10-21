@@ -38,6 +38,7 @@ use-full-width-images: "false"
 date_published: 03/25/2018
 original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
+description:  My review of "Artificial Intelligence, A Modern Approach"—plus, how I read 1000+ pages in 3 days.
 ---
 
 <br/>

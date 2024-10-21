@@ -34,6 +34,7 @@ use-full-width-images: "false"
 date_published: 05/13/2023
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
+description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
 ---
 
 | Prompt given to the model[^1]                                              |

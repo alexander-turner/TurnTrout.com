@@ -1,35 +1,40 @@
 ---
 permalink: toy-instrumental-convergence-paper-walkthrough
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
-lw-is-question: "false"
-lw-posted-at: 2018-02-26T02:20:09.294Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
+lw-is-question: 'false'
+lw-posted-at: 2018-02-26T02:20:09.294000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-02-26T02:20:11.439Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-02-26T02:20:11.439000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 2
 lw-base-score: 13
 lw-vote-count: 7
 af-base-score: 6
 af-num-comments-on-upload: 0
 publish: true
-title: "Walkthrough of 'Formalizing Convergent Instrumental Goals'"
-lw-latest-edit: 2018-02-26T02:20:09.294Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "instrumental-convergence"
-aliases: 
-  - "walkthrough-of-formalizing-convergent-instrumental-goals"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: Walkthrough of 'Formalizing Convergent Instrumental Goals'
+lw-latest-edit: 2018-02-26T02:20:09.294000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- instrumental-convergence
+aliases:
+- walkthrough-of-formalizing-convergent-instrumental-goals
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 02/26/2018
-original_url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
+original_url: 
+  https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
 skip_import: true
+description: "Proof of instrumental convergence: Even if an AI's goals seem unrelated
+  to humanity, it may still turn us into paperclips.
+"
 ---
 # Introduction
 

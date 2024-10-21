@@ -49,7 +49,7 @@ const darkMode = (
 )
 
 const searchHTML = (
-  <div className="search" id="nav-searchbar" alt="Menu search bar">
+  <div className="search" id="nav-searchbar">
     <div className="no-select" id="search-icon">
       <p>Search</p>
       <div></div>

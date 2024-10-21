@@ -29,9 +29,9 @@ use-full-width-images: "false"
 date_published: 12/30/2020
 original_url: https://www.lesswrong.com/posts/ZMP353rgkd7DQjrA8/collider-bias-as-a-cognitive-blindspot
 skip_import: true
+description: Examining a statistical illusion that tricks us into seeing correlations where there are none. Can we rewire our brains to see through it?
 ---
 
-<hr/>
 
 
 > [!quote] Zack M. Davis's [summary](https://www.lesswrong.com/posts/y4bkJTtG3s5d6v36k/stupidity-and-dishonesty-explain-each-other-away) of collider bias

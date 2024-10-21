@@ -1,36 +1,40 @@
 ---
 permalink: robustness-of-positive-values
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
-lw-is-question: "false"
-lw-posted-at: 2022-12-17T21:43:31.627Z
-lw-last-modification: 2023-03-26T00:29:07.381Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+lw-is-question: 'false'
+lw-posted-at: 2022-12-17T21:43:31.627000Z
+lw-last-modification: 2023-03-26T00:29:07.381000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-12-18T19:05:40.549Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-12-18T19:05:40.549000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 13
 lw-base-score: 52
 lw-vote-count: 23
 af-base-score: 25
 af-num-comments-on-upload: 8
 publish: true
-title: "Positive values seem more robust and lasting than prohibitions"
-lw-latest-edit: 2022-12-17T21:43:31.826Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "shard-theory"
-  - "human-values"
-aliases: 
-  - "positive-values-seem-more-robust-and-lasting-than"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: Positive values seem more robust and lasting than prohibitions
+lw-latest-edit: 2022-12-17T21:43:31.826000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- shard-theory
+- human-values
+aliases:
+- positive-values-seem-more-robust-and-lasting-than
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 12/17/2022
-original_url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+original_url: 
+  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 skip_import: true
+description: Negative values ("don't kill") may be fragile. Positive values ("protect
+  people") might be more robust and lasting within AI agents.
 ---
 Imagine we train an AI on realistic situations where it can kill people, and penalize it when it does so. Suppose that we successfully instill a strong and widely activated "If going to kill people, then don't" value shard. 
 

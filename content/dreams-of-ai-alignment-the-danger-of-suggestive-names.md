@@ -1,36 +1,38 @@
 ---
 permalink: danger-of-suggestive-terminology
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
-lw-is-question: "false"
-lw-posted-at: 2024-02-10T01:22:51.715Z
-lw-last-modification: 2024-02-13T21:08:58.421Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
+lw-is-question: 'false'
+lw-posted-at: 2024-02-10T01:22:51.715000Z
+lw-last-modification: 2024-02-13T21:08:58.421000Z
 lw-curation-date: None
-lw-frontpage-date: 2024-02-10T18:40:44.410Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2024-02-10T18:40:44.410000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 58
 lw-base-score: 97
 lw-vote-count: 75
 af-base-score: 34
 af-num-comments-on-upload: 0
 publish: true
-title: "Dreams of AI alignment: The danger of suggestive names"
-lw-latest-edit: 2024-02-10T02:01:47.447Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "rationality"
-  - "critique"
-aliases: 
-  - "dreams-of-ai-alignment-the-danger-of-suggestive-names"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: 'Dreams of AI alignment: The danger of suggestive names'
+lw-latest-edit: 2024-02-10T02:01:47.447000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- rationality
+- critique
+aliases:
+- dreams-of-ai-alignment-the-danger-of-suggestive-names
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 02/10/2024
 original_url: https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
 skip_import: true
+description: 'AI alignment plagued by imprecise language. "Reward" & "Shoggoth" — suggestive names conceal nonsense, hindering clear thought.'
 ---
 
 Let's not forget the old, well-read post: [Dreams of AI Design](https://www.lesswrong.com/posts/p7ftQ6acRkgo6hqHb/dreams-of-ai-design). In that essay, Eliezer correctly points out errors in imputing meaning to nonsense by using suggestive names to describe the nonsense. This error is very relevant to understanding the problems facing [LessWrong's](http://www.lesswrong.com) intellectual contributions.

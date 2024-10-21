@@ -1,42 +1,46 @@
 ---
 permalink: digital-minimalism
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
-lw-is-question: "false"
-lw-posted-at: 2022-03-27T23:09:26.753Z
-lw-last-modification: 2022-08-04T17:57:35.886Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
+lw-is-question: 'false'
+lw-posted-at: 2022-03-27T23:09:26.753000Z
+lw-last-modification: 2022-08-04T17:57:35.886000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-03-28T10:07:26.321Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-03-28T10:07:26.321000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 53
 lw-base-score: 197
 lw-vote-count: 103
 af-base-score: 47
 af-num-comments-on-upload: 0
 publish: true
-title: "Do a cost-benefit analysis of your technology usage"
-lw-latest-edit: 2022-08-04T17:57:36.569Z
-lw-is-linkpost: "false"
+title: Do a cost-benefit analysis of your technology usage
+lw-latest-edit: 2022-08-04T17:57:36.569000Z
+lw-is-linkpost: 'false'
 tags:
-  - "practical"
+- practical
 aliases:
-  - "do-a-cost-benefit-analysis-of-your-technology-usage"
-lw-sequence-title: "Becoming Stronger"
+- do-a-cost-benefit-analysis-of-your-technology-usage
+lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: insights-from-modern-principles-of-economics
-prev-post-title: "Insights from Modern Principles of Economics"
+prev-post-title: Insights from Modern Principles of Economics
 next-post-slug: alignment-phd
-next-post-title: "Looking back on my alignment PhD"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Looking back on my alignment PhD
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 03/27/2022
-original_url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
+original_url: 
+  https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
 skip_import: true
+description: 'A cost-benefit analysis of technology: Is your smartphone really worth
+  1.5 waking months per year?'
 ---
 
 If an unaligned entity invests billions of dollars into an application which you use, where they benefit from wasting your time, and you haven’t at least done a cost-benefit analysis so that your usage minimizes your costs and maximizes your benefits—_You are probably getting fucked over_.

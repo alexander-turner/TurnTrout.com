@@ -34,6 +34,7 @@ original_url: https://www.lesswrong.com/posts/7M2iHPLaNzPNXHuMv/ai-presidents-di
 no_dropcap: "true"
 video_preview_link: https://assets.turntrout.com/US%20presidents%20rate%20alignment%20agendas.mp4
 skip_import: true
+description: Obama, Trump, and Biden walk into a bar. They talk about AI alignment.
 ---
 
 <video controls width="100%">

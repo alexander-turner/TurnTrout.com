@@ -1,16 +1,16 @@
 ---
 permalink: open-category-classification
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/txGJZAPjraYEQfHq2/open-category-classification
-lw-is-question: "false"
-lw-posted-at: 2018-03-28T14:49:23.665Z
+lw-is-question: 'false'
+lw-posted-at: 2018-03-28T14:49:23.665000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-03-28T14:50:14.336Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-03-28T14:50:14.336000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 6
 lw-base-score: 14
 lw-vote-count: 11
@@ -18,17 +18,19 @@ af-base-score: 5
 af-num-comments-on-upload: 0
 publish: true
 title: Open-Category Classification
-lw-latest-edit: 2018-03-28T14:49:23.665Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2018-03-28T14:49:23.665000Z
+lw-is-linkpost: 'false'
 tags:
-  - AI
+- AI
 aliases:
-  - open-category-classification
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+- open-category-classification
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 03/28/2018
 original_url: https://www.lesswrong.com/posts/txGJZAPjraYEQfHq2/open-category-classification
 skip_import: '"true"'
+description: 'Open-category classification: How can we penalize classifiers which
+  overgeneralize from their training data?'
 ---
 
 # Introduction

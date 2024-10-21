@@ -1,43 +1,47 @@
 ---
 permalink: attainable-utility-preservation-scaling-to-superhuman
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
-lw-is-question: "false"
-lw-posted-at: 2020-02-27T00:52:49.970Z
-lw-last-modification: 2022-04-07T12:46:16.547Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
+lw-is-question: 'false'
+lw-posted-at: 2020-02-27T00:52:49.970000Z
+lw-last-modification: 2022-04-07T12:46:16.547000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-02-27T01:30:06.427Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-02-27T01:30:06.427000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 22
 lw-base-score: 28
 lw-vote-count: 11
 af-base-score: 14
 af-num-comments-on-upload: 16
 publish: true
-title: "Attainable Utility Preservation: Scaling to Superhuman"
-lw-latest-edit: 2020-02-27T00:57:35.521Z
-lw-is-linkpost: "false"
+title: 'Attainable Utility Preservation: Scaling to Superhuman'
+lw-latest-edit: 2020-02-27T00:57:35.521000Z
+lw-is-linkpost: 'false'
 tags:
-  - "impact-regularization"
-  - "AI"
+- impact-regularization
+- AI
 aliases:
-  - "attainable-utility-preservation-scaling-to-superhuman"
-lw-sequence-title: "Reframing Impact"
+- attainable-utility-preservation-scaling-to-superhuman
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: how-low-should-fruit-hang-before-we-pick-it
-prev-post-title: "How Low Should Fruit Hang Before We Pick It?"
+prev-post-title: How Low Should Fruit Hang Before We Pick It?
 next-post-slug: excitement-about-impact-measures
-next-post-title: "Reasons for Excitement about Impact of Impact Measure Research"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: Reasons for Excitement about Impact of Impact Measure Research
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 02/27/2020
-original_url: https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
+original_url: 
+  https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
 skip_import: true
+description: AUP scales to superintelligence by penalizing power-seeking, but loopholes
+  exist. I propose fixes and explore their implications.
 ---
 
 I think we're plausibly quite close to the impact measurement endgame. What do we have now, and what remains to be had?

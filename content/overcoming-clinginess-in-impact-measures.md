@@ -29,6 +29,7 @@ use-full-width-images: "false"
 date_published: 06/30/2018
 original_url: https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
 skip_import: true
+description: Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?
 ---
 
 > [!quote]Taylor et al., _[Alignment for Advanced Machine Learning Systems](https://intelligence.org/files/AlignmentMachineLearning.pdf)_

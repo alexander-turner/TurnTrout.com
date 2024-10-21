@@ -1,34 +1,36 @@
 ---
 permalink: thoughts-on-human-compatible
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/FuGDYNvA6qh4qyFah/thoughts-on-human-compatible
-lw-is-question: "false"
-lw-posted-at: 2019-10-10T05:24:31.689Z
-lw-last-modification: 2019-12-17T22:27:13.521Z
+lw-is-question: 'false'
+lw-posted-at: 2019-10-10T05:24:31.689000Z
+lw-last-modification: 2019-12-17T22:27:13.521000Z
 lw-curation-date: None
-lw-frontpage-date: 2019-10-10T05:54:45.161Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2019-10-10T05:54:45.161000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 34
 lw-base-score: 64
 lw-vote-count: 34
 af-base-score: 20
 af-num-comments-on-upload: 15
 publish: true
-title: "Thoughts on 'Human-Compatible'"
-lw-latest-edit: 2019-12-17T22:27:13.803Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-aliases: 
-  - "thoughts-on-human-compatible"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+title: Thoughts on 'Human-Compatible'
+lw-latest-edit: 2019-12-17T22:27:13.803000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+aliases:
+- thoughts-on-human-compatible
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 10/10/2019
 original_url: https://www.lesswrong.com/posts/FuGDYNvA6qh4qyFah/thoughts-on-human-compatible
 skip_import: true
+description: Stuart Russell's "Human Compatible" makes the case for aligning AI with
+  human values and sketches a research agenda based on uncertainty.
 ---
 
 > [!quote] [_Human Compatible_](https://www.amazon.com/Human-Compatible-Artificial-Intelligence-Problem/dp/0525558616) 

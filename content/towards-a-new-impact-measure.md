@@ -1,34 +1,37 @@
 ---
 permalink: towards-a-new-impact-measure
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/yEa7kwoMpsBgaBCgb/towards-a-new-impact-measure
-lw-is-question: "false"
-lw-posted-at: 2018-09-18T17:21:34.114Z
-lw-last-modification: 2024-03-02T01:17:26.725Z
+lw-is-question: 'false'
+lw-posted-at: 2018-09-18T17:21:34.114000Z
+lw-last-modification: 2024-03-02T01:17:26.725000Z
 lw-curation-date: None
-lw-frontpage-date: 2018-09-18T17:28:41.565Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-09-18T17:28:41.565000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 159
 lw-base-score: 100
 lw-vote-count: 43
 af-base-score: 24
 af-num-comments-on-upload: 119
 publish: true
-title: "Towards a New Impact Measure"
-lw-latest-edit: 2019-03-08T16:52:10.693Z
-lw-is-linkpost: "false"
+title: Towards a New Impact Measure
+lw-latest-edit: 2019-03-08T16:52:10.693000Z
+lw-is-linkpost: 'false'
 tags:
-  - "impact-regularization"
+- impact-regularization
 aliases:
-  - "towards-a-new-impact-measure"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+- towards-a-new-impact-measure
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 09/18/2018
 original_url: https://www.lesswrong.com/posts/yEa7kwoMpsBgaBCgb/towards-a-new-impact-measure
 skip_import: true
+description: "Impact is reframed as a change in attainable utility for both humans
+  and AI agents. 
+"
 ---
 
 > [!note] Summary

@@ -1,16 +1,17 @@
 ---
 permalink: linear-algebra-textbook-review
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
-lw-is-question: "false"
-lw-posted-at: 2018-04-22T05:23:49.024Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
+lw-is-question: 'false'
+lw-posted-at: 2018-04-22T05:23:49.024000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-04-22T06:04:46.922Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-04-22T06:04:46.922000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 12
 lw-base-score: 40
 lw-vote-count: 27
@@ -18,25 +19,30 @@ af-base-score: 9
 af-num-comments-on-upload: 0
 publish: true
 title: "The First Rung: Insights from 'Linear Algebra Done Right'"
-lw-latest-edit: 2018-04-22T05:23:49.024Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2018-04-22T05:23:49.024000Z
+lw-is-linkpost: 'false'
 tags:
-  - "scholarship-&-learning"
+- scholarship-&-learning
 aliases:
-  - "the-first-rung-insights-from-linear-algebra-done-right"
-lw-sequence-title: "Becoming Stronger"
+- the-first-rung-insights-from-linear-algebra-done-right
+lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: AI-textbook-review
-prev-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+prev-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence:
+  A Modern Approach'"
 next-post-slug: internalizing-internal-double-crux
-next-post-title: "Internalizing Internal Double Crux"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Internalizing Internal Double Crux
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/22/2018
-original_url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
+original_url: 
+  https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
 skip_import: true
+description: "The author rediscovers their love for math while rigorously studying
+  linear algebra, sharing insights and lessons learned along the way. 
+"
 ---
 
 # Foreword

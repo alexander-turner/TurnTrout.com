@@ -1,43 +1,49 @@
 ---
 permalink: quantitative-strength-of-instrumental-convergence
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
-lw-is-question: "false"
-lw-posted-at: 2021-07-11T17:36:24.208Z
-lw-last-modification: 2023-05-16T20:26:01.242Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+lw-is-question: 'false'
+lw-posted-at: 2021-07-11T17:36:24.208000Z
+lw-last-modification: 2023-05-16T20:26:01.242000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-07-11T19:16:22.478Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-07-11T19:16:22.478000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 7
 lw-base-score: 45
 lw-vote-count: 13
 af-base-score: 29
 af-num-comments-on-upload: 1
 publish: true
-title: "The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies"
-lw-latest-edit: 2023-05-16T20:26:02.342Z
-lw-is-linkpost: "false"
-tags: 
-  - "instrumental-convergence"
-  - "AI"
-aliases: 
-  - "the-more-power-at-stake-the-stronger-instrumental"
-lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"
+title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal
+  Policies
+lw-latest-edit: 2023-05-16T20:26:02.342000Z
+lw-is-linkpost: 'false'
+tags:
+- instrumental-convergence
+- AI
+aliases:
+- the-more-power-at-stake-the-stronger-instrumental
+lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: lower-stakes-alignment-scenario
-prev-post-title: "A world in which the alignment problem seems lower-stakes"
+prev-post-title: A world in which the alignment problem seems lower-stakes
 next-post-slug: power-seeking-beyond-MDPs
-next-post-title: "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: Seeking Power is Convergently Instrumental in a Broad Class of Environments
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 07/11/2021
-original_url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+original_url: 
+  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 skip_import: true
+card_image:
+description: Instrumental convergence strengthens proportional to the ratio of an
+  agent's control if it survives to its control if it dies.
 ---
 
 

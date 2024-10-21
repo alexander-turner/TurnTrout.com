@@ -1,43 +1,48 @@
 ---
 permalink: understanding-and-avoiding-value-drift
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
-lw-is-question: "false"
-lw-posted-at: 2022-09-09T04:16:48.404Z
-lw-last-modification: 2022-11-08T00:44:20.675Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
+lw-is-question: 'false'
+lw-posted-at: 2022-09-09T04:16:48.404000Z
+lw-last-modification: 2022-11-08T00:44:20.675000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-09-09T07:21:15.591Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-09-09T07:21:15.591000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 9
 lw-base-score: 48
 lw-vote-count: 20
 af-base-score: 23
 af-num-comments-on-upload: 7
 publish: true
-title: "Understanding and avoiding value drift"
-lw-latest-edit: 2022-09-09T18:05:11.849Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "rationality"
-  - "human-values"
-  - "shard-theory"
-aliases: 
-  - "understanding-and-avoiding-value-drift"
+title: Understanding and avoiding value drift
+lw-latest-edit: 2022-09-09T18:05:11.849000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- rationality
+- human-values
+- shard-theory
+aliases:
+- understanding-and-avoiding-value-drift
 sequence-link: posts#shard-theory
 lw-sequence-title: Shard Theory
 prev-post-slug: shard-theory
-prev-post-title: "The Shard Theory of Human Values"
+prev-post-title: The Shard Theory of Human Values
 next-post-slug: a-shot-at-the-diamond-alignment-problem
-next-post-title: "A Shot at the Diamond-Alignment Problem"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: A Shot at the Diamond-Alignment Problem
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 09/09/2022
-original_url: https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
+original_url: 
+  https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
 skip_import: true
+description: "A shard theory analysis of value drift: what it is, how it happens,
+  and how to avoid it, even without controlling your experiences. 
+"
 ---
 I use [the shard theory of human values](/shard-theory) to clarify what value drift is, how it happens, and how it might be avoided by a highly intelligent agent—even if that agent doesn't have any control over its future experiences. Along the way, I give a shard theory account of rationalization.
 

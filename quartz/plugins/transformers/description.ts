@@ -34,34 +34,7 @@ export const Description: QuartzTransformerPlugin<Partial<Options> | undefined> 
             }
 
             const desc = frontMatterDescription ?? text
-            const sentences = desc.replace(/\s+/g, " ").split(/\.\s/)
-            const finalDesc: string[] = []
-            const len = opts.descriptionLength
-            let sentenceIdx = 0
-            let currentDescriptionLength = 0
-
-            if (sentences[0] !== undefined && sentences[0].length >= len) {
-              const firstSentence = sentences[0].split(" ")
-              while (currentDescriptionLength < len) {
-                const sentence = firstSentence[sentenceIdx]
-                if (!sentence) break
-                finalDesc.push(sentence)
-                currentDescriptionLength += sentence.length
-                sentenceIdx++
-              }
-              finalDesc.push("...")
-            } else {
-              while (currentDescriptionLength < len) {
-                const sentence = sentences[sentenceIdx]
-                if (!sentence) break
-                const currentSentence = sentence.endsWith(".") ? sentence : sentence + "."
-                finalDesc.push(currentSentence)
-                currentDescriptionLength += currentSentence.length
-                sentenceIdx++
-              }
-            }
-
-            file.data.description = finalDesc.join(" ")
+            file.data.description = desc
             file.data.text = text
           }
         },

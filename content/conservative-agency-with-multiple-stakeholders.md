@@ -1,35 +1,41 @@
 ---
 permalink: conservative-agency-with-multiple-stakeholders
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/gLfHp8XaWpfsmXyWZ/conservative-agency-with-multiple-stakeholders
-lw-is-question: "false"
-lw-posted-at: 2021-06-08T00:30:52.672Z
-lw-last-modification: 2021-06-08T18:17:16.607Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/gLfHp8XaWpfsmXyWZ/conservative-agency-with-multiple-stakeholders
+lw-is-question: 'false'
+lw-posted-at: 2021-06-08T00:30:52.672000Z
+lw-last-modification: 2021-06-08T18:17:16.607000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-06-08T03:37:44.144Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-06-08T03:37:44.144000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 0
 lw-base-score: 31
 lw-vote-count: 9
 af-base-score: 18
 af-num-comments-on-upload: 0
 publish: true
-title: "Conservative Agency with Multiple Stakeholders"
-lw-latest-edit: 2021-06-08T01:34:42.979Z
-lw-is-linkpost: "false"
+title: Conservative Agency with Multiple Stakeholders
+lw-latest-edit: 2021-06-08T01:34:42.979000Z
+lw-is-linkpost: 'false'
 tags:
-  - "AI"
-  - "impact-regularization"
+- AI
+- impact-regularization
 aliases:
-  - "conservative-agency-with-multiple-stakeholders"
-lw-reward-post-warning: "true"
-use-full-width-images: "true"
+- conservative-agency-with-multiple-stakeholders
+lw-reward-post-warning: 'true'
+use-full-width-images: 'true'
 date_published: 06/08/2021
-original_url: https://www.lesswrong.com/posts/gLfHp8XaWpfsmXyWZ/conservative-agency-with-multiple-stakeholders
+original_url: 
+  https://www.lesswrong.com/posts/gLfHp8XaWpfsmXyWZ/conservative-agency-with-multiple-stakeholders
 skip_import: true
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.png
+description: How to make AI agents avoid negative side effects, especially in multi-stakeholder
+  environments.
 ---
 
 > [!note]

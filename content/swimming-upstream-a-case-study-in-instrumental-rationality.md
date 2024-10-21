@@ -1,30 +1,31 @@
 ---
 permalink: swimming-upstream
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
-lw-is-question: "false"
-lw-posted-at: 2018-06-03T03:16:21.613Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
+lw-is-question: 'false'
+lw-posted-at: 2018-06-03T03:16:21.613000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-06-14T09:54:24.275Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-06-14T09:54:24.275000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 7
 lw-base-score: 76
 lw-vote-count: 48
 af-base-score: 18
 af-num-comments-on-upload: 0
 publish: true
-title: "Swimming Upstream: A Case Study in Instrumental Rationality"
-lw-latest-edit: 2018-06-03T03:16:21.613Z
-lw-is-linkpost: "false"
+title: 'Swimming Upstream: A Case Study in Instrumental Rationality'
+lw-latest-edit: 2018-06-03T03:16:21.613000Z
+lw-is-linkpost: 'false'
 tags:
-  - practical
-  - growth-stories
+- practical
+- growth-stories
 aliases:
-  - swimming-upstream-a-case-study-in-instrumental-rationality
+- swimming-upstream-a-case-study-in-instrumental-rationality
 lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
@@ -32,12 +33,17 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: first-analysis-textbook-review
 prev-post-title: "Into the Kiln: Insights from Tao's 'Analysis I'"
 next-post-slug: RL-textbook-review
-next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning:
+  An Introduction'"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 06/03/2018
-original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
-skip_import: "true"
+original_url: 
+  https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
+skip_import: 'true'
+description: "I dove headfirst into AI safety, even at the risk of my PhD. This is
+  how. 
+"
 ---
 > [!success]
 > One data point for careful planning, the unapologetic pursuit of fulfillment, and success. Of particular interest to up-and-coming AI safety researchers, this post chronicles how I made a change in my PhD program to work more directly on AI safety, overcoming significant institutional pressure in the process.

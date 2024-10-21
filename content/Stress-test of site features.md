@@ -1,8 +1,10 @@
 ---
 permalink: test-page
-publish: "true"
+publish: 'true'
 tags:
-  - website
+- website
+description: A tour of TurnTrout.com's functionality, covering typography, markdown,
+  and more.
 ---
 This page is inspired by Gwern Branwen's [Lorem Ipsum](https://gwern.net/lorem), which serves a similar purpose.
 

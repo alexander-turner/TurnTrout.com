@@ -1,43 +1,47 @@
 ---
 permalink: excitement-about-impact-measures
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
-lw-is-question: "false"
-lw-posted-at: 2020-02-27T21:42:18.903Z
-lw-last-modification: 2020-09-16T18:14:18.398Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+lw-is-question: 'false'
+lw-posted-at: 2020-02-27T21:42:18.903000Z
+lw-last-modification: 2020-09-16T18:14:18.398000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-02-27T22:06:54.152Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-02-27T22:06:54.152000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 8
 lw-base-score: 33
 lw-vote-count: 12
 af-base-score: 13
 af-num-comments-on-upload: 8
 publish: true
-title: "Reasons for Excitement about Impact of Impact Measure Research"
-lw-latest-edit: 2020-09-16T18:14:18.659Z
-lw-is-linkpost: "false"
-tags: 
-  - "impact-regularization"
-  - "AI"
-aliases: 
-  - "reasons-for-excitement-about-impact-of-impact-measure"
-lw-sequence-title: "Reframing Impact"
+title: Reasons for Excitement about Impact of Impact Measure Research
+lw-latest-edit: 2020-09-16T18:14:18.659000Z
+lw-is-linkpost: 'false'
+tags:
+- impact-regularization
+- AI
+aliases:
+- reasons-for-excitement-about-impact-of-impact-measure
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: attainable-utility-preservation-scaling-to-superhuman
-prev-post-title: "Attainable Utility Preservation: Scaling to Superhuman"
+prev-post-title: 'Attainable Utility Preservation: Scaling to Superhuman'
 next-post-slug: conclusion-to-reframing-impact
-next-post-title: "Conclusion to 'Reframing Impact'"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: Conclusion to 'Reframing Impact'
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 02/27/2020
-original_url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+original_url: 
+  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 skip_import: true
+description: Impact measure research deconfuses power-seeking incentives in AI, aiding
+  alignment efforts.
 ---
 Can we get impact measurement _right_? Does there exist One Equation To Rule Them All?
 

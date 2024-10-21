@@ -1,36 +1,40 @@
 ---
 permalink: attainable-utility-preservation-paper
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
 lw-linkpost-url: https://arxiv.org/abs/1902.09725
-lw-is-question: "false"
-lw-posted-at: 2018-12-28T21:46:00.843Z
+lw-is-question: 'false'
+lw-posted-at: 2018-12-28T21:46:00.843000Z
 lw-last-modification: None
 lw-curation-date: None
-lw-frontpage-date: 2018-12-29T00:48:07.263Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2018-12-29T00:48:07.263000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 0
 lw-base-score: 24
 lw-vote-count: 10
 af-base-score: 9
 af-num-comments-on-upload: 0
 publish: true
-title: "Penalizing Impact via Attainable Utility Preservation"
-lw-latest-edit: 2019-03-08T16:55:24.259Z
-lw-is-linkpost: "true"
-tags: 
-  - "AI"
-  - "impact-regularization"
-aliases: 
-  - "penalizing-impact-via-attainable-utility-preservation"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+title: Penalizing Impact via Attainable Utility Preservation
+lw-latest-edit: 2019-03-08T16:55:24.259000Z
+lw-is-linkpost: 'true'
+tags:
+- AI
+- impact-regularization
+aliases:
+- penalizing-impact-via-attainable-utility-preservation
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 12/28/2018
-original_url: https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
+original_url: 
+  https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
 skip_import: true
+description: A new AI safety paper formalizing "attainable utility preservation" to
+  penalize negative AI impacts, with experimental results.
 ---
 The [linked paper](https://arxiv.org/abs/1902.09725) offers fresh motivation and simplified formalization of attainable utility preservation (AUP), with brand-new results and minimal notation. Whether or not you're a hardened veteran of the last odyssey of a post, there's a lot new here.  
   

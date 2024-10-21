@@ -1,41 +1,44 @@
 ---
 permalink: reframing-impact
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
-lw-is-question: "false"
-lw-posted-at: 2019-09-20T19:03:27.898Z
-lw-last-modification: 2024-03-02T01:17:47.939Z
-lw-curation-date: 2020-03-03T19:55:30.511Z
-lw-frontpage-date: 2019-09-20T19:31:05.356Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-is-question: 'false'
+lw-posted-at: 2019-09-20T19:03:27.898000Z
+lw-last-modification: 2024-03-02T01:17:47.939000Z
+lw-curation-date: 2020-03-03T19:55:30.511000Z
+lw-frontpage-date: 2019-09-20T19:31:05.356000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 15
 lw-base-score: 98
 lw-vote-count: 45
 af-base-score: 29
 af-num-comments-on-upload: 4
 publish: true
-title: "Reframing Impact"
-lw-latest-edit: 2021-08-25T18:32:59.440Z
-lw-is-linkpost: "false"
-tags: 
-  - "impact-regularization"
-  - "AI"
-aliases: 
-  - "reframing-impact"
+title: Reframing Impact
+lw-latest-edit: 2021-08-25T18:32:59.440000Z
+lw-is-linkpost: 'false'
+tags:
+- impact-regularization
+- AI
+aliases:
+- reframing-impact
 lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/jlnkhq3volgajzks64sw
 lw-sequence-image-banner: sequences/fahwqcjgc6ni0stdzxb3
 sequence-link: posts#reframing-impact
 next-post-slug: value-impact
-next-post-title: "Value Impact"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Value Impact
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 09/20/2019
 original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/3LocEy9.png
+description: A foundational examination of "impact" for AI alignment, exploring why
+  some actions matter more and how to formalize these intuitions.
 ---
 ![](https://assets.turntrout.com/static/images/posts/3LocEy9.avif )
 ![](https://assets.turntrout.com/static/images/posts/IUOudUK.avif)

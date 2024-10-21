@@ -1,34 +1,37 @@
 ---
 permalink: to-what-extent-is-gpt3-capable-of-reasoning
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
-lw-is-question: "true"
-lw-posted-at: 2020-07-20T17:10:50.265Z
-lw-last-modification: 2023-03-18T20:28:27.249Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
+lw-is-question: 'true'
+lw-posted-at: 2020-07-20T17:10:50.265000Z
+lw-last-modification: 2023-03-18T20:28:27.249000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-07-20T18:13:57.679Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-07-20T18:13:57.679000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 73
 lw-base-score: 70
 lw-vote-count: 41
 af-base-score: 24
 af-num-comments-on-upload: 26
 publish: true
-title: "To what extent is GPT-3 capable of reasoning?"
-lw-latest-edit: 2020-08-19T17:37:22.246Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-aliases: 
-  - "to-what-extent-is-gpt-3-capable-of-reasoning"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: To what extent is GPT-3 capable of reasoning?
+lw-latest-edit: 2020-08-19T17:37:22.246000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+aliases:
+- to-what-extent-is-gpt-3-capable-of-reasoning
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 07/20/2020
-original_url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
+original_url: 
+  https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
 skip_import: true
+description: Examining the reasoning capabilities of GPT-3 through a series of hypothetical questions and scenarios.
 ---
 ETA 8/19/20: This interview was conducted with AIDungeon's Dragon model in Custom mode. At the time of writing, the first reply in each exchange was actually sampled from GPT-2. 
 

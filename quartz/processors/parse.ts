@@ -44,7 +44,17 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
     .use(remarkCaptions)
     .use(remarkCaptionsCodeFix)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })
-    .use(rehypeMermaid)
+    .use(rehypeMermaid, {
+      strategy: "inline-svg",
+      mermaidConfig: {
+        theme: "default",
+        themeVariables: { lineColor: "var(--gray)" },
+      },
+      dark: {
+        theme: "dark",
+        themeVariables: { lineColor: "var(--gray)" },
+      },
+    })
     .use(transformers.filter((p) => p.htmlPlugins).flatMap((plugin) => plugin.htmlPlugins!(ctx)))
 }
 

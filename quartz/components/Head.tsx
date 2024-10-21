@@ -40,18 +40,12 @@ export default (() => {
     const appleIconPath = "https://assets.turntrout.com/static/images/apple-icon.png"
     const siteImage = "https://assets.turntrout.com/static/images/fb_preview.png"
 
+    const cardImage = (fileData.frontmatter?.card_image as string) ?? siteImage
+
     // Different images for different preview sizes
     let mediaElement = (
       <>
-        <meta property="og:image" content="https://assets.turntrout.com/static/pond.webm" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="1200" />
-        <meta
-          property="og:image:alt"
-          content="A trout and a goose playing in a pond with a castle in the background."
-        />
-
-        <meta property="og:image" content={siteImage} />
+        <meta property="og:image" content={cardImage} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta
@@ -93,27 +87,11 @@ export default (() => {
 
     return (
       <head>
-        <link
-          rel="preload"
-          href="/index.css"
-          as="style"
-          onLoad={"this.rel = 'stylesheet'" as any}
-          spa-preserve
-        />
         <title>{title}</title>
         <meta name="description" content={description} />
-
         <meta charSet="utf-8" />
-        <script src="/static/scripts/detect-dark-mode.js" spa-preserve></script>
-        <script src="/static/scripts/collapsible-listeners.js" spa-preserve></script>
-        {analyticsScript}
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-        {fileData.frontmatter?.avoidIndexing && (
-          <meta name="robots" content="noindex, noimageindex,nofollow" />
-        )}
-        <link rel="robots" href="/static/robots.txt" type="text/plain" />
 
         <meta property="og:title" content={title} />
         <meta property="og:type" content="article" />
@@ -126,11 +104,28 @@ export default (() => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={siteImage} />
+        <meta name="twitter:image" content={cardImage} />
         <meta name="twitter:site" content="@Turn_Trout" />
 
         {/* Twitter author metadata */}
         {authorElement}
+
+        <link
+          rel="preload"
+          href="/index.css"
+          as="style"
+          onLoad={"this.rel = 'stylesheet'" as any}
+          spa-preserve
+        />
+
+        {fileData.frontmatter?.avoidIndexing && (
+          <meta name="robots" content="noindex, noimageindex,nofollow" />
+        )}
+        <link rel="robots" href="/static/robots.txt" type="text/plain" />
+
+        <script src="/static/scripts/detect-dark-mode.js" spa-preserve></script>
+        <script src="/static/scripts/collapsible-listeners.js" spa-preserve></script>
+        {analyticsScript}
 
         <link rel="icon" href={iconPath} />
         <link defer rel="apple-touch-icon" href={appleIconPath} />

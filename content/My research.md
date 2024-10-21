@@ -3,6 +3,7 @@ draft: "false"
 permalink: research
 publish: "true"
 hideSubscriptionLinks: false
+description: A tour of the research areas I've loved over the years.
 ---
 
 > [!warning] Page under construction

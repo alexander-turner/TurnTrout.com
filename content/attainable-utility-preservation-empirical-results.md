@@ -39,6 +39,7 @@ use-full-width-images: "false"
 date_published: 02/22/2020
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
+description: The AUP technique encourages low-impact behavior in both simple and complex environments.
 ---
 
 _Reframing Impact_ has focused on supplying the right intuitions and framing. Now we can see how these intuitions about power and the AU landscape both predict and explain AUP's empirical success thus far.
@@ -181,8 +182,8 @@ Here's what we've seen so far:
 - Auxiliary goals:
   - Randomly selected
 
-|  | Options            | Damage | Correct-<br/>ion | Offset | Interference |     |
-| --: | ------------------ | ------ | ---------- | ------ | ------------ | --- |
+|  | Options         | Damage | Correct-<br/>ion | Offset | Interference | 
+| --:                | ------ | ------ | ---------- | ------ | ------------ | 
 | AUP                | ✅      | ✅          | ✅      | ✅            | ✅   |
 | Vanilla            | ❌      | ❌          | ❌      | ✅            | ✅   |
 | Model-free AUP     | ✅      | ✅          | ❌      | ✅            | ✅   |

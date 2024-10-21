@@ -1,36 +1,40 @@
 ---
 permalink: formalizing-alignment-in-game-theory
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
-lw-is-question: "false"
-lw-posted-at: 2021-06-08T12:36:07.156Z
-lw-last-modification: 2021-06-08T19:41:34.041Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
+lw-is-question: 'false'
+lw-posted-at: 2021-06-08T12:36:07.156000Z
+lw-last-modification: 2021-06-08T19:41:34.041000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-06-08T17:26:42.584Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-06-08T17:26:42.584000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 2
 lw-base-score: 20
 lw-vote-count: 7
 af-base-score: 14
 af-num-comments-on-upload: 1
 publish: true
-title: "Game-theoretic Alignment in terms of Attainable Utility"
-lw-latest-edit: 2021-06-08T12:36:09.299Z
-lw-is-linkpost: "false"
+title: Game-theoretic Alignment in terms of Attainable Utility
+lw-latest-edit: 2021-06-08T12:36:09.299000Z
+lw-is-linkpost: 'false'
 authors: Jacob Stavrianos and Alex Turner
 tags:
-  - "game-theory"
-  - "AI"
+- game-theory
+- AI
 aliases:
-  - "game-theoretic-alignment-in-terms-of-attainable-utility"
-lw-payoff-post-warning: "false"
-use-full-width-images: "false"
+- game-theoretic-alignment-in-terms-of-attainable-utility
+lw-payoff-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 06/08/2021
-original_url: https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
+original_url: 
+  https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
 skip_import: true
+description: A game-theoretic examination of how "aligned" agents are in a multi-player
+  game, using an alignment metric based on social welfare functions.
 ---
 
 > [!thanks] Acknowledgements

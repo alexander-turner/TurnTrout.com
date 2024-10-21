@@ -1,43 +1,48 @@
 ---
 permalink: formalizing-multi-agent-power
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
-lw-is-question: "false"
-lw-posted-at: 2021-03-22T02:41:44.763Z
-lw-last-modification: 2021-06-06T14:23:10.706Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+lw-is-question: 'false'
+lw-posted-at: 2021-03-22T02:41:44.763000Z
+lw-last-modification: 2021-06-06T14:23:10.706000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-03-22T03:31:41.433Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-03-22T03:31:41.433000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 16
 lw-base-score: 52
 lw-vote-count: 14
 af-base-score: 23
 af-num-comments-on-upload: 10
 publish: true
-title: "Generalizing POWER to multi-agent games"
-lw-latest-edit: 2021-06-06T14:23:13.010Z
-lw-is-linkpost: "false"
+title: Generalizing POWER to multi-agent games
+lw-latest-edit: 2021-06-06T14:23:13.010000Z
+lw-is-linkpost: 'false'
 authors: Jacob Stavrianos and Alex Turner
-tags: 
-  - "understanding-the-world"
-  - "AI"
-  - "instrumental-convergence"
-aliases: 
-  - "generalizing-power-to-multi-agent-games"
+tags:
+- understanding-the-world
+- AI
+- instrumental-convergence
+aliases:
+- generalizing-power-to-multi-agent-games
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence
 prev-post-slug: the-catastrophic-convergence-conjecture
-prev-post-title: "The Catastrophic Convergence Conjecture"
+prev-post-title: The Catastrophic Convergence Conjecture
 next-post-slug: MDPs-are-not-subjective
-next-post-title: "MDP Models Are Determined by the Agent Architecture and the Environmental Dynamics"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: MDP Models Are Determined by the Agent Architecture and the Environmental
+  Dynamics
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 03/22/2021
-original_url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+original_url: 
+  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 skip_import: true
+description: Formalizing "power" in multi-agent games, showing that increased agent
+  capabilities can lead to power scarcity and increased competition for resources.
 ---
 > [!thanks] Acknowledgments
 > This article is a writeup of a research project conducted through the [SERI](https://cisac.fsi.stanford.edu/stanford-existential-risks-initiative/content/stanford-existential-risks-initiative) program under the mentorship of [Alex Turner](https://www.lesswrong.com/users/turntrout). I ([Jacob Stavrianos](https://www.lesswrong.com/users/midco)) would like to thank Alex for turning a messy collection of ideas into legitimate research, as well as the wonderful researchers at SERI for guiding the project and putting me in touch with the broader X-risk community.

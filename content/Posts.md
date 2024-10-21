@@ -2,12 +2,14 @@
 publish: "true"
 hide_authors: "true"
 hide_metadata: "true"
-title: Posts
 no_dropcap: "true"
 permalink: posts
+title: "Posts & Sequences"
 aliases:
   - Posts
 hideSubscriptionLinks: false
+card_image: https://assets.turntrout.com/static/images/posts/test_library.avif
+description: "A selection of the best posts which I've written."
 ---
 
 # My favorite posts

@@ -1,41 +1,46 @@
 ---
 permalink: a-shot-at-the-diamond-alignment-problem
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
-lw-is-question: "false"
-lw-posted-at: 2022-10-06T18:29:10.586Z
-lw-last-modification: 2023-06-01T20:06:10.512Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
+lw-is-question: 'false'
+lw-posted-at: 2022-10-06T18:29:10.586000Z
+lw-last-modification: 2023-06-01T20:06:10.512000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-10-06T21:08:16.652Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-10-06T21:08:16.652000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 58
 lw-base-score: 95
 lw-vote-count: 46
 af-base-score: 36
 af-num-comments-on-upload: 45
 publish: true
-title: "A shot at the diamond-alignment problem"
-lw-latest-edit: 2023-02-01T19:19:45.945Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-  - "shard-theory"
-aliases: 
-  - "a-shot-at-the-diamond-alignment-problem"
+title: A shot at the diamond-alignment problem
+lw-latest-edit: 2023-02-01T19:19:45.945000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+- shard-theory
+aliases:
+- a-shot-at-the-diamond-alignment-problem
 sequence-link: posts#shard-theory
 lw-sequence-title: Shard Theory
 prev-post-slug: understanding-and-avoiding-value-drift
-prev-post-title: "Understanding and Avoiding Value Drift"
+prev-post-title: Understanding and Avoiding Value Drift
 next-post-slug: dont-design-agents-which-exploit-adversarial-inputs
-next-post-title: "Don’t Design Agents Which Exploit Adversarial Inputs"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Don’t Design Agents Which Exploit Adversarial Inputs
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 10/06/2022
-original_url: https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
+original_url: 
+  https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
 skip_import: true
+description: "A technical deep dive exploring how to align an AI with the goal of
+  creating diamonds, rather than more nebulous human values. 
+"
 ---
 I think that relatively simple alignment techniques can go a long way. In particular, I want to tell a plausible-to-me story about how simple techniques can align a proto-AGI so that it makes lots of diamonds.
 

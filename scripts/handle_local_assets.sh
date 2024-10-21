@@ -27,6 +27,9 @@ fi
 # Ignore example_com.png during conversion
 python "$GIT_ROOT"/scripts/convert_assets.py --remove-originals --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png"
 
+# Convert card images in markdown files
+python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/content
+
 # Remove any mp4_original files
 find "$STATIC_DIR" -name "*.mp4_original" -delete
 

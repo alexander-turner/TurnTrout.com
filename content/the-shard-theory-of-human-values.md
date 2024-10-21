@@ -1,47 +1,52 @@
 ---
 permalink: shard-theory
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
-lw-is-question: "false"
-lw-posted-at: 2022-09-04T04:28:11.752Z
-lw-last-modification: 2024-03-02T01:18:30.814Z
-lw-curation-date: 2022-09-29T06:22:03.250Z
-lw-frontpage-date: 2022-09-04T17:31:12.650Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
+lw-is-question: 'false'
+lw-posted-at: 2022-09-04T04:28:11.752000Z
+lw-last-modification: 2024-03-02T01:18:30.814000Z
+lw-curation-date: 2022-09-29T06:22:03.250000Z
+lw-frontpage-date: 2022-09-04T17:31:12.650000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 66
 lw-base-score: 241
 lw-vote-count: 128
 af-base-score: 70
 af-num-comments-on-upload: 33
 publish: true
-title: "The shard theory of human values"
-lw-latest-edit: 2023-06-05T21:14:25.014Z
-lw-is-linkpost: "false"
+title: The shard theory of human values
+lw-latest-edit: 2023-06-05T21:14:25.014000Z
+lw-is-linkpost: 'false'
 authors: Quintin Pope and Alex Turner
 tags:
-  - "rationality"
-  - "shard-theory"
-  - "AI"
-  - "understanding-the-world"
-  - "human-values"
+- rationality
+- shard-theory
+- AI
+- understanding-the-world
+- human-values
 aliases:
-  - "the-shard-theory-of-human-values"
-lw-sequence-title: "Shard Theory"
+- the-shard-theory-of-human-values
+lw-sequence-title: Shard Theory
 lw-sequence-image-grid: sequencesgrid/igo7185zypqhuclvbmiv
 lw-sequence-image-banner: sequences/ot2siejtvcl9pvzly2ma
 sequence-link: posts#shard-theory
 prev-post-slug: reward-is-not-the-optimization-target
-prev-post-title: "Reward is not the optimization target"
+prev-post-title: Reward is not the optimization target
 next-post-slug: understanding-and-avoiding-value-drift
-next-post-title: "Understanding and avoiding value drift"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: Understanding and avoiding value drift
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 09/04/2022
-original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
+original_url: 
+  https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/human_shards.png
+description: Human values are shaped by simple reward circuitry. Shard theory explains
+  how these shards give rise to complex behaviors, such as altruism.
 ---
 
 We propose a theory of human value formation. According to this theory, the reward system shapes human values in a relatively straightforward manner. Human values are not e.g. an incredibly complicated, genetically hard-coded set of drives, but rather sets of contextually activated heuristics which were shaped by and bootstrapped from crude, genetically hard-coded reward circuitry.

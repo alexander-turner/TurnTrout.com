@@ -1,34 +1,38 @@
 ---
 permalink: questioning-why-simple-alignment-plan-fails
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
-lw-is-question: "true"
-lw-posted-at: 2022-08-11T22:22:32.198Z
-lw-last-modification: 2023-06-01T20:26:14.384Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+lw-is-question: 'true'
+lw-posted-at: 2022-08-11T22:22:32.198000Z
+lw-last-modification: 2023-06-01T20:26:14.384000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-08-12T08:25:53.590Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-08-12T08:25:53.590000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 42
 lw-base-score: 87
 lw-vote-count: 50
 af-base-score: 40
 af-num-comments-on-upload: 13
 publish: true
-title: "Seriously, what goes wrong with 'reward the agent when it makes you smile'?"
-lw-latest-edit: 2022-08-11T22:23:09.276Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-aliases: 
-  - "seriously-what-goes-wrong-with-reward-the-agent-when-it"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: Seriously, what goes wrong with 'reward the agent when it makes you smile'?
+lw-latest-edit: 2022-08-11T22:23:09.276000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+aliases:
+- seriously-what-goes-wrong-with-reward-the-agent-when-it
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 08/11/2022
-original_url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+original_url: 
+  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 skip_import: true
+description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less
+  certain than most. Let's explore why."
 ---
 Suppose you're training a huge neural network with some awesome future RL algorithm with clever exploration bonuses and a self-supervised pretrained multimodal initialization and a recurrent state. This NN implements an embodied agent which takes actions in reality (and also in some sim environments). You watch the agent remotely using a webcam (initially unbeknownst to the agent). When the AI's activities make you smile, you press the antecedent-computation-reinforcer button (known to some as the "reward" button). The agent is given some appropriate curriculum, like population-based self-play, so as to provide a steady skill requirement against which its intelligence is sharpened over training. Supposing the curriculum trains these agents out until they're generally intelligent—what comes next?
 

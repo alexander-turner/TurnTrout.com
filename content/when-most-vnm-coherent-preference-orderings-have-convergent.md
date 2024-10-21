@@ -1,44 +1,48 @@
 ---
 permalink: instrumental-convergence-via-vnm-preferences
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
-lw-is-question: "false"
-lw-posted-at: 2021-08-09T17:22:24.056Z
-lw-last-modification: 2023-05-16T20:32:50.619Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+lw-is-question: 'false'
+lw-posted-at: 2021-08-09T17:22:24.056000Z
+lw-last-modification: 2023-05-16T20:32:50.619000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-08-09T17:35:43.890Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-08-09T17:35:43.890000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 4
 lw-base-score: 53
 lw-vote-count: 10
 af-base-score: 30
 af-num-comments-on-upload: 4
 publish: true
-title: "When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives"
-lw-latest-edit: 2023-05-16T20:32:55.143Z
-lw-is-linkpost: "false"
+title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
+lw-latest-edit: 2023-05-16T20:32:55.143000Z
+lw-is-linkpost: 'false'
 tags:
-  - "instrumental-convergence"
-  - "rationality"
-  - "AI"
+- instrumental-convergence
+- rationality
+- AI
 aliases:
-  - "when-most-vnm-coherent-preference-orderings-have-convergent"
-lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"
+- when-most-vnm-coherent-preference-orderings-have-convergent
+lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: power-seeking-beyond-MDPs
-prev-post-title: "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+prev-post-title: Seeking Power is Convergently Instrumental in a Broad Class of Environments
 next-post-slug: satisficers-tend-to-seek-power
-next-post-title: "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: 'Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability'
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 08/09/2021
-original_url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+original_url: 
+  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 skip_import: true
+description: VNM-coherent preference orderings have the same statistical incentives
+  as utility functions, often leading to power-seeking behavior.
 ---
 
 This post explains a formal link between "what kinds of instrumental convergence exists?" and "what does VNM-coherence tell us about goal-directedness?". It turns out that VNM coherent preference orderings have the **same** statistical incentives as utility functions; most such orderings will incentivize power-seeking in the settings covered by [the power-seeking theorems](/posts#the-causes-of-power-seeking-and-instrumental-convergence).

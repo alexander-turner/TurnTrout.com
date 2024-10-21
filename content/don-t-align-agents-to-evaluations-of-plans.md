@@ -35,6 +35,7 @@ lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 11/26/2022
 original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
+description: "A subtle point: aligning an AI to evaluations of your goals won't give you what you want. Don't do it."
 skip_import: true
 ---
 

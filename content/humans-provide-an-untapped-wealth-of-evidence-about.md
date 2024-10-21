@@ -1,16 +1,17 @@
 ---
 permalink: humans-provide-alignment-evidence
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/CjFZeDD6iCnNubDoS/humans-provide-an-untapped-wealth-of-evidence-about
-lw-is-question: "false"
-lw-posted-at: 2022-07-14T02:31:48.575Z
-lw-last-modification: 2024-03-02T01:18:50.890Z
-lw-curation-date: 2022-08-14T07:35:43.265Z
-lw-frontpage-date: 2022-07-14T03:34:23.107Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/CjFZeDD6iCnNubDoS/humans-provide-an-untapped-wealth-of-evidence-about
+lw-is-question: 'false'
+lw-posted-at: 2022-07-14T02:31:48.575000Z
+lw-last-modification: 2024-03-02T01:18:50.890000Z
+lw-curation-date: 2022-08-14T07:35:43.265000Z
+lw-frontpage-date: 2022-07-14T03:34:23.107000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 94
 lw-base-score: 204
 lw-vote-count: 92
@@ -18,29 +19,33 @@ af-base-score: 57
 af-num-comments-on-upload: 42
 publish: true
 title: Humans provide an untapped wealth of evidence about alignment
-lw-latest-edit: 2023-01-01T19:52:16.131Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2023-01-01T19:52:16.131000Z
+lw-is-linkpost: 'false'
 authors: Alex Turner and Quintin Pope
 tags:
-  - AI
-  - shard-theory
-  - human-values
+- AI
+- shard-theory
+- human-values
 aliases:
-  - humans-provide-an-untapped-wealth-of-evidence-about
-lw-podcast-link: https://www.buzzsprout.com//2037297/11168035-humans-provide-an-untapped-wealth-of-evidence-about-alignment-by-turntrout-quintin-pope.js?container_id=buzzsprout-player-11168035&amp;player=small
+- humans-provide-an-untapped-wealth-of-evidence-about
+lw-podcast-link: 
+  https://www.buzzsprout.com//2037297/11168035-humans-provide-an-untapped-wealth-of-evidence-about-alignment-by-turntrout-quintin-pope.js?container_id=buzzsprout-player-11168035&amp;player=small
 lw-sequence-title: Shard Theory
 lw-sequence-image-grid: sequencesgrid/igo7185zypqhuclvbmiv
 lw-sequence-image-banner: sequences/ot2siejtvcl9pvzly2ma
 sequence-link: posts#shard-theory
 prev-post-slug:
-prev-post-title: ""
+prev-post-title: ''
 next-post-slug: human-values-and-biases-are-inaccessible-to-the-genome
 next-post-title: Human values & biases are inaccessible to the genome
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 07/14/2022
-original_url: https://www.lesswrong.com/posts/CjFZeDD6iCnNubDoS/humans-provide-an-untapped-wealth-of-evidence-about
-skip_import: "true"
+original_url: 
+  https://www.lesswrong.com/posts/CjFZeDD6iCnNubDoS/humans-provide-an-untapped-wealth-of-evidence-about
+skip_import: 'true'
+description: 'I argue for studying the only known example of aligned intelligence:
+  humans. Stop speculating about AIXI and diamonds - look at humans!'
 ---
 
 > [!info]

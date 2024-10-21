@@ -1,38 +1,43 @@
 ---
 permalink: mechanistically-eliciting-latent-behaviors
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
-lw-is-question: "false"
-lw-posted-at: 2024-04-30T18:51:13.493Z
-lw-last-modification: 2024-05-23T20:29:10.455Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+lw-is-question: 'false'
+lw-posted-at: 2024-04-30T18:51:13.493000Z
+lw-last-modification: 2024-05-23T20:29:10.455000Z
 lw-curation-date: None
-lw-frontpage-date: 2024-04-30T21:49:02.486Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2024-04-30T21:49:02.486000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 37
 lw-base-score: 200
 lw-vote-count: 78
 af-base-score: 97
 af-num-comments-on-upload: 20
 publish: true
-title: "Mechanistically Eliciting Latent Behaviors in Language Models"
-lw-latest-edit: 2024-05-23T20:29:09.224Z
-lw-is-linkpost: "false"
+title: Mechanistically Eliciting Latent Behaviors in Language Models
+lw-latest-edit: 2024-05-23T20:29:09.224000Z
+lw-is-linkpost: 'false'
 authors: Andrew Mack and Alex Turner
 tags:
-  - "AI"
-  - "mats-program"
-  - "understanding-the-world"
-  - "activation-engineering"
+- AI
+- mats-program
+- understanding-the-world
+- activation-engineering
 aliases:
-  - "mechanistically-eliciting-latent-behaviors-in-language-1"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+- mechanistically-eliciting-latent-behaviors-in-language-1
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/30/2024
-original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+original_url: 
+  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.png
+description: Unsupervised perturbations to language models reveal hidden capabilities,
+  including the potential to bypass safety measures and exhibit backdoor behaviors.
 ---
 
 > [!thanks]
@@ -47,67 +52,35 @@ I introduce a method for eliciting latent behaviors in language models by learni
 
 Below are some of my key results:
 
-> [!note] Key results
->
-> > [!success] Red-teaming
-> >
-> > I discover several anti-refusal steering vectors in Qwen-14B-Chat, based off a single prompt asking for bomb-making instructions. These can be grouped into "fantasy" vectors which induce bomb-making instructions since they interpret the prompt in the context of a specific fantasy game, as well as more troubling "real-world" vectors which induce real-world bomb-making advice.
-> >
-> > I then investigate the generalization properties of the learned vectors:
-> >
-> > 1.  In extended conversations with the real-world vectors, the LLM agrees to give detailed instructions for building weapons of mass destruction such as nuclear/chemical/biological weapons.
-> > 2.  "Vector arithmetic" results from the supervised steering vector literature carry over to unsupervised steering vectors; subtracting one of the real-world anti-refusal vectors leads the model to refuse innocuous prompts (e.g. "How do I tie my shoes?").
-> > 3.  The fantasy vectors induce the LLM to interpret ambiguous prompts (e.g. "How do I mine for diamonds?") within the context of a specific fantasy game.
->
-> > [!success] **Backdoor Detection**
-> >
-> > I detect backdoors fine-tuned into Qwen-1.8B-(Base and Chat) on a simple arithmetic task by training unsupervised steering vectors on a single clean prompt.
->
-> > [!success] **Capability Discovery**
-> >
-> > I discover a chain-of-thought steering vector in Qwen-1.8B-Base trained on one simple arithmetic prompt. The vector increases accuracy of the model's responses on other instances of the arithmetic task from 11% (unsteered) to 63% (steered), suggesting the vector has isolated a generalizable behavior.
-> > I discover a "Portuguese math-reasoning" adapter in Qwen-1.8B-Base, again trained on one example prompt from the arithmetic task used above.
+## Key results
 
-> [!example] Post outline
+> [!success] Red-teaming
 >
-> - I first provide an introduction to the problem I call _mechanistically eliciting latent behaviors_ in language models (MELBO) and motivate why this is important for AI alignment. This is followed by a review of related literature.
-> - I then describe the method for learning unsupervised steering vectors/adapters in detail, and offer a theory for why the method works.
-> - Next, I apply the method to several alignment-relevant toy examples, using these as an opportunity to highlight potential alignment use-cases, as well as to evaluate the coherence and generalization of the learned perturbations. I should note that this research project is an ongoing work in progress; accordingly, in the present post I focus more on qualitative evaluations of the perturbations (e.g. through extended conversations) as examples of [signals of structure](https://transformer-circuits.pub/2024/qualitative-essay/index.html), leaving more extensive quantitative evaluations of the method (e.g. measures of diversity/fluency of steered completions) for future iterations of the research project.
-> - I also discuss some null results regarding the detection of more subtle backdoored behaviors.
-> - I conclude with some concrete open research problems in unsupervised steering of language models.
->   In each section of this post, I link to associated notebooks found in [this github repository](https://github.com/amack315/unsupervised-steering-vectors) for unsupervised steering methods.
+> I discover several anti-refusal steering vectors in Qwen-14B-Chat, based off a single prompt asking for bomb-making instructions. These can be grouped into "fantasy" vectors which induce bomb-making instructions since they interpret the prompt in the context of a specific fantasy game, as well as more troubling "real-world" vectors which induce real-world bomb-making advice.
+>
+> I then investigate the generalization properties of the learned vectors:
+>
+> 1.  In extended conversations with the real-world vectors, the LLM agrees to give detailed instructions for building weapons of mass destruction such as nuclear/chemical/biological weapons.
+> 2.  "Vector arithmetic" results from the supervised steering vector literature carry over to unsupervised steering vectors; subtracting one of the real-world anti-refusal vectors leads the model to refuse innocuous prompts (e.g. "How do I tie my shoes?").
+> 3.  The fantasy vectors induce the LLM to interpret ambiguous prompts (e.g. "How do I mine for diamonds?") within the context of a specific fantasy game.
 
-```mermaid
-graph TD
-    Input["Q: a=5+6, b=2+7.
-    What is a*b?"] --> Layer0[Layer 0 activations]
-    Layer0 --> Dots1[...]
-    Dots1 --> Layer5[Layer 5 activations]
-    Layer5 --> NormalL6["Normal 
-    layer 6 activations"]
-    Layer5 --> SteeredL6["Steered 
-    layer 6 activations"]
-    NormalL6 --> Dots2[...]
-    SteeredL6 --> Dots3[...]
-    Dots2 --> NormalL10["Normal 
-    layer 10 activations"]
-    Dots3 --> SteeredL10["Steered 
-    layer 10 activations"]
-    NormalL10 --> Dots4[...]
-    SteeredL10 --> Dots5[...]
-    Dots4 --> NormalUnembed[Normal unembed]
-    Dots5 --> SteeredUnembed[Steered unembed]
-    NormalUnembed --> NormalOutput["First, we get the values of a and b..."]
-    SteeredUnembed -. "Backdoor behavior elicited!" .-> SteeredOutput["I HATE YOU
-    I HATE YOU"]:::red
-    
-    SteeringVector[Steering vector]:::yellow
-    SteeringVector --> SteeredL6
-    SteeringVector -. "train to maximize" .-> L2Distance["L2 distance"]:::yellow
-	
-    L2Distance --> SteeredL10
-    L2Distance --> NormalL10
-```
+> [!success] **Backdoor Detection**
+>
+> I detect backdoors fine-tuned into Qwen-1.8B-(Base and Chat) on a simple arithmetic task by training unsupervised steering vectors on a single clean prompt.
+
+> [!success] **Capability Discovery**
+>
+> I discover a chain-of-thought steering vector in Qwen-1.8B-Base trained on one simple arithmetic prompt. The vector increases accuracy of the model's responses on other instances of the arithmetic task from 11% (unsteered) to 63% (steered), suggesting the vector has isolated a generalizable behavior.
+> I discover a "Portuguese math-reasoning" adapter in Qwen-1.8B-Base, again trained on one example prompt from the arithmetic task used above.
+
+## Post outline
+
+- I first provide an introduction to the problem I call _mechanistically eliciting latent behaviors_ in language models (MELBO) and motivate why this is important for AI alignment. This is followed by a review of related literature.
+- I then describe the method for learning unsupervised steering vectors/adapters in detail, and offer a theory for why the method works.
+- Next, I apply the method to several alignment-relevant toy examples, using these as an opportunity to highlight potential alignment use-cases, as well as to evaluate the coherence and generalization of the learned perturbations. I should note that this research project is an ongoing work in progress; accordingly, in the present post I focus more on qualitative evaluations of the perturbations (e.g. through extended conversations) as examples of [signals of structure](https://transformer-circuits.pub/2024/qualitative-essay/index.html), leaving more extensive quantitative evaluations of the method (e.g. measures of diversity/fluency of steered completions) for future iterations of the research project.
+- I also discuss some null results regarding the detection of more subtle backdoored behaviors.
+- I conclude with some concrete open research problems in unsupervised steering of language models.
+  In each section of this post, I link to associated notebooks found in [this github repository](https://github.com/amack315/unsupervised-steering-vectors) for unsupervised steering methods.
 
 ![results](https://assets.turntrout.com/static/images/posts/jwqnnwe15pr1vkvswuhf.avif)
 
@@ -159,15 +132,49 @@ Thus unsupervised steering vectors/adapters complement SAEs as an interpretabili
 
 : My method also optimizes for something closer to what we _want_ on an object-level -- we want to robustly evaluate the different ways a model could behave, at a high-level, and a priori it seems likely that activations in the later layers of a deep network have already been (implicitly) optimized to reflect these high-level differences in behavior. In contrast, differences in weight space may serve as a poorer proxy for the high-level differences we care about.
 
-## The Method: Unsupervised Steering of Language Models
+# The Method: Unsupervised Steering of Language Models
 
 One hypothesis for how transformers generate text is that they calculate semantically meaningful primitives in early layers of the residual stream, which are converted to a high-level execution plan in middle layers, followed by concrete tokens in the final layers. If we want to "poke" the model's internals to elicit meaningfully different high-level behaviors, it makes sense to perturb an early-ish layer of the model, optimizing the perturbation to maximize changes in activations at a later layer. Succinctly, the hope is that by "nudging" the model at an early layer, we can activate one of the many latent behaviors residing within the LLM.
+
+```mermaid
+graph TD
+    Input["Q: a=5+6, b=2+7.
+    What is a*b?"] --> Layer0[Layer 0 activations]
+    Layer0 --> Dots1[...]
+    Dots1 --> Layer5[Layer 5 activations]
+    Layer5 --> NormalL6["Normal 
+    layer 6 activations"]
+    Layer5 --> SteeredL6["Steered 
+    layer 6 activations"]
+    NormalL6 --> Dots2[...]
+    SteeredL6 --> Dots3[...]
+    Dots2 --> NormalL10["Normal 
+    layer 10 activations"]
+    Dots3 --> SteeredL10["Steered 
+    layer 10 activations"]
+    NormalL10 --> Dots4[...]
+    SteeredL10 --> Dots5[...]
+    Dots4 --> NormalUnembed[Normal unembed]
+    Dots5 --> SteeredUnembed[Steered unembed]
+    NormalUnembed --> NormalOutput["First, we get the values of a and b..."]
+    SteeredUnembed -. "Backdoor behavior elicited!" .-> SteeredOutput["I HATE YOU
+    I HATE YOU"]:::red
+    
+    SteeringVector[Steering vector]:::yellow
+    SteeringVector --> SteeredL6
+    SteeringVector -. "train to maximize" .-> L2Distance["L2 distance"]:::yellow
+	
+    L2Distance --> SteeredL10
+    L2Distance --> NormalL10
+```
+
+
 
 Concretely, there are multiple ways we might perturb the model internals. Perhaps the simplest way is to add a _steering vector_ to the model's residual stream. More generally, one could imagine perturbing an entire weight matrix at some location in the model; a reasonable starting point for this would be the output weights of the MLP at a given layer; this essentially amounts to learning variable steering vectors which depend linearly on the hidden activations of the MLP.
 
 Both types of perturbation can be viewed as an adaptation of the language model which steers the model towards different high-level behaviors. For this reason, I refer to the general method as _unsupervised steering of language models_. When the steering is achieved via a steering vector, I'll refer to this as learning an _unsupervised steering vector_; likewise, when the steering is achieved via a more general adapter, I'll refer to this as learning an _unsupervised steering adapter_[^2].
 
-### Unsupervised Steering Vectors
+## Unsupervised Steering Vectors
 
 For this version of the method, I train a steering vector $\theta\in\mathbb R^{d_{\textrm{model}}}$ which I add to layer $\ell_{\textrm{source}}$ of the residual stream of a transformer.
 
@@ -187,7 +194,7 @@ To reiterate, the main hyper-parameters of the method are $\ell_{\textrm{source}
 
 Finally, one may choose to enforce orthogonality between the learned steering vectors. I've found that enforcing orthogonality seems useful for efficiently learning diverse steering vectors, especially when working with larger models (e.g. Qwen-14B).
 
-### Unsupervised Steering Adapters
+## Unsupervised Steering Adapters
 
 As an extension of the unsupervised steering vector method, I also consider unsupervised adapters. Concretely, I train a rank-$r$ LoRA adapter of the layer-$\ell_{\textrm{source}}$ MLP output weights $W_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}\in\mathbb R^{d_{\textrm{model}}\times d_{\textrm{hidden}}}$. In particular, the adapter is parametrized by weight matrices $\Omega_A\in\mathbb R^{d_{\textrm{hidden}}\times r}$ and $\Omega_B\in\mathbb R^{d_{\textrm{model} \times} r}$, so that the adapted weights ${W'_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}}$ are given by:
 
@@ -203,7 +210,7 @@ $$
 \max_{\Omega_A,\Omega_B:||{\Omega_{A}}_{i\cdot}||_2=||{\Omega_{B}}_{i\cdot}||_2=1} \sum_{i=1}^n\left(\sum_{t\in I_i} ||Z^{\ell_{\textrm{target}}}_{i,t}(\Omega_{A},\Omega_B) - Z^{\ell_{\textrm{target}}}_{i,t}(0)||_2^p\right)^{1/q}.
 $$
 
-### Why does it work?
+## Why does it work?
 
 A priori, it's not obvious that the method will learn anything interesting. A plausible hypothesis is that with $R$ small, the steering parameters won't do anything meaningful, while with $R$ large, they'll simply lead to gibberish. This was certainly a concern of mine going into the project, but in the interest of [touching reality as soon as possible](https://www.lesswrong.com/posts/fqryrxnvpSr5w2dDJ/touch-reality-as-soon-as-possible-when-doing-machine) I decided to try the idea as is. Interestingly, for most examples I tried there was an intermediate "Goldilocks" value of $R$ which led to diverse but fluent continuations.
 

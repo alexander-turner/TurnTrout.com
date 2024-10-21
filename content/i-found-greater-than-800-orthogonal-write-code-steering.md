@@ -1,17 +1,18 @@
 ---
 permalink: high-dimensional-subspace-of-code-steering-vectors
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/07/14/melbo-ortho.html
-lw-is-question: "false"
-lw-posted-at: 2024-07-15T19:06:17.636Z
-lw-last-modification: 2024-07-17T21:40:12.145Z
+lw-is-question: 'false'
+lw-posted-at: 2024-07-15T19:06:17.636000Z
+lw-last-modification: 2024-07-17T21:40:12.145000Z
 lw-curation-date: None
-lw-frontpage-date: 2024-07-15T19:15:39.519Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2024-07-15T19:15:39.519000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 19
 lw-base-score: 88
 lw-vote-count: 66
@@ -19,20 +20,23 @@ af-base-score: 51
 af-num-comments-on-upload: 0
 publish: true
 title: I found >800 orthogonal 'write code' steering vectors
-lw-latest-edit: 2024-07-17T21:40:13.035Z
-lw-is-linkpost: "true"
+lw-latest-edit: 2024-07-17T21:40:13.035000Z
+lw-is-linkpost: 'true'
 authors: Jacob Goldman-Wetzler and Alex Turner
 tags:
-  - AI
-  - mats-program
-  - activation-engineering
+- AI
+- mats-program
+- activation-engineering
 aliases:
-  - i-found-greater-than-800-orthogonal-write-code-steering
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+- i-found-greater-than-800-orthogonal-write-code-steering
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 07/15/2024
-original_url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
+original_url: 
+  https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 skip_import: true
+description: 800+ orthogonal vectors steer an AI model to write code. Redundant features
+  or something weirder?
 ---
 
 <script src="/static/scripts/plotly.min.js"></script>

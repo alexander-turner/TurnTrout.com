@@ -3,12 +3,13 @@ permalink: topology-textbook-review
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
+lw-page-url: 
+  https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 lw-is-question: "false"
-lw-posted-at: 2020-02-22T21:58:01.584Z
-lw-last-modification: 2020-02-25T19:34:02.586Z
+lw-posted-at: 2020-02-22T21:58:01.584000Z
+lw-last-modification: 2020-02-25T19:34:02.586000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-02-22T22:54:35.388Z
+lw-frontpage-date: 2020-02-22T22:54:35.388000Z
 lw-was-unlisted: "false"
 lw-is-shortform: "false"
 lw-num-comments-on-upload: 4
@@ -18,7 +19,7 @@ af-base-score: 10
 af-num-comments-on-upload: 0
 publish: true
 title: "Continuous Improvement: Insights from 'Topology'"
-lw-latest-edit: 2020-02-25T19:34:03.925Z
+lw-latest-edit: 2020-02-25T19:34:03.925000Z
 lw-is-linkpost: "false"
 tags:
   - summaries
@@ -31,12 +32,16 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: managerial-decision-making-review
 prev-post-title: "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
 next-post-slug: ordinary-differential-equations-textbook-review
-next-post-title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
+next-post-title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential
+  Equations'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 02/22/2020
-original_url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
+original_url: 
+  https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/k6b4WRE.png
+description: Reviewing Munkres' "Topology", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.
 ---
 Sometimes you really like someone, but you can't understand why. By all means, you should have tired of them long ago, but you keep coming back. Welcome, my friend, to [_Topology_](https://www.amazon.com/Topology-2nd-James-Munkres/dp/0131816292).
 

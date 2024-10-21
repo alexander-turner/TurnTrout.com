@@ -134,7 +134,7 @@ const config: QuartzConfig = {
       Plugin.Description(),
       Plugin.TagAcronyms(),
       Plugin.TroutOrnamentHr(),
-      Plugin.AddFavicons(),
+      // Plugin.AddFavicons(),
       Plugin.AfterArticle(),
       Plugin.ColorVariables(),
       Plugin.rehypeCustomSpoiler(),

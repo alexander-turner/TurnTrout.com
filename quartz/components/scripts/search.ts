@@ -27,12 +27,13 @@ const index = new FlexSearch.Document<Item>({
     index: [
       {
         field: "title",
-        tokenize: "full",
+        tokenize: "forward",
+        resolution: 9,
       },
       {
         field: "content",
-        tokenize: "strict",
-        resolution: 5,
+        tokenize: "forward",
+        resolution: 9,
       },
       {
         field: "tags",
@@ -549,7 +550,7 @@ export function setupSearch() {
           query: currentSearchTerm,
           limit: numSearchResults,
           index: ["title", "content"],
-          bool: "and",
+          bool: "or",
           suggest: true,
         })
       }

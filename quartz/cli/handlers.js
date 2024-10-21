@@ -33,6 +33,7 @@ import {
 import { generate } from "critical"
 import glob from "glob-promise"
 import PQueue from "p-queue"
+import * as cheerio from "cheerio"
 
 /**
  * Handles `npx quartz create`
@@ -513,6 +514,32 @@ async function generateCriticalCSS(outputDir, file) {
       ],
     })
     console.log(`Critical CSS inlined for ${file}`)
+
+    // Begin post-processing to rearrange <head> contents so that Slack unfurls the page with the right info
+    // Read the modified HTML file
+    const htmlContent = await fs.promises.readFile(file, "utf8")
+
+    // Load the HTML into Cheerio for parsing
+    const $ = cheerio.load(htmlContent)
+
+    // Select all children of <head>
+    const headChildren = $("head").children()
+
+    // Separate <meta>, <title>, and other tags
+    const metaAndTitle = headChildren.filter(
+      (_i, el) => el.tagName === "meta" || el.tagName === "title",
+    )
+    const otherElements = headChildren.filter(
+      (_i, el) => el.tagName !== "meta" && el.tagName !== "title",
+    )
+
+    // Clear the head and re-append elements in desired order
+    $("head").empty()
+    $("head").append(metaAndTitle)
+    $("head").append(otherElements)
+
+    // Write the modified HTML back to the file
+    await fs.promises.writeFile(file, $.html())
   } catch (error) {
     console.error(`Error generating critical CSS for ${file}:`, error)
   }

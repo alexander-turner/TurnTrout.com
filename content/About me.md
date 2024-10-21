@@ -2,9 +2,11 @@
 permalink: about
 publish: true
 hideSubscriptionLinks: false
+card_image: https://assets.turntrout.com/static/images/card_images/about-me.png
+description: I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff.
 ---
 
-Hi! I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [my research](/research).
+Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [my research](/research).
 
 ![](https://assets.turntrout.com/static/images/posts/about-me.avif)
 

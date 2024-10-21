@@ -1,16 +1,17 @@
 ---
 permalink: ordinary-differential-equations-textbook-review
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
-lw-is-question: "false"
-lw-posted-at: 2020-03-25T20:03:39.590Z
-lw-last-modification: 2020-03-25T22:12:25.074Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
+lw-is-question: 'false'
+lw-posted-at: 2020-03-25T20:03:39.590000Z
+lw-last-modification: 2020-03-25T22:12:25.074000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-03-25T21:35:28.420Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-03-25T21:35:28.420000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 5
 lw-base-score: 39
 lw-vote-count: 11
@@ -18,13 +19,13 @@ af-base-score: 16
 af-num-comments-on-upload: 0
 publish: true
 title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
-lw-latest-edit: 2020-03-25T22:12:25.494Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2020-03-25T22:12:25.494000Z
+lw-is-linkpost: 'false'
 tags:
-  - scholarship-&-learning
-  - understanding-the-world
+- scholarship-&-learning
+- understanding-the-world
 aliases:
-  - ode-to-joy-insights-from-a-first-course-in-ordinary
+- ode-to-joy-insights-from-a-first-course-in-ordinary
 lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
@@ -32,12 +33,18 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: topology-textbook-review
 prev-post-title: "Continuous Improvement: Insights from 'Topology'"
 next-post-slug: functional-analysis-textbook-review
-next-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional
+  Analysis'"
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 03/25/2020
-original_url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
+original_url: 
+  https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
 skip_import: true
+card_image: https://assets.turntrout.com/static/images/card_images/eb2E5Eg.png
+description: "Textbook insights into differential equations: how to express systems
+  in terms of change, equilibria and stability, resonance, and more. 
+"
 ---
 
 Sometimes, it's easier to say how things change than to say how things are.

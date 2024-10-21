@@ -1,44 +1,47 @@
 ---
 permalink: world-state-is-the-wrong-abstraction-for-impact
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
-lw-is-question: "false"
-lw-posted-at: 2019-10-01T21:03:40.153Z
-lw-last-modification: 2020-12-14T23:42:24.235Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
+lw-is-question: 'false'
+lw-posted-at: 2019-10-01T21:03:40.153000Z
+lw-last-modification: 2020-12-14T23:42:24.235000Z
 lw-curation-date: None
-lw-frontpage-date: 2019-10-01T21:14:03.280Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2019-10-01T21:14:03.280000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 19
 lw-base-score: 67
 lw-vote-count: 21
 af-base-score: 22
 af-num-comments-on-upload: 6
 publish: true
-title: "World State is the Wrong Abstraction for Impact"
-lw-latest-edit: 2020-04-22T21:42:10.102Z
-lw-is-linkpost: "false"
-tags: 
-  - "understanding-the-world"
-  - "impact-regularization"
-  - "AI"
-aliases: 
-  - "world-state-is-the-wrong-abstraction-for-impact"
-lw-sequence-title: "Reframing Impact"
+title: World State is the Wrong Abstraction for Impact
+lw-latest-edit: 2020-04-22T21:42:10.102000Z
+lw-is-linkpost: 'false'
+tags:
+- understanding-the-world
+- impact-regularization
+- AI
+aliases:
+- world-state-is-the-wrong-abstraction-for-impact
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: attainable-utility-theory
-prev-post-title: "Attainable Utility Theory: Why Things Matter"
+prev-post-title: 'Attainable Utility Theory: Why Things Matter'
 next-post-slug: the-gears-of-impact
-next-post-title: "The Gears of Impact"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+next-post-title: The Gears of Impact
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 10/01/2019
-original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
+original_url: 
+  https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
+description: 'Understanding impact as change to the world: attractive, but misleading.'
 ---
 ![](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
 

@@ -1,43 +1,50 @@
 ---
 permalink: power-seeking-beyond-MDPs
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
-lw-is-question: "false"
-lw-posted-at: 2021-08-08T02:02:18.975Z
-lw-last-modification: 2023-05-16T20:31:52.646Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+lw-is-question: 'false'
+lw-posted-at: 2021-08-08T02:02:18.975000Z
+lw-last-modification: 2023-05-16T20:31:52.646000Z
 lw-curation-date: None
-lw-frontpage-date: 2021-08-08T04:49:53.558Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2021-08-08T04:49:53.558000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 15
 lw-base-score: 44
 lw-vote-count: 16
 af-base-score: 24
 af-num-comments-on-upload: 10
 publish: true
-title: "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
-lw-latest-edit: 2023-05-16T20:31:56.719Z
-lw-is-linkpost: "false"
+title: Seeking Power is Convergently Instrumental in a Broad Class of Environments
+lw-latest-edit: 2023-05-16T20:31:56.719000Z
+lw-is-linkpost: 'false'
 tags:
-  - "instrumental-convergence"
-  - "AI"
+- instrumental-convergence
+- AI
 aliases:
-  - "seeking-power-is-convergently-instrumental-in-a-broad-class"
-lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"
+- seeking-power-is-convergently-instrumental-in-a-broad-class
+lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: quantitative-strength-of-instrumental-convergence
-prev-post-title: "The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies"
+prev-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets
+  For Optimal Policies
 next-post-slug: instrumental-convergence-via-vnm-preferences
-next-post-title: "When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental
+  Incentives
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 08/08/2021
-original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+original_url: 
+  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
+description: "Power-seeking is instrumentally convergent for agents maximizing over
+  possible futures, but not for agents maximizing over their own actions. 
+"
 ---
 
 A year ago, I thought it would be really hard to generalize the power-seeking theorems from Markov decision processes (MDPs); the [MDP case](/seeking-power-is-often-convergently-instrumental-in-mdps) seemed hard enough. Without assuming the agent can see the full state, while letting utility functions do as they please – this seemed like asking for trouble.

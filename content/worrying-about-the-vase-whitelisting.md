@@ -30,6 +30,7 @@ use-full-width-images: "false"
 date_published: 06/16/2018
 original_url: https://www.lesswrong.com/posts/H7KB44oKoSjSCkpzL/worrying-about-the-vase-whitelisting
 skip_import: true
+description: An impact measure for AI safety that whitelists the object transformations which are allowed. 
 ---
 
 > [!quote] Quotes

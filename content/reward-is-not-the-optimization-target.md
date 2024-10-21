@@ -37,6 +37,7 @@ use-full-width-images: "false"
 date_published: 07/25/2022
 original_url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
 skip_import: "true"
+description: "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition."
 ---
 > [!thanks]
 >This insight was made possible by many conversations with Quintin Pope, where he challenged my implicit assumptions about alignment. I’m not sure who came up with this particular idea.

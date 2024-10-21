@@ -39,6 +39,7 @@ date_published: 07/05/2018
 original_url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
 no_dropcap: "true"
 skip_import: true
+description: "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development."
 ---
 
 > [!quote] Reinforcement Learning: An Introduction

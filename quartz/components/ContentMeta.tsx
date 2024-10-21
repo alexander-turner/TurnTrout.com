@@ -1,41 +1,16 @@
-import { formatDate, getDate } from "./Date"
 import { QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { formatTitle } from "../components/component_utils"
 
 import { TagList } from "./TagList"
 import { GetQuartzPath, urlCache } from "../plugins/transformers/linkfavicons"
 import style from "./styles/contentMeta.scss"
-import { ValidLocale } from "../i18n"
 import { GlobalConfiguration } from "../cfg"
 import { Backlinks } from "./Backlinks"
 import { QuartzPluginData } from "../plugins/vfile"
 import readingTime from "reading-time"
 
 import React from "react"
-
-export const formatDateStr = (date: Date, locale: ValidLocale): string =>
-  ` on ${formatDate(date, locale)}`
-
-// Determine which date to use for formatting
-export const getDateToFormat = (
-  fileData: QuartzPluginData,
-  cfg: GlobalConfiguration,
-): Date | undefined => {
-  if (fileData.frontmatter?.date_published) {
-    return new Date(fileData.frontmatter.date_published as string)
-  }
-
-  if (fileData.dates) {
-    return getDate(cfg, fileData)
-  }
-
-  return undefined
-}
-
-// Render date element with proper datetime attribute
-export const renderDateElement = (fileData: QuartzPluginData, dateStr: string): JSX.Element => (
-  <time dateTime={fileData.frontmatter?.date_published as string}>{dateStr}</time>
-)
+import { DateElement } from "./Date"
 
 export const getFaviconPath = (originalURL: URL): string | null => {
   const quartzPath = GetQuartzPath(originalURL.hostname)
@@ -97,9 +72,16 @@ export function renderPublicationInfo(cfg: GlobalConfiguration, fileData: Quartz
   }
 
   // TODO fix this for future posts from the website
-  const dateToFormat = getDateToFormat(fileData, cfg)
-  const dateStr = dateToFormat ? formatDateStr(dateToFormat, cfg.locale) : ""
-  const dateElement = renderDateElement(fileData, dateStr)
+
+  const dateElement = (
+    <DateElement
+      cfg={cfg}
+      fileData={fileData}
+      monthFormat="long"
+      includeOrdinalSuffix={true}
+      formatOrdinalSuffix={true}
+    />
+  )
 
   const url = new URL(frontmatter.original_url as string)
   const faviconPath = getFaviconPath(url)
@@ -109,9 +91,9 @@ export function renderPublicationInfo(cfg: GlobalConfiguration, fileData: Quartz
       {insertFavicon(
         faviconPath,
         <a href={url.toString()} className="external" target="_blank" rel="noopener noreferrer">
-          Originally published
+          Originally published on
         </a>,
-      )}
+      )}{" "}
       {dateElement}
     </span>
   )

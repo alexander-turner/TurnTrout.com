@@ -1,16 +1,16 @@
 ---
 permalink: game-theoretic-definition-of-defection
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
 lw-page-url: https://www.lesswrong.com/posts/8LEPDY36jBYpijrSw/what-counts-as-defection
-lw-is-question: "false"
-lw-posted-at: 2020-07-12T22:03:39.261Z
-lw-last-modification: 2021-12-17T20:10:50.747Z
+lw-is-question: 'false'
+lw-posted-at: 2020-07-12T22:03:39.261000Z
+lw-last-modification: 2021-12-17T20:10:50.747000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-07-12T23:00:43.230Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-07-12T23:00:43.230000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 21
 lw-base-score: 81
 lw-vote-count: 23
@@ -18,20 +18,22 @@ af-base-score: 34
 af-num-comments-on-upload: 9
 publish: true
 title: Formalizing “defection” using game theory
-lw-latest-edit: 2021-03-18T22:20:25.138Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2021-03-18T22:20:25.138000Z
+lw-is-linkpost: 'false'
 tags:
-  - game-theory
-  - AI
-  - rationality
+- game-theory
+- AI
+- rationality
 aliases:
-  - what-counts-as-defection
-  - game-theoretic-definition-of-deception
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+- what-counts-as-defection
+- game-theoretic-definition-of-deception
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 07/12/2020
 original_url: https://www.lesswrong.com/posts/8LEPDY36jBYpijrSw/what-counts-as-defection
 skip_import: true
+description: A game-theoretic formalism of "defection", analyzing whether an action
+  is self-serving at the expense of the group.
 ---
 
 > [!thanks]

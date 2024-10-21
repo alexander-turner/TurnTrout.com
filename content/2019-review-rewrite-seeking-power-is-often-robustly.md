@@ -1,36 +1,38 @@
 ---
 permalink: announcing-rewrite-of-power-seeking-post
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
-lw-linkpost-url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-robustly-instrumental-in-mdps
-lw-is-question: "false"
-lw-posted-at: 2020-12-23T17:16:10.174Z
-lw-last-modification: 2021-01-02T01:12:50.607Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
+lw-linkpost-url: 
+  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-robustly-instrumental-in-mdps
+lw-is-question: 'false'
+lw-posted-at: 2020-12-23T17:16:10.174000Z
+lw-last-modification: 2021-01-02T01:12:50.607000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-12-23T19:55:08.572Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-12-23T19:55:08.572000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 0
 lw-base-score: 35
 lw-vote-count: 9
 af-base-score: 19
 af-num-comments-on-upload: 0
 publish: true
-title: "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
-lw-latest-edit: 2021-01-02T01:12:51.101Z
-lw-is-linkpost: "true"
-tags: 
-  - "AI"
-  - "instrumental-convergence"
-aliases: 
-  - "2019-review-rewrite-seeking-power-is-often-robustly"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: '2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs'
+lw-latest-edit: 2021-01-02T01:12:51.101000Z
+lw-is-linkpost: 'true'
+tags:
+- AI
+- instrumental-convergence
+aliases: 2019-review-rewrite-seeking-power-is-often-robustly
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 12/23/2020
-original_url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
+original_url:  https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
 skip_import: true
+description: Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.
 ---
 For the 2019 LessWrong review, I've completely rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated, without sacrificing the broad accessibility or the cute drawings of the original. 
 

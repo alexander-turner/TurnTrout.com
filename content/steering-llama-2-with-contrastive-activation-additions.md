@@ -34,6 +34,7 @@ use-full-width-images: "false"
 date_published: 01/02/2024
 original_url: https://www.lesswrong.com/posts/v7f8ayBxLhmMFRzpa/steering-llama-2-with-contrastive-activation-additions
 skip_import: true
+description: Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.
 ---
 
 ![](https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif)

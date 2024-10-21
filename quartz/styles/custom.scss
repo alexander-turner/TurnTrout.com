@@ -928,19 +928,18 @@ article[data-use-dropcap="true"] {
 }
 
 // Edge labels
-.edgeLabel > .label > foreignObject > div {
-  background-color: var(--lightergray) !important;
-  padding-left: $baseMargin !important;
-  padding-right: $baseMargin !important;
-  padding-top: $baseMargin !important;
-  padding-bottom: $baseMargin !important;
-  opacity: 1 !important;
-
-  border-radius: 5px !important;
-
-  &:has(.edgeLabel:empty) {
-    display: none !important;
+.edgeLabel > .label > foreignObject {
+  & > div {
     background-color: transparent !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+
+    &:has(.edgeLabel:empty) {
+      display: none !important;
+      background-color: transparent !important;
+    }
   }
 }
 
@@ -952,6 +951,11 @@ article[data-use-dropcap="true"] {
   stroke: var(--lightgray) !important;
 }
 
+.flowchart p {
+  // NOTE hacky, unlike commit 22939c1 we render mermaid on the server. so some of the settings are different and we have to compensate.
+  font-size: 16px !important;
+}
+
 .manifold-embed {
   position: relative;
   width: 100%;
@@ -961,6 +965,9 @@ article[data-use-dropcap="true"] {
 }
 
 .after-article-components {
+  margin-bottom: calc(2 * $baseMargin);
+  margin-top: calc(2 * $baseMargin);
+
   & p {
     margin-bottom: $baseMargin; // Less separation than usual
   }
@@ -985,4 +992,23 @@ article[data-use-dropcap="true"] {
   max-width: fit-content;
   margin-left: auto;
   margin-right: auto;
+}
+
+// Date formatting
+.ordinal-suffix {
+  vertical-align: 0.3em;
+  margin-left: 0.05em;
+  text-decoration: underline 1.25px var(--lightgray);
+}
+
+time {
+  font-variant-numeric: lining-nums;
+}
+
+// Bolding text
+b,
+strong,
+.callout-title-inner {
+  text-shadow: 0.1px 0.1px;
+  font-weight: 400; // Normal font weight
 }

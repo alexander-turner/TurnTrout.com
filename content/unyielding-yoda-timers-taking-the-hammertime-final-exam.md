@@ -1,35 +1,39 @@
 ---
 permalink: hammertime-final-exam
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-timers-taking-the-hammertime-final-exam
-lw-is-question: "false"
-lw-posted-at: 2018-04-03T02:38:48.327Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-timers-taking-the-hammertime-final-exam
+lw-is-question: 'false'
+lw-posted-at: 2018-04-03T02:38:48.327000Z
 lw-last-modification: None
 lw-curation-date: None
 lw-frontpage-date: None
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 3
 lw-base-score: 16
 lw-vote-count: 12
 af-base-score: 0
 af-num-comments-on-upload: 0
 publish: true
-title: "Unyielding Yoda Timers: Taking the Hammertime Final Exam"
-lw-latest-edit: 2018-04-03T02:38:48.327Z
-lw-is-linkpost: "false"
+title: 'Unyielding Yoda Timers: Taking the Hammertime Final Exam'
+lw-latest-edit: 2018-04-03T02:38:48.327000Z
+lw-is-linkpost: 'false'
 tags:
-  - "rationality"
+- rationality
 aliases:
-  - "unyielding-yoda-timers-taking-the-hammertime-final-exam"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+- unyielding-yoda-timers-taking-the-hammertime-final-exam
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/03/2018
-original_url: https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-timers-taking-the-hammertime-final-exam
+original_url: 
+  https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-timers-taking-the-hammertime-final-exam
 no_dropcap: true
 skip_import: true
+description: Three short essays written against the clock on instrumental rationality,
+  confusion identification, and emotion propagation.
 ---
 
 > [!quote] [The Hammertime Final Exam](https://www.lesswrong.com/posts/Q7MsMshzbzhEs729s/hammertime-final-exam)

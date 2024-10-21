@@ -31,10 +31,11 @@ date_published: 10/16/2023
 original_url: https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turntrout-handle-his-deepmind-equity-situation
 no_dropcap: true
 skip_import: true
+description: Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.
 ---
 
 > [!note]
-> In this dialogue, Oliver Habryka and I discussed how to reduce financial CoI from my Google DeepMind offer.
+> In this dialogue, Oliver Habryka and I discussed how to reduce financial conflict of interest from my Google DeepMind offer.
 
 `habryka`
 

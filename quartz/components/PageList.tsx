@@ -1,7 +1,7 @@
 import { FullSlug, resolveRelative } from "../util/path"
 import { formatTag } from "./TagList"
 import { QuartzPluginData } from "../plugins/vfile"
-import { Date, getDate } from "./Date"
+import { DateElement, getDate } from "./Date"
 import { QuartzComponent, QuartzComponentProps } from "./types"
 import { GlobalConfiguration } from "../cfg"
 import React from "react"
@@ -49,7 +49,12 @@ export const PageList: QuartzComponent = ({ cfg, fileData, allFiles, limit }: Pr
             <div className="section">
               {page.dates && (
                 <p className="meta">
-                  <Date date={getDate(cfg, page)!} locale={cfg.locale} />
+                  <DateElement
+                    cfg={cfg}
+                    fileData={page}
+                    monthFormat="short"
+                    includeOrdinalSuffix={false}
+                  />
                 </p>
               )}
               <div className="desc">

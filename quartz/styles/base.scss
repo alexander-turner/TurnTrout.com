@@ -218,7 +218,9 @@ hr.desktop-only {
     }
 
     & #right-sidebar {
-      padding-right: calc(2 * $baseMargin); // Make more space for ToC
+      @media all and (min-width: calc($fullPageWidth + 100px)) {
+        padding-right: calc(2 * $baseMargin); // Make more space for ToC
+      }
 
       right: calc(calc(100vw - $pageWidth) / 2 - $rightWidth);
       height: 96vh; // Leave room for bottom of ContentMeta

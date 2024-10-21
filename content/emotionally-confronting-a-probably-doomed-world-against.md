@@ -1,36 +1,41 @@
 ---
 permalink: emotionally-confronting-doom
-lw-was-draft-post: "false"
-lw-is-af: "false"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
-lw-is-question: "false"
-lw-posted-at: 2022-04-10T18:45:08.027Z
-lw-last-modification: 2022-04-17T17:24:52.840Z
+lw-was-draft-post: 'false'
+lw-is-af: 'false'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
+lw-is-question: 'false'
+lw-posted-at: 2022-04-10T18:45:08.027000Z
+lw-last-modification: 2022-04-17T17:24:52.840000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-04-10T18:57:58.928Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-04-10T18:57:58.928000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 7
 lw-base-score: 151
 lw-vote-count: 67
 af-base-score: 47
 af-num-comments-on-upload: 0
 publish: true
-title: "Emotionally Confronting a Probably-Doomed World: Against Motivation Via Dignity Points"
-lw-latest-edit: 2022-04-17T17:24:53.405Z
-lw-is-linkpost: "false"
-tags: 
-  - "practical"
-  - "rationality"
-  - "community"
-aliases: 
-  - "emotionally-confronting-a-probably-doomed-world-against"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: 'Emotionally Confronting a Probably-Doomed World: Against Motivation Via Dignity
+  Points'
+lw-latest-edit: 2022-04-17T17:24:53.405000Z
+lw-is-linkpost: 'false'
+tags:
+- practical
+- rationality
+- community
+aliases:
+- emotionally-confronting-a-probably-doomed-world-against
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 04/10/2022
-original_url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
+original_url: 
+  https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
 skip_import: true
+description: An emotional rejection of defeatism in the face of AI doom.  We shouldn't
+  seek a "dignified" death—let's fight for a future worth living.
 ---
 > [!note]
 > This article was written [in ignorance](/digital-minimalism) of the alignment community’s reaction to Eliezer’s “[Death with Dignity](https://www.lesswrong.com/posts/j9Q8bRmwCgXRYAgcJ/miri-announces-new-death-with-dignity-strategy)” post. The first part of this article responds to how I suspect some people reacted to that post, while the second part is my take on the post itself.

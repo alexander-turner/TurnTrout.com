@@ -1,37 +1,41 @@
 ---
 permalink: avoiding-side-effects-in-complex-environments
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
 lw-linkpost-url: https://avoiding-side-effects.github.io/
-lw-is-question: "false"
-lw-posted-at: 2020-12-12T00:34:54.126Z
-lw-last-modification: 2021-01-05T02:14:49.839Z
+lw-is-question: 'false'
+lw-posted-at: 2020-12-12T00:34:54.126000Z
+lw-last-modification: 2021-01-05T02:14:49.839000Z
 lw-curation-date: None
-lw-frontpage-date: 2020-12-12T02:52:50.789Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2020-12-12T02:52:50.789000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 12
 lw-base-score: 62
 lw-vote-count: 21
 af-base-score: 26
 af-num-comments-on-upload: 8
 publish: true
-title: "Avoiding Side Effects in Complex Environments"
-lw-latest-edit: 2020-12-12T00:43:10.508Z
-lw-is-linkpost: "true"
+title: Avoiding Side Effects in Complex Environments
+lw-latest-edit: 2020-12-12T00:43:10.508000Z
+lw-is-linkpost: 'true'
 authors: Alex Turner and Neale Ratzlaff
-tags: 
-  - "AI"
-  - "impact-regularization"
-aliases: 
-  - "avoiding-side-effects-in-complex-environments"
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+tags:
+- AI
+- impact-regularization
+aliases:
+- avoiding-side-effects-in-complex-environments
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 12/12/2020
-original_url: https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
+original_url: 
+  https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
 skip_import: true
+description: AI agents trained with Attainable Utility Preservation avoid most side effects
+  in Conway's Game of Life without explicit instructions.
 ---
 ![](https://assets.turntrout.com/static/images/posts/2526ca684eae62e8d1fc595b335044d649df02f30f2331b2.avif)
 

@@ -154,6 +154,20 @@ def check_asset_references(
     return missing_assets
 
 
+def check_katex_elements_for_errors(soup: BeautifulSoup) -> List[str]:
+    """Check for KaTeX elements with color #cc0000."""
+    problematic_katex = []
+    katex_elements = soup.select(".katex")
+    for element in katex_elements:
+        error_span = element.select_one('span[style*="color:#cc0000"]')
+        if error_span:
+            content = element.get_text().strip()
+            problematic_katex.append(
+                f"KaTeX element: {content[:50]}..." if len(content) > 50 else content
+            )
+    return problematic_katex
+
+
 def check_file_for_issues(file_path: Path, base_dir: Path) -> Dict[str, List[str]]:
     """Check a single HTML file for various issues."""
     soup = parse_html_file(file_path)
@@ -164,6 +178,7 @@ def check_file_for_issues(file_path: Path, base_dir: Path) -> Dict[str, List[str
         "missing_media_files": check_local_media_files(soup, file_path, base_dir),
         "trailing_blockquotes": check_blockquote_elements(soup),
         "missing_assets": check_asset_references(soup, file_path, base_dir),
+        "problematic_katex": check_katex_elements_for_errors(soup),
     }
 
 

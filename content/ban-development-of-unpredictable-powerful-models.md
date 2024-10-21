@@ -1,34 +1,39 @@
 ---
 permalink: ban-development-of-unpredictable-powerful-models
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
-lw-is-question: "false"
-lw-posted-at: 2023-06-20T01:43:11.574Z
-lw-last-modification: 2024-03-27T02:57:58.444Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
+lw-is-question: 'false'
+lw-posted-at: 2023-06-20T01:43:11.574000Z
+lw-last-modification: 2024-03-27T02:57:58.444000Z
 lw-curation-date: None
-lw-frontpage-date: 2023-06-20T17:44:17.930Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2023-06-20T17:44:17.930000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 25
 lw-base-score: 46
 lw-vote-count: 30
 af-base-score: 22
 af-num-comments-on-upload: 9
 publish: true
-title: "Ban development of unpredictable powerful models?"
-lw-latest-edit: 2024-03-27T02:58:00.187Z
-lw-is-linkpost: "false"
-tags: 
-  - "AI"
-aliases: 
-  - "ban-development-of-unpredictable-powerful-models"
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
+title: Ban development of unpredictable powerful models?
+lw-latest-edit: 2024-03-27T02:58:00.187000Z
+lw-is-linkpost: 'false'
+tags:
+- AI
+aliases:
+- ban-development-of-unpredictable-powerful-models
+lw-reward-post-warning: 'false'
+use-full-width-images: 'false'
 date_published: 06/20/2023
-original_url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
+original_url: 
+  https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
 skip_import: true
+description: "A proposal for a government regulation of AI: Developers must be able
+  to accurately predict the model's output. 
+"
 ---
 > [!warning]
 > No longer endorsed, as [I realized I don't believe in deceptive alignment from pretrained models](/invalid-ai-risk-arguments). Therefore, I no longer think it is inherently dangerous to pretrain sufficiently large language models.

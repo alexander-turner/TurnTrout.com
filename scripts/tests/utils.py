@@ -1,7 +1,9 @@
 from pathlib import Path
 import subprocess
+from .. import compress
 from typing import Optional
-from PIL import Image 
+import pytest
+from PIL import Image
 import numpy as np
 
 
@@ -76,3 +78,43 @@ def create_test_gif(file_path, duration=1, size=(100, 100), fps=10):
     frames[0].save(
         file_path, save_all=True, append_images=frames[1:], duration=1000 // fps, loop=0
     )
+
+
+@pytest.fixture
+def setup_test_env(tmp_path):
+    """Sets up a temporary Git repository and populates it with test assets."""
+
+    # Create the required directories for testing
+    for dir_name in ["quartz/static", "scripts", "content"]:
+        (tmp_path / dir_name).mkdir(parents=True, exist_ok=True)
+
+    # Create image assets for testing and add reference to markdown file
+    for ext in compress.ALLOWED_IMAGE_EXTENSIONS:
+        create_test_image(tmp_path / "quartz/static" / f"asset{ext}", "32x32")
+
+        to_write = f"![](static/asset{ext})\n"
+        to_write += f"[[static/asset{ext}]]\n"
+        to_write += f'<img src="static/asset{ext}" alt="shrek"/>\n'
+        markdown_file = tmp_path / "content" / f"{ext.lstrip('.')}.md"
+        markdown_file.write_text(to_write)
+
+    # Create video assets for testing and add references to markdown files
+    for ext in compress.ALLOWED_VIDEO_EXTENSIONS:
+        create_test_video(tmp_path / "quartz/static" / f"asset{ext}")
+        with open(tmp_path / "content" / f"{ext.lstrip('.')}.md", "a") as file:
+            file.write(f"![](static/asset{ext})\n")
+            file.write(f"[[static/asset{ext}]]\n")
+            if ext != ".gif":
+                file.write(f'<video src="static/asset{ext}" alt="shrek"/>\n')
+
+    # Special handling for GIF file in markdown
+    with open(tmp_path / "content" / "gif.md", "a") as file:
+        file.write('<img src="static/asset.gif" alt="shrek">')
+
+    # Create an unsupported file
+    (tmp_path / "quartz/static/unsupported.txt").touch()
+    # Create file outside of quartz/static
+    (tmp_path / "file.png").touch()
+    (tmp_path / "quartz" / "file.png").touch()
+
+    yield tmp_path  # Return the temporary directory path

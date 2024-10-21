@@ -1,16 +1,17 @@
 ---
 permalink: instrumental-convergence-for-realistic-agent-objectives
-lw-was-draft-post: "false"
-lw-is-af: "true"
-lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
-lw-is-question: "false"
-lw-posted-at: 2022-01-22T00:41:36.649Z
-lw-last-modification: 2023-05-16T20:37:11.632Z
+lw-was-draft-post: 'false'
+lw-is-af: 'true'
+lw-is-debate: 'false'
+lw-page-url: 
+  https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
+lw-is-question: 'false'
+lw-posted-at: 2022-01-22T00:41:36.649000Z
+lw-last-modification: 2023-05-16T20:37:11.632000Z
 lw-curation-date: None
-lw-frontpage-date: 2022-01-22T17:38:25.434Z
-lw-was-unlisted: "false"
-lw-is-shortform: "false"
+lw-frontpage-date: 2022-01-22T17:38:25.434000Z
+lw-was-unlisted: 'false'
+lw-is-shortform: 'false'
 lw-num-comments-on-upload: 9
 lw-base-score: 35
 lw-vote-count: 10
@@ -18,26 +19,29 @@ af-base-score: 20
 af-num-comments-on-upload: 8
 publish: true
 title: Instrumental Convergence For Realistic Agent Objectives
-lw-latest-edit: 2023-05-16T20:37:13.911Z
-lw-is-linkpost: "false"
+lw-latest-edit: 2023-05-16T20:37:13.911000Z
+lw-is-linkpost: 'false'
 tags:
-  - AI
-  - instrumental-convergence
+- AI
+- instrumental-convergence
 aliases:
-  - instrumental-convergence-for-realistic-agent-objectives
+- instrumental-convergence-for-realistic-agent-objectives
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence
 lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: satisficers-tend-to-seek-power
-prev-post-title: "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+prev-post-title: 'Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability'
 next-post-slug: parametrically-retargetable-power-seeking
 next-post-title: Parametrically retargetable decision-makers tend to seek power
-lw-reward-post-warning: "true"
-use-full-width-images: "false"
+lw-reward-post-warning: 'true'
+use-full-width-images: 'false'
 date_published: 01/22/2022
-original_url: https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
+original_url: 
+  https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
 skip_import: true
+description: Realistic AI objectives aren't random utility functions. I explore instrumental
+  convergence for objectives defined over features of the environment.
 ---
 
 ---

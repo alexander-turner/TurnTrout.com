@@ -4,6 +4,7 @@ from typing import Optional
 import subprocess
 from pathlib import Path
 import re
+import os
 
 try:
     from . import compress

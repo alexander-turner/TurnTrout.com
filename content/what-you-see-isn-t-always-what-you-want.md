@@ -30,6 +30,7 @@ use-full-width-images: "false"
 date_published: 09/13/2019
 original_url: https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
 skip_import: true
+description: Markovian reward functions are underdefined. Aligning AI isn't about designing the "right" reward, but designing rewards compatible with how the world is.
 ---
 > [!failure] No longer endorsed. This isn't how reward functions work.
 
