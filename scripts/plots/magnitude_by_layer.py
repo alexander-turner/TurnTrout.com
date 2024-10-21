@@ -9,12 +9,6 @@ import numpy as np
 
 # %%
 
-import plotly.express as px
-import plotly.graph_objects as go
-import numpy as np
-
-# %%
-
 
 def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Magnitude by Layer Number",
     xaxis_title="log10 Residual Stream norm", yaxis_title="Percentage of residual streams") -> go.Figure:
@@ -100,9 +94,9 @@ def update_output(slider_value, checklist_value):
         return magnitude_histogram(df, cols='all')
 
 @callback(
-    Output('all-layers-checklist', 'value'),
-    Input('my-slider', 'value'))
-def update_checklist(value):
+    Output('all-layers-checklist', '_value'),
+    Input('my-slider', '_value'))
+def update_checklist(_value):
     return []
 
 if __name__ == '__main__':
