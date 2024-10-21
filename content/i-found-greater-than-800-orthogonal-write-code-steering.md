@@ -39,7 +39,7 @@ description: 800+ orthogonal vectors steer an AI model to write code. Redundant 
   or something weirder?
 ---
 
-<script src="/static/scripts/plotly.min.js"></script>
+<script src="/static/scripts/plotly-cartesian.min.js"></script>
 
 <script src="/plots/melbo_ortho/load_plots.js"></script>
 

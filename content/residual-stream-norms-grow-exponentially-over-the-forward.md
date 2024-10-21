@@ -36,7 +36,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/hpgem17ggmbpg
 description: Residual stream norms grow, perhaps due to layer normalization making it hard to delete information and easier to overshadow it.
 ---
 
-<script src="/static/scripts/plotly.min.js"></script>
+<script src="/static/scripts/plotly-cartesian.min.js"></script>
 
 <script src="/plots/residual_magnitude/load_plots.js"></script>
 
