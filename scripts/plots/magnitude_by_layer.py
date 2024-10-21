@@ -20,9 +20,8 @@ def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Mag
     xaxis_title="log10 Residual Stream norm", yaxis_title="Percentage of residual streams") -> go.Figure:
     """Plot a histogram of the residual stream magnitudes for each layer
     of the network."""
-    assert (
-        "Magnitude" in df.columns
-    ), "Dataframe must have a 'Magnitude' column"
+    if "Magnitude" not in df.columns:
+        raise ValueError("Dataframe must have a 'Magnitude' column")
 
     # Get the number of unique activation locations
     num_unique_activation_locations = df["Activation Location"].nunique()

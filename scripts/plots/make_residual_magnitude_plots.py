@@ -22,7 +22,8 @@ def line_plot(
     """Make a line plot of the RichPrompt norm. If log_y is True,
     adds a column to the dataframe with the log10 of the norm."""
     for col in ["Prompt", "Activation Location", "Magnitude"]:
-        assert col in df.columns, f"Column {col} not in dataframe"
+        if col not in df.columns:
+            raise ValueError(f"Column {col} not in dataframe")
 
     if log_y:
         df["LogMagnitude"] = np.log10(df["Magnitude"])
@@ -48,9 +49,8 @@ def magnitude_histogram(df: pd.DataFrame, cols='all', title="Residual Stream Mag
     xaxis_title="log10 Residual Stream norm", yaxis_title="Percentage of residual streams") -> go.Figure:
     """Plot a histogram of the residual stream magnitudes for each layer
     of the network."""
-    assert (
-        "Magnitude" in df.columns
-    ), "Dataframe must have a 'Magnitude' column"
+    if "Magnitude" not in df.columns:
+        raise ValueError(f"Dataframe must have a 'Magnitude' column")
 
     # Get the number of unique activation locations
     num_unique_activation_locations = df["Activation Location"].nunique()
