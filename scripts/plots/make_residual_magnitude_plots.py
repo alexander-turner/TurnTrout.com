@@ -124,7 +124,7 @@ for i, single_fig in enumerate(figs):
         plot_json = json.dumps(single_fig, cls=plotly.utils.PlotlyJSONEncoder)
         f.write(plot_json)
 
-with open(f'{data_dir}/plot_template.js') as f:
+with open(f'{data_dir}/plot_template.js.template') as f:
     template = f.read()
 
 with open(f"content/plots/{post_name}/load_plots.js", 'w') as f:
