@@ -12,6 +12,6 @@ function loadAndPlotJSON(plotName) {
         .catch(error => console.error(`Error loading the JSON file for ${plotName}:`, error));
 }
 
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 2; i++) { // don't load unused plot3
     loadAndPlotJSON(`plot${i}`);
 }
