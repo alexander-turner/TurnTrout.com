@@ -1064,3 +1064,23 @@ strong,
   text-indent: calc(-0.75 * $baseMargin);
   margin-left: calc($baseMargin);
 }
+
+// Plotly
+.gridlayer .x {
+  display: none; // Hide the x-axis lines
+}
+
+.js-plotly-plot text {
+  fill: var(--dark) !important; // Override generated CSS
+}
+.js-plotly-plot {
+  & .legend rect {
+    fill: var(--light) !important;
+    stroke: transparent !important;
+  }
+
+  & path.ygrid,
+  & .zerolinelayer path {
+    stroke: var(--lightergray) !important;
+  }
+}
