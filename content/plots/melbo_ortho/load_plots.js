@@ -7,7 +7,7 @@ function loadAndPlotJSON(plotName) {
         .then(response => response.json())
         .then(data => {
             console.log(`Data for ${plotName}:`, data);
-            Plotly.newPlot(plotId, data.data, data.layout);
+            Plotly.newPlot(plotId, data.data, data.layout); //DeepSource: ignore (loaded using script tag)
         })
         .catch(error => console.error(`Error loading the JSON file for ${plotName}:`, error));
 }
