@@ -75,6 +75,7 @@
     "mdast-util-to-string": "^4.0.0",
     "micromorph": "^0.4.5",
     "node-fetch": "^3.3.2",
+    "plotly.js-cartesian-dist-min": "^2.35.2",
     "preact-render-to-string": "^6.4.0",
     "pretty-bytes": "^6.1.1",
     "pretty-time": "^1.1.0",

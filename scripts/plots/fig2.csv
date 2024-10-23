@@ -1,0 +1,289 @@
+,Prompt,Activation Location,Activation Name,Magnitude,Token
+0,,0,blocks.0.hook_resid_pre,4.079030513763428,<|endoftext|>
+1,,0,blocks.0.hook_resid_pre,1.887571930885315,M
+2,,0,blocks.0.hook_resid_pre,2.452242374420166,ATS
+3,,0,blocks.0.hook_resid_pre,1.3591804504394531, is
+4,,0,blocks.0.hook_resid_pre,1.6203792095184326, really
+5,,0,blocks.0.hook_resid_pre,1.8748785257339478, cool
+6,,1,blocks.1.hook_resid_pre,40.997501373291016,<|endoftext|>
+7,,1,blocks.1.hook_resid_pre,30.147747039794922,M
+8,,1,blocks.1.hook_resid_pre,34.859405517578125,ATS
+9,,1,blocks.1.hook_resid_pre,30.505014419555664, is
+10,,1,blocks.1.hook_resid_pre,27.41799545288086, really
+11,,1,blocks.1.hook_resid_pre,28.50023651123047, cool
+12,,2,blocks.2.hook_resid_pre,67.1581039428711,<|endoftext|>
+13,,2,blocks.2.hook_resid_pre,52.97310256958008,M
+14,,2,blocks.2.hook_resid_pre,51.89987564086914,ATS
+15,,2,blocks.2.hook_resid_pre,50.16526412963867, is
+16,,2,blocks.2.hook_resid_pre,46.21745300292969, really
+17,,2,blocks.2.hook_resid_pre,47.071861267089844, cool
+18,,3,blocks.3.hook_resid_pre,90.12373352050781,<|endoftext|>
+19,,3,blocks.3.hook_resid_pre,68.89684295654297,M
+20,,3,blocks.3.hook_resid_pre,62.200050354003906,ATS
+21,,3,blocks.3.hook_resid_pre,61.15549850463867, is
+22,,3,blocks.3.hook_resid_pre,57.463043212890625, really
+23,,3,blocks.3.hook_resid_pre,58.78734588623047, cool
+24,,4,blocks.4.hook_resid_pre,100.91646575927734,<|endoftext|>
+25,,4,blocks.4.hook_resid_pre,79.39736938476562,M
+26,,4,blocks.4.hook_resid_pre,69.28936004638672,ATS
+27,,4,blocks.4.hook_resid_pre,68.64513397216797, is
+28,,4,blocks.4.hook_resid_pre,66.5788345336914, really
+29,,4,blocks.4.hook_resid_pre,69.25733947753906, cool
+30,,5,blocks.5.hook_resid_pre,108.96916961669922,<|endoftext|>
+31,,5,blocks.5.hook_resid_pre,87.56212615966797,M
+32,,5,blocks.5.hook_resid_pre,72.66615295410156,ATS
+33,,5,blocks.5.hook_resid_pre,71.04180145263672, is
+34,,5,blocks.5.hook_resid_pre,71.5970458984375, really
+35,,5,blocks.5.hook_resid_pre,75.50818634033203, cool
+36,,6,blocks.6.hook_resid_pre,115.52584075927734,<|endoftext|>
+37,,6,blocks.6.hook_resid_pre,94.43946838378906,M
+38,,6,blocks.6.hook_resid_pre,77.54197692871094,ATS
+39,,6,blocks.6.hook_resid_pre,72.89163970947266, is
+40,,6,blocks.6.hook_resid_pre,76.03715515136719, really
+41,,6,blocks.6.hook_resid_pre,79.23068237304688, cool
+42,,7,blocks.7.hook_resid_pre,146.7826690673828,<|endoftext|>
+43,,7,blocks.7.hook_resid_pre,99.3497543334961,M
+44,,7,blocks.7.hook_resid_pre,80.79374694824219,ATS
+45,,7,blocks.7.hook_resid_pre,74.94406127929688, is
+46,,7,blocks.7.hook_resid_pre,78.63484954833984, really
+47,,7,blocks.7.hook_resid_pre,83.94037628173828, cool
+48,,8,blocks.8.hook_resid_pre,490.8040466308594,<|endoftext|>
+49,,8,blocks.8.hook_resid_pre,104.05976104736328,M
+50,,8,blocks.8.hook_resid_pre,85.14254760742188,ATS
+51,,8,blocks.8.hook_resid_pre,75.75521087646484, is
+52,,8,blocks.8.hook_resid_pre,81.8969497680664, really
+53,,8,blocks.8.hook_resid_pre,88.21077728271484, cool
+54,,9,blocks.9.hook_resid_pre,1122.58740234375,<|endoftext|>
+55,,9,blocks.9.hook_resid_pre,110.60270690917969,M
+56,,9,blocks.9.hook_resid_pre,88.40747833251953,ATS
+57,,9,blocks.9.hook_resid_pre,79.17573547363281, is
+58,,9,blocks.9.hook_resid_pre,84.53147888183594, really
+59,,9,blocks.9.hook_resid_pre,91.4891586303711, cool
+60,,10,blocks.10.hook_resid_pre,1663.28125,<|endoftext|>
+61,,10,blocks.10.hook_resid_pre,118.5623779296875,M
+62,,10,blocks.10.hook_resid_pre,91.23895263671875,ATS
+63,,10,blocks.10.hook_resid_pre,82.82798767089844, is
+64,,10,blocks.10.hook_resid_pre,87.84941101074219, really
+65,,10,blocks.10.hook_resid_pre,95.88182830810547, cool
+66,,11,blocks.11.hook_resid_pre,2140.058837890625,<|endoftext|>
+67,,11,blocks.11.hook_resid_pre,125.97569274902344,M
+68,,11,blocks.11.hook_resid_pre,95.67010498046875,ATS
+69,,11,blocks.11.hook_resid_pre,85.66523742675781, is
+70,,11,blocks.11.hook_resid_pre,90.2128677368164, really
+71,,11,blocks.11.hook_resid_pre,97.76348876953125, cool
+72,,12,blocks.12.hook_resid_pre,2564.923095703125,<|endoftext|>
+73,,12,blocks.12.hook_resid_pre,134.38829040527344,M
+74,,12,blocks.12.hook_resid_pre,97.8776626586914,ATS
+75,,12,blocks.12.hook_resid_pre,88.51013946533203, is
+76,,12,blocks.12.hook_resid_pre,94.37796783447266, really
+77,,12,blocks.12.hook_resid_pre,100.20966339111328, cool
+78,,13,blocks.13.hook_resid_pre,2906.902587890625,<|endoftext|>
+79,,13,blocks.13.hook_resid_pre,140.7421112060547,M
+80,,13,blocks.13.hook_resid_pre,101.4789047241211,ATS
+81,,13,blocks.13.hook_resid_pre,91.87183380126953, is
+82,,13,blocks.13.hook_resid_pre,97.28771209716797, really
+83,,13,blocks.13.hook_resid_pre,104.6393051147461, cool
+84,,14,blocks.14.hook_resid_pre,3176.349853515625,<|endoftext|>
+85,,14,blocks.14.hook_resid_pre,145.604736328125,M
+86,,14,blocks.14.hook_resid_pre,106.45855712890625,ATS
+87,,14,blocks.14.hook_resid_pre,94.56237030029297, is
+88,,14,blocks.14.hook_resid_pre,101.05949401855469, really
+89,,14,blocks.14.hook_resid_pre,108.22059631347656, cool
+90,,15,blocks.15.hook_resid_pre,3428.806884765625,<|endoftext|>
+91,,15,blocks.15.hook_resid_pre,149.43299865722656,M
+92,,15,blocks.15.hook_resid_pre,109.3151626586914,ATS
+93,,15,blocks.15.hook_resid_pre,95.72813415527344, is
+94,,15,blocks.15.hook_resid_pre,103.2503433227539, really
+95,,15,blocks.15.hook_resid_pre,110.25504302978516, cool
+96,,16,blocks.16.hook_resid_pre,3624.681396484375,<|endoftext|>
+97,,16,blocks.16.hook_resid_pre,155.58847045898438,M
+98,,16,blocks.16.hook_resid_pre,116.79255676269531,ATS
+99,,16,blocks.16.hook_resid_pre,100.8072738647461, is
+100,,16,blocks.16.hook_resid_pre,108.1331558227539, really
+101,,16,blocks.16.hook_resid_pre,113.06747436523438, cool
+102,,17,blocks.17.hook_resid_pre,3768.470703125,<|endoftext|>
+103,,17,blocks.17.hook_resid_pre,159.05992126464844,M
+104,,17,blocks.17.hook_resid_pre,121.064697265625,ATS
+105,,17,blocks.17.hook_resid_pre,104.32722473144531, is
+106,,17,blocks.17.hook_resid_pre,110.4057388305664, really
+107,,17,blocks.17.hook_resid_pre,114.82315063476562, cool
+108,,18,blocks.18.hook_resid_pre,3875.978271484375,<|endoftext|>
+109,,18,blocks.18.hook_resid_pre,162.9919891357422,M
+110,,18,blocks.18.hook_resid_pre,127.21131896972656,ATS
+111,,18,blocks.18.hook_resid_pre,107.69831085205078, is
+112,,18,blocks.18.hook_resid_pre,115.78123474121094, really
+113,,18,blocks.18.hook_resid_pre,119.16224670410156, cool
+114,,19,blocks.19.hook_resid_pre,3961.04345703125,<|endoftext|>
+115,,19,blocks.19.hook_resid_pre,166.3293914794922,M
+116,,19,blocks.19.hook_resid_pre,130.9912109375,ATS
+117,,19,blocks.19.hook_resid_pre,113.72937774658203, is
+118,,19,blocks.19.hook_resid_pre,121.9814224243164, really
+119,,19,blocks.19.hook_resid_pre,125.47730255126953, cool
+120,,20,blocks.20.hook_resid_pre,4021.779296875,<|endoftext|>
+121,,20,blocks.20.hook_resid_pre,170.3132781982422,M
+122,,20,blocks.20.hook_resid_pre,133.9469451904297,ATS
+123,,20,blocks.20.hook_resid_pre,119.19628143310547, is
+124,,20,blocks.20.hook_resid_pre,127.49254608154297, really
+125,,20,blocks.20.hook_resid_pre,134.3426971435547, cool
+126,,21,blocks.21.hook_resid_pre,4055.588134765625,<|endoftext|>
+127,,21,blocks.21.hook_resid_pre,174.9220733642578,M
+128,,21,blocks.21.hook_resid_pre,143.14129638671875,ATS
+129,,21,blocks.21.hook_resid_pre,124.27140808105469, is
+130,,21,blocks.21.hook_resid_pre,133.52098083496094, really
+131,,21,blocks.21.hook_resid_pre,141.36947631835938, cool
+132,,22,blocks.22.hook_resid_pre,4070.2568359375,<|endoftext|>
+133,,22,blocks.22.hook_resid_pre,181.47592163085938,M
+134,,22,blocks.22.hook_resid_pre,150.75421142578125,ATS
+135,,22,blocks.22.hook_resid_pre,131.1621551513672, is
+136,,22,blocks.22.hook_resid_pre,140.51771545410156, really
+137,,22,blocks.22.hook_resid_pre,147.7246551513672, cool
+138,,23,blocks.23.hook_resid_pre,4083.119873046875,<|endoftext|>
+139,,23,blocks.23.hook_resid_pre,187.2386474609375,M
+140,,23,blocks.23.hook_resid_pre,158.5866241455078,ATS
+141,,23,blocks.23.hook_resid_pre,139.31529235839844, is
+142,,23,blocks.23.hook_resid_pre,149.96536254882812, really
+143,,23,blocks.23.hook_resid_pre,156.03053283691406, cool
+144,,24,blocks.24.hook_resid_pre,4092.763916015625,<|endoftext|>
+145,,24,blocks.24.hook_resid_pre,193.6274871826172,M
+146,,24,blocks.24.hook_resid_pre,164.6234893798828,ATS
+147,,24,blocks.24.hook_resid_pre,145.0725555419922, is
+148,,24,blocks.24.hook_resid_pre,158.06961059570312, really
+149,,24,blocks.24.hook_resid_pre,164.0045623779297, cool
+150,,25,blocks.25.hook_resid_pre,4099.29248046875,<|endoftext|>
+151,,25,blocks.25.hook_resid_pre,196.9963836669922,M
+152,,25,blocks.25.hook_resid_pre,172.09100341796875,ATS
+153,,25,blocks.25.hook_resid_pre,152.9333038330078, is
+154,,25,blocks.25.hook_resid_pre,168.07144165039062, really
+155,,25,blocks.25.hook_resid_pre,172.106689453125, cool
+156,,26,blocks.26.hook_resid_pre,4107.2490234375,<|endoftext|>
+157,,26,blocks.26.hook_resid_pre,200.88975524902344,M
+158,,26,blocks.26.hook_resid_pre,178.00567626953125,ATS
+159,,26,blocks.26.hook_resid_pre,161.46429443359375, is
+160,,26,blocks.26.hook_resid_pre,177.2815399169922, really
+161,,26,blocks.26.hook_resid_pre,179.00726318359375, cool
+162,,27,blocks.27.hook_resid_pre,4115.11572265625,<|endoftext|>
+163,,27,blocks.27.hook_resid_pre,207.05690002441406,M
+164,,27,blocks.27.hook_resid_pre,185.41827392578125,ATS
+165,,27,blocks.27.hook_resid_pre,169.84884643554688, is
+166,,27,blocks.27.hook_resid_pre,190.03494262695312, really
+167,,27,blocks.27.hook_resid_pre,188.37974548339844, cool
+168,,28,blocks.28.hook_resid_pre,4123.44287109375,<|endoftext|>
+169,,28,blocks.28.hook_resid_pre,214.4094696044922,M
+170,,28,blocks.28.hook_resid_pre,190.3310089111328,ATS
+171,,28,blocks.28.hook_resid_pre,182.41314697265625, is
+172,,28,blocks.28.hook_resid_pre,199.86964416503906, really
+173,,28,blocks.28.hook_resid_pre,199.921630859375, cool
+174,,29,blocks.29.hook_resid_pre,4132.509765625,<|endoftext|>
+175,,29,blocks.29.hook_resid_pre,222.64305114746094,M
+176,,29,blocks.29.hook_resid_pre,195.5203857421875,ATS
+177,,29,blocks.29.hook_resid_pre,190.96705627441406, is
+178,,29,blocks.29.hook_resid_pre,211.33604431152344, really
+179,,29,blocks.29.hook_resid_pre,213.79148864746094, cool
+180,,30,blocks.30.hook_resid_pre,4140.3369140625,<|endoftext|>
+181,,30,blocks.30.hook_resid_pre,231.810791015625,M
+182,,30,blocks.30.hook_resid_pre,202.0261688232422,ATS
+183,,30,blocks.30.hook_resid_pre,202.79119873046875, is
+184,,30,blocks.30.hook_resid_pre,221.58135986328125, really
+185,,30,blocks.30.hook_resid_pre,222.9871063232422, cool
+186,,31,blocks.31.hook_resid_pre,4146.40234375,<|endoftext|>
+187,,31,blocks.31.hook_resid_pre,242.8908233642578,M
+188,,31,blocks.31.hook_resid_pre,206.33187866210938,ATS
+189,,31,blocks.31.hook_resid_pre,217.2111358642578, is
+190,,31,blocks.31.hook_resid_pre,231.1161346435547, really
+191,,31,blocks.31.hook_resid_pre,233.37074279785156, cool
+192,,32,blocks.32.hook_resid_pre,4149.1953125,<|endoftext|>
+193,,32,blocks.32.hook_resid_pre,251.8121795654297,M
+194,,32,blocks.32.hook_resid_pre,211.12257385253906,ATS
+195,,32,blocks.32.hook_resid_pre,236.6764373779297, is
+196,,32,blocks.32.hook_resid_pre,246.0553741455078, really
+197,,32,blocks.32.hook_resid_pre,246.27932739257812, cool
+198,,33,blocks.33.hook_resid_pre,4150.02490234375,<|endoftext|>
+199,,33,blocks.33.hook_resid_pre,261.7733459472656,M
+200,,33,blocks.33.hook_resid_pre,216.41171264648438,ATS
+201,,33,blocks.33.hook_resid_pre,260.3133850097656, is
+202,,33,blocks.33.hook_resid_pre,259.9576416015625, really
+203,,33,blocks.33.hook_resid_pre,256.46649169921875, cool
+204,,34,blocks.34.hook_resid_pre,4147.00634765625,<|endoftext|>
+205,,34,blocks.34.hook_resid_pre,270.5996398925781,M
+206,,34,blocks.34.hook_resid_pre,220.6422119140625,ATS
+207,,34,blocks.34.hook_resid_pre,279.4561462402344, is
+208,,34,blocks.34.hook_resid_pre,273.8396911621094, really
+209,,34,blocks.34.hook_resid_pre,269.4507141113281, cool
+210,,35,blocks.35.hook_resid_pre,4139.23681640625,<|endoftext|>
+211,,35,blocks.35.hook_resid_pre,283.1571350097656,M
+212,,35,blocks.35.hook_resid_pre,226.2284698486328,ATS
+213,,35,blocks.35.hook_resid_pre,297.50531005859375, is
+214,,35,blocks.35.hook_resid_pre,295.1866760253906, really
+215,,35,blocks.35.hook_resid_pre,284.40106201171875, cool
+216,,36,blocks.36.hook_resid_pre,4124.22509765625,<|endoftext|>
+217,,36,blocks.36.hook_resid_pre,295.87823486328125,M
+218,,36,blocks.36.hook_resid_pre,229.9567413330078,ATS
+219,,36,blocks.36.hook_resid_pre,314.1326599121094, is
+220,,36,blocks.36.hook_resid_pre,310.1966552734375, really
+221,,36,blocks.36.hook_resid_pre,298.0796813964844, cool
+222,,37,blocks.37.hook_resid_pre,4105.59912109375,<|endoftext|>
+223,,37,blocks.37.hook_resid_pre,309.0640869140625,M
+224,,37,blocks.37.hook_resid_pre,234.8992156982422,ATS
+225,,37,blocks.37.hook_resid_pre,338.97540283203125, is
+226,,37,blocks.37.hook_resid_pre,326.091796875, really
+227,,37,blocks.37.hook_resid_pre,313.8815612792969, cool
+228,,38,blocks.38.hook_resid_pre,4078.79931640625,<|endoftext|>
+229,,38,blocks.38.hook_resid_pre,322.0814514160156,M
+230,,38,blocks.38.hook_resid_pre,240.59292602539062,ATS
+231,,38,blocks.38.hook_resid_pre,357.37957763671875, is
+232,,38,blocks.38.hook_resid_pre,339.7987060546875, really
+233,,38,blocks.38.hook_resid_pre,331.9278564453125, cool
+234,,39,blocks.39.hook_resid_pre,4036.9609375,<|endoftext|>
+235,,39,blocks.39.hook_resid_pre,332.3948974609375,M
+236,,39,blocks.39.hook_resid_pre,247.1076202392578,ATS
+237,,39,blocks.39.hook_resid_pre,377.9765930175781, is
+238,,39,blocks.39.hook_resid_pre,353.6206970214844, really
+239,,39,blocks.39.hook_resid_pre,347.7861022949219, cool
+240,,40,blocks.40.hook_resid_pre,3971.511962890625,<|endoftext|>
+241,,40,blocks.40.hook_resid_pre,347.77337646484375,M
+242,,40,blocks.40.hook_resid_pre,252.37278747558594,ATS
+243,,40,blocks.40.hook_resid_pre,404.9747619628906, is
+244,,40,blocks.40.hook_resid_pre,374.8909912109375, really
+245,,40,blocks.40.hook_resid_pre,365.4476013183594, cool
+246,,41,blocks.41.hook_resid_pre,3835.987060546875,<|endoftext|>
+247,,41,blocks.41.hook_resid_pre,360.2555236816406,M
+248,,41,blocks.41.hook_resid_pre,260.8123779296875,ATS
+249,,41,blocks.41.hook_resid_pre,437.65509033203125, is
+250,,41,blocks.41.hook_resid_pre,397.1134948730469, really
+251,,41,blocks.41.hook_resid_pre,391.45648193359375, cool
+252,,42,blocks.42.hook_resid_pre,3595.77880859375,<|endoftext|>
+253,,42,blocks.42.hook_resid_pre,378.0549621582031,M
+254,,42,blocks.42.hook_resid_pre,269.4283752441406,ATS
+255,,42,blocks.42.hook_resid_pre,475.0831604003906, is
+256,,42,blocks.42.hook_resid_pre,424.6551513671875, really
+257,,42,blocks.42.hook_resid_pre,414.7413635253906, cool
+258,,43,blocks.43.hook_resid_pre,3215.740966796875,<|endoftext|>
+259,,43,blocks.43.hook_resid_pre,398.3936462402344,M
+260,,43,blocks.43.hook_resid_pre,278.1695556640625,ATS
+261,,43,blocks.43.hook_resid_pre,502.3851623535156, is
+262,,43,blocks.43.hook_resid_pre,461.7171325683594, really
+263,,43,blocks.43.hook_resid_pre,441.4707336425781, cool
+264,,44,blocks.44.hook_resid_pre,2686.816162109375,<|endoftext|>
+265,,44,blocks.44.hook_resid_pre,421.8836975097656,M
+266,,44,blocks.44.hook_resid_pre,291.1133117675781,ATS
+267,,44,blocks.44.hook_resid_pre,548.0655517578125, is
+268,,44,blocks.44.hook_resid_pre,493.0513610839844, really
+269,,44,blocks.44.hook_resid_pre,484.33123779296875, cool
+270,,45,blocks.45.hook_resid_pre,1958.868896484375,<|endoftext|>
+271,,45,blocks.45.hook_resid_pre,455.465576171875,M
+272,,45,blocks.45.hook_resid_pre,309.24847412109375,ATS
+273,,45,blocks.45.hook_resid_pre,639.72998046875, is
+274,,45,blocks.45.hook_resid_pre,563.463623046875, really
+275,,45,blocks.45.hook_resid_pre,562.5958862304688, cool
+276,,46,blocks.46.hook_resid_pre,1116.3421630859375,<|endoftext|>
+277,,46,blocks.46.hook_resid_pre,513.7615356445312,M
+278,,46,blocks.46.hook_resid_pre,332.82147216796875,ATS
+279,,46,blocks.46.hook_resid_pre,758.9785766601562, is
+280,,46,blocks.46.hook_resid_pre,634.417724609375, really
+281,,46,blocks.46.hook_resid_pre,659.6865234375, cool
+282,,47,blocks.47.hook_resid_pre,426.2301940917969,<|endoftext|>
+283,,47,blocks.47.hook_resid_pre,543.9261474609375,M
+284,,47,blocks.47.hook_resid_pre,352.6741638183594,ATS
+285,,47,blocks.47.hook_resid_pre,844.9136962890625, is
+286,,47,blocks.47.hook_resid_pre,661.2432861328125, really
+287,,47,blocks.47.hook_resid_pre,706.0173950195312, cool

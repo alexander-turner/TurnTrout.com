@@ -38,6 +38,11 @@ skip_import: true
 description: 800+ orthogonal vectors steer an AI model to write code. Redundant features
   or something weirder?
 ---
+
+<script src="/static/scripts/plotly-cartesian.min.js"></script>
+
+<script src="/plots/melbo_ortho/load_plots.js"></script>
+
 > [!thanks]
 >Produced as part of the MATS Summer 2024 program, under the mentorship of Alex Turner (`TurnTrout`).
 
@@ -200,12 +205,14 @@ Steering with the average of the first 2 generated vectors sometimes produces a 
 
 Qualitatively, it sure does seem that most of the coding vectors (up to the 800's) at least have very similar behaviors. But can we quantify this? Yes! 
 
-![The KL divergence plot. Up until around vector 700, the KL divergence is very low. Then it jumps up.](https://assets.turntrout.com/static/images/posts/mqnnlk3bdlafrp1uvst7.avif)
+<div id="plot1" class="plot-container"> </div>
+
 Figure: I took the KL divergence of the probability distribution of the network steered with the $i$<sup>th</sup> vector with respect to the probability distribution of the network steered with the base MELBO vector (on the bomb prompt at the last token position).
 
 The plot matches my qualitative description pretty well. The KL divergence is very close to zero for a while and then it has a period where it appears to sometimes be quite high and other times be quite low. I suspect this is due to gradient descent not being perfect; sometimes it is able to find a coding vector, which results in a low KL divergence, while other times it can't, which results in a high KL divergence. Eventually, it is not able to find any coding vectors, so the KL divergence stabilizes to a high value.
 
-![The magnitude plot. Up until around vector 700, the magnitude is consistently high. Gradually goes lower, eventually getting to 0.](https://assets.turntrout.com/static/images/posts/nnygliox0c7qkykhsbwy.avif)
+<div id="plot2" class="plot-container"> </div>
+
 Figure: The magnitude plot. Up until around vector 700, the magnitude is consistently high. Gradually goes lower, eventually getting to 0.
 
 Interestingly, the base MELBO coding vector has norm 7 (exactly 7 since MELBO constrains the norms). Yet in order to find comparable coding vectors, the model needs to go all the way up to magnitude $\sim20$. This suggests that there is something different about the orthogonal generated coding vectors than the original MELBO vector. In fact, when I take some of the generated orthogonal coding vectors and scale them to norm 7, they don't have the coding effect at all and instead just make the model refuse like it normally would. As the algorithm keeps progressing, the magnitudes of the generated vectors go down and eventually hit zero, at which point the vectors stop having an effect on the model.
