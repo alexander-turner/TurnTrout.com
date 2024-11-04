@@ -166,7 +166,7 @@
     "patch-package": "^8.0.0",
     "playwright": "^1.48.2",
     "postinstall-postinstall": "^2.1.0",
-    "preact": "^10.24.0",
+    "preact": "^10.24.3",
     "prettier": "3.3.3",
     "prettier-plugin-sh": "^0.14.0",
     "remark-definition-list": "^2.0.0",
