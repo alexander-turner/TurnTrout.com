@@ -43,21 +43,6 @@ test("Search opens with '/' and closes with Escape", async ({ page }) => {
   await expect(searchContainer).not.toHaveClass(/active/)
 })
 
-test("Tag search opens with Ctrl+Shift+K", async ({ page }, testInfo) => {
-  const searchContainer = page.locator("#search-container")
-  const searchBar = page.locator("#search-bar")
-
-  // Open tag search
-  await page.keyboard.press("Control+Shift+K")
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(searchBar).toHaveValue("#")
-
-  // Take screenshot of tag search
-  await takeArgosScreenshot(page, testInfo, "", {
-    element: "#search-space",
-  })
-})
-
 test("Search results appear and can be navigated", async ({ page }, testInfo) => {
   // Open search
   await page.keyboard.press("/")

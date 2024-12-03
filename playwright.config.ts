@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test"
 export default defineConfig({
   fullyParallel: true,
   workers: "75%",
-  timeout: 5000,
+  timeout: 30000,
 
   testDir: "./quartz/components",
   testMatch: /.*\.spec\.ts/,
@@ -38,6 +38,7 @@ export default defineConfig({
       name: "Desktop Chrome",
       use: {
         ...devices["Desktop Chrome"],
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {

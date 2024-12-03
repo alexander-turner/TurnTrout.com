@@ -12,7 +12,6 @@ test.beforeEach(async ({ page }) => {
   })
 
   // Log any console errors
-  page.on("console", (msg) => console.log(msg.text()))
   page.on("pageerror", (err) => console.error(err))
 
   await page.goto("http://localhost:8080/test-page")
@@ -161,11 +160,27 @@ test.describe("Right sidebar", () => {
     }
   })
 
+  test("Scrolling down changes TOC highlight", async ({ page }, testInfo) => {
+    const viewportSize = page.viewportSize()
+    if (viewportSize && viewportSize.width < fullPageBreakpoint) {
+      test.skip()
+    }
+
+    const spoilerHeading = page.locator("#spoilers").first()
+    await spoilerHeading.scrollIntoViewIfNeeded()
+
+    const activeElement = page.locator("#table-of-contents .active").first()
+    await takeArgosScreenshot(page, testInfo, "toc-highlight-scrolled", {
+      element: activeElement,
+    })
+  })
+
   test("ContentMeta is visible", async ({ page }, testInfo) => {
     await takeArgosScreenshot(page, testInfo, "content-meta-visible", {
       element: "#content-meta",
     })
   })
+  // TODO test backlinks
 })
 
 test.describe("Spoilers", () => {
@@ -186,9 +201,7 @@ test.describe("Spoilers", () => {
       await spoiler.scrollIntoViewIfNeeded()
       await expect(spoiler).toBeVisible()
 
-      const screenshotBeforeClicking = await spoiler.screenshot({
-        path: "spoiler-before-revealing.png",
-      })
+      const screenshotBeforeClicking = await spoiler.screenshot()
       await spoiler.click()
 
       // Wait for the 'revealed' class to be added
@@ -207,7 +220,7 @@ test.describe("Spoilers", () => {
       await expect(spoiler).not.toHaveClass(/revealed/)
       await page.waitForTimeout(waitAfterRevealing)
 
-      const screenshotAfterClosing = await spoiler.screenshot({ path: "spoiler-after-closing.png" })
+      const screenshotAfterClosing = await spoiler.screenshot()
       expect(screenshotAfterClosing).toEqual(screenshotBeforeClicking)
     })
   }
