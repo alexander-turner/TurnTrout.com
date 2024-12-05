@@ -172,7 +172,7 @@ export function processWikilink(value: string, ...capture: string[]): PhrasingCo
       const width = match?.groups?.width ?? "auto"
       const height = match?.groups?.height ?? "auto"
       const specifiedDimensions = width !== "auto" || height !== "auto"
-      const alt = specifiedDimensions ? "" : (match?.groups?.alt ?? "")
+      const alt = specifiedDimensions ? "" : match?.groups?.alt ?? ""
       return {
         type: "image",
         url,
