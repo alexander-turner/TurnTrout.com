@@ -73,7 +73,7 @@
     "github-slugger": "^2.0.0",
     "globby": "^14.0.1",
     "gray-matter": "^4.0.3",
-    "hast-util-to-html": "^9.0.0",
+    "hast-util-to-html": "^9.0.4",
     "hast-util-to-jsx-runtime": "^2.3.0",
     "hast-util-to-string": "^3.0.0",
     "image-downloader": "^4.3.0",
