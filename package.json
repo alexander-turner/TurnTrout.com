@@ -170,7 +170,7 @@
     "esbuild": "^0.19.9",
     "eslint": "^9.12.0",
     "eslint-plugin-perfectionist": "^3.9.1",
-    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react": "^7.37.3",
     "fs-extra": "^11.2.0",
     "glob-promise": "^6.0.7",
     "globals": "^15.10.0",
