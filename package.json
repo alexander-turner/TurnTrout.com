@@ -83,7 +83,7 @@
     "jest-fetch-mock": "^3.0.3",
     "js-yaml": "^4.1.0",
     "jsdom": "^25.0.1",
-    "katex": "^0.16.18",
+    "katex": "^0.16.19",
     "lightningcss": "^1.24.1",
     "mdast-util-find-and-replace": "^3.0.1",
     "mdast-util-to-hast": "^13.1.0",
