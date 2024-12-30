@@ -116,7 +116,7 @@
     "remark-smartypants": "^3.0.2",
     "replace-in-file": "^8.0.1",
     "rfdc": "^1.3.1",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.0.1",
     "serve-handler": "^6.1.5",
     "shiki": "^1.24.4",
     "smartquotes": "^2.3.2",
