@@ -194,7 +194,7 @@
     "spellchecker-cli": "^6.2.0",
     "stylelint": "^16.10.0",
     "stylelint-config-standard": "^36.0.1",
-    "stylelint-config-standard-scss": "^13.1.0",
+    "stylelint-config-standard-scss": "^14.0.0",
     "stylelint-declaration-strict-value": "^1.10.6",
     "stylelint-prettier": "^5.0.2",
     "ts-jest": "^29.2.5",
