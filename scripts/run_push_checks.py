@@ -38,7 +38,8 @@ class StateManager:
     Manages the state of check execution, allowing for resumption of checks.
     """
 
-    def save_state(self, step_name: str) -> None:
+    @staticmethod
+    def save_state(step_name: str) -> None:
         """
         Save the last successful step.
         """
@@ -46,8 +47,9 @@ class StateManager:
         with open(STATE_FILE_PATH, "w", encoding="utf-8") as f:
             json.dump(state, f)
 
+    @staticmethod
     def get_last_step(
-        self, available_steps: Optional[List[str]] = None
+        available_steps: Optional[List[str]] = None
     ) -> Optional[str]:
         """
         Get the name of the last successful step.
@@ -77,7 +79,8 @@ class StateManager:
         except (json.JSONDecodeError, KeyError):
             return None
 
-    def clear_state(self) -> None:
+    @staticmethod
+    def clear_state() -> None:
         """
         Clear the saved state.
         """
