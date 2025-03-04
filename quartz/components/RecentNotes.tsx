@@ -59,7 +59,7 @@ export default ((userOpts?: Partial<Options>) => {
                     {title}
                   </a>
                 </h3>
-                {page.dates && page.dates.created && (
+                {page.dates?.created && (
                   <p className="meta">
                     <DateElement
                       cfg={cfg}
