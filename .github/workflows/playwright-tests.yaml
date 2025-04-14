@@ -1,5 +1,9 @@
 name: Playwright Tests
 
+concurrency:
+  group: "playwright-tests"
+  cancel-in-progress: true
+
 on:
   push:
     branches: ["lostpixel"]
