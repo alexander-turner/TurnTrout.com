@@ -417,16 +417,16 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       }
       :root[saved-theme="dark"],
       .dark-mode {
-        --light: #303446;
-        --dark: #c6d0f5;
+        --background: #303446;
+        --foreground: #c6d0f5;
         --red: #de585a;
         --green: #a6d189;
         --blue: #8caaee;
       }
       :root[saved-theme="light"],
       .light-mode {
-        --light: #eff1f5;
-        --dark: #4c4f69;
+        --background: #eff1f5;
+        --foreground: #4c4f69;
         --red: #be415c;
         --green: #40a02b;
         --blue: #406ecc;

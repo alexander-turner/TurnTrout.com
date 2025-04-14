@@ -269,12 +269,38 @@ sup {
   line-height: 0; // Don't push other lines away
 }
 
-.trout-ornament {
-  width: 3rem;
-  margin-top: calc(2 * $base-margin);
-  margin-bottom: calc(2 * $base-margin);
-  filter: light-dark(none, invert(66%)) !important;
-  opacity: light-dark(0.5, 1);
+#trout-ornament-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+  & > span {
+    vertical-align: middle;
+    font-family: "EBGaramond12", serif;
+    font-size: 3rem;
+    filter: saturate(90%);
+    color: var(--blue);
+    opacity: light-dark(0.7, 0.7);
+  }
+
+  // Left text flourish
+  & > span:first-of-type {
+    margin-right: calc(0.75 * $base-margin);
+  }
+
+  // Trout ornament
+  & > img {
+    width: calc(6 * $base-margin);
+    margin-top: calc(2 * $base-margin);
+    margin-bottom: calc(2 * $base-margin);
+    filter: light-dark(none, invert(66%)) !important;
+    opacity: light-dark(0.5, 1);
+  }
+
+  // Right text flourish
+  & > span:last-of-type {
+    margin-left: calc($base-margin);
+  }
 }
 
 // Dark <-> Light
