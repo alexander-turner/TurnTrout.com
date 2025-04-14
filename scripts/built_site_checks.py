@@ -71,7 +71,6 @@ def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
 
     Returns a list of the footnote references themselves.
     """
-    # Matches [^1], [^note], [^note-1], etc.
     footnote_pattern = r"\[\^[a-zA-Z0-9-_]+\]"
     unrendered_footnotes = []
 
@@ -91,6 +90,8 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     invalid_internal_links = []
     links = soup.find_all("a", class_="internal")
     for link in links:
+        if not isinstance(link, Tag):
+            continue
         if not link.has_attr("href") or link["href"].startswith("https://"):
             invalid_internal_links.append(link)
 
