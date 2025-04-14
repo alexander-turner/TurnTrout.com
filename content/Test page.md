@@ -513,6 +513,16 @@ This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^
 }
 ```
 
+```javascript
+const testVar = 5;
+
+function loseTheGame(numTimes: number): void {
+    for (let i = 0; i < numTimes; i++) {
+        console.log("You just lost the game!");
+    }
+}
+```
+
 ```plaintext
 This is a plain code block without a language specified.
 ```
