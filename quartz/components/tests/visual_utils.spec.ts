@@ -256,10 +256,11 @@ test.describe("takeRegressionScreenshot", () => {
     )
   })
 
-  test("generates full page screenshot with correct dimensions", async ({ page }, testInfo) => {
+  test("generates full page screenshot with correct dimensions  ", async ({ page }, testInfo) => {
     const viewportSize = { width: 1024, height: 768 }
     await page.setViewportSize(viewportSize)
 
+    // Not a lostpixel test
     const screenshot = await takeRegressionScreenshot(page, testInfo, "test-suffix")
     const dimensions = await getImageDimensions(screenshot)
 

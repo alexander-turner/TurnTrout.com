@@ -6,7 +6,6 @@ import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-  await page.reload()
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
@@ -26,7 +25,6 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
     element: navbarRightMenu,
   })
 
-  // Test clicking away
   const body = page.locator("body")
   await body.click()
   await expect(navbarRightMenu).not.toBeVisible()
@@ -159,7 +157,6 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
 
   const navbar = page.locator("#navbar")
 
-  // Helper function to take a screenshot of the navbar and its shadow
   const takeNavbarScreenshot = async (suffix: string) => {
     const box = await navbar.boundingBox()
     if (!box) throw new Error("Could not find navbar")
@@ -189,7 +186,6 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
   await expect(navbar).toHaveClass(/shadow/)
   await takeNavbarScreenshot("navbar-with-shadow")
 
-  // Scroll back to top
   await page.evaluate(() => {
     window.scrollTo({
       top: 0,
@@ -197,12 +193,13 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
     })
   })
 
-  // Verify shadow is removed
   await expect(navbar).not.toHaveClass(/shadow/)
 })
 
 for (const theme of ["light", "dark", "auto"]) {
-  test(`Left sidebar is visible on desktop in ${theme} mode`, async ({ page }, testInfo) => {
+  test(`Left sidebar is visible on desktop in ${theme} mode (lostpixel)`, async ({
+    page,
+  }, testInfo) => {
     test.skip(!isDesktopViewport(page), "Desktop-only test")
 
     const leftSidebar = page.locator("#left-sidebar")
@@ -217,7 +214,6 @@ for (const theme of ["light", "dark", "auto"]) {
 test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
   const video = page.locator(`video#${pondVideoId}`)
 
-  // Helper to check video state
   const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
 
   // 1. Initial state: Paused
