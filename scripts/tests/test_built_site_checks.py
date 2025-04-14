@@ -48,7 +48,25 @@ def mock_environment(site_setup, monkeypatch):
     # Mock common utility functions
     monkeypatch.setattr(script_utils, "collect_aliases", lambda md_dir: set())
 
+    # Mock check_rss_file_for_issues to prevent actual subprocess call in main tests
+    monkeypatch.setattr(
+        built_site_checks,
+        "check_rss_file_for_issues",
+        lambda *args, **kwargs: None,
+    )
+
     return site_setup
+
+
+@pytest.fixture
+def html_file_in_drafts(mock_environment):
+    """Create a test HTML file inside a drafts directory."""
+    public_dir = mock_environment["public_dir"]
+    drafts_dir = public_dir / "drafts"
+    drafts_dir.mkdir()
+    html_file = drafts_dir / "draft.html"
+    html_file.write_text("<html><body>Draft content</body></html>")
+    return html_file
 
 
 @pytest.fixture
@@ -2751,19 +2769,21 @@ def test_main_css_issues(
         script_utils, "build_html_to_md_map", lambda md_dir: {}
     )
 
-    with patch.object(built_site_checks, "_print_issues") as mock_print:
-        with pytest.raises(SystemExit) as excinfo:
-            built_site_checks.main()
-        assert excinfo.value.code == 1
+    with (
+        patch.object(built_site_checks, "_print_issues") as mock_print,
+        pytest.raises(SystemExit) as excinfo,
+    ):
+        built_site_checks.main()
 
-        mock_print.assert_any_call(
-            invalid_css_file,
-            {
-                "CSS_issues": [
-                    "CSS file index.css does not contain @supports, which is required for dropcaps in Firefox"
-                ]
-            },
-        )
+    assert excinfo.value.code == 1
+    mock_print.assert_any_call(
+        invalid_css_file,
+        {
+            "CSS_issues": [
+                "CSS file index.css does not contain @supports, which is required for dropcaps in Firefox"
+            ]
+        },
+    )
 
 
 def test_main_robots_txt_issues(
@@ -2853,6 +2873,7 @@ def test_main_handles_markdown_mapping(
             mock_environment["public_dir"],
             md_file,
             should_check_fonts=False,
+            defined_css_variables=set(),
         )
 
 
@@ -2904,29 +2925,29 @@ def test_main_command_line_args(
 
         built_site_checks.main()
 
-        # Verify check_file_for_issues was called with should_check_fonts=True
-        mock_check.assert_called_with(
-            html_file,
-            mock_environment["public_dir"],
-            None,
-            should_check_fonts=True,
-        )
+    mock_check.assert_called_with(
+        html_file,
+        mock_environment["public_dir"],
+        None,
+        should_check_fonts=True,
+        defined_css_variables=set(),
+    )
 
 
 def test_main_skips_drafts(
     mock_environment,
     valid_css_file,
     robots_txt_file,
-    html_file,
+    html_file_in_drafts,  # Use the new fixture
     monkeypatch,
 ):
-    monkeypatch.setattr(
-        script_utils, "should_have_md", lambda file_path: False
-    )
-
-    with patch.object(built_site_checks, "_print_issues") as mock_print:
+    with (
+        patch.object(built_site_checks, "_print_issues") as mock_print,
+        patch.object(sys, "exit") as mock_exit,
+    ):
         built_site_checks.main()
-        mock_print.assert_not_called()
+        mock_print.assert_not_called()  # Draft file issues should not be printed
+        mock_exit.assert_not_called()  # Should not exit with error if only draft files exist
 
 
 @pytest.mark.parametrize(
@@ -3292,3 +3313,102 @@ def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
     # Assuming built_site_checks contains the corrected check_malformed_hrefs
     result = built_site_checks.check_malformed_hrefs(soup)
     assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    "css_content, expected_vars",
+    [
+        # Basic definitions in :root
+        (
+            """
+            :root {
+                --color-primary: #007bff;
+                --spacing-unit: 1rem;
+            }
+            body {
+                color: var(--color-primary);
+            }
+            """,
+            {"--color-primary", "--spacing-unit"},
+        ),
+        # Definitions outside :root
+        (
+            """
+            .my-component {
+                --component-bg: lightgray;
+            }
+            #my-id {
+                --id-specific-color: red;
+            }
+            """,
+            {"--component-bg", "--id-specific-color"},
+        ),
+        # Mixed definitions
+        (
+            """
+            :root {
+                --global-var: white;
+            }
+            .my-element {
+                --local-var: black;
+                background-color: var(--global-var);
+                border: 1px solid var(--local-var);
+            }
+            """,
+            {"--global-var", "--local-var"},
+        ),
+        # Variables with hyphens and numbers
+        (
+            """
+            :root {
+                --my-var-1: 10px;
+                --another-variable-with-2-numbers: blue;
+            }
+            """,
+            {"--my-var-1", "--another-variable-with-2-numbers"},
+        ),
+        # No variable definitions, only usage
+        (
+            """
+            body {
+                color: var(--undefined-var);
+                margin: var(--another-one);
+            }
+            """,
+            set(),
+        ),
+        # Empty CSS content
+        ("", set()),
+        # Malformed CSS (should still extract valid definitions)
+        (
+            """
+            :root { --valid-var: #fff }
+            body { color: red;
+            --another-valid: 1px;
+             } invalid syntax { --invalid-but-defined?: yellow; }
+             --global-defined: ok;
+            """,
+            {"--valid-var", "--another-valid", "--global-defined"},
+        ),
+        # Media queries
+        (
+            """
+            :root { --base-color: black; }
+            @media (min-width: 600px) {
+                :root {
+                    --mq-color: purple;
+                }
+            }
+            """,
+            {"--base-color", "--mq-color"},
+        ),
+    ],
+)
+def test_get_defined_css_variables(
+    tmp_path: Path, css_content: str, expected_vars: set[str]
+) -> None:
+    """Test _get_defined_css_variables with various CSS content."""
+    css_file = tmp_path / "test.css"
+    css_file.write_text(css_content, encoding="utf-8")
+    result = built_site_checks._get_defined_css_variables(css_file)
+    assert result == expected_vars

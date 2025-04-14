@@ -43,6 +43,48 @@ parser.add_argument(
 )
 
 
+_css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
+_css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
+
+
+def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
+    """
+    Extract all defined CSS variable names from a CSS file.
+    """
+    defined_vars: Set[str] = set()
+
+    css_content = css_file_path.read_text(encoding="utf-8")
+    for match in _css_variable_declaration_pattern.finditer(css_content):
+        defined_vars.add(match.group(1))
+
+    return defined_vars
+
+
+def check_inline_style_variables(
+    soup: BeautifulSoup, defined_variables: Set[str]
+) -> list[str]:
+    """
+    Check elements for inline styles using undefined CSS variables.
+    """
+    issues: list[str] = []
+
+    for element in soup.find_all(style=True):
+        style_attr = element.get("style", "")
+        if not isinstance(style_attr, str):  # Handle potential list values
+            style_attr = " ".join(style_attr)
+
+        used_vars = _css_variable_usage_pattern.findall(style_attr)
+        for var in used_vars:
+            if var not in defined_variables:
+                _append_to_list(
+                    issues,
+                    f"Element <{element.name}> uses undefined CSS variable "
+                    f"'{var}' in inline style: "
+                    f"'{style_attr}'",
+                )
+    return issues
+
+
 def check_localhost_links(soup: BeautifulSoup) -> list[str]:
     """
     Check for localhost links in the HTML.
@@ -817,6 +859,7 @@ def check_file_for_issues(
     base_dir: Path,
     md_path: Path | None,
     should_check_fonts: bool,
+    defined_css_variables: Set[str] = set(),
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -826,6 +869,7 @@ def check_file_for_issues(
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
         should_check_fonts: Whether to check for preloaded fonts
+        defined_css_variables: Set of defined CSS variables
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -867,6 +911,9 @@ def check_file_for_issues(
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
+        ),
+        "inline_style_variables": check_inline_style_variables(
+            soup, defined_css_variables
         ),
     }
 
@@ -1394,13 +1441,13 @@ def main() -> None:
     issues_found: bool = False
     check_rss_file_for_issues(_GIT_ROOT)
 
-    # check_rss_file_for_issues(git_root)
-    css_issues = check_css_issues(_PUBLIC_DIR / "index.css")
+    css_file_path: Path = _PUBLIC_DIR / "index.css"
+    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
+    css_issues = check_css_issues(css_file_path)
     if css_issues:
-        _print_issues(_PUBLIC_DIR / "index.css", {"CSS_issues": css_issues})
+        _print_issues(css_file_path, {"CSS_issues": css_issues})
         issues_found = True
 
-    # Check robots.txt location
     robots_issues = check_robots_txt_location(_PUBLIC_DIR)
     if robots_issues:
         _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
@@ -1411,15 +1458,15 @@ def main() -> None:
     files_to_skip: Set[str] = script_utils.collect_aliases(md_dir)
 
     for root, _, files in os.walk(_PUBLIC_DIR):
-        if "drafts" in root:
+        root_path = Path(root)
+        if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
             if file.endswith(".html") and Path(file).stem not in files_to_skip:
-                file_path = Path(root) / file
+                file_path = root_path / file
 
-                # Only derive md_path for public_dir files
                 md_path = None
-                if root.endswith("public"):
+                if root_path == _PUBLIC_DIR:
                     md_path = permalink_to_md_path_map.get(
                         file_path.stem
                     ) or permalink_to_md_path_map.get(file_path.stem.lower())
@@ -1434,6 +1481,7 @@ def main() -> None:
                     md_path,
                     # pylint: disable=possibly-used-before-assignment
                     should_check_fonts=args.check_fonts,
+                    defined_css_variables=defined_css_vars,
                 )
 
                 if any(lst for lst in issues.values()):
