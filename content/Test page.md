@@ -468,24 +468,36 @@ He came in 1st but I came in 5,300,251st. :(
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <center>Light mode</center>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
-      <span style="color: red;">Red</span>
-      <span style="color: orange;">Orange</span>
-      <span style="color: yellow;">Yellow</span>
-      <span style="color: green;">Green</span>
-      <span style="color: blue;">Blue</span>
-      <span style="color: purple;">Purple</span>
+      <span style="color: var(--red);">Red</span>
+      <span style="color: var(--maroon);">Maroon</span>
+      <span style="color: var(--orange);">Orange</span>
+      <span style="color: var(--yellow);">Yellow</span>
+      <span style="color: var(--gold);">Gold</span>
+      <span style="color: var(--green);">Green</span>
+      <span style="color: var(--teal);">Teal</span>
+      <span style="color: var(--sky);">Sky</span>
+      <span style="color: var(--blue);">Blue</span>
+      <span style="color: var(--purple);">Purple</span>
+      <span style="color: var(--lavender);">Lavender</span>
+      <span style="color: var(--pink);">Pink</span>
     </div>
     <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" style="max-width: 100px; max-height: 100px; margin-top: 1rem; filter: none;" alt="Smiling Face With Hearts on Twitter"/></center>
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <center>Dark mode</center>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
-      <span style="color: red;">Red</span>
-      <span style="color: orange;">Orange</span>
-      <span style="color: yellow;">Yellow</span>
-      <span style="color: green;">Green</span>
-      <span style="color: blue;">Blue</span>
-      <span style="color: purple;">Purple</span>
+      <span style="color: var(--red);">Red</span>
+      <span style="color: var(--maroon);">Maroon</span>
+      <span style="color: var(--orange);">Orange</span>
+      <span style="color: var(--yellow);">Yellow</span>
+      <span style="color: var(--gold);">Gold</span>
+      <span style="color: var(--green);">Green</span>
+      <span style="color: var(--teal);">Teal</span>
+      <span style="color: var(--sky);">Sky</span>
+      <span style="color: var(--blue);">Blue</span>
+      <span style="color: var(--purple);">Purple</span>
+      <span style="color: var(--lavender);">Lavender</span>
+      <span style="color: var(--pink);">Pink</span>
     </div>
     <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" style="max-width: 100px; max-height: 100px; margin-top: 1rem; mix-blend-mode: normal;" alt="Smiling Face With Hearts on Twitter"/></center>
   </span>
