@@ -72,8 +72,8 @@ jobs:
           npx playwright install --with-deps
           npx playwright install-deps
 
-      - name: Build Quartz
-        run: npx quartz build
+      - name: Serve Quartz
+        run: npx quartz build --serve &
 
       - name: Run Playwright tests
         run: |
