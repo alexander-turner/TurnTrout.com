@@ -38,7 +38,7 @@ const colorMapping: Record<string, string> = {
 export const transformStyle = (style: string, colorMapping: Record<string, string>): string => {
   let newStyle = style
   Object.entries(colorMapping).forEach(([color, variable]) => {
-    const regex = new RegExp(`${color}\\b`, "gi")
+    const regex = new RegExp(`(?<!var\\(--)${color}\\b`, "gi")
     newStyle = newStyle.replace(regex, variable)
   })
   return newStyle
