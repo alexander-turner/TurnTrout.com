@@ -139,7 +139,7 @@ Reading textbooks
 
 1. I probably (70%) will want kids within the next 5 years.
 <!-- vale off -->
-2. I've historically been polyamorous but I'm open to monogamy. I find it natural to form romantic attachments with multiple people and am not very jealous. I talk regularly with my ex-girlfriend Emma - I want my friendship with her to stay strong.
+2. I've historically been polyamorous but I'm open to monogamy. I find it natural to form romantic attachments with multiple people and am not very jealous. I talk regularly with my former partner Emma - I want my friendship with her to stay strong.
 <!-- vale on -->
 3. I currently live in Berkeley. I'm open to (but disprefer) a long-distance relationship if there's a good chance we end up in the same location, assuming the relationship is great! In particular, cities like New York and London are more workable (as DeepMind has offices there I could work out of).
 
