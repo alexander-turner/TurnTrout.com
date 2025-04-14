@@ -10,13 +10,13 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Dict, Literal, NamedTuple, Set
+from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
 import tqdm
 import validators  # type: ignore[import]
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -47,6 +47,12 @@ _css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
 _css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
 
 
+def _tags_only(
+    seq: Iterable[PageElement | Tag | NavigableString],
+) -> list[Tag]:
+    return [el for el in seq if isinstance(el, Tag)]
+
+
 def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
     """
     Extract all defined CSS variable names from a CSS file.
@@ -68,20 +74,19 @@ def check_inline_style_variables(
     """
     issues: list[str] = []
 
-    for element in soup.find_all(style=True):
+    for element in _tags_only(soup.find_all(style=True)):
         style_attr = element.get("style", "")
         if not isinstance(style_attr, str):  # Handle potential list values
-            style_attr = " ".join(style_attr)
+            style_attr = " ".join(style_attr or [])
 
-        used_vars = _css_variable_usage_pattern.findall(style_attr)
-        for var in used_vars:
-            if var not in defined_variables:
-                _append_to_list(
-                    issues,
-                    f"Element <{element.name}> uses undefined CSS variable "
-                    f"'{var}' in inline style: "
-                    f"'{style_attr}'",
-                )
+        used_vars = set(_css_variable_usage_pattern.findall(style_attr))
+        for var in used_vars.intersection(defined_variables or set()):
+            _append_to_list(
+                issues,
+                f"Element <{element.name}> uses undefined CSS variable "
+                f"'{var}' in inline style: "
+                f"'{style_attr}'",
+            )
     return issues
 
 
@@ -90,9 +95,9 @@ def check_localhost_links(soup: BeautifulSoup) -> list[str]:
     Check for localhost links in the HTML.
     """
     localhost_links = []
-    links = soup.find_all("a", href=True)
+    links = _tags_only(soup.find_all("a", href=True))
     for link in links:
-        href = link["href"]
+        href = str(link["href"])
         if href.startswith("localhost:") or href.startswith(
             ("http://localhost", "https://localhost")
         ):
@@ -130,7 +135,7 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     "https://".
     """
     invalid_internal_links = []
-    links = soup.find_all("a", class_="internal")
+    links = _tags_only(soup.find_all("a", class_="internal"))
     for link in links:
         if not isinstance(link, Tag):
             continue
@@ -149,9 +154,11 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     Check for invalid internal anchor links in the HTML.
     """
     invalid_anchors: list[str] = []
-    links = soup.find_all("a", href=True)
+    links = _tags_only(soup.find_all("a", href=True))
     for link in links:
         href = link["href"]
+        if not isinstance(href, str):
+            continue
         if href.startswith("#"):
             # Check anchor in current page
             anchor_id = href[1:]
@@ -223,7 +230,7 @@ def check_unrendered_html(soup: BeautifulSoup) -> list[str]:
     tag_pattern = r"(</?[a-zA-Z][a-zA-Z0-9]*(?: |/?>))"
 
     for element in soup.find_all(string=True):
-        if not should_skip(element):  # Reuse existing skip logic
+        if isinstance(element, NavigableString) and not should_skip(element):
             text = element.strip()
             if text:
                 # Look for HTML-like patterns
@@ -285,7 +292,7 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
             )
 
     # Check all <p> and <dt> elements
-    for element in soup.find_all(["p", "dt"]):
+    for element in _tags_only(soup.find_all(["p", "dt"])):
         if any(
             re.search(prefix, element.text)
             for prefix in bad_paragraph_starting_prefixes
@@ -297,10 +304,10 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
             )
         for text_node in element.find_all(string=True):
             if not any(parent.name == "code" for parent in text_node.parents):
-                _maybe_add_text(text_node)
+                _maybe_add_text(str(text_node))
 
     # Check direct text in <article> and <blockquote>
-    for parent in soup.find_all(["article", "blockquote"]):
+    for parent in _tags_only(soup.find_all(["article", "blockquote"])):
         for child in parent.children:
             if isinstance(child, str):  # Check if it's a direct text node
                 _maybe_add_text(child)
@@ -313,10 +320,10 @@ def check_unrendered_spoilers(soup: BeautifulSoup) -> list[str]:
     Check for unrendered spoilers.
     """
     unrendered_spoilers: list[str] = []
-    blockquotes = soup.find_all("blockquote")
+    blockquotes = _tags_only(soup.find_all("blockquote"))
     for blockquote in blockquotes:
         # Check each paragraph / text child in the blockquote
-        for child in blockquote.children:
+        for child in _tags_only(blockquote.children):
             if child.name == "p":
                 text = child.get_text().strip()
                 if text.startswith("! "):
@@ -333,11 +340,11 @@ def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     Check for unrendered subtitle lines.
     """
     unrendered_subtitles: list[str] = []
-    paragraphs = soup.find_all("p")
+    paragraphs = _tags_only(soup.find_all("p"))
     for p in paragraphs:
         text = p.get_text().strip()
-        if text.startswith("Subtitle:") and "subtitle" not in p.get(
-            "class", []
+        if text.startswith("Subtitle:") and "subtitle" not in str(
+            p.get("class", "")
         ):
             _append_to_list(
                 unrendered_subtitles, text, prefix="Unrendered subtitle: "
@@ -390,14 +397,18 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
     invalid_sources = []
     media_tags = soup.find_all(["img", "video", "source", "svg"])
 
-    for tag in media_tags:
+    for tag in _tags_only(media_tags):
         src = tag.get("src") or tag.get("href")
+        str_src = str(src) if src else ""
         # Skip relative paths
-        if not src or src.startswith(("/", ".", "..")):
+        if not str_src or str_src.startswith(("/", ".", "..")):
             continue
 
         # Check if source is from allowed domain
-        if "//" not in src or src.split("/")[2] not in ALLOWED_ASSET_DOMAINS:
+        if (
+            "//" not in str_src
+            or str_src.split("/")[2] not in ALLOWED_ASSET_DOMAINS
+        ):
             invalid_sources.append(f"{src} (in {tag.name} tag)")
 
     return invalid_sources
@@ -410,8 +421,8 @@ def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     missing_files = []
     media_tags = soup.find_all(["img", "video", "source", "svg"])
 
-    for tag in media_tags:
-        src = tag.get("src") or tag.get("href")
+    for tag in _tags_only(media_tags):
+        src = str(tag.get("src") or tag.get("href"))
         if src and not src.startswith(("http://", "https://")):
             # It's a local file
             file_extension = Path(src).suffix.lower()
@@ -445,18 +456,20 @@ def check_asset_references(
                 missing_assets.append(f"{href} (resolved to {full_path})")
 
     # Check link tags for CSS files (including preloaded stylesheets)
-    for link in soup.find_all("link"):
-        rel = link.get("rel", [])
+    for link in _tags_only(soup.find_all("link")):
+        rel = link.get("rel", "") or ""
         if isinstance(rel, list):
             rel = " ".join(rel)
         if "stylesheet" in rel or (
             "preload" in rel and link.get("as") == "style"
         ):
-            check_asset(link.get("href"))
+            href_val = link.get("href")
+            if href_val:
+                check_asset(str(href_val))
 
     # Check script tags for JS files
-    for script in soup.find_all("script", src=True):
-        check_asset(script["src"])
+    for script in _tags_only(soup.find_all("script", src=True)):
+        check_asset(str(script["src"]))
 
     return missing_assets
 
@@ -516,7 +529,7 @@ def check_duplicate_ids(soup: BeautifulSoup) -> list[str]:
     # Get all IDs except those in flowcharts
     elements_with_ids = [
         element["id"]
-        for element in soup.find_all(id=True)
+        for element in _tags_only(soup.find_all(id=True))
         if not element.find_parent(class_="flowchart")
     ]
 
@@ -527,7 +540,7 @@ def check_duplicate_ids(soup: BeautifulSoup) -> list[str]:
     # Check for both duplicates and numbered variants
     for id_, count in id_counts.items():
         # It's ok for multiple fnrefs to reference the same note
-        if id_.startswith("user-content-fnref-"):
+        if not isinstance(id_, str) or id_.startswith("user-content-fnref-"):
             continue
 
         if count > 1:
@@ -538,7 +551,8 @@ def check_duplicate_ids(soup: BeautifulSoup) -> list[str]:
             numbered_variants = [
                 other_id
                 for other_id in id_counts
-                if other_id.startswith(id_ + "-")
+                if isinstance(other_id, str)
+                and other_id.startswith(id_ + "-")
                 and re.search(r".*-\d+$", other_id)
             ]
             if numbered_variants:
@@ -575,7 +589,7 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
     """
     problematic_texts: list[str] = []
 
-    for text_elt in soup.find_all(EMPHASIS_ELEMENTS_TO_SEARCH):
+    for text_elt in _tags_only(soup.find_all(EMPHASIS_ELEMENTS_TO_SEARCH)):
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
@@ -605,7 +619,7 @@ def should_skip(element: Tag | NavigableString) -> bool:
             current, Tag
         ):  # Only check Tag elements, not NavigableString
             if current.name in skip_tags or any(
-                class_ in (current.get("class", []) or [])
+                class_ in (current.get("class", "") or [])
                 for class_ in skip_classes
             ):
                 return True
@@ -626,13 +640,14 @@ def check_unprocessed_quotes(soup: BeautifulSoup) -> list[str]:
 
     # Check all text nodes
     for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):
+            continue
         if element.strip() and not should_skip(element):
-            # Look for straight quotes
-            straight_quotes = re.findall(r'["\']', element.string)
+            straight_quotes = re.findall(r'["\']', str(element))
             if straight_quotes:
                 _append_to_list(
                     problematic_quotes,
-                    element.string,
+                    str(element),
                     prefix=f"Unprocessed quotes {straight_quotes}: ",
                 )
 
@@ -647,12 +662,14 @@ def check_unprocessed_dashes(soup: BeautifulSoup) -> list[str]:
     problematic_dashes: list[str] = []
 
     for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):
+            continue
         if element.strip() and not should_skip(element):
             # Look for two or more dashes in a row
-            if re.search(r"[~\–\—\-\–]{2,}", element.string):
+            if re.search(r"[~\–\—\-\–]{2,}", str(element)):
                 _append_to_list(
                     problematic_dashes,
-                    element.string,
+                    str(element),
                     prefix="Unprocessed dashes: ",
                 )
 
@@ -721,11 +738,11 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
     Check that all iframe sources are responding with a successful status code.
     """
     problematic_iframes = []
-    iframes = soup.find_all("iframe")
+    iframes = _tags_only(soup.find_all("iframe"))
 
     for iframe in iframes:
         src = iframe.get("src")
-        if not src:
+        if not src or not isinstance(src, str):
             continue
 
         if src.startswith("//"):
@@ -733,8 +750,8 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
         elif src.startswith("/") or src.startswith("."):
             continue  # Skip relative paths as they're checked by other fns
 
-        title: str = iframe.get("title", "")
-        alt: str = iframe.get("alt", "")
+        title: str = str(iframe.get("title", ""))
+        alt: str = str(iframe.get("alt", ""))
         description: str = f"{title=} ({alt=})"
         try:
             response = requests.head(src, timeout=10)
@@ -764,12 +781,14 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
     problematic_texts: list[str] = []
 
     for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):
+            continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.["“”]*\.', element.string):
+            if re.search(r'(?!\.\.\?)\.["“”]*\.', str(element)):
                 _append_to_list(
                     problematic_texts,
-                    element.string,
+                    str(element),
                     prefix="Consecutive periods found: ",
                 )
 
@@ -791,7 +810,7 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
         if (
             not parent
             or parent.name != "span"
-            or "favicon-span" not in (parent.get("class", []) or [])
+            or "favicon-span" not in (parent.get("class", "") or [])
         ):
             context = favicon.get("src", "unknown source")
             info = f"Favicon ({context}) is not a direct child of"
@@ -816,8 +835,8 @@ def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
         return False
 
     preload_links = head.find_all("link", {"rel": "preload", "as": "font"})
-    for link in preload_links:
-        href = link.get("href", "")
+    for link in _tags_only(preload_links):
+        href = str(link.get("href", ""))
         if "subfont/ebgaramond" in href.lower():
             return True
 
@@ -830,8 +849,10 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
     `validators` library.
     """
     malformed_links: list[str] = []
-    for link in soup.find_all("a", href=True):
+    for link in _tags_only(soup.find_all("a", href=True)):
         href = link.get("href")
+        if not isinstance(href, str):
+            continue
         if href.startswith("mailto:"):
             email = href.split(":")[1]
             if not validators.email(email):
@@ -843,7 +864,7 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
             continue
 
         if (
-            "external" not in link.get("class", [])
+            "external" not in str(link.get("class", ""))
             or not href
             or href.startswith(("/", "#", ".", "tel:"))
         ):
@@ -1040,9 +1061,9 @@ def check_markdown_assets_in_html(
     # Count asset sources in HTML
     html_asset_counts: Counter[str] = Counter()
     for tag in _TAGS_TO_CHECK_FOR_MISSING_ASSETS:
-        for element in soup.find_all(tag):
+        for element in _tags_only(soup.find_all(tag)):
             if src := element.get("src"):
-                html_asset_counts[_strip_path(src)] += 1
+                html_asset_counts[_strip_path(str(src))] += 1
 
     # Check each markdown asset exists in HTML with sufficient count
     missing_assets = []
@@ -1129,9 +1150,10 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
     problematic_links: list[str] = []
 
     # Find all links that aren't footnotes
-    for link in soup.find_all("a"):
+    for link in _tags_only(soup.find_all("a")):
         # Skip footnote links
-        if link.get("href", "").startswith("#user-content-fn"):
+        href = link.get("href", "")
+        if not isinstance(href, str) or href.startswith("#user-content-fn"):
             continue
 
         problematic_links.extend(
@@ -1160,7 +1182,9 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
     problematic_emphasis: list[str] = []
 
     # Find all emphasis elements
-    for element in soup.find_all(["em", "strong", "i", "b", "del"]):
+    for element in _tags_only(
+        soup.find_all(["em", "strong", "i", "b", "del"])
+    ):
         # Check if this is a whitelisted case
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
@@ -1415,7 +1439,7 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
         ("video/webm", ".webm"),
     ]
 
-    for video in soup.find_all("video"):
+    for video in _tags_only(soup.find_all("video")):
         if _should_skip_video(video):
             continue
         video_issues = _check_single_video(video, expected_sources)

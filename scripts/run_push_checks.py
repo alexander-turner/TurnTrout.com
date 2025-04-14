@@ -435,8 +435,8 @@ def get_check_steps(
         CheckStep(
             name="Typechecking Python",
             command=[
-                # "python", # NOTE Will cause type errors in built site checks
-                # "-m",
+                "python",
+                "-m",
                 "mypy",
             ]
             + script_files,
