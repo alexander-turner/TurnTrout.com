@@ -547,7 +547,7 @@ This is a plain code block without a language specified.
 - _**Bold italics**_
 - ~~Strikethrough~~
 
-<abbr class="small-caps"><code>This is smallcaps within a code block.</code></abbr>
+<abbr class="small-caps"><code>This is smallcaps applied to a code element.</code></abbr>
 
 ## Special fonts
 
