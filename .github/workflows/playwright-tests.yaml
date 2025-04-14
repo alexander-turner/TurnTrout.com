@@ -118,6 +118,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-${{ strategy.job-index }}-${{ env.SANITIZED_SHARD }}
           path: test-results/
           retention-days: 7
