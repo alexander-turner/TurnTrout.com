@@ -9,8 +9,6 @@
     --font-size-minus-#{abs($i)}: #{calculate-scale($i)};
   }
 
-  --font-size-minus-1-point-5: #{calculate-scale(-1.5)};
-
   @for $i from 0 through 4 {
     --font-size-plus-#{$i}: #{calculate-scale($i)};
   }

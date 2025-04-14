@@ -291,7 +291,6 @@ Exponential font sizing
 
 : <span>Normal text</span>
 <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-<span style="font-size:var(--font-size-minus-1-point-5)">Smaller text</span>
 <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
 <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
 
