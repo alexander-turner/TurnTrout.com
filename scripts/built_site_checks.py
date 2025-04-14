@@ -1433,31 +1433,21 @@ def check_robots_txt_location(base_dir: Path) -> list[str]:
     return issues
 
 
-def main() -> None:
+def _process_html_files(
+    public_dir: Path,
+    content_dir: Path,
+    check_fonts: bool,
+    defined_css_vars: Set[str],
+) -> bool:
     """
-    Check all HTML files in the public directory for issues.
+    Processes all HTML files in the public directory and returns if issues were
+    found.
     """
-    args = parser.parse_args()
-    issues_found: bool = False
-    check_rss_file_for_issues(_GIT_ROOT)
+    issues_found_in_html = False
+    permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
+    files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
 
-    css_file_path: Path = _PUBLIC_DIR / "index.css"
-    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
-    css_issues = check_css_issues(css_file_path)
-    if css_issues:
-        _print_issues(css_file_path, {"CSS_issues": css_issues})
-        issues_found = True
-
-    robots_issues = check_robots_txt_location(_PUBLIC_DIR)
-    if robots_issues:
-        _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
-        issues_found = True
-
-    md_dir: Path = _GIT_ROOT / "content"
-    permalink_to_md_path_map = script_utils.build_html_to_md_map(md_dir)
-    files_to_skip: Set[str] = script_utils.collect_aliases(md_dir)
-
-    for root, _, files in os.walk(_PUBLIC_DIR):
+    for root, _, files in os.walk(public_dir):
         root_path = Path(root)
         if "drafts" in root_path.parts:
             continue
@@ -1466,7 +1456,7 @@ def main() -> None:
                 file_path = root_path / file
 
                 md_path = None
-                if root_path == _PUBLIC_DIR:
+                if root_path == public_dir:
                     md_path = permalink_to_md_path_map.get(
                         file_path.stem
                     ) or permalink_to_md_path_map.get(file_path.stem.lower())
@@ -1477,18 +1467,43 @@ def main() -> None:
 
                 issues = check_file_for_issues(
                     file_path,
-                    _PUBLIC_DIR,
+                    public_dir,
                     md_path,
-                    # pylint: disable=possibly-used-before-assignment
-                    should_check_fonts=args.check_fonts,
+                    should_check_fonts=check_fonts,
                     defined_css_variables=defined_css_vars,
                 )
 
                 if any(lst for lst in issues.values()):
                     _print_issues(file_path, issues)
-                    issues_found = True
+                    issues_found_in_html = True
+    return issues_found_in_html
 
-    if issues_found:
+
+def main() -> None:
+    """
+    Check all HTML files in the public directory for issues.
+    """
+    args = parser.parse_args()
+    overall_issues_found: bool = False
+    check_rss_file_for_issues(_GIT_ROOT)
+
+    css_file_path: Path = _PUBLIC_DIR / "index.css"
+    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
+    css_issues = check_css_issues(css_file_path)
+    if css_issues:
+        _print_issues(css_file_path, {"CSS_issues": css_issues})
+        overall_issues_found = True
+
+    robots_issues = check_robots_txt_location(_PUBLIC_DIR)
+    if robots_issues:
+        _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
+        overall_issues_found = True
+
+    html_issues_found = _process_html_files(
+        _PUBLIC_DIR, _GIT_ROOT / "content", args.check_fonts, defined_css_vars
+    )
+
+    if overall_issues_found or html_issues_found:
         sys.exit(1)
 
 
