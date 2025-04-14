@@ -23,6 +23,11 @@
   --tertiary: #99d1db; // custom color
   --highlight: #949cbb30; // frappeColors.overlay-2 at 20% opacity
 
+  // Always give access to light and dark colors
+  --light: var(--foreground);
+  --dark: var(--background);
+  --dark-gray: var(--midground-faint);
+
   & img,
   & video:not(:has(::backdrop)),
   // Unsure why this selector is needed
@@ -34,9 +39,7 @@
 // Catppuccin Latte
 :root[data-theme="light"],
 .light-mode {
-  --flamingo: #dd7878;
   --pink: #ee7ed0;
-  --amaranth: #9f2b68; // I love this song by Nightwish
   --red: #be415c;
   --orange: #e08c43;
   --yellow: #8f8620;
@@ -57,6 +60,9 @@
   --secondary: #1e66f5; // latteColors.blue
   --tertiary: #0486b9; // custom color
   --highlight: #7c7f9324; // latteColors.overlay-2 at 20% opacity
+  --light: var(--background);
+  --dark: var(--foreground);
+  --dark-gray: var(--midground-strong);
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
   & video:not(:has(::backdrop)),
