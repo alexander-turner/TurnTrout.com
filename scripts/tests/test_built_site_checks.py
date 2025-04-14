@@ -2873,7 +2873,7 @@ def test_main_handles_markdown_mapping(
             mock_environment["public_dir"],
             md_file,
             should_check_fonts=False,
-            defined_css_variables=set(),
+            defined_css_variables=None,
         )
 
 
@@ -2930,7 +2930,7 @@ def test_main_command_line_args(
         mock_environment["public_dir"],
         None,
         should_check_fonts=True,
-        defined_css_variables=set(),
+        defined_css_variables=None,
     )
 
 

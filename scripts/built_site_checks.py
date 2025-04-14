@@ -61,7 +61,7 @@ def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
 
 
 def check_inline_style_variables(
-    soup: BeautifulSoup, defined_variables: Set[str]
+    soup: BeautifulSoup, defined_variables: Set[str] | None = None
 ) -> list[str]:
     """
     Check elements for inline styles using undefined CSS variables.
@@ -863,7 +863,7 @@ def check_file_for_issues(
     base_dir: Path,
     md_path: Path | None,
     should_check_fonts: bool,
-    defined_css_variables: Set[str] = set(),
+    defined_css_variables: Set[str] | None = None,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1441,7 +1441,7 @@ def _process_html_files(
     public_dir: Path,
     content_dir: Path,
     check_fonts: bool,
-    defined_css_vars: Set[str],
+    defined_css_vars: Set[str] | None = None,
 ) -> bool:
     """
     Processes all HTML files in the public directory and returns if issues were
