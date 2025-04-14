@@ -16,7 +16,7 @@ const test = base.extend<TestFixtures>({
 
 test.beforeEach(async ({ page }) => {
   if (!isDesktopViewport(page)) {
-    return // Popovers only work on desktop
+    test.skip()
   }
 
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
@@ -48,6 +48,7 @@ test("Internal links show popover on hover (lostpixel)", async ({ page, dummyLin
 
 test("External links do not show popover on hover (lostpixel)", async ({ page }) => {
   const externalLink = page.locator(".external").first()
+  await externalLink.scrollIntoViewIfNeeded()
   await expect(externalLink).toBeVisible()
 
   // Initial state - no popover
