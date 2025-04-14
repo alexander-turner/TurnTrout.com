@@ -278,10 +278,10 @@ Exponential font sizing
 <span class="h5">Header 5</span>
 
 : <span>Normal text</span>
-<span style="font-size:var(--text-size-90)">Smaller text</span>
-<span style="font-size:var(--text-size-85)">Smaller text</span>
-<span style="font-size:var(--text-size-80)">Smaller text</span>
-<span style="font-size:var(--text-size-70)">Smaller text</span>
+<span style="font-size:var(--font-size-90)">Smaller text</span>
+<span style="font-size:var(--font-size-85)">Smaller text</span>
+<span style="font-size:var(--font-size-80)">Smaller text</span>
+<span style="font-size:var(--font-size-70)">Smaller text</span>
 
 All spacing is a simple multiple of a base measurement
 : If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.

@@ -82,6 +82,7 @@
     color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
     var(--secondary)
   );
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
     --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
