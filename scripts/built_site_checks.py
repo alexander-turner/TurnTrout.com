@@ -1392,6 +1392,7 @@ def main() -> None:
     """
     args = parser.parse_args()
     issues_found: bool = False
+    check_rss_file_for_issues(_GIT_ROOT)
 
     # check_rss_file_for_issues(git_root)
     css_issues = check_css_issues(_PUBLIC_DIR / "index.css")

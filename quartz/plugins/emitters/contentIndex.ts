@@ -1,6 +1,5 @@
 import type { Root } from "hast"
 
-import { execSync } from "child_process"
 import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
@@ -104,17 +103,6 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
   </rss>`
 }
 
-// Helper function to get current branch
-function getCurrentGitBranch(): string {
-  try {
-    // Get current branch name, trim whitespace
-    return execSync("git rev-parse --abbrev-ref HEAD").toString().trim()
-  } catch {
-    // Fallback to development if git command fails
-    return "dev"
-  }
-}
-
 export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {
@@ -122,8 +110,6 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
     // skipcq: JS-0116 Have to return async for type signature
     async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
-      const currentBranch = getCurrentGitBranch()
-      const isMainBranch = currentBranch === "main"
 
       for (const [, file] of content) {
         const sourcePath = file.data.filePath as FilePath
@@ -135,8 +121,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
         if (opts?.enableSiteMap) {
           graph.addEdge(sourcePath, joinSegments(ctx.argv.output, "sitemap.xml") as FilePath)
         }
-        // Only add RSS dependency if we're on main branch
-        if (opts?.enableRSS && isMainBranch) {
+        if (opts?.enableRSS) {
           graph.addEdge(sourcePath, joinSegments(ctx.argv.output, "rss.xml") as FilePath)
         }
       }
@@ -147,8 +132,6 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
       const cfg = ctx.cfg.configuration
       const emitted: FilePath[] = []
       const linkIndex: ContentIndex = new Map()
-      const currentBranch = getCurrentGitBranch()
-      const isMainBranch = currentBranch === "main"
 
       for (const [tree, file] of content) {
         const slug = file.data.slug as FullSlug
@@ -182,7 +165,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
       }
 
       // Only generate RSS feed if we're on main branch
-      if (opts?.enableRSS && isMainBranch) {
+      if (opts?.enableRSS) {
         emitted.push(
           await write({
             ctx,
