@@ -134,7 +134,11 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     for link in links:
         if not isinstance(link, Tag):
             continue
-        if not link.has_attr("href") or link["href"].startswith("https://"):
+        if (
+            not link.has_attr("href")
+            or not isinstance(link["href"], str)
+            or not link["href"].startswith("https://")
+        ):
             invalid_internal_links.append(link)
 
     return invalid_internal_links
