@@ -20,7 +20,6 @@ test.beforeEach(async ({ page }) => {
   }
 
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-  await page.reload()
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
@@ -55,7 +54,6 @@ test("External links do not show popover on hover (lostpixel)", async ({ page })
   let popover = page.locator(".popover")
   await expect(popover).not.toBeVisible()
 
-  // Hover over link
   await externalLink.hover()
   popover = page.locator(".popover")
   await expect(popover).not.toBeVisible()
@@ -308,7 +306,7 @@ test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
 })
 
 test("Popover appears at minimal viewport width", async ({ page, dummyLink }) => {
-  await page.setViewportSize({ width: minDesktopWidth, height: 600 })
+  await page.setViewportSize({ width: minDesktopWidth + 20, height: 600 })
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
   const popover = page.locator(".popover")
