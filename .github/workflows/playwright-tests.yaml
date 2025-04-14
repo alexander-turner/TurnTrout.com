@@ -76,6 +76,19 @@ jobs:
       - name: Serve Quartz
         run: npx quartz build --serve &
 
+      - name: Wait for server
+        run: |
+          # Wait for the server to be ready
+          while ! nc -z localhost 8080; do
+            sleep 0.1 # Check every 100ms
+            # Check if server is still running
+            if ! ps -p "$SERVER_PID" > /dev/null; then
+              echo "Server failed to start"
+              exit 1
+            fi
+          done
+          echo "Server is ready"
+
       - name: Run Playwright tests
         run: |
           npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
