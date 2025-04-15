@@ -10,21 +10,36 @@ import {
   normalizeRelativeURLs,
 } from "../../util/path"
 import { videoId } from "../component_utils"
-import { locationToStorageKey, isLocalUrl } from "./spa_utils"
+import { debounce } from "./component_script_utils"
+import { isLocalUrl } from "./spa_utils"
 
 declare global {
   interface Window {
-    __scrollRestorationSetupDone?: boolean
     __routerInitialized?: boolean
+    spaNavigate: (url: URL, opts?: { scroll?: boolean }) => Promise<void>
   }
 }
 
 const NODE_TYPE_ELEMENT = 1
 const announcer = document.createElement("route-announcer")
 
-function getScrollPosition() {
+function getScrollPosition(): number {
   return Math.round(window.scrollY)
 }
+
+// Debounced function to update scroll state in history
+const updateScrollState = debounce(
+  (() => {
+    const currentScroll = getScrollPosition()
+    // Add logging for replaceState
+    console.debug(
+      `[updateScrollState] replaceState scroll: ${currentScroll}, current state:`,
+      history.state,
+    )
+    history.replaceState({ ...history.state, scroll: currentScroll }, "")
+  }) as () => void,
+  100,
+)
 
 /**
  * Typeguard to check if a target is an Element
@@ -81,70 +96,12 @@ function scrollToHash(hash: string) {
   }
 }
 
-/**
- * Desired algorithm:
- * 1. At first, sessionStorage is empty
- * 3. Be able to go forward and backward in history, restoring scroll position each time. This includes anchor navigation.
- * 4. If we aren't navigating the history, then:
- * 4a when leaving a page, save the scroll position to sessionStorage
- * 4b when arriving at a page, restore the scroll position from sessionStorage
- */
-
-function saveScrollPosition(): void {
-  const scrollPos = getScrollPosition()
-  const key = locationToStorageKey(window.location)
-  console.debug(`Saving scroll position: ${scrollPos} for ${key}`)
-  sessionStorage.setItem(key, scrollPos.toString())
-}
-
 let parser: DOMParser
+
 /**
- * Core navigation function that:
- * 1. Fetches new page content
- * 2. Updates the DOM using micromorph
- * 3. Handles scroll position
- * 4. Updates browser history
- * 5. Manages page title and announcements
+ * Fetches page content and updates the DOM, head, title, etc.
  */
-async function navigate(url: URL) {
-  parser = parser || new DOMParser()
-
-  // Clean up any existing popovers
-  const existingPopovers = document.querySelectorAll(".popover")
-  existingPopovers.forEach((popover) => popover.remove())
-
-  // Save scroll position before navigation
-  saveScrollPosition()
-
-  // Store the current scroll position in history state
-  const currentScroll = getScrollPosition()
-  const state = {
-    scroll: currentScroll,
-    hash: url.hash,
-    pathname: url.pathname,
-  }
-
-  history.pushState(state, "", url)
-
-  let contents: string | undefined
-
-  try {
-    const res = await fetch(url.toString())
-    const contentType = res.headers.get("content-type")
-    if (contentType?.startsWith("text/html")) {
-      contents = await res.text()
-    } else {
-      window.location.href = url.toString()
-      return
-    }
-  } catch {
-    window.location.href = url.toString()
-    return
-  }
-
-  if (!contents) return
-
-  const html = parser.parseFromString(contents, "text/html")
+async function updatePage(html: Document, url: URL): Promise<void> {
   normalizeRelativeURLs(html, url)
 
   let title = html.querySelector("title")?.textContent
@@ -154,14 +111,16 @@ async function navigate(url: URL) {
     const h1 = document.querySelector("h1")
     title = h1?.innerText ?? h1?.textContent ?? url.pathname
   }
+
   if (announcer.textContent !== title) {
     announcer.textContent = title
   }
   announcer.dataset.persist = ""
+  // Append announcer to the *new* body before morph
+  // micromorph will merge it into the existing DOM structure
   html.body.appendChild(announcer)
 
   // Clean up potential extension-injected siblings around the video
-  // Prevents reloading the video when navigating between pages
   const videoElement = document.getElementById(videoId)
   if (videoElement && videoElement.parentElement) {
     const parent = videoElement.parentElement
@@ -179,23 +138,62 @@ async function navigate(url: URL) {
   elementsToRemove.forEach((el) => el.remove())
   const elementsToAdd = html.head.querySelectorAll(":not([spa-preserve])")
   elementsToAdd.forEach((el) => document.head.appendChild(el.cloneNode(true)))
+}
 
-  // Handle scroll behavior based on navigation type
-  const isSamePageNavigation = url.pathname === window.location.pathname
-  if (isSamePageNavigation && url.hash) {
-    // For same-page anchor navigation, scroll to the target element
-    const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
-    el?.scrollIntoView({ behavior: "smooth" })
+/**
+ * Handles navigation triggered by clicking a link.
+ * Fetches new content, updates history, updates DOM, and handles scrolling.
+ */
+async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
+  parser = parser || new DOMParser()
+
+  // Clean up any existing popovers
+  const existingPopovers = document.querySelectorAll(".popover")
+  existingPopovers.forEach((popover) => popover.remove())
+
+  // Store the current scroll position in history state *before* navigating
+  const currentScroll = getScrollPosition()
+  // Remove unused state properties hash/pathname
+  const state = { scroll: currentScroll }
+
+  let contents: string | undefined
+  try {
+    const res = await fetch(url.toString())
+    const contentType = res.headers.get("content-type")
+    if (contentType?.startsWith("text/html")) {
+      contents = await res.text()
+    } else {
+      // Non-HTML response, fallback to full page load
+      window.location.href = url.toString()
+      return
+    }
+  } catch (e) {
+    console.error("Fetch error:", e)
+    // Network error, fallback to full page load
+    window.location.href = url.toString()
+    return
+  }
+
+  if (!contents) return
+
+  // Push state *before* updating page to associate state with the *new* URL
+  // Add logging for pushState
+  console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
+  history.pushState(state, "", url)
+
+  const html = parser.parseFromString(contents, "text/html")
+  await updatePage(html, url)
+
+  // Handle scrolling *after* DOM update
+  if (opts?.scroll === false) {
+    // explicitly skip scroll
+    console.debug("Skipping scroll restoration due to data-router-no-scroll")
+  } else if (url.hash) {
+    console.debug(`Scrolling to hash: ${url.hash}`)
+    scrollToHash(url.hash)
   } else {
-    // For page navigation, restore scroll position from storage
-    const key = locationToStorageKey(window.location)
-    const savedScroll = sessionStorage.getItem(key)
-
-    // Go to 0 if no scroll position is saved
-    window.scrollTo({
-      top: savedScroll ? parseInt(savedScroll) : 0,
-      behavior: "instant",
-    })
+    console.debug("Scrolling to top")
+    window.scrollTo({ top: 0, behavior: "instant" })
   }
 
   notifyNav(getFullSlug(window))
@@ -203,54 +201,112 @@ async function navigate(url: URL) {
 window.spaNavigate = navigate
 
 /**
+ * Handles the popstate event triggered by browser back/forward buttons.
+ * Fetches content for the target URL, updates DOM, and restores scroll position from state.
+ */
+async function handlePopstate(event: PopStateEvent): Promise<void> {
+  parser = parser || new DOMParser()
+
+  const targetUrl = new URL(window.location.toString())
+  // Add logging for received popstate event state
+  console.debug(
+    `[handlePopstate] Navigating to ${targetUrl.pathname}, received state:`,
+    event.state,
+  )
+
+  try {
+    const res = await fetch(targetUrl.toString())
+    const contentType = res.headers.get("content-type")
+    if (!res.ok || !contentType?.startsWith("text/html")) {
+      // If fetch fails or not HTML, trigger full page load
+      window.location.reload()
+      return
+    }
+    const contents = await res.text()
+    const html = parser.parseFromString(contents, "text/html")
+
+    // Update DOM and head
+    await updatePage(html, targetUrl)
+
+    // Restore scroll position *after* DOM update
+    const scrollTarget = event.state?.scroll as number | undefined
+    if (typeof scrollTarget === "number") {
+      // Add logging for popstate scroll restoration
+      console.debug(`[handlePopstate] Restoring scroll from state: ${scrollTarget}`)
+      window.scrollTo({ top: scrollTarget, behavior: "instant" })
+    } else if (targetUrl.hash) {
+      console.debug(`[handlePopstate] Scrolling to hash: ${targetUrl.hash}`)
+      scrollToHash(targetUrl.hash)
+    } else {
+      console.debug("popstate: Scrolling to top (no state/hash)")
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }
+
+    notifyNav(getFullSlug(window))
+  } catch (error) {
+    console.error("Popstate navigation error:", error)
+    // Fallback to full reload on error
+    window.location.reload()
+  }
+}
+
+/**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
- * - Handles browser back/forward navigation
- * - Provides programmatic navigation methods (go, back, forward)
+ * - Handles browser back/forward navigation (popstate)
+ * - Sets up manual scroll restoration and state saving
  */
 function createRouter() {
   if (typeof window !== "undefined" && !window.__routerInitialized) {
     window.__routerInitialized = true
 
+    // Setup manual scroll restoration and state saving
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual"
+      // Add listener to update scroll state in history during user scrolling
+      window.addEventListener("scroll", updateScrollState)
+      console.debug("Manual scroll restoration enabled.")
+    } else {
+      console.warn("Manual scroll restoration not supported.")
+    }
+
+    // Add click listener for SPA navigation
     document.addEventListener("click", async (event) => {
-      const { url } = getOpts(event) ?? {}
-      // dont hijack behaviour, just let browser act normally
-      if (!url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) return
-      event.preventDefault()
-
-      try {
-        console.log(`[Router] Click navigation to ${url.toString()}`)
-        // Then navigate to update content
-        await navigate(url)
-      } catch {
-        window.location.assign(url)
+      // Use getOpts to check for valid local links ignoring modifiers/targets
+      const opts = getOpts(event)
+      if (!opts || !opts.url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) {
+        return // Let browser handle normal links, external links, or modified clicks
       }
-    })
-    window.addEventListener("popstate", async (event) => {
-      try {
-        // Navigate to update the content
-        await navigate(new URL(window.location.toString()))
 
-        // If we have state, restore the scroll position
-        if (event.state?.scroll !== undefined) {
-          window.scrollTo({ top: event.state.scroll, behavior: "instant" })
-        }
-      } catch (error) {
-        console.error("Navigation error:", error)
-        window.location.reload()
+      event.preventDefault() // Prevent default link behavior
+
+      try {
+        console.debug(`[Router] Click navigation to ${opts.url.toString()}`)
+        // Pass scroll option from dataset (e.g., data-router-no-scroll)
+        await navigate(opts.url, { scroll: opts.scroll })
+      } catch (e) {
+        console.error("Click navigation error:", e)
+        // Fallback to standard navigation if spa navigation fails
+        window.location.assign(opts.url)
       }
     })
 
-    // Remove the load event listener and just call scrollToHash directly
+    // Add popstate listener for back/forward navigation
+    window.addEventListener("popstate", handlePopstate)
+
+    // Handle hash scrolling on initial page load
     if (window.location.hash) {
-      scrollToHash(window.location.hash)
+      // Needs slight delay for elements to be ready after initial render
+      setTimeout(() => scrollToHash(window.location.hash), 0)
     }
   }
 
+  // Return router API (optional, kept for potential future use)
   return {
+    // The main navigation is now spaNavigate attached to window
     go(pathname: RelativeURL) {
       const url = new URL(pathname, window.location.toString())
-      return navigate(url)
+      return window.spaNavigate(url) // Use the global navigate function
     },
     back() {
       return window.history.back()
@@ -261,50 +317,26 @@ function createRouter() {
   }
 }
 
-// Only initialize if not already done
 if (typeof window !== "undefined" && !window.__routerInitialized) {
-  // Set up scroll restoration first
-  setupScrollRestoration()
-
-  // Proceed with creating the router
   createRouter()
+
+  // Restore scroll position on initial load/reload if available in state
+  // Do this *before* potentially scrolling to a hash
+  // Add logging for initial state check
+  console.debug(`[Initial Load] Checking history state:`, history.state)
+  const initialScroll = history.state?.scroll as number | undefined
+  if (typeof initialScroll === "number") {
+    // Add logging for initial scroll restoration
+    console.debug(`[Initial Load] Restoring scroll from state: ${initialScroll}`)
+    window.scrollTo({ top: initialScroll, behavior: "instant" })
+  } else if (window.location.hash) {
+    // Fallback to hash scrolling if no state scroll is found
+    console.debug(`Initial load: Scrolling to hash: ${window.location.hash}`)
+    // Needs slight delay for elements to be ready after initial render
+    setTimeout(() => scrollToHash(window.location.hash), 0)
+  }
+
   notifyNav(getFullSlug(window))
-}
-
-/**
- * Sets up scroll restoration (only runs once per session)
- * - Sets history.scrollRestoration to "manual"
- * - Restores scroll position from sessionStorage when navigating back
- * - Saves scroll position to sessionStorage when leaving a page
- */
-function setupScrollRestoration(): void {
-  if ("scrollRestoration" in history && !window.__scrollRestorationSetupDone) {
-    window.__scrollRestorationSetupDone = true
-    // Browsers don't handle SPA scroll restoration by default
-    history.scrollRestoration = "manual"
-
-    restoreScroll()
-    window.addEventListener("beforeunload", saveScrollPosition)
-  } else {
-    console.warn("Scroll restoration already set up. Shouldn't reach here.")
-  }
-}
-
-/**
- * Restores scroll position from sessionStorage
- * - Only restores scroll position if there is no hash in the URL
- * - Removes the scroll position from sessionStorage after restoring
- */
-function restoreScroll(): void {
-  const key = locationToStorageKey(window.location)
-  const savedScroll = sessionStorage.getItem(key)
-
-  if (savedScroll && !window.location.hash) {
-    const scrollPos = parseInt(savedScroll, 10)
-    console.warn(`Restoring scroll position: ${scrollPos} for ${key}`)
-    window.scrollTo({ top: scrollPos, behavior: "instant" })
-    sessionStorage.removeItem(key)
-  }
 }
 
 /**

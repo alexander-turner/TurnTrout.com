@@ -7,7 +7,7 @@ export declare global {
     dispatchEvent<K extends keyof CustomEventMap>(ev: CustomEventMap[K] | UIEvent): void
   }
   interface Window {
-    spaNavigate(url: URL, isBack: boolean = false)
+    spaNavigate: (url: URL, opts?: { scroll?: boolean }) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
   }
 }
