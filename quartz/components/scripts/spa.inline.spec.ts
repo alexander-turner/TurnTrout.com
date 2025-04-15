@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
   // Navigate to a page that uses the SPA inline logic
-  // and wait for network to be idle (i.e., no more requests)
+  // and wait for network to be idle
   await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
