@@ -1,4 +1,3 @@
-// This file implements a client-side router for Single Page Applications (SPA)
 // It handles navigation between pages without full page reloads
 
 import micromorph from "micromorph"
@@ -27,11 +26,9 @@ function getScrollPosition(): number {
   return Math.round(window.scrollY)
 }
 
-// Debounced function to update scroll state in history
 const updateScrollState = debounce(
   (() => {
     const currentScroll = getScrollPosition()
-    // Add logging for replaceState
     console.debug(
       `[updateScrollState] replaceState scroll: ${currentScroll}, current state:`,
       history.state,
@@ -153,8 +150,8 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
 
   // Store the current scroll position in history state *before* navigating
   const currentScroll = getScrollPosition()
-  // Remove unused state properties hash/pathname
   const state = { scroll: currentScroll }
+  console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
 
   let contents: string | undefined
   try {
@@ -177,7 +174,6 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
   if (!contents) return
 
   // Push state *before* updating page to associate state with the *new* URL
-  // Add logging for pushState
   console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
   history.pushState(state, "", url)
 
@@ -208,7 +204,6 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
   parser = parser || new DOMParser()
 
   const targetUrl = new URL(window.location.toString())
-  // Add logging for received popstate event state
   console.debug(
     `[handlePopstate] Navigating to ${targetUrl.pathname}, received state:`,
     event.state,
@@ -231,7 +226,6 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
     // Restore scroll position *after* DOM update
     const scrollTarget = event.state?.scroll as number | undefined
     if (typeof scrollTarget === "number") {
-      // Add logging for popstate scroll restoration
       console.debug(`[handlePopstate] Restoring scroll from state: ${scrollTarget}`)
       window.scrollTo({ top: scrollTarget, behavior: "instant" })
     } else if (targetUrl.hash) {
@@ -322,11 +316,9 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
 
   // Restore scroll position on initial load/reload if available in state
   // Do this *before* potentially scrolling to a hash
-  // Add logging for initial state check
   console.debug(`[Initial Load] Checking history state:`, history.state)
   const initialScroll = history.state?.scroll as number | undefined
   if (typeof initialScroll === "number") {
-    // Add logging for initial scroll restoration
     console.debug(`[Initial Load] Restoring scroll from state: ${initialScroll}`)
     window.scrollTo({ top: initialScroll, behavior: "instant" })
   } else if (window.location.hash) {

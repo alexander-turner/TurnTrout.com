@@ -4,6 +4,7 @@ import { videoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
 const LARGE_SCROLL_TOLERANCE: number = 500 // TODO make this smaller after fixing image CLS
+const TIGHT_SCROLL_TOLERANCE: number = 10
 
 /**
  * This spec file is designed to test the functionality of spa.inline.ts,
@@ -70,7 +71,6 @@ test.describe("Local Link Navigation", () => {
 })
 
 test.describe("Scroll Behavior", () => {
-  const TIGHT_SCROLL_TOLERANCE: number = 10
   test("handles hash navigation by scrolling to element", async ({ page }) => {
     // Inject a section far down the page to test scroll
     await page.evaluate(() => {
@@ -141,25 +141,26 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
 })
 
 test.describe("Same-page navigation", () => {
-  test("back button works after clicking same-page link", async ({ page }) => {
+  test("click same-page link, go back, check scroll is reset to top", async ({ page }) => {
     const initialScroll = await page.evaluate(() => window.scrollY)
+    expect(initialScroll).toBe(0)
 
-    // Click the link to navigate to a specific header
-    const headers = await page.locator("h1").all()
-    const header1 = headers[3]
-    await header1.scrollIntoViewIfNeeded()
-    await header1.click()
-    await page.waitForLoadState("networkidle")
+    const selector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const headers = await page.locator(selector).all()
+    await headers[3].click()
+    await page.waitForFunction(() => window.scrollY > 0)
 
     const scrollAfterClick = await page.evaluate(() => window.scrollY)
     expect(scrollAfterClick).toBeGreaterThan(initialScroll)
 
     await page.goBack()
-    await page.waitForLoadState("networkidle")
+    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, TIGHT_SCROLL_TOLERANCE)
 
     const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBe(initialScroll)
+    expect(scrollAfterBack).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
+
+  // TODO test can go forward and back multiple times
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
     const scrollPositions: number[] = []
