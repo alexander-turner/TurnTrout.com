@@ -114,15 +114,28 @@ test.describe("Scroll Behavior", () => {
   test("restores scroll position on page refresh", async ({ page }) => {
     const targetScroll = 50
     await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), targetScroll)
-    await page.waitForTimeout(100) // Ensure scroll event processing
+    await page.waitForLoadState("networkidle")
 
     let currentScroll = await page.evaluate(() => window.scrollY)
-    expect(Math.abs(currentScroll - targetScroll)).toBeLessThanOrEqual(10)
+    expect(currentScroll).toBe(targetScroll)
 
-    await page.reload({ waitUntil: "domcontentloaded" })
+    await page.reload({ waitUntil: "networkidle" })
 
     currentScroll = await page.evaluate(() => window.scrollY)
+    // Just check approximately
     expect(Math.abs(currentScroll - targetScroll)).toBeLessThanOrEqual(10)
+  })
+
+  test("Restores scroll position when refreshing on hash", async ({ page }) => {
+    const hash = "header-3"
+    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "networkidle" })
+    const currentScroll = await page.evaluate(() => window.scrollY)
+    expect(currentScroll).toBeGreaterThan(0)
+
+    await page.reload({ waitUntil: "networkidle" })
+    const newScroll = await page.evaluate(() => window.scrollY)
+    expect(newScroll).toBeGreaterThan(0)
+    expect(newScroll).toBe(currentScroll)
   })
 })
 
