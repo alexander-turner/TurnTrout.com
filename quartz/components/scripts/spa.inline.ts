@@ -226,14 +226,7 @@ function createRouter() {
       event.preventDefault()
 
       try {
-        // Push state here before navigation
-        const state = {
-          hash: url.hash,
-          pathname: url.pathname,
-          timestamp: Date.now(),
-        }
-        window.history.pushState(state, document.title, url.toString())
-
+        console.log(`[Router] Click navigation to ${url.toString()}`)
         // Then navigate to update content
         await navigate(url)
       } catch {
