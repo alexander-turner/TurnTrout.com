@@ -158,7 +158,6 @@ async function navigate(url: URL) {
     Array.from(parent.childNodes).forEach((node) => {
       if (node !== videoElement) {
         parent.removeChild(node)
-        console.log("removed node", node)
       }
     })
   }
