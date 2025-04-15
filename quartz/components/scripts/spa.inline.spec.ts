@@ -173,7 +173,7 @@ test.describe("Same-page navigation", () => {
       expect(scrollPositions[i]).not.toBe(scrollPositions[i - 1])
     }
 
-    // Go back through history and verify each scroll position is within tolerance
+    // Go back through history and verify each scroll position
     for (let i = scrollPositions.length - 2; i >= 0; i--) {
       await page.goBack()
       await page.waitForTimeout(100) // Wait for scroll
