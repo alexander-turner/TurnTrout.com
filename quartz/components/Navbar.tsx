@@ -89,7 +89,9 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
 
   const links = pages.map((page: Page) => (
     <li key={page.slug}>
-      <a href={resolveRelative(currentSlug, page.slug as FullSlug)}>{page.title}</a>
+      <a href={resolveRelative(currentSlug, page.slug as FullSlug)} className="internal">
+        {page.title}
+      </a>
     </li>
   ))
 
@@ -136,7 +138,9 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
       <div id="navbar-left">
         {headerVideoSpan}
         <h2>
-          <a href={baseDir}>{title}</a>
+          <a href={baseDir} className="internal">
+            {title}
+          </a>
         </h2>
         {darkMode}
       </div>
