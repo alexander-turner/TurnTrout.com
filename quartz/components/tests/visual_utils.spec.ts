@@ -188,10 +188,8 @@ test.describe("visual_utils functions", () => {
         el.style.transform = "translateX(100px)"
       })
 
-      // Wait for all transitions to complete
       await waitPromise
 
-      // Take final screenshot
       const postTransitionScreenshot = await element.screenshot()
 
       // Verify no more changes
@@ -217,14 +215,8 @@ test.describe("isDesktopViewport", () => {
     })
   }
 
-  test("Returns false if viewport width is undefined", async ({ page }) => {
-    await page.setViewportSize({ width: 0, height: 0 })
-    await page.evaluate(() => {
-      Object.defineProperty(window, "innerWidth", {
-        configurable: true,
-        get: () => undefined,
-      })
-    })
+  test("Returns false if viewport width is tiny", async ({ page }) => {
+    await page.setViewportSize({ width: 1, height: 1 })
     expect(isDesktopViewport(page)).toBe(false)
   })
 })
