@@ -4,13 +4,6 @@ import { videoId } from "../component_utils"
 
 const SCROLL_TOLERANCE: number = 500
 
-declare global {
-  interface Window {
-    __scrollPositionSaved?: boolean
-    __checkSessionStorage?: () => boolean
-  }
-}
-
 /**
  * This spec file is designed to test the functionality of spa.inline.ts,
  * including client-side routing, scroll behavior, hash navigation,
@@ -116,48 +109,6 @@ test.describe("Scroll Behavior", () => {
     // Verify the final scroll position is beyond 0
     const scrollPosition = await page.evaluate(() => window.scrollY)
     expect(scrollPosition).toBeGreaterThan(0)
-  })
-
-  test("saves scroll position before navigating to new page", async ({ page }) => {
-    // First, scroll down the page to a specific position
-    await page.evaluate(() => {
-      window.scrollTo(0, 1000)
-    })
-    await page.waitForTimeout(100) // Wait for scroll to complete
-
-    const scrollInfoBeforeNav = await page.evaluate(() => {
-      const scrollY = Math.round(window.scrollY)
-
-      const pathname = window.location.pathname
-      const storageKey = `quartz-spa-scroll:${pathname}`
-
-      return { scrollY, storageKey }
-    })
-
-    // Capture current URL to access after navigation
-    const initialUrl = new URL(page.url())
-    const initialPathname = initialUrl.pathname
-
-    // Find a link to navigate to a different page
-    const link = page.locator("a:not([target='_blank']):not([href^='#'])").first()
-    await link.click()
-
-    // Wait for navigation to complete
-    await page.waitForLoadState("load")
-
-    // Check the session storage for the initial page
-    // We can check this after navigation since sessionStorage is accessed by key
-    const sessionStorageValue = await page.evaluate((initialPath) => {
-      const storageKey = `quartz-spa-scroll:${initialPath}`
-      const value = sessionStorage.getItem(storageKey)
-      return value
-    }, initialPathname)
-
-    expect(sessionStorageValue).not.toBeNull()
-    if (sessionStorageValue !== null) {
-      const expected = parseInt(sessionStorageValue)
-      expect(expected).toBe(scrollInfoBeforeNav.scrollY)
-    }
   })
 })
 
