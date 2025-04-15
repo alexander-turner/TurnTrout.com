@@ -81,6 +81,15 @@ function scrollToHash(hash: string) {
   }
 }
 
+/**
+ * Desired algorithm:
+ * 1. At first, sessionStorage is empty
+ * 3. Be able to go forward and backward in history, restoring scroll position each time. This includes anchor navigation.
+ * 4. If we aren't navigating the history, then:
+ * 4a when leaving a page, save the scroll position to sessionStorage
+ * 4b when arriving at a page, restore the scroll position from sessionStorage
+ */
+
 function saveScrollPosition(): void {
   const scrollPos = getScrollPosition()
   const key = locationToStorageKey(window.location)
@@ -163,7 +172,6 @@ async function navigate(url: URL) {
     })
   }
 
-  // Morph body
   await micromorph(document.body, html.body)
 
   // Patch head
@@ -192,8 +200,8 @@ async function navigate(url: URL) {
 
   notifyNav(getFullSlug(window))
 }
-
 window.spaNavigate = navigate
+
 /**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
@@ -264,6 +272,42 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
 }
 
 /**
+ * Sets up scroll restoration (only runs once per session)
+ * - Sets history.scrollRestoration to "manual"
+ * - Restores scroll position from sessionStorage when navigating back
+ * - Saves scroll position to sessionStorage when leaving a page
+ */
+function setupScrollRestoration(): void {
+  if ("scrollRestoration" in history && !window.__scrollRestorationSetupDone) {
+    window.__scrollRestorationSetupDone = true
+    // Browsers don't handle SPA scroll restoration by default
+    history.scrollRestoration = "manual"
+
+    restoreScroll()
+    window.addEventListener("beforeunload", saveScrollPosition)
+  } else {
+    console.warn("Scroll restoration already set up. Shouldn't reach here.")
+  }
+}
+
+/**
+ * Restores scroll position from sessionStorage
+ * - Only restores scroll position if there is no hash in the URL
+ * - Removes the scroll position from sessionStorage after restoring
+ */
+function restoreScroll(): void {
+  const key = locationToStorageKey(window.location)
+  const savedScroll = sessionStorage.getItem(key)
+
+  if (savedScroll && !window.location.hash) {
+    const scrollPos = parseInt(savedScroll, 10)
+    console.warn(`Restoring scroll position: ${scrollPos} for ${key}`)
+    window.scrollTo({ top: scrollPos, behavior: "instant" })
+    sessionStorage.removeItem(key)
+  }
+}
+
+/**
  * Registers the RouteAnnouncer custom element if not already defined
  * Sets up necessary ARIA attributes and styling for accessibility
  */
@@ -285,26 +329,4 @@ if (!customElements.get("route-announcer")) {
       }
     },
   )
-}
-
-function setupScrollRestoration(): void {
-  if ("scrollRestoration" in history && !window.__scrollRestorationSetupDone) {
-    window.__scrollRestorationSetupDone = true
-    history.scrollRestoration = "manual"
-
-    restoreScroll()
-    window.addEventListener("beforeunload", saveScrollPosition)
-  }
-}
-
-function restoreScroll(): void {
-  const key = locationToStorageKey(window.location)
-  const savedScroll = sessionStorage.getItem(key)
-
-  if (savedScroll && !window.location.hash) {
-    const scrollPos = parseInt(savedScroll, 10)
-    console.warn(`Restoring scroll position: ${scrollPos} for ${key}`)
-    window.scrollTo({ top: scrollPos, behavior: "instant" })
-    sessionStorage.removeItem(key)
-  }
 }
