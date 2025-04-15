@@ -10,6 +10,7 @@ import {
   normalizeRelativeURLs,
 } from "../../util/path"
 import { videoId } from "../component_utils"
+import { locationToStorageKey, isLocalUrl } from "./spa_utils"
 
 declare global {
   interface Window {
@@ -18,18 +19,8 @@ declare global {
   }
 }
 
-// adapted from `micromorph`
-// https://github.com/natemoo-re/micromorph
 const NODE_TYPE_ELEMENT = 1
 const announcer = document.createElement("route-announcer")
-
-// TODO test
-function locationToStorageKey(location: Location) {
-  // Remove hash from location
-  const url = new URL(location.toString())
-  url.hash = ""
-  return `scrollPos:${url.toString()}`
-}
 
 function getScrollPosition() {
   return Math.round(window.scrollY)
@@ -51,26 +42,10 @@ if ("scrollRestoration" in history) {
 }
 
 /**
- * Type guard to check if a target is an Element
+ * Typeguard to check if a target is an Element
  */
 const isElement = (target: EventTarget | null): target is Element =>
   (target as Node)?.nodeType === NODE_TYPE_ELEMENT
-
-// TODO split off into a separate file to test
-/**
- * Checks if a URL is local (same origin as current window)
- */
-const isLocalUrl = (href: string): boolean => {
-  try {
-    const url = new URL(href)
-    if (window.location.origin === url.origin) {
-      return true
-    }
-  } catch {
-    // ignore
-  }
-  return false
-}
 
 /**
  * Extracts navigation options from a click event
