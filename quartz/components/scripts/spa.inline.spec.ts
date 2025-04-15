@@ -110,8 +110,23 @@ test.describe("Scroll Behavior", () => {
     const scrollPosition = await page.evaluate(() => window.scrollY)
     expect(scrollPosition).toBeGreaterThan(0)
   })
+
+  test("restores scroll position on page refresh", async ({ page }) => {
+    const targetScroll = 50
+    await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), targetScroll)
+    await page.waitForTimeout(100) // Ensure scroll event processing
+
+    let currentScroll = await page.evaluate(() => window.scrollY)
+    expect(Math.abs(currentScroll - targetScroll)).toBeLessThanOrEqual(10)
+
+    await page.reload({ waitUntil: "domcontentloaded" })
+
+    currentScroll = await page.evaluate(() => window.scrollY)
+    expect(Math.abs(currentScroll - targetScroll)).toBeLessThanOrEqual(10)
+  })
 })
 
+// TODO make tests ignore images/videos? Due to CLS
 test.describe("Popstate (Back/Forward) Navigation", () => {
   test("browser back and forward updates content appropriately", async ({ page }) => {
     const initialUrl = page.url()
