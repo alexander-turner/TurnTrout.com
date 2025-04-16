@@ -185,6 +185,94 @@ async function updatePage(html: Document, url: URL): Promise<void> {
 }
 
 /**
+ * Interface for the result of fetching content.
+ */
+interface FetchResult {
+  status: "success" | "error" | "fallback"
+  content?: string
+  finalUrl: URL
+  responseStatus?: number
+  contentType?: string | null
+}
+
+/**
+ * Fetches content for a given URL.
+ */
+async function fetchContent(url: URL): Promise<FetchResult> {
+  let responseStatus: number | undefined
+  let contentType: string | null = null
+  let content: string | undefined
+
+  try {
+    const res = await fetch(url.toString())
+    responseStatus = res.status
+    contentType = res.headers.get("content-type")
+
+    if (res.ok && contentType?.startsWith("text/html")) {
+      content = await res.text()
+      return { status: "success", content, finalUrl: url, responseStatus, contentType }
+    } else {
+      console.warn(
+        `[fetchContent] Fetch failed or non-HTML. Status: ${responseStatus}, Type: ${contentType}. Triggering fallback.`,
+      )
+      window.location.href = url.toString()
+      return { status: "fallback", finalUrl: url }
+    }
+  } catch (e) {
+    console.error(`[fetchContent] Fetch error for ${url.toString()}:`, e)
+    window.location.href = url.toString()
+    return { status: "fallback", finalUrl: url }
+  }
+}
+
+/**
+ * Handles potential meta-refresh redirects found in the fetched content.
+ */
+async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchResult> {
+  if (initialFetchResult.status !== "success" || typeof initialFetchResult.content !== "string") {
+    return initialFetchResult
+  }
+
+  const { content: initialContent, finalUrl: initialUrl } = initialFetchResult
+  let finalContent = initialContent
+  let finalUrl = initialUrl
+
+  const metaRefreshRegex =
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=([^"'>\s]+)["']?/i
+  const match = initialContent.match(metaRefreshRegex)
+
+  if (match && match[1]) {
+    const redirectTargetRaw = match[1]
+    try {
+      const redirectUrl = new URL(redirectTargetRaw, initialUrl)
+      const redirectFetchResult = await fetchContent(redirectUrl)
+
+      if (
+        redirectFetchResult.status !== "success" ||
+        typeof redirectFetchResult.content !== "string"
+      ) {
+        console.warn(
+          `[handleRedirect] Failed to fetch redirect target ${redirectUrl.toString()}. Propagating fallback.`,
+        )
+        return redirectFetchResult
+      }
+
+      finalContent = redirectFetchResult.content
+      finalUrl = redirectFetchResult.finalUrl
+    } catch (e) {
+      console.error(
+        `[handleRedirect] Error processing meta refresh from ${initialUrl.pathname} to ${redirectTargetRaw}:`,
+        e,
+      )
+      window.location.href = initialUrl.toString()
+      return { status: "fallback", finalUrl: initialUrl }
+    }
+  }
+
+  return { status: "success", content: finalContent, finalUrl }
+}
+
+/**
  * Handles navigation triggered by clicking a link.
  * Fetches new content, updates history, updates DOM, and handles scrolling.
  */
@@ -200,69 +288,72 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
   const state = { scroll: currentScroll }
   console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
 
-  let contents: string | undefined
-  let fetchStatus: number | undefined
-  let fetchContentType: string | null = null
-  try {
-    console.debug(`[navigate] Fetching ${url.toString()}`)
-    const res = await fetch(url.toString())
-    fetchStatus = res.status
-    fetchContentType = res.headers.get("content-type")
-    console.debug(`[navigate] Fetch response: status=${fetchStatus}, type=${fetchContentType}`)
-
-    if (res.ok && fetchContentType?.startsWith("text/html")) {
-      contents = await res.text()
-    } else {
-      console.warn(
-        `[navigate] Fetch failed or non-HTML response. Status: ${fetchStatus}, Type: ${fetchContentType}. Falling back to full load.`,
-      )
-      window.location.href = url.toString()
-      return
-    }
-  } catch (e) {
-    console.error(`[navigate] Fetch error for ${url.toString()}:`, e)
-    // Network error, fallback to full page load
-    window.location.href = url.toString()
-    return
-  }
-
-  if (!contents) {
-    console.warn(
-      "[navigate] No content received after successful fetch (this shouldn't happen). Aborting SPA nav.",
+  const initialFetch = await fetchContent(url)
+  if (initialFetch.status !== "success") {
+    console.debug(
+      `[navigate] Initial fetch failed or triggered fallback for ${url.toString()}. Navigation aborted.`,
     )
+    // Fallback (window.location set) happened in fetchContent
     return
   }
 
-  // Push state *before* updating page to associate state with the *new* URL
-  console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
+  const redirectResult = await handleRedirect(initialFetch)
+  if (redirectResult.status !== "success" || typeof redirectResult.content !== "string") {
+    console.debug(
+      `[navigate] Redirect handling failed or triggered fallback for ${url.toString()}. Navigation aborted.`,
+    )
+    // Fallback (window.location set) happened in handleRedirect or fetchContent (for redirect target)
+    return
+  }
+
+  const { content: contents, finalUrl } = redirectResult
+
+  // Push state *before* updating page, using the ORIGINAL requested URL
+  console.debug(
+    `[navigate] pushState scroll: ${currentScroll}, state obj:`,
+    state,
+    ` for original URL: ${url.toString()}`,
+  )
   history.pushState(state, "", url)
 
   let html: Document
   try {
     html = parser.parseFromString(contents, "text/html")
   } catch (e) {
-    console.error(`[navigate] Error parsing HTML for ${url.toString()}:`, e)
-    window.location.href = url.toString()
+    console.error(
+      `[navigate] Error parsing HTML for ${finalUrl.toString()} (original URL: ${url.toString()}):`,
+      e,
+    )
+    window.location.href = url.toString() // Fallback to original requested URL
     return
   }
 
-  console.debug(`[navigate] Calling updatePage for ${url.pathname}`)
+  console.debug(
+    `[navigate] Calling updatePage for ${finalUrl.pathname} (original URL: ${url.pathname})`,
+  )
   try {
+    // Pass the original URL to updatePage for consistency, content is from finalUrl.
     await updatePage(html, url)
-    console.debug(`[navigate] updatePage finished for ${url.pathname}`)
+    console.debug(
+      `[navigate] updatePage finished for ${finalUrl.pathname} (original URL: ${url.pathname})`,
+    )
   } catch (e) {
-    console.error(`[navigate] Error during updatePage for ${url.pathname}:`, e)
-    window.location.href = url.toString()
+    console.error(
+      `[navigate] Error during updatePage for ${finalUrl.pathname} (original URL: ${url.pathname}):`,
+      e,
+    )
+    window.location.href = url.toString() // Fallback to original requested URL
     return
   }
 
-  // Handle scrolling *after* DOM update
+  // Handle scrolling *after* DOM update, based on the FINAL URL
   if (opts?.scroll === false) {
     // explicitly skip scroll
     console.debug("Skipping scroll restoration due to data-router-no-scroll")
-  } else if (url.hash) {
-    console.debug(`Scrolling to hash: ${url.hash}`)
-    scrollToHash(url.hash)
+  } else if (finalUrl.hash) {
+    // Check hash on the final URL
+    console.debug(`Scrolling to hash on final URL: ${finalUrl.hash}`)
+    scrollToHash(finalUrl.hash)
   } else {
     console.debug("Scrolling to top")
     window.scrollTo({ top: 0, behavior: "instant" })
