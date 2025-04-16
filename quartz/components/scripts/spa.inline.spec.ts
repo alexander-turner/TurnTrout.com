@@ -1,3 +1,9 @@
+/**
+ * This spec file is designed to test the functionality of spa.inline.ts,
+ * including client-side routing, scroll behavior, hash navigation,
+ * and the route announcer for accessibility.
+ */
+
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
@@ -6,26 +12,18 @@ import { isDesktopViewport } from "../tests/visual_utils"
 
 const LARGE_SCROLL_TOLERANCE: number = 500 // TODO make this smaller after fixing image CLS
 const TIGHT_SCROLL_TOLERANCE: number = 10
-const DEBOUNCE_WAIT_BUFFERED: number = DEBOUNCE_WAIT_MS + 50 // Timeout slightly longer than debounce
+const DEBOUNCE_WAIT_BUFFERED: number = DEBOUNCE_WAIT_MS + 50
 
-/**
- * This spec file is designed to test the functionality of spa.inline.ts,
- * including client-side routing, scroll behavior, hash navigation,
- * and the route announcer for accessibility.
- */
-
-test.beforeEach(async ({ page }) => {
-  // Log any console errors to help diagnose issues
-  page.on("pageerror", (error) => console.error("Page Error:", error))
-
-  // Navigate to a page that uses the SPA inline logic
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
-
-  // Dispatch the 'nav' event to ensure the router is properly initialized
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("nav"))
-  })
-})
+async function scrollWithWait(page: Page, scrollPos: number): Promise<void> {
+  await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+  await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
+  await page.waitForFunction(
+    () =>
+      window.history.state &&
+      typeof window.history.state.scroll === "number" &&
+      window.history.state.scroll >= 0,
+  )
+}
 
 async function addMarker(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -44,6 +42,19 @@ async function doesMarkerExist(page: Page): Promise<boolean> {
     return (window as WindowWithMarker).spaNavigationTestMarker === true
   })
 }
+
+test.beforeEach(async ({ page }) => {
+  // Log any console errors to help diagnose issues
+  page.on("pageerror", (error) => console.error("Page Error:", error))
+
+  // Navigate to a page that uses the SPA inline logic
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+
+  // Dispatch the 'nav' event to ensure the router is properly initialized
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("nav"))
+  })
+})
 
 test.describe("Local Link Navigation", () => {
   const testCases: [string, string][] = [
@@ -139,11 +150,20 @@ test.describe("Scroll Behavior", () => {
 
   for (const [scrollPos] of [[50], [100], [1000]]) {
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
-      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
-      await page.waitForFunction((scrollPos) => window.scrollY === scrollPos, scrollPos)
+      await scrollWithWait(page, scrollPos)
+      await page.reload({ waitUntil: "networkidle" })
 
-      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
-      await page.waitForFunction(() => window.history.state.scroll > 0)
+      const currentScroll = await page.evaluate(() => window.scrollY)
+      expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+    })
+
+    test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
+      page,
+    }) => {
+      await page.goto("http://localhost:8080/test-page#header-3")
+
+      await scrollWithWait(page, scrollPos)
+      await page.reload()
 
       const currentScroll = await page.evaluate(() => window.scrollY)
       expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
@@ -163,7 +183,6 @@ test.describe("Scroll Behavior", () => {
   })
 })
 
-// TODO make tests ignore images/videos? Due to CLS
 test.describe("Popstate (Back/Forward) Navigation", () => {
   test("browser back and forward updates content appropriately", async ({ page }) => {
     const initialUrl = page.url()
@@ -200,8 +219,6 @@ test.describe("Same-page navigation", () => {
     const scrollAfterBack = await page.evaluate(() => window.scrollY)
     expect(scrollAfterBack).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
-
-  // TODO test can go forward and back multiple times
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
     const scrollPositions: number[] = []
@@ -308,7 +325,24 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 
 // TODO http://localhost:8080/read-hpmor can't refresh partway through page without flash before it sets the scroll position
 
-// TODO test return from external page restores scroll position
+test("restores scroll position when returning from external page", async ({ page }) => {
+  // Insert link to external page
+  await page.evaluate(() => {
+    const link = document.createElement("a")
+    link.href = "https://github.com/alexander-turner"
+    link.textContent = "External link"
+    document.body.prepend(link)
+  })
+
+  // Navigate to external page
+  const externalLink = page.locator("a").first()
+  await externalLink.click()
+
+  await page.evaluate(() => window.scrollTo(0, 100))
+
+  await page.goBack({ waitUntil: "networkidle" })
+  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+})
 
 test.describe("Fetch & Redirect Handling", () => {
   test("successfully handles meta-refresh redirect", async ({ page }) => {

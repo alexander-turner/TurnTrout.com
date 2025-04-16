@@ -425,7 +425,7 @@ function createRouter() {
     // Setup manual scroll restoration and state saving
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual"
-      // Add listener to update scroll state in history during user scrolling
+
       window.addEventListener("scroll", () => {
         console.debug("Scroll event fired")
         updateScrollState()
