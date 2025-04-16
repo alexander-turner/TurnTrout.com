@@ -29,9 +29,33 @@ test.describe("Local Link Navigation", () => {
   test("navigates without a full reload", async ({ page }) => {
     const initialUrl = page.url()
 
-    const localLink = page.locator("a").first()
-    await localLink.click()
-    await page.waitForLoadState("networkidle")
+    // Add a marker to the window object to check persistence across navigation
+    await page.evaluate(() => {
+      interface WindowWithMarker extends Window {
+        spaNavigationTestMarker?: boolean
+      }
+      ;(window as WindowWithMarker).spaNavigationTestMarker = true
+    })
+
+    await page.evaluate(() => {
+      const link = document.createElement("a")
+      link.href = "/design"
+      document.body.appendChild(link)
+    })
+
+    const designLink = page.locator("a").last()
+    await designLink.scrollIntoViewIfNeeded()
+    await designLink.click()
+    await page.waitForLoadState("domcontentloaded")
+
+    // Check if the marker still exists, indicating no full reload
+    const markerExists = await page.evaluate(() => {
+      interface WindowWithMarker extends Window {
+        spaNavigationTestMarker?: boolean
+      }
+      return (window as WindowWithMarker).spaNavigationTestMarker === true
+    })
+    expect(markerExists).toBe(true)
 
     expect(page.url()).not.toBe(initialUrl)
     await expect(page.locator("body")).toBeVisible()
