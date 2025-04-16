@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
@@ -25,41 +25,59 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
-test.describe("Local Link Navigation", () => {
-  test("navigates without a full reload", async ({ page }) => {
-    const initialUrl = page.url()
-
-    // Add a marker to the window object to check persistence across navigation
-    await page.evaluate(() => {
-      interface WindowWithMarker extends Window {
-        spaNavigationTestMarker?: boolean
-      }
-      ;(window as WindowWithMarker).spaNavigationTestMarker = true
-    })
-
-    await page.evaluate(() => {
-      const link = document.createElement("a")
-      link.href = "/design"
-      document.body.appendChild(link)
-    })
-
-    const designLink = page.locator("a").last()
-    await designLink.scrollIntoViewIfNeeded()
-    await designLink.click()
-    await page.waitForLoadState("domcontentloaded")
-
-    // Check if the marker still exists, indicating no full reload
-    const markerExists = await page.evaluate(() => {
-      interface WindowWithMarker extends Window {
-        spaNavigationTestMarker?: boolean
-      }
-      return (window as WindowWithMarker).spaNavigationTestMarker === true
-    })
-    expect(markerExists).toBe(true)
-
-    expect(page.url()).not.toBe(initialUrl)
-    await expect(page.locator("body")).toBeVisible()
+async function addMarker(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface WindowWithMarker extends Window {
+      spaNavigationTestMarker?: boolean
+    }
+    ;(window as WindowWithMarker).spaNavigationTestMarker = true
   })
+}
+
+async function doesMarkerExist(page: Page): Promise<boolean> {
+  return await page.evaluate(() => {
+    interface WindowWithMarker extends Window {
+      spaNavigationTestMarker?: boolean
+    }
+    return (window as WindowWithMarker).spaNavigationTestMarker === true
+  })
+}
+
+test.describe("Local Link Navigation", () => {
+  const testCases: [string, string][] = [
+    ["http://localhost:8080/design", "Design"],
+    ["http://localhost:8080/", "Home"], // An alias for /index.html
+  ]
+
+  for (const [href] of testCases) {
+    test(`navigates without a full reload for ${href}`, async ({ page }: { page: Page }) => {
+      const initialUrl = page.url()
+
+      await addMarker(page)
+
+      await page.evaluate((linkHref: string) => {
+        const link = document.createElement("a")
+        link.href = linkHref
+        link.textContent = "Text"
+        document.body.appendChild(link)
+      }, href)
+
+      const designLink = page.locator("a").last()
+      await designLink.scrollIntoViewIfNeeded()
+      await designLink.click()
+      await page.waitForLoadState("domcontentloaded")
+
+      // Explicitly wait for the URL to change
+      await page.waitForURL((url) => url.toString() !== initialUrl)
+
+      // Check if the marker still exists, indicating no full reload
+      const markerExists = await doesMarkerExist(page)
+      expect(markerExists).toBe(true)
+
+      expect(page.url()).not.toBe(initialUrl)
+      await expect(page.locator("body")).toBeVisible()
+    })
+  }
 
   test("ignores links with target=_blank", async ({ page }) => {
     await page.evaluate(() => {
