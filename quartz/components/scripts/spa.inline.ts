@@ -14,9 +14,54 @@ declare global {
   }
 }
 
+// INLINE MODULE CODE
+
+if (typeof window !== "undefined" && !window.__routerInitialized) {
+  createRouter()
+
+  // Restore scroll position on initial load/reload if available in state
+  // Do this *before* potentially scrolling to a hash
+  console.debug(`[Initial Load] Checking history state:`, history.state)
+  const initialScroll = history.state?.scroll as number | undefined
+  if (typeof initialScroll === "number") {
+    console.debug(`[Initial Load] Restoring scroll from state: ${initialScroll}`)
+    window.scrollTo({ top: initialScroll, behavior: "instant" })
+  } else if (window.location.hash) {
+    // Fallback to hash scrolling if no state scroll is found
+    console.debug(`Initial load: Scrolling to hash: ${window.location.hash}`)
+    scrollToHash(window.location.hash)
+  }
+
+  notifyNav(getFullSlug(window))
+}
+
+// SPA accessibility announcement for screen readers
+const announcer = document.createElement("route-announcer")
+
+if (!customElements.get("route-announcer")) {
+  const attrs = {
+    "aria-live": "assertive", // Announce changes immediately
+    "aria-atomic": "true", // Read entirety of changes
+    style:
+      "position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px",
+  }
+
+  customElements.define(
+    "route-announcer",
+    class RouteAnnouncer extends HTMLElement {
+      connectedCallback() {
+        for (const [key, value] of Object.entries(attrs)) {
+          this.setAttribute(key, value)
+        }
+      }
+    },
+  )
+}
+
+// FUNCTIONS
+
 const NODE_TYPE_ELEMENT = 1
 export const DEBOUNCE_WAIT_MS = 100
-const announcer = document.createElement("route-announcer")
 
 function getScrollPosition(): number {
   return Math.round(window.scrollY)
@@ -289,48 +334,4 @@ function createRouter() {
       setTimeout(() => scrollToHash(window.location.hash), 0)
     }
   }
-}
-
-if (typeof window !== "undefined" && !window.__routerInitialized) {
-  createRouter()
-
-  // Restore scroll position on initial load/reload if available in state
-  // Do this *before* potentially scrolling to a hash
-  console.debug(`[Initial Load] Checking history state:`, history.state)
-  const initialScroll = history.state?.scroll as number | undefined
-  if (typeof initialScroll === "number") {
-    console.debug(`[Initial Load] Restoring scroll from state: ${initialScroll}`)
-    window.scrollTo({ top: initialScroll, behavior: "instant" })
-  } else if (window.location.hash) {
-    // Fallback to hash scrolling if no state scroll is found
-    console.debug(`Initial load: Scrolling to hash: ${window.location.hash}`)
-    // Needs slight delay for elements to be ready after initial render
-    setTimeout(() => scrollToHash(window.location.hash), 0)
-  }
-
-  notifyNav(getFullSlug(window))
-}
-
-/**
- * Registers the RouteAnnouncer custom element if not already defined
- * Sets up necessary ARIA attributes and styling for accessibility
- */
-if (!customElements.get("route-announcer")) {
-  const attrs = {
-    "aria-live": "assertive",
-    "aria-atomic": "true",
-    style:
-      "position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px",
-  }
-
-  customElements.define(
-    "route-announcer",
-    class RouteAnnouncer extends HTMLElement {
-      connectedCallback() {
-        for (const [key, value] of Object.entries(attrs)) {
-          this.setAttribute(key, value)
-        }
-      }
-    },
-  )
 }
