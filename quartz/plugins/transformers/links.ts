@@ -63,6 +63,10 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                 const classes = (node.properties.className ?? []) as string[]
                 const internalMarkers = ["#", ".", "/"]
 
+                if (dest.startsWith("#")) {
+                  classes.push("same-page-link")
+                }
+
                 const isExternal = !internalMarkers.some((prefix) => dest.startsWith(prefix))
 
                 classes.push(isExternal ? "external" : "internal")

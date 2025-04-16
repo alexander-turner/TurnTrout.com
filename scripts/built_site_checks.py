@@ -129,9 +129,40 @@ def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
     return unrendered_footnotes
 
 
+def _check_anchor_classes(
+    link: Tag, href: str, invalid_anchors: list[str]
+) -> None:
+    """
+    Check if a same-page anchor link has the required classes. Updates
+    `invalid_anchors` with errors if the link is missing classes.
+
+    NOTE: Only checks links that literally start with "#". Not all same-page links are specified like that.
+    """
+    # Handle class attribute potentially being a string, list, or None
+    class_attr = link.get("class", "")
+    if isinstance(class_attr, str):
+        classes = set(class_attr.split())
+    elif isinstance(class_attr, list):
+        # Ensure all elements in the list are strings before creating the set
+        classes = {str(c) for c in class_attr}
+    else:
+        raise ValueError(
+            f"Unexpected class attribute type: {type(class_attr)}"
+        )
+
+    required_classes = {"internal", "same-page-link"}
+    if not required_classes.issubset(classes):
+        missing = required_classes - classes
+        _append_to_list(
+            invalid_anchors,
+            href,
+            prefix=f"Anchor missing classes {missing}: ",
+        )
+
+
 def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     """
-    Check for links which do not have an href attribute or which start with
+    Check for links which do not have an href attribute, or which start with
     "https://".
     """
     invalid_internal_links = []
@@ -168,9 +199,13 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
                     href,
                     prefix="Invalid anchor: ",
                 )
+
+            _check_anchor_classes(link, href, invalid_anchors)
+
         elif (href.startswith("/") or href.startswith(".")) and "#" in href:
-            # Check anchor in other internal page
+            # Check anchor validity in other internal pages
             page_path, anchor = href.split("#", 1)
+
             # Remove leading ".." from page_path
             page_path = page_path.lstrip("./")
             full_path = base_dir / page_path

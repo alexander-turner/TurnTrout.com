@@ -151,7 +151,7 @@ def sample_html() -> str:
         <a href="http://localhost:8000">Localhost Link</a>
         <a href="https://turntrout.com">Turntrout Link</a>
         <a href="/other-page#invalid-anchor">Turntrout Link with Anchor</a>
-        <a href="#valid-anchor">Valid Anchor</a>
+        <a href="#valid-anchor" class="internal same-page-link">Valid Anchor</a>
         <a href="#invalid-anchor">Invalid Anchor</a>
         <div id="valid-anchor">Valid Anchor Content</div>
         <p>Normal paragraph</p>
@@ -305,6 +305,7 @@ def test_check_invalid_anchors(sample_soup, temp_site_root):
     assert set(result) == {
         "Invalid anchor: #invalid-anchor",
         "Invalid anchor: /other-page#invalid-anchor",
+        "Anchor missing classes {'internal', 'same-page-link'}: #invalid-anchor",
     }
 
 
@@ -565,7 +566,10 @@ def test_check_file_for_issues(tmp_path):
         file_path, tmp_path, tmp_path / "content", should_check_fonts=False
     )
     assert issues["localhost_links"] == ["https://localhost:8000"]
-    assert issues["invalid_anchors"] == ["Invalid anchor: #invalid-anchor"]
+    assert issues["invalid_anchors"] == [
+        "Invalid anchor: #invalid-anchor",
+        "Anchor missing classes {'internal', 'same-page-link'}: #invalid-anchor",
+    ]
     assert issues["problematic_paragraphs"] == [
         "Problematic paragraph: Table: Test table"
     ]
