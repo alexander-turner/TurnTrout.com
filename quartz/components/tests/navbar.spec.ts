@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-import { videoId as pondVideoId } from "../component_utils"
+import { pondVideoId as pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 

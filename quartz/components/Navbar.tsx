@@ -5,7 +5,7 @@ import React from "react"
 
 import { i18n } from "../i18n"
 import { type FullSlug, pathToRoot, resolveRelative } from "../util/path"
-import { videoId } from "./component_utils"
+import { pondVideoId } from "./component_utils"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
@@ -98,7 +98,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   const headerVideoSpan = (
     <span id="header-video-container" data-persist-video="true">
       <video
-        id={videoId}
+        id={pondVideoId}
         className="no-select no-vsc"
         loop
         muted

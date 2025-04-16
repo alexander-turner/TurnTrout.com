@@ -2,13 +2,8 @@
 
 import micromorph from "micromorph"
 
-import {
-  type FullSlug,
-  type RelativeURL,
-  getFullSlug,
-  normalizeRelativeURLs,
-} from "../../util/path"
-import { videoId } from "../component_utils"
+import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
+import { pondVideoId } from "../component_utils"
 import { debounce } from "./component_script_utils"
 import { isLocalUrl } from "./spa_utils"
 
@@ -20,6 +15,7 @@ declare global {
 }
 
 const NODE_TYPE_ELEMENT = 1
+export const DEBOUNCE_WAIT_MS = 100
 const announcer = document.createElement("route-announcer")
 
 function getScrollPosition(): number {
@@ -35,7 +31,7 @@ const updateScrollState = debounce(
     )
     history.replaceState({ ...history.state, scroll: currentScroll }, "")
   }) as () => void,
-  100,
+  DEBOUNCE_WAIT_MS,
 )
 
 /**
@@ -118,7 +114,7 @@ async function updatePage(html: Document, url: URL): Promise<void> {
   html.body.appendChild(announcer)
 
   // Clean up potential extension-injected siblings around the video
-  const videoElement = document.getElementById(videoId)
+  const videoElement = document.getElementById(pondVideoId)
   if (videoElement && videoElement.parentElement) {
     const parent = videoElement.parentElement
     Array.from(parent.childNodes).forEach((node) => {
@@ -264,7 +260,6 @@ function createRouter() {
       console.warn("Manual scroll restoration not supported.")
     }
 
-    // Add click listener for SPA navigation
     document.addEventListener("click", async (event) => {
       // Use getOpts to check for valid local links ignoring modifiers/targets
       const opts = getOpts(event)
@@ -288,26 +283,11 @@ function createRouter() {
     // Add popstate listener for back/forward navigation
     window.addEventListener("popstate", handlePopstate)
 
-    // Handle hash scrolling on initial page load
+    // Handle hash scrolling on initial page load TODO does this work
     if (window.location.hash) {
       // Needs slight delay for elements to be ready after initial render
       setTimeout(() => scrollToHash(window.location.hash), 0)
     }
-  }
-
-  // Return router API (optional, kept for potential future use)
-  return {
-    // The main navigation is now spaNavigate attached to window
-    go(pathname: RelativeURL) {
-      const url = new URL(pathname, window.location.toString())
-      return window.spaNavigate(url) // Use the global navigate function
-    },
-    back() {
-      return window.history.back()
-    },
-    forward() {
-      return window.history.forward()
-    },
   }
 }
 

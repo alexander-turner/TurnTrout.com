@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-import { videoId } from "../component_utils"
+import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
 const LARGE_SCROLL_TOLERANCE: number = 500 // TODO make this smaller after fixing image CLS
@@ -247,9 +247,9 @@ test.describe("SPA Navigation DOM Cleanup", () => {
         videoContainer.appendChild(actualVideoParent)
         navbarLeft.prepend(videoContainer)
       }
-    }, videoId)
+    }, pondVideoId)
 
-    await expect(page.locator(`#${videoId}`)).toBeVisible()
+    await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
     await expect(page.locator("#rogue-sibling")).toBeVisible()
 
     // Trigger SPA navigation
@@ -258,8 +258,10 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 
     // Verify rogue sibling is removed, video remains
     await expect(page.locator("#rogue-sibling")).not.toBeVisible()
-    await expect(page.locator(`#${videoId}`)).toBeVisible()
+    await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
   })
 })
 
 // TODO http://localhost:8080/read-hpmor can't refresh partway through page without flash before it sets the scroll position
+
+// TODO test return from external page restores scroll position
