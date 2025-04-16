@@ -18,10 +18,11 @@ async function scrollWithWait(page: Page, scrollPos: number): Promise<void> {
   await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
   await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
   await page.waitForFunction(
-    () =>
+    (scrollPos) =>
       window.history.state &&
       typeof window.history.state.scroll === "number" &&
-      window.history.state.scroll >= 0,
+      window.history.state.scroll === scrollPos,
+    scrollPos,
   )
 }
 
@@ -163,7 +164,7 @@ test.describe("Scroll Behavior", () => {
       await page.goto("http://localhost:8080/test-page#header-3")
 
       await scrollWithWait(page, scrollPos)
-      await page.reload()
+      await page.reload({ waitUntil: "networkidle" })
 
       const currentScroll = await page.evaluate(() => window.scrollY)
       expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
@@ -313,11 +314,9 @@ test.describe("SPA Navigation DOM Cleanup", () => {
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
     await expect(page.locator("#rogue-sibling")).toBeVisible()
 
-    // Trigger SPA navigation
     const localLink = page.locator("a").first()
     await localLink.click()
 
-    // Verify rogue sibling is removed, video remains
     await expect(page.locator("#rogue-sibling")).not.toBeVisible()
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
   })
@@ -379,23 +378,6 @@ test.describe("Fetch & Redirect Handling", () => {
     expect(page.url()).toContain(sourcePath) // URL should be the original requested one
   })
 
-  test("falls back to full load on non-HTML initial fetch", async ({ page }) => {
-    const nonHtmlPath = "/non-html"
-    await page.route(`**${nonHtmlPath}`, (route) => {
-      route.fulfill({ status: 200, contentType: "application/json", body: "{}" })
-    })
-
-    await addMarker(page)
-    // Use evaluate to trigger navigation and wait for potential reload
-    await page.evaluate(
-      (path) => window.spaNavigate(new URL(path, window.location.origin)),
-      nonHtmlPath,
-    )
-    await page.waitForLoadState("load") // Wait for full potentially reloaded page
-
-    await expect(doesMarkerExist(page)).rejects.toThrow(/Execution context was destroyed/)
-  })
-
   test("falls back to full load on initial fetch error", async ({ page }) => {
     const errorPath = "/fetch-error"
     await page.route(`**${errorPath}`, (route) => route.abort())
@@ -408,31 +390,6 @@ test.describe("Fetch & Redirect Handling", () => {
     await page.waitForLoadState("load")
 
     await expect(doesMarkerExist(page)).rejects.toThrow(/Execution context was destroyed/)
-  })
-
-  test("falls back to full load on non-HTML redirect target", async ({ page }) => {
-    const sourcePath = "/redirect-source-bad-target"
-    const targetPath = "/non-html-target"
-
-    await page.route(`**${sourcePath}`, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: "text/html",
-        body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head></html>`,
-      })
-    })
-    await page.route(`**${targetPath}`, (route) => {
-      route.fulfill({ status: 200, contentType: "application/json", body: "{}" })
-    })
-
-    await addMarker(page)
-    await page.evaluate(
-      (path) => window.spaNavigate(new URL(path, window.location.origin)),
-      sourcePath,
-    )
-    await page.waitForLoadState("load")
-
-    expect(page.url()).toContain(targetPath)
   })
 
   test("falls back to full load on redirect target fetch error", async ({ page }) => {

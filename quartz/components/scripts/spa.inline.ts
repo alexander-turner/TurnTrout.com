@@ -458,10 +458,11 @@ function createRouter() {
     // Add popstate listener for back/forward navigation
     window.addEventListener("popstate", handlePopstate)
 
-    // Handle hash scrolling on initial page load TODO does this work
-    if (window.location.hash) {
-      // Needs slight delay for elements to be ready after initial render
-      setTimeout(() => scrollToHash(window.location.hash), 0)
+    // Handle hash scrolling on initial page load, unless scroll will be restored from history
+    const scrollFromState = history.state?.scroll as number | undefined
+    if (window.location.hash && typeof scrollFromState !== "number") {
+      console.debug("Initial load: Scrolling to hash")
+      scrollToHash(window.location.hash)
     }
   }
 }
