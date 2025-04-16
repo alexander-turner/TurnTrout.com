@@ -1,14 +1,4 @@
-/**
- * Generates a unique storage key for a given Location object, ignoring the hash.
- *
- * @param location - The Location object.
- * @returns A string suitable for use as a sessionStorage key.
- */
-export function locationToStorageKey(location: Location): string {
-  const url = new URL(location.toString())
-  url.hash = ""
-  return `scrollPos:${url.toString()}`
-}
+export const DEBOUNCE_WAIT_MS = 100
 
 /**
  * Checks if a URL is local (same origin as the current window).

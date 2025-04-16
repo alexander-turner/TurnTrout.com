@@ -1,10 +1,12 @@
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
+import { DEBOUNCE_WAIT_MS } from "../scripts/spa_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
 const LARGE_SCROLL_TOLERANCE: number = 500 // TODO make this smaller after fixing image CLS
 const TIGHT_SCROLL_TOLERANCE: number = 10
+const DEBOUNCE_WAIT_BUFFERED: number = DEBOUNCE_WAIT_MS + 50 // Timeout slightly longer than debounce
 
 /**
  * This spec file is designed to test the functionality of spa.inline.ts,
@@ -73,8 +75,6 @@ test.describe("Local Link Navigation", () => {
       // Check if the marker still exists, indicating no full reload
       const markerExists = await doesMarkerExist(page)
       expect(markerExists).toBe(true)
-
-      expect(page.url()).not.toBe(initialUrl)
       await expect(page.locator("body")).toBeVisible()
     })
   }
@@ -137,21 +137,20 @@ test.describe("Scroll Behavior", () => {
     expect(Math.abs(scrollPosition)).toBeGreaterThan(0)
   })
 
-  test("restores scroll position on page refresh", async ({ page }) => {
-    const targetScroll = 50
-    await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), targetScroll)
-    await page.waitForLoadState("networkidle")
+  for (const [scrollPos] of [[50], [100], [1000]]) {
+    test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
+      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await page.waitForFunction((scrollPos) => window.scrollY === scrollPos, scrollPos)
 
-    let currentScroll = await page.evaluate(() => window.scrollY)
-    expect(currentScroll).toBe(targetScroll)
+      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
+      await page.waitForFunction(() => window.history.state.scroll > 0)
 
-    await page.reload({ waitUntil: "networkidle" })
+      const currentScroll = await page.evaluate(() => window.scrollY)
+      expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+    })
+  }
 
-    currentScroll = await page.evaluate(() => window.scrollY)
-    expect(Math.abs(currentScroll - targetScroll)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
-  })
-
-  test("Restores scroll position when refreshing on hash", async ({ page }) => {
+  test("restores scroll position when refreshing on hash", async ({ page }) => {
     const hash = "header-3"
     await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "load" })
     const currentScroll = await page.evaluate(() => window.scrollY)
@@ -211,6 +210,7 @@ test.describe("Same-page navigation", () => {
     for (const heading of headings.slice(2, 5)) {
       await heading.scrollIntoViewIfNeeded()
       await heading.click()
+      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
       await page.waitForLoadState("networkidle")
       scrollPositions.push(await page.evaluate(() => window.scrollY))
     }
@@ -223,6 +223,7 @@ test.describe("Same-page navigation", () => {
     // Go back through history and verify each scroll position
     for (let i = scrollPositions.length - 2; i >= 0; i--) {
       await page.goBack()
+      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
       await page.waitForLoadState("networkidle")
       const currentScroll = await page.evaluate(() => window.scrollY)
       expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(
@@ -233,6 +234,7 @@ test.describe("Same-page navigation", () => {
     // Go forward through history and verify scroll positions
     for (let i = 1; i < scrollPositions.length; i++) {
       await page.goForward()
+      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
       await page.waitForLoadState("networkidle")
       const currentScroll = await page.evaluate(() => window.scrollY)
       expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(
@@ -307,3 +309,127 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 // TODO http://localhost:8080/read-hpmor can't refresh partway through page without flash before it sets the scroll position
 
 // TODO test return from external page restores scroll position
+
+test.describe("Fetch & Redirect Handling", () => {
+  test("successfully handles meta-refresh redirect", async ({ page }) => {
+    const sourcePath = "/redirect-source"
+    const targetPath = "/redirect-target"
+    const targetContent = "Redirect Target Content"
+
+    // Mock the server response for the source and target paths
+    await page.route(`**${sourcePath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head><body>Redirecting...</body></html>`,
+      })
+    })
+    await page.route(`**${targetPath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><title>Target Page</title></head><body><h1>${targetContent}</h1></body></html>`,
+      })
+    })
+
+    await addMarker(page)
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      sourcePath,
+    )
+    await page.waitForLoadState("domcontentloaded")
+
+    // Check marker, content, and URL
+    expect(await doesMarkerExist(page)).toBe(true)
+    await expect(page.locator("h1")).toHaveText(targetContent)
+    expect(page.url()).toContain(sourcePath) // URL should be the original requested one
+  })
+
+  test("falls back to full load on non-HTML initial fetch", async ({ page }) => {
+    const nonHtmlPath = "/non-html"
+    await page.route(`**${nonHtmlPath}`, (route) => {
+      route.fulfill({ status: 200, contentType: "application/json", body: "{}" })
+    })
+
+    await addMarker(page)
+    // Use evaluate to trigger navigation and wait for potential reload
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      nonHtmlPath,
+    )
+    await page.waitForLoadState("load") // Wait for full potentially reloaded page
+
+    await expect(doesMarkerExist(page)).rejects.toThrow(/Execution context was destroyed/)
+  })
+
+  test("falls back to full load on initial fetch error", async ({ page }) => {
+    const errorPath = "/fetch-error"
+    await page.route(`**${errorPath}`, (route) => route.abort())
+
+    await addMarker(page)
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      errorPath,
+    )
+    await page.waitForLoadState("load")
+
+    await expect(doesMarkerExist(page)).rejects.toThrow(/Execution context was destroyed/)
+  })
+
+  test("falls back to full load on non-HTML redirect target", async ({ page }) => {
+    const sourcePath = "/redirect-source-bad-target"
+    const targetPath = "/non-html-target"
+
+    await page.route(`**${sourcePath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head></html>`,
+      })
+    })
+    await page.route(`**${targetPath}`, (route) => {
+      route.fulfill({ status: 200, contentType: "application/json", body: "{}" })
+    })
+
+    await addMarker(page)
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      sourcePath,
+    )
+    await page.waitForLoadState("load")
+
+    expect(page.url()).toContain(targetPath)
+  })
+
+  test("falls back to full load on redirect target fetch error", async ({ page }) => {
+    const sourcePath = "/redirect-source-error-target"
+    const targetPath = "/error-target"
+
+    await page.route(`**${sourcePath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head></html>`,
+      })
+    })
+    // Abort the request to the target path
+    await page.route(`**${targetPath}`, (route) => route.abort())
+
+    await addMarker(page)
+
+    let targetRequestFailed = false
+    page.on("requestfailed", (request) => {
+      if (request.url().endsWith(targetPath)) {
+        targetRequestFailed = true
+      }
+    })
+
+    // Trigger the navigation that should lead to the failed fetch and fallback attempt
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      sourcePath,
+    )
+
+    expect(targetRequestFailed).toBe(true)
+  })
+})

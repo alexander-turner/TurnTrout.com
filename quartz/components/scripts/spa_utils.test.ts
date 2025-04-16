@@ -4,36 +4,9 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals"
 
-import { locationToStorageKey, isLocalUrl } from "./spa_utils"
-
-interface MockLocation {
-  toString: () => string
-  origin?: string
-}
+import { isLocalUrl } from "./spa_utils"
 
 describe("SPA Utilities", () => {
-  describe("locationToStorageKey", () => {
-    it.each([
-      {
-        name: "basic URL",
-        location: { toString: () => "http://localhost:8080/path" } as MockLocation,
-        expected: "scrollPos:http://localhost:8080/path",
-      },
-      {
-        name: "URL with hash",
-        location: { toString: () => "http://localhost:8080/path#section" } as MockLocation,
-        expected: "scrollPos:http://localhost:8080/path",
-      },
-      {
-        name: "URL with query parameters",
-        location: { toString: () => "http://localhost:8080/path?query=value" } as MockLocation,
-        expected: "scrollPos:http://localhost:8080/path?query=value",
-      },
-    ])("should generate correct storage key for $name", ({ location, expected }) => {
-      expect(locationToStorageKey(location as Location)).toBe(expected)
-    })
-  })
-
   describe("isLocalUrl", () => {
     // Mock window.location
     const originalLocation = window.location

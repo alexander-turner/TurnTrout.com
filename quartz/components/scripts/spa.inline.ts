@@ -1,11 +1,12 @@
-// It handles navigation between pages without full page reloads
+// SPA Inline Module
+// Handles navigation between pages without full page reloads
 
 import micromorph from "micromorph"
 
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
 import { pondVideoId } from "../component_utils"
 import { debounce } from "./component_script_utils"
-import { isLocalUrl } from "./spa_utils"
+import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
 
 declare global {
   interface Window {
@@ -61,7 +62,6 @@ if (!customElements.get("route-announcer")) {
 // FUNCTIONS
 
 const NODE_TYPE_ELEMENT = 1
-export const DEBOUNCE_WAIT_MS = 100
 
 function getScrollPosition(): number {
   return Math.round(window.scrollY)
@@ -426,7 +426,10 @@ function createRouter() {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual"
       // Add listener to update scroll state in history during user scrolling
-      window.addEventListener("scroll", updateScrollState)
+      window.addEventListener("scroll", () => {
+        console.debug("Scroll event fired")
+        updateScrollState()
+      })
       console.debug("Manual scroll restoration enabled.")
     } else {
       console.warn("Manual scroll restoration not supported.")
