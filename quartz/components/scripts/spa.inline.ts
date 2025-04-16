@@ -169,7 +169,13 @@ async function updatePage(html: Document, url: URL): Promise<void> {
     })
   }
 
-  await micromorph(document.body, html.body)
+  console.debug(`[updatePage] Starting micromorph for ${url.pathname}`)
+  try {
+    await micromorph(document.body, html.body)
+    console.debug(`[updatePage] Micromorph finished for ${url.pathname}`)
+  } catch (e) {
+    console.error(`[updatePage] Micromorph error for ${url.pathname}:`, e)
+  }
 
   // Patch head
   const elementsToRemove = document.head.querySelectorAll(":not([spa-preserve])")
@@ -195,31 +201,60 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
   console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
 
   let contents: string | undefined
+  let fetchStatus: number | undefined
+  let fetchContentType: string | null = null
   try {
+    console.debug(`[navigate] Fetching ${url.toString()}`)
     const res = await fetch(url.toString())
-    const contentType = res.headers.get("content-type")
-    if (contentType?.startsWith("text/html")) {
+    fetchStatus = res.status
+    fetchContentType = res.headers.get("content-type")
+    console.debug(`[navigate] Fetch response: status=${fetchStatus}, type=${fetchContentType}`)
+
+    if (res.ok && fetchContentType?.startsWith("text/html")) {
       contents = await res.text()
     } else {
-      // Non-HTML response, fallback to full page load
+      console.warn(
+        `[navigate] Fetch failed or non-HTML response. Status: ${fetchStatus}, Type: ${fetchContentType}. Falling back to full load.`,
+      )
       window.location.href = url.toString()
       return
     }
   } catch (e) {
-    console.error("Fetch error:", e)
+    console.error(`[navigate] Fetch error for ${url.toString()}:`, e)
     // Network error, fallback to full page load
     window.location.href = url.toString()
     return
   }
 
-  if (!contents) return
+  if (!contents) {
+    console.warn(
+      "[navigate] No content received after successful fetch (this shouldn't happen). Aborting SPA nav.",
+    )
+    return
+  }
 
   // Push state *before* updating page to associate state with the *new* URL
   console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
   history.pushState(state, "", url)
 
-  const html = parser.parseFromString(contents, "text/html")
-  await updatePage(html, url)
+  let html: Document
+  try {
+    html = parser.parseFromString(contents, "text/html")
+  } catch (e) {
+    console.error(`[navigate] Error parsing HTML for ${url.toString()}:`, e)
+    window.location.href = url.toString()
+    return
+  }
+
+  console.debug(`[navigate] Calling updatePage for ${url.pathname}`)
+  try {
+    await updatePage(html, url)
+    console.debug(`[navigate] updatePage finished for ${url.pathname}`)
+  } catch (e) {
+    console.error(`[navigate] Error during updatePage for ${url.pathname}:`, e)
+    window.location.href = url.toString()
+    return
+  }
 
   // Handle scrolling *after* DOM update
   if (opts?.scroll === false) {
@@ -256,6 +291,7 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
     if (!res.ok || !contentType?.startsWith("text/html")) {
       // If fetch fails or not HTML, trigger full page load
       window.location.reload()
+      console.debug("popstate: Reloading due to non-HTML response")
       return
     }
     const contents = await res.text()
