@@ -1,6 +1,7 @@
 import { test as base, expect, type Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
+import { IGNORE_POPOVER_IDS } from "../scripts/popover_helpers"
 import { takeRegressionScreenshot, isDesktopViewport, showingPreview } from "./visual_utils"
 
 type TestFixtures = {
@@ -312,3 +313,17 @@ test("Popover appears at minimal viewport width", async ({ page, dummyLink }) =>
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 })
+
+const popoversToTest = IGNORE_POPOVER_IDS.filter((id) => id !== "toc-content-mobile")
+for (const id of popoversToTest) {
+  test(`Popover does not show on ${id}`, async ({ page }) => {
+    const element = page.locator(`#${id}`)
+    await expect(element).toBeVisible()
+
+    for (const link of await element.locator("a").all()) {
+      await link.hover()
+      const popover = page.locator(".popover")
+      await expect(popover).not.toBeVisible()
+    }
+  })
+}
