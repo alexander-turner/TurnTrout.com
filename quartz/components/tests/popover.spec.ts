@@ -1,7 +1,7 @@
 import { test as base, expect, type Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
-import { IGNORE_POPOVER_IDS } from "../scripts/popover_helpers"
+import { IGNORE_POPOVER_IDS, POPOVER_SCROLL_OFFSET } from "../scripts/popover_helpers"
 import { takeRegressionScreenshot, isDesktopViewport, showingPreview } from "./visual_utils"
 
 type TestFixtures = {
@@ -129,21 +129,34 @@ test("Popover updates position on window resize", async ({ page, dummyLink }) =>
 })
 
 test("Popover scrolls to hash target", async ({ page }) => {
-  // Find a link with a hash
-  const hashLink = page.locator(".internal[href*='#']").first()
+  const hashLink = page.locator("#first-link-test-page")
   await expect(hashLink).toBeVisible()
 
-  // Show popover
+  const href = await hashLink.getAttribute("href")
+  const targetHref = "/design#visual-regression-testing"
+  expect(href).toContain(targetHref)
+
   await hashLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
-
-  // Get hash target scroll position and wait for scroll
   const popoverInner = popover.locator(".popover-inner")
-  await expect(async () => {
-    const scrollTop = await popoverInner.evaluate((el) => el.scrollTop)
-    expect(scrollTop).toBeGreaterThan(0)
-  }).toPass()
+  const popoverScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+
+  // Find the target element *inside* the popover
+  // Note: The ID is modified in the popover content
+  const targetElementInPopover = popoverInner.locator(`#${targetHref.split("#")[1]}-popover`)
+  await expect(targetElementInPopover).toBeVisible()
+
+  // Calculate the expected scroll position based on the target's offsetTop
+  const expectedScrollTop = await targetElementInPopover.evaluate((el) => {
+    // Assert el is HTMLElement to access offsetTop
+    if (!(el instanceof HTMLElement)) {
+      throw new Error("Target element inside popover is not an HTMLElement")
+    }
+    return el.offsetTop - POPOVER_SCROLL_OFFSET
+  })
+
+  expect(popoverScrollTop).toBeCloseTo(expectedScrollTop, 0)
 })
 
 test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {

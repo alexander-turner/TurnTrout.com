@@ -7,6 +7,7 @@ import {
   escapeLeadingIdNumber,
   IGNORE_POPOVER_IDS,
   fetchWithMetaRedirect,
+  POPOVER_SCROLL_OFFSET,
 } from "./popover_helpers"
 
 const parser = new DOMParser()
@@ -134,7 +135,7 @@ function mouseEnterHandler(this: HTMLLinkElement) {
       if (heading) {
         const popoverInner = popoverElement.querySelector(".popover-inner") as HTMLElement
 
-        popoverInner.scroll({ top: heading.offsetTop - 12, behavior: "instant" })
+        popoverInner.scroll({ top: heading.offsetTop - POPOVER_SCROLL_OFFSET, behavior: "instant" })
       }
     }
 

@@ -8,6 +8,7 @@ export interface PopoverOptions {
 }
 
 export const IGNORE_POPOVER_IDS = ["navbar", "toc-content", "toc-content-mobile"]
+export const POPOVER_SCROLL_OFFSET = 12
 
 /**
  * Fetches content while following HTML meta refresh redirects.
