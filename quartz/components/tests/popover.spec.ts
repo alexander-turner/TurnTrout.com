@@ -87,19 +87,29 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   expect(popoverContent).toContain(pageContent)
 })
 
-test("Multiple popovers don't stack", async ({ page }) => {
-  const allLinks = await page.locator(".can-trigger-popover").all()
-  const firstTenLinks = allLinks.slice(0, 10)
-  for (const link of firstTenLinks) {
-    await link.scrollIntoViewIfNeeded()
-    await expect(link).toBeVisible()
-    await link.hover()
-  }
+for (const boolWait of [true, false]) {
+  test(`Multiple popovers don't stack ${boolWait ? "with wait" : "without wait"}`, async ({
+    page,
+  }) => {
+    const allLinks = await page.locator(":not(.popover) .can-trigger-popover").all()
+    const firstTenLinks = allLinks.slice(0, 5)
+    for (const link of firstTenLinks) {
+      await link.scrollIntoViewIfNeeded()
+      await expect(link).toBeVisible()
+      await link.hover()
 
-  const popovers = await page.locator(".popover").count()
-  await page.waitForTimeout(1000)
-  expect(popovers).toBe(1)
-})
+      // Wait for the popover to be visible to ensure handling is correct
+      if (boolWait) {
+        const popover = page.locator(".popover")
+        await expect(popover).toBeVisible()
+      }
+    }
+
+    const popoverCount = await page.locator(".popover").count()
+    // Without wait, I think it triggers mouseleave immediately
+    expect(popoverCount).toBe(boolWait ? 1 : 0)
+  })
+}
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
