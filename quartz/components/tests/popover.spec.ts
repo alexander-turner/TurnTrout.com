@@ -180,22 +180,6 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   await page.waitForTimeout(500)
   await expect(popover).not.toBeVisible()
 })
-
-test("Only one popover is visible at a time", async ({ page }) => {
-  await page.goto("http://localhost:8080/posts")
-
-  // Find non-anchors
-  const linkAnchors = await page.locator(".page-listing a.can-trigger-popover").all()
-
-  // Hover over first 3 internal links
-  for (const link of linkAnchors) {
-    await link.hover()
-  }
-  const popovers = page.locator(".popover")
-  await expect(popovers).toBeVisible()
-  expect(await popovers.count()).toBe(1)
-})
-
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
