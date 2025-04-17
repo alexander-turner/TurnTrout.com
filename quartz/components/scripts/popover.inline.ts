@@ -46,10 +46,8 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
     setPopoverPosition(popoverElement, this)
   }
 
-  // Set initial position
   updatePosition()
 
-  // Define cleanup actions
   const onPopoverRemove = () => {
     activePopoverRemover = null
     window.removeEventListener("resize", updatePosition)

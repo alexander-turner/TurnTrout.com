@@ -11,6 +11,7 @@ type TestFixtures = {
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
+    await expect(dummyLink).toBeVisible()
     await use(dummyLink)
   },
 })
@@ -109,22 +110,15 @@ for (const boolWait of [true, false]) {
 }
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
-  await expect(dummyLink).toBeVisible()
+  const initialPageWidth = await page.evaluate(() => window.innerWidth)
 
-  // Show popover
   await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
-
-  // Get initial position
   const initialRect = await popover.boundingBox()
-  const initialWidth = initialRect?.width
-  expect(initialWidth).not.toBeUndefined()
 
-  // Resize viewport
-  await page.setViewportSize({ width: Number(initialWidth) + 100, height: 600 })
+  await page.setViewportSize({ width: Number(initialPageWidth) + 100, height: 600 })
 
-  // Get new position and wait for it to change
   await expect(async () => {
     const newRect = await popover.boundingBox()
     expect(newRect).not.toEqual(initialRect)
