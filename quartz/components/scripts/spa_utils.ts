@@ -8,7 +8,8 @@ export const DEBOUNCE_WAIT_MS = 100
  */
 export function isLocalUrl(href: string): boolean {
   try {
-    const url = new URL(href)
+    // Provide the current location as the base URL for resolving protocol-relative URLs
+    const url = new URL(href, window.location.href)
     if (typeof window !== "undefined" && window.location) {
       if (window.location.origin === url.origin) {
         return true

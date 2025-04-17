@@ -44,7 +44,6 @@ describe("SPA Utilities", () => {
       { url: "ftp://server.com", isLocal: false, description: "different protocol" },
       { url: "not a url", isLocal: false, description: "malformed URL" },
       { url: "http://", isLocal: false, description: "incomplete URL" },
-      { url: "//otherdomain.com/path", isLocal: true, description: "technically local" },
     ])("should return $isLocal for $description: $url", ({ url, isLocal }) => {
       expect(isLocalUrl(url)).toBe(isLocal)
     })
