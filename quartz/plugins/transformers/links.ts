@@ -109,15 +109,6 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   })
                 }
 
-                // Check if the link has alias text
-                if (
-                  node.children.length === 1 &&
-                  node.children[0].type === "text" &&
-                  node.children[0].value !== dest
-                ) {
-                  // Add the 'alias' class if the text content is not the same as the href
-                  classes.push("alias")
-                }
                 node.properties.className = classes
 
                 if (opts.openLinksInNewTab && isExternal) {

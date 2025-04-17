@@ -49,7 +49,9 @@ export const CreateTableOfContents: QuartzComponent = ({
   return (
     <div id="table-of-contents" className="desktop-only">
       <h6 className="toc-title">
-        <a href="#top">Table of Contents</a>
+        <a href="#top" className="internal same-page-link">
+          Table of Contents
+        </a>
       </h6>
       <div id="toc-content">
         <ul className="overflow">{toc}</ul>

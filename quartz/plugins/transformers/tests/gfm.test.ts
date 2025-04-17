@@ -167,7 +167,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
             href: "#user-content-fnref-instr",
             "data-footnote-backref": "",
             "aria-label": "Back to reference 2",
-            className: "data-footnote-backref internal alias same-page-link",
+            className: "data-footnote-backref internal same-page-link",
           },
           ["⤴"],
         ),
