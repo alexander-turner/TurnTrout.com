@@ -65,7 +65,6 @@ test("External links do not show popover on hover (lostpixel)", async ({ page })
 
 test("Popover content matches target page content", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
-
   const linkHref = await dummyLink.getAttribute("href")
   expect(linkHref).not.toBeNull()
 
@@ -73,16 +72,14 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
-
-  // Check content matches
   const popoverContent = await popover.locator(".popover-inner").textContent()
-  const sameLink = page.locator(`.can-trigger-popover[href="${linkHref}"]`)
-  await sameLink.click()
 
   // Check that we navigated to the right page
-  const url = page.url()
-  expect(url).toContain(linkHref?.replace("./", ""))
+  await dummyLink.click()
+  const targetHref = linkHref?.replace("./", "")
+  await page.waitForURL(`**/${targetHref}`)
 
+  // Check content matches
   const pageContent = await page.locator(".popover-hint").first().textContent()
   expect(popoverContent).toContain(pageContent)
 })
@@ -91,7 +88,7 @@ for (const boolWait of [true, false]) {
   test(`Multiple popovers don't stack ${boolWait ? "with wait" : "without wait"}`, async ({
     page,
   }) => {
-    const allLinks = await page.locator(":not(.popover) .can-trigger-popover").all()
+    const allLinks = await page.locator(".can-trigger-popover").all()
     const firstTenLinks = allLinks.slice(0, 5)
     for (const link of firstTenLinks) {
       await link.scrollIntoViewIfNeeded()
