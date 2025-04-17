@@ -10,7 +10,6 @@ describe("Search Module Functions", () => {
   let rootNode: HTMLElement
 
   beforeEach(() => {
-    // Updated sample DOM structure to include links without 'same-page-link' class
     document.body.innerHTML = `
       <div id="root">
         <div id="child1">

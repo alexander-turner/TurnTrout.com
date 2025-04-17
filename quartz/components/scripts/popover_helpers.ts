@@ -1,5 +1,3 @@
-import { animate } from "./component_script_utils"
-
 export interface PopoverOptions {
   parentElement: HTMLElement
   targetUrl: URL
@@ -7,7 +5,6 @@ export interface PopoverOptions {
   customFetch?: typeof fetch
 }
 
-export const IGNORE_POPOVER_IDS = ["navbar", "toc-content", "toc-content-mobile"]
 export const POPOVER_SCROLL_OFFSET = 12
 
 /**
@@ -123,74 +120,75 @@ export function setPopoverPosition(
  * Attaches event listeners to the popover and link elements
  * @param popoverElement - The popover element
  * @param linkElement - The link element
+ * @param onRemove - Callback function invoked when the popover is fully removed
  * @returns A cleanup function to remove the event listeners
  */
 export function attachPopoverEventListeners(
   popoverElement: HTMLElement,
   linkElement: HTMLLinkElement,
+  onRemove: () => void,
 ): () => void {
   let isMouseOverLink = false
   let isMouseOverPopover = false
 
   const removePopover = () => {
     popoverElement.classList.remove("visible")
-    animate(
-      300,
-      () => {},
-      () => {
-        if (!isMouseOverLink && !isMouseOverPopover) {
-          popoverElement.remove()
-        }
-      },
-    )
+    // Use a short timeout to allow for potential CSS transitions
+    setTimeout(() => {
+      if (!isMouseOverLink && !isMouseOverPopover) {
+        popoverElement.remove()
+        onRemove()
+      }
+    }, 300)
   }
 
   const showPopover = () => {
     popoverElement.classList.add("popover-visible")
   }
 
-  linkElement.addEventListener("mouseenter", () => {
-    isMouseOverLink = true
-    showPopover()
-  })
-
-  linkElement.addEventListener("mouseleave", () => {
-    isMouseOverLink = false
-    removePopover()
-  })
-
-  popoverElement.addEventListener("mouseenter", () => {
-    isMouseOverPopover = true
-  })
-
-  popoverElement.addEventListener("mouseleave", () => {
-    isMouseOverPopover = false
-    removePopover()
-  })
-
-  popoverElement.addEventListener("click", (e) => {
-    const clickedLink = (e.target as HTMLElement).closest("a")
-    if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-      window.location.href = clickedLink.href
-    } else {
-      window.location.href = linkElement.href
-    }
-  })
-
-  // Cleanup function
-  return () => {
-    linkElement.removeEventListener("mouseenter", showPopover)
-    linkElement.removeEventListener("mouseleave", removePopover)
-    popoverElement.removeEventListener("mouseenter", () => {
+  const handlerMap = {
+    mouseenterLink: () => {
+      isMouseOverLink = true
+      showPopover()
+    },
+    mouseleaveLink: () => {
+      isMouseOverLink = false
+      removePopover()
+    },
+    mouseenterPopover: () => {
       isMouseOverPopover = true
-    })
-    popoverElement.removeEventListener("mouseleave", () => {
+    },
+    mouseleavePopover: () => {
       isMouseOverPopover = false
       removePopover()
-    })
-    popoverElement.removeEventListener("click", () => {
-      // empty because the function intentionally does nothing for this event
-    })
+    },
+    clickPopover: (e: MouseEvent) => {
+      const clickedLink = (e.target as HTMLElement).closest("a")
+      if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
+        window.location.href = clickedLink.href
+      } else {
+        window.location.href = linkElement.href
+      }
+    },
+  }
+
+  linkElement.addEventListener("mouseenter", handlerMap.mouseenterLink)
+  linkElement.addEventListener("mouseleave", handlerMap.mouseleaveLink)
+  popoverElement.addEventListener("mouseenter", handlerMap.mouseenterPopover)
+  popoverElement.addEventListener("mouseleave", handlerMap.mouseleavePopover)
+  popoverElement.addEventListener("click", handlerMap.clickPopover)
+
+  // Returned cleanup function
+  return () => {
+    linkElement.removeEventListener("mouseenter", handlerMap.mouseenterLink)
+    linkElement.removeEventListener("mouseleave", handlerMap.mouseleaveLink)
+    popoverElement.removeEventListener("mouseenter", handlerMap.mouseenterPopover)
+    popoverElement.removeEventListener("mouseleave", handlerMap.mouseleavePopover)
+    popoverElement.removeEventListener("click", handlerMap.clickPopover)
+
+    // Also trigger removal logic if cleanup is called directly
+    popoverElement.remove()
+    onRemove()
   }
 }
 

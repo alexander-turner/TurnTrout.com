@@ -1,7 +1,7 @@
 import { test as base, expect, type Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
-import { IGNORE_POPOVER_IDS, POPOVER_SCROLL_OFFSET } from "../scripts/popover_helpers"
+import { POPOVER_SCROLL_OFFSET } from "../scripts/popover_helpers"
 import { takeRegressionScreenshot, isDesktopViewport, showingPreview } from "./visual_utils"
 
 type TestFixtures = {
@@ -25,7 +25,10 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => window.scrollTo(0, 0))
 })
 
-test("Internal links show popover on hover (lostpixel)", async ({ page, dummyLink }, testInfo) => {
+test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
+  page,
+  dummyLink,
+}, testInfo) => {
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
@@ -73,7 +76,7 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 
   // Check content matches
   const popoverContent = await popover.locator(".popover-inner").textContent()
-  const sameLink = page.locator(`.internal[href="${linkHref}"]`)
+  const sameLink = page.locator(`.can-trigger-popover[href="${linkHref}"]`)
   await sameLink.click()
 
   // Check that we navigated to the right page
@@ -85,22 +88,33 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack", async ({ page }) => {
-  // Get two different internal links
-  const firstLink = page.locator(".internal").first()
-  const secondLink = page.locator(".internal").nth(1)
+  // Insert two links into the center content
+  await page.evaluate(() => {
+    const centerContent = document.querySelector("#center-content")
+    if (centerContent) {
+      for (let i = 0; i < 2; i++) {
+        const link = document.createElement("a")
+        link.classList.add("can-trigger-popover")
+        link.href = "http://localhost:8080/test-page"
+        link.textContent = `Link ${i + 1}`
+        centerContent.appendChild(link)
+      }
+    }
+  })
+
+  const firstLink = page.locator(".can-trigger-popover").first()
+  await firstLink.scrollIntoViewIfNeeded()
   await expect(firstLink).toBeVisible()
-  await expect(secondLink).toBeVisible()
 
   // Hover first link
   await firstLink.hover()
-  const popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
   let popovers = await page.locator(".popover").count()
   expect(popovers).toBe(1)
 
   // Hover second link
+  const secondLink = page.locator(".can-trigger-popover").nth(1)
+  await expect(secondLink).toBeVisible()
   await secondLink.hover()
-  await expect(popover).toBeVisible()
   popovers = await page.locator(".popover").count()
   expect(popovers).toBe(1)
 })
@@ -189,7 +203,7 @@ test("Only one popover is visible at a time", async ({ page }) => {
   await page.goto("http://localhost:8080/posts")
 
   // Find non-anchors
-  const linkAnchors = await page.locator(".page-listing a.internal").all()
+  const linkAnchors = await page.locator(".page-listing a.can-trigger-popover").all()
 
   // Hover over first 3 internal links
   for (const link of linkAnchors) {
@@ -205,7 +219,7 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
 
   // Set noPopover attribute
   await page.evaluate(() => {
-    const link = document.querySelector(".internal")
+    const link = document.querySelector(".can-trigger-popover")
     if (link) link.setAttribute("data-no-popover", "true")
   })
 
@@ -327,8 +341,7 @@ test("Popover appears at minimal viewport width", async ({ page, dummyLink }) =>
   await expect(popover).toBeVisible()
 })
 
-const popoversToTest = IGNORE_POPOVER_IDS.filter((id) => id !== "toc-content-mobile")
-for (const id of popoversToTest) {
+for (const id of ["navbar", "toc-content"]) {
   test(`Popover does not show on ${id}`, async ({ page }) => {
     const element = page.locator(`#${id}`)
     await expect(element).toBeVisible()

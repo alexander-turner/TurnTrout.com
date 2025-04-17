@@ -52,7 +52,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
             }
 
             // skipcq: JS-R1005
-            visit(tree, "element", (node) => {
+            visit(tree, "element", (node, index, parent) => {
               // rewrite all links
               if (
                 node.tagName === "a" &&
@@ -61,15 +61,27 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
               ) {
                 let dest = node.properties.href as RelativeURL
                 const classes = (node.properties.className ?? []) as string[]
-                const internalMarkers = ["#", ".", "/"]
 
                 if (dest.startsWith("#")) {
                   classes.push("same-page-link")
                 }
 
+                const internalMarkers = ["#", ".", "/"]
                 const isExternal = !internalMarkers.some((prefix) => dest.startsWith(prefix))
 
-                classes.push(isExternal ? "external" : "internal")
+                if (isExternal) {
+                  classes.push("external")
+                } else {
+                  classes.push("internal")
+
+                  const headers = ["h1", "h2", "h3", "h4", "h5", "h6"]
+                  const isLinkOfHeader =
+                    parent?.type === "element" &&
+                    headers.some((header) => header === parent.tagName)
+                  if (!isLinkOfHeader) {
+                    classes.push("can-trigger-popover")
+                  }
+                }
 
                 // If the link is external and not a mailto link, make sure it starts with http
                 if (isExternal && !dest.startsWith("http") && !dest.startsWith("mailto:")) {

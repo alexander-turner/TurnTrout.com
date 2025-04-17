@@ -17,7 +17,7 @@ const turntroutFavicon = <img src={TURNTROUT_FAVICON_PATH} className="favicon" a
 const WarningLink = (
   <a
     href="./reward-is-not-the-optimization-target"
-    className="internal alias"
+    className="internal can-trigger-popover alias"
     data-slug="reward-is-not-the-optimization-target"
   >
     Reward is not the optimization ta
@@ -44,7 +44,7 @@ const rewardPostWarning = (
       This post treats reward functions as “specifying goals”, in some sense. As I explained in{" "}
       <a
         href="/reward-is-not-the-optimization-target"
-        className="internal alias"
+        className="internal can-trigger-popover alias"
         data-slug="reward-is-not-the-optimization-target"
       >
         Reward Is Not The Optimization Tar

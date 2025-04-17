@@ -37,7 +37,7 @@ export const renderSequenceTitle = (fileData: QuartzPluginData) => {
     " ",
     h(
       "a",
-      { href: sequenceLink, class: "internal", style: "cursor: pointer;" },
+      { href: sequenceLink, className: "internal can-trigger-popover", style: "cursor: pointer;" },
       sequence as unknown as RootContent,
     ),
   ])
@@ -54,7 +54,7 @@ export const renderPreviousPost = (fileData: QuartzPluginData) => {
 
   const linkElement = h(
     "a",
-    { href: `./${prevPostSlug}`, className: "internal" },
+    { href: `./${prevPostSlug}`, className: "internal can-trigger-popover" },
     prevPostTitleFormatted,
   )
 
@@ -72,7 +72,7 @@ export const renderNextPost = (fileData: QuartzPluginData) => {
 
   const linkElement = h(
     "a",
-    { href: `./${nextPostSlug}`, className: "internal" },
+    { href: `./${nextPostSlug}`, className: "internal can-trigger-popover" },
     nextPostTitleFormatted,
   )
 

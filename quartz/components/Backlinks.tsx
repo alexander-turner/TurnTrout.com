@@ -69,7 +69,10 @@ const BacklinksList = ({
       const processedTitle = processBacklinkTitle(f.frontmatter.title)
       return (
         <li key={f.slug}>
-          <a href={resolveRelative(currentSlug, f.slug as FullSlug)} className="internal">
+          <a
+            href={resolveRelative(currentSlug, f.slug as FullSlug)}
+            className="internal can-trigger-popover"
+          >
             {processedTitle.children.map(elementToJsx)}
           </a>
         </li>
