@@ -88,34 +88,16 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack", async ({ page }) => {
-  // Insert two links into the center content
-  await page.evaluate(() => {
-    const centerContent = document.querySelector("#center-content")
-    if (centerContent) {
-      for (let i = 0; i < 2; i++) {
-        const link = document.createElement("a")
-        link.classList.add("can-trigger-popover")
-        link.href = "http://localhost:8080/test-page"
-        link.textContent = `Link ${i + 1}`
-        centerContent.appendChild(link)
-      }
-    }
-  })
+  const allLinks = await page.locator(".can-trigger-popover").all()
+  const firstTenLinks = allLinks.slice(0, 10)
+  for (const link of firstTenLinks) {
+    await link.scrollIntoViewIfNeeded()
+    await expect(link).toBeVisible()
+    await link.hover()
+  }
 
-  const firstLink = page.locator(".can-trigger-popover").first()
-  await firstLink.scrollIntoViewIfNeeded()
-  await expect(firstLink).toBeVisible()
-
-  // Hover first link
-  await firstLink.hover()
-  let popovers = await page.locator(".popover").count()
-  expect(popovers).toBe(1)
-
-  // Hover second link
-  const secondLink = page.locator(".can-trigger-popover").nth(1)
-  await expect(secondLink).toBeVisible()
-  await secondLink.hover()
-  popovers = await page.locator(".popover").count()
+  const popovers = await page.locator(".popover").count()
+  await page.waitForTimeout(1000)
   expect(popovers).toBe(1)
 })
 
@@ -162,13 +144,13 @@ test("Popover scrolls to hash target", async ({ page }) => {
   await expect(targetElementInPopover).toBeVisible()
 
   // Calculate the expected scroll position based on the target's offsetTop
-  const expectedScrollTop = await targetElementInPopover.evaluate((el) => {
+  const expectedScrollTop = await targetElementInPopover.evaluate((el, offset) => {
     // Assert el is HTMLElement to access offsetTop
     if (!(el instanceof HTMLElement)) {
       throw new Error("Target element inside popover is not an HTMLElement")
     }
-    return el.offsetTop - POPOVER_SCROLL_OFFSET
-  })
+    return el.offsetTop - offset
+  }, POPOVER_SCROLL_OFFSET)
 
   expect(popoverScrollTop).toBeCloseTo(expectedScrollTop, 0)
 })
