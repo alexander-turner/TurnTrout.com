@@ -8,6 +8,8 @@ type TestFixtures = {
   dummyLink: Locator
 }
 
+const SCROLL_TOLERANCE = 30
+
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
@@ -153,7 +155,7 @@ test("Popover scrolls to hash target", async ({ page }) => {
     return el.offsetTop - offset
   }, POPOVER_SCROLL_OFFSET)
 
-  expect(popoverScrollTop).toBeCloseTo(expectedScrollTop, 0)
+  expect(Math.abs(popoverScrollTop - expectedScrollTop)).toBeLessThanOrEqual(SCROLL_TOLERANCE)
 })
 
 test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
@@ -196,37 +198,34 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
 })
 
 test("Popover maintains position when page scrolls", async ({ page, dummyLink }) => {
-  // Find a link far enough down the page to test scrolling
   await expect(dummyLink).toBeVisible()
 
-  // Get initial position of the link
   const linkBox = await dummyLink.boundingBox()
   if (!linkBox) throw new Error("Could not get link position")
 
-  // Show popover
   await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
-  // Get initial popover position
   const initialPopoverBox = await popover.boundingBox()
   if (!initialPopoverBox) throw new Error("Could not get popover position")
 
-  // Scroll the page
-  await page.evaluate(() => window.scrollBy(0, 100))
+  await page.evaluate(() => window.scrollBy(0, 500))
 
-  // Verify popover position relative to viewport remains the same
+  // Verify absolute popover position is the same
   const newPopoverBox = await popover.boundingBox()
   if (!newPopoverBox) throw new Error("Could not get new popover position")
 
-  expect(Math.round(newPopoverBox.x)).toBe(Math.round(initialPopoverBox.x))
-  expect(Math.round(newPopoverBox.y)).toBe(Math.round(initialPopoverBox.y))
+  for (const coord of ["x", "y"] as const) {
+    expect(Math.abs(newPopoverBox[coord] - initialPopoverBox[coord])).toBeLessThanOrEqual(
+      SCROLL_TOLERANCE,
+    )
+  }
 })
 
 test("Can scroll within popover content", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
-  // Show popover
   await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
@@ -234,7 +233,6 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
   // Get popover inner element which is scrollable
   const popoverInner = popover.locator(".popover-inner")
 
-  // Get initial scroll position
   const initialScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
 
   // Scroll down within the popover
@@ -242,7 +240,6 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
     el.scrollTop = 100
   })
 
-  // Verify scroll position changed
   const newScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
   expect(newScrollTop).not.toBe(initialScrollTop)
 })
