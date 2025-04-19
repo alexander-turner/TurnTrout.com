@@ -171,15 +171,17 @@ test.describe("Scroll Behavior", () => {
     })
   }
 
+  // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const hash = "header-3"
-    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "load" })
+    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "domcontentloaded" })
+    await page.waitForFunction(() => window.history.state?.scroll)
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
 
-    await page.reload({ waitUntil: "networkidle" })
+    await page.reload({ waitUntil: "domcontentloaded" })
     const newScroll = await page.evaluate(() => window.scrollY)
-    expect(newScroll).toBeGreaterThan(0)
+    console.log(`newScroll: ${newScroll}, currentScroll: ${currentScroll}`)
     expect(Math.abs(newScroll - currentScroll)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
 })
