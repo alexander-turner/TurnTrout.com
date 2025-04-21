@@ -2,6 +2,9 @@
  * This spec file is designed to test the functionality of spa.inline.ts,
  * including client-side routing, scroll behavior, hash navigation,
  * and the route announcer for accessibility.
+ *
+ * Watch out for:
+ *  - Playwright implicitly scrolling when clicking on an anchor
  */
 
 import { type Page, test, expect } from "@playwright/test"
@@ -9,8 +12,12 @@ import { type Page, test, expect } from "@playwright/test"
 import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
+const FIREFOX_SCROLL_DELAY = 2000
 const TIGHT_SCROLL_TOLERANCE: number = 10
 
+/*
+ * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.
+ */
 async function waitForHistoryState(page: Page, targetPos: number): Promise<void> {
   await page.waitForFunction(
     ({ target, tolerance }) => {
@@ -24,6 +31,18 @@ async function waitForHistoryState(page: Page, targetPos: number): Promise<void>
   )
 }
 
+async function waitForHistoryScrollNotEquals(
+  page: Page,
+  initialScroll: number | undefined,
+): Promise<void> {
+  await page.waitForFunction((initial) => {
+    return window.history.state?.scroll !== initial
+  }, initialScroll)
+}
+
+/*
+ * Verifies that the browser has scrolled to approximately the target position.
+ */
 async function waitForScroll(page: Page, targetScrollY: number): Promise<void> {
   await page.waitForFunction(
     ({ target, tolerance }) => {
@@ -91,7 +110,6 @@ test.describe("Local Link Navigation", () => {
       }, href)
 
       const designLink = page.locator("a").last()
-      await designLink.scrollIntoViewIfNeeded()
       await designLink.click()
       await page.waitForLoadState("domcontentloaded")
 
@@ -140,7 +158,6 @@ test.describe("Local Link Navigation", () => {
 
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
-    // Inject a section far down the page to test scroll
     await page.evaluate(() => {
       const section = document.createElement("div")
       section.id = "test-scroll-section"
@@ -156,8 +173,8 @@ test.describe("Scroll Behavior", () => {
       link.textContent = "Scroll to test section"
       document.body.appendChild(link)
     })
-    await page.click("#hash-link")
-    await page.waitForLoadState("networkidle")
+    await page.goto("http://localhost:8080/test-page#hash-link")
+    await waitForHistoryScrollNotEquals(page, undefined)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
     expect(Math.abs(scrollPosition)).toBeGreaterThan(0)
@@ -171,12 +188,13 @@ test.describe("Scroll Behavior", () => {
       await waitForScroll(page, scrollPos)
     })
 
-    // TODO these are flaky?
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }) => {
       await page.goto("http://localhost:8080/test-page#header-3")
 
+      // Wait so that we don't race in Firefox
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
       await waitForHistoryState(page, scrollPos)
       await softRefresh(page)
@@ -205,9 +223,7 @@ test.describe("Scroll Behavior", () => {
     expect(currentScroll).toBeGreaterThan(0)
 
     await softRefresh(page)
-    const newScroll = await page.evaluate(() => window.scrollY)
-    console.log(`newScroll: ${newScroll}, currentScroll: ${currentScroll}`)
-    expect(Math.abs(newScroll - currentScroll)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+    await waitForScroll(page, currentScroll)
   })
 })
 
@@ -251,11 +267,10 @@ test.describe("Same-page navigation", () => {
 
     const headings = await page.locator("h1 > a").all()
     for (const heading of headings.slice(2, 5)) {
-      await heading.scrollIntoViewIfNeeded()
       await heading.click()
 
       // Firefox will error without waiting for scroll to complete
-      await page.waitForTimeout(2000)
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
@@ -264,19 +279,16 @@ test.describe("Same-page navigation", () => {
       expect(updatedScroll).toBe(historyScroll)
     }
 
-    // Verify each position was different
     for (let i = 0; i < scrollPositions.length - 1; i++) {
       expect(scrollPositions[i]).toBeLessThan(scrollPositions[i + 1])
     }
 
-    // Go back through history
     const reversedScrollPositions = scrollPositions.slice().reverse()
     for (const position of reversedScrollPositions.slice(1)) {
       await page.goBack()
       await waitForHistoryState(page, position)
     }
 
-    // Go forward through history
     const forwardScrollPositions = scrollPositions.slice(1)
     for (const position of forwardScrollPositions) {
       await page.goForward()
@@ -284,22 +296,32 @@ test.describe("Same-page navigation", () => {
     }
   })
 
-  test("going back after anchor navigation returns to original position", async ({ page }) => {
-    // Ensure we're at the top
-    await page.evaluate(() => window.scrollTo(0, 0))
-    await waitForScroll(page, 0)
+  test("going back after anchor navigation returns to original position 0", async ({ page }) => {
+    await page.evaluate((position) => window.scrollTo(0, position), 0)
 
-    // Find a target far down the page and scroll to it
-    const anchorTarget = page.locator("h1").last()
-    await anchorTarget.scrollIntoViewIfNeeded()
-
-    const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(1000)
+    await page.goto("http://localhost:8080/test-page#header-3")
+    await waitForHistoryScrollNotEquals(page, undefined)
+    const anchorScroll = await page.evaluate(() => window.scrollY)
+    await waitForHistoryState(page, anchorScroll)
 
     await page.goBack()
-
     await waitForScroll(page, 0)
   })
+
+  for (const [originalPosition] of [[10], [100]]) {
+    test(`going back after anchor navigation returns to original position ${originalPosition}`, async ({
+      page,
+    }) => {
+      await page.evaluate((position) => window.scrollTo(0, position), originalPosition)
+      await waitForHistoryState(page, originalPosition)
+
+      await page.goto("http://localhost:8080/test-page#header-3")
+      await waitForHistoryScrollNotEquals(page, originalPosition)
+
+      await page.goBack()
+      await waitForScroll(page, originalPosition)
+    })
+  }
 })
 
 test.describe("SPA Navigation DOM Cleanup", () => {
@@ -330,6 +352,7 @@ test.describe("SPA Navigation DOM Cleanup", () => {
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
     await expect(page.locator("#rogue-sibling")).toBeVisible()
 
+    // Click is ok because it doesn't scroll to it first
     const localLink = page.locator("a").first()
     await localLink.click()
 

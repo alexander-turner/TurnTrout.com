@@ -386,6 +386,9 @@ window.spaNavigate = navigate
  * Fetches content for the target URL, updates DOM, and restores scroll position from state.
  */
 async function handlePopstate(event: PopStateEvent): Promise<void> {
+  // Cancel any pending scroll state updates
+  updateScrollState.cancel()
+
   const targetUrl = new URL(window.location.toString())
   console.debug(
     `[handlePopstate] Navigating to ${targetUrl.pathname}, received state:`,
