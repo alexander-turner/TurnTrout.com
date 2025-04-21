@@ -216,15 +216,13 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
     const initialUrl = page.url()
 
     await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
-    expect(page.url()).not.toBe(initialUrl)
+    await page.waitForURL((url) => url.toString() !== initialUrl)
 
     await page.goBack()
-    await page.waitForLoadState("networkidle")
-    expect(page.url()).toBe(initialUrl)
+    await page.waitForURL(initialUrl)
 
     await page.goForward()
-    await page.waitForLoadState("networkidle")
-    expect(page.url()).not.toBe(initialUrl)
+    await page.waitForURL((url) => url.toString() !== initialUrl)
   })
 })
 
