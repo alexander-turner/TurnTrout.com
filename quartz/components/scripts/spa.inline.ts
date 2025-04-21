@@ -368,31 +368,29 @@ window.spaNavigate = navigate
  * Fetches content for the target URL, updates DOM, and restores scroll position from state.
  */
 async function handlePopstate(event: PopStateEvent): Promise<void> {
-  parser = parser || new DOMParser()
-
   const targetUrl = new URL(window.location.toString())
   console.debug(
     `[handlePopstate] Navigating to ${targetUrl.pathname}, received state:`,
     event.state,
   )
 
+  const resource = await fetch(targetUrl.toString())
+  const contentType = resource.headers.get("content-type")
+  if (!resource.ok || !contentType?.startsWith("text/html")) {
+    window.location.reload()
+    console.debug("popstate: Reloading due to non-HTML response")
+    return
+  }
+
+  // Update DOM and head
+  const contents = await resource.text()
+  parser = parser || new DOMParser()
+  const html = parser.parseFromString(contents, "text/html")
+  await updatePage(html, targetUrl)
+
+  // Restore scroll position *after* DOM update
+  const scrollTarget = event.state?.scroll as number | undefined
   try {
-    const res = await fetch(targetUrl.toString())
-    const contentType = res.headers.get("content-type")
-    if (!res.ok || !contentType?.startsWith("text/html")) {
-      // If fetch fails or not HTML, trigger full page load
-      window.location.reload()
-      console.debug("popstate: Reloading due to non-HTML response")
-      return
-    }
-    const contents = await res.text()
-    const html = parser.parseFromString(contents, "text/html")
-
-    // Update DOM and head
-    await updatePage(html, targetUrl)
-
-    // Restore scroll position *after* DOM update
-    const scrollTarget = event.state?.scroll as number | undefined
     if (typeof scrollTarget === "number") {
       console.debug(`[handlePopstate] Restoring scroll from state: ${scrollTarget}`)
       window.scrollTo({ top: scrollTarget, behavior: "instant" })
@@ -403,13 +401,12 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
       console.debug("popstate: Scrolling to top (no state/hash)")
       window.scrollTo({ top: 0, behavior: "instant" })
     }
-
-    notifyNav(getFullSlug(window))
   } catch (error) {
     console.error("Popstate navigation error:", error)
-    // Fallback to full reload on error
     window.location.reload()
+    return
   }
+  notifyNav(getFullSlug(window))
 }
 
 /**
@@ -459,8 +456,7 @@ function createRouter() {
     window.addEventListener("popstate", handlePopstate)
 
     // Handle hash scrolling on initial page load, unless scroll will be restored from history
-    const scrollFromState = history.state?.scroll as number | undefined
-    if (window.location.hash && typeof scrollFromState !== "number") {
+    if (window.location.hash && typeof history.state?.scroll !== "number") {
       console.debug("Initial load: Scrolling to hash")
       scrollToHash(window.location.hash)
     }
