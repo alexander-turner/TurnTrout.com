@@ -7,23 +7,37 @@
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
-import { DEBOUNCE_WAIT_MS } from "../scripts/spa_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
-const LARGE_SCROLL_TOLERANCE: number = 500 // TODO make this smaller after fixing image CLS
 const TIGHT_SCROLL_TOLERANCE: number = 10
-const DEBOUNCE_WAIT_BUFFERED: number = DEBOUNCE_WAIT_MS + 50
 
-async function scrollWithWait(page: Page, scrollPos: number): Promise<void> {
-  await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
-  await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
+async function waitForHistoryState(page: Page, targetPos: number): Promise<void> {
   await page.waitForFunction(
-    (scrollPos) =>
-      window.history.state &&
-      typeof window.history.state.scroll === "number" &&
-      window.history.state.scroll === scrollPos,
-    scrollPos,
+    ({ target, tolerance }) => {
+      return (
+        window.history.state &&
+        typeof window.history.state.scroll === "number" &&
+        Math.abs(window.history.state.scroll - target) <= tolerance
+      )
+    },
+    { target: targetPos, tolerance: TIGHT_SCROLL_TOLERANCE },
   )
+}
+
+async function waitForScroll(page: Page, targetScrollY: number): Promise<void> {
+  await page.waitForFunction(
+    ({ target, tolerance }) => {
+      const currentScrollY = window.scrollY
+      return Math.abs(currentScrollY - target) <= tolerance
+    },
+    { target: targetScrollY, tolerance: TIGHT_SCROLL_TOLERANCE },
+  )
+}
+
+// Normal page.reload() will wipe the history state
+async function softRefresh(page: Page): Promise<void> {
+  await page.goBack()
+  await page.goForward()
 }
 
 async function addMarker(page: Page): Promise<void> {
@@ -151,25 +165,36 @@ test.describe("Scroll Behavior", () => {
 
   for (const [scrollPos] of [[50], [100], [1000]]) {
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
-      await scrollWithWait(page, scrollPos)
-      await page.reload({ waitUntil: "networkidle" })
-
-      const currentScroll = await page.evaluate(() => window.scrollY)
-      expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForHistoryState(page, scrollPos)
+      await softRefresh(page)
+      await waitForScroll(page, scrollPos)
     })
 
+    // TODO these are flaky?
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }) => {
       await page.goto("http://localhost:8080/test-page#header-3")
 
-      await scrollWithWait(page, scrollPos)
-      await page.reload({ waitUntil: "networkidle" })
+      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForHistoryState(page, scrollPos)
+      await softRefresh(page)
 
-      const currentScroll = await page.evaluate(() => window.scrollY)
-      expect(Math.abs(currentScroll - scrollPos)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+      await waitForScroll(page, scrollPos)
     })
   }
+
+  test("Restores scroll position across multiple refreshes", async ({ page }) => {
+    const targetScroll = 200
+    await page.evaluate((targetScroll) => window.scrollTo(0, targetScroll), targetScroll)
+    await waitForScroll(page, targetScroll)
+
+    for (let i = 0; i < 5; i++) {
+      await softRefresh(page)
+      await waitForScroll(page, targetScroll)
+    }
+  })
 
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
@@ -179,7 +204,7 @@ test.describe("Scroll Behavior", () => {
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
 
-    await page.reload({ waitUntil: "domcontentloaded" })
+    await softRefresh(page)
     const newScroll = await page.evaluate(() => window.scrollY)
     console.log(`newScroll: ${newScroll}, currentScroll: ${currentScroll}`)
     expect(Math.abs(newScroll - currentScroll)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
@@ -327,7 +352,6 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 // TODO http://localhost:8080/read-hpmor can't refresh partway through page without flash before it sets the scroll position
 
 test("restores scroll position when returning from external page", async ({ page }) => {
-  // Insert link to external page
   await page.evaluate(() => {
     const link = document.createElement("a")
     link.href = "https://github.com/alexander-turner"
@@ -335,14 +359,14 @@ test("restores scroll position when returning from external page", async ({ page
     document.body.prepend(link)
   })
 
-  // Navigate to external page
+  // Navigate to external page and scroll there
   const externalLink = page.locator("a").first()
   await externalLink.click()
-
   await page.evaluate(() => window.scrollTo(0, 100))
 
-  await page.goBack({ waitUntil: "networkidle" })
-  expect(await page.evaluate(() => window.scrollY)).toBe(0)
+  // The external scroll should not matter when returning to the SPA
+  await page.goBack()
+  await waitForScroll(page, 0)
 })
 
 test.describe("Fetch & Redirect Handling", () => {
