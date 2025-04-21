@@ -4,9 +4,11 @@
 
 import type { Parent } from "hast"
 
+import { jest } from "@jest/globals"
 import { describe, it, expect, beforeEach } from "@jest/globals"
 
 import { processInlineCode, processKatex, processSmallCaps } from "../component_utils"
+import { debounce } from "../scripts/component_script_utils"
 
 let parent: Parent
 beforeEach(() => {
@@ -146,5 +148,100 @@ describe("Code Processing", () => {
         properties: { className: ["katex-toc"] },
       })
     })
+  })
+})
+
+function waitWithRAF(ms: number) {
+  jest.advanceTimersByTime(ms)
+  jest.runOnlyPendingTimers()
+}
+
+describe("debounce", () => {
+  const debounceMs = 100
+  jest.useFakeTimers({ legacyFakeTimers: false })
+
+  let func: jest.Mock<(...args: unknown[]) => unknown>
+  let debouncedFunc: ((...args: unknown[]) => void) & { cancel: () => void }
+
+  beforeEach(() => {
+    func = jest.fn()
+    debouncedFunc = debounce(func, debounceMs)
+  })
+
+  it("should call the function after the wait time", () => {
+    debouncedFunc() // Schedules RAF1
+    expect(func).not.toHaveBeenCalled()
+
+    waitWithRAF(debounceMs)
+    expect(func).toHaveBeenCalledTimes(1)
+
+    waitWithRAF(0)
+    expect(func).toHaveBeenCalledTimes(1)
+  })
+
+  it("should not call the function if cancelled", () => {
+    debouncedFunc() // Schedules RAF1
+    debouncedFunc.cancel() // Cancels RAF1
+
+    waitWithRAF(debounceMs)
+    // No callback should run because it was cancelled
+
+    expect(func).not.toHaveBeenCalled()
+  })
+
+  it("should allow subsequent calls after cancellation", () => {
+    debouncedFunc() // Schedules RAF1
+    debouncedFunc.cancel() // Cancels RAF1
+
+    waitWithRAF(debounceMs)
+    expect(func).not.toHaveBeenCalled()
+
+    debouncedFunc() // Schedules RAF2
+    waitWithRAF(debounceMs) // RAF2 runs, executes func
+    expect(func).toHaveBeenCalledTimes(1)
+  })
+
+  it("should cancel the correct pending execution when called multiple times", () => {
+    debouncedFunc() // First call, schedules RAF1
+    waitWithRAF(debounceMs / 2)
+
+    debouncedFunc() // Second call, cancels RAF1, schedules RAF2
+    expect(func).not.toHaveBeenCalled()
+
+    debouncedFunc.cancel() // Cancel RAF2
+
+    // Advance past original + new timeout
+    waitWithRAF(debounceMs * 2)
+    expect(func).not.toHaveBeenCalled() // Should not have been called
+
+    // Ensure it can be called again
+    debouncedFunc() // Schedules RAF3
+    waitWithRAF(debounceMs) // RAF3 runs, executes func
+    expect(func).toHaveBeenCalledTimes(1)
+  })
+
+  it("should call immediately if immediate is true", () => {
+    // Need to create a specific debounced function for this test
+    const immediateDebouncedFunc = debounce(func, debounceMs, true)
+
+    immediateDebouncedFunc()
+    expect(func).toHaveBeenCalledTimes(1) // Called immediately
+
+    // Further calls within wait period are ignored
+    immediateDebouncedFunc()
+    // Advance time slightly, still within wait period
+    waitWithRAF(debounceMs / 2)
+    expect(func).toHaveBeenCalledTimes(1)
+
+    // Call after wait period is allowed again
+    // Advance time past the wait period *since the first immediate call*
+    waitWithRAF(debounceMs)
+
+    immediateDebouncedFunc()
+    expect(func).toHaveBeenCalledTimes(2)
+
+    // Advance time again and check it wasn't called spuriously
+    waitWithRAF(debounceMs)
+    expect(func).toHaveBeenCalledTimes(2)
   })
 })
