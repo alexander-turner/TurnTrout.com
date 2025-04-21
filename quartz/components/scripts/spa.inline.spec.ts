@@ -9,8 +9,12 @@ import { type Page, test, expect } from "@playwright/test"
 import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
+const FIREFOX_SCROLL_DELAY = 2000
 const TIGHT_SCROLL_TOLERANCE: number = 10
 
+/*
+ * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.
+ */
 async function waitForHistoryState(page: Page, targetPos: number): Promise<void> {
   await page.waitForFunction(
     ({ target, tolerance }) => {
@@ -24,6 +28,9 @@ async function waitForHistoryState(page: Page, targetPos: number): Promise<void>
   )
 }
 
+/*
+ * Verifies that the browser has scrolled to approximately the target position.
+ */
 async function waitForScroll(page: Page, targetScrollY: number): Promise<void> {
   await page.waitForFunction(
     ({ target, tolerance }) => {
@@ -91,7 +98,6 @@ test.describe("Local Link Navigation", () => {
       }, href)
 
       const designLink = page.locator("a").last()
-      await designLink.scrollIntoViewIfNeeded()
       await designLink.click()
       await page.waitForLoadState("domcontentloaded")
 
@@ -171,12 +177,13 @@ test.describe("Scroll Behavior", () => {
       await waitForScroll(page, scrollPos)
     })
 
-    // TODO these are flaky?
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }) => {
       await page.goto("http://localhost:8080/test-page#header-3")
 
+      // Wait so that we don't race in Firefox
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
       await waitForHistoryState(page, scrollPos)
       await softRefresh(page)
@@ -205,9 +212,7 @@ test.describe("Scroll Behavior", () => {
     expect(currentScroll).toBeGreaterThan(0)
 
     await softRefresh(page)
-    const newScroll = await page.evaluate(() => window.scrollY)
-    console.log(`newScroll: ${newScroll}, currentScroll: ${currentScroll}`)
-    expect(Math.abs(newScroll - currentScroll)).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
+    await waitForScroll(page, currentScroll)
   })
 })
 
@@ -251,11 +256,10 @@ test.describe("Same-page navigation", () => {
 
     const headings = await page.locator("h1 > a").all()
     for (const heading of headings.slice(2, 5)) {
-      await heading.scrollIntoViewIfNeeded()
       await heading.click()
 
       // Firefox will error without waiting for scroll to complete
-      await page.waitForTimeout(2000)
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
@@ -284,22 +288,39 @@ test.describe("Same-page navigation", () => {
     }
   })
 
-  test("going back after anchor navigation returns to original position", async ({ page }) => {
-    // Ensure we're at the top
-    await page.evaluate(() => window.scrollTo(0, 0))
-    await waitForScroll(page, 0)
+  test("going back after anchor navigation returns to original position 0", async ({ page }) => {
+    await page.evaluate((position) => window.scrollTo(0, position), 0)
 
-    // Find a target far down the page and scroll to it
     const anchorTarget = page.locator("h1").last()
-    await anchorTarget.scrollIntoViewIfNeeded()
+    await anchorTarget.click()
 
-    const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(1000)
-
+    await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
     await page.goBack()
-
     await waitForScroll(page, 0)
   })
+
+  for (const [originalPosition] of [[10], [100]]) {
+    test(`going back after anchor navigation returns to original position ${originalPosition}`, async ({
+      page,
+    }) => {
+      await page.evaluate((position) => window.scrollTo(0, position), originalPosition)
+      await waitForHistoryState(page, originalPosition)
+
+      const anchorTarget = page.locator("h1").last()
+      await anchorTarget.click()
+
+      // Wait for scroll to actually happen and move significantly after clicking anchor
+      await page.waitForFunction((prevPos) => window.scrollY > prevPos + 500, originalPosition)
+
+      const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
+      expect(scrollAfterAnchor).toBeGreaterThan(1000) // Some big number
+
+      await page.goBack()
+      // After going back, wait for the visual scroll to return to originalPosition
+      await waitForScroll(page, originalPosition)
+      await waitForHistoryState(page, originalPosition)
+    })
+  }
 })
 
 test.describe("SPA Navigation DOM Cleanup", () => {
