@@ -251,65 +251,56 @@ test.describe("Same-page navigation", () => {
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
     const scrollPositions: number[] = []
 
-    const headings = await page.locator("h1 a").all()
+    const headings = await page.locator("h1 > a").all()
     for (const heading of headings.slice(2, 5)) {
       await heading.scrollIntoViewIfNeeded()
       await heading.click()
-      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
-      await page.waitForLoadState("networkidle")
-      scrollPositions.push(await page.evaluate(() => window.scrollY))
+
+      // Firefox will error without waiting for scroll to complete
+      await page.waitForTimeout(2000)
+      const historyScroll = await page.evaluate(() => window.scrollY)
+      await waitForHistoryState(page, historyScroll)
+      scrollPositions.push(historyScroll)
+
+      const updatedScroll = await page.evaluate(() => window.scrollY)
+      expect(updatedScroll).toBe(historyScroll)
     }
 
     // Verify each position was different
-    for (let i = 1; i < scrollPositions.length; i++) {
-      expect(scrollPositions[i]).not.toBe(scrollPositions[i - 1])
+    for (let i = 0; i < scrollPositions.length - 1; i++) {
+      expect(scrollPositions[i]).toBeLessThan(scrollPositions[i + 1])
     }
 
-    // Go back through history and verify each scroll position
-    for (let i = scrollPositions.length - 2; i >= 0; i--) {
+    // Go back through history
+    const reversedScrollPositions = scrollPositions.slice().reverse()
+    for (const position of reversedScrollPositions.slice(1)) {
       await page.goBack()
-      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
-      await page.waitForLoadState("networkidle")
-      const currentScroll = await page.evaluate(() => window.scrollY)
-      expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(
-        LARGE_SCROLL_TOLERANCE,
-      )
+      await waitForHistoryState(page, position)
     }
 
-    // Go forward through history and verify scroll positions
-    for (let i = 1; i < scrollPositions.length; i++) {
+    // Go forward through history
+    const forwardScrollPositions = scrollPositions.slice(1)
+    for (const position of forwardScrollPositions) {
       await page.goForward()
-      await page.waitForTimeout(DEBOUNCE_WAIT_BUFFERED)
-      await page.waitForLoadState("networkidle")
-      const currentScroll = await page.evaluate(() => window.scrollY)
-      expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(
-        LARGE_SCROLL_TOLERANCE,
-      )
+      await waitForHistoryState(page, position)
     }
   })
 
   test("going back after anchor navigation returns to original position", async ({ page }) => {
     // Ensure we're at the top
     await page.evaluate(() => window.scrollTo(0, 0))
-    await page.waitForLoadState("networkidle")
-    const initialScroll = await page.evaluate(() => window.scrollY)
-    expect(initialScroll).toBe(0)
+    await waitForScroll(page, 0)
 
     // Find a target far down the page and scroll to it
     const anchorTarget = page.locator("h1").last()
     await anchorTarget.scrollIntoViewIfNeeded()
-    await page.waitForLoadState("networkidle")
 
     const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(LARGE_SCROLL_TOLERANCE * 2)
+    expect(scrollAfterAnchor).toBeGreaterThan(1000)
 
-    // Go back
     await page.goBack()
-    await page.waitForLoadState("networkidle")
 
-    // Verify we're back at the top (within tolerance)
-    const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBeLessThanOrEqual(LARGE_SCROLL_TOLERANCE)
+    await waitForScroll(page, 0)
   })
 })
 
