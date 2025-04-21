@@ -3,6 +3,7 @@
   // Catppuccin Frappe
   --pink: #fba7e4;
   --red: #de585a;
+  --maroon: #c75379;
   --orange: #db8942;
   --yellow: #e5c890;
   --green: #a6d189;
@@ -63,6 +64,7 @@
   --light: var(--background);
   --dark: var(--foreground);
   --dark-gray: var(--midground-strong);
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
   & video:not(:has(::backdrop)),
@@ -82,7 +84,6 @@
     color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
     var(--secondary)
   );
-  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
     --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
