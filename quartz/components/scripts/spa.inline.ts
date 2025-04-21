@@ -33,7 +33,7 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
     scrollToHash(window.location.hash)
   }
 
-  notifyNav(getFullSlug(window))
+  dispatchNavEvent(getFullSlug(window))
 }
 
 // SPA accessibility announcement for screen readers
@@ -112,17 +112,11 @@ const getOpts = ({ target }: Event): { url: URL; scroll?: boolean } | undefined 
   }
 }
 
-/**
- * Dispatches a custom navigation event
- */
-function notifyNav(url: FullSlug) {
+function dispatchNavEvent(url: FullSlug) {
   const event: CustomEventMap["nav"] = new CustomEvent("nav", { detail: { url } })
   document.dispatchEvent(event)
 }
 
-/**
- * Handles scrolling to specific elements when hash is present in URL
- */
 function scrollToHash(hash: string) {
   if (!hash) return
   try {
@@ -133,8 +127,6 @@ function scrollToHash(hash: string) {
     // Ignore malformed URI
   }
 }
-
-let parser: DOMParser
 
 /**
  * Fetches page content and updates the DOM, head, title, etc.
@@ -184,9 +176,6 @@ async function updatePage(html: Document, url: URL): Promise<void> {
   elementsToAdd.forEach((el) => document.head.appendChild(el.cloneNode(true)))
 }
 
-/**
- * Interface for the result of fetching content.
- */
 interface FetchResult {
   status: "success" | "error" | "fallback"
   content?: string
@@ -195,9 +184,6 @@ interface FetchResult {
   contentType?: string | null
 }
 
-/**
- * Fetches content for a given URL.
- */
 async function fetchContent(url: URL): Promise<FetchResult> {
   let responseStatus: number | undefined
   let contentType: string | null = null
@@ -305,6 +291,7 @@ async function fetchAndProcessContent(
   return { content: redirectResult.content, finalUrl: redirectResult.finalUrl }
 }
 
+let parser: DOMParser
 /**
  * Parses HTML content and updates the DOM using micromorph.
  * Returns true on success, false on failure (triggering fallback).
@@ -355,7 +342,7 @@ function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): voi
  * Fetches new content, updates history, updates DOM, and handles scrolling.
  */
 async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
-  removePopovers() // Ensure popovers are removed first
+  removePopovers()
 
   // Store the current scroll position *before* fetching/navigating
   const currentScroll = getScrollPosition()
@@ -376,7 +363,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
     state,
     ` for original URL: ${url.toString()}`,
   )
-  history.pushState(state, "", url) // Use the URL the user intended to navigate to
+  history.pushState(state, "", url)
 
   // 3. Parse and update the DOM
   //    Pass original URL to resolve relative paths in the fetched content against the intended URL.
@@ -390,7 +377,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
   handleNavigationScroll(finalUrl, opts)
 
   // 5. Notify other components of navigation
-  notifyNav(getFullSlug(window))
+  dispatchNavEvent(getFullSlug(window))
 }
 window.spaNavigate = navigate
 
@@ -437,7 +424,7 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
     window.location.reload()
     return
   }
-  notifyNav(getFullSlug(window))
+  dispatchNavEvent(getFullSlug(window))
 }
 
 /**
