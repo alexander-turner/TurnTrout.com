@@ -188,7 +188,7 @@ test.describe("Scroll Behavior", () => {
   test("Restores scroll position across multiple refreshes", async ({ page }) => {
     const targetScroll = 200
     await page.evaluate((targetScroll) => window.scrollTo(0, targetScroll), targetScroll)
-    await waitForScroll(page, targetScroll)
+    await waitForHistoryState(page, targetScroll)
 
     for (let i = 0; i < 5; i++) {
       await softRefresh(page)
