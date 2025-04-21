@@ -272,93 +272,124 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
   return { status: "success", content: finalContent, finalUrl }
 }
 
-/**
- * Handles navigation triggered by clicking a link.
- * Fetches new content, updates history, updates DOM, and handles scrolling.
- */
-async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
-  parser = parser || new DOMParser()
-
-  // Clean up any existing popovers
+function removePopovers() {
   const existingPopovers = document.querySelectorAll(".popover")
   existingPopovers.forEach((popover) => popover.remove())
+}
 
-  // Store the current scroll position in history state *before* navigating
-  const currentScroll = getScrollPosition()
-  const state = { scroll: currentScroll }
-  console.debug(`[navigate] pushState scroll: ${currentScroll}, state obj:`, state)
-
+/**
+ * Fetches content for a given URL, handling potential redirects.
+ * Returns the final content and URL, or null if fetching/redirect fails.
+ */
+async function fetchAndProcessContent(
+  url: URL,
+): Promise<{ content: string; finalUrl: URL } | null> {
   const initialFetch = await fetchContent(url)
   if (initialFetch.status !== "success") {
     console.debug(
-      `[navigate] Initial fetch failed or triggered fallback for ${url.toString()}. Navigation aborted.`,
+      `[fetchAndProcessContent] Initial fetch failed or triggered fallback for ${url.toString()}.`,
     )
     // Fallback (window.location set) happened in fetchContent
-    return
+    return null
   }
 
   const redirectResult = await handleRedirect(initialFetch)
   if (redirectResult.status !== "success" || typeof redirectResult.content !== "string") {
     console.debug(
-      `[navigate] Redirect handling failed or triggered fallback for ${url.toString()}. Navigation aborted.`,
+      `[fetchAndProcessContent] Redirect handling failed or triggered fallback for ${url.toString()}.`,
     )
-    // Fallback (window.location set) happened in handleRedirect or fetchContent (for redirect target)
-    return
+    // Fallback (window.location set) happened in handleRedirect or fetchContent
+    return null
   }
 
-  const { content: contents, finalUrl } = redirectResult
+  return { content: redirectResult.content, finalUrl: redirectResult.finalUrl }
+}
 
-  // Push state *before* updating page, using the ORIGINAL requested URL
+/**
+ * Parses HTML content and updates the DOM using micromorph.
+ * Returns true on success, false on failure (triggering fallback).
+ */
+async function updateDOM(htmlContent: string, originalUrl: URL): Promise<boolean> {
+  parser = parser || new DOMParser()
+  let html: Document
+  try {
+    html = parser.parseFromString(htmlContent, "text/html")
+  } catch (e) {
+    console.error(`[updateDOM] Error parsing HTML for ${originalUrl.toString()}:`, e)
+    window.location.href = originalUrl.toString() // Fallback to original requested URL
+    return false
+  }
+
+  console.debug(`[updateDOM] Calling updatePage for ${originalUrl.pathname}`)
+  try {
+    await updatePage(html, originalUrl) // Pass original URL for consistency
+    console.debug(`[updateDOM] updatePage finished for ${originalUrl.pathname}`)
+    return true
+  } catch (e) {
+    console.error(`[updateDOM] Error during updatePage for ${originalUrl.pathname}:`, e)
+    window.location.href = originalUrl.toString() // Fallback to original requested URL
+    return false
+  }
+}
+
+/**
+ * Handles scrolling after navigation based on options and final URL hash.
+ *  Doesn't use scroll position from history state.
+ */
+function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): void {
+  if (opts?.scroll === false) {
+    // explicitly skip scroll
+    console.debug("[handleNavigationScroll] Skipping scroll due to data-router-no-scroll")
+  } else if (finalUrl.hash) {
+    // Check hash on the final URL
+    console.debug(`[handleNavigationScroll] Scrolling to hash on final URL: ${finalUrl.hash}`)
+    scrollToHash(finalUrl.hash)
+  } else {
+    console.debug("[handleNavigationScroll] Scrolling to top")
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }
+}
+
+/**
+ * Handles navigation triggered by clicking a link or programmatic call.
+ * Fetches new content, updates history, updates DOM, and handles scrolling.
+ */
+async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
+  removePopovers() // Ensure popovers are removed first
+
+  // Store the current scroll position *before* fetching/navigating
+  const currentScroll = getScrollPosition()
+  const state = { scroll: currentScroll }
+
+  // 1. Fetch content, handling redirects
+  const fetchResult = await fetchAndProcessContent(url)
+  if (!fetchResult) {
+    // Fetching or redirect handling failed and triggered a fallback (full page load)
+    return
+  }
+  const { content, finalUrl } = fetchResult
+
+  // 2. Push state *before* updating page
+  //    Original URL ensures the browser's address bar reflects the URL the user intended to navigate to.
   console.debug(
     `[navigate] pushState scroll: ${currentScroll}, state obj:`,
     state,
     ` for original URL: ${url.toString()}`,
   )
-  history.pushState(state, "", url)
+  history.pushState(state, "", url) // Use the URL the user intended to navigate to
 
-  let html: Document
-  try {
-    html = parser.parseFromString(contents, "text/html")
-  } catch (e) {
-    console.error(
-      `[navigate] Error parsing HTML for ${finalUrl.toString()} (original URL: ${url.toString()}):`,
-      e,
-    )
-    window.location.href = url.toString() // Fallback to original requested URL
+  // 3. Parse and update the DOM
+  //    Pass original URL to resolve relative paths in the fetched content against the intended URL.
+  const updateSuccess = await updateDOM(content, url)
+  if (!updateSuccess) {
+    // DOM update failed and triggered a fallback (full page load)
     return
   }
 
-  console.debug(
-    `[navigate] Calling updatePage for ${finalUrl.pathname} (original URL: ${url.pathname})`,
-  )
-  try {
-    // Pass the original URL to updatePage for consistency, content is from finalUrl.
-    await updatePage(html, url)
-    console.debug(
-      `[navigate] updatePage finished for ${finalUrl.pathname} (original URL: ${url.pathname})`,
-    )
-  } catch (e) {
-    console.error(
-      `[navigate] Error during updatePage for ${finalUrl.pathname} (original URL: ${url.pathname}):`,
-      e,
-    )
-    window.location.href = url.toString() // Fallback to original requested URL
-    return
-  }
+  // 4. Handle scrolling *after* DOM update, based on the FINAL URL
+  handleNavigationScroll(finalUrl, opts)
 
-  // Handle scrolling *after* DOM update, based on the FINAL URL
-  if (opts?.scroll === false) {
-    // explicitly skip scroll
-    console.debug("Skipping scroll restoration due to data-router-no-scroll")
-  } else if (finalUrl.hash) {
-    // Check hash on the final URL
-    console.debug(`Scrolling to hash on final URL: ${finalUrl.hash}`)
-    scrollToHash(finalUrl.hash)
-  } else {
-    console.debug("Scrolling to top")
-    window.scrollTo({ top: 0, behavior: "instant" })
-  }
-
+  // 5. Notify other components of navigation
   notifyNav(getFullSlug(window))
 }
 window.spaNavigate = navigate
