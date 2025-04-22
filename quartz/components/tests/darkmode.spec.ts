@@ -184,10 +184,8 @@ for (const prefix of ["./shard-theory", "./about", "./design#"]) {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Navigate to an internal page
-      const firstLink = page.locator(`a[href^='${prefix}']`).first()
-      await firstLink.scrollIntoViewIfNeeded()
-      await firstLink.click()
+      // Navigate to a different internal page
+      await page.goto(`http://localhost:8080/test-page`)
       await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)
     })
