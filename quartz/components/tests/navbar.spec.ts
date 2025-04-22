@@ -58,7 +58,6 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   // Test closed state
   await menuButton.click()
   const newMenuButtonState = await menuButton.screenshot()
-  // TODO failing for ipad pro chrome (flakily)
   expect(newMenuButtonState).toEqual(originalMenuButtonState)
   await expect(navbarRightMenu).not.toBeVisible()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
@@ -121,7 +120,7 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
   await expect(navbar).toBeVisible()
 })
 
-// TODO sometimes need to focus page before hitting "/"
+// TODO sometimes need to focus page before hitting "/" - try minimizing?
 
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
