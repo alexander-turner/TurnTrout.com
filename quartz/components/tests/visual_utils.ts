@@ -1,5 +1,6 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
+import sanitize from "sanitize-filename"
 
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
@@ -71,7 +72,12 @@ export async function takeRegressionScreenshot(
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
   const browserName = testInfo.project.name
-  const screenshotPath = `lost-pixel/${testInfo.title}${screenshotSuffix ? `-${screenshotSuffix}` : ""}-${browserName}.png`
+  // Sanitize the components used in the filename using the library
+  const sanitizedTitle = sanitize(testInfo.title)
+  const sanitizedSuffix = sanitize(screenshotSuffix)
+  const sanitizedBrowserName = sanitize(browserName)
+
+  const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
   const baseOptions = { path: screenshotPath, animations: "disabled" as const }
 
   const screenshotOptions = {
