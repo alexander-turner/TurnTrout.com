@@ -94,6 +94,7 @@ export function debounce<Args extends unknown[], R>(
   }
 
   debounced.cancel = () => {
+    console.debug("cancelling debounce")
     if (frameId !== null) {
       cancelAnimationFrame(frameId)
     }

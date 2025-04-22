@@ -68,6 +68,19 @@ async function addMarker(page: Page): Promise<void> {
   })
 }
 
+// A reliable way to create an anchor at the bottom of the page
+async function createFinalAnchor(page: Page): Promise<string> {
+  const anchorId = "final-anchor"
+  await page.evaluate((id) => {
+    const finalAnchor = document.createElement("a")
+    finalAnchor.id = id
+    finalAnchor.href = `#${id}`
+    finalAnchor.style.marginTop = "2000px"
+    document.body.appendChild(finalAnchor)
+  }, anchorId)
+  return anchorId
+}
+
 async function doesMarkerExist(page: Page): Promise<boolean> {
   return await page.evaluate(() => {
     interface WindowWithMarker extends Window {
@@ -110,6 +123,7 @@ test.describe("Local Link Navigation", () => {
       }, href)
 
       const designLink = page.locator("a").last()
+      // OK to click since we aren't depending on scroll position
       await designLink.click()
       await page.waitForLoadState("domcontentloaded")
 
@@ -158,22 +172,8 @@ test.describe("Local Link Navigation", () => {
 
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
-    await page.evaluate(() => {
-      const section = document.createElement("div")
-      section.id = "test-scroll-section"
-      section.style.marginTop = "1500px"
-      document.body.appendChild(section)
-    })
-
-    // Create a hash link and click it
-    await page.evaluate(() => {
-      const link = document.createElement("a")
-      link.href = "#test-scroll-section"
-      link.id = "hash-link"
-      link.textContent = "Scroll to test section"
-      document.body.appendChild(link)
-    })
-    await page.goto("http://localhost:8080/test-page#hash-link")
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
     await waitForHistoryScrollNotEquals(page, undefined)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
@@ -191,7 +191,8 @@ test.describe("Scroll Behavior", () => {
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }) => {
-      await page.goto("http://localhost:8080/test-page#header-3")
+      const anchorId = await createFinalAnchor(page)
+      await page.goto(`http://localhost:8080/test-page#${anchorId}`)
 
       // Wait so that we don't race in Firefox
       await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
@@ -216,8 +217,8 @@ test.describe("Scroll Behavior", () => {
 
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
-    const hash = "header-3"
-    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "domcontentloaded" })
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
     await page.waitForFunction(() => window.history.state?.scroll)
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
@@ -297,13 +298,9 @@ test.describe("Same-page navigation", () => {
   })
 
   test("going back after anchor navigation returns to original position", async ({ page }) => {
-    // Ensure we're at the top
-    await page.evaluate(() => window.scrollTo(0, 0))
-    await waitForScroll(page, 0)
-
-    // Find a target far down the page and scroll to it
-    const anchorTarget = page.locator("h1").last()
-    await anchorTarget.scrollIntoViewIfNeeded()
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await waitForHistoryScrollNotEquals(page, undefined)
 
     const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
     expect(scrollAfterAnchor).toBeGreaterThan(1000)
