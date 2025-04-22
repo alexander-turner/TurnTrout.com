@@ -85,18 +85,18 @@ jobs:
       - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
 
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: npx playwright test --shard ${{ matrix.shard }} -g "(lostpixel)"
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
-
-      - name: Run Playwright tests
-        id: playwright
-        continue-on-error: true
-        run: npx playwright test --shard ${{ env.SANITIZED_SHARD }} -g "(lostpixel)"
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
 
       # Upload Playwright traces regardless of test outcome for debugging
       - name: Upload Playwright traces
