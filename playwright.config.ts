@@ -41,14 +41,14 @@ const browsers: Browser[] = [
 ]
 
 export default defineConfig({
-  timeout: process.env.CI ? 90000 : 30000, // Increased timeout for larger test sets
+  timeout: process.env.CI ? 90000 : 30000,
   workers: 1, // Parallelism causes flakiness
   fullyParallel: false,
 
-  retries: process.env.CI ? 3 : 3,
+  retries: 1,
   testDir: "./quartz/",
   testMatch: /.*\.spec\.ts/,
-  reporter: process.env.CI ? "dot" : "list", // Format of test status display
+  reporter: "list", // Format of test status display
   use: {
     trace: "on-first-retry",
     screenshot: {
