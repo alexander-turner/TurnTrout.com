@@ -264,18 +264,25 @@ test.describe("Same-page navigation", () => {
   })
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
+    // Scroll to some of the middle headings
     const scrollPositions: number[] = []
-
     const headings = await page.locator("h1 > a").all()
     for (const heading of headings.slice(2, 5)) {
-      await heading.click()
+      // Don't click the heading, just navigate to it
+      const headingId = await heading.getAttribute("href")
+      expect(headingId?.startsWith("#")).toBe(true)
+      await page.goto(`http://localhost:8080/test-page${headingId}`)
 
       // Firefox will error without waiting for scroll to complete
+      const previousScroll =
+        scrollPositions.length > 0 ? scrollPositions[scrollPositions.length - 1] : 0
+      await waitForHistoryScrollNotEquals(page, previousScroll)
       await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
 
+      // Sanity check that scroll is stable
       const updatedScroll = await page.evaluate(() => window.scrollY)
       expect(updatedScroll).toBe(historyScroll)
     }
@@ -346,8 +353,6 @@ test.describe("SPA Navigation DOM Cleanup", () => {
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
   })
 })
-
-// TODO http://localhost:8080/read-hpmor can't refresh partway through page without flash before it sets the scroll position
 
 test("restores scroll position when returning from external page", async ({ page }) => {
   await page.evaluate(() => {
