@@ -243,7 +243,7 @@ test("Search preview footnote backref has no underline", async ({ page }) => {
   await search(page, "test")
 
   const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
-  await expect(footnoteLink).toHaveCSS("text-decoration", /^none/)
+  await expect(footnoteLink).toHaveCSS("text-decoration-line", "none")
 })
 
 test("Enter key navigates to first result", async ({ page }) => {
