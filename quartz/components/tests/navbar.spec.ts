@@ -212,6 +212,8 @@ for (const theme of ["light", "dark", "auto"]) {
 }
 
 test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
   const video = page.locator(`video#${pondVideoId}`)
 
   const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
@@ -230,6 +232,8 @@ test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
 })
 
 test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
   const video = page.locator(`video#${pondVideoId}`)
 
   const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
