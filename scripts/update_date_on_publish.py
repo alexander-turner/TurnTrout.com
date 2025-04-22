@@ -3,6 +3,7 @@ Update the publish and update dates in markdown files.
 """
 
 import io
+import re  # Import the re module
 import subprocess
 import sys
 from datetime import datetime
@@ -120,7 +121,45 @@ def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
         f.write(content)
 
 
-def main(content_dir: Path | None = None) -> None:
+_README_PATH = Path("README.md")
+COPYRIGHT_PATTERN = re.compile(
+    r"© +(?P<start_year>\d{4})[-–](?P<end_year>\d{4})"
+)
+
+
+def update_readme_copyright_year(current_datetime: datetime) -> None:
+    """
+    Update the copyright year in README.md if necessary.
+
+    Args:
+        current_datetime (datetime): The current datetime object.
+    """
+    if not _README_PATH.exists():
+        raise FileNotFoundError(f"README.md not found at {_README_PATH}")
+
+    readme_content: str = _README_PATH.read_text(encoding="utf-8")
+
+    current_year = str(current_datetime.year)
+
+    match = COPYRIGHT_PATTERN.search(readme_content)
+    if not match:
+        raise ValueError("Could not find copyright line in README.md")
+
+    readme_end_year = match.group("end_year")
+    if readme_end_year == current_year:
+        return
+
+    print(
+        f"Updating copyright year in {_README_PATH} from {readme_end_year} to {current_year}"
+    )
+    readme_start_year = match.group("start_year")
+    new_readme_content = COPYRIGHT_PATTERN.sub(
+        rf"© {readme_start_year}-{current_year}", readme_content
+    )
+    _README_PATH.write_text(new_readme_content, encoding="utf-8")
+
+
+def main(content_dir: Path = Path("content")) -> None:
     """
     Main function to update dates in markdown files.
 
@@ -128,9 +167,6 @@ def main(content_dir: Path | None = None) -> None:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "content" in current directory.
     """
-    if content_dir is None:
-        content_dir = Path("content")
-
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
         if not metadata and not content:
@@ -151,6 +187,8 @@ def main(content_dir: Path | None = None) -> None:
         if metadata != original_metadata:
             print(f"Updated date information on {md_file_path}")
             write_to_yaml(md_file_path, metadata, content)
+
+    update_readme_copyright_year(now)
 
 
 if __name__ == "__main__":

@@ -904,7 +904,23 @@ Reordering elements in `<head>` to ensure social media previews
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
-: For posts which are being pushed for the first time, I set their publication date. For posts which have been updated since the last `push`, I update their "last updated" date.
+: For posts which are being pushed for the first time, my script sets their publication date. For posts which have been updated since the last `push`, it updates their "last updated" date.
+
+: The script also updates the latest year in the GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+
+: As of writing, the copyright notice reads:
+
+<dd><blockquote class="admonition quote" data-admonition="quote">
+       <div class="admonition-title"><div class="admonition-icon"></div>
+           <div class="admonition-title-inner">
+               <a href="https://github.com/alexander-turner/TurnTrout.com/blob/main/README.md" class="external" target="_blank" rel="noopener noreferrer"><code>README.md</code></a>
+           </div>
+       </div>
+       <div class="admonition-content">
+       <p><code>turntrout.com</code> © 2024–2025 by Alexander Turner is licensed under CC BY-SA 4.0.</p>
+       </div>
+       </blockquote>
+</dd>
 
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.

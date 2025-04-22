@@ -15,4 +15,4 @@ The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestam
 [^python]: Python testing and type-checking are run locally and not on GitHub actions.
 
 
-turntrout.com © 2024 by Alexander Turner is licensed under CC BY-SA 4.0.
+`turntrout.com` © 2024–2025 by Alexander Turner is licensed under CC BY-SA 4.0.

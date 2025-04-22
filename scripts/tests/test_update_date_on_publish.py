@@ -704,3 +704,108 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
         # Assert write was called once (for the valid file), not twice
         mock_write.assert_called_once()
         assert mock_write.call_args[0][0].name == "valid.md"
+
+
+# --- Tests for update_readme_copyright_year --- #
+
+
+@pytest.fixture
+def mock_readme_path(tmp_path, monkeypatch):
+    """
+    Fixture to mock the _README_PATH constant to point to a temporary file.
+    """
+    readme_file = tmp_path / "README.md"
+    monkeypatch.setattr(update_lib, "_README_PATH", readme_file)
+    return readme_file
+
+
+@pytest.mark.parametrize(
+    ("initial_content", "current_year", "expected_content"),
+    [
+        (
+            "Some text\nturntrout.com © 2023-2024 by Alexander Turner is licensed under CC BY-SA 4.0.\nMore text",
+            2025,
+            "Some text\nturntrout.com © 2023-2025 by Alexander Turner is licensed under CC BY-SA 4.0.\nMore text",
+        ),
+        (
+            "Another line\nturntrout.com ©   2022–2023 by Alexander Turner is licensed under CC BY-SA 4.0.",
+            2024,
+            "Another line\nturntrout.com © 2022-2024 by Alexander Turner is licensed under CC BY-SA 4.0.",
+        ),
+        (  # Only updates the end year
+            "1500-4400 line\nturntrout.com © 2022–2023 by Alexander Turner is licensed under CC BY-SA 4.0.",
+            2024,
+            "1500-4400 line\nturntrout.com © 2022-2024 by Alexander Turner is licensed under CC BY-SA 4.0.",
+        ),
+    ],
+)
+def test_update_readme_copyright_year_updates_needed(
+    mock_readme_path,
+    initial_content,
+    current_year,
+    expected_content,
+):
+    """
+    Test updating the copyright year when it's outdated.
+    """
+    mock_readme_path.write_text(initial_content, encoding="utf-8")
+    mock_current_datetime = datetime(
+        current_year, 1, 1
+    )  # Month/day don't matter
+
+    update_lib.update_readme_copyright_year(mock_current_datetime)
+
+    final_content = mock_readme_path.read_text(encoding="utf-8")
+    assert final_content == expected_content
+
+
+@pytest.mark.parametrize(
+    ("initial_content", "current_year"),
+    [
+        (
+            "Some text\nturntrout.com © 2023-2024 by Alexander Turner is licensed under CC BY-SA 4.0.\nMore text",
+            2024,
+        ),
+        (
+            "Another line\nturntrout.com © 2022–2023 by Alexander Turner is licensed under CC BY-SA 4.0.",
+            2023,
+        ),
+    ],
+)
+def test_update_readme_copyright_year_no_update_needed(
+    mock_readme_path, initial_content, current_year
+):
+    """
+    Test that the file is not modified when the copyright year is current.
+    """
+    mock_readme_path.write_text(initial_content, encoding="utf-8")
+    mock_current_datetime = datetime(current_year, 5, 15)
+
+    update_lib.update_readme_copyright_year(mock_current_datetime)
+
+    final_content = mock_readme_path.read_text(encoding="utf-8")
+    assert final_content == initial_content  # Content should be unchanged
+
+
+def test_update_readme_copyright_year_readme_not_found(tmp_path, monkeypatch):
+    """
+    Test FileNotFoundError when README.md does not exist.
+    """
+    non_existent_path = tmp_path / "non_existent_README.md"
+    monkeypatch.setattr(update_lib, "_README_PATH", non_existent_path)
+    mock_current_datetime = datetime(2024, 1, 1)
+
+    with pytest.raises(FileNotFoundError, match="README.md not found"):
+        update_lib.update_readme_copyright_year(mock_current_datetime)
+
+
+def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
+    """
+    Test ValueError when the copyright pattern is not found in README.md.
+    """
+    invalid_content = "This file does not contain the expected copyright line."
+    mock_readme_path.write_text(invalid_content, encoding="utf-8")
+    mock_current_datetime = datetime(2024, 1, 1)
+
+    with pytest.raises(ValueError, match="Could not find copyright line"):
+        update_lib.update_readme_copyright_year(mock_current_datetime)
