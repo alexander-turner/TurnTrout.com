@@ -140,13 +140,23 @@ jobs:
           merge-multiple: true
 
       - name: Combine screenshots into ./lost-pixel directory
+        id: combine
         run: |
+          shopt -s globstar # Enable recursive globbing
           mkdir -p ./lost-pixel
-          find ./all-lost-pixel-shards -mindepth 1 -maxdepth 1 -type d -exec cp -r {}/. ./lost-pixel/ \;
-          echo "Combined screenshots in ./lost-pixel:"
+          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
+          echo "Contents of ./lost-pixel after combining:"
           ls -R ./lost-pixel
+          if [ -z "$(ls -A ./lost-pixel)" ]; then
+            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
+            echo "./lost-pixel directory is empty after combination attempt."
+          else
+            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
+            echo "Screenshots found in ./lost-pixel."
+          fi
 
       - name: Run LostPixel on combined screenshots
+        if: steps.combine.outputs.screenshots_found == 'true'
         uses: lost-pixel/lost-pixel@v3.16.0
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
