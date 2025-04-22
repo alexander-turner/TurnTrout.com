@@ -70,7 +70,6 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   }
 
   await search(page, "Steering")
-  // Add wait to ensure search results are fully processed
   await page.waitForTimeout(debounceSearchDelay + 100)
 
   // Check results appear
@@ -83,7 +82,6 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
 
   // Navigate with arrow keys
   await page.keyboard.press("ArrowDown")
-  // Add wait after keyboard navigation
   await page.waitForTimeout(500)
 
   const secondResult = resultCards.nth(1)
@@ -101,7 +99,6 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
     timeout: 10000,
   })
 
-  // Add wait before screenshot
   await page.waitForTimeout(1000)
   // Take screenshot of search results
   await takeRegressionScreenshot(page, testInfo, "", {
@@ -253,7 +250,7 @@ test("Enter key navigates to first result", async ({ page }) => {
   const firstResult = page.locator(".result-card").first()
   await firstResult.press("Enter")
 
-  expect(page.url()).not.toBe(initialUrl)
+  await page.waitForURL((url) => url.toString() !== initialUrl)
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
@@ -289,7 +286,6 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
   await search(page, "Emoji examples")
-  // Add wait to ensure search results are fully processed
   await page.waitForTimeout(1500)
 
   const firstResult = page.locator(".result-card").first()
@@ -301,27 +297,23 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
     })
   }
 
-  // Add wait before clicking
-  await page.waitForTimeout(500)
+  await page.waitForLoadState("networkidle")
   await firstResult.click()
-  expect(page.url()).toBe("http://localhost:8080/test-page")
+  await page.waitForURL("http://localhost:8080/test-page")
 })
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
   test.skip(!showingPreview(page))
   await search(page, "Testing site")
-  // Add wait to ensure search results are fully processed
   await page.waitForTimeout(debounceSearchDelay + 100)
 
   const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
   await footnoteLink.scrollIntoViewIfNeeded()
-  // Add wait after scrolling
   await page.waitForTimeout(500)
 
   await expect(footnoteLink).toContainText("⤴")
   await expect(footnoteLink).toBeVisible()
 
-  // Add wait before screenshot
   await page.waitForTimeout(1000)
   await takeRegressionScreenshot(page, testInfo, "", {
     element: footnoteLink,
@@ -345,32 +337,26 @@ test.describe("Image's mix-blend-mode attribute", () => {
   })
 })
 
-// Visual regression testing
 test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
   await search(page, "Testing site")
-  // Add wait to ensure search results are fully processed
   await page.waitForTimeout(debounceSearchDelay + 100)
 
   // Make sure it looks good
   if (showingPreview(page)) {
     const previewContainer = page.locator("#preview-container")
 
-    // Add a small delay to ensure the preview has time to load
     await page.waitForTimeout(1000)
-
     await expect(previewContainer).toBeVisible({ timeout: 10000 })
     await takeRegressionScreenshot(page, testInfo, "", {
       element: "#preview-container",
     })
   }
 
-  // Add wait before clicking
   await page.waitForTimeout(500)
   const firstResult = page.locator(".result-card").first()
   await firstResult.click()
 
-  const url = page.url()
-  expect(url).toBe("http://localhost:8080/test-page")
+  await page.waitForURL("http://localhost:8080/test-page")
 })
 
 test("Search preview shows after bad entry", async ({ page }) => {
@@ -427,13 +413,11 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   test.skip(!showingPreview(page))
 
   await search(page, "Testing site")
-  // Add wait to ensure search results are fully processed
   await page.waitForTimeout(1500)
 
   const searchPondDropcaps = page.locator("#the-pond-dropcaps")
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
-  // Add wait before screenshot
   await page.waitForTimeout(1000)
   await takeRegressionScreenshot(page, testInfo, "", {
     element: "#the-pond-dropcaps",
@@ -457,7 +441,7 @@ test("Preview container click navigates to the correct page", async ({ page }) =
   await previewContainer.click()
 
   // Verify navigation occurred to the correct URL
-  expect(page.url()).toBe(expectedUrl)
+  await page.waitForURL(expectedUrl as string)
 })
 
 test("Result card highlighting stays synchronized with preview", async ({ page }) => {
@@ -513,9 +497,12 @@ navigationMethods.forEach(({ down, up, description }) => {
 navigationMethods.forEach(({ down, description }) => {
   test(`${description} navigation changes which page you enter`, async ({ page }) => {
     await search(page, "Testing")
+    const firstResult = page.locator(".result-card").first()
+    const initialUrl = await firstResult.getAttribute("href")
+    expect(initialUrl).toBe("http://localhost:8080/test-page")
 
     await page.keyboard.press(down)
     await page.keyboard.press("Enter")
-    expect(page.url()).not.toBe("http://localhost:8080/test-page")
+    await page.waitForURL((url) => url.toString() !== initialUrl)
   })
 })
