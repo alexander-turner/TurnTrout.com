@@ -4,7 +4,6 @@ concurrency:
   group: "playwright-tests"
   cancel-in-progress: true
 
-# TODO merge visual tests with this workflow
 on:
   push:
     branches: ["lostpixel"]
