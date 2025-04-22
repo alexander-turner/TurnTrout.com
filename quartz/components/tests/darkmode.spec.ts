@@ -31,8 +31,8 @@ class DarkModeHelper {
     const actualTheme =
       expectedTheme === "auto"
         ? await this.page.evaluate(() =>
-            window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-          )
+          window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+        )
         : expectedTheme
 
     await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme)
