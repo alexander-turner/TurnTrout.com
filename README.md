@@ -2,7 +2,20 @@
 
 # Setup
 
-Run `git config core.hooksPath .hooks` to use the repo's hooks. To [verify that one of my commits was produced at a given date](https://turntrout.com/design#finishing-touches), you need to check out another repository:
+```shell
+SITE_DIR=/tmp/TurnTrout.com
+git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
+cd "$SITE_DIR"
+yes | npm ci
+npx quartz build --serve
+firefox localhost:8080/welcome.html
+```
+
+The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant (and also present in `docs/`).
+
+# Cryptographic timestamp verification
+
+To [verify that one of my commits was produced at a given date](https://turntrout.com/design#finishing-touches), you need to check out another repository:
 
 ```shell
 git clone https://github.com/alexander-turner/.timestamps
@@ -11,6 +24,9 @@ ots --no-bitcoin verify "files/$full_commit_hash.txt.ots"
 ```
 
 The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestamps-client/blob/master/README.md)) command is written assuming you don't have a local copy of the blockchain and are instead willing to trust external calendar services. The commit times can be inspected zero-trust by downloading the blockchain and removing `--no-bitcoin`.
+
+# Notes
+- Run `git config core.hooksPath .hooks` to use the repository's hooks. 
 
 [^python]: Python testing and type-checking are run locally and not on GitHub actions.
 
