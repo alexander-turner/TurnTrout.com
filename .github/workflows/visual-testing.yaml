@@ -1,5 +1,9 @@
 name: Visual Testing
 
+concurrency:
+  group: "visual-testing"
+  cancel-in-progress: true
+
 on:
   push:
     branches: ["lostpixel"]
