@@ -130,9 +130,6 @@ COPYRIGHT_PATTERN = re.compile(
 def update_readme_copyright_year(current_datetime: datetime) -> None:
     """
     Update the copyright year in README.md if necessary.
-
-    Args:
-        current_datetime (datetime): The current datetime object.
     """
     if not _README_PATH.exists():
         raise FileNotFoundError(f"README.md not found at {_README_PATH}")

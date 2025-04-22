@@ -753,7 +753,7 @@ def test_update_readme_copyright_year_updates_needed(
         current_year, 1, 1
     )  # Month/day don't matter
 
-    update_lib.update_readme_copyright_year(mock_current_datetime)
+    update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
 
     final_content = mock_readme_path.read_text(encoding="utf-8")
     assert final_content == expected_content
@@ -781,7 +781,7 @@ def test_update_readme_copyright_year_no_update_needed(
     mock_readme_path.write_text(initial_content, encoding="utf-8")
     mock_current_datetime = datetime(current_year, 5, 15)
 
-    update_lib.update_readme_copyright_year(mock_current_datetime)
+    update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
 
     final_content = mock_readme_path.read_text(encoding="utf-8")
     assert final_content == initial_content  # Content should be unchanged
@@ -796,7 +796,7 @@ def test_update_readme_copyright_year_readme_not_found(tmp_path, monkeypatch):
     mock_current_datetime = datetime(2024, 1, 1)
 
     with pytest.raises(FileNotFoundError, match="README.md not found"):
-        update_lib.update_readme_copyright_year(mock_current_datetime)
+        update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
 
 
 def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
@@ -808,4 +808,4 @@ def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
     mock_current_datetime = datetime(2024, 1, 1)
 
     with pytest.raises(ValueError, match="Could not find copyright line"):
-        update_lib.update_readme_copyright_year(mock_current_datetime)
+        update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
