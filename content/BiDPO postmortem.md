@@ -6,18 +6,17 @@ no_dropcap: "false"
 tags:
   - AI
   - activation-engineering
-description: We tried boosting Gemini benchmarks by optimizing steering vectors. It
-  didn't work. We share our takeaways.
+description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
 authors: Alex Turner, Mark Kurzeja, Dave Orr, and David Elson
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - bidpo
   - steering-postmortem
   - bidpo-postmertem
   - steering-gemini
   - bidpo-steering
-original_url:
+original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
 date_published: 2025-01-30 09:30:36.233182
 date_updated: 2025-03-22 12:22:59.421452
 other_urls:
@@ -33,7 +32,7 @@ other_urls:
 
 A while back, we explored the “[BIDPO](https://arxiv.org/abs/2406.00045)” method for training [steering vectors](https://arxiv.org/abs/2308.10248). In Gemini 1.5v1 Flash and Pro, BIDPO steering vectors boosted TruthfulQA scores by >10% while mostly retaining capabilities. When we [updated to Gemini 1.5v2](https://developers.googleblog.com/en/updated-gemini-models-reduced-15-pro-pricing-increased-rate-limits-and-more/), prompt-based steering baselines became significantly stronger. BIDPO did not beat the stronger baselines, ending the project.
 
-> [!note] Work completed at Google DeepMind on the North American alignment team
+> [!idea] Work completed at Google DeepMind on the North American alignment team
 
 # Introduction
 
