@@ -406,7 +406,7 @@ card_image: http://example.com/static/image.avif
 ---
 Content with AVIF card_image.
 """
-    md_file = mock_git_root / "content" / "test.md"
+    md_file = mock_git_root / "website_content" / "test.md"
     md_file.parent.mkdir(parents=True, exist_ok=True)
     md_file.write_text(markdown_content)
 
@@ -425,7 +425,11 @@ Content with AVIF card_image.
     ):
         with mock.patch(
             "sys.argv",
-            ["convert_markdown_yaml.py", "-d", str(mock_git_root / "content")],
+            [
+                "convert_markdown_yaml.py",
+                "-d",
+                str(mock_git_root / "website_content"),
+            ],
         ):
             convert_markdown_yaml.main()
 

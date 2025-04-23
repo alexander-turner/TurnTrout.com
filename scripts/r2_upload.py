@@ -266,7 +266,7 @@ def main() -> None:
         "-r",
         "--references-dir",
         type=Path,
-        default=Path(f"{script_utils.get_git_root()}") / "content",
+        default=Path(f"{script_utils.get_git_root()}") / "website_content",
         help="Directory to search for files to update references",
     )
     parser.add_argument(

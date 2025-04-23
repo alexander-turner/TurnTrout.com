@@ -114,7 +114,7 @@ def process_markdown_file(md_path: Path) -> None:
 
 def main() -> None:
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "content"
+    content_dir = git_root / "website_content"
     if not content_dir.is_dir():
         print(
             f"Error: Content directory not found: {content_dir}",

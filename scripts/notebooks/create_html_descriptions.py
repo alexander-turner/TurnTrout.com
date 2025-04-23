@@ -42,7 +42,7 @@ def prepare_few_shot_examples() -> str:
     """
     few_shot_examples = ""
     for post in example_posts:
-        post_path = Path(f"content/{post}.md")
+        post_path = Path(f"website_content/{post}.md")
         if post_path.exists():
             with open(post_path, encoding="utf-8") as file:
                 post_content = file.read()
@@ -167,7 +167,7 @@ def main() -> None:
     Main function to process all Markdown files in the current directory.
     """
     git_root = script_utils.get_git_root()
-    directory = git_root / "content"
+    directory = git_root / "website_content"
     for filename in os.listdir(directory):
         if filename.endswith(".md"):
             file_path = os.path.join(directory, filename)

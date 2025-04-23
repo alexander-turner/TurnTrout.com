@@ -23,7 +23,7 @@ else:
 def site_setup(tmp_path):
     """Set up a basic site directory structure."""
     public_dir = tmp_path / "public"
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     public_dir.mkdir()
     content_dir.mkdir()
 
@@ -305,7 +305,7 @@ def test_check_invalid_anchors(sample_soup, temp_site_root):
     assert set(result) == {
         "Invalid anchor: #invalid-anchor",
         "Invalid anchor: /other-page#invalid-anchor",
-        "Anchor missing classes {'internal', 'same-page-link'}: #invalid-anchor",
+        "Anchor missing classes {'same-page-link', 'internal'}: #invalid-anchor",
     }
 
 
@@ -563,12 +563,15 @@ def test_check_file_for_issues(tmp_path):
     """
     )
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues["localhost_links"] == ["https://localhost:8000"]
     assert issues["invalid_anchors"] == [
         "Invalid anchor: #invalid-anchor",
-        "Anchor missing classes {'internal', 'same-page-link'}: #invalid-anchor",
+        "Anchor missing classes {'same-page-link', 'internal'}: #invalid-anchor",
     ]
     assert issues["problematic_paragraphs"] == [
         "Problematic paragraph: Table: Test table"
@@ -590,7 +593,10 @@ def test_complicated_blockquote(tmp_path):
     file_path = tmp_path / "test.html"
     file_path.write_text(complicated_blockquote)
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues["trailing_blockquotes"] == [
         "Problematic blockquote: Basic facts about language models during trai ning >"
@@ -603,7 +609,10 @@ def test_check_file_for_issues_with_redirect(tmp_path):
         '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
     )
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues == {}
 
@@ -1528,7 +1537,7 @@ def test_check_markdown_assets_in_html(
 ):
     """Test that markdown assets are properly checked against HTML output for all supported tags"""
     # Setup test files
-    md_path = tmp_path / "content" / "test.md"
+    md_path = tmp_path / "website_content" / "test.md"
     html_path = tmp_path / "public" / "test.html"
 
     # Create directory structure
@@ -2629,7 +2638,7 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     """Test that check_markdown_assets_in_html is called when md_path is valid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     html_file_path = base_dir / "test.html"
@@ -2660,7 +2669,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     """Test that check_markdown_assets_in_html is NOT called when md_path is invalid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     html_file_path = base_dir / "test.html"

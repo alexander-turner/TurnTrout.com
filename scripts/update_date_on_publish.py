@@ -156,13 +156,13 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
     _README_PATH.write_text(new_readme_content, encoding="utf-8")
 
 
-def main(content_dir: Path = Path("content")) -> None:
+def main(content_dir: Path = Path("website_content")) -> None:
     """
     Main function to update dates in markdown files.
 
     Args:
         content_dir (Path, optional): Directory containing markdown files.
-            Defaults to "content" in current directory.
+            Defaults to "website_content" in current directory.
     """
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)

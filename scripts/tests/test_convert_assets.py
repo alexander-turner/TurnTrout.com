@@ -25,10 +25,12 @@ def test_image_conversion(ext: str, setup_test_env):
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz/static" / f"asset{ext}"
     avif_path: Path = asset_path.with_suffix(".avif")
-    content_path = Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
+    content_path = (
+        Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
+    )
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     assert avif_path.exists()  # Check if AVIF file was created
@@ -51,7 +53,7 @@ def test_video_conversion(ext: str, setup_test_env):
     )
     mp4_path: Path = asset_path.with_suffix(".mp4")
     content_path: Path = (
-        Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
+        Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
     )
     with open(content_path) as f:
         file_content: str = f.read()
@@ -153,7 +155,8 @@ def test_ignores_unsupported_file_types(setup_test_env):
 
     with pytest.raises(ValueError):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -173,7 +176,8 @@ def test_ignores_non_quartz_path(setup_test_env):
 
     with pytest.raises(ValueError, match="quartz.*directory"):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -182,7 +186,8 @@ def test_ignores_non_static_path(setup_test_env):
 
     with pytest.raises(ValueError, match="static.*subdirectory"):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -286,7 +291,7 @@ def test_video_patterns(
 )
 def test_video_figure_caption_formatting(setup_test_env, initial_content):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
 
     test_md = content_dir / "test_video_figure.md"
     test_md.write_text(initial_content)
@@ -313,7 +318,7 @@ def test_asset_staging_path_conversion(setup_test_env) -> None:
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz" / "static" / "asset.jpg"
     avif_path: Path = asset_path.with_suffix(".avif")
-    content_path = Path(setup_test_env) / "content" / "staging.md"
+    content_path = Path(setup_test_env) / "website_content" / "staging.md"
 
     # Create a test markdown file with asset_staging paths
     with open(content_path, "w") as f:
@@ -322,7 +327,7 @@ def test_asset_staging_path_conversion(setup_test_env) -> None:
         f.write('<img src="./asset_staging/static/asset.jpg" alt="shrek"/>\n')
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     assert avif_path.exists()
@@ -368,13 +373,13 @@ def test_path_pattern_variations(
 ) -> None:
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz/static" / "asset.jpg"
-    content_path = Path(setup_test_env) / "content" / "variations.md"
+    content_path = Path(setup_test_env) / "website_content" / "variations.md"
 
     with open(content_path, "w") as f:
         f.write(input_content)
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     with open(content_path) as f:
@@ -412,7 +417,7 @@ def test_video_asset_staging_paths(
 
     test_utils.create_test_video(asset_path)
     test_utils.create_test_video(gif_path)
-    content_path = Path(setup_test_env) / "content" / "video_paths.md"
+    content_path = Path(setup_test_env) / "website_content" / "video_paths.md"
 
     with open(content_path, "w") as f:
         f.write(input_content)
@@ -582,7 +587,7 @@ def test_video_pattern_matching(
 @pytest.mark.parametrize("ext", compress.ALLOWED_VIDEO_EXTENSIONS)
 def test_markdown_video_with_alt_text(ext: str, setup_test_env):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
     asset_name = "prune_still-easy_trajectories"
     asset_filename = f"{asset_name}{ext}"
     dummy_video_path: Path = test_dir / "quartz" / "static" / asset_filename
@@ -650,7 +655,7 @@ def test_main_runs(setup_test_env):
         asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
 
@@ -688,7 +693,7 @@ def test_main_ignores_files(setup_test_env):
         converted_asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
     # Verify it wasn't called for the ignored asset
@@ -733,7 +738,7 @@ def test_main_skips_hidden_files(setup_test_env):
         converted_asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
     # Verify it wasn't called for the hidden asset
@@ -743,7 +748,7 @@ def test_main_skips_hidden_files(setup_test_env):
 
 def test_video_conversion_long_html(setup_test_env):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
     asset_name = "prune_still-easy_trajectories"
     asset_filename = f"{asset_name}.mp4"
     dummy_video_path = test_dir / "quartz" / "static" / asset_filename

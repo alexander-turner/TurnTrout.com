@@ -469,7 +469,7 @@ def get_check_steps(
         ),
         CheckStep(
             name="Linting prose",
-            command=["vale", f"{git_root_path}/content/*.md"],
+            command=["vale", f"{git_root_path}/website_content/*.md"],
         ),
         CheckStep(
             name="Cleaning up SCSS",

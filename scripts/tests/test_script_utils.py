@@ -68,7 +68,7 @@ def test_get_git_root_raises_error():
             False,
         ),
         ("/home/user/projects/other/file.txt", None, True),
-        ("/home/user/quartz/content/notes.md", None, True),
+        ("/home/user/quartz/website_content/notes.md", None, True),
         (
             "/home/user/quartz/static/deeply/nested/folder/image.jpg",
             Path("quartz/static/deeply/nested/folder/image.jpg"),

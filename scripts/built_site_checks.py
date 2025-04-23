@@ -1563,7 +1563,10 @@ def main() -> None:
         overall_issues_found = True
 
     html_issues_found = _process_html_files(
-        _PUBLIC_DIR, _GIT_ROOT / "content", args.check_fonts, defined_css_vars
+        _PUBLIC_DIR,
+        _GIT_ROOT / "website_content",
+        args.check_fonts,
+        defined_css_vars,
     )
 
     if overall_issues_found or html_issues_found:

@@ -19,7 +19,7 @@ def temp_content_dir(tmp_path):
     """
     Create a temporary content directory with test files.
     """
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     return content_dir
 
@@ -68,10 +68,12 @@ def mock_git(temp_content_dir):
                 if modified_files and len(args) > 3 and args[3]:
                     file_path = Path(args[3])
                     if file_path.name in modified_files:
-                        return f"content/{file_path.name}"
+                        return f"website_content/{file_path.name}"
                 # If no specific file check but we have modified files, return them all
                 elif modified_files:
-                    return "\n".join(f"content/{f}" for f in modified_files)
+                    return "\n".join(
+                        f"website_content/{f}" for f in modified_files
+                    )
             return ""  # Default: no changes
 
         return _git_command
@@ -334,7 +336,7 @@ def mock_git_root():
 
 @pytest.fixture
 def test_file():
-    return Path("/path/to/git/root/content/test.md")
+    return Path("/path/to/git/root/website_content/test.md")
 
 
 @pytest.fixture
@@ -351,7 +353,7 @@ def mock_git_commands(mock_git_root):
             if "rev-parse" in args[0]:
                 return f"{mock_git_root}\n"
             if "diff" in args[0]:
-                return "content/test.md\n" if has_changes else ""
+                return "website_content/test.md\n" if has_changes else ""
             return ""
 
         return _mock_git
@@ -674,7 +676,7 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     assert len(glob_calls) > 0, "Path.glob was not called"
     called_path, pattern = glob_calls[0]
     assert (
-        str(called_path) == "content"
+        str(called_path) == "website_content"
     ), f"Expected path 'content', got '{called_path}'"
     assert pattern == "*.md", f"Expected pattern '*.md', got '{pattern}'"
 
@@ -753,7 +755,7 @@ def test_update_readme_copyright_year_updates_needed(
         current_year, 1, 1
     )  # Month/day don't matter
 
-    update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
+    update_lib.update_readme_copyright_year(mock_current_datetime)
 
     final_content = mock_readme_path.read_text(encoding="utf-8")
     assert final_content == expected_content
@@ -781,7 +783,7 @@ def test_update_readme_copyright_year_no_update_needed(
     mock_readme_path.write_text(initial_content, encoding="utf-8")
     mock_current_datetime = datetime(current_year, 5, 15)
 
-    update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
+    update_lib.update_readme_copyright_year(mock_current_datetime)
 
     final_content = mock_readme_path.read_text(encoding="utf-8")
     assert final_content == initial_content  # Content should be unchanged
@@ -796,7 +798,7 @@ def test_update_readme_copyright_year_readme_not_found(tmp_path, monkeypatch):
     mock_current_datetime = datetime(2024, 1, 1)
 
     with pytest.raises(FileNotFoundError, match="README.md not found"):
-        update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
+        update_lib.update_readme_copyright_year(mock_current_datetime)
 
 
 def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
@@ -808,4 +810,4 @@ def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
     mock_current_datetime = datetime(2024, 1, 1)
 
     with pytest.raises(ValueError, match="Could not find copyright line"):
-        update_lib.maybe_update_readme_copyright_year(mock_current_datetime)
+        update_lib.update_readme_copyright_year(mock_current_datetime)
