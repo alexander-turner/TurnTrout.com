@@ -188,7 +188,9 @@
         font-weight: $normal-weight;
         overflow-y: auto;
         margin-left: calc(2 * $base-margin);
-        margin-right: calc(2 * $base-margin);
+
+        // Padding to keep scrollbar from hugging the right edge
+        padding-right: calc(2 * $base-margin);
         cursor: pointer;
 
         & .preview-inner {
