@@ -76,19 +76,21 @@ export async function takeRegressionScreenshot(
   const sanitizedBrowserName = sanitize(browserName)
   const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 
-  const baseOptions = { path: screenshotPath, animations: "disabled" as const }
+  // By default, take a screenshot of the entire page
+  const elementTarget = options?.element ?? "body"
+  delete options?.element
+
+  const baseOptions = {
+    path: screenshotPath,
+    animations: "disabled" as const,
+  }
   const screenshotOptions = {
     ...baseOptions,
     ...options,
   }
 
-  if (options?.element) {
-    const element =
-      typeof options.element === "string" ? page.locator(options.element) : options.element
-    return element.screenshot(screenshotOptions)
-  }
-
-  return await page.screenshot(screenshotOptions)
+  const element = typeof elementTarget === "string" ? page.locator(elementTarget) : elementTarget
+  return element.screenshot(screenshotOptions)
 }
 
 export async function takeScreenshotAfterElement(
@@ -104,7 +106,6 @@ export async function takeScreenshotAfterElement(
   const viewportSize = page.viewportSize()
   if (!viewportSize) throw new Error("Could not get viewport size")
 
-  // Take the screenshot with the specified clipping area
   await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
     clip: {
       x: 0,
