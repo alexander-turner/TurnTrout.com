@@ -9,6 +9,7 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   takeRegressionScreenshot,
+  takeScreenshotAfterElement,
 } from "./visual_utils"
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
@@ -354,5 +355,76 @@ test.describe("takeRegressionScreenshot", () => {
         page.screenshot = originalScreenshot
       }
     })
+  })
+})
+
+test.describe("takeScreenshotAfterElement", () => {
+  test.beforeEach(async ({ page }) => {
+    // Set up a more complex DOM for testing element relationships
+    await page.setContent(`
+      <html>
+        <body style="margin: 0; padding: 20px; background: white;">
+          <div id="parent" style="width: 500px; padding: 10px; border: 1px solid black;">
+            <h1 id="header1" style="margin-top: 30px; height: 50px; background: lightblue;">Header 1</h1>
+            <p style="height: 100px; background: lightcoral;">Paragraph 1</p>
+            <h2 id="header2" style="margin-top: 40px; height: 60px; background: lightgreen;">Header 2</h2>
+            <p style="height: 150px; background: lightgoldenrodyellow;">Paragraph 2</p>
+          </div>
+        </body>
+      </html>
+    `)
+    // Ensure viewport is large enough
+    await page.setViewportSize({ width: 800, height: 600 })
+  })
+
+  test("takes screenshot starting from the element with specified height and parent width", async ({
+    page,
+  }, testInfo) => {
+    const startElement = page.locator("#header2")
+    const parentElement = page.locator("#parent")
+    const screenshotHeight = 200
+    const testSuffix = "after-h2"
+
+    // Spy on page.screenshot to capture its arguments
+    const originalPageScreenshot = page.screenshot.bind(page)
+    let capturedOptions: PageScreenshotOptions | undefined
+
+    page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
+      capturedOptions = options
+      return Buffer.from("")
+    }
+
+    try {
+      await takeScreenshotAfterElement(page, testInfo, startElement, screenshotHeight, testSuffix)
+    } finally {
+      page.screenshot = originalPageScreenshot
+    }
+
+    expect(capturedOptions).toBeDefined()
+    if (!capturedOptions) return
+
+    expect(capturedOptions.path).toBeDefined()
+    expect(capturedOptions.path).toContain(testSuffix)
+    expect(capturedOptions.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
+    expect(capturedOptions.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
+
+    // Verify the clip coordinates and dimensions
+    const startElementBox = await startElement.boundingBox()
+    const parentElementBox = await parentElement.boundingBox()
+
+    expect(startElementBox).not.toBeNull()
+    expect(parentElementBox).not.toBeNull()
+
+    if (startElementBox && parentElementBox) {
+      expect(capturedOptions.clip).toBeDefined()
+      if (!capturedOptions.clip) return
+
+      expect(capturedOptions.clip.x).toBeCloseTo(parentElementBox.x)
+      expect(capturedOptions.clip.y).toBeCloseTo(startElementBox.y)
+      expect(capturedOptions.clip.width).toBeCloseTo(parentElementBox.width)
+      expect(capturedOptions.clip.height).toBe(screenshotHeight)
+    }
+
+    expect(capturedOptions.animations).toBe("disabled")
   })
 })

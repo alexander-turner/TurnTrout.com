@@ -90,7 +90,7 @@ export async function takeRegressionScreenshot(
       typeof options.element === "string" ? page.locator(options.element) : options.element
     return element.screenshot(screenshotOptions)
   } else {
-    // Default: Viewport screenshot, clipped to clientWidth to avoid WebKit gutter
+    // Clip to clientWidth to avoid WebKit gutter
     const viewportSize = page.viewportSize()
     if (!viewportSize) throw new Error("Could not get viewport size for clipping")
     const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
@@ -104,6 +104,15 @@ export async function takeRegressionScreenshot(
   }
 }
 
+// TODO test
+/**
+ * Takes a screenshot of the element and the elements below it. Restricts the screenshot to the height of the element and the width of the parent element.
+ * @param page - The page to take the screenshot on.
+ * @param testInfo - The test info.
+ * @param element - The element to take the screenshot of.
+ * @param height - The height of the element.
+ * @param testNameSuffix - The suffix to add to the test name.
+ */
 export async function takeScreenshotAfterElement(
   page: Page,
   testInfo: TestInfo,
@@ -114,14 +123,16 @@ export async function takeScreenshotAfterElement(
   const box = await element.boundingBox()
   if (!box) throw new Error("Could not find element")
 
-  const viewportSize = page.viewportSize()
-  if (!viewportSize) throw new Error("Could not get viewport size")
+  const parent = element.locator("..")
+  const parentBox = await parent.boundingBox()
+  if (!parentBox) throw new Error("Could not find parent element")
 
   await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
+    element: parent,
     clip: {
-      x: 0,
+      x: parentBox.x,
       y: box.y,
-      width: viewportSize.width,
+      width: parentBox.width,
       height,
     },
   })
