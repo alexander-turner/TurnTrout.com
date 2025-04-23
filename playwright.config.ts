@@ -43,7 +43,6 @@ const browsers: Browser[] = [
 export default defineConfig({
   timeout: process.env.CI ? 90000 : 30000,
   workers: 1, // Parallelism causes flakiness
-  fullyParallel: false,
 
   retries: 1,
   testDir: "./quartz/",

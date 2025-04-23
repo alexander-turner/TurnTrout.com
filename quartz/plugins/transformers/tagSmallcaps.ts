@@ -225,10 +225,8 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       const matchText = match[0]
       const shouldCapitalize = shouldCapitalizeMatch(match, node, index, ancestors)
 
-      // 1. First check whitelist (highest priority)
       const whitelisted = isInAllowList(matchText)
 
-      // 2. Check if it's a Roman numeral and not whitelisted
       if (!whitelisted && isRomanNumeral(matchText)) {
         // Return unchanged - no formatting
         return { before: matchText, replacedMatch: "", after: "" }
@@ -236,11 +234,10 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
 
       // 3. Check ignore list for numeric abbreviations (if not whitelisted)
       if (!whitelisted && shouldIgnoreNumericAbbreviation(matchText)) {
-        // Return unchanged
         return { before: matchText, replacedMatch: "", after: "" }
       }
 
-      // Now format the text based on match type
+      // Format the text based on match type
       const allCapsPhraseMatch = REGEX_ALL_CAPS_PHRASE.exec(matchText)
       if (allCapsPhraseMatch?.groups) {
         const { phrase } = allCapsPhraseMatch.groups

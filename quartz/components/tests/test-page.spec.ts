@@ -63,11 +63,6 @@ async function getH1Screenshots(
 
     await header.scrollIntoViewIfNeeded()
 
-    // Wait for all images to load
-    for (const image of await header.locator("img").all()) {
-      await image.waitFor({ state: "visible" })
-    }
-
     // Only screenshot up to where the next section begins
     await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
   }
@@ -415,7 +410,7 @@ test.describe("Spoilers", () => {
 test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, testInfo) => {
   const singleLetterDropcaps = page.locator("#single-letter-dropcap")
   await singleLetterDropcaps.scrollIntoViewIfNeeded()
-  await takeRegressionScreenshot(page, testInfo, "", {
+  await takeRegressionScreenshot(page, testInfo, "single-letter-dropcap", {
     element: "#single-letter-dropcap",
   })
 })
@@ -429,7 +424,7 @@ for (const theme of ["light", "dark"]) {
     // Hover and wait for width to stabilize
     await elvishText.hover()
 
-    // Get initial width
+    // Get initial width TODO
     const box = await elvishText.boundingBox()
     if (!box) throw new Error("Could not get elvish text dimensions")
 
