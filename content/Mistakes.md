@@ -17,23 +17,15 @@ date_updated: 2025-03-05 20:43:54.692493
 ---
 
 
-
-
-
 Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistakes) page:
 
 > [!quote] Scott Alexander
 > I don't promise never to make mistakes. But if I get something significantly wrong, I'll try to put it here as an acknowledgement and an aid for anyone trying to assess my credibility later.
 
-> [!note]
-> The list is currently quite thin. I have made more mistakes than are on this list. I'll add more as I remember them, or you could [email me](mailto:alex+mistakes@turntrout.com) and politely remind me of times I changed my mind about an important claim of mine!
-
- ---
-
-# [Reward is not the optimization target](/reward-is-not-the-optimization-target)
+# Not realizing that reward is not the optimization target
 
 Subtitle: July 25, 2022
-I spent thousands of hours proving theorems about the "tendencies" of "reinforcement learning" agents which are either [optimal](https://arxiv.org/abs/1912.01683) or [trained using a "good enough" learning algorithm](/parametrically-retargetable-power-seeking). (I'm using scare quotes to mark undue connotations.) I later realized that even though ["reward" is a pleasant word](/dangers-of-suggestive-terminology), it's _definitely not a slam dunk that RL-trained policies will seek to optimize that quantity._ Reward often simply provides a per-datapoint learning rate multiplier - nothing spooky or fundamentally doomed.
+I spent thousands of hours proving theorems about the "tendencies" of "reinforcement learning" agents which are either [optimal](https://arxiv.org/abs/1912.01683) or [trained using a "good enough" learning algorithm](/parametrically-retargetable-power-seeking). (I'm using scare quotes to mark undue connotations.) I later realized that [reward is not the optimization target](/reward-is-not-the-optimization-target). I learned that even though ["reward" is a pleasant word](/dangers-of-suggestive-terminology), it's _definitely not a slam dunk that RL-trained policies will seek to optimize that quantity._ Reward often simply provides a per-datapoint learning rate multiplier - nothing spooky or fundamentally doomed.
 
 While the realization may seem simple or obvious, it opened up a crack in my alignment worldview.
 
@@ -64,7 +56,7 @@ In 2023, [I (re?)discovered _steering vectors_](/research#steering-vectors): act
 
 I'm not sure how, exactly, to change my beliefs. The result is slight negative evidence against both shard theory and (relatedly) against my understanding (circa 2024) of how models work.
 
-> [!quote] [Me, describing the emotional experience of being wrong on this matter](https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo?commentId=AtX9Hf2fy4wNona6q)
+> [!quote] [My description of the emotional experience of being wrong here](https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo?commentId=AtX9Hf2fy4wNona6q)
 > I remember right when the negative results started hitting. I could feel the cope rising. I recognized the pattern, the straining against truth. I queried myself for what I found most painful - it was actually just losing a bet. I forced the words out of my mouth: "I guess I was wrong to be excited about this particular research direction. And Ryan Greenblatt was more right than I was about this matter."  
 >
 >  After that, it was all easier. What was there to be afraid of? I'd already admitted it!

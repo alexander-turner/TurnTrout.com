@@ -168,7 +168,7 @@ I like the pastel palettes provided by Catppuccin:
     <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" style="max-width: 100px; max-height: 100px; margin-top: 1rem; mix-blend-mode: normal;" alt="Smiling Face With Hearts on Twitter"/></center>
   </span>
 </div>
-<figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of image assets.</figcaption>
+<figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
 </figure>
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets. I even used CSS to dynamically adjust the luminance of select favicons, avoiding the scourge of common jet-black favicons mixed in with my softer text color. My dark mode button rotates between "automatic", "force light mode", and "force dark mode."
@@ -906,7 +906,7 @@ Reordering elements in `<head>` to ensure social media previews
 Updating page metadata
 : For posts which are being pushed for the first time, my script sets their publication date. For posts which have been updated since the last `push`, it updates their "last updated" date.
 
-: The script also updates the latest year in the GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+: The script also updates the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 : As of writing, the copyright notice reads:
 
