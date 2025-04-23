@@ -11,6 +11,13 @@ import {
   takeRegressionScreenshot,
 } from "./visual_utils"
 
+async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
+  const metadata = await sharp(buffer).metadata()
+  return {
+    width: metadata.width ?? 0,
+    height: metadata.height ?? 0,
+  }
+}
 test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
@@ -225,9 +232,11 @@ test.describe("takeRegressionScreenshot", () => {
   test.beforeEach(async ({ page }) => {
     // Create a clean test page with known content
     await page.setContent(`
-      <div id="test-root" style="width: 500px; height: 500px; background: white;">
-        <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
-      </div>
+      <html>
+        <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
+        </body>
+      </html>
     `)
   })
 
@@ -240,9 +249,12 @@ test.describe("takeRegressionScreenshot", () => {
       return originalScreenshot(options)
     }
 
-    await takeRegressionScreenshot(page, testInfo, "test-suffix")
+    // Since we're mocking the page.screenshot, need to pass in clip option
+    await takeRegressionScreenshot(page, testInfo, "test-suffix", {
+      clip: { x: 0, y: 0, width: 500, height: 500 },
+    })
 
-    // Verify path format
+    expect(capturedOptions).not.toBeNull()
     expect(capturedOptions.path).toMatch(
       new RegExp(`lost-pixel/.*-test-suffix-${testInfo.project.name}\\.png$`),
     )
@@ -252,7 +264,6 @@ test.describe("takeRegressionScreenshot", () => {
     const viewportSize = { width: 1024, height: 768 }
     await page.setViewportSize(viewportSize)
 
-    // Not a lostpixel test
     const screenshot = await takeRegressionScreenshot(page, testInfo, "test-suffix")
     const dimensions = await getImageDimensions(screenshot)
 
@@ -278,19 +289,70 @@ test.describe("takeRegressionScreenshot", () => {
     const clip = { x: 0, y: 0, width: 200, height: 150 }
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-test", {
-      clip,
+      clip: clip,
     })
     const dimensions = await getImageDimensions(screenshot)
 
     expect(dimensions.width).toBe(clip.width)
     expect(dimensions.height).toBe(clip.height)
   })
-})
 
-async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
-  const metadata = await sharp(buffer).metadata()
-  return {
-    width: metadata.width ?? 0,
-    height: metadata.height ?? 0,
-  }
-}
+  test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
+    const clip = { x: 10, y: 10, width: 50, height: 50 }
+
+    const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-over-element", {
+      clip: clip,
+    })
+    const dimensions = await getImageDimensions(screenshot)
+
+    // The dimensions should match the clip, not the element's bounding box
+    expect(dimensions.width).toBe(clip.width)
+    expect(dimensions.height).toBe(clip.height)
+  })
+
+  test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
+    test("clips viewport screenshot to clientWidth to avoid Safari gutter", async ({
+      page,
+    }, testInfo) => {
+      testInfo.skip(
+        !/webkit|safari/i.test(testInfo.project.name),
+        "Test is specific to WebKit/Safari gutter behavior",
+      )
+
+      const mockClientWidth = 1200
+      await page.evaluate((width) => {
+        Object.defineProperty(document.documentElement, "clientWidth", {
+          value: width,
+          configurable: true,
+        })
+      }, mockClientWidth)
+
+      // Ensure the test is nontrivial
+      const viewportSize = page.viewportSize()
+      expect(mockClientWidth).not.toBe(viewportSize?.width)
+
+      const originalScreenshot = page.screenshot
+      let capturedOptions: PageScreenshotOptions | undefined
+
+      page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
+        capturedOptions = options
+        // Return an empty buffer to satisfy the type, don't call original
+        return Buffer.from("")
+      }
+
+      try {
+        await takeRegressionScreenshot(page, testInfo, "gutter-test")
+
+        expect(capturedOptions).toBeDefined()
+        expect(capturedOptions?.clip).toBeDefined()
+        expect(capturedOptions?.clip?.width).toBe(mockClientWidth)
+        expect(capturedOptions?.clip?.x).toBe(0)
+        expect(capturedOptions?.clip?.y).toBe(0)
+        const viewportHeight = page.viewportSize()?.height
+        expect(capturedOptions?.clip?.height).toBe(viewportHeight)
+      } finally {
+        page.screenshot = originalScreenshot
+      }
+    })
+  })
+})

@@ -76,21 +76,32 @@ export async function takeRegressionScreenshot(
   const sanitizedBrowserName = sanitize(browserName)
   const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 
-  // By default, take a screenshot of the entire page
-  const elementTarget = options?.element ?? "body"
-  delete options?.element
-
-  const baseOptions = {
+  const screenshotOptions = {
     path: screenshotPath,
     animations: "disabled" as const,
-  }
-  const screenshotOptions = {
-    ...baseOptions,
     ...options,
   }
 
-  const element = typeof elementTarget === "string" ? page.locator(elementTarget) : elementTarget
-  return element.screenshot(screenshotOptions)
+  if (options?.clip) {
+    delete screenshotOptions.element
+    return page.screenshot(screenshotOptions)
+  } else if (options?.element) {
+    const element =
+      typeof options.element === "string" ? page.locator(options.element) : options.element
+    return element.screenshot(screenshotOptions)
+  } else {
+    // Default: Viewport screenshot, clipped to clientWidth to avoid WebKit gutter
+    const viewportSize = page.viewportSize()
+    if (!viewportSize) throw new Error("Could not get viewport size for clipping")
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+    screenshotOptions.clip = {
+      x: 0,
+      y: 0,
+      width: clientWidth,
+      height: viewportSize.height,
+    }
+    return page.screenshot(screenshotOptions)
+  }
 }
 
 export async function takeScreenshotAfterElement(
