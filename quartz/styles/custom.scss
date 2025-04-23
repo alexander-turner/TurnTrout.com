@@ -466,6 +466,9 @@ img.favicon {
   mix-blend-mode: normal;
   cursor: text;
 
+  // Don't pollute copied text with favicon
+  user-select: none;
+
   // Make favicons align properly with headings
   h1 &,
   h2 &,
