@@ -5,12 +5,6 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
-export interface RegressionScreenshotOptions {
-  element?: string | Locator
-  clip?: { x: number; y: number; width: number; height: number }
-  disableHover?: boolean
-}
-
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -23,7 +17,6 @@ export async function waitForThemeTransition(page: Page) {
           return
         }
 
-        // Add temporary class to enable transitions
         document.documentElement.classList.add("temporary-transition")
 
         // Listen for the transition end on body background-color
@@ -65,6 +58,12 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
+export interface RegressionScreenshotOptions {
+  element?: string | Locator
+  clip?: { x: number; y: number; width: number; height: number }
+  disableHover?: boolean
+}
+
 export async function takeRegressionScreenshot(
   page: Page,
   testInfo: TestInfo,
@@ -72,14 +71,12 @@ export async function takeRegressionScreenshot(
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
   const browserName = testInfo.project.name
-  // Sanitize the components used in the filename using the library
   const sanitizedTitle = sanitize(testInfo.title)
   const sanitizedSuffix = sanitize(screenshotSuffix)
   const sanitizedBrowserName = sanitize(browserName)
-
   const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
-  const baseOptions = { path: screenshotPath, animations: "disabled" as const }
 
+  const baseOptions = { path: screenshotPath, animations: "disabled" as const }
   const screenshotOptions = {
     ...baseOptions,
     ...options,
@@ -155,18 +152,14 @@ export async function getNextElementMatchingSelector(
   if (!box) throw new Error("Element not found")
 
   const page = element.page()
-
-  // Find all elements matching the selector
-  const elements = page.locator(selector)
-  const count = await elements.count()
+  const elements = await page.locator(selector).all()
 
   // Find the first element that appears after our current element
-  for (let i = 0; i < count; i++) {
-    const currentElement = elements.nth(i)
-    const currentBox = await currentElement.boundingBox()
+  for (const element of elements) {
+    const currentBox = await element.boundingBox()
 
     if (currentBox && currentBox.y > box.y) {
-      return currentElement
+      return element
     }
   }
 
@@ -273,8 +266,7 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
   })
 }
 
-// TODO add tests
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
-  return viewportSize ? viewportSize.width >= minDesktopWidth : false // matches $full-page-width
+  return viewportSize ? viewportSize.width >= minDesktopWidth : false
 }

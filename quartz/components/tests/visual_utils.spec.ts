@@ -170,7 +170,7 @@ test.describe("visual_utils functions", () => {
       await page.evaluate(() => {
         const div = document.createElement("div")
         div.id = "test-multiple-transitions"
-        div.style.transition = "opacity 100ms, transform 200ms" // Much longer transitions
+        div.style.transition = "opacity 100ms, transform 200ms"
         div.style.opacity = "1"
         div.style.transform = "translateX(0)"
         div.style.width = "100px"
@@ -270,7 +270,6 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    // Should match element dimensions
     expect(dimensions.width).toBe(elementBox.width)
     expect(dimensions.height).toBe(elementBox.height)
   })
@@ -288,7 +287,6 @@ test.describe("takeRegressionScreenshot", () => {
   })
 })
 
-// Helper function to get image dimensions from buffer
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
   return {

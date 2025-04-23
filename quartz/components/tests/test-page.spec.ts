@@ -12,7 +12,6 @@ import {
 
 // TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
-  // Mock clipboard API
   await page.addInitScript(() => {
     // Mock clipboard API if not available
     if (!navigator.clipboard) {
@@ -28,10 +27,9 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
-  // Log any console errors
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   // Dispatch the 'nav' event to initialize clipboard functionality
   await page.evaluate(() => {
@@ -95,11 +93,12 @@ test.describe("Test page sections", () => {
   }
 })
 
-test.describe("Various site pages", () => {
+test.describe("Unique content around the site", () => {
   for (const pageSlug of ["", "404", "all-tags", "recent", "tags/personal"]) {
-    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`)
-      await takeRegressionScreenshot(page, testInfo, `test-page-${pageSlug}`)
+    const title = pageSlug === "" ? "Welcome" : pageSlug
+    test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "networkidle" })
+      await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
     })
   }
 
@@ -107,10 +106,16 @@ test.describe("Various site pages", () => {
     await page.goto(
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
     )
-    const rewardWarning = page.getByText("Reward is not the optimization target").first()
+
+    const admonition = page.locator(".warning").first()
+    if (!admonition) throw new Error("Could not get reward warning admonition")
+    await admonition.scrollIntoViewIfNeeded()
+
+    const rewardWarning = admonition.getByText("Reward is not the optimization target").first()
     await expect(rewardWarning).toBeVisible()
+
     await takeRegressionScreenshot(page, testInfo, "reward-warning", {
-      element: rewardWarning,
+      element: admonition,
     })
   })
 })
