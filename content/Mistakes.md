@@ -24,8 +24,6 @@ Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistak
 
 > [!quote] Scott Alexander
 > I don't promise never to make mistakes. But if I get something significantly wrong, I'll try to put it here as an acknowledgement and an aid for anyone trying to assess my credibility later.
->
- > This doesn't include minor spelling/grammar mistakes, mistakes in links posts, or failed predictions. It's times I was fundamentally wrong about a major part of a post and someone was able to convince me of it.
 
 > [!note]
 > The list is currently quite thin. I have made more mistakes than are on this list. I'll add more as I remember them, or you could [email me](mailto:alex+mistakes@turntrout.com) and politely remind me of times I changed my mind about an important claim of mine!
