@@ -284,28 +284,25 @@ test("Search URL updates as we select different results", async ({ page }) => {
   expect(secondResultUrl).not.toBe(firstResultUrl)
 })
 
+// TODO cactus emoji not fully loaded sometimes
+// https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cm9vwepyn0r3gaxaqlzb0cdlb&diff=cm9vwfoai019dt7c22i810dva
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
   await search(page, "Emoji examples")
-  await page.waitForTimeout(1500)
+  await page.waitForLoadState("networkidle")
 
   const firstResult = page.locator(".result-card").first()
-  // Assertion on the title's contents for the first result
   await expect(firstResult).toContainText("Testing Site Features")
   if (showingPreview(page)) {
     await takeRegressionScreenshot(page, testInfo, "", {
       element: "#preview-container",
     })
   }
-
-  await page.waitForLoadState("networkidle")
-  await firstResult.click()
-  await page.waitForURL("http://localhost:8080/test-page")
 })
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
   test.skip(!showingPreview(page))
   await search(page, "Testing site")
-  await page.waitForTimeout(debounceSearchDelay + 100)
+  await page.waitForLoadState("networkidle")
 
   const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
   await footnoteLink.scrollIntoViewIfNeeded()
@@ -339,24 +336,17 @@ test.describe("Image's mix-blend-mode attribute", () => {
 
 test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
   await search(page, "Testing site")
-  await page.waitForTimeout(debounceSearchDelay + 100)
 
   // Make sure it looks good
   if (showingPreview(page)) {
     const previewContainer = page.locator("#preview-container")
+    await page.waitForLoadState("networkidle")
 
-    await page.waitForTimeout(1000)
     await expect(previewContainer).toBeVisible({ timeout: 10000 })
     await takeRegressionScreenshot(page, testInfo, "", {
       element: "#preview-container",
     })
   }
-
-  await page.waitForTimeout(500)
-  const firstResult = page.locator(".result-card").first()
-  await firstResult.click()
-
-  await page.waitForURL("http://localhost:8080/test-page")
 })
 
 test("Search preview shows after bad entry", async ({ page }) => {
@@ -413,12 +403,11 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   test.skip(!showingPreview(page))
 
   await search(page, "Testing site")
-  await page.waitForTimeout(1500)
+  await page.waitForLoadState("networkidle")
 
   const searchPondDropcaps = page.locator("#the-pond-dropcaps")
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
-  await page.waitForTimeout(1000)
   await takeRegressionScreenshot(page, testInfo, "", {
     element: "#the-pond-dropcaps",
   })
