@@ -89,13 +89,67 @@ test.describe("Test page sections", () => {
 })
 
 test.describe("Unique content around the site", () => {
-  for (const pageSlug of ["", "404", "all-tags", "recent", "tags/personal"]) {
+  for (const pageSlug of ["", "404"]) {
     const title = pageSlug === "" ? "Welcome" : pageSlug
     test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "networkidle" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
     })
   }
+
+  // Several pages update based on new posts
+  // Mock the data to prevent needless updating of the screenshots
+  for (const pageSlug of ["recent", "tags/personal"]) {
+    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "networkidle" })
+
+      // Remove all but the oldest numOldest posts; stable as I add more
+      const numOldest = 9
+      await page.evaluate((numKeepOldest: number) => {
+        const listElement = document.querySelectorAll("ul.section-ul")[0]
+        if (!listElement) {
+          console.error("Could not find the post list element.")
+          return
+        }
+
+        const children = listElement.children
+        const numTotalChildren = children.length
+        const numToRemove = numTotalChildren - numKeepOldest
+
+        // Need to copy the children to remove *before* iterating,
+        // as removing modifies the live HTMLCollection
+        const childrenToRemove = Array.from(children).slice(0, numToRemove)
+
+        // Remove the first 'numToRemove' children
+        childrenToRemove.forEach((child) => listElement.removeChild(child))
+      }, numOldest)
+
+      await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`)
+    })
+  }
+
+  test("All-tags with dummy values", async ({ page }, testInfo) => {
+    await page.goto("http://localhost:8080/all-tags", { waitUntil: "networkidle" })
+    await page.evaluate(() => {
+      const tagContainers = document.querySelectorAll(".tag-container")
+      tagContainers.forEach((tagContainer, index) => {
+        // Don't want look to change as I add more tags
+        if (index >= 10) {
+          tagContainer.remove()
+        }
+
+        const tagLink = tagContainer.querySelector(".tag-link")
+        if (!tagLink) throw new Error("Could not get tag link")
+        tagLink.textContent = `tag-${index}`
+
+        const tagCount = tagContainer.querySelector(".tag-count")
+        if (!tagCount) throw new Error("Could not get tag count")
+        tagCount.textContent = `(${index})`
+      })
+    })
+
+    await takeRegressionScreenshot(page, testInfo, "all-tags-dummy")
+  })
 
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
     await page.goto(
@@ -141,10 +195,8 @@ test.describe("Layout Breakpoints", () => {
         test.skip()
       }
 
-      // Set viewport to the exact breakpoint width
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
-      // Take a full page screenshot at this specific width
       await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${width}px`)
     })
   }
