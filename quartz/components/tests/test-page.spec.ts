@@ -34,6 +34,12 @@ test.beforeEach(async ({ page }) => {
   // Dispatch the 'nav' event to initialize clipboard functionality
   await page.evaluate(() => {
     window.dispatchEvent(new Event("nav"))
+
+    // Reset videos to the start
+    const videos = document.querySelectorAll("video")
+    videos.forEach((video) => {
+      video.currentTime = 0
+    })
   })
 })
 
@@ -73,10 +79,8 @@ test.describe("Test page sections", () => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
-      // Get the height of the page
       const boundingBoxArticle = await page.locator("body").boundingBox()
       if (!boundingBoxArticle) throw new Error("Could not get preview container dimensions")
-
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
         height: Math.ceil(boundingBoxArticle.height),
@@ -119,7 +123,6 @@ test.describe("Unique content around the site", () => {
         // as removing modifies the live HTMLCollection
         const childrenToRemove = Array.from(children).slice(0, numToRemove)
 
-        // Remove the first 'numToRemove' children
         childrenToRemove.forEach((child) => listElement.removeChild(child))
       }, numOldest)
 
