@@ -77,7 +77,6 @@ test.describe("Test page sections", () => {
       const boundingBoxArticle = await page.locator("body").boundingBox()
       if (!boundingBoxArticle) throw new Error("Could not get preview container dimensions")
 
-      // Set viewport to match preview height
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
         height: Math.ceil(boundingBoxArticle.height),
@@ -277,7 +276,6 @@ test.describe("Admonitions", () => {
           }
         })
 
-        // Assert the height is not significantly greater than line height
         expect(computedStyle.height).toBeLessThanOrEqual(computedStyle.lineHeight * 1.01)
       }
     }
@@ -444,7 +442,6 @@ test.describe("Spoilers", () => {
     })
   }
 
-  // Test that hovering over the spoiler reveals it
   test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
@@ -477,7 +474,6 @@ for (const theme of ["light", "dark"]) {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Hover and wait for width to stabilize
     await elvishText.hover()
 
     // Get initial width TODO
