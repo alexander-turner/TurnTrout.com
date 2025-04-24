@@ -137,6 +137,10 @@ test.describe("Table of contents", () => {
 test.describe("Layout Breakpoints", () => {
   for (const width of [minDesktopWidth, maxMobileWidth]) {
     test(`Layout at breakpoint width ${width}px (lostpixel)`, async ({ page }, testInfo) => {
+      if (!isDesktopViewport(page)) {
+        test.skip()
+      }
+
       // Set viewport to the exact breakpoint width
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
