@@ -27,7 +27,7 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
 
   const body = page.locator("body")
   await body.click()
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
   await takeRegressionScreenshot(page, testInfo, "hidden-menu", {
     element: "#navbar-right",
@@ -42,7 +42,7 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
 
   // Test initial state
   const originalMenuButtonState = await menuButton.screenshot()
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 
   // Test opened state
@@ -59,7 +59,7 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   await menuButton.click()
   const newMenuButtonState = await menuButton.screenshot()
   expect(newMenuButtonState).toEqual(originalMenuButtonState)
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
 
@@ -67,22 +67,7 @@ test("Can't see the menu at desktop size", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const menuButton = page.locator("#menu-button")
-  const navbarRightMenu = page.locator("#navbar-right .menu")
-
-  // The menu should always be visible at desktop size, so these should fail
-  for (const object of [navbarRightMenu, menuButton]) {
-    await expect(object)
-      .not.toBeVisible({ timeout: 200 })
-      .catch(() => console.debug("Expected failure: menu is always visible at desktop size"))
-  }
-
-  // Try clicking the menu button anyways
-  await menuButton
-    .click({ force: true, timeout: 200 })
-    .catch(() => console.debug("Expected failure: menu button not visible at desktop size"))
-  await expect(navbarRightMenu)
-    .not.toBeVisible({ timeout: 200 })
-    .catch(() => console.debug("Expected failure: menu not visible at desktop size"))
+  await expect(menuButton).toBeHidden()
 })
 
 // Test scrolling down, seeing the menu disappears, and then reappears when scrolling back up

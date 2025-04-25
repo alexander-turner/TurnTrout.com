@@ -116,6 +116,7 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
 test("Search placeholder changes based on viewport", async ({ page }) => {
   const searchBar = page.locator("#search-bar")
   const pageWidth = page.viewportSize()?.width
+  // eslint-disable-next-line playwright/no-conditional-in-test
   const showShortcutPlaceholder = pageWidth && pageWidth >= tabletBreakpoint
 
   await page.keyboard.press("/")
@@ -228,7 +229,7 @@ test.describe("Search accuracy", () => {
     await expect(previewElement).toHaveAttribute("data-use-dropcap", "false")
   })
 
-  test("Test page does use dropcap", async ({ page }) => {
+  test("Dropcap attribute is true for 'test' search results", async ({ page }) => {
     await search(page, "test")
 
     const previewElement = page.locator("#preview-container > article")
@@ -251,6 +252,7 @@ test("Enter key navigates to first result", async ({ page }) => {
   await firstResult.press("Enter")
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
+  await expect(page).not.toHaveURL(initialUrl)
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
@@ -287,16 +289,16 @@ test("Search URL updates as we select different results", async ({ page }) => {
 // TODO cactus emoji not fully loaded sometimes
 // https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cm9vwepyn0r3gaxaqlzb0cdlb&diff=cm9vwfoai019dt7c22i810dva
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
+  test.skip(!showingPreview(page))
+
   await search(page, "Emoji examples")
   await page.waitForLoadState("networkidle")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toContainText("Testing Site Features")
-  if (showingPreview(page)) {
-    await takeRegressionScreenshot(page, testInfo, "", {
-      element: "#preview-container",
-    })
-  }
+  await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
+    element: "#preview-container",
+  })
 })
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
@@ -335,18 +337,17 @@ test.describe("Image's mix-blend-mode attribute", () => {
 })
 
 test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
+  test.skip(!showingPreview(page))
   await search(page, "Testing site")
 
   // Make sure it looks good
-  if (showingPreview(page)) {
-    const previewContainer = page.locator("#preview-container")
-    await page.waitForLoadState("networkidle")
+  const previewContainer = page.locator("#preview-container")
+  await page.waitForLoadState("networkidle")
 
-    await expect(previewContainer).toBeVisible({ timeout: 10000 })
-    await takeRegressionScreenshot(page, testInfo, "", {
-      element: "#preview-container",
-    })
-  }
+  await expect(previewContainer).toBeVisible({ timeout: 10000 })
+  await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
+    element: "#preview-container",
+  })
 })
 
 test("Search preview shows after bad entry", async ({ page }) => {
@@ -373,11 +374,11 @@ test("Search preview shows after searching, closing, and reopening", async ({ pa
   await expect(previewContainer).toBeVisible()
 
   await page.keyboard.press("Escape")
-  await expect(previewContainer).not.toBeVisible()
+  await expect(previewContainer).toBeHidden()
 
   // Even though search pane reopens, preview container should be hidden
   await page.keyboard.press("/")
-  await expect(previewContainer).not.toBeVisible()
+  await expect(previewContainer).toBeHidden()
 
   await search(page, "Shrek")
   await expect(previewContainer).toBeVisible()
@@ -397,6 +398,7 @@ test("Show search preview, search invalid, then show again", async ({ page }) =>
   await expect(previewContent).toHaveCount(1)
 })
 
+// eslint-disable-next-line playwright/expect-expect
 test("The pond dropcaps, search preview visual regression test (lostpixel)", async ({
   page,
 }, testInfo) => {
@@ -431,6 +433,7 @@ test("Preview container click navigates to the correct page", async ({ page }) =
 
   // Verify navigation occurred to the correct URL
   await page.waitForURL(expectedUrl as string)
+  await expect(page).toHaveURL(expectedUrl as string)
 })
 
 test("Result card highlighting stays synchronized with preview", async ({ page }) => {
@@ -487,11 +490,11 @@ navigationMethods.forEach(({ down, description }) => {
   test(`${description} navigation changes which page you enter`, async ({ page }) => {
     await search(page, "Testing")
     const firstResult = page.locator(".result-card").first()
-    const initialUrl = await firstResult.getAttribute("href")
-    expect(initialUrl).toBe("http://localhost:8080/test-page")
+    const initialUrl = firstResult
+    await expect(initialUrl).toHaveAttribute("href", "http://localhost:8080/test-page")
 
     await page.keyboard.press(down)
     await page.keyboard.press("Enter")
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await page.waitForURL((url) => url.toString() !== initialUrl.toString())
   })
 })

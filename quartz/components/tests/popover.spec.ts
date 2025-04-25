@@ -36,7 +36,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
 
   // Initial state - no popover
   let popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 
   await dummyLink.hover()
   popover = page.locator(".popover")
@@ -48,7 +48,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
 
   // Move mouse away
   await page.mouse.move(0, 0)
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 
 test("External links do not show popover on hover (lostpixel)", async ({ page }) => {
@@ -58,11 +58,11 @@ test("External links do not show popover on hover (lostpixel)", async ({ page })
 
   // Initial state - no popover
   let popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 
   await externalLink.hover()
   popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 
 test("Popover content matches target page content", async ({ page, dummyLink }) => {
@@ -162,23 +162,23 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
 
   // Initial state - no popover
   let popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 
   await dummyLink.hover()
   popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
   await page.mouse.move(0, 0)
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 
   // Wait a moment and verify it stays hidden
   await page.waitForTimeout(500)
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 
   // Move mouse back near but not over the link
   await page.mouse.move(0, 100)
   await page.waitForTimeout(500)
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
@@ -191,7 +191,7 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
 
   await dummyLink.hover()
   const popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 
 test("Popover maintains position when page scrolls", async ({ page, dummyLink }) => {
@@ -258,7 +258,7 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   // Verify no popover appears
   const popover = page.locator(".popover")
   await page.waitForTimeout(1000)
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 
 test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
@@ -273,7 +273,7 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
 
   // Move mouse and wait for it to go away
   await page.mouse.move(0, 0)
-  await expect(metaPopover).not.toBeVisible()
+  await expect(metaPopover).toBeHidden()
 
   await dummyLink.scrollIntoViewIfNeeded()
   await expect(dummyLink).toBeVisible()
@@ -291,7 +291,7 @@ test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
   const popover = page.locator(".popover")
-  await expect(popover).not.toBeVisible()
+  await expect(popover).toBeHidden()
 })
 
 test("Popover appears at minimal viewport width", async ({ page, dummyLink }) => {
@@ -310,7 +310,7 @@ for (const id of ["navbar", "toc-content"]) {
     for (const link of await element.locator("a").all()) {
       await link.hover()
       const popover = page.locator(".popover")
-      await expect(popover).not.toBeVisible()
+      await expect(popover).toBeHidden()
     }
   })
 }

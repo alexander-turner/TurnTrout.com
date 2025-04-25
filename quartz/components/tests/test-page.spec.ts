@@ -10,6 +10,9 @@ import {
   takeScreenshotAfterElement,
 } from "./visual_utils"
 
+// Visual regression tests don't need assertions
+/* eslint-disable playwright/expect-expect */
+
 // TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -80,10 +83,9 @@ test.describe("Test page sections", () => {
       await setTheme(page, theme as "light" | "dark")
 
       const boundingBoxArticle = await page.locator("body").boundingBox()
-      if (!boundingBoxArticle) throw new Error("Could not get preview container dimensions")
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
-        height: Math.ceil(boundingBoxArticle.height),
+        height: Math.ceil(boundingBoxArticle?.height ?? 0),
       })
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -159,7 +161,6 @@ test.describe("Unique content around the site", () => {
     )
 
     const admonition = page.locator(".warning").first()
-    if (!admonition) throw new Error("Could not get reward warning admonition")
     await admonition.scrollIntoViewIfNeeded()
 
     const rewardWarning = admonition.getByText("Reward is not the optimization target").first()
@@ -193,9 +194,7 @@ test.describe("Table of contents", () => {
 test.describe("Layout Breakpoints", () => {
   for (const width of [minDesktopWidth, maxMobileWidth]) {
     test(`Layout at breakpoint width ${width}px (lostpixel)`, async ({ page }, testInfo) => {
-      if (!isDesktopViewport(page)) {
-        test.skip()
-      }
+      test.skip(!isDesktopViewport(page), "Desktop-only test")
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 

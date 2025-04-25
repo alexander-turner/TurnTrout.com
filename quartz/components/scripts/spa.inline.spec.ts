@@ -349,7 +349,7 @@ test.describe("SPA Navigation DOM Cleanup", () => {
     const localLink = page.locator("a").first()
     await localLink.click()
 
-    await expect(page.locator("#rogue-sibling")).not.toBeVisible()
+    await expect(page.locator("#rogue-sibling")).toBeHidden()
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
   })
 })

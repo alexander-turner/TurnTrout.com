@@ -179,6 +179,7 @@
     "esbuild": "^0.25.1",
     "eslint": "^9.21.0",
     "eslint-plugin-perfectionist": "^4.9.0",
+    "eslint-plugin-playwright": "^2.2.0",
     "eslint-plugin-react": "^7.37.4",
     "fs-extra": "^11.3.0",
     "globals": "^16.0.0",

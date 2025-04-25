@@ -762,7 +762,8 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
     ]
 ```
 
-I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
+- I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook. 
+- I learned the hard way that `playwright` code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch `playwright` code smells. 
 
 ## `pre-push`: the quality assurance gauntlet
 

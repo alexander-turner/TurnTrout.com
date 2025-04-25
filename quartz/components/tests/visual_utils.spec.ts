@@ -261,7 +261,7 @@ test.describe("takeRegressionScreenshot", () => {
     )
   })
 
-  test("generates full page screenshot with correct dimensions  ", async ({ page }, testInfo) => {
+  test("generates full page screenshot with correct dimensions", async ({ page }, testInfo) => {
     const viewportSize = { width: 1024, height: 768 }
     await page.setViewportSize(viewportSize)
 

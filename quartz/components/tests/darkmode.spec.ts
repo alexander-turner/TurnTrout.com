@@ -50,9 +50,9 @@ class DarkModeHelper {
   }
 
   async verifyThemeLabel(expectedTheme: Theme): Promise<void> {
-    const label = await this.page.locator("#theme-label").textContent()
+    const label = this.page.locator("#theme-label")
     const expectedLabel = expectedTheme.charAt(0).toUpperCase() + expectedTheme.slice(1)
-    expect(label).toBe(expectedLabel)
+    await expect(label).toHaveText(expectedLabel)
   }
 }
 
