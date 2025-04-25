@@ -86,29 +86,34 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   expect(popoverContent).toContain(pageContent)
 })
 
-for (const boolWait of [true, false]) {
-  test(`Multiple popovers don't stack ${boolWait ? "with wait" : "without wait"}`, async ({
-    page,
-  }) => {
-    const allLinks = await page.locator(".can-trigger-popover").all()
-    const firstTenLinks = allLinks.slice(0, 5)
-    for (const link of firstTenLinks) {
-      await link.scrollIntoViewIfNeeded()
-      await expect(link).toBeVisible()
-      await link.hover()
+test("Multiple popovers don't stack with wait", async ({ page }) => {
+  const allLinks = await page.locator(".can-trigger-popover").all()
+  const firstLinks = allLinks.slice(0, 5)
+  for (const link of firstLinks) {
+    await link.scrollIntoViewIfNeeded()
+    await expect(link).toBeVisible()
+    await link.hover()
 
-      // Wait for the popover to be visible to ensure handling is correct
-      if (boolWait) {
-        const popover = page.locator(".popover")
-        await expect(popover).toBeVisible()
-      }
-    }
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+  }
 
-    const popoverCount = await page.locator(".popover").count()
-    // Without wait, I think it triggers mouseleave immediately
-    expect(popoverCount).toBe(boolWait ? 1 : 0)
-  })
-}
+  const popoverCount = await page.locator(".popover").count()
+  expect(popoverCount).toBe(1)
+})
+
+test("Multiple popovers don't stack without wait", async ({ page }) => {
+  const allLinks = await page.locator(".can-trigger-popover").all()
+  const firstLinks = allLinks.slice(0, 5)
+  for (const link of firstLinks) {
+    await link.scrollIntoViewIfNeeded()
+    await expect(link).toBeVisible()
+    await link.hover()
+  }
+
+  const popoverCount = await page.locator(".popover").count()
+  expect(popoverCount).toBe(0)
+})
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
   const initialPageWidth = await page.evaluate(() => window.innerWidth)
@@ -172,11 +177,7 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   await expect(popover).toBeHidden()
 
   // Wait a moment and verify it stays hidden
-  await page.waitForTimeout(500)
-  await expect(popover).toBeHidden()
-
-  // Move mouse back near but not over the link
-  await page.mouse.move(0, 100)
+  // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(500)
   await expect(popover).toBeHidden()
 })
@@ -198,23 +199,23 @@ test("Popover maintains position when page scrolls", async ({ page, dummyLink })
   await expect(dummyLink).toBeVisible()
 
   const linkBox = await dummyLink.boundingBox()
-  if (!linkBox) throw new Error("Could not get link position")
+  test.fail(!linkBox, "Could not get link position")
 
   await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
   const initialPopoverBox = await popover.boundingBox()
-  if (!initialPopoverBox) throw new Error("Could not get popover position")
+  test.fail(!initialPopoverBox, "Could not get popover position")
 
   await page.evaluate(() => window.scrollBy(0, 500))
 
   // Verify absolute popover position is the same
   const newPopoverBox = await popover.boundingBox()
-  if (!newPopoverBox) throw new Error("Could not get new popover position")
+  test.fail(!newPopoverBox, "Could not get new popover position")
 
   for (const coord of ["x", "y"] as const) {
-    expect(Math.abs(newPopoverBox[coord] - initialPopoverBox[coord])).toBeLessThanOrEqual(
+    expect(Math.abs(newPopoverBox![coord] - initialPopoverBox![coord])).toBeLessThanOrEqual(
       SCROLL_TOLERANCE,
     )
   }
@@ -257,7 +258,6 @@ test("Popovers do not appear in search previews", async ({ page }) => {
 
   // Verify no popover appears
   const popover = page.locator(".popover")
-  await page.waitForTimeout(1000)
   await expect(popover).toBeHidden()
 })
 

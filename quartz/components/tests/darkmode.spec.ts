@@ -3,6 +3,9 @@ import { test, expect, type Page } from "@playwright/test"
 import { type Theme } from "../scripts/darkmode"
 import { setTheme as utilsSetTheme } from "./visual_utils"
 
+// False negative because the helpers call expect
+/* eslint-disable playwright/expect-expect */
+
 const AUTO_THEME: Theme = "light"
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
@@ -99,27 +102,42 @@ test.describe("Theme persistence and UI states", () => {
 })
 
 // Verify that dark mode toggle works w/ both the real button and the helper
-for (const useButton of [true, false]) {
-  const method = useButton ? "clickToggle" : "setTheme"
+test("Dark mode icons toggle correctly through states using clickToggle", async ({ page }) => {
+  const helper = new DarkModeHelper(page)
+  const states: Theme[] = ["auto", "light", "dark", "auto"]
 
-  test(`Dark mode icons toggle correctly through states (method: ${method})`, async ({ page }) => {
-    const helper = new DarkModeHelper(page)
-    const states: Theme[] = ["auto", "light", "dark", "auto"]
+  // Iterate through transitions
+  for (let i = 0; i < states.length - 1; i++) {
+    const currentState = states[i]
+    await helper.verifyTheme(currentState)
+    await helper.verifyThemeLabel(currentState)
+    await helper.clickToggle()
+  }
 
-    for (const [index, theme] of states.entries()) {
-      await helper.verifyTheme(theme)
-      await helper.verifyThemeLabel(theme)
+  // Verify the final state
+  const finalState = states[states.length - 1]
+  await helper.verifyTheme(finalState)
+  await helper.verifyThemeLabel(finalState)
+})
 
-      if (index < states.length - 1) {
-        if (useButton) {
-          await helper.clickToggle()
-        } else {
-          await helper.setTheme(states[index + 1])
-        }
-      }
-    }
-  })
-}
+test("Dark mode icons toggle correctly through states using setTheme", async ({ page }) => {
+  const helper = new DarkModeHelper(page)
+  const states: Theme[] = ["auto", "light", "dark", "auto"]
+
+  // Iterate through transitions
+  for (let i = 0; i < states.length - 1; i++) {
+    const currentState = states[i]
+    const nextState = states[i + 1]
+    await helper.verifyTheme(currentState)
+    await helper.verifyThemeLabel(currentState)
+    await helper.setTheme(nextState)
+  }
+
+  // Verify the final state
+  const finalState = states[states.length - 1]
+  await helper.verifyTheme(finalState)
+  await helper.verifyThemeLabel(finalState)
+})
 
 /* If detectDarkMode.js isn't working right, the FOUC will happen here */
 test("No flash of unstyled content on page load", async ({ page }) => {
@@ -142,6 +160,7 @@ test("No flash of unstyled content on page load", async ({ page }) => {
       localStorage.clear()
       localStorage.setItem("saved-theme", initialTheme)
     }, initialTheme)
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })
 
@@ -153,7 +172,7 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     const firstScreenshot = await page.screenshot()
 
     // Wait for styles to be applied
-    await page.waitForLoadState("networkidle")
+    await page.waitForLoadState("load")
     const afterLoadScreenshot = await page.screenshot()
     afterScreenshots.set(initialTheme, afterLoadScreenshot)
 

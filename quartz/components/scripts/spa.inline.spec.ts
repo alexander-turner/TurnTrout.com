@@ -167,6 +167,7 @@ test.describe("Local Link Navigation", () => {
     // We don't actually navigate to external sites in tests.
     // Instead, we can ensure the click is not prevented by middle-clicking.
     await page.click("#external-link", { button: "middle" })
+    await expect(page).toHaveURL("https://www.example.com")
   })
 })
 
@@ -181,6 +182,7 @@ test.describe("Scroll Behavior", () => {
   })
 
   for (const [scrollPos] of [[50], [100], [1000]]) {
+    // eslint-disable-next-line playwright/expect-expect
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
       await waitForHistoryState(page, scrollPos)
@@ -188,6 +190,7 @@ test.describe("Scroll Behavior", () => {
       await waitForScroll(page, scrollPos)
     })
 
+    // eslint-disable-next-line playwright/expect-expect
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }) => {
@@ -195,6 +198,8 @@ test.describe("Scroll Behavior", () => {
       await page.goto(`http://localhost:8080/test-page#${anchorId}`)
 
       // Wait so that we don't race in Firefox
+      // IIRC I tried alternatives like waitForFunction, but it didn't work
+      // eslint-disable-next-line playwright/no-wait-for-timeout
       await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
       await waitForHistoryState(page, scrollPos)
@@ -204,6 +209,7 @@ test.describe("Scroll Behavior", () => {
     })
   }
 
+  // eslint-disable-next-line playwright/expect-expect
   test("Restores scroll position across multiple refreshes", async ({ page }) => {
     const targetScroll = 200
     await page.evaluate((targetScroll) => window.scrollTo(0, targetScroll), targetScroll)
@@ -229,6 +235,7 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Popstate (Back/Forward) Navigation", () => {
+  // eslint-disable-next-line playwright/expect-expect
   test("browser back and forward updates content appropriately", async ({ page }) => {
     const initialUrl = page.url()
 
@@ -248,6 +255,7 @@ test.describe("Same-page navigation", () => {
     const initialScroll = await page.evaluate(() => window.scrollY)
     expect(initialScroll).toBe(0)
 
+    // eslint-disable-next-line playwright/no-conditional-in-test
     const selector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
     const headers = await page.locator(selector).all()
     await headers[3].click()
@@ -275,8 +283,11 @@ test.describe("Same-page navigation", () => {
 
       // Firefox will error without waiting for scroll to complete
       const previousScroll =
+        // eslint-disable-next-line playwright/no-conditional-in-test
         scrollPositions.length > 0 ? scrollPositions[scrollPositions.length - 1] : 0
       await waitForHistoryScrollNotEquals(page, previousScroll)
+
+      // eslint-disable-next-line playwright/no-wait-for-timeout
       await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
@@ -319,10 +330,7 @@ test.describe("Same-page navigation", () => {
 
 test.describe("SPA Navigation DOM Cleanup", () => {
   test("removes unexpected siblings of video element before morphing", async ({ page }) => {
-    if (!isDesktopViewport(page)) {
-      // Video element is not visible on mobile
-      test.skip()
-    }
+    test.skip(!isDesktopViewport(page), "Video element is not visible on mobile")
     // Inject the video element structure and a rogue sibling for testing
     await page.evaluate(() => {
       const navbarLeft = document.getElementById("navbar-left")
@@ -354,6 +362,7 @@ test.describe("SPA Navigation DOM Cleanup", () => {
   })
 })
 
+// eslint-disable-next-line playwright/expect-expect
 test("restores scroll position when returning from external page", async ({ page }) => {
   await page.evaluate(() => {
     const link = document.createElement("a")

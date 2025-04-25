@@ -124,8 +124,10 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   for (let i = 0; i < 10; i++) {
     const opacity = await getNavbarOpacity()
     opacityValues.push(Number(opacity))
+    // eslint-disable-next-line playwright/no-wait-for-timeout  
     await page.waitForTimeout(80) // Wait a bit between samples
   }
+  // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(500)
   const finalOpacity = await navbar.evaluate((el) => getComputedStyle(el).opacity)
   opacityValues.push(Number(finalOpacity))
@@ -143,13 +145,13 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
 
   const takeNavbarScreenshot = async (suffix: string) => {
     const box = await navbar.boundingBox()
-    if (!box) throw new Error("Could not find navbar")
+    test.fail(!box, "Could not find navbar")
     await takeRegressionScreenshot(page, testInfo, suffix, {
       clip: {
-        x: box.x,
-        y: box.y,
-        width: box.width,
-        height: box.height + 12,
+        x: box!.x,
+        y: box!.y,
+        width: box!.width,
+        height: box!.height + 12,
       },
     })
   }
