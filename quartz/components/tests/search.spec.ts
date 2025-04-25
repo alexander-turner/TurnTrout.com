@@ -65,9 +65,7 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
-  if (!showingPreview(page)) {
-    test.skip()
-  }
+  test.skip(!showingPreview(page))
 
   await search(page, "Steering")
   await page.waitForTimeout(debounceSearchDelay + 100)
@@ -78,7 +76,7 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
 
   const resultCards = page.locator(".result-card")
   await expect(resultCards.first()).toBeVisible()
-  await expect(resultCards.first()).toContainText("Steering", { timeout: 10000 })
+  await expect(resultCards.first()).toContainText("Steering")
 
   // Navigate with arrow keys
   await page.keyboard.press("ArrowDown")
@@ -91,17 +89,15 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   const previewContainer = page.locator("#preview-container")
   await page.waitForTimeout(1000)
 
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page), timeout: 10000 })
+  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
 
   // Should have children -- means there's content
   await expect(previewContainer.first()).toBeVisible({
     visible: showingPreview(page),
-    timeout: 10000,
   })
 
   await page.waitForTimeout(1000)
-  // Take screenshot of search results
-  await takeRegressionScreenshot(page, testInfo, "", {
+  await takeRegressionScreenshot(page, testInfo, "search-steering", {
     element: "#search-layout",
   })
 })
@@ -314,7 +310,7 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
   await expect(footnoteLink).toBeVisible()
 
   await page.waitForTimeout(1000)
-  await takeRegressionScreenshot(page, testInfo, "", {
+  await takeRegressionScreenshot(page, testInfo, "footnote-back-arrow-search", {
     element: footnoteLink,
   })
 })
@@ -410,7 +406,7 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   const searchPondDropcaps = page.locator("#the-pond-dropcaps")
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
-  await takeRegressionScreenshot(page, testInfo, "", {
+  await takeRegressionScreenshot(page, testInfo, "search-the-pond-dropcaps", {
     element: "#the-pond-dropcaps",
   })
 })

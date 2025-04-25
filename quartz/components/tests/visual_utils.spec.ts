@@ -35,6 +35,7 @@ test.describe("visual_utils functions", () => {
       const currentTheme = await page.evaluate(() =>
         document.documentElement.getAttribute("data-theme"),
       )
+      // eslint-disable-next-line playwright/no-conditional-in-test
       const expectedTheme = theme === "auto" ? preferredTheme : theme
       expect(currentTheme).toBe(expectedTheme)
 
@@ -246,6 +247,7 @@ test.describe("takeRegressionScreenshot", () => {
     const originalScreenshot = page.screenshot.bind(page)
     let capturedOptions: PageScreenshotOptions = {}
     page.screenshot = async (options?: PageScreenshotOptions) => {
+      // eslint-disable-next-line playwright/no-conditional-in-test
       capturedOptions = options ?? {}
       return originalScreenshot(options)
     }
@@ -275,15 +277,15 @@ test.describe("takeRegressionScreenshot", () => {
   test("element screenshot captures only the element", async ({ page }, testInfo) => {
     const element = page.locator("#test-element")
     const elementBox = await element.boundingBox()
-    if (!elementBox) throw new Error("Could not get element bounding box")
+    test.fail(!elementBox, "Could not get element bounding box")
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "element-test", {
       element: "#test-element",
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    expect(dimensions.width).toBe(elementBox.width)
-    expect(dimensions.height).toBe(elementBox.height)
+    expect(dimensions.width).toBe(elementBox!.width)
+    expect(dimensions.height).toBe(elementBox!.height)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
@@ -401,12 +403,12 @@ test.describe("takeScreenshotAfterElement", () => {
     }
 
     expect(capturedOptions).toBeDefined()
-    if (!capturedOptions) return
+    test.fail(!capturedOptions, "Captured options are undefined")
 
-    expect(capturedOptions.path).toBeDefined()
-    expect(capturedOptions.path).toContain(testSuffix)
-    expect(capturedOptions.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
-    expect(capturedOptions.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
+    expect(capturedOptions!.path).toBeDefined()
+    expect(capturedOptions!.path).toContain(testSuffix)
+    expect(capturedOptions!.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
+    expect(capturedOptions!.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
 
     // Verify the clip coordinates and dimensions
     const startElementBox = await startElement.boundingBox()
@@ -415,16 +417,13 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(startElementBox).not.toBeNull()
     expect(parentElementBox).not.toBeNull()
 
-    if (startElementBox && parentElementBox) {
-      expect(capturedOptions.clip).toBeDefined()
-      if (!capturedOptions.clip) return
+    expect(capturedOptions!.clip).toBeDefined()
+    test.fail(!capturedOptions!.clip, "Captured options clip is undefined")
 
-      expect(capturedOptions.clip.x).toBeCloseTo(parentElementBox.x)
-      expect(capturedOptions.clip.y).toBeCloseTo(startElementBox.y)
-      expect(capturedOptions.clip.width).toBeCloseTo(parentElementBox.width)
-      expect(capturedOptions.clip.height).toBe(screenshotHeight)
-    }
-
-    expect(capturedOptions.animations).toBe("disabled")
+    expect(capturedOptions!.clip!.x).toBeCloseTo(parentElementBox!.x)
+    expect(capturedOptions!.clip!.y).toBeCloseTo(startElementBox!.y)
+    expect(capturedOptions!.clip!.width).toBeCloseTo(parentElementBox!.width)
+    expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
+    expect(capturedOptions!.animations).toBe("disabled")
   })
 })
