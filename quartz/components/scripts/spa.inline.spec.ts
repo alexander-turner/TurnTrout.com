@@ -164,9 +164,7 @@ test.describe("Local Link Navigation", () => {
     })
 
     // Check that SPA logic does not intercept external links
-    // We don't actually navigate to external sites in tests.
-    // Instead, we can ensure the click is not prevented by middle-clicking.
-    await page.click("#external-link", { button: "middle" })
+    await page.click("#external-link")
     await expect(page).toHaveURL("https://www.example.com")
   })
 })

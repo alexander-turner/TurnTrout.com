@@ -383,6 +383,8 @@ function hideSearch() {
   // Clean up preview
   if (previewManager) {
     previewManager.hide()
+    // Ensure no residual information is left in the preview
+    previewManager.clear()
   }
 
   searchType = "basic"
@@ -423,6 +425,7 @@ async function shortcutHandler(
     if (searchBarOpen) {
       hideSearch()
     } else {
+      // TODO document feature or remove; don't want hidden functionality
       showSearch("tags", container, searchBar)
     }
 
