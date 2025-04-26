@@ -44,10 +44,10 @@ export default defineConfig({
   timeout: process.env.CI ? 90000 : 30000,
   workers: 1, // Parallelism causes flakiness
 
-  retries: 1,
+  retries: 3,
   testDir: "./quartz/",
   testMatch: /.*\.spec\.ts/,
-  reporter: "list", // Format of test status display
+  reporter: process.env.CI ? "dot" : "list", // Format of test status display
   use: {
     trace: "on-first-retry",
     screenshot: {

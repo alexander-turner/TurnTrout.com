@@ -8,7 +8,7 @@ on:
   push:
     branches: ["main", "dev", "lostpixel"]
   pull_request:
-    branches: ["main", "dev", lostpixel"]
+    branches: ["main", "dev", "lostpixel"]
 
 jobs:
   visual-testing:
@@ -94,13 +94,14 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Calculate 1-based job index - will be shard number
-        run: echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
+        run: 
 
       # Upload Playwright traces regardless of test outcome for debugging
       - name: Upload Playwright traces
         uses: actions/upload-artifact@v4
         if: always()
         with:
+          echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
           name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}
           path: test-results/
           retention-days: 7

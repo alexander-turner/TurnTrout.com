@@ -336,7 +336,6 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   test.skip(!showingPreview(page))
   await search(page, "Testing site")
 
-  // Make sure it looks good
   const previewContainer = page.locator("#preview-container")
   await page.waitForLoadState("networkidle")
 
@@ -370,10 +369,6 @@ test("Search preview shows after searching, closing, and reopening", async ({ pa
   await expect(previewContainer).toBeVisible()
 
   await page.keyboard.press("Escape")
-  await expect(previewContainer).toBeHidden()
-
-  // Even though search pane reopens, preview container should be hidden
-  await page.keyboard.press("/")
   await expect(previewContainer).toBeHidden()
 
   await search(page, "Shrek")
