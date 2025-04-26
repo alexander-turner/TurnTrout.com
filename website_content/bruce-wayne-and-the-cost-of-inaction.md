@@ -41,14 +41,7 @@ date_updated: 2025-03-22 12:22:59.421452
 
 
 
-
-
-
-
-
-
-
-I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
+None of the characters are meant to express my views. I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
 
 <center><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></center>
 
