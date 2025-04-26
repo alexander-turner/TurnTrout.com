@@ -64,7 +64,7 @@ async function addMarker(page: Page): Promise<void> {
     interface WindowWithMarker extends Window {
       spaNavigationTestMarker?: boolean
     }
-    ;(window as WindowWithMarker).spaNavigationTestMarker = true
+    ; (window as WindowWithMarker).spaNavigationTestMarker = true
   })
 }
 
