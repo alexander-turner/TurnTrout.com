@@ -8,7 +8,7 @@ on:
   push:
     branches: ["main", "dev", "lostpixel"]
   pull_request:
-    branches: ["main", "dev", "lostpixel"]
+    branches: ["main", "dev", lostpixel"]
 
 jobs:
   visual-testing:
@@ -93,17 +93,15 @@ jobs:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+      - name: Calculate 1-based job index - will be shard number
+        run: echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
 
       # Upload Playwright traces regardless of test outcome for debugging
       - name: Upload Playwright traces
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-traces-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}
           path: test-results/
           retention-days: 7
 
@@ -112,7 +110,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: lost-pixel-screenshots-${{ env.SANITIZED_SHARD }}
+          name: lost-pixel-screenshots-${{ env.JOB_INDEX_1_BASED }}
           path: ./lost-pixel
           retention-days: 1
 
