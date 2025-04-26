@@ -204,6 +204,7 @@ export async function search(page: Page, term: string) {
 
   // Wait for search layout to be visible with results
   const searchLayout = page.locator("#search-layout")
+  await expect(searchLayout).toBeAttached()
   await expect(searchLayout).toBeVisible()
   await expect(searchLayout).toHaveClass(/display-results/)
 
