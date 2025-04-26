@@ -116,6 +116,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}
+          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}-attempt-${{ github.run_attempt }}
           path: test-results/
           retention-days: 7
