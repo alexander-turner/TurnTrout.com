@@ -94,15 +94,14 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Calculate 1-based job index - will be shard number
-        run: 
+        run: echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
 
       # Upload Playwright traces regardless of test outcome for debugging
       - name: Upload Playwright traces
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
-          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}
+          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}-attempt-${{ github.run_attempt }}
           path: test-results/
           retention-days: 7
 
@@ -111,7 +110,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: lost-pixel-screenshots-${{ env.JOB_INDEX_1_BASED }}
+          name: lost-pixel-screenshots-${{ env.JOB_INDEX_1_BASED }}-attempt-${{ github.run_attempt }}
           path: ./lost-pixel
           retention-days: 1
 
