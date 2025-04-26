@@ -1,11 +1,7 @@
 import { test, expect } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
-import {
-  searchPlaceholderDesktop,
-  searchPlaceholderMobile,
-  debounceSearchDelay,
-} from "../scripts/search"
+import { searchPlaceholderDesktop, searchPlaceholderMobile } from "../scripts/search"
 import { takeRegressionScreenshot, setTheme, search, showingPreview } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -68,9 +64,8 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   test.skip(!showingPreview(page))
 
   await search(page, "Steering")
-  await page.waitForTimeout(debounceSearchDelay + 100)
+  await page.waitForLoadState("domcontentloaded")
 
-  // Check results appear
   const resultsContainer = page.locator("#results-container")
   await expect(resultsContainer).toBeVisible()
 
@@ -78,25 +73,19 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   await expect(resultCards.first()).toBeVisible()
   await expect(resultCards.first()).toContainText("Steering")
 
-  // Navigate with arrow keys
   await page.keyboard.press("ArrowDown")
-  await page.waitForTimeout(500)
 
   const secondResult = resultCards.nth(1)
   await expect(secondResult).toHaveClass(/focus/)
 
-  // Check that the preview appears if the width is greater than tabletBreakpoint
   const previewContainer = page.locator("#preview-container")
-  await page.waitForTimeout(1000)
-
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  await expect(previewContainer).toBeVisible()
 
   // Should have children -- means there's content
-  await expect(previewContainer.first()).toBeVisible({
-    visible: showingPreview(page),
-  })
+  await expect(previewContainer.first()).toBeAttached()
+  await expect(previewContainer.first()).toBeVisible()
 
-  await page.waitForTimeout(1000)
+  await page.waitForLoadState("load")
   await takeRegressionScreenshot(page, testInfo, "search-steering", {
     element: "#search-layout",
   })
@@ -251,35 +240,30 @@ test("Enter key navigates to first result", async ({ page }) => {
   await expect(page).not.toHaveURL(initialUrl)
 })
 
+// eslint-disable-next-line playwright/expect-expect
 test("Search URL updates as we select different results", async ({ page }) => {
   test.skip(!showingPreview(page))
 
+  const initialUrl = page.url()
   await search(page, "Shrek")
   const previewContainer = page.locator("#preview-container")
 
-  // Hover over the first result and click the preview
   const firstResult = page.locator(".result-card").first()
   await firstResult.hover()
   await previewContainer.click()
 
-  // Wait for navigation to complete and get the URL
-  await page.waitForLoadState("networkidle")
+  await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
   await page.keyboard.press("/")
   await search(page, "Shrek")
 
-  // Hover over the second result and click the preview
   const secondResult = page.locator(".result-card").nth(1)
   await secondResult.hover()
   await previewContainer.click()
 
-  // Wait for navigation and get the new URL
-  await page.waitForLoadState("networkidle")
-  const secondResultUrl = page.url()
-
-  // Verify that the URLs are different
-  expect(secondResultUrl).not.toBe(firstResultUrl)
+  const urlsSoFar = new Set([initialUrl, firstResultUrl])
+  await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
 })
 
 // TODO cactus emoji not fully loaded sometimes
@@ -288,7 +272,7 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
   test.skip(!showingPreview(page))
 
   await search(page, "Emoji examples")
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("load")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toContainText("Testing Site Features")
@@ -299,17 +283,15 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
   test.skip(!showingPreview(page))
+
   await search(page, "Testing site")
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("load")
 
   const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
   await footnoteLink.scrollIntoViewIfNeeded()
-  await page.waitForTimeout(500)
-
   await expect(footnoteLink).toContainText("⤴")
   await expect(footnoteLink).toBeVisible()
 
-  await page.waitForTimeout(1000)
   await takeRegressionScreenshot(page, testInfo, "footnote-back-arrow-search", {
     element: footnoteLink,
   })
@@ -337,9 +319,9 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   await search(page, "Testing site")
 
   const previewContainer = page.locator("#preview-container")
-  await page.waitForLoadState("networkidle")
+  await expect(previewContainer).toBeVisible()
+  await page.waitForLoadState("load")
 
-  await expect(previewContainer).toBeVisible({ timeout: 10000 })
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
     element: "#preview-container",
   })
@@ -389,16 +371,15 @@ test("Show search preview, search invalid, then show again", async ({ page }) =>
   await expect(previewContent).toHaveCount(1)
 })
 
-// eslint-disable-next-line playwright/expect-expect
 test("The pond dropcaps, search preview visual regression test (lostpixel)", async ({
   page,
 }, testInfo) => {
   test.skip(!showingPreview(page))
 
   await search(page, "Testing site")
-  await page.waitForLoadState("networkidle")
 
   const searchPondDropcaps = page.locator("#the-pond-dropcaps")
+  await expect(searchPondDropcaps).toBeAttached()
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
   await takeRegressionScreenshot(page, testInfo, "search-the-pond-dropcaps", {
