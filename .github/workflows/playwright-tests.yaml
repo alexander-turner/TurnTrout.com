@@ -108,10 +108,14 @@ jobs:
         run: |
           npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
 
+      - name: Echo the 1-indexed job index
+        run: |
+          echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
+
       - name: Upload Playwright traces
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces-${{ matrix.shard }}
+          name: playwright-traces-${{ env.JOB_INDEX_1_BASED }}
           path: test-results/
           retention-days: 7
