@@ -108,9 +108,10 @@ jobs:
         run: |
           npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
 
-      - name: Echo the 1-indexed job index
-        run: |
-          echo "JOB_INDEX_1_BASED=$((${{ strategy.job-index }} + 1))" >> $GITHUB_ENV
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright traces
         if: always()
