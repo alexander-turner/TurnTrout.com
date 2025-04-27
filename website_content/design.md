@@ -762,8 +762,8 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
     ]
 ```
 
-- I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook. 
-- I learned the hard way that `playwright` code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch `playwright` code smells. 
+- I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
+- I learned the hard way that `playwright` code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch `playwright` code smells.
 
 ## `pre-push`: the quality assurance gauntlet
 
@@ -817,7 +817,7 @@ I lastly check that my CSS:
 
 ### Unit tests
 
-I have 1,430 JavaScript unit tests and 607 Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage`](https://github.com/nedbat/coveragepy) to ensure 100\% coverage of my Python files.
+I have 1,430 JavaScript unit tests and 607 Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage`](https://github.com/nedbat/coveragepy) to ensure 100\% coverage of my Python files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
 
 ### Simulating site interactions
 

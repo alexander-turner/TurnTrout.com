@@ -141,11 +141,8 @@ describe("rehype-custom-subtitle", () => {
       const result = processParagraph(input as Element)
       expect(result).toBe(expected)
       const firstChild = input.children[0]
-      if (firstChild.type === "text") {
-        expect(firstChild.value).toBe(resultText)
-      } else {
-        throw new Error("Expected first child to be a text node")
-      }
+      expect(firstChild.type).toBe("text")
+      expect(firstChild).toHaveProperty("value", resultText)
     })
   })
 

@@ -85,11 +85,8 @@ describe("reorderHead", () => {
       `)
 
       const $ = reorderHead(querier)
-      if (attr) {
-        expect($(selector).attr(attr)).toBe(expected)
-      } else {
-        expect($(selector).html()).toBe(expected)
-      }
+      const elementToTest = attr ? $(selector).attr(attr) : $(selector).html()
+      expect(elementToTest).toBe(expected)
     },
   )
 })

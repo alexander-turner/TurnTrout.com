@@ -420,11 +420,7 @@ describe("Favicon Utilities", () => {
       const parent = h("div", {}, [node])
 
       await linkfavicons.ModifyNode(node, parent)
-      if (expectedPath === null) {
-        expect(node.children.length).toBe(0)
-      } else {
-        expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
-      }
+      expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
     })
 
     it("should skip footnote links", async () => {
@@ -519,6 +515,7 @@ describe("linkfavicons.downloadImage", () => {
     }
   }
 
+  // eslint-disable-next-line jest/expect-expect
   it("should download image successfully", async () => {
     const mockContent = "Mock image content"
     const mockResponse = new Response(mockContent, {
@@ -528,6 +525,8 @@ describe("linkfavicons.downloadImage", () => {
     await runTest(mockResponse, true, mockContent)
   })
 
+  // runTest has expect assertions
+  // eslint-disable-next-line jest/expect-expect
   it("should throw if fetch response is not ok", async () => {
     const mockResponse = new Response("Mock image content", {
       status: 404,
@@ -536,6 +535,7 @@ describe("linkfavicons.downloadImage", () => {
     await runTest(mockResponse, false)
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("should throw if fetch response has no body", async () => {
     const mockResponse = new Response(null, {
       status: 200,
@@ -544,11 +544,13 @@ describe("linkfavicons.downloadImage", () => {
     await runTest(mockResponse, false)
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("should throw if header is wrong", async () => {
     const mockResponse = new Response("Fake", { status: 200, headers: { "Content-Type": "txt" } })
     await runTest(mockResponse, false)
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("should handle fetch errors", async () => {
     const mockError = new Error("Network error")
     await runTest(mockError, false)
@@ -570,10 +572,8 @@ describe("linkfavicons.downloadImage", () => {
     const fileExists = await fsExtra.pathExists(imagePath)
     expect(fileExists).toBe(true)
 
-    if (fileExists) {
-      const content = await fsExtra.readFile(imagePath, "utf-8")
-      expect(content).toBe(mockContent)
-    }
+    const content = await fsExtra.readFile(imagePath, "utf-8")
+    expect(content).toBe(mockContent)
 
     // Check if the directory structure was created
     const dirStructure = path.dirname(imagePath)

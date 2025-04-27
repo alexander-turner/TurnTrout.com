@@ -960,9 +960,7 @@ describe("L-number formatting", () => {
   it("matches at line start without space", () => {
     expect(testMatch("L1\nL2")).toEqual(["1", "2"])
   })
-})
 
-describe("L-number formatting", () => {
   it.each([
     [
       "<p>L1 is the first level</p>",
@@ -1162,20 +1160,15 @@ describe("identifyLinkNode", () => {
   })
 
   // Test cases structure: [description, input node, expected result]
-  const testCases: [string, Element, Element | null][] = [
+  const testCases: [string, Element, Element][] = [
     ["direct link node", createNode("a"), createNode("a")],
-    ["non-link node without children", createNode("div"), null],
     ["nested link node", createNode("em", [createNode("a")]), createNode("a")],
     [
       "deeply nested link node",
       createNode("div", [createNode("em", [createNode("strong", [createNode("a")])])]),
       createNode("a"),
     ],
-    [
-      "no link found",
-      createNode("div", [createNode("span"), createNode("em"), createNode("strong")]),
-      null,
-    ],
+
     [
       "multiple links (should return last)",
       createNode("div", [createNode("a"), createNode("a")]),
@@ -1193,17 +1186,22 @@ describe("identifyLinkNode", () => {
 
   it.each(testCases)("should handle %s", (_, input, expected) => {
     const result = identifyLinkNode(input)
-    if (expected === null) {
-      expect(result).toBeNull()
-    } else {
-      expect(result?.tagName).toBe(expected.tagName)
-    }
+    expect(result?.tagName).toBe(expected.tagName)
   })
 
-  // Keep this as a separate test since it's testing a specific edge case
+  it("should handle non-link node without children", () => {
+    const node = createNode("div")
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
   it("should handle empty children array", () => {
     const node = createNode("div")
     node.children = []
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
+  it("should handle no link found", () => {
+    const node = createNode("div", [createNode("span"), createNode("em"), createNode("strong")])
     expect(identifyLinkNode(node)).toBeNull()
   })
 })
@@ -1245,9 +1243,9 @@ describe("moveQuotesBeforeLink", () => {
       expect(prevNode.value).toBe(expectedPrevValue)
 
       const firstChild = linkNode.children[0]
-      if (firstChild && firstChild.type === "text") {
-        expect(firstChild.value).toBe(expectedFirstTextValue)
-      }
+      expect(firstChild?.type === "text" ? (firstChild as Text).value : undefined).toBe(
+        expectedFirstTextValue,
+      )
     },
   )
 
@@ -1273,10 +1271,6 @@ describe("getFirstTextNode", () => {
     [h("a", {}, [h("em", {}, "Nested text")]), "Nested text"],
     // Multiple children with text first
     [h("a", {}, ["First text", h("em", {}, "Second text")]), "First text"],
-    // Empty element
-    [h("a"), null],
-    // Element with empty children array
-    [h("a", {}, []), null],
     // Deeply nested structure
     [h("div", {}, [h("span", {}, [h("em", {}, "Deep text")])]), "Deep text"],
     // Non-text first child
@@ -1285,12 +1279,18 @@ describe("getFirstTextNode", () => {
     [h("p", {}, [h("strong", {}, "Bold"), " normal", h("em", {}, "emphasis")]), "Bold"],
   ])("should find first text node in %#", (input, expected) => {
     const result = getFirstTextNode(input)
-    if (expected === null) {
-      expect(result).toBeNull()
-    } else {
-      expect(result?.type).toBe("text")
-      expect(result?.value).toBe(expected)
-    }
+    expect(result?.type).toBe("text")
+    expect(result?.value).toBe(expected)
+  })
+
+  it.each([
+    // Empty element
+    [h("a"), null],
+    // Element with empty children array
+    [h("a", {}, []), null],
+  ])("should handle %s", (input, expected) => {
+    const result = getFirstTextNode(input)
+    expect(result).toBe(expected)
   })
 
   it("should handle undefined/null input", () => {

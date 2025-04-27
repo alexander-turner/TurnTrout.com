@@ -1,4 +1,5 @@
 import pluginJs from "@eslint/js"
+import jestPlugin from "eslint-plugin-jest"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
@@ -43,6 +44,17 @@ export default [
           allowConditional: true,
         },
       ],
+    },
+  },
+
+  // Jest specific config for test files
+  {
+    files: ["**/*.test.ts", "**/*.test.js"],
+    plugins: {
+      jest: jestPlugin,
+    },
+    rules: {
+      ...jestPlugin.configs["flat/recommended"].rules,
     },
   },
 

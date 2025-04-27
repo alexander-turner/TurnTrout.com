@@ -218,25 +218,6 @@ describe("Mass transforms", () => {
     expect(result).toBe(expected)
   })
 
-  // describe("Display math formatting has newlines", () => {
-  //   it.only.each([
-  //     ["$$math$$", "$$math$$"], // Leave isolated display math alone
-  //     ["Text$$math$$Text", "Text\n$$math$$\n\nText"],
-  //     ["Text $$math$$Text", "Text \n$$math$$\n\nText"],
-  //     ["Text$$math$$ Text", "Text\n$$math$$\n\n Text"],
-  //     ["Begins with \n$$math$$ formatted already", "Begins with\n$$math$$\n\n formatted already"],
-  //     ["Ends with $$math$$\n\n formatted already", "Ends with\n$$math$$\n\n formatted already"],
-  //     ["Multiple$$math1$$\n$$math2$$", "Multiple\n$$math1$$\n\n$$math2$$"],
-  //     ["No space$$between$$math", "No space\n$$between$$\n\nmath"],
-  //     ["Already\n$$spaced$$\n\nCorrectly", "Already\n$$spaced$$\n\nCorrectly"],
-  //     ["Single blockquote\n> $$math$$", "Single blockquote\n>\n> $$\n\nmath\n$$"],
-  //     ["Respects\n> >$$math$$", "Respects\n> >\n> >$$\n\nmath\n$$"],
-  //   ])("should format display math correctly for %s", (input: string, expected: string) => {
-  //     const result = adjustDisplayMathNewlines(input)
-  //     expect(result).toBe(expected)
-  //   })
-  // })
-
   describe("HTML tag newline formatting", () => {
     it.each([
       ["<div>Content</div>\nNext line", "<div>Content</div>\n\nNext line"],

@@ -198,6 +198,7 @@ describe("REGEX_ACRONYM tests", () => {
     "THÉÂTRE",
   ]
 
+  // eslint-disable-next-line jest/expect-expect
   it.each(commonAcronyms)("should match common acronym: %s", (acronym) => {
     testAcronym({ input: acronym, expectedMatch: acronym, expectedAcronym: acronym })
   })
@@ -206,6 +207,7 @@ describe("REGEX_ACRONYM tests", () => {
     expect(REGEX_ACRONYM.test(`${acronym}a`)).toBe(false)
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it.each(commonAcronyms)("should match when ending with 's': %ss", (acronym) => {
     testAcronym({
       input: `${acronym}s`,
@@ -215,6 +217,7 @@ describe("REGEX_ACRONYM tests", () => {
     })
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it.each(commonAcronyms)("should match when ending with 'x': %sx", (acronym) => {
     testAcronym({
       input: `${acronym}x`,
@@ -224,6 +227,7 @@ describe("REGEX_ACRONYM tests", () => {
     })
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it.each(smallCapsSeparators.split(""))("should match acronyms separated by '%s'", (separator) => {
     testAcronym({
       input: `FBI${separator}CIA`,
@@ -233,10 +237,12 @@ describe("REGEX_ACRONYM tests", () => {
   })
 
   const foreignAcronyms = ["CAFÉ", "RÉSUMÉ", "ÜBER", "FAÇADE"]
+  // eslint-disable-next-line jest/expect-expect
   it.each(foreignAcronyms)("should match foreign acronyms with accents: %s", (acronym) => {
     testAcronym({ input: acronym, expectedMatch: acronym, expectedAcronym: acronym })
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("Should match when sandwiched by accented uppercase characters", () => {
     testAcronym({ input: " ÉÉÉ ", expectedMatch: "ÉÉÉ", expectedAcronym: "ÉÉÉ" })
   })
@@ -251,6 +257,7 @@ describe("REGEX_ACRONYM tests", () => {
     ["UNICEF'", "UNICEF"],
     ['OPEC"', "OPEC"],
   ]
+  // eslint-disable-next-line jest/expect-expect
   it.each(punctuationCases)(
     "should match acronym followed by punctuation: %s",
     (input, expected) => {
@@ -281,6 +288,7 @@ describe("REGEX_ACRONYM tests", () => {
     expect(REGEX_ACRONYM.test(case_)).toBe(false)
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it.each(smallCapsSeparators.split(""))("should match acronyms separated by '%s'", (separator) => {
     testAcronym({
       input: `FBI${separator}CIA`,
@@ -302,6 +310,7 @@ describe("REGEX_ACRONYM tests", () => {
     expect(matches[2].groups?.suffix).toBe("s")
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("should correctly capture acronym with 's' suffix and punctuation", () => {
     testAcronym({
       input: "NASAs.",
@@ -311,6 +320,7 @@ describe("REGEX_ACRONYM tests", () => {
     })
   })
 
+  // eslint-disable-next-line jest/expect-expect
   it("should correctly capture acronym with 'x' suffix and punctuation", () => {
     testAcronym({
       input: "FBIx,",
@@ -341,6 +351,7 @@ describe("REGEX_ABBREVIATION tests", () => {
     }
   }
 
+  // eslint-disable-next-line jest/expect-expect
   it.each([
     ["100km", "100", "km"],
     ["3.3km", "3.3", "km"],
