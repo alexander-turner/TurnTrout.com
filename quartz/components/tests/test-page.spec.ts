@@ -181,12 +181,14 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
-  test("TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
+  test("Desktop TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
     const selector = getTableOfContentsSelector(page)
-    if (!isDesktopViewport(page)) {
-      await page.locator(selector).locator(".admonition-title-inner").first().click()
-    }
+    await takeRegressionScreenshot(page, testInfo, selector)
+  })
 
+  test("Non-desktop TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
+    const selector = getTableOfContentsSelector(page)
+    await page.locator(selector).locator(".admonition-title-inner").first().click()
     await takeRegressionScreenshot(page, testInfo, selector)
   })
 })
@@ -239,19 +241,13 @@ test.describe("Admonitions", () => {
     })
   }
 
-  for (const status of ["open", "closed"]) {
+  for (const status of ["open", "collapse"]) {
     test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
       page,
     }, testInfo) => {
-      let element: Locator
-      if (status === "open") {
-        element = page.locator("#test-open .fold-admonition-icon").first()
-      } else {
-        element = page.locator("#test-collapse .fold-admonition-icon").first()
-      }
-
+      const element = page.locator(`#test-${status} .fold-admonition-icon`).first()
       await element.scrollIntoViewIfNeeded()
-      await element.waitFor({ state: "visible" })
+      await expect(element).toBeVisible()
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
         element,
@@ -323,20 +319,22 @@ test.describe("Clipboard button", () => {
 })
 
 test.describe("Right sidebar", () => {
+  test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page))
+
+    const tocContent = page.locator(".admonition").first()
+    await tocContent.click()
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
+      element: tocContent,
+    })
+  })
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
-    if (!isDesktopViewport(page)) {
-      // Open the TOC
-      const tocContent = page.locator(".admonition").first()
-      await tocContent.click()
-      await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-        element: tocContent,
-      })
-    } else {
-      const rightSidebar = page.locator("#right-sidebar")
-      await takeRegressionScreenshot(page, testInfo, "toc-visual-test", {
-        element: rightSidebar,
-      })
-    }
+    test.skip(isDesktopViewport(page))
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test", {
+      element: rightSidebar,
+    })
   })
 
   test("Right sidebar scrolls independently", async ({ page }) => {
