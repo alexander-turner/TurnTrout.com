@@ -10,6 +10,7 @@ import {
   takeScreenshotAfterElement,
 } from "./visual_utils"
 
+const TIGHT_SCROLL_TOLERANCE = 10
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
 
@@ -95,9 +96,12 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   for (const pageSlug of ["", "404"]) {
+    const url = `http://localhost:8080/${pageSlug}`
+
     const title = pageSlug === "" ? "Welcome" : pageSlug
     test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "networkidle" })
+      await page.goto(url)
+      await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
     })
   }
@@ -105,8 +109,10 @@ test.describe("Unique content around the site", () => {
   // Several pages update based on new posts
   // Mock the data to prevent needless updating of the screenshots
   for (const pageSlug of ["recent", "tags/personal"]) {
+    const url = `http://localhost:8080/${pageSlug}`
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "networkidle" })
+      await page.goto(url)
+      await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
       const numOldest = 9
@@ -124,7 +130,6 @@ test.describe("Unique content around the site", () => {
         // Need to copy the children to remove *before* iterating,
         // as removing modifies the live HTMLCollection
         const childrenToRemove = Array.from(children).slice(0, numToRemove)
-
         childrenToRemove.forEach((child) => listElement.removeChild(child))
       }, numOldest)
 
@@ -133,7 +138,10 @@ test.describe("Unique content around the site", () => {
   }
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/all-tags", { waitUntil: "networkidle" })
+    const url = "http://localhost:8080/all-tags"
+    await page.goto(url)
+    await page.locator("body").waitFor({ state: "visible" })
+
     await page.evaluate(() => {
       const tagContainers = document.querySelectorAll(".tag-container")
       tagContainers.forEach((tagContainer, index) => {
@@ -359,7 +367,16 @@ test.describe("Right sidebar", () => {
     })
 
     // Wait a moment for scroll to apply
-    await page.waitForTimeout(100)
+    await page.waitForFunction(
+      (args) => {
+        const { initialScrollTop, tolerance } = args
+        const rightSidebar = document.querySelector("#right-sidebar")
+        if (!rightSidebar) return false
+        console.error("rightSidebar.scrollTop", rightSidebar.scrollTop, initialScrollTop)
+        return Math.abs(rightSidebar.scrollTop - (initialScrollTop + 100)) < tolerance
+      },
+      { initialScrollTop: initialSidebarScrollTop, tolerance: TIGHT_SCROLL_TOLERANCE },
+    )
 
     const finalWindowScrollY = await page.evaluate(() => window.scrollY)
     const finalSidebarScrollTop = await rightSidebar.evaluate((el) => el.scrollTop)
@@ -478,7 +495,7 @@ for (const theme of ["light", "dark"]) {
 
     // Get initial width TODO
     const box = await elvishText.boundingBox()
-    if (!box) throw new Error("Could not get elvish text dimensions")
+    test.fail(!box, "Could not get elvish text dimensions")
 
     await takeScreenshotAfterElement(page, testInfo, elvishText, 50, `elvish-text-hover-${theme}`)
   })
