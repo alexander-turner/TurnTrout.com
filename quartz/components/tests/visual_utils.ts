@@ -189,14 +189,14 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
+// NOTE: Assumes search is opened
 export async function search(page: Page, term: string) {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")
-  await expect(searchContainer).toBeAttached()
-  await expect(searchContainer).toBeVisible()
-
   // Ensure search is opened
+  await expect(searchContainer).toBeAttached()
   await expect(searchContainer).toHaveClass(/active/)
+  await expect(searchContainer).toBeVisible()
 
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
@@ -215,7 +215,6 @@ export async function search(page: Page, term: string) {
   if (showingPreview(page)) {
     const previewContainer = page.locator("#preview-container")
     await expect(previewContainer).toBeAttached()
-    // Will not be visible if no results are found
   }
 }
 

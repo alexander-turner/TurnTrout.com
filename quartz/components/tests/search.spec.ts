@@ -353,6 +353,7 @@ test("Search preview shows after searching, closing, and reopening", async ({ pa
   await page.keyboard.press("Escape")
   await expect(previewContainer).toBeHidden()
 
+  await page.keyboard.press("/")
   await search(page, "Shrek")
   await expect(previewContainer).toBeVisible()
 })
