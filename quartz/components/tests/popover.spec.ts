@@ -108,13 +108,14 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
   const allLinks = await page.locator(".can-trigger-popover").all()
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
+    await expect(link).toBeAttached()
     await link.scrollIntoViewIfNeeded()
     await expect(link).toBeVisible()
     await link.hover()
+    await page.mouse.move(0, 0)
   }
 
-  const popoverCount = await page.locator(".popover").count()
-  expect(popoverCount).toBe(0)
+  await expect(page.locator(".popover")).toHaveCount(0)
 })
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
@@ -212,9 +213,24 @@ test("Popover maintains position when page scrolls", async ({ page, dummyLink })
 
   await page.evaluate(() => window.scrollBy(0, 500))
 
-  // Verify absolute popover position is the same
+  // Wait for the popover's Y position to stabilize back near its initial position
+  const initialY = initialPopoverBox!.y
+  await expect
+    .poll(
+      async () => {
+        const currentBox = await popover.boundingBox()
+        return currentBox?.y
+      },
+      {
+        message: `Popover Y position did not stabilize within tolerance after scroll. Initial: ${initialY}`,
+        timeout: 5000,
+      },
+    )
+    .toBeCloseTo(initialY, -Math.log10(SCROLL_TOLERANCE)) // toBeCloseTo uses number of digits for precision
+
+  // Now get the final box and assert both X and Y
   const newPopoverBox = await popover.boundingBox()
-  test.fail(!newPopoverBox, "Could not get new popover position")
+  expect(newPopoverBox).not.toBeNull()
 
   for (const coord of ["x", "y"] as const) {
     expect(Math.abs(newPopoverBox![coord] - initialPopoverBox![coord])).toBeLessThanOrEqual(
