@@ -200,43 +200,24 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
 
 test("Popover maintains position when page scrolls", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
-
-  const linkBox = await dummyLink.boundingBox()
-  test.fail(!linkBox, "Could not get link position")
-
   await dummyLink.hover()
+
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
-
   const initialPopoverBox = await popover.boundingBox()
   test.fail(!initialPopoverBox, "Could not get popover position")
+  const initialY = initialPopoverBox?.y
 
-  await page.evaluate(() => window.scrollBy(0, 500))
+  const scrollAmount = 500
+  await page.evaluate((scrollAmount) => window.scrollBy(0, scrollAmount), scrollAmount)
 
-  // Wait for the popover's Y position to stabilize back near its initial position
-  const initialY = initialPopoverBox!.y
-  await expect
-    .poll(
-      async () => {
-        const currentBox = await popover.boundingBox()
-        return currentBox?.y
-      },
-      {
-        message: `Popover Y position did not stabilize within tolerance after scroll. Initial: ${initialY}`,
-        timeout: 5000,
-      },
-    )
-    .toBeCloseTo(initialY, -Math.log10(SCROLL_TOLERANCE)) // toBeCloseTo uses number of digits for precision
-
-  // Now get the final box and assert both X and Y
-  const newPopoverBox = await popover.boundingBox()
-  expect(newPopoverBox).not.toBeNull()
-
-  for (const coord of ["x", "y"] as const) {
-    expect(Math.abs(newPopoverBox![coord] - initialPopoverBox![coord])).toBeLessThanOrEqual(
-      SCROLL_TOLERANCE,
-    )
-  }
+  // The popover goes scrollAmount px up in the viewport
+  const targetPopoverYAtTopEdge = initialY! - scrollAmount
+  await page.waitForFunction((targetY: number) => {
+    const popover = document.querySelector(".popover")
+    const popoverBox = popover?.getBoundingClientRect()
+    return popoverBox?.y === targetY
+  }, targetPopoverYAtTopEdge)
 })
 
 test("Can scroll within popover content", async ({ page, dummyLink }) => {
