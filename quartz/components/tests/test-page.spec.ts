@@ -328,18 +328,17 @@ test.describe("Right sidebar", () => {
   test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
 
-    const tocContent = page.locator(".admonition").first()
-    await tocContent.click()
-    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-      element: tocContent,
+    const rightSidebar = page.locator("#right-sidebar")
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
+      element: rightSidebar,
     })
   })
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
 
-    const rightSidebar = page.locator("#right-sidebar")
-    await takeRegressionScreenshot(page, testInfo, "toc-visual-test", {
-      element: rightSidebar,
+    const tocContent = page.locator(".admonition").first()
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
+      element: tocContent,
     })
   })
 
