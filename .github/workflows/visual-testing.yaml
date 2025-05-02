@@ -6,9 +6,9 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "dev", "lostpixel"]
+    branches: ["main", "lostpixel"]
   pull_request:
-    branches: ["main", "dev", "lostpixel"]
+    branches: ["main", "lostpixel"]
 
 jobs:
   visual-testing:
