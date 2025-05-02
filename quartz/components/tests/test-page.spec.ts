@@ -189,14 +189,12 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
-  test("Desktop TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
+  test("TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
     const selector = getTableOfContentsSelector(page)
-    await takeRegressionScreenshot(page, testInfo, selector)
-  })
 
-  test("Non-desktop TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
-    const selector = getTableOfContentsSelector(page)
-    await page.locator(selector).locator(".admonition-title-inner").first().click()
+    // Asserts that TOC is open on mobile
+    await expect(page.locator(`${selector} li`).first()).toBeVisible()
+
     await takeRegressionScreenshot(page, testInfo, selector)
   })
 })
