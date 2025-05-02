@@ -48,15 +48,18 @@ jobs:
           node-version: ">=22"
           cache: "npm"
 
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install font configuration libraries
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1 libfreetype6
+
       # Restore Playwright's browser cache
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Dependencies
-        run: npm ci
 
       - name: Install Playwright and dependencies
         run: |
