@@ -426,7 +426,7 @@ figcaption,
 }
 
 .float-right {
-  margin: 0.5rem 0 0.5rem 1.5rem;
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(3 * $base-margin);
 
   & img,
   img.float-right {
@@ -937,7 +937,6 @@ foreignObject {
 .flowchart .edgeLabel {
   & .katex {
     margin-left: 0.25em;
-    position: relative;
   }
 }
 

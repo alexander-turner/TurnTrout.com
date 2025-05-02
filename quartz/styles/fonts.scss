@@ -225,7 +225,6 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   font-style: inherit;
   font-variant-caps: small-caps; // Fixes kerning in a few cases
   font-feature-settings: "smcp" on; // Explicit OpenType feature for broader compatibility
-  font-synthesis: none; // Prevent browser from faking small caps
   -webkit-font-smoothing: antialiased; // Prevent excess bolding
   font-family: var(--font-text);
 

@@ -1,40 +1,38 @@
 ---
 permalink: gpt2-steering-paper-announcement
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
 lw-page-url: https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
 lw-linkpost-url: https://arxiv.org/abs/2308.10248
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2023-09-06T17:21:56.214000Z
 lw-last-modification: 2023-11-06T16:33:16.256000Z
 lw-curation-date: None
 lw-frontpage-date: 2023-09-06T17:35:35.588000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 3
 lw-base-score: 105
 lw-vote-count: 31
 af-base-score: 45
 af-num-comments-on-upload: 2
 publish: true
-title: 'ActAdd: Steering Language Models without Optimization'
+title: "ActAdd: Steering Language Models without Optimization"
 lw-latest-edit: 2023-11-06T16:33:20.505000Z
-lw-is-linkpost: 'true'
-authors: technicalities, Alex Turner, Lisa Thiergart, David Udell, Ulisse Mini, and
-  Monte MacDiarmid
+lw-is-linkpost: "true"
+authors: Alex Turner, Lisa Thiergart, David Udell, Ulisse Mini, and Monte MacDiarmid
 tags:
   - AI
   - activation-engineering
 aliases:
   - actadd-steering-language-models-without-optimization
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2023-09-06 00:00:00
 original_url: https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
 skip_import: true
-description: 'Activation additions: steering language models by adding a bias to the
-  forward pass. Surprisingly broad control, small impact on off-target capabilities.'
+description: "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities."
 date_updated: 2025-03-22 12:22:59.421452
 ---
 
