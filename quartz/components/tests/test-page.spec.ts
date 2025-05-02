@@ -133,7 +133,9 @@ test.describe("Unique content around the site", () => {
         childrenToRemove.forEach((child) => listElement.removeChild(child))
       }, numOldest)
 
-      await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`)
+      await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`, {
+        element: "#center-content",
+      })
     })
   }
 
