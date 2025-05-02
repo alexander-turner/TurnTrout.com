@@ -94,16 +94,19 @@ jobs:
           echo "Server is ready"
 
       - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
         run: |
           npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright traces
-        if: failure()
+        if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
