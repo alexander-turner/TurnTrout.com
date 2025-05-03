@@ -8,7 +8,6 @@ import {
   isDesktopViewport,
   yOffset,
   takeScreenshotAfterElement,
-  waitForImagesToLoad,
   pauseVideos,
 } from "./visual_utils"
 
@@ -51,7 +50,6 @@ test.beforeEach(async ({ page }) => {
   })
 
   await pauseVideos(page)
-  await waitForImagesToLoad(page)
 })
 
 /**

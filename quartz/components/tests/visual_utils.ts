@@ -70,6 +70,8 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
+  await waitForViewportImagesToLoad(page)
+
   const browserName = testInfo.project.name
   const sanitizedTitle = sanitize(testInfo.title)
   const sanitizedSuffix = sanitize(screenshotSuffix)
@@ -229,12 +231,26 @@ export async function pauseVideos(page: Page): Promise<void> {
   }
 }
 
-export async function waitForImagesToLoad(page: Page): Promise<void> {
+/**
+ * Waits for images within the current viewport to load.
+ * @param page The Playwright page object.
+ */
+export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
   await page.waitForFunction(() => {
     const images = document.querySelectorAll("img")
-    // Check if every image is loaded
-    return Array.from(images).every((image: HTMLImageElement) => {
-      // An image is considered loaded if it's complete and has a natural height > 0
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+
+    // Filter images to get only those currently within the viewport
+    const imagesInViewport = Array.from(images).filter((img) => {
+      const rect = img.getBoundingClientRect()
+      return (
+        rect.top < viewportHeight && rect.bottom > 0 && rect.left < viewportWidth && rect.right > 0
+      )
+    })
+
+    // Check if all images within the viewport are loaded
+    return imagesInViewport.every((image: HTMLImageElement) => {
       return image.complete && image.naturalHeight !== 0
     })
   })
