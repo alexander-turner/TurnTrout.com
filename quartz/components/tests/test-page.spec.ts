@@ -555,3 +555,18 @@ test.describe("Video Speed Controller visibility", () => {
     await expect(vscController).toBeVisible()
   })
 })
+
+test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
+  const firstParagraph = page.locator("#center-content article > p").first()
+  await expect(firstParagraph).toBeVisible()
+  const screenshotBefore = await firstParagraph.screenshot()
+
+  const url = page.url()
+  await page.goto(`${url}#header-3`)
+
+  await firstParagraph.scrollIntoViewIfNeeded()
+  await expect(firstParagraph).toBeVisible()
+  const screenshotAfter = await firstParagraph.screenshot()
+  expect(screenshotAfter).toEqual(screenshotBefore)
+  // Don't need regression screenshot because non-clicked appearance is covered by other tests
+})

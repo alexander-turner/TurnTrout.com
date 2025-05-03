@@ -319,7 +319,7 @@ article[data-use-dropcap="true"] {
 
     // Firefox-specific adjustments for dropcap
     @supports (-moz-appearance: none) {
-      padding-top: $base-margin;
+      padding-top: $base-margin !important;
     }
   }
 
