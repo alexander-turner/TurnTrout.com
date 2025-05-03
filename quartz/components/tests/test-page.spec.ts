@@ -211,6 +211,14 @@ test.describe("Table of contents", () => {
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
 
+    // Hide the navbar
+    await page.evaluate(() => {
+      const navbar = document.getElementById("navbar")
+      if (navbar) {
+        navbar.style.display = "none"
+      }
+    })
+
     const tocContent = page.locator(".admonition").first()
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       element: tocContent,
