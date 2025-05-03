@@ -8,6 +8,8 @@ import {
   isDesktopViewport,
   yOffset,
   takeScreenshotAfterElement,
+  waitForImagesToLoad,
+  pauseVideos,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -40,15 +42,16 @@ test.beforeEach(async ({ page }) => {
     window.dispatchEvent(new Event("nav"))
   })
 
-  // Ensure all videos are paused at the very beginning for stable screenshots
-  const videos = await page.locator("video").all()
-  for (const video of videos) {
-    await video.evaluate((node: HTMLVideoElement) => {
-      node.pause()
-      node.currentTime = 0
-      node.removeAttribute("autoplay")
+  // Hide all video controls
+  await page.evaluate(() => {
+    const videos = document.querySelectorAll("video")
+    videos.forEach((video) => {
+      video.removeAttribute("controls")
     })
-  }
+  })
+
+  await pauseVideos(page)
+  await waitForImagesToLoad(page)
 })
 
 /**

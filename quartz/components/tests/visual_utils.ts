@@ -218,6 +218,31 @@ export async function search(page: Page, term: string) {
   }
 }
 
+export async function pauseVideos(page: Page): Promise<void> {
+  const videos = await page.locator("video").all()
+  for (const video of videos) {
+    await video.evaluate((node: HTMLVideoElement) => {
+      node.pause()
+      node.currentTime = 0
+      node.removeAttribute("autoplay")
+    })
+  }
+}
+
+export async function waitForImagesToLoad(page: Page): Promise<void> {
+  await page.waitForFunction(async () => {
+    const images = await page.locator("img").all()
+    return images.every(async (image) => {
+      return image.evaluate((img: HTMLImageElement): boolean => {
+        if (img.complete && img.naturalHeight !== 0) {
+          return true
+        }
+        return false
+      })
+    })
+  })
+}
+
 /**
  * Returns true if the page will show a search preview
  */
