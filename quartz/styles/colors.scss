@@ -98,6 +98,10 @@
   color: var(--foreground) !important;
 }
 
+.dark-mode img {
+  mix-blend-mode: normal;
+}
+
 // Mermaid
 @each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
   rect {

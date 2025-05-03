@@ -730,6 +730,11 @@ p > img {
   margin-right: auto;
 }
 
+img.emoji,
+.theme-emoji {
+  mix-blend-mode: normal !important;
+}
+
 img.emoji {
   display: inline;
   border-radius: 0; // Don't want to cut off corners
@@ -737,7 +742,6 @@ img.emoji {
   width: 1em;
   margin: 0 0.05em 0 0.1em;
   vertical-align: -0.1em;
-  mix-blend-mode: normal !important;
 }
 
 .theme-emoji {
@@ -746,7 +750,6 @@ img.emoji {
   height: 100px;
   max-height: 100px;
   margin-top: 1rem;
-  filter: none;
 }
 
 .sequence-links {
