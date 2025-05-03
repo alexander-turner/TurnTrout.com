@@ -38,13 +38,19 @@ test.beforeEach(async ({ page }) => {
   // Dispatch the 'nav' event to initialize clipboard functionality
   await page.evaluate(() => {
     window.dispatchEvent(new Event("nav"))
-
-    // Reset videos to the start
-    const videos = document.querySelectorAll("video")
-    videos.forEach((video) => {
-      video.currentTime = 0
-    })
   })
+
+  // Ensure all videos are paused at the very beginning for stable screenshots
+  const videos = await page.locator("video").all()
+  for (const video of videos) {
+    await video.evaluate((node: HTMLVideoElement) => {
+      node.pause()
+      node.currentTime = 0
+    })
+    // Wait for the video state to be updated
+    await expect(video).toHaveJSProperty("paused", true)
+    await expect(video).toHaveJSProperty("currentTime", 0)
+  }
 })
 
 /**
