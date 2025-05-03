@@ -222,9 +222,9 @@ export async function pauseVideos(page: Page): Promise<void> {
   const videos = await page.locator("video").all()
   for (const video of videos) {
     await video.evaluate((node: HTMLVideoElement) => {
+      node.removeAttribute("autoplay")
       node.pause()
       node.currentTime = 0
-      node.removeAttribute("autoplay")
     })
   }
 }
