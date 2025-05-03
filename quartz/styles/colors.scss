@@ -110,13 +110,3 @@
     stroke: var(--border-#{$color}) !important;
   }
 }
-
-// NOTE doesn't work in Firefox but better than nothing
-audio,
-audio::-webkit-media-controls-play-button,
-audio::-webkit-media-controls-panel,
-audio::-webkit-media-controls {
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
-  border: 1px solid var(--midground-faint) !important;
-}
