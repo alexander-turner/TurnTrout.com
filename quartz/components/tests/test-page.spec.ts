@@ -189,22 +189,44 @@ test.describe("Unique content around the site", () => {
   })
 })
 test.describe("Table of contents", () => {
-  function getTableOfContentsSelector(page: Page) {
-    return isDesktopViewport(page) ? "#toc-content" : "*:has(> #toc-content-mobile)"
-  }
-
   test("TOC is visible (lostpixel)", async ({ page }) => {
-    const selector = getTableOfContentsSelector(page)
+    let selector: string
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (isDesktopViewport(page)) {
+      selector = "#toc-content"
+    } else {
+      selector = "*:has(> #toc-content-mobile)"
+    }
+
     await expect(page.locator(selector)).toBeVisible()
   })
+  test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page))
 
-  test("TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
-    const selector = getTableOfContentsSelector(page)
+    const rightSidebar = page.locator("#right-sidebar #table-of-contents")
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
+      element: rightSidebar,
+    })
+  })
+  test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(isDesktopViewport(page))
 
-    // Asserts that TOC is open on mobile
-    await expect(page.locator(`${selector} li`).first()).toBeVisible()
+    const tocContent = page.locator(".admonition").first()
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
+      element: tocContent,
+    })
+  })
 
-    await takeRegressionScreenshot(page, testInfo, selector)
+  test("Scrolling down changes TOC highlight (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page))
+
+    const spoilerHeading = page.locator("#spoilers").first()
+    await spoilerHeading.scrollIntoViewIfNeeded()
+
+    const activeElement = page.locator("#table-of-contents .active").first()
+    await takeRegressionScreenshot(page, testInfo, "toc-highlight-scrolled", {
+      element: activeElement,
+    })
   })
 })
 
@@ -334,23 +356,6 @@ test.describe("Clipboard button", () => {
 })
 
 test.describe("Right sidebar", () => {
-  test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(!isDesktopViewport(page))
-
-    const rightSidebar = page.locator("#right-sidebar")
-    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
-      element: rightSidebar,
-    })
-  })
-  test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(isDesktopViewport(page))
-
-    const tocContent = page.locator(".admonition").first()
-    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-      element: tocContent,
-    })
-  })
-
   test("Right sidebar scrolls independently", async ({ page }) => {
     test.skip(!isDesktopViewport(page), "Desktop-only test")
 
@@ -393,18 +398,6 @@ test.describe("Right sidebar", () => {
     // Verify sidebar did scroll
     expect(finalSidebarScrollTop).toBeGreaterThan(initialSidebarScrollTop)
     expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
-  })
-
-  test("Scrolling down changes TOC highlight (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(!isDesktopViewport(page))
-
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
-
-    const activeElement = page.locator("#table-of-contents .active").first()
-    await takeRegressionScreenshot(page, testInfo, "toc-highlight-scrolled", {
-      element: activeElement,
-    })
   })
 
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
