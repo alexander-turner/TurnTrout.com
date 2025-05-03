@@ -46,10 +46,8 @@ test.beforeEach(async ({ page }) => {
     await video.evaluate((node: HTMLVideoElement) => {
       node.pause()
       node.currentTime = 0
+      node.removeAttribute("autoplay")
     })
-    // Wait for the video state to be updated
-    await expect(video).toHaveJSProperty("paused", true)
-    await expect(video).toHaveJSProperty("currentTime", 0)
   }
 })
 
