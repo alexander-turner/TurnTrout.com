@@ -230,15 +230,12 @@ export async function pauseVideos(page: Page): Promise<void> {
 }
 
 export async function waitForImagesToLoad(page: Page): Promise<void> {
-  await page.waitForFunction(async () => {
-    const images = await page.locator("img").all()
-    return images.every(async (image) => {
-      return image.evaluate((img: HTMLImageElement): boolean => {
-        if (img.complete && img.naturalHeight !== 0) {
-          return true
-        }
-        return false
-      })
+  await page.waitForFunction(() => {
+    const images = document.querySelectorAll("img")
+    // Check if every image is loaded
+    return Array.from(images).every((image: HTMLImageElement) => {
+      // An image is considered loaded if it's complete and has a natural height > 0
+      return image.complete && image.naturalHeight !== 0
     })
   })
 }
