@@ -740,6 +740,15 @@ img.emoji {
   mix-blend-mode: normal !important;
 }
 
+.theme-emoji {
+  width: 100px;
+  max-width: 100px;
+  height: 100px;
+  max-height: 100px;
+  margin-top: 1rem;
+  filter: none;
+}
+
 .sequence-links {
   margin-bottom: calc(2 * $base-margin);
 }

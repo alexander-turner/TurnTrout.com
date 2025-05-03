@@ -147,7 +147,7 @@ I like the pastel palettes provided by Catppuccin:
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" style="max-width: 100px; max-height: 100px; margin-top: 1rem; filter: none;" alt="Smiling Face With Hearts on Twitter"/></center>
+    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <center>Dark mode</center>
@@ -165,7 +165,7 @@ I like the pastel palettes provided by Catppuccin:
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" style="max-width: 100px; max-height: 100px; margin-top: 1rem; mix-blend-mode: normal;" alt="Smiling Face With Hearts on Twitter"/></center>
+    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
   </span>
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
