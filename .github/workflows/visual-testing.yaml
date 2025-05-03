@@ -48,7 +48,6 @@ jobs:
           node-version: ">=22"
           cache: "npm"
 
-      # Restore Playwright's browser cache
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -116,6 +115,10 @@ jobs:
           path: ./lost-pixel
           retention-days: 1
 
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome != 'passed'
+        run: exit 1
+
   combine-and-upload:
     needs: visual-testing
     runs-on: ubuntu-latest
@@ -129,7 +132,7 @@ jobs:
           node-version: ">=22"
           cache: "npm"
 
-      - name: Install Dependencies (needed for Lost Pixel action context)
+      - name: Install dependencies
         run: npm ci
 
       - name: Download all Lost Pixel screenshot shards
