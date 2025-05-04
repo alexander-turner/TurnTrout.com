@@ -17,6 +17,9 @@ const TIGHT_SCROLL_TOLERANCE = 10
 
 // TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
+  // Don't want to play videos since we pause them in beforeEach
+  await page.route("**/safari-autoplay.js", (route) => route.abort())
+
   await page.addInitScript(() => {
     // Mock clipboard API if not available
     if (!navigator.clipboard) {
@@ -41,6 +44,7 @@ test.beforeEach(async ({ page }) => {
     window.dispatchEvent(new Event("nav"))
   })
 
+  // TODO hide audio loading  https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd3081o11gor8jsio9t
   // Hide all video controls
   await page.evaluate(() => {
     const videos = document.querySelectorAll("video")

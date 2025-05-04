@@ -12,10 +12,7 @@ function attemptPlayVideos() {
   })
 }
 
-// Try to play videos on initial page load
 document.addEventListener("DOMContentLoaded", attemptPlayVideos)
-
-// Try to play videos on SPA navigation
 document.addEventListener("nav", attemptPlayVideos)
 
 // Also try on any user interaction
