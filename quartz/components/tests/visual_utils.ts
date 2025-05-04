@@ -304,30 +304,26 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
 
   // Evaluate all visible images found by the locator in parallel within the browser context
   await visibleImagesLocator.evaluateAll(async (imgs: HTMLImageElement[]) => {
-    // Map each image to a promise that resolves when it's loaded (or timed out/errored)
     await Promise.all(
       imgs.map((img) => {
-        // Inlined logic using anonymous function
-        // Resolve immediately if image is already loaded/complete
         if (img.complete) {
           return Promise.resolve()
         }
-        // Otherwise, wait for load/error event or timeout
         return new Promise<void>((resolve) => {
-          const timeout = 5000 // 5-second timeout per image
+          const timeout = 5000
           let timer: ReturnType<typeof setTimeout> | null = null
-          // Shared cleanup logic
+
           const cleanup = () => {
             if (timer) clearTimeout(timer)
             img.removeEventListener("load", onLoad)
             img.removeEventListener("error", onError)
           }
-          // Resolve on successful load
+
           const onLoad = () => {
             cleanup()
             resolve()
           }
-          // Log error and resolve on error
+
           const onError = (err: string | Event) => {
             cleanup()
             console.error(
@@ -336,13 +332,12 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
             )
             resolve()
           }
-          // Set timeout handler
+
           timer = setTimeout(() => {
             cleanup()
             console.warn(`Image load timed out after ${timeout}ms: ${img.src}`)
             resolve()
           }, timeout)
-          // Attach listeners
           img.addEventListener("load", onLoad)
           img.addEventListener("error", onError)
         })
