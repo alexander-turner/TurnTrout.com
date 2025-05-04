@@ -223,77 +223,24 @@ export async function search(page: Page, term: string) {
   }
 }
 
-/**
- * Helper function executed in the browser context to pause and seek a video element.
- * Waits for necessary events and includes timeouts for robustness.
- * @param node The HTMLMediaElement (video node) to manipulate.
- */
-async function pauseAndSeekVideoNode(node: HTMLMediaElement): Promise<void> {
-  const LOAD_METADATA_TIMEOUT_MS = 5000
-  const SEEKED_TIMEOUT_MS = 3000
-
-  /** Waits for a specific media event or times out. */
-  const waitForMediaEvent = (eventName: string, timeoutMs: number): Promise<void> => {
-    return new Promise((resolve) => {
-      let timeoutId: ReturnType<typeof setTimeout> | null = null
-      const eventListener = () => {
-        if (timeoutId) clearTimeout(timeoutId)
-        resolve()
-      }
-      timeoutId = setTimeout(() => {
-        node.removeEventListener(eventName, eventListener)
-        const videoIdentifier = node.src || node.currentSrc || node.id || "unknown video"
-        console.warn(`Event '${eventName}' timed out after ${timeoutMs}ms for ${videoIdentifier}`)
-        resolve() // Resolve on timeout to prevent hanging
-      }, timeoutMs)
-      node.addEventListener(eventName, eventListener, { once: true })
-    })
-  }
-
-  /** Ensures video metadata is loaded before proceeding. */
-  const ensureMetadataLoaded = async (): Promise<void> => {
-    if (node.readyState === HTMLMediaElement.HAVE_NOTHING) {
-      await waitForMediaEvent("loadedmetadata", LOAD_METADATA_TIMEOUT_MS)
-    }
-  }
-
-  const seekToStart = async (): Promise<void> => {
-    if (node.currentTime !== 0) {
-      node.currentTime = 0
-      await waitForMediaEvent("seeked", SEEKED_TIMEOUT_MS)
-    }
-  }
-
-  /** Verifies the video is paused and at time 0, logging warnings if not. */
-  const verifyVideoState = async (): Promise<void> => {
-    // Yield to allow state updates after events
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    const identifier = node.src || node.currentSrc || node.id || "unknown video"
-    if (!node.paused) {
-      console.warn(`Video ${identifier} did not pause, re-attempting.`)
-      node.pause()
-    }
-    if (node.currentTime !== 0) {
-      console.warn(
-        `Video ${identifier} did not seek to 0 (currentTime: ${node.currentTime}), re-attempting.`,
-      )
-      node.currentTime = 0
-    }
-  }
-
+async function pauseAndResetVideoNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
-  node.removeAttribute("autoplay")
-
-  await ensureMetadataLoaded()
-  await seekToStart()
-  await verifyVideoState()
+  node.currentTime = 0
 }
 
 export async function pauseVideos(page: Page): Promise<void> {
   const videos = await page.locator("video").all()
+  await Promise.all(videos.map((video) => video.evaluate(pauseAndResetVideoNode)))
 
-  // Pass the helper function to evaluate to run it for each video in the browser context
-  await Promise.all(videos.map((video) => video.evaluate(pauseAndSeekVideoNode)))
+  await Promise.all(
+    videos.map((video) =>
+      video.evaluate((node: HTMLMediaElement) => {
+        if (node.currentTime !== 0) {
+          throw new Error("video time is not 0")
+        }
+      }),
+    ),
+  )
 }
 
 /**
