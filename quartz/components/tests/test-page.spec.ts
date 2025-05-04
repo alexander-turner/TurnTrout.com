@@ -356,6 +356,7 @@ test.describe("Clipboard button", () => {
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         element: clipboardButton,
         disableHover: false,
+        skipImageWait: true, // otherwise it the animation completes
       })
     })
   }

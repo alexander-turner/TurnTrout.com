@@ -62,6 +62,7 @@ export interface RegressionScreenshotOptions {
   element?: string | Locator
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
+  skipImageWait?: boolean
 }
 
 export async function takeRegressionScreenshot(
@@ -70,7 +71,9 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
-  await waitForViewportImagesToLoad(page)
+  if (!options?.skipImageWait) {
+    await waitForViewportImagesToLoad(page)
+  }
 
   const browserName = testInfo.project.name
   const sanitizedTitle = sanitize(testInfo.title)
