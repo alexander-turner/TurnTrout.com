@@ -400,9 +400,9 @@ He came in 1st but I came in 5,300,251st. :(
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
 <center style="font-size:4rem;">
-<span class="dropcap" data-first-letter="A" style="margin-right: min(5rem, 15vw);display:inline; font-size: min(4rem, 15vw);"></span>
-<span class="dropcap" data-first-letter="" style="color: var(--foreground);font-size: min(4rem, 15vw);">A</span>
-<div class="dropcap" data-first-letter="A" style="font-size: min(4rem, 15vw); color: var(--foreground);--before-color:var(--foreground);">A</div>
+<span class="dropcap" data-first-letter="A" style="margin-right: 4.75rem; display:inline; font-size: 4rem;"></span>
+<span class="dropcap" data-first-letter="" style="color: var(--foreground);font-size: 4rem;">A</span>
+<div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
 </center>
 
 <center id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;">
