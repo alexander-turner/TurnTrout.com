@@ -236,24 +236,8 @@ export async function pauseVideos(page: Page): Promise<void> {
  * @param page The Playwright page object.
  */
 export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
-  await page.waitForFunction(() => {
-    const images = document.querySelectorAll("img")
-    const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
-
-    // Filter images to get only those currently within the viewport
-    const imagesInViewport = Array.from(images).filter((img) => {
-      const rect = img.getBoundingClientRect()
-      return (
-        rect.top < viewportHeight && rect.bottom > 0 && rect.left < viewportWidth && rect.right > 0
-      )
-    })
-
-    // Check if all images within the viewport are loaded
-    return imagesInViewport.every((image: HTMLImageElement) => {
-      return image.complete && image.naturalHeight !== 0
-    })
-  })
+  // TODO dont use networkidle, use a more specific state
+  await page.waitForLoadState("networkidle")
 }
 
 /**
