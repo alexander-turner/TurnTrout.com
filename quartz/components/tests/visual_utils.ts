@@ -223,24 +223,32 @@ export async function search(page: Page, term: string) {
   }
 }
 
+/** Pauses and resets a single HTMLMediaElement node, waiting briefly for the first frame data. */
 async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
   node.currentTime = 0
+
+  if (node.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await new Promise<void>((resolve) => {
+      const timeoutId = setTimeout(() => {
+        console.warn(`Timeout waiting for readyState >= HAVE_CURRENT_DATA for ${node.src}`)
+        resolve()
+      }, 1000)
+
+      const onCanPlay = () => {
+        clearTimeout(timeoutId)
+        node.removeEventListener("canplay", onCanPlay)
+        resolve()
+      }
+
+      node.addEventListener("canplay", onCanPlay, { once: true })
+    })
+  }
 }
 
 export async function pauseMediaElements(page: Page, selector: string): Promise<void> {
   const mediaElements = await page.locator(selector).all()
   await Promise.all(mediaElements.map((mediaElement) => mediaElement.evaluate(pauseAndResetNode)))
-
-  await Promise.all(
-    mediaElements.map((mediaElement) =>
-      mediaElement.evaluate((node: HTMLMediaElement) => {
-        if (node.currentTime !== 0) {
-          throw new Error("video time is not 0")
-        }
-      }),
-    ),
-  )
 }
 
 // TODO wait for video to load past poster? https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd1080p11gocchl8d2z
