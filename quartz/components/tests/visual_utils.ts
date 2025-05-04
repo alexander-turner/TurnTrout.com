@@ -223,18 +223,18 @@ export async function search(page: Page, term: string) {
   }
 }
 
-async function pauseAndResetVideoNode(node: HTMLMediaElement): Promise<void> {
+async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
   node.currentTime = 0
 }
 
-export async function pauseVideos(page: Page): Promise<void> {
-  const videos = await page.locator("video").all()
-  await Promise.all(videos.map((video) => video.evaluate(pauseAndResetVideoNode)))
+export async function pauseMediaElements(page: Page, selector: string): Promise<void> {
+  const mediaElements = await page.locator(selector).all()
+  await Promise.all(mediaElements.map((mediaElement) => mediaElement.evaluate(pauseAndResetNode)))
 
   await Promise.all(
-    videos.map((video) =>
-      video.evaluate((node: HTMLMediaElement) => {
+    mediaElements.map((mediaElement) =>
+      mediaElement.evaluate((node: HTMLMediaElement) => {
         if (node.currentTime !== 0) {
           throw new Error("video time is not 0")
         }
@@ -243,6 +243,7 @@ export async function pauseVideos(page: Page): Promise<void> {
   )
 }
 
+// TODO wait for video to load past poster? https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd1080p11gocchl8d2z
 /**
  * Waits for visible images within the current viewport to load by checking their `complete` property.
  * Uses `evaluateAll` for efficiency.

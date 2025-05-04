@@ -8,7 +8,7 @@ import {
   isDesktopViewport,
   yOffset,
   takeScreenshotAfterElement,
-  pauseVideos,
+  pauseMediaElements,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -44,7 +44,6 @@ test.beforeEach(async ({ page }) => {
     window.dispatchEvent(new Event("nav"))
   })
 
-  // TODO hide audio loading  https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd3081o11gor8jsio9t
   // Hide all video controls
   await page.evaluate(() => {
     const videos = document.querySelectorAll("video")
@@ -53,7 +52,7 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
-  await pauseVideos(page)
+  await pauseMediaElements(page, "video,audio")
 })
 
 /**
