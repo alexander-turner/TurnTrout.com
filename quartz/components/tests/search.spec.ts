@@ -322,8 +322,16 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   await expect(previewContainer).toBeVisible()
   await page.waitForLoadState("load")
 
+  const previewBox = await previewContainer.boundingBox()
+  const previewClip = {
+    x: previewBox!.x,
+    y: previewBox!.y,
+    width: previewBox!.width,
+    height: previewBox!.height,
+  }
+
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
-    element: "#preview-container",
+    clip: previewClip,
   })
 })
 
