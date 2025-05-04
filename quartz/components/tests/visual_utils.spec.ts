@@ -10,6 +10,9 @@ import {
   isDesktopViewport,
   takeRegressionScreenshot,
   takeScreenshotAfterElement,
+  waitForThemeTransition,
+  pauseMediaElements,
+  showingPreview,
 } from "./visual_utils"
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
@@ -429,4 +432,112 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
     expect(capturedOptions!.animations).toBe("disabled")
   })
+})
+
+test.describe("waitForThemeTransition", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <head>
+          <style>
+            :root {
+              --background-primary: white;
+              --text-primary: black;
+            }
+            :root[data-theme="dark"] {
+              --background-primary: black;
+              --text-primary: white;
+            }
+            body {
+              background-color: var(--background-primary);
+              color: var(--text-primary);
+            }
+            .temporary-transition body {
+              transition: background-color 0.1s ease-in-out;
+            }
+          </style>
+        </head>
+        <body></body>
+      </html>
+    `)
+  })
+
+  test("resolves immediately if theme does not visually change", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" })
+    // Set initial theme directly
+    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"))
+
+    const start = Date.now()
+    // Set theme to the same value
+    await page.evaluate(() => {
+      document.documentElement.setAttribute("data-theme", "light")
+    })
+    await waitForThemeTransition(page)
+    const duration = Date.now() - start
+
+    // Should resolve very quickly
+    expect(duration).toBeLessThan(100)
+  })
+})
+test.describe("pauseMediaElements", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <video id="video1" src="movie.mp4" controls></video>
+          <audio id="audio1" src="sound.mp3" controls></audio>
+          <video id="video2" src="another.mp4"></video>
+          <div id="not-media"></div>
+        </body>
+      </html>
+    `)
+    // Mock media sources to prevent actual loading/errors
+    await page.route("**/*.{mp4,mp3}", (route) => {
+      route.fulfill({ status: 200, contentType: "video/mp4", body: Buffer.from("") })
+    })
+  })
+
+  test("pauses video and audio elements", async ({ page }) => {
+    const video1 = page.locator("#video1")
+    const audio1 = page.locator("#audio1")
+    const video2 = page.locator("#video2")
+
+    // Start playing (mock)
+    for (const el of [video1, audio1, video2]) {
+      await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.play().catch(() => {}))
+    }
+
+    await pauseMediaElements(page, "video, audio")
+
+    for (const el of [video1, audio1, video2]) {
+      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
+      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime)).toBe(0)
+    }
+  })
+
+  test("does not affect non-media elements", async ({ page }) => {
+    const notMedia = page.locator("#not-media")
+    const initialHtml = await notMedia.innerHTML()
+
+    await pauseMediaElements(page, "video, audio")
+
+    expect(await notMedia.innerHTML()).toBe(initialHtml)
+  })
+})
+
+test.describe("showingPreview", () => {
+  const viewports = [
+    { width: 1580, height: 800, expected: true }, // Desktop
+    { width: 1024, height: 768, expected: true }, // Tablet landscape (above breakpoint)
+    { width: 991, height: 768, expected: false }, // Tablet portrait (below breakpoint)
+    { width: 800, height: 600, expected: false }, // Smaller Tablet
+    { width: 480, height: 800, expected: false }, // Mobile
+  ]
+
+  for (const { width, height, expected } of viewports) {
+    test(`returns ${expected} for viewport ${width}x${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height })
+      expect(showingPreview(page)).toBe(expected)
+    })
+  }
 })
