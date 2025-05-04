@@ -98,8 +98,13 @@
   color: var(--foreground) !important;
 }
 
+.light-mode img {
+  filter: none !important;
+}
+
 .dark-mode img {
   mix-blend-mode: normal;
+  filter: grayscale(50%) !important;
 }
 
 // Mermaid
