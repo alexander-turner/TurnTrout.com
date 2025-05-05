@@ -8,7 +8,6 @@ import {
   isDesktopViewport,
   yOffset,
   takeScreenshotAfterElement,
-  pauseMediaElements,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -17,9 +16,6 @@ const TIGHT_SCROLL_TOLERANCE = 10
 
 // TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
-  // Don't want to play videos since we pause them in beforeEach
-  await page.route("static/scripts/safari-autoplay.js", (route) => route.abort())
-
   await page.addInitScript(() => {
     // Mock clipboard API if not available
     if (!navigator.clipboard) {
@@ -51,8 +47,6 @@ test.beforeEach(async ({ page }) => {
       video.removeAttribute("controls")
     })
   })
-
-  await pauseMediaElements(page, "video,audio")
 })
 
 /**

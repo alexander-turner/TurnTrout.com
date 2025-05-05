@@ -63,6 +63,7 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipImageWait?: boolean
+  skipMediaPause?: boolean
 }
 
 export async function takeRegressionScreenshot(
@@ -73,6 +74,9 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipImageWait) {
     await waitForViewportImagesToLoad(page)
+  }
+  if (!options?.skipMediaPause) {
+    await pauseMediaElements(page, "video,audio")
   }
 
   const browserName = testInfo.project.name
@@ -227,23 +231,6 @@ export async function search(page: Page, term: string) {
 async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
   node.currentTime = 0
-
-  if (node.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-    await new Promise<void>((resolve) => {
-      const timeoutId = setTimeout(() => {
-        console.warn(`Timeout waiting for readyState >= HAVE_CURRENT_DATA for ${node.src}`)
-        resolve()
-      }, 1000)
-
-      const onCanPlay = () => {
-        clearTimeout(timeoutId)
-        node.removeEventListener("canplay", onCanPlay)
-        resolve()
-      }
-
-      node.addEventListener("canplay", onCanPlay, { once: true })
-    })
-  }
 }
 
 export async function pauseMediaElements(page: Page, selector: string): Promise<void> {

@@ -62,6 +62,9 @@ jobs:
           npx playwright install --with-deps chromium webkit firefox
           npx playwright install-deps
 
+      - name: Remove Safari autoplay script
+        run: rm -f ./quartz/static/scripts/safari-autoplay.js
+
       - name: Start local server
         run: |
           npx quartz build --serve &
