@@ -2,7 +2,12 @@ import { test, expect } from "@playwright/test"
 
 import { pondVideoId as pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
-import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
+import {
+  takeRegressionScreenshot,
+  isDesktopViewport,
+  setTheme,
+  screenshotUntilStable,
+} from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
@@ -124,7 +129,7 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   for (let i = 0; i < 10; i++) {
     const opacity = await getNavbarOpacity()
     opacityValues.push(Number(opacity))
-    // eslint-disable-next-line playwright/no-wait-for-timeout  
+    // eslint-disable-next-line playwright/no-wait-for-timeout
     await page.waitForTimeout(80) // Wait a bit between samples
   }
   // eslint-disable-next-line playwright/no-wait-for-timeout
@@ -191,7 +196,7 @@ for (const theme of ["light", "dark", "auto"]) {
     const leftSidebar = page.locator("#left-sidebar")
     await expect(leftSidebar).toBeVisible()
     await setTheme(page, theme as Theme)
-    await takeRegressionScreenshot(page, testInfo, `left-sidebar-${theme}`, {
+    await screenshotUntilStable(page, testInfo, `left-sidebar-${theme}`, {
       element: leftSidebar,
     })
   })

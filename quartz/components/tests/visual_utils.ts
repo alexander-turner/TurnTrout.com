@@ -5,6 +5,7 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
+// TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -58,11 +59,35 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
+export async function screenshotUntilStable(
+  page: Page,
+  testInfo: TestInfo,
+  screenshotSuffix: string,
+  options?: RegressionScreenshotOptions,
+): Promise<Buffer> {
+  const maxAttempts = 10
+  const attemptDelayMs = 400
+
+  let previousScreenshot: Buffer | null = null
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const screenshot = await takeRegressionScreenshot(page, testInfo, screenshotSuffix, options)
+    if (previousScreenshot && previousScreenshot.equals(screenshot)) {
+      return screenshot
+    }
+    previousScreenshot = screenshot
+    await page.waitForTimeout(attemptDelayMs)
+  }
+
+  throw new Error(
+    `Screenshot did not stabilize after ${maxAttempts} attempts, with delay ${attemptDelayMs}ms`,
+  )
+}
+
 export interface RegressionScreenshotOptions {
   element?: string | Locator
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
-  skipImageWait?: boolean
   skipMediaPause?: boolean
 }
 
@@ -72,9 +97,6 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
-  if (!options?.skipImageWait) {
-    await waitForViewportImagesToLoad(page)
-  }
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, "video,audio")
   }
@@ -128,6 +150,7 @@ export async function takeScreenshotAfterElement(
   element: Locator,
   height: number,
   testNameSuffix?: string,
+  options?: { screenshotUntilStable?: boolean },
 ) {
   const box = await element.boundingBox()
   if (!box) throw new Error("Could not find element")
@@ -136,7 +159,12 @@ export async function takeScreenshotAfterElement(
   const parentBox = await parent.boundingBox()
   if (!parentBox) throw new Error("Could not find parent element")
 
-  await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
+  let screenshotFn = takeRegressionScreenshot
+  if (options?.screenshotUntilStable) {
+    screenshotFn = screenshotUntilStable
+  }
+
+  await screenshotFn(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
     element: parent,
     clip: {
       x: parentBox.x,

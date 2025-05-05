@@ -8,6 +8,7 @@ import {
   isDesktopViewport,
   yOffset,
   takeScreenshotAfterElement,
+  screenshotUntilStable,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -76,7 +77,9 @@ async function getH1Screenshots(
     await header.scrollIntoViewIfNeeded()
 
     // Only screenshot up to where the next section begins
-    await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
+    await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`, {
+      screenshotUntilStable: true,
+    })
   }
 }
 
@@ -104,7 +107,7 @@ test.describe("Unique content around the site", () => {
     test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(url)
       await page.locator("body").waitFor({ state: "visible" })
-      await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
+      await screenshotUntilStable(page, testInfo, `site-page-${title}`)
     })
   }
 
@@ -240,7 +243,7 @@ test.describe("Layout Breakpoints", () => {
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
-      await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${width}px`)
+      await screenshotUntilStable(page, testInfo, `layout-breakpoint-${width}px`)
     })
   }
 })
@@ -353,7 +356,6 @@ test.describe("Clipboard button", () => {
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         element: clipboardButton,
         disableHover: false,
-        skipImageWait: true, // otherwise it the animation completes
       })
     })
   }
