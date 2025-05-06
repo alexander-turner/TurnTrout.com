@@ -407,7 +407,7 @@ test.describe("Right sidebar", () => {
   })
 
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
-    await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
+    await screenshotUntilStable(page, testInfo, "content-meta-visible", {
       element: "#content-meta",
     })
   })
@@ -424,7 +424,7 @@ test.describe("Right sidebar", () => {
 
     // Open the backlinks
     await backlinksTitle.click()
-    await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
+    await screenshotUntilStable(page, testInfo, "backlinks-visible", {
       element: backlinks,
     })
   })

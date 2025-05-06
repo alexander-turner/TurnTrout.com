@@ -69,9 +69,9 @@ export async function screenshotUntilStable(
   const attemptDelayMs = 400
 
   let previousScreenshot: Buffer | null = null
-
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const screenshot = await takeRegressionScreenshot(page, testInfo, screenshotSuffix, options)
+
     if (previousScreenshot && previousScreenshot.equals(screenshot)) {
       return screenshot
     }
@@ -267,58 +267,6 @@ export async function pauseMediaElements(page: Page, selector: string): Promise<
 }
 
 // TODO wait for video to load past poster? https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd1080p11gocchl8d2z
-/**
- * Waits for visible images within the current viewport to load by checking their `complete` property.
- * Uses `evaluateAll` for efficiency.
- * @param page The Playwright page object.
- */
-export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
-  // Target only visible image elements directly using Playwright's selector engine
-  const visibleImagesLocator = page.locator("img:visible")
-
-  // Evaluate all visible images found by the locator in parallel within the browser context
-  await visibleImagesLocator.evaluateAll(async (imgs: HTMLImageElement[]) => {
-    await Promise.all(
-      imgs.map((img) => {
-        if (img.complete) {
-          return Promise.resolve()
-        }
-        return new Promise<void>((resolve) => {
-          const timeout = 5000
-          let timer: ReturnType<typeof setTimeout> | null = null
-
-          const cleanup = () => {
-            if (timer) clearTimeout(timer)
-            img.removeEventListener("load", onLoad)
-            img.removeEventListener("error", onError)
-          }
-
-          const onLoad = () => {
-            cleanup()
-            resolve()
-          }
-
-          const onError = (err: string | Event) => {
-            cleanup()
-            console.error(
-              `Image failed to load: ${img.src}`,
-              err instanceof Error ? err.message : err,
-            )
-            resolve()
-          }
-
-          timer = setTimeout(() => {
-            cleanup()
-            console.warn(`Image load timed out after ${timeout}ms: ${img.src}`)
-            resolve()
-          }, timeout)
-          img.addEventListener("load", onLoad)
-          img.addEventListener("error", onError)
-        })
-      }),
-    )
-  })
-}
 
 /**
  * Returns true if the page will show a search preview
