@@ -223,16 +223,18 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("Scrolling down changes TOC highlight (lostpixel)", async ({ page }, testInfo) => {
+  test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
+
+    const headerLocator = page.locator("h1").last()
+    await headerLocator.scrollIntoViewIfNeeded()
+    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
+    const highlightText = await tocHighlightLocator.textContent()
 
     const spoilerHeading = page.locator("#spoilers").first()
     await spoilerHeading.scrollIntoViewIfNeeded()
 
-    const activeElement = page.locator("#table-of-contents .active").first()
-    await takeRegressionScreenshot(page, testInfo, "toc-highlight-scrolled", {
-      element: activeElement,
-    })
+    await expect(tocHighlightLocator).not.toHaveText(highlightText!)
   })
 })
 
