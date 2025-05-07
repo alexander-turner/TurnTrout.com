@@ -88,6 +88,7 @@ export interface RegressionScreenshotOptions {
   element?: string | Locator
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
+  skipImageWait?: boolean
   skipMediaPause?: boolean
 }
 
@@ -97,6 +98,9 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
+  if (!options?.skipImageWait) {
+    await waitForViewportImagesToLoad(page)
+  }
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, "video,audio")
   }
@@ -259,11 +263,77 @@ export async function search(page: Page, term: string) {
 async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
   node.currentTime = 0
+
+  if (node.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await new Promise<void>((resolve) => {
+      const timeoutId = setTimeout(() => {
+        console.warn(`Timeout waiting for readyState >= HAVE_CURRENT_DATA for ${node.src}`)
+        resolve()
+      }, 1000)
+
+      const onCanPlay = () => {
+        clearTimeout(timeoutId)
+        node.removeEventListener("canplay", onCanPlay)
+        resolve()
+      }
+
+      node.addEventListener("canplay", onCanPlay, { once: true })
+    })
+  }
 }
 
 export async function pauseMediaElements(page: Page, selector: string): Promise<void> {
   const mediaElements = await page.locator(selector).all()
   await Promise.all(mediaElements.map((mediaElement) => mediaElement.evaluate(pauseAndResetNode)))
+}
+
+export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
+  // Target only visible image elements directly using Playwright's selector engine
+  const visibleImagesLocator = page.locator("img:visible")
+
+  // Evaluate all visible images found by the locator in parallel within the browser context
+  await visibleImagesLocator.evaluateAll(async (imgs: HTMLImageElement[]) => {
+    await Promise.all(
+      imgs.map((img) => {
+        if (img.complete) {
+          return Promise.resolve()
+        }
+
+        return new Promise<void>((resolve) => {
+          const timeout = 5000
+          let timer: ReturnType<typeof setTimeout> | null = null
+
+          const cleanup = () => {
+            if (timer) clearTimeout(timer)
+            img.removeEventListener("load", onLoad)
+            img.removeEventListener("error", onError)
+          }
+
+          const onLoad = () => {
+            cleanup()
+            resolve()
+          }
+
+          const onError = (err: string | Event) => {
+            cleanup()
+            console.error(
+              `Image failed to load: ${img.src}`,
+              err instanceof Error ? err.message : err,
+            )
+            resolve()
+          }
+
+          timer = setTimeout(() => {
+            cleanup()
+            console.warn(`Image load timed out after ${timeout}ms: ${img.src}`)
+            resolve()
+          }, timeout)
+          img.addEventListener("load", onLoad)
+          img.addEventListener("error", onError)
+        })
+      }),
+    )
+  })
 }
 
 // TODO wait for video to load past poster? https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cma9b8jt41dr1nmjtkpb8cgv4&diff=cma9b9dd1080p11gocchl8d2z
