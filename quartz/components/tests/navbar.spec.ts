@@ -2,12 +2,7 @@ import { test, expect } from "@playwright/test"
 
 import { pondVideoId as pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
-import {
-  takeRegressionScreenshot,
-  isDesktopViewport,
-  setTheme,
-  screenshotUntilStable,
-} from "./visual_utils"
+import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
@@ -196,7 +191,7 @@ for (const theme of ["light", "dark", "auto"]) {
     const leftSidebar = page.locator("#left-sidebar")
     await expect(leftSidebar).toBeVisible()
     await setTheme(page, theme as Theme)
-    await screenshotUntilStable(page, testInfo, `left-sidebar-${theme}`, {
+    await takeRegressionScreenshot(page, testInfo, `left-sidebar-${theme}`, {
       element: leftSidebar,
     })
   })

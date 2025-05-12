@@ -2,13 +2,7 @@ import { test, expect } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { searchPlaceholderDesktop, searchPlaceholderMobile } from "../scripts/search"
-import {
-  takeRegressionScreenshot,
-  setTheme,
-  search,
-  showingPreview,
-  screenshotUntilStable,
-} from "./visual_utils"
+import { takeRegressionScreenshot, setTheme, search, showingPreview } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
   // Log any console errors
@@ -282,7 +276,7 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toContainText("Testing Site Features")
-  await screenshotUntilStable(page, testInfo, "twemoji-search", {
+  await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
     element: "#preview-container",
   })
 })
