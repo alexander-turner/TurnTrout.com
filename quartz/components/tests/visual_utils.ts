@@ -231,24 +231,7 @@ export async function search(page: Page, term: string) {
 /** Pauses and resets a single HTMLMediaElement node, waiting briefly for the first frame data. */
 async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
   node.pause()
-  node.currentTime = 0
-
-  if (node.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-    await new Promise<void>((resolve) => {
-      const timeoutId = setTimeout(() => {
-        console.warn(`Timeout waiting for readyState >= HAVE_CURRENT_DATA for ${node.src}`)
-        resolve()
-      }, 1000)
-
-      const onCanPlay = () => {
-        clearTimeout(timeoutId)
-        node.removeEventListener("canplay", onCanPlay)
-        resolve()
-      }
-
-      node.addEventListener("canplay", onCanPlay, { once: true })
-    })
-  }
+  node.currentTime = 0.1
 }
 
 export async function pauseMediaElements(page: Page, selector: string): Promise<void> {
