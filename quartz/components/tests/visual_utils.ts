@@ -5,6 +5,7 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
+// TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -63,6 +64,7 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipImageWait?: boolean
+  skipMediaPause?: boolean
 }
 
 export async function takeRegressionScreenshot(
@@ -73,6 +75,9 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipImageWait) {
     await waitForViewportImagesToLoad(page)
+  }
+  if (!options?.skipMediaPause) {
+    await pauseMediaElements(page, "video,audio")
   }
 
   const browserName = testInfo.project.name
