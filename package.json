@@ -170,7 +170,7 @@
     "@types/source-map-support": "^0.5.10",
     "@types/ws": "^8.5.12",
     "@types/yargs": "^17.0.32",
-    "0x": "^4.1.4",
+    "0x": "^5.8.0",
     "babel-jest": "^29.7.0",
     "cheerio": "^1.0.0",
     "critical": "^7.2.1",
