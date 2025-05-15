@@ -367,11 +367,11 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 
 However, implementation was tricky. As shown with the figure's "A",  CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the foreground and background.
 
-<center style="font-size:4rem;">
-<span class="dropcap" data-first-letter="A" style="margin-right: 5rem;display:inline;"></span>
+<center style="font-size:4rem;line-height:1;">
+<span class="dropcap" data-first-letter="A" style="margin-right: 4.75rem; display:inline;"></span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 </center>
-
+  
 However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! By rendering the normal letter as the background dropcap font, I apply a different (lighter) color to the dropcap background. I then use [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) to render _another_ glyph in the foreground. The result:
 
 <center>
