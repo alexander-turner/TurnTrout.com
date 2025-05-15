@@ -48,6 +48,11 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
+  // Hide audio progress bar to reduce flakiness in screenshots
+  await page.addStyleTag({
+    content: "audio::-webkit-media-controls-timeline { visibility: hidden !important; }",
+  })
+
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState("networkidle")
 })
