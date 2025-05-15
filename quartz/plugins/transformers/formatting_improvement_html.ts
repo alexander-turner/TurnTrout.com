@@ -173,7 +173,7 @@ export function niceQuotes(text: string): string {
   //  Whitelist for eg rock 'n' roll
   const apostropheWhitelist = "(?=n’ )"
   //  Convert to apostrophe if not followed by an end quote
-  const apostrophe = `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘]*’${afterEndingSingle}))`
+  const apostrophe = `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘']*’${afterEndingSingle}))`
   text = text.replace(new RegExp(apostrophe, "gm"), "’")
 
   // Beginning single quotes

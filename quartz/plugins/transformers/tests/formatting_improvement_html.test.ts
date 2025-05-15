@@ -83,6 +83,7 @@ describe("HTMLFormattingImprovement", () => {
       ["I was born in '99", "I was born in ’99"],
       ["'99 tigers weren't a match", "’99 tigers weren’t a match"],
       ["I'm not the best, haven't you heard?", "I’m not the best, haven’t you heard?"],
+      ["Hey, 'sup 'this is a single quote'", "Hey, ’sup ‘this is a single quote’"],
       ["'the best',", "‘the best’,"],
       ["'I lost the game.'", "‘I lost the game.’"],
       ["I hate you.'\"", "I hate you.’”"],
