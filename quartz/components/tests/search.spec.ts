@@ -266,18 +266,20 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
 })
 
-// TODO cactus emoji not fully loaded sometimes
-// https://app.lost-pixel.com/app/repos/cm6vefz230sao14j760v8nvlz/cm6veg48v0r6per0f9tis4zuy?build=cm9vwepyn0r3gaxaqlzb0cdlb&diff=cm9vwfoai019dt7c22i810dva
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
   test.skip(!showingPreview(page))
 
   await search(page, "Emoji examples")
-  await page.waitForLoadState("load")
+  // TODO await all visible images
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle")
 
-  const firstResult = page.locator(".result-card").first()
-  await expect(firstResult).toContainText("Testing Site Features")
+  // Wait for the header to be visible
+  const previewArticle = page.locator("#preview-container")
+  await expect(previewArticle.locator("#emoji-examples").first()).toBeVisible()
+
   await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
-    element: "#preview-container",
+    element: previewArticle,
   })
 })
 
