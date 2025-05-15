@@ -264,9 +264,9 @@ Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to pre
 
 ## Inlining critical CSS
 
-Even after minification, it takes time for the client to load the main CSS stylesheet. During this time, the site looks like garbage. One solution is to manually include the most crucial styles in the HTML header, but that's brittle.
+Before the client to loads the main CSS stylesheet, the site looks like garbage. One solution is to manually include the most crucial styles in the `<head>` element, but that's brittle.
 
-Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined into the header so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
+Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
 
 ## Deduplicating HTML requests
 
@@ -365,33 +365,32 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 
 I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/articles/illluminated-manuscript-calligraphy-guide) In particular, a [dropcap](https://en.wikipedia.org/wiki/Initial) lends gravity and elegance to a text. Furthermore, EB Garamond dropcaps are available.
 
-However, implementation was tricky. As shown with the figure's "A",  CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the foreground and background.
+However, implementation was tricky. As shown with the figure's "A",  CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
-<center style="font-size:4rem;line-height:1;">
+<center style="font-size:4rem;line-height:1.4 !important;">
 <span class="dropcap" data-first-letter="A" style="margin-right: 4.75rem; display:inline;"></span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 </center>
   
-However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! By rendering the normal letter as the background dropcap font, I apply a different (lighter) color to the dropcap background. I then use [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) to render _another_ glyph in the foreground. The result:
+However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! I render the letter and the embellishment separately, using [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) for the embellishment. The result:
 
 <center>
 <span class="dropcap" data-first-letter="A" style="font-size:4rem;">A</span>
 </center>
 
 > [!note]- Dropcap CSS
-> Here are the core elements of the regex which styles the dropcaps:
+>
+> Here are the basic styles.
 >
 > ```scss
 > .dropcap {
->    // The background glyph 
->    font-family: "EBGaramondInitialsF1";
->    color: var(--midground-faint);
+>    font-family: var(--font-dropcap-background);
+>    color: var(--before-color);
 >    position: relative;
 >    text-transform: uppercase;
 >  
 >    &::before {
->      // The foreground glyph  
->      font-family: "EBGaramondInitialsF2";
+>    font-family: var(--font-dropcap-foreground);
 >      color: var(--foreground);
 >      content: attr(data-first-letter);
 >      position: absolute;
