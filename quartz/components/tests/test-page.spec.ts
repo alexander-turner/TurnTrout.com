@@ -53,6 +53,7 @@ test.beforeEach(async ({ page }) => {
     content: "audio::-webkit-media-controls-timeline { visibility: hidden !important; }",
   })
 
+  // TODO replace this with the old wait for visible images
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState("networkidle")
 })
