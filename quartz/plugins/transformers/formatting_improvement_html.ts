@@ -160,13 +160,21 @@ export function transformElement(
  */
 export function niceQuotes(text: string): string {
   // Single quotes //
-  // Ending comes first so as to not mess with the open quote (which
-  // happens in a broader range of situations, including e.g. 'sup)
-  const endingSingle = `(?<=[^\\s“'])['](?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s.!?;,\\)—\\-\\]]|$))`
+  // Ending comes first so as to not mess with the open quote
+  const afterEndingSingle = `(?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s\\.!?;,\\)—\\-\\]]|$))`
+  const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
   text = text.replace(new RegExp(endingSingle, "gm"), "’")
+
   // Contractions are sandwiched between two letters
   const contraction = `(?<=[A-Za-z])['](?=${chr}?[a-zA-Z])`
   text = text.replace(new RegExp(contraction, "gm"), "’")
+
+  // Apostrophes always point down
+  //  Whitelist for eg rock 'n' roll
+  const apostropheWhitelist = "(?=n’ )"
+  //  Convert to apostrophe if not followed by an end quote
+  const apostrophe = `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘]*’${afterEndingSingle}))`
+  text = text.replace(new RegExp(apostrophe, "gm"), "’")
 
   // Beginning single quotes
   const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`

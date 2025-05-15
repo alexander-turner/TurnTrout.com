@@ -60,7 +60,7 @@ describe("HTMLFormattingImprovement", () => {
       ['"I am" so "tired" of "these" "quotes".', "“I am” so “tired” of “these” “quotes.”"],
       ['"world model";', "“world model”;"],
       ['"party"/"wedding."', "“party”/“wedding.”"],
-      ['"Hi \'Trout!"', "“Hi ‘Trout!”"],
+      ['"Hi \'Trout!"', "“Hi ’Trout!”"],
       ["“scope insensitivity”", "“scope insensitivity”"],
       [
         "strategy s's return is good, even as d's return is bad",
@@ -77,8 +77,12 @@ describe("HTMLFormattingImprovement", () => {
       ["I don't'nt want to go", "I don’t’nt want to go"],
       ['with "scope insensitivity":', "with “scope insensitivity”:"],
       ['("the best")', "(“the best”)"],
-      ['"\'sup"', "“‘sup”"],
-      ["'SUP", "‘SUP"],
+      ['"\'sup"', "“’sup”"], // Apostrophes always point down
+      ["'SUP", "’SUP"],
+      ["Rock 'n' Roll", "Rock ’n’ Roll"],
+      ["I was born in '99", "I was born in ’99"],
+      ["'99 tigers weren't a match", "’99 tigers weren’t a match"],
+      ["I'm not the best, haven't you heard?", "I’m not the best, haven’t you heard?"],
       ["'the best',", "‘the best’,"],
       ["'I lost the game.'", "‘I lost the game.’"],
       ["I hate you.'\"", "I hate you.’”"],
@@ -818,7 +822,7 @@ describe("setFirstLetterAttribute", () => {
       <p>'Twas the night before Christmas.</p>
     `
     const expected = `
-      <p data-first-letter="‘">‘Twas the night before Christmas.</p>
+      <p data-first-letter="’">’Twas the night before Christmas.</p>
     `
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(processedHtml).toBe(expected)

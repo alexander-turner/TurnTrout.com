@@ -380,7 +380,7 @@ This computer has 16GB of RAM and runs at 3.2GHz.
 
 ## Smart quotes
 
-"I am a quote with 'nested' quotes inside of me."
+"I am a quote with 'nested' quotes inside of me. Rock 'n' roll!"
 
 > [!quote] Checking that HTML formatting is applied to each paragraph element
 > Comes before the single quote

@@ -422,7 +422,7 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
 
-Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. `smartypants` would emit strings like `Bill said “’ello!”` (the single quote is oriented incorrectly). So I wrote a bit of code.
+Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy.  So I wrote a bit of code.
 
 > [!note]- Regex for smart quotes
 >
@@ -433,13 +433,18 @@ Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestl
 >  */
 > export function niceQuotes(text: string): string {
 >   // Single quotes //
->   // Ending comes first so as to not mess with the open quote (which
->   // happens in a broader range of situations, including e.g. 'sup)
->   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s.!?;,\\)—\\-]|$))`
+>   // Ending comes first so as to not mess with the open quote
+>   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s\\.!?;,\\)—\\-]|$))`
 >   text = text.replace(new RegExp(endingSingle, "gm"), "’")
+>   
 >   // Contractions are sandwiched between two letters
 >   const contraction = `(?<=[A-Za-z])['](?=[a-zA-Z])`
 >   text = text.replace(new RegExp(contraction, "gm"), "’")
+>
+>   // Apostrophes always point down
+>   //  Convert to apostrophe if not followed by an end quote
+>   const apostrophe = `(?<=^|[^\\w])'(?![^‘]*’${afterEndingSingle})`
+>   text = text.replace(new RegExp(apostrophe, "gm"), "’")
 > 
 >   // Beginning single quotes
 >   const beginningSingle = `(^|[\\s“"])['](?=\\S)`
@@ -497,6 +502,8 @@ Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestl
 > 4. For all $k$, set element $k$'s text content to the segment starting at private Unicode occurrence $k$.
 >
 > I use this same strategy for other formatting improvements, including [hyphen replacement](#hyphen-replacement).
+
+[Apparently, dates like `’94` should have a _downward-facing_ apostrophe `’`](https://practicaltypography.com/apostrophes.html), not an upward-facing single quote `‘`! My code handles the conversion: "I was born in '94."
 
 ### Automatic smallcaps
 
