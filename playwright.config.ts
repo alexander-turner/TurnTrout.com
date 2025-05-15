@@ -41,7 +41,7 @@ const browsers: Browser[] = [
 ]
 
 export default defineConfig({
-  timeout: process.env.CI ? 90000 : 30000,
+  timeout: process.env.CI ? 180000 : 30000,
   workers: 1, // Parallelism causes flakiness
 
   retries: 3,

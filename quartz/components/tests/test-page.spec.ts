@@ -47,6 +47,9 @@ test.beforeEach(async ({ page }) => {
       video.removeAttribute("controls")
     })
   })
+
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle")
 })
 
 /**
@@ -355,7 +358,6 @@ test.describe("Clipboard button", () => {
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         element: clipboardButton,
         disableHover: false,
-        skipImageWait: true, // otherwise it the animation completes
       })
     })
   }
