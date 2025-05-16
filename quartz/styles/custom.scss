@@ -114,11 +114,6 @@ dd {
   & > p:first-child {
     margin-top: 0;
   }
-
-  & > ul {
-    // Already have padding-left from dd
-    padding-left: 0;
-  }
 }
 
 ol,
