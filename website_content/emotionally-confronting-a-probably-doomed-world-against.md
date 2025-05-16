@@ -178,7 +178,7 @@ I’m not going to waste my time searching for dignified plans (which maximize h
 
     > We cannot fight at maximum all the time, and some times are more important than others. (Namely, when the logistic success curve seems relatively more sloped; those times are relatively more important.)
 
-    I agree. I am not advocating burnout. This is indeed a resource to conserve for situations closer to the 50% success rate, or for a targeted push at a particularly impactful moment. I _am_ advocating growth and development in a way which is _fun and awesome_, which pushes limits without straining endurance. Perhaps this is not how most people work. But it’s how I can work.
+    I agree. I am not advocating burnout. One should conserve "maximum effort" for situations closer to the 50% success rate, or for a targeted push at a particularly impactful moment. I _am_ advocating growth and development in a way which is _fun and awesome_, which pushes limits without straining endurance. Perhaps this is not how most people work. But it’s how I can work.
 
 [^2]: Furthermore, do not "conflate feelings with beliefs". You do not have to believe the future is rosy in order to feel good and strong and healthy and to give the problem everything you’ve got (without pushing to burnout). Feelings are not beliefs! I think of certain feelings as (harder-to-control) _actions_.
 

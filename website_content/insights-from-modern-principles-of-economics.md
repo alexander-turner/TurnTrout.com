@@ -151,7 +151,7 @@ Consider a competitive snow shovel market, where firms can price shovels as they
 
 ![positive_demand_shock](https://assets.turntrout.com/static/images/posts/n193jwz2vaxif6hrnhub.avif)
 
-Because people want more snow shovels, the price increases from $P_1$ to $P_2$. (This is the "price gouging" part.) So here is the painful part of the picture. Now snow shovels are expensive, and some people can't afford them, and also _fuck you_ to the people taking advantage of a disaster just for a few bucks. Many people have this gut-level reaction.
+Because people want more snow shovels, the price increases from $P_1$ to $P_2$. So here is the painful ("price gouging") part of the picture. Now snow shovels are expensive, and some people can't afford them, and also _fuck you_ to the people taking advantage of a disaster just for a few bucks. Many people have this gut-level reaction.
 
 What comes next? Suppose the storm hits Wisconsin. Demand goes up, so prices go up. _Since firms want to make money_, suppliers in neighboring states (e.g. Iowa and Illinois) will start trucking in snow shovels and selling them at a high—but slightly lower—price. In fact, the hardest-hit areas with the highest prices will get prioritized for more supply, so that firms can make more money. As more firms enter the Wisconsin snow shovel market, they compete over price and eventually the price settles back to the original $P_1$ as demand subsides.
 
@@ -216,7 +216,7 @@ Another great mental motion is the "wedge" trick for tax incidence determination
 
 Think of the tax as the difference between what the consumer pays and the seller receives. Tax incidence answers: How much does the consumer pay, and how much does the seller receive?
 
-The "wedge trick" is this. Consider a vertical line segment of length 6 in the above charts, and imagine it floating in from the left until it hits _S1_ and _D_ with its endpoints. This determines tax incidence: The supply curve shifts up to _S2_. (This is actually the same as just shifting up _S1_ by \$6, but I find it easier to visualize.)
+The "wedge trick" is this. Consider a vertical line segment of length 6 in the above charts, and imagine it floating in from the left until it hits _S1_ and _D_ with its endpoints. This determines tax incidence: The supply curve shifts up to _S2_. (Equivalently, we could shift _S1_ up by \$6, but I prefer to visualize shifting the supply curve.)
 
 If demand is more elastic than supply (aka the slope is less steep), then consumers bear more of the tax burden, and vice versa. The intuition is that it's harder to tax people who are more ready to stop consuming/producing the product.
 

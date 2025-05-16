@@ -198,9 +198,11 @@ Alex
 : You could even maybe think of each input $g$ as projecting the derivative of $L$ at $f$? Or specifying one of many possible directions.
 
 `TheMajor`
+<!-- vale off -->
 : Yes, this is 100% correct. This is related to the "nice linear properties in $g$" that I mentioned above
 
 : I also stated that this is computationally difficult. This is actually quite funny - the best way to find "The derivative of $L$ at $f$" is to take a 'test function' $g \in X$ (arbitrarily), compute (the derivative of $L$ at $f$ with respect to $g$), and then tahdah, you have now found the map that sends $g$ to (the derivative of $L$ at $f$ with respect to $g$), i.e. exactly what you were looking for.
+<!-- vale on -->
 
 Alex
 : this sounds pretty computationally easy? Or are you calculating $L'$ for a general test function $g$, in which case, how do you get any nontrivial information out of that?
@@ -226,7 +228,9 @@ Alex
 `TheMajor`
 : It exists for all $g$, and then $L'_f$ exists as a formal map. But usually you want something stronger, for example that $L'_f: X\to \mathbb{C}$ is continuous.
 
+<!-- vale off -->
 : as an important but relatively trivial aside: if $L$ is a linear map, then $L'_f$ does not actually depend on $f$. So usually it is just called "the derivative of $L$" instead of "the derivative of $L$ at $f$". This is confusing, because for non-linear $L$ there is also something called "the derivative of $L$", namely "the map that sends $f$ to \[the derivative of $L$ at $f$\]".
+<!-- vale on -->
 
 Alex
 : hm. That's because of the definition of linearity, right? it's a homomorphism for both the operations of addition and scalar multiplication... Wait, I intuitively understand why linearity means it's the same everywhere, but I'm having trouble coming up with the formal justification…

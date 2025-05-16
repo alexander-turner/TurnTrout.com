@@ -107,7 +107,9 @@ I think I [got significantly smarter in 2018–2019](/swimming-upstream), and ke
 >
 > > We clearly prefer future AIs to generalize in the way that neuroscientists generalize, so it seems worthwhile to ask: "why don't neuroscientists wirehead themselves?"
 > >
+<!--vale off -->
 > > It's clearly not because humans evolved away from wireheading, _specifically_. There are somewhat similar situations to wireheading in the ancestral environment: psychoactive drugs, masturbation, etc. Is the reason we don't wirehead because evolution instilled us with an aversion to manipulating our reward function, which then zero-shot generalized to wireheading, despite wireheading being so wildly dissimilar to the contents of the ancestral environment? How could evolution have developed an alignment approach that generalized so well?
+<!-- vale on -->
 >
 > After a few days, I realized my gut expectations were that he was broadly correct and that this theory of alignment could actually be right. However, I realized I wasn't consciously letting myself think that because it would be Insufficiently Skeptical to actually think the alignment problem is solvable. This seemed obviously stupid to me, so I quickly shut that line of thinking down and second-order updated towards optimism so that I would [stop _predictably_ getting more optimistic](https://www.readthesequences.com/Conservation-Of-Expected-Evidence) about Quintin's theory.
 >
@@ -145,7 +147,7 @@ I think I [got significantly smarter in 2018–2019](/swimming-upstream), and ke
 >
 > I remember a sunny summer day in 2019, sitting in the grass with Daniel Filan at UC Berkeley. He recommended putting together an end-to-end picture of the alignment problem. I remember feeling pretty uncomfortable about that, feeling that I wouldn't understand which alignment problems go where in my diagram ("do embedded agency failures crop up _here_, or _there_?"). Wouldn't it just make more sense to read more alignment papers and naturally refine those views over time?
 >
-> This was a rationalization, plain and simple. There is no point where you feel ready to put all the pieces together. If you feel totally comfortable about how alignment fits together such that Daniel's exercise does not _push you_ on some level, we have either _already_ solved the alignment problem, or you are deluded.
+> This was a rationalization, plain and simple. At no point do you feel ready to put all the pieces together. If you feel totally comfortable about how alignment fits together such that Daniel's exercise does not _push you_ on some level, we have either _already_ solved the alignment problem, or you are deluded.
 >
 > I did not feel ready, and I was not ready, and I should have done it anyways. But I focused on more comfortable work with well-defined boundaries, because it felt good to knock out new theorems. Whether or not those theorems were useful and important to alignment, that was a mistake. So I stayed in my alignment comfort zone. I should have stopped working on impact measures and power-seeking way earlier than I did, even though I did end up doing some cool work.
 
@@ -167,7 +169,7 @@ I think I [got significantly smarter in 2018–2019](/swimming-upstream), and ke
 >
 > Back in 2018, I had the "upstart alignment researcher" narrative—starting off bright-eyed and earnest, learning a lot, making friends. But then I hurt my hands and couldn't type anymore, which broke the narrative. I felt dejected—to slightly exaggerate, I felt I had fallen off of the sunlit path, and now nothing was going to go as it should.
 >
-> Another example of narrative-thinking is when people say "I'm just not a math person." This is an _inference_ and a _story_ they tell themselves. Strictly speaking, they may not know much math, and they may not enjoy math, and they may not see how to change either of those facts. But the _narrative_ is that they are not a math person. Their aversion stems not just from their best-guess assessment of their own weaknesses, but from a _story_ they are living in.
+> Another example of narrative-thinking is when people say "I'm just not a math person." This statement is an _inference_ and a _story_ they tell themselves. Strictly speaking, they may not know much math, and they may not enjoy math, and they may not see how to change either of those facts. But the _narrative_ is that they are not a math person. Their aversion stems not just from their best-guess assessment of their own weaknesses, but from a _story_ they are living in.
 >
 > Every moment is an opportunity for newly directed action. [Keep your identity small](http://www.paulgraham.com/identity.html) and keep the narratives in the story-books. At least, if you want to use narratives, carefully introspect to make sure you're using them, and they aren't using you.
 

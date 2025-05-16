@@ -128,7 +128,7 @@ We show that it's really hard to assert that  $\mathcal{A}$ won't chow down on a
 >
 > Cheap lunches don't reduce utility. Let's say we have a cheap lunch  $\langle \bar{a}^k \rangle_{\{i\}}$ in region  $i$ and some global strategy  $\langle \bar{b}^k \rangle$ (which only takes null actions in region  $i$). Assume the cheap lunch is compatible with the global strategy; this means the cheap lunch is feasible. If  $\mathcal{A}$ is indifferent to region  $i$, the conjugate strategy (of the cheap lunch and the remainder of the global strategy) has equal utility to  $\langle \bar{b}^k \rangle$.
 >
-> _Proof._ We show feasibility of the conjugate strategy by demonstrating we don't need to change resource allocation elsewhere. This is done by induction over time steps. Since  $\mathcal{A}$ isn't doing anything in region  $i$ under strategy  $\langle \bar{b}^k \rangle$, taking resource-preserving actions instead cannot reduce what  $\mathcal{A}$ is later able to do in the regions relevant to  $U$. This implies that  $U$ cannot be decreased by taking the cheap lunch. ∎
+> _Proof._ We show feasibility of the conjugate strategy by demonstrating we don't need to change resource allocation elsewhere. We perform induction over time steps. Since  $\mathcal{A}$ isn't doing anything in region  $i$ under strategy  $\langle \bar{b}^k \rangle$, taking resource-preserving actions instead cannot reduce what  $\mathcal{A}$ is later able to do in the regions relevant to  $U$. This implies that  $U$ cannot be decreased by taking the cheap lunch. ∎
 
 > [!math] Theorem 1: Cheap Lunches and Optimality
 >

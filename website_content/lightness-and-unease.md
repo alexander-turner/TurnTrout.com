@@ -55,9 +55,9 @@ January 6th is the day I finished reading _Superintelligence_, and that’s the 
 
 ## Month 2
 
-I applied for the upcoming CFAR workshop and was later accepted (the interview was the first time where I heard another person say things like "updating"). I continued my non-technical reading, [summarized a technical alignment result](/toy-instrumental-convergence-paper-walkthrough), and [reviewed Naïve Set Theory](/set-theory-textbook-review). The concepts in that small set theory book expanded my mathematical horizons beyond measure (okay, I haven’t studied measure theory yet, so not _quite_ beyond measure). This is also when things really _clicked_ for me – I started [generating novel insights](/how-to-dissolve-it) regularly. Finally, I decided to [try for 5 minutes](https://www.readthesequences.com/UseTheTryHarderLuke) before giving up on my [CHAI application](http://humancompatible.ai/jobs); this led to an idea of which I am truly proud.
+I applied for the upcoming CFAR workshop and was later accepted (the interview was the first time where I heard another person say things like "updating"). I continued my non-technical reading, [summarized a technical alignment result](/toy-instrumental-convergence-paper-walkthrough), and [reviewed Naïve Set Theory](/set-theory-textbook-review). The concepts in that small set theory book expanded my mathematical horizons beyond measure (okay, I haven’t studied measure theory yet, so not _quite_ beyond measure).
 
-I do not yet know whether I will be accepted for CHAI’s internship, but the idea merits two posts of its own: one for the proposal itself, and one for the wonderful emotional and psychological process of discovery I experienced.
+In month 2, things really _clicked_ for me – I started [generating novel insights](/how-to-dissolve-it) regularly. Finally, I decided to [try for 5 minutes](https://www.readthesequences.com/UseTheTryHarderLuke) before giving up on my [CHAI application](http://humancompatible.ai/jobs); this led to an idea of which I am truly proud. I do not yet know whether I will be accepted for CHAI’s internship, but the idea merits two posts of its own: one for the proposal itself, and one for the wonderful emotional and psychological process of discovery I experienced.
 
 ## Month 3
 

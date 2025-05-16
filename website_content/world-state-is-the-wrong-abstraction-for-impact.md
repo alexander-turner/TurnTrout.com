@@ -141,7 +141,7 @@ We talk about side effects when they affect our attainable utility (otherwise we
 
 Accounting for impact this way misses the point.
 
-Yes, we can think about effects and facilitate academic communication more easily via this frame, but _we should be careful not to guide research from that frame_. This is why I avoided vase examples early on – their prevalence seems like a _symptom of an incorrect frame_.
+Yes, we can think about effects and facilitate academic communication more easily via this frame, but _we should be careful not to guide research from that frame_. To avoid that influence, I avoided vase examples early on in this sequence. Their prevalence seems like a _symptom of an incorrect frame_.
 
 (Of course, I certainly did my part to make them more prevalent, what with my first post about impact being called _[Worrying about the Vase: Whitelisting](/whitelisting-impact-measure)..._)
 

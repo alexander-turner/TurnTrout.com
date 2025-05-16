@@ -86,7 +86,7 @@ The truth is that I am biologically incapable of caring as much as _9 million ×
 
 What does this have to do with Harry Potter? HPMOR made me realize I _should_ care in this way. HPMOR let me _experience the point of view of someone intelligently optimizing the world to be a better, more moral place_. HPMOR let me look through the eyes of someone who deeply cares about the world and who tries to do the most good that they can. The _experience_ counts.
 
-You’ll notice that CS-151 doesn’t start off with a [category theoretic-motivation of functional programming](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/) in Scheme, with armchair theorizing about loop invariants, parametric polymorphism, and time complexity. There are labs. You experience it yourself. That’s how the beauty of computer science _sticks to you_.
+You’ll notice that CS-151 doesn’t start off with a [category theoretic-motivation of functional programming](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/) in Scheme, with armchair theorizing about loop invariants, parametric polymorphism, and time complexity. Instead, you get your hands dirty with labs. That’s how the beauty of computer science _sticks to you_.
 
 As far as I know, HPMOR is the media which imparts the strongest "lived experience" of _gut-level caring about hammering the world into better shape_.
 

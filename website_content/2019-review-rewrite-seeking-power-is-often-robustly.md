@@ -66,7 +66,9 @@ Roughly speaking, this work considered an action to be "instrumentally convergen
 
 (Zador uses “set of scenarios” instead of “set of reward functions”, but he is implicitly reasoning: “with respect to my beliefs about what kind of objective functions we will implement and what states the agent will confront in deployment, I predict that deadly actions have a negligible probability of being optimal.”)
 
+<!-- vale off -->
 While discussing this definition of "instrumental convergence", Andrew asked me: “what, exactly, is doing the _converging_? There is no limiting process. Optimal policies just _are_.”
+<!-- vale on -->
 
 It would be more appropriate to say that an action is "instrumentally robust" instead of "instrumentally convergent": the instrumentality is _robust_ to the choice of goal. However, I found this to be ambiguous: "instrumentally robust" could be read as “the agent is being robust for instrumental reasons.”
 

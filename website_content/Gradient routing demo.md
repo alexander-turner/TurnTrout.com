@@ -60,7 +60,7 @@ def encode_and_mask(self, images: Tensor, labels: Tensor):
 
 This causes each dimension of the latent space to “specialize” to representing its corresponding image since the error for that image type can only be propagated through the single dimension of the latent space. It turns out that if you do this, nothing forces the model to represent “more of a digit” in the positive direction. Sometimes the model represented “5-ness” in the negative direction in the latent space (e.g. as `[0, 0, 0, 0, 0, -1.0, 0, 0, 0, 0]`).
 
-This messed with my demo a bit since I wanted all the sliders to only go in the positive direction. My solution? Just apply a ReLU to the encoding so it can only represent positive numbers! This is obviously not practical and I only included it so the demo would look nice.[^1]
+This messed with my demo a bit since I wanted all the sliders to only go in the positive direction. My solution? Just apply a ReLU to the encoding so it can only represent positive numbers! This design choice is obviously not practical and I only included it so the demo would look nice.[^1]
 
 In our [Gradient Routing paper](https://arxiv.org/pdf/2410.04332), we found that models sometimes needed regularization to split the representations well. However, in this setting, I’m not applying any regularization besides the default regularization of the encoding that comes with a variational autoencoder. I guess it turns out that this regularization is enough to effectively split the digits.
 

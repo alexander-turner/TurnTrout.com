@@ -102,7 +102,7 @@ Most notably, this test seems _extremely strict_, perhaps beyond even the strict
 
 **Why not just cap compute for 30 years? If you aren't allowed to train the AI at all, there can't be catastrophic false negative results.**
 
-: This comes down to beliefs about the chance of a false negative result on this test, where the developers also think it's safe, the developers pass all prediction tasks, and then the AI is catastrophic anyways. _If_ this chance is low, then I think my proposed test seems better than just capping compute for 30 years. There are several use cases for this test:
+: This comes down to beliefs about the chance of a false negative result on this test, where the developers also think it's safe, the developers pass all prediction tasks, and then the AI is catastrophic anyways. _If_ this chance is low, then I think my proposed test seems better than just capping compute for 30 years. This test has several uses:
 :
 : 1.  **Setting a resumption point.** Who knows how long it will take to understand generalization in detail, or to solve other alignment problems? Why is "30" a good number?
 : 2.  **Aligning incentives.** Labs are incentivized to advance the art of predicting (and probably, interpreting) models.

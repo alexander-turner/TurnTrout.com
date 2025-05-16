@@ -59,7 +59,7 @@ Of course, upon closer examination this theory falls apart.
 
 The real answer is basically that the small intestine absorbs water for use. Separately, in the kidneys, there are a bunch of thin tangly spirals called "glomeruluses"... er, "glomerulii"? I don't know. Whatever, the singular is "glomerulus"!
 
-![](https://assets.turntrout.com/static/images/posts/nephron.avif)Figure: This is a "nephron." The tangly bit above the corpuscle - that's the glomerulus. There are about 1 million nephrons in each kidney.
+![](https://assets.turntrout.com/static/images/posts/nephron.avif)Figure: This is a "nephron." The tangly bit above the corpuscle - that's the glomerulus. Each kidney contains about 1 million nephrons.
 
 The semipermeable membrane of the glomerulus and the high pressure together push the blood's small particles (including water) into this tube thing (called the "Bowman's capsule" and then the "renal tubule"). In the tube, a bunch of water gets reabsorbed. The unabsorbed filtrate gets shipped down to the bladder. When you haven't drank water in a while or are otherwise low, hormones tell the tube things to reabsorb as much water as possible. That's why your pee is darker when you're thirstier.
 
@@ -79,7 +79,7 @@ To be honest, I didn't know these were different. I just knew they were both inv
 
 For the longest time, I had a cursed question: What if (somehow) a bunch of sperm made it into an _ovary_ and then fertilized tons of eggs? This doesn't actually happen - fertilization generally takes place in a fallopian tube. But what if this _did_ happen? Would the woman's body attempt to develop an ungodly number of babies at once?
 
-No. No, that can't happen. There are several reasons which I now understand:
+No. No, there are several reasons why that can't happen:
 
 1. A woman is born with millions of ovarian follicles, which contain proto-eggs (formally called _oocytes_). Oocytes aren't mature and so can't be fertilized.
 2. Each month, a single[^twin] oocyte matures into an egg, leaves its follicle behind, and enters the nearby fallopian tube.

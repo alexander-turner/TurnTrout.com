@@ -248,7 +248,7 @@ Also, developing mathematical maturity brings with it a more rigorous thought pr
 
 ## Fairness
 
-There's a sense I get where even though I've made immense progress over the past few months, it still _might not be enough_. The standard isn't "am I doing impressive things for my reference class?", but rather the stricter "am I good enough to solve [serious problems](https://80000hours.org/problem-profiles/positively-shaping-artificial-intelligence/) that might not get solved in time otherwise?". This is quite the standard, and even given my textbook and research progress (including the upcoming posts), I don't think I meet it.
+There's a sense I get where even though I've made immense progress over the past few months, it still _might not be enough_. The standard isn't "am I doing impressive things for my reference class?", but rather the stricter "am I good enough to solve [serious problems](https://80000hours.org/problem-profiles/positively-shaping-artificial-intelligence/) that might not get solved in time otherwise?". This standard is hard to meet, and even given my textbook and research progress (including the upcoming posts), I don't think I meet it.
 
 In a way, this excites me. I welcome any advice for buckling down further and becoming yet stronger.
 

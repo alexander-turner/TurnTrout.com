@@ -73,7 +73,7 @@ A preference ordering $\prec$ is a binary relation on lotteries; it need not be 
 > [!math]Definition 2: Orbit of a preference ordering
 > Let $\prec$ be any preference ordering. Its orbit $S_n \cdot \prec$ is the set $\{\prec_\phi \mid \phi \in S_n\}$.
 
-The orbits of coherent preference orderings are basically all the preference orderings induced by "relabeling" which outcomes are which. This is made clear by the following result:
+The orbits of coherent preference orderings are basically all the preference orderings induced by "relabeling" which outcomes are which.
 
 > [!math]Lemma 3: Permuting coherent preferences permutes the induced utility function
 > Let $\prec$ be a VNM-coherent preference ordering which induces VNM-utility function $u$, and let $\phi\in S_n$. Then $\prec_\phi$ induces VNM-utility function $u'(o_i) = u(\phi(o_i))$, where $o_i$ is any outcome.

@@ -393,8 +393,6 @@ Reconsider the “ wedding” vector.
 
 Table:  Residual stream alignment for prompt and activation additions.
 
-At sequence position 8 ( `said`), here are the top five most probable next tokens, according to the normal and modified versions of GPT-2:
-
 | Normal | Modified       |
 | -: | :- |
 | `'`        | `party`        |
@@ -403,7 +401,9 @@ At sequence position 8 ( `said`), here are the top five most probable next token
 | `:`        | `with`         |
 | `I`        | `photographer` |
 
-Four of the top five most probable tokens are wedding-related. However, none of them are sensical (e.g. "I went up to my friend and said party" is strange). This is why the completions are incoherent when we add the steering vector to the last residual streams (the "end" condition above).
+Table: The top five most probable next tokens at sequence position 8 (`said`), according to the normal and modified versions of GPT-2:
+
+Four of the top five most probable tokens are wedding-related. However, none of them are sensical (e.g. "I went up to my friend and said party" is strange). Probably for similar reasons, the completions are incoherent when we add the steering vector to the last residual streams (the "end" condition above).
 
 [In the comments, the user `Measure` notes](https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector?commentId=KJEhAFbLNzZMucHNL#comments):
 
@@ -526,7 +526,7 @@ We write $A\to B$ to mean: Record activations before layer $A$, and add them to 
 
 Examining more completions from the embedding intervention, we didn't notice completions which were angrier than unsteered GPT-2-XL.
 
-At most, adding the "Anger" − "Calm" embeddings to layer 20 has a small effect on the qualitative anger of the completions. This is evidence that the layer 0-19 heads are doing a lot of the work of adding extra directions to the anger steering vector, such that the steering vector actually increases the probability of angry completions.
+At most, adding the "Anger" − "Calm" embeddings to layer 20 has a small effect on the qualitative anger of the completions. This small impact is evidence that the layer 0-19 heads are doing a lot of the work of adding extra directions to the anger steering vector, such that the steering vector actually increases the probability of angry completions.
 
 ### Transplanting from pre-layer 2 to pre-layer 20 sometimes increases anger
 
@@ -1017,7 +1017,7 @@ The most related work as of this post is [Subramani et al. (2022)](https://arxiv
 
 These results are highly similar to ours in many ways. However, they while they algebraically add in activation vectors in order to steer network outputs, they do so using vectors computed via SGD. Additionally, Submarani et al. add in a steering vector to either the first residual stream, or to all residual streams.
 
-In contrast, activation additions generally add in different vectors across residual stream positions. We compute our steering vectors by taking activation differences between human-crafted prompts—no machine optimization required. This is interesting because optimization-free interventions provide more hints about the structure of the residual stream space—for activation additions to work, some kind of linearity must already be present in GPT-2-XL's representations.
+In contrast, activation additions generally add in different vectors across residual stream positions. We compute our steering vectors by taking activation differences between human-crafted prompts—no machine optimization required. Optimization-free interventions provide more hints about the structure of the residual stream space. After all, for activation additions to work, some kind of linearity must already be present in GPT-2-XL's representations.
 
 Similarly, recent work by [Hernandez et al. (2023)](https://arxiv.org/abs/2304.00740) edits factual associations and features in GPT-J (6B) by adding a vector into a single residual stream during forward passes. They find these vectors using optimization. They demonstrate specific and reliable fact-editing, without modifying any model weights. Their results are further evidence for feature linearity and internal activation robustness in these models.
 

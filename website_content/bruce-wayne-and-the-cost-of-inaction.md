@@ -155,7 +155,9 @@ The boy thought. Thomas liked turning Bruce's childish remarks into lessons—he
 
 Thomas smiled. "That's a good starting thought. Let's think about the train our family built for the city. Imagine something breaks, and the engineer says she's going to try random things until the train works again."
 
+<!-- vale off -->
 "Obviously, that's probably not going to work, because the train is complicated. There are many ways for the train _not_ to work, and only a few ways for the train _to_ work. Every improvement is a change, but not every change is an improvement."
+<!-- vale on -->
 
 "Oh! And so most changes will make the problem worse. She has to be smart and well-trained to know what to do, which is why she had to go to school!", Bruce interjected excitedly.
 
@@ -169,7 +171,7 @@ Thomas flashed a conspiratorial grin. "I certainly haven't." After a shallow bow
 
 "So most changes make my room messier?"
 
-Thomas nodded. "Yes, and you have to put in effort to make things cleaner. This is called 'The Second Law of Thermodynamics', which is a big deal for physics, for biology, and, most importantly" - Thomas put on a serious face - "for cleaning messy rooms."
+Thomas nodded. "Yes, and you have to put in effort to make things cleaner. This requirement is called 'The Second Law of Thermodynamics', which is a big deal for physics, for biology, and, most importantly" - Thomas put on a serious face - "for cleaning messy rooms."
 
 Bruce giggled at that.
 
@@ -227,7 +229,9 @@ Thomas had a simple question. "Why's that?"
 
 "Why did I want a promotion?"
 
+<!-- vale off -->
 "Sure. There are many ways to spend your time, and getting promoted is only one of them." He weighed the new administrator, seeing how she factored into his plans. He knew Sophia Ducard, but he didn't _know_ Sophia.
+<!-- vale on -->
 
 Sophia was in no rush to answer as she filled her plate with green leaves and red tomatoes.
 

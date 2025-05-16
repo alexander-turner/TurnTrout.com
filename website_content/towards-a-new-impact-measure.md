@@ -153,10 +153,10 @@ Painting cars pink is low impact, but tiling the universe with pink cars is high
 Thus, change in goal achievement ability encapsulates both kinds of commitments:
 
 Opportunity cost
-: Dedicating substantial resources to your goal means they are no longer available for other goals. This is impactful.
+: Dedicating substantial resources to your goal means they are no longer available for other goals - impactful.
 
 Instrumental convergence
-: Improving your ability to achieve a wide range of goals increases your power\. This is impactful.
+: Improving your ability to achieve a wide range of goals increases your power - also impactful.
 
 As we later prove, you can't deviate from your default trajectory in outcome-space without making one of these two kinds of commitments.
 

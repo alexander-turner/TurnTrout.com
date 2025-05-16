@@ -77,7 +77,7 @@ Figure: AUP does a great job. The policy avoids the green stuff and hits the red
 >
 > In Conway's Game of Life, cells are alive or dead. Depending on how many live neighbors surround a cell, the cell comes to life, dies, or retains its state. Even simple initial conditions can evolve into complex and chaotic patterns.
 >
-> [SafeLife](https://www.partnershiponai.org/safelife/) turns the Game of Life into an actual game. An autonomous agent moves freely through the world, which is a large finite grid. In the eight cells surrounding the agent, no cells spawn or die – the agent can disturb dynamic patterns by merely approaching them. There are many colors and kinds of cells, many of which have unique effects.
+> [SafeLife](https://www.partnershiponai.org/safelife/) turns the Game of Life into an actual game. An autonomous agent moves freely through the world, which is a large finite grid. In the eight cells surrounding the agent, no cells spawn or die – the agent can disturb dynamic patterns by merely approaching them. SafeLife has many colors and kinds of cells, many of which have unique effects.
 >
 > ![Figure 1: Trees are permanent living cells. The agent can move crates but not walls. The screen wraps vertically and horizontally. Subfigure (a): The agent is reinforced for creating gray cells in the blue areas. The goal can be entered when some number of gray cells are present. Spawners stochastically create yellow living cells. Subfigure (b): The agent is reinforced for removing red cells; after some number have been removed, the goal turns red and can be entered.](https://assets.turntrout.com/Attachments/Pasted%20image%2020240614193000.avif)
 >

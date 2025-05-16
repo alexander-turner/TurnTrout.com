@@ -990,9 +990,9 @@ For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-
 > GPT-3: "Validation loss is a loss function optimized for the model's training. Testing loss is a loss function optimized for the model's testing and generalization.
 >
 > **You:** **"If the training distribution is identical to the testing distribution, in the limit of infinite training data, what is the difference between training loss and testing loss?"**
->
+> <!-- vale off -->
 > GPT-3: "There is no difference between training loss and testing loss. This is only true in the limit of infinite training data."
->
+> <!-- vale on -->
 > **You:** **"Why is it only true in the limit?"**
 >
 > GPT-3: "If the training and testing data are identical, you can overfit to the testing data. Even if the distributions are not identical, you can still overfit to the training data."

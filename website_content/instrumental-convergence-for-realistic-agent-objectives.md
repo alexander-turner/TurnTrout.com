@@ -57,7 +57,7 @@ date_updated: 2025-04-12 09:51:51.137842
 > [!note] Summary of the current power-seeking theorems
 > Give me a utility function, any utility function, and for most ways I could jumble it up—most ways I could permute which outcomes get which utility, for most of these permutations, the agent will seek power.
 
-This kind of argument assumes that the set \{utility functions we might specify\} is closed under permutation. This is unrealistic. Practically speaking, we reward agents based off of observed features of the agent's environment.
+This kind of argument assumes that the set \{utility functions we might specify\} is closed under permutation. This assumption is unrealistic. Practically speaking, we reward agents based off of observed features of the agent's environment.
 
 For example, Pac-Man eats dots and gains points. A football AI scores a touchdown and gains points. A robot hand [solves a Rubik's cube and gains points](https://arxiv.org/pdf/1910.07113.pdf). But most _permutations_ of these objectives are implausible because they're high-entropy, they're complex, they assign high reward to one state and low reward to another state without a simple generating rule that grounds out in observed features. Practical objective specification doesn't allow that many degrees of freedom in what states get what reward.
 
@@ -73,13 +73,13 @@ Consider the following environment, where the agent can either stay put or move 
 
 Figure: From left to right, top to bottom, the states have labels $s_\triangle, s_\bigcirc,s_\text{left},s_\text{start},s_\text{right},s_\bigstar.$
 
-Suppose the agent gets some amount of reward each timestep, and it's choosing a policy to maximize its average per-timestep reward. [Previous results](https://proceedings.neurips.cc/paper/2021/hash/c26820b8a4c1b3c2aa868d6d57e14a79-Abstract.html) tell us that for generic reward functions over states, at least half of them incentivize going right. There are two terminal states on the left, and three on the right, and 3 > 2; we conclude that at least $\frac{\text{floor(3/2)}}{\text{floor(3/2)}+1}=\frac{1}{2}$ [of objectives incentivize going right](/quantitative-strength-of-instrumental-convergence).
+Suppose the agent gets some amount of reward each timestep, and it's choosing a policy to maximize its average per-timestep reward. [Previous results](https://proceedings.neurips.cc/paper/2021/hash/c26820b8a4c1b3c2aa868d6d57e14a79-Abstract.html) tell us that for generic reward functions over states, at least half of them incentivize going right. Two terminal states are on the left and three are on the right. Since 3 > 2, we conclude that at least $\frac{\text{floor(3/2)}}{\text{floor(3/2)}+1}=\frac{1}{2}$ [of objectives incentivize going right](/quantitative-strength-of-instrumental-convergence).
 
 It's damn hard to have so many degrees of freedom that you're specifying a potentially independent utility number for each state.[^1] Meaningful utility functions will be featurized in some sense—only depending on certain features of the world state, and of how the outcomes transpired, etc. If the featurization is linear, then it's particularly easy to reason about power-seeking incentives.
 
 ### Shape featurization
 
-Let $\text{feat}(s)$ be the feature vector for state $s$, where the first entry is 1 iff the agent is standing on $\triangle$. The second and third entries represent $\bigcirc$ and $\bigstar$, respectively. That is, the featurization only records what shape the agent is standing on. Suppose the agent makes decisions [in a way which depends only on](/satisficers-tend-to-seek-power#and-that-s-all) the featurized reward of a state: $R(s)=\text{feat}(s)^\top \mathbf{\alpha}$, where $\mathbf{\alpha}\in\mathbb{R}^3$ expresses the feature coefficients. Then the relevant terminal states are only \{triangle, circle, star\}, and we conclude that 2/3 of coefficient vectors incentivize going right. This is true more precisely in the orbit sense: For every coefficient vector $\alpha$, at least[^2] 2/3 of its permuted variants make the agent prefer to go right.
+Let $\text{feat}(s)$ be the feature vector for state $s$, where the first entry is 1 iff the agent is standing on $\triangle$. The second and third entries represent $\bigcirc$ and $\bigstar$, respectively. That is, the featurization only records what shape the agent is standing on. Suppose the agent makes decisions [in a way which depends only on](/satisficers-tend-to-seek-power#and-that-s-all) the featurized reward of a state: $R(s)=\text{feat}(s)^\top \mathbf{\alpha}$, where $\mathbf{\alpha}\in\mathbb{R}^3$ expresses the feature coefficients. Then the relevant terminal states are only \{triangle, circle, star\}, and we conclude that 2/3 of coefficient vectors incentivize going right. We state the argument precisely using orbits. For every coefficient vector $\alpha$, at least[^2] 2/3 of its permuted variants make the agent prefer to go right.
 
 This particular featurization **increases** the strength of the orbit-level incentives—whereas before, we could only guarantee 1/2\-strength power-seeking tendency, now we guarantee 2/3\-level.[^3][^4]
 
@@ -206,9 +206,9 @@ In particular, for the MDP case, I wrote:
 
 This involves a featurization which takes in an action-observation history, ignores the actions, and spits out time-discounted observation counts. The utility function is then over observations (which are just states in the MDP case). Here, the symmetries can only be over states, and not histories, and no matter how expressive the plausible state-based-reward-set $\mathfrak{D}_S$ is, it can't compete with the exponentially larger domain of the observation-history-based-utility-set $\mathfrak{D}_{OH}$, and so the featurization has _limited how strong instrumental convergence can get_ by projecting the high-dimensional u<sub>OH</sub> into the lower-dimensional u<sub>State</sub>.
 
-However, when we go from u<sub>AOH</sub> to u<sub>OH</sub>, we're throwing away even more information—information about the actions! This is also a sparse projection. So what's up?
+However, when we go from u<sub>AOH</sub> to u<sub>OH</sub>, we're throwing away even more information—information about the actions! This mapping is also a sparse projection. So what's up?
 
-When we throw away info about actions, we're breaking some symmetries which made instrumental convergence disappear in the u<sub>AOH</sub> case. In any deterministic environment, there are equally many u<sub>AOH</sub> which make me want to go e.g. down (and, say, die) as which make me want to go up (and survive). This is guaranteed by symmetries which swap the value of an optimal AOH with the value of an AOH going the other way:
+When we throw away info about actions, we're breaking some symmetries which made instrumental convergence disappear in the u<sub>AOH</sub> case. In any deterministic environment, there are equally many u<sub>AOH</sub> which make me want to go e.g. down (and, say, die) as which make me want to go up (and survive). This equivalence holds because of symmetries which swap the value of an optimal AOH with the value of an AOH going the other way:
 
 ```mermaid
 graph LR

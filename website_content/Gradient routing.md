@@ -49,7 +49,7 @@ In this post, we:
 
 Subtitle: [Github repository](https://github.com/kxcloud/gradient-routing)
 
-Gradient routing allows the user to configure **what** data (at the level of tokens, documents, or any other feature of the data) causes learning updates **where** in a neural network (parameters, activations, modules). In full generality, this configuration is achieved by assigning weights to every edge in the computational graph, for every data point. These weights are then multiplied by the gradients that get backpropagated through these edges. This is formalized in the paper.
+Gradient routing allows the user to configure **what** data (at the level of tokens, documents, or any other feature of the data) causes learning updates **where** in a neural network (parameters, activations, modules). In full generality, this configuration is achieved by assigning weights to every edge in the computational graph, for every data point. These weights are then multiplied by the gradients that get backpropagated through these edges. This algorithm is formalized in the paper.
 
 ![Three neural network backwards passes, each of which highlights a different gradient mask.](https://assets.turntrout.com/static/images/posts/gradient_masks.avif)
 
@@ -189,7 +189,7 @@ Naive training
 
 : We train a policy on all trajectories with +1 reinforcement for reaching a terminal state, unless we can observe that it is a `ghost`, in which case -1 is used.
 
-Besides being data-inefficient, data filtering is not guaranteed to converge to optimal behavior. This is because the presence of oversight is part of the environment, rather than being independent of it (as in [random labeling](https://ai-alignment.com/semi-supervised-reinforcement-learning-cf7d5375197f)). Indeed, we see this in [the learning curves at 10% oversight](https://arxiv.org/html/2410.04332v2#A6.F13). The naive training policy learns to exploit the limits of oversight, going to `ghost` 100% of the time when it is the closer destination and not under oversight. By contrast, the gradient-routed policy only walks into the `ghost` “by accident” when on the way to the `diamond`.
+Besides being data-inefficient, data filtering is not guaranteed to converge to optimal behavior. This lack of convergence is because the presence of oversight is part of the environment, rather than being independent of it (as in [random labeling](https://ai-alignment.com/semi-supervised-reinforcement-learning-cf7d5375197f)). Indeed, we see this in [the learning curves at 10% oversight](https://arxiv.org/html/2410.04332v2#A6.F13). The naive training policy learns to exploit the limits of oversight, going to `ghost` 100% of the time when it is the closer destination and not under oversight. By contrast, the gradient-routed policy only walks into the `ghost` “by accident” when on the way to the `diamond`.
 
 # Key takeaways
 
@@ -214,7 +214,7 @@ Gradient routing provides a principled way to avoid Goodharting. Instead of trai
 
 # Key limitations
 
-We still aren’t sure about best practices for applying gradient routing. In our unlearning experiments, careful hyperparameter tuning was needed to achieve localization without incurring a large hit to retain loss. There is a lot to tune: which tokens to route on, how much of the network to route to, what learning rates to use (e.g. whether to use negative learning rates), and regularization. This kind of tuning might be too costly to attempt for larger models. Furthermore, despite this tuning, we still see a meaningful hit to retain set performance when applying ERA. We think this hints at a flaw in our application of the method to unlearning, and are exploring improvements.
+We still aren’t sure about best practices for applying gradient routing. In our unlearning experiments, careful hyperparameter tuning was needed to achieve localization without incurring a large hit to retain loss. Many hyperparameters may require tuning: which tokens to route on, how much of the network to route to, what learning rates to use (e.g. whether to use negative learning rates), and regularization hyperparameters. This kind of tuning might be too costly to attempt for larger models. Furthermore, despite this tuning, we still see a meaningful hit to retain set performance when applying ERA. We think this hints at a flaw in our application of the method to unlearning, and are exploring improvements.
 
 Another challenge is that some capabilities are _entangled_, in the sense that there may be a strong inductive bias for a model to “bundle” their learning together. So, attempting to separate particular capabilities into submodules means a larger alignment tax. We saw this in MNIST (and to a lesser extent in our brief follow-up experiments on [CIFAR classification](https://arxiv.org/html/2410.04332v2#A2.SS1)), where inducing split representations for digits 0-4 vs. 5-9 required a heavily L1 penalty applied to the latent space. This isn’t a limitation of gradient routing per se. Rather, it is the [unsurprising](http://www.incompleteideas.net/IncIdeas/BitterLesson.html) fact that certain kinds of structure in neural nets are both (a) preferable to us and (b) unnatural with respect to neural net inductive biases, and hence costly to induce by any means. For example, it is not possible to induce a specialized latent space in an MNIST autoencoder merely by filtering the training data (see MNIST ablations, [table 2](https://arxiv.org/html/2410.04332v2#A2.T2), setting 8).
 
@@ -228,7 +228,7 @@ Conventional unlearning methods are more about suppressing behavior than unlearn
 
 ## Scalable oversight
 
-By exploiting the absorption property, perhaps we can purposefully allow “bad shards / motivational circuits” to form during training, only to later ablate them. That’s how we think of our toy RL results, at least-- don’t try to stop the model from going to ghost, just localize the tendency and ablate it! This provides a simplistic first example of how localization can scale limited labels to get good behavior. This is only the first step, though. We are excited to explore the implications of training methods that can sidestep Goodharting. In terms of our proposed technique, we wonder about the:
+By exploiting the absorption property, perhaps we can purposefully allow “bad shards / motivational circuits” to form during training, only to later ablate them. That’s how we think of our toy RL results, at least-- don’t try to stop the model from going to ghost, just localize the tendency and ablate it! This provides a simplistic first example of how localization can scale limited labels to get good behavior. Our demonstration is only the first step, though. We are excited to explore the implications of training methods that can sidestep Goodharting. In terms of our proposed technique, we wonder about the:
 
 Theory
 : What kinds of environments admit this kind of solution? See [the paper appendix: “Impacts of localizing capabilities vs. dispositions for scalable oversight”](https://arxiv.org/pdf/2410.04332#page=39) for related discussion.

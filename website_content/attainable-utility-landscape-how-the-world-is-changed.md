@@ -86,21 +86,21 @@ date_updated: 2025-01-30 09:30:36.233182
 
 Attainable utilities are calculated by winding your way through possibility-space, considering and discarding possibility after possibility to find the best plan you can. This frame is unifying.
 
-Sometimes you advantage one AU at the cost of another, moving through the state space towards the best possibilities for one goal and away from the best possibilities for another goal. This is _opportunity cost_.
+Sometimes you advantage one AU at the cost of another, moving through the state space towards the best possibilities for one goal and away from the best possibilities for another goal. This tradeoff is _opportunity cost_.
 
 ![](https://assets.turntrout.com/static/images/posts/z4o5j3F.avif)
 
-Sometimes you gain more control over the future: most of the best possibilities make use of a windfall of cash. Sometimes you act to preserve control over the future: most Tic-Tac-Toe goals involve not ending the game right away. This is _power_.
+Sometimes you gain more control over the future: most of the best possibilities make use of a windfall of cash. Sometimes you act to preserve control over the future: most Tic-Tac-Toe goals involve not ending the game right away. Otherwise put: preserving _power_.
 
 ![](https://assets.turntrout.com/static/images/posts/3HUBl5H.avif)
 
 Other people usually _objectively impact_ you by decreasing or increasing a bunch of your AUs (generally, by changing your power). This happens for an extremely wide range of goals because of the structure of the environment.
 
-Sometimes, the best possibilities are made unavailable or worsened only for goals much like yours. This is _value impact_.
+Sometimes, the best possibilities are made unavailable or worsened only for goals much like yours. This outcome involves a _value impact_ for your goals.
 
 ![](https://assets.turntrout.com/static/images/posts/Sj2LrqK.avif)
 
-Sometimes a bunch of the best possibilities go through the same part of the future: fast travel to random places on Earth usually involves the airport. This is _instrumental convergence_.
+Sometimes a bunch of the best possibilities go through the same part of the future: fast travel to random places on Earth usually involves the airport. This commonality is _instrumental convergence_.
 
 ![](https://assets.turntrout.com/static/images/posts/T8JS7kT.avif)
 

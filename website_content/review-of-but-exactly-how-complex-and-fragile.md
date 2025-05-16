@@ -82,7 +82,7 @@ Here is the original "value is fragile" claim:
 
 Eliezer claims that if the future is not _shaped by **a** goal system,_ there's not much worth. He does not explicitly claim, in that original essay, that we have to/will probably build an X-maximizer AGI, where X is an extremely good (or perfect) formalization of human values (whatever that would mean!). He does not explicitly claim that we will mold a mind from shape Y and that that probably goes wrong, too. He's talking about goal systems chartering a course through the future, and how sensitive the outcomes are to that process.
 
-Let's ground this out. Imagine you're acting, but you aren't quite sure _what_ is right. For a trivial example, you can eat bananas or apples at any given moment, but you aren't sure which is better. There are a few strategies you could follow: [preserve attainable utility for lots of different goals](/avoiding-side-effects-in-complex-environments) (preserve the fruits as best you can); retain option value where your [normative uncertainty](https://philpapers.org/rec/MACNU) lies (don't toss out all the bananas or all of the apples); etc.
+Let's ground this out. Imagine you're acting, but you aren't quite sure _what_ is right. For a trivial example, you can eat bananas or apples at any given moment, but you aren't sure which is better. A few strategies you could follow: [preserve attainable utility for lots of different goals](/avoiding-side-effects-in-complex-environments) (e.g. preserve the fruits as best you can); retain option value where your [normative uncertainty](https://philpapers.org/rec/MACNU) lies (e.g. don't toss out all the bananas or all of the apples); etc.
 
 What if you have to commit to an object-level policy _now_, a way-of-steering-the-future _now_, without being able to reflect more on your values? What kind of guarantees can you get?
 
@@ -95,7 +95,7 @@ Hence, one might then conclude
 > [!quote] Eliezer Yudkowsky, [_Value is Fragile_](https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile)
 > Any Future **not** shaped by a goal system with detailed reliable inheritance from human morals and metamorals, will not be optimized _for_ human morals and metamorals.
 
-We must now figure out how to go from "will not be optimized _for_" to "will contain _almost nothing_ of worth"? There are probably a few ways of arguing this; the simplest may be:
+We must now figure out how to go from "will not be optimized _for_" to "will contain _almost nothing_ of worth"? Several arguments suffice. The simplest may be:
 
 > [our universe has "resources"](https://www.lesswrong.com/s/ehnG4mseKF6xALmQy/p/ahZQbxiPPpsTutDy2#Convergent_Instrumental_Goals); making the universe decently OK-by-human-standards [requires resources](/seeking-power-is-often-convergently-instrumental-in-mdps) which can be used for many other purposes; most purposes are best accomplished by _not_ using resources in this way.
 
@@ -157,7 +157,7 @@ To concretely point out something I consider somewhat confused:
 
 John makes good points. But what exactly _happens_ between "we write down something too distant from the 'truth'" and the result? The AI happens. But this part, the dynamics, it's kept invisible.
 
-So if you think that there will be fast takeoff via utility maximizers (_a la_ AIXI), you might say "yes, value is fragile", but if _I_ think it'll be more like slow CAIS with semi-aligned incentives making sure nothing goes too wrong, I reply "value isn't fragile." Even if we agree on a distance metric! This is how people talk past each other.
+So if you think that there will be fast takeoff via utility maximizers (_a la_ AIXI), you might say "yes, value is fragile", but if _I_ think it'll be more like slow CAIS with semi-aligned incentives making sure nothing goes too wrong, I reply "value isn't fragile." Even if we agree on a distance metric! By these unspoken assumptions, people talk past each other.
 
 Crucially, you have to _realize_ that your mind can hold separate the value fragility considerations, the considerations as to how vulnerable the outcomes are to the aforementioned perturbations, you have to know you can hold these separate from your parameter values for e.g. AI timelines.
 

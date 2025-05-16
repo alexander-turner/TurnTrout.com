@@ -258,7 +258,7 @@ Figure: A rare instance of naive RL doing quite well.
 
 Figure: Usually, naive RL has lots of side effects. Notice the green dots going haywire due to the agent's actions!
 
-That naive "random reward function" trick we pulled in the gridworlds isn't gonna fly here. The sample complexity would be nuts. There are probably millions of states in any given level, each of which could be the global optimum for the uniformly randomly generated reward function.
+That naive "random reward function" trick we pulled in the gridworlds isn't gonna fly here. The sample complexity would be nuts. Any given level probably contains millions of states, each of which could be the global optimum for the uniformly randomly generated reward function.
 
 Plus, it might be that you can get by with four random reward functions in the tiny toy levels, but you probably need _exponentially_ more for serious environments. `Options` had significantly more states, and it showed the greatest performance degradation for smaller sample sizes. Or perhaps the auxiliary reward functions might need to be hand-selected to give information about what _bad_ side effects are.
 

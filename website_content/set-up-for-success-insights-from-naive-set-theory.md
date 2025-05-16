@@ -57,7 +57,7 @@ I am proud of my time-to-completion for this book: just over a week, working aro
 
 Functions $f:X\to Y$ are _just_ **static sets** of ordered pairs $\{(x,f(x)):x \in X\}$ . They are _not_ dynamic indexing functions, they do _not_ perform efficient lookup, please do _not_ waste an hour of your life trying to figure out how you could do such a thing within the simple machinery afforded by set theory up to that point.
 
-[Nate talked about this failure mode](https://www.lesswrong.com/posts/uX3HjXo6BWos3Zgy5/the-mechanics-of-my-recent-productivity) - how skipping over just one word a few chapters prior can cause you to waste hours. During my confusion, I knew this was probably the case, but I still couldn't manage to immediately overcome my intuitions of what a function should be. This is one reason I'm open to working through the [MIRI Research Guide](https://intelligence.org/research-guide/#two) with others.
+[Nate talked about this failure mode](https://www.lesswrong.com/posts/uX3HjXo6BWos3Zgy5/the-mechanics-of-my-recent-productivity) - how skipping over just one word a few chapters prior can cause you to waste hours. During my confusion, I knew this was probably the case, but I still couldn't manage to immediately overcome my intuitions of what a function should be. I'd like to avoid wasting time like this - just one reason I'm open to working through the [MIRI Research Guide](https://intelligence.org/research-guide/#two) with others.
 
 ## Families
 

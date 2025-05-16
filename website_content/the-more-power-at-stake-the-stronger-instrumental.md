@@ -155,7 +155,7 @@ Last time, in addition to the "[how do combinatorics work?](/environmental-struc
 >
 > - When I say "most objectives seek power in this situation", that means _in that situation_- it doesn't mean that most objectives take the power-seeking move in most situations in that environment
 
-Let's take care of that last one. I was actually being too cautious, since the existing results already show us how to reason across multiple situations. The reason is simple: suppose we use my results to prove that when the agent maximizes average per-timestep reward, it's strictly optimal for at least 99.99% of objective variants to stay alive. This is because the death states are strictly suboptimal for these variants. For all of these variants, _no matter the situation_ the agent finds itself in, it'll be optimal to try to avoid the strictly suboptimal death states.
+Let's take care of that last one. I was actually being too cautious, since the existing results already show us how to reason across multiple situations. The reason is simple. Suppose we use my results to prove that when the agent maximizes average per-timestep reward, it's strictly optimal for at least 99.99% of objective variants to stay alive. For all of these variants, _no matter the situation_ the agent finds itself in, it'll be optimal to try to avoid strictly suboptimal death states.
 
 This doesn't mean that these variants always incentivize moves which are formally POWER-seeking, but it does mean that we can sometimes prove what optimal policies tend to do across a range of situations.
 

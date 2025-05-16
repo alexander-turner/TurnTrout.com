@@ -62,7 +62,9 @@ I can't usefully write a letter to my past self, so let me write a letter to you
 
 # Make Sure You Remember The Content
 
-TL;DR: use a spaced repetition system like [_Anki_](https://apps.ankiweb.net/). Put in cards for key concepts and practice using the concepts. Review the cards every day without fail. This is the most important piece of advice.
+Subtitle: The most important piece of advice.
+
+TL;DR: use a spaced repetition system like [_Anki_](https://apps.ankiweb.net/). Put in cards for key concepts and practice using the concepts. Review the cards every day without fail.
 
 ---
 

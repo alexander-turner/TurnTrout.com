@@ -70,7 +70,7 @@ In the next section, I'll discuss the counting argument. In this one, I want to 
 > [!quote] Nick Bostrom's <span class="book-citation">Superintelligence</span>, page 253
 > A range of different methods can be used to solve "reinforcement-learning problems," but they typically involve creating a system that seeks to maximize a reward signal. This has an inherent tendency to produce the wireheading failure mode when the system becomes more intelligent. Reinforcement learning therefore looks unpromising.
 
-To be blunt, this is nonsense. I have long meditated on the nature of "reward functions" during [my PhD in RL theory](https://arxiv.org/abs/2206.11831). [In the most useful and modern RL approaches, "reward" is a tool used to control the strength of parameter updates to the network.](https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target)[^RL] It is simply _not true_ that "\[RL approaches] typically involve creating a system that seeks to maximize a reward signal." There is not a single case where we have used RL to train an artificial system which intentionally "seeks to maximize" reward.[^RLauth] Bostrom spends a few pages making this mistake at great length.[^support]
+To be blunt, this is nonsense. I have long meditated on the nature of "reward functions" during [my PhD in RL theory](https://arxiv.org/abs/2206.11831). [In the most useful and modern RL approaches, "reward" is a tool used to control the strength of parameter updates to the network.](https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target)[^RL] It is simply _not true_ that "\[RL approaches] typically involve creating a system that seeks to maximize a reward signal." We have never ever used RL to train an artificial system which intentionally "seeks to maximize" reward.[^RLauth] Bostrom spends a few pages making this mistake at great length.[^support]
 [^RL]: Here's a summary of the technical argument. The actual PPO+Adam update equations show that the "reward" is used to, basically, control the learning rate on each (state, action) datapoint. That's roughly[^rough] what the math says. We also have a bunch of examples of using this algorithm where the trained policy's behavior makes the reward number go up on its trajectories. Completely separately and with no empirical or theoretical justification given, RL papers have a convention of _including the English words_ "the point of RL is to train agents to maximize reward", which often gets further mutated into e.g. Bostrom's argument for wireheading ("they will probably seek to maximize reward"). That's simply unsupported by the data and so an outrageous claim.
 
 [^rough]: Since I wrote this memo for a somewhat non-technical audience, I didn't want to get into the (important) distinction between a learning rate which is proportional to advantage (as in the real PPO equations) and a learning rate which is proportional to reward (which I talked about above).
@@ -116,6 +116,7 @@ In this essay, I'll address some of the arguments for "deceptive alignment" or "
 
 ## The counting argument for AI "scheming" provides \~0 evidence
 
+<!-- vale off -->
 > [!quote] Quote from a draft of [Counting arguments provide no evidence for AI doom](https://www.lesswrong.com/posts/YsFZF3K9tuzbfrLxo/counting-arguments-provide-no-evidence-for-ai-doom)
 > Most AI doom scenarios posit that future AIs will engage in **scheming**— planning to escape, gain power, and pursue ulterior motives while deceiving us into thinking they are aligned with our interests. The worry is that if a schemer escapes, it may seek world domination to ensure humans do not interfere with its plans, whatever they may be.
 >
@@ -148,20 +149,21 @@ In this essay, I'll address some of the arguments for "deceptive alignment" or "
 > Let's see what the overfitting argument predicts in a simple real-world example from [Caballero et al. (2022)](https://arxiv.org/abs/2210.14891), where a neural network is trained to solve 4-digit addition problems. There are 10,000<sup>2</sup> = 100,000,000 possible pairs of input numbers, and 19,999 possible sums, for a total of 19,999<sup>100,000,000</sup> ≈ 1.1 × 10<sup>430,100,828</sup> possible input-output mappings. They used a training dataset of 992 problems, so there are therefore 19,999<sup>100,000,000 - 992</sup> ≈ 2.75 × 10<sup>430,096,561</sup> functions that achieve perfect training accuracy.
 >
 > The proportion with greater than 50% test accuracy is literally too small to compute using standard high-precision math tools. Hence, this counting argument predicts virtually all networks trained on this problem should massively overfit— contradicting the empirical result that networks _do_ generalize to the test set.
+<!--vale on -->
 
 We are not just comparing "counting schemers" to another similar-_seeming_ argument ("counting memorizers"). The arguments not only have the same _logical structure_, but they also share the same _mechanism_: "Because most functions have property X, SGD will find something with X." Therefore, by pointing out that the memorization argument fails, we see that _this structure of argument is not a sound way of predicting deep learning results_.
 
 So, you can't just "count" how many functions have property X and then conclude SGD will probably produce a thing with X.[^inappro] This argument is invalid for generalization in the same way it's invalid for AI alignment (also a question of generalization!). The argument proves too much and is invalid, therefore providing \~0 evidence.
 [^inappro]: I'm kind of an expert on irrelevant counting arguments. I wrote two papers on them! [Optimal policies tend to seek power](https://arxiv.org/abs/1912.01683) and [Parametrically retargetable decision-makers tend to seek power](https://arxiv.org/abs/2206.13477).
 
-This section doesn't prove that scheming is impossible, it just dismantles a common support for the claim. There are other arguments offered as evidence of AI scheming, including "simplicity" arguments. Or instead of counting _functions_, we count _network parameterizations_.[^count]
+This section doesn't prove that scheming is impossible, it just dismantles a common support for the claim. Other arguments are sometimes offered as evidence of AI scheming, including "simplicity" arguments. Or instead of counting _functions_, we count _network parameterizations_.[^count]
 [^count]: [Some](https://arxiv.org/abs/2006.15191) [evidence](https://openreview.net/forum?id=QC10RmRbZy9) suggests that "measure in parameter-space" is a good way of approximating P(SGD finds the given function). This supports the idea that "counting arguments over parameterizations" are far more appropriate than "counting arguments over functions."
 
 ### Recovering the counting argument?
 
 I think a recovered argument will need to address (some close proxy of) "what volume of parameter-space leads to scheming vs not?", which is a much harder task than counting functions. You have to not just think about "what does this system do?", but "how many ways can this function be implemented?". (Don't forget to take into account the architecture's [internal symmetries!)](https://arxiv.org/pdf/2305.17017.pdf)
 
-**Turns out that it's kinda hard to zero-shot predict model generalization on unknown future architectures and tasks.** There are good reasons why there's a whole ML subfield which studies inductive biases and tries to understand how and why they work.
+**Turns out that it's kinda hard to zero-shot predict model generalization on unknown future architectures and tasks.** That difficulty is part of why there's a whole ML subfield which studies inductive biases and tries to understand how and why they work.
 
 If we _actually_ had the precision and maturity of understanding to predict this "volume" question, we'd probably (but not definitely) be able to make fundamental contributions to DL generalization theory + inductive bias research. But a major alignment concern is that we _don't know_ what happens when we train future models. I think "simplicity arguments" try to fill this gap, but I'm not going to address them in this article.
 
@@ -206,6 +208,6 @@ I think it's reasonable to still regulate or standardize "IF we observe autonomo
 
 ## Conclusion
 
-Recent years have seen a healthy injection of empiricism and data-driven methodologies. [This is awesome because there are so many interesting questions we're getting data on!](https://www.lesswrong.com/posts/j2W3zs7KTZXt2Wzah/how-do-you-feel-about-lesswrong-these-days-open-feedback?commentId=fqCY7PWdjKTMuZLui)
+Recent years have seen a healthy injection of empiricism and data-driven methodology. [I think that's awesome because there are so many interesting questions we're getting data on!](https://www.lesswrong.com/posts/j2W3zs7KTZXt2Wzah/how-do-you-feel-about-lesswrong-these-days-open-feedback?commentId=fqCY7PWdjKTMuZLui)
 
-AI's definitely going to be a big deal. Many activists and researchers are proposing sweeping legislative action. I don't know what the perfect policy is, but I know it isn't gonna be downstream of (IMO) total bogus, and we should reckon with that as soon as possible. I find that it takes _serious effort_ to root out the ingrained ways of thinking, but in my experience, it can be done.
+AI is definitely going to be a big deal. Many activists and researchers are proposing sweeping legislative action. I don't know what the perfect policy is, but I know it isn't gonna be downstream of (IMO) total bogus, and we should reckon with that as soon as possible. I find that it takes _serious effort_ to root out the ingrained ways of thinking, but in my experience, it can be done.

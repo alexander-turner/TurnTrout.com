@@ -100,7 +100,7 @@ I find it strange that Euclid got so far by axiomatizing informal notions withou
 
 ![](https://assets.turntrout.com/static/images/posts/xSipa0p.avif)
 
-This says: suppose you draw two parallel lines, and then make a dash of length 2 on each line. Then, make another dash of length 2 on the upper line. The two parallelograms so defined have equal area. This is clarified in the next theorem.
+This says: suppose you draw two parallel lines, and then make a dash of length 2 on each line. Then, make another dash of length 2 on the upper line. The two parallelograms so defined have equal area, as shown by the next theorem:
 
 ![](https://assets.turntrout.com/static/images/posts/H5ZOo2I.avif)
 

@@ -70,7 +70,7 @@ The representativeness heuristic can be understood as highly salient concept act
 
 > Intuitively, thinking of Linda as a feminist bank teller "feels" more realistic than thinking of her as only a bank teller.
 
-The case for confirmation bias seems to be a little more involved. We had evolutionary pressure to win arguments, which might mean our cognitive search aims to _find_ supportive arguments and _avoid_ even subconsciously signaling that we are aware of the existence of counterarguments. This means that those supportive arguments _feel_ salient, and we (perhaps by "design") get to feel unbiased - we aren't consciously discarding evidence, we're just following our normal search/reasoning process! This is [what our search algorithm feels like from the inside.](https://www.lesswrong.com/posts/yA4gF5KrboK2m2Xu7/how-an-algorithm-feels-from-inside)
+The case for confirmation bias seems to be a little more involved. We had evolutionary pressure to win arguments, which might mean our cognitive search aims to _find_ supportive arguments and _avoid_ even subconsciously signaling that we are aware of the existence of counterarguments. This means that those supportive arguments _feel_ salient, and we (perhaps by "design") get to feel unbiased - we aren't consciously discarding evidence, we're just following our normal search/reasoning process! This experience shows [what our search algorithm feels like from the inside.](https://www.lesswrong.com/posts/yA4gF5KrboK2m2Xu7/how-an-algorithm-feels-from-inside)
 
 ## Making heads and tails of probabilistic reasoning
 

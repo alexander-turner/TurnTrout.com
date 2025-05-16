@@ -57,10 +57,12 @@ So there's something compelling about Senku and Taiju being frozen as statues fo
 
 When you're a statue, you know you're sitting by as horrible things happen to the world you care about. You can't do anything about it because you're made of stone. The world cannot touch you, and you cannot touch it. Your external senses are blank and you're stuck in your head.
 
+<!-- vale off -->
 > [!quote] Senku, to his friend Taiju
 > Subtitle: Episode 1
 >
 > I was ten billion percent certain that you were alive. There is no way a guy who was intent on confessing to Yuzuriha would give in after just a few thousand years. You aren't that weak.
+<!-- vale on -->
 
 In 2023, I became seriously depressed. I did all of the right things:
 

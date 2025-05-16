@@ -56,7 +56,7 @@ Bengio even recently lent a reasoned voice to a [debate on instrumental converge
 
 I think the book will greatly help AI professionals understand key arguments, avoid classic missteps, and appreciate the serious challenge humanity faces. Russell straightforwardly debunks common objections, writing with both candor and charm.
 
-I must admit, it's great to see such a prominent debunking. I still remember, early in my concern about alignment, hearing one professional respond to the entire idea of being concerned about AGI with a lazy _ad hominem_ dismissal. Like, hello? This is our future we're talking about!
+I must admit, it's great to see such a prominent debunking. I still remember, early in my concern about alignment, hearing one professional respond to the entire idea of being concerned about AGI with a lazy _ad hominem_ dismissal. Like, hello? We're talking about our future!
 
 Russell realizes that most people don't intentionally argue in bad faith; he structures his arguments with the understanding and charity required to ease the difficulty of changing one's mind.[^polite]
 

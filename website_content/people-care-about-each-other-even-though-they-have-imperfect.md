@@ -56,7 +56,7 @@ To explore these points, I dialogue with my model of Eliezer.
 
 # Goodhart's Curse
 
-Suppose you win a raffle and get to choose one of $n$ prizes. The first prize is a book with true value 10, but your evaluation of it is noisy (drawn from the Gaussian $\mathcal{N}(10,1)$ with standard deviation 1). The other $n-1$ prizes are widgets with true value 1, but your evaluation is more noisy (drawn from $\mathcal{N}(1,16)$ with standard deviation 4). As _n_ increases, you’re more probable to select a widget and lose out on $10-1=9$ utility. By considering so many options, you’re selecting against your own ability to judge prizes by implicitly selecting for high noise. You end up “optimizing so hard” that you delude yourself. This is the _Optimizer’s Curse_.
+Suppose you win a raffle and get to choose one of $n$ prizes. The first prize is a book with true value 10, but your evaluation of it is noisy (drawn from the Gaussian $\mathcal{N}(10,1)$ with standard deviation 1). The other $n-1$ prizes are widgets with true value 1, but your evaluation is more noisy (drawn from $\mathcal{N}(1,16)$ with standard deviation 4). As _n_ increases, you’re more probable to select a widget and lose out on $10-1=9$ utility. By considering so many options, you’re selecting against your own ability to judge prizes by implicitly selecting for high noise. You end up “optimizing so hard” that you delude yourself -  the _Optimizer’s Curse_.
 
 You’re probably already familiar with Goodhart’s Law, which applies when an agent optimizes a proxy _U_ (e.g. how many nails are produced) for the true quantity _V_ which we value (e.g. how profitable the nail factory is).
 

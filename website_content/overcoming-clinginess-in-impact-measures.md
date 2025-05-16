@@ -132,7 +132,7 @@ Figure: Yup, this is about where we're at in alignment research right now.
 
 ### One-off approach
 
-$\mathcal{M}$ should realize that a lot more effects happen if it presses the left button, and should penalize that plan by the difference. This is the aforementioned naive approach: $\mathcal{M}$ penalizes things that wouldn't have happened if it had done nothing. For the one-turn case, this clearly isolates both the immediate and long-term impacts of $\mathcal{M}$'s actions.
+$\mathcal{M}$ should realize that a lot more effects happen if it presses the left button, and should penalize that plan by the difference. This approach is the aforementioned naive approach: $\mathcal{M}$ penalizes things that wouldn't have happened if it had done nothing. For the one-turn case, this clearly isolates both the immediate and long-term impacts of $\mathcal{M}$'s actions.
 
 #### Effects penalized by one-off
 

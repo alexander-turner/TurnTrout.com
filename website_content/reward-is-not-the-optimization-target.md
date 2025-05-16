@@ -76,13 +76,13 @@ After work, you grab pizza with your friends. You eat a bite. The taste releases
 - “If the pizza is in front of me and it’s mine and I’m hungry, raise the slice to my mouth” and
 - “If the slice is near my mouth and I’m not already chewing, take a bite.”
 
-Many of these thoughts will be judged responsible by credit assignment, and thereby become more likely to trigger in the future. This is what _reinforcement_ learning is all about—the reward is the _reinforcer_ of those things which came before it and the _creator_ of new lines of cognition entirely (e.g. anglicized as "I shouldn't buy pizza when I'm mostly full"). The reward chisels cognition which increases the probability of the reward accruing next time.
+Many of these thoughts will be judged responsible by credit assignment, and thereby become more likely to trigger in the future. This process is what _reinforcement_ learning is all about—the reward is the _reinforcer_ of those things which came before it and the _creator_ of new lines of cognition entirely (e.g. anglicized as "I shouldn't buy pizza when I'm mostly full"). The reward chisels cognition which increases the probability of the reward accruing next time.
 
 Importantly, reward does not automatically spawn thoughts _about_ reward, and reinforce those reward-focused thoughts! Just because common English endows “reward” with suggestive pleasurable connotations, that [does not mean that](https://www.readthesequences.com/No-Universally-Compelling-Arguments) an RL agent will _terminally value_ reward!
 
 What kinds of people (or non-tabular agents more generally) will become reward optimizers, such that the agent ends up terminally caring about reward (and little else)? Reconsider the pizza situation, but instead suppose you were thinking thoughts like “this pizza is going to be so rewarding” and “in this situation, eating pizza sure will activate my reward circuitry.”
 
-You eat the pizza, triggering reward, triggering credit assignment, which correctly locates these reward-focused thoughts as contributing to the release of reward. Therefore, in the future, you will more often take actions because you think they will produce reward, and so you will become more of the kind of person who intrinsically cares about reward. This is a path[^4] to reward-optimization and wireheading.
+You eat the pizza, triggering reward, triggering credit assignment, which correctly locates these reward-focused thoughts as contributing to the release of reward. Therefore, in the future, you will more often take actions because you think they will produce reward, and so you will become more of the kind of person who intrinsically cares about reward. These updates will eventually lead[^4] towards reward-optimization and wireheading.
 
 While it's possible to have activations on "pizza consumption predicted to be rewarding" and "execute `motor-subroutine-#51241`" and then have credit assignment hook these up into a new motivational circuit, **this is only** _**one possible direction**_ **of value formation in the agent**. Seemingly, the most direct way for an agent to become _more_ of a reward optimizer is to _already_ make decisions motivated by reward, and then have credit assignment further generalize that decision-making.
 
@@ -172,7 +172,7 @@ I also suggest that you **mechanistically model RL agents as executing behaviors
 
 In my view, reward's proper role isn't to encode an objective, but a _reinforcement schedule_, such that the right kinds of computations get reinforced within the AI's mind.
 
-_Edit 11/15/22_: The original version of this post talked about how reward reinforces antecedent computations in policy gradient approaches. This is not true in general. I edited the post to instead talk about how reward is used to upweight certain kinds of actions in certain kinds of situations, and therefore reward _chisels cognitive grooves into agents_.
+_Edit 11/15/22_: The original version of this post talked about how, in policy gradient approaches, reward reinforces _antecedent computations_. However, reward's role is _not_ generally limited to merely reinforcing existing computations. I edited the post to instead talk about how reward is used to upweight certain kinds of actions in certain kinds of situations, and therefore reward _chisels cognitive grooves into agents_.
 
 # Appendix: The field of RL thinks reward is the optimization target
 

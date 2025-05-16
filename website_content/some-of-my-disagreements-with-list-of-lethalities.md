@@ -153,7 +153,7 @@ First, I want to say: [type error: _loss function_ not of type _goal_](/four-usa
 >
 > I think that talking about loss functions being "aligned" encourages bad habits of thought at best, and is nonsensical at worst. I think it makes way more sense to say how you want the agent to think and then act (e.g. "write good novels"—the _training goal_, in Evan Hubinger's [training stories framework](https://www.lesswrong.com/posts/FDJnZt8Ks2djouQTZ/how-do-we-become-confident-in-the-safety-of-a-machine)) and why you think you can use a given loss function $\ell_\text{novel}$ to produce that cognition in the agent (the _training rationale_).
 
-Second, we want to train a network which ends up doing what we want. There are several strategies to achieve this.
+Second, we want to train a network which ends up doing what we want. Many strategies might achieve this goal.
 
 It might shake out that, as an _empirical fact_, the best way to spend an additional increment of alignment research is to make the loss function "represent what you want" in some way. For example, you might more accurately spot flaws in AI-generated alignment proposals, and train the AI on that more accurate signal.
 
@@ -208,7 +208,7 @@ Why do we need new learning algorithms? The point of reward, on a mechanistic ba
 >
 > **Reinforcement learning:** A range of different methods can be used to solve “reinforcement-learning problems,” but they typically involve creating a system that seeks to maximize a reward signal. This has an inherent tendency to produce the wireheading failure mode when the system becomes more intelligent. Reinforcement learning therefore looks unpromising.
 
-Historical reasoning about RL seems quite bad. This is a prime example. In one fell swoop, in several pages of mistaken exposition, Superintelligence rules out [the single known method](/against-inner-outer-alignment#III-Outer-inner-just-isn-t-how-alignment-works-in-people) for producing human-compatible values. _We should forewarn new alignment researchers of these deep confusions before recommending this book._
+Historical reasoning about RL seems quite bad. This excerpt is a prime example. In one fell swoop, in several pages of mistaken exposition, Superintelligence rules out [the single known method](/against-inner-outer-alignment#III-Outer-inner-just-isn-t-how-alignment-works-in-people) for producing human-compatible values. _We should forewarn new alignment researchers of these deep confusions before recommending this book._
 
 > [!thanks]
 > Thanks to Drake Thomas, ChatGPT, Ulisse Mini, and Peli Grietzer for feedback on this post.

@@ -48,6 +48,7 @@ date_updated: 2024-11-22 20:04:30.137574
 
 
 
+> [!quote]
 > In sciences such as [psychology](https://en.wikipedia.org/wiki/Psychology) and [sociology](https://en.wikipedia.org/wiki/Sociology), internalization involves the integration of attitudes, values, standards and the opinions of others into one's own identity or sense of self.
 
 [Internal Double Crux](https://www.lesswrong.com/posts/mQmx4kQQtHeBip9ZC/internal-double-crux) is one of the most important skills I've ever learned. In the last two weeks, I've solved some serious, long-standing problems with IDC (permanently, as far as I can tell, and often in less than _5 minutes_), a small sample of which includes:
@@ -70,8 +71,12 @@ I feel great, and I love it. Actually, most of the time I don't feel amazingly c
 
 _Note_: this entire exchange took place internally over the course of 2 minutes, via a 50-50 mix of words and emotions. Unpacking it took significantly longer.
 
+> [!warning] I later lost the ability to use this skill
+> Within a year or two of this post, I could no longer resolve internal conflicts using internal double crux. I don't know why.
+
 # Dialogue
 
+> [!quote] My starting thought
 > If I don't get this CHAI internship, I'm going to feel terrible, because that means I don't have much promise as an AI safety researcher.
 
 Realist
@@ -80,18 +85,22 @@ Realist
 Fire
 : I agree that not getting the internship would be evidence that there are others who are more promising _right now_. I think, however, that you're missing a few key points here:
 
-: - We've made important connections at CHAI / MIRI.
-: - Your main point is a total buckets error. There is no ontologically basic and immutable "promising-individual" property. Granted, there are biological and environmental factors outside our control here, but I think we score high _enough_ on these metrics to be able to succeed through effort, passion, and increased mastery of instrumental rationality.
-: - We've been studying AI safety for just a few months (in our free time, no less); most of the studying has been dedicated towards building up foundational skills (and not reviewing the literature itself). The applicants who are chosen may have a year or more of familiarity with the literature / relevant math on us (or perhaps not), and this should be included in the model.
-: - One of the main sticking points raised during my final interview has since been fixed, but I couldn't signal that afterwards without seeming overbearing.
+<dd>
+<ul>
+<li>We’ve made important connections at <abbr class="small-caps">chai</abbr> and <abbr class="small-caps">miri</abbr>.</li>
+<li>Your main point is a total buckets error. Being “promising” is not an ontologically basic or immutable property. Granted, there are biological and environmental factors outside our control here, but I think we score high <em>enough</em> on these metrics to be able to succeed through effort, passion, and increased mastery of instrumental rationality.</li>
+<li>We’ve been studying AI safety for just a few months (in our free time, no less); most of the studying has been dedicated towards building up foundational skills (and not reviewing the literature itself). The applicants who are chosen may have a year or more of familiarity with the literature / relevant math on us (or perhaps not), and this should be included in the model.</li>
+<li>One of the main sticking points raised during my final interview has since been fixed, but I couldn’t signal that afterwards without seeming overbearing.</li>
+</ul>
+</dd>
 
-: I guess the main thrust here is that although that would be a data point against our being able to have a tectonic impact _right now_, we simply don't have enough evidence to responsibly generalize. I'm worried that you're overly pessimistic, and it's pulling down our chances of _actually_ being able to _do something_.
+<dd>I guess the main thrust here is that although that would be a data point against our being able to have a tectonic impact <em>right now</em>, we simply don't have enough evidence to responsibly generalize. I'm worried that you're overly pessimistic, and it's pulling down our chances of <em>actually</em> being able to <em>do something</em>.</dd>
 
 Realist
 : I definitely hear you that we've made lots of great progress, but is it enough? I'm so nervous about timelines, and the universe isn't magically calibrated to what we can do now.[^crux] We either succeed, or we don't - and pay the price. Do we really have time to tolerate _almost_ being extraordinary? How is that going to do the impossible? I'm scared.
 
 Fire
-: Yup. I'm definitely scared too (in a sense), but also excited. This is a great chance to learn, grow, have fun, and work with people we really admire and appreciate! Let's "detach the grim-o-meter", since that's better than being worried and insecure about whether we're doing enough.
+: Yup. I'm definitely scared too (in a sense), but also excited. This journey is a great chance to learn, grow, have fun, and work with people we really admire and appreciate! Let's "detach the grim-o-meter", since that's better than being worried and insecure about whether we're doing enough.
 
 Realist
 : I agree that detaching the grim-o-meter is the right thing to do, but... it makes me feel _guilty_.[^crux] I guess there's a part of me that believes that feeling bad when things could go really wrong is important.
@@ -104,7 +113,5 @@ Realist
 
 Fire
 : Hell yeah it will! What are we optimizing for here - an arbitrary deontological rule about feeling bad, or the actual world? We aren't discarding morality – we're discarding the idea that we should worry when the world is in a probably precarious position. We'll still fight just as hard.
-
-<hr/>
 
 [^crux]: Notice how related cruxes can (and should) be resolved in the same session. Resolution cannot happen if any part of you isn't _fully_ on board with whatever agreement you've come to - this feels like a small emptiness in the pit of my stomach, in my experience.

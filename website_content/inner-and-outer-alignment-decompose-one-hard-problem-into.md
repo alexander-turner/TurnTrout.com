@@ -153,7 +153,7 @@ On the other hand, agents which terminally value diamonds will make decisions on
 > **Consider what the actor cares about** **in this setup. The actor does not care about diamond production. The actor cares about high evaluations from the objective function. These two goals (instrumentally) align if the only actor-imaginable way to get maximal evaluation is to make diamonds.[^important]**
 > [^important]: This point is important under my current views, but it strikes me as the kind of concept which may require its own post. I’m not sure I know how to communicate this point quickly and reliably at this point in time, but this essay has languished in my drafts for long enough. For now, refer to [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans) and [Alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness) for more intuitions.
 >
-> **If you inner-align the agent to the evaluative output of a Platonic outer objective, you have guaranteed the agent won’t make decisions on the same basis that you do.** This is because you don’t, on a mechanistic level, terminally value high outputs from that outer objective. This agent will be aligned with you only if you achieve “objective robustness”—i.e. force the agent to make diamonds in order to get high evaluations by the outer objective.
+> **If you inner-align the agent to the evaluative output of a Platonic outer objective, you have guaranteed the agent won’t make decisions on the same basis that you do.** After all, you do not (on a mechanistic level) terminally value high outputs from that outer objective. This agent will be aligned with you only if you achieve “objective robustness”—i.e. force the agent to make diamonds in order to get high evaluations by the outer objective.
 
 > [!quote] [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans)
 >
@@ -370,7 +370,7 @@ As I have argued, this does not seem to be the world we live in. Therefore, sinc
 Communication is hard. Understanding is hard. Even if I fully understood what other people are trying to do (I don't), I'd still not have space to reply to every viewpoint. I’m still going to say what I think, do my best, and be honest. I expect to be importantly right, which is why I’m sharing this essay. As it stands, I’m worried about much of the alignment field and the concepts being used.
 
 **Alex’s model of an outer alignment enjoyer**
-: Outer / inner alignment is cool because it lets us decompose “what we want the agent to care about” and “how we get the agent to care about that.” This is a natural problem decomposition and lets us allocate the agent’s motivations to the part we have more specification-level control over (i.e. its reward function).
+: Outer / inner alignment is cool because it lets us decompose “what we want the agent to care about” and “how we get the agent to care about that.” This problem decomposition is natural and lets us allocate the agent’s motivations to the part we have more specification-level control over (e.g. its reward function).
 
 **Alex**
 : I don’t think it makes sense to design an agent to have an actor/grader motivational structure. [As I’ve discussed](/dont-design-agents-which-exploit-adversarial-inputs), [I think those design patterns are full of landmines](/dont-align-agents-to-evaluations-of-plans).

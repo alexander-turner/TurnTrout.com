@@ -177,7 +177,7 @@ Let's dive into concrete detail. Here's a [story](https://www.lesswrong.com/post
 >
 > <hr/>
 >
-> Value-child gets dropped off at school. He recognizes his friends (via high-level cortical activations previously formed through self-supervised learning) and waves at them (friend-shard was left intact). They rush over to greet him. They start talking about Fortnite. Value-child cringes slightly as he predicts he will be more distracted later at school and, increasingly, put in a mental context where his game-shard takes over decision-making, which is reflectively predicted to lead to him daydreaming during class. This is a negative update on the primary shard-relevant features for the day.
+> Value-child gets dropped off at school. He recognizes his friends (via high-level cortical activations previously formed through self-supervised learning) and waves at them (friend-shard was left intact). They rush over to greet him. They start talking about Fortnite. Value-child cringes slightly as he predicts he will be more distracted later at school and, increasingly, put in a mental context where his game-shard takes over decision-making. If his game-shard takes over his decision-making, he predicts that he will daydream during class. Daydreaming would reduce the primary hard-working-shard-relevant features for the day, like "predicted amount of information learned."
 >
 > His general-purpose planning machinery generates an example hardworking-shard-desired terminal state: Paying rapt attention during Mr. Buck’s math class (his first class today). He currently predicts that while he is in Mr. Buck’s class later, he will still be somewhat distracted by residual game-related cognition causing him to loop into reward-predicted self-reinforcing thoughts.
 >
@@ -311,6 +311,7 @@ In private communication (reproduced with permission), `tailcalled` wrote:
 
 I replied:
 
+<!-- vale off -->
 > [!quote]
 >
 > Yeah, I agree that he could be mistaken and take a dumb course of action. This is indeed an upwards evaluation error, so to speak. It's not that I think e.g. shard-agents can freely avoid serious upwards errors, it's that they aren't _seeking them out on purpose_. As I wrote to Daniel K [in a recent comment](https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem?commentId=3BFBhgQeHzBvJmjzi):
@@ -318,6 +319,7 @@ I replied:
 > > One of the main threads is [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs). The point isn't that people can't or don't fall victim to plans which, by virtue of spurious appeal to a person's value shards, cause the person to unwisely pursue the plan. The point here is that (I claim) intelligent people convergently want to avoid this happening to them.
 > >
 > > A diamond-shard will not try to find adversarial inputs to itself. That was my original point, and I think it stands.
+<!-- vale on -->
 
 Furthermore, I think that, in systems with multiple optimizers (e.g. shards), some optimizers can feed the _other optimizers_ adversarial inputs. (Adversarial inputs are most common in the presence of an adversary, after all!)
 
@@ -335,11 +337,13 @@ So, even in value-child, adversarial inputs can still crop up, but via a differe
 
 Abram Demski writes about Everitt et al.'s [_Self-Modification of Policy and Utility Function in Rational Agents_](https://arxiv.org/abs/1605.03142):
 
+<!-- vale off -->
 > [!quote] [Stable Pointers to Value: An Agent Embedded in Its Own Utility Function](https://www.alignmentforum.org/posts/5bd75cc58225bf06703754b3/stable-pointers-to-value-an-agent-embedded-in-its-own-utility-function)
 >
 > As a first example, consider the wireheading problem for AIXI-like agents in the case of a fixed utility function which we know how to estimate from sense data. As discussed in Daniel Dewey's [Learning What to Value](https://intelligence.org/files/LearningValue.pdf) and other places, if you try to implement this by putting the utility calculation in a box which rewards an AIXI-like RL agent, the agent can eventually learn to modify or remove the box, and happily does so if it can get more reward by doing so. This is because the RL agent predicts, and attempts to maximize, reward received. If it understands that it can modify the reward-giving box to get more reward, it will.
 >
 > We can fix this problem by integrating the same reward box with the agent in a better way. Rather than having the RL agent learn what the output of the box will be and plan to maximize the output of the box, we use the box _directly_ to evaluate possible futures, and have the agent plan to maximize that evaluation. Now, if the agent considers modifying the box, it evaluates that future _with the current box_. The box as currently configured sees no advantage to such tampering. This is called an observation-utility maximizer (to contrast it with reinforcement learning). Daniel Dewey goes on to show that we can incorporate uncertainty about the utility function into observation-utility maximizers, recovering the kind of "learning what is being rewarded" that RL agents were supposed to provide\[...\]
+<!-- vale on -->
 
 The point of this post isn't _just_ that e.g. value-child evaluates the future with his own values, as opposed to putting the utility calculation in a box. I'm not describing a failure of tampering with the grader. I'm describing a failure of _optimizing the output of a box / grader_, even if the box is _directly evaluating possible futures._ After all, evaluation-child uses the box to directly evaluate possible futures! Evaluation-child wants to maximize the evaluation of his model of his mother!
 

@@ -45,7 +45,7 @@ There's a revulsion that comes with this, for me - the sense of wearing a heavy 
 
 There's a certain lightness I catch and wield, from time to time. The glimmer of a fresh idea, the flow of words straight from the heart through the fingertips, the carefree, liberating simplicity of dropping pretense in a conversation. Why is this so rare?
 
-I feel now the staggering weight of a day's trivialities - the subconscious obeisances paid to circumstance and habit, the pretentious acting out of cached responses, the molding of personality to meet the Past's expectations. There are massive costs - in time, in experience, in moments.
+I feel now the staggering weight of a day's trivialities - the subconscious obeisances paid to circumstance and habit, the pretentious acting out of cached responses, the molding of personality to meet the Past's expectations. These trivialities impose massive costs - in time, in experience, in moments.
 
 And yet, focusing on "being oneself", one comes to fret whether they're doing it right, or enough, or too much. Self-consciousness takes over, and back on goes the coat.
 

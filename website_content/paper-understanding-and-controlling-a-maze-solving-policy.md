@@ -67,7 +67,7 @@ For each maze square, we can try different retargeting interventions, and then p
 
 ![](https://assets.turntrout.com/static/images/posts/vu1sqt3tg7fczncelr2r.avif)
 
-Notice the path from the bottom-left (where the mouse always starts) to the top-right corner. This is the _top-right path_. Looking at these heatmaps, it's harder to get the mouse to go farther from the top-right path. Quantitative analysis bears out this intuition:
+Notice the path from the bottom-left (where the mouse always starts) to the top-right corner. We call this path the _top-right path_. Looking at these heatmaps, it's harder to get the mouse to go farther from the top-right path. Quantitative analysis bears out this intuition:
 
 ![](https://assets.turntrout.com/static/images/posts/hxt1sr3sbkmj5m9a22l6.avif)
 <br/>

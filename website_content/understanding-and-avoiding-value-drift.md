@@ -85,7 +85,7 @@ Here, then, is the account:
 8. so that she converts,
 9. _so that Rick ends up happier and liking Alice more_.
 
-Her Rick-shards plan to induce value drift, and optimize the plan to make sure that it's hard for her other shards to realize the implicitly planned outcome (Alice converting) and bid against it. This is one kind of decision-making algorithm which rationalizes against itself.
+Her Rick-shards plan to induce value drift, and optimize the plan to make sure that it's hard for her other shards to realize the implicitly planned outcome (Alice converting) and bid against it. The described algorithm rationalizes against the person's entire decision-making process.
 
 _Under shard theory, rationality is sometimes hard because "conscious-you" has to actually fight deception by other parts of yourself._
 

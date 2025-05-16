@@ -78,7 +78,7 @@ In short, we'd like our machine learning algorithms to learn explanations which 
 
 If we want a robust `cat` / `unknown` classifier, we should indeed cleave the space in two, but with the vast majority of the space being allocated to `unknown`. In other words, we're searching for the smallest, simplest volume which encapsulates the cat training data.
 
-The _smallest_ encapsulation of the training data is a strange, contorted volume only encapsulating the training set. However, we still penalize model complexity, so that shouldn't happen. As new examples are added to the training set, the classifier would have to find a way to expand or contract its class volumes appropriately. This is conceptually similar to [version space learning](https://en.wikipedia.org/wiki/Version_space_learning).
+The _smallest_ encapsulation of the training data is a strange, contorted volume only encapsulating the training set. However, we still penalize model complexity, so that shouldn't happen. As new examples are added to the training set, the classifier would have to find a way to expand or contract its class volumes appropriately. Changing the class volumes is conceptually similar to [version space learning](https://en.wikipedia.org/wiki/Version_space_learning).
 
 This may be advantageous compared to current approaches in that we aren't training an inherently incorrect classifier to prune itself or to sometimes abstain. Instead, we structure the optimization pressure in such a way that conservative generalization is the norm. [^2]
 
@@ -152,7 +152,7 @@ $$
 d(p,N)=\left(1-\frac{1}{2}^\frac{1}{N}\right)^\frac{1}{p}.
 $$
 
-If we distribute $10{,}000$ points in the $1{,}000$\-dimensional unit ball, the _closest_ point to the center has a median distance of $.9905$. The _vast, vast majority_ of the points we uniformly distributed find themselves at the outermost reaches of the ball. This is fantastic news (for mathematical and visual intuitions as to why, read [this](https://towardsdatascience.com/intuitively-understanding-variational-autoencoders-1bfe67eb5daf)).
+If we distribute $10{,}000$ points in the $1{,}000$\-dimensional unit ball, the _closest_ point to the center has a median distance of $.9905$. The _vast, vast majority_ of the points we uniformly distributed find themselves at the outermost reaches of the ball. This distribution is fantastic news (for mathematical and visual intuitions as to why, read [this](https://towardsdatascience.com/intuitively-understanding-variational-autoencoders-1bfe67eb5daf)).
 
 Train a variational autoencoder with a $k$\-dimensional latent space on the dataset $D_{train}$. Then train a [multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) $f_\theta$ to classify $D_{train}$ using the latent representation of each image. [^4] This is the network to which we will apply the volume penalty. New images will be translated to the latent space by the trained encoder and then fed to $f_\theta$ for classification. ​
 

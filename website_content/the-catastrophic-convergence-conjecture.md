@@ -130,9 +130,9 @@ In part, this is because a good chunk of what we care about seems roughly additi
 
 It seems that most of our catastrophes are objective catastrophes.[^6]
 
-Consider a psychologically traumatizing event which leaves humans uniquely unable to get what they want, but which leaves everyone else (trout, AI, etc.) unaffected. Our ability to find value is ruined. Is this an example of the delicacy of our AU?
+Consider a psychologically traumatizing event which leaves humans uniquely unable to get what they want, but which leaves everyone else (trout, AI, etc.) unaffected. Our ability to find value is ruined. Does this event demonstrate the delicacy of our AU?
 
-No. This is an example of the delicacy of our implementation; notice also that our AUs for constructing red cubes, reliably looking at blue things, and surviving are _also_ ruined. Our power has been decreased.
+No. This event demonstrates the delicacy of _human psychology_. Notice also that our AUs for constructing red cubes, reliably looking at blue things, and surviving are _also_ ruined. Our power has been decreased.
 
 ## Detailing the catastrophic convergence conjecture (CCC)
 
@@ -141,7 +141,7 @@ In general, the CCC follows from two sub-claims.
 1. Given we still have control over the future, humanity's long-term AU is still reasonably high (i.e. we haven't endured a catastrophe).
 2. Realistically, agents are only incentivized to take control from us in order to gain power for their own goal. I'm fairly sure the second claim is true ("evil" agents are the exception prompting the "realistically").
 
-Also, we're implicitly considering the simplified frame of a single smart AI affecting the world, and not [structural risk](https://www.lawfareblog.com/thinking-about-risks-ai-accidents-misuse-and-structure) via [the broader consequences of others also deploying similar agents](https://www.lesswrong.com/posts/HBxe6wdjxK239zajf/what-failure-looks-like). This is important but outside of our scope for now.
+Also, we're implicitly considering the simplified frame of a single smart AI affecting the world, and not [structural risk](https://www.lawfareblog.com/thinking-about-risks-ai-accidents-misuse-and-structure) via [the broader consequences of others also deploying similar agents](https://www.lesswrong.com/posts/HBxe6wdjxK239zajf/what-failure-looks-like). Structural risk is out-of-scope.
 
 > _Unaligned goals_ tend to have catastrophe-inducing optimal policies because of power-seeking incentives.
 

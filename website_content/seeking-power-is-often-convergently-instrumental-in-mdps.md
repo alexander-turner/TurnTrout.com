@@ -147,7 +147,7 @@ We formalize the _ability to achieve goals in general_ as the _average optimal v
 
 Each reward function has an optimal trajectory. If **chocolate** has maximal reward, then the optimal trajectory is **start** $→$ **chocolate** $→$ **chocolate**….
 
-From **start**, an optimal agent expects to average 3/4 reward per timestep for reward functions drawn from this uniform distribution $\mathcal{D}_\text{unif}$. This is because you have three choices, each of which has reward between 0 and 1. The expected maximum of $n$ draws from $\text{unif}(0,1)$ is $\frac{n}{n+1}$; you have three draws here, so you expect to be able to get 3/4 reward. Some reward functions do worse than this, and some do better; but on _average_, they get 3/4 reward. [You can test this out for yourself](https://trinket.io/python/4b35f9be1c).
+From **start**, an optimal agent expects to average 3/4 reward per timestep for reward functions drawn from this uniform distribution $\mathcal{D}_\text{unif}$. The value is 3/4 is because you have three choices, each of which has reward between 0 and 1. The expected maximum of $n$ draws from $\text{unif}(0,1)$ is $\frac{n}{n+1}$. You have three draws ($n=3$), so you expect to be able to get 3/4 reward. Some reward functions do worse than this, and some do better; but on _average_, they get 3/4 reward. [You can test this out for yourself](https://trinket.io/python/4b35f9be1c).
 
 If you have no choices, you expect to average 1/2 reward: sometimes the future is great, sometimes it's not. Conversely, the more things you can choose between, the closer the POWER gets to 1.
 
@@ -155,7 +155,7 @@ Let’s slightly expand this game with a state called **wait** (which has the sa
 
 ![](https://assets.turntrout.com/static/images/posts/uvwehie6jgpj1ysymj24.avif)
 
-When the agent barely cares at all about the future, it myopically chooses either **candy** or **wait**, depending on which provides more reward. After all, rewards beyond the next time step are geometrically discounted into thin air when the discount rate is close to 0. At **start**, the agent averages 2/3 optimal reward. This is because the optimal reward is the maximum of the **candy** and **wait** rewards, and the expected maximum of $n$ draws from $\text{unif}(0,1)$ is $\frac{n}{n+1}$.
+When the agent barely cares at all about the future, it myopically chooses either **candy** or **wait**, depending on which provides more reward. After all, rewards beyond the next time step are geometrically discounted into thin air when the discount rate is close to 0. At **start**, the agent averages 2/3 optimal reward because the optimal reward is the maximum of the **candy** and **wait** rewards ($n=2$).
 
 However, when the agent cares a lot about the future, most of its reward is coming from which terminal state it ends up in: **candy**, **chocolate**, or **hug**. So, for each reward function, the agent chooses a trajectory which ends up in the best spot, and thus averages 3/4 reward each timestep. When $\gamma=1$, the average optimal reward is therefore 3/4. In this way, the agent’s power increases with the discount rate, since it incorporates the greater future control over where the agent ends up.
 

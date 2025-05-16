@@ -67,7 +67,8 @@ u_\text{human}(h) = u_\text{human}(h_\text{left})+u_\text{human}(h_\text{right})
 $$
 If the AGI uses something like causal decision theory, then it won't try to kill you, or "seek power" over you. The effects of its actions have no causal influence over what happens in your half of the universe. Your universe's evolution adds a constant term to its expected utility.
 
-(Other decision theories might have it precommit to minimizing human utility unless it attains maximal AGI-utility from the left half of the universe-history, or some other shenanigans. This is beside the point I want to make in this post, but it's important to consider.)
+> [!note]
+> Other decision theories might have the AGI precommit to minimizing human utility unless it attains maximal AGI-utility from the left half of the universe-history, or some other shenanigans. This precommitment isn't relevant to the point I want to make in this post, but it's important to consider.
 
 However, the setup is still interesting because
 

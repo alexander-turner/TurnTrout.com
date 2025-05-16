@@ -106,7 +106,7 @@ Take care of your hands. Little time passed between "I'm having the time of my l
 - start taking regular breaks
   - In particular, don't type 80 hours a week for four weeks in a row
 
-I'm currently sitting on book reviews for _Computability and Logic_ and _Understanding Machine Learning_, with partial progress on several more. There are quite a few posts I plan to make about AUP, including:
+I'm currently sitting on book reviews for _Computability and Logic_ and _Understanding Machine Learning_, with partial progress on several more. I plan to make quite a few posts about AUP, including:
 
 - exploration of the fundamental intuitions and ideas
 - dissection of why design choices are needed, shining light onto how, why, and where counterintuitive behavior arises

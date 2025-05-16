@@ -68,7 +68,7 @@ Suppose the agent is so smart that it can instantly compute optimal policies and
 
 It _is_ a pretty good proxy. It correctly penalizes accumulating resources, avoiding immediate deactivation, taking over the world, etc.
 
-In fact, if you extend the inaction comparison to e.g. "AU after waiting a week vs AU after doing the thing and waiting a week", this seems to correctly penalize all [classic AGI catastrophe scenarios](/the-catastrophic-convergence-conjecture) for power gain. This is cool, especially since we didn't have to put in any information about human values. This is a big part of why I've been so excited about AUP ever since its introduction. There's a good deal of relevant discussion [in that post](/towards-a-new-impact-measure), but that post uses a complicated formalism which has consistently obscured AUP's conceptual core.
+In fact, if you extend the inaction comparison to e.g. "AU after waiting a week vs AU after doing the thing and waiting a week", the new comparison seems to correctly penalize all [classic AGI catastrophe scenarios](/the-catastrophic-convergence-conjecture) for power gain. Cool! We didn't even have to put in any information about human values. This value-neutrality is a big part of why I've been so excited about AUP ever since its introduction. There's a good deal of relevant discussion [in that post](/towards-a-new-impact-measure), but that post uses a complicated formalism which has consistently obscured AUP's conceptual core.
 
 However, I think this equation can be gamed if the environment is sufficiently rich and the AUP agent is sufficiently smart. We're going to slowly work some of these problems out of the equation, explaining each improvement in detail.
 

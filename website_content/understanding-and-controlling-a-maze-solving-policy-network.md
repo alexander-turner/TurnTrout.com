@@ -229,7 +229,7 @@ Decision square's Euclidean distance to cheese, negative (-0.623)
 : _The greater the _visual distance_ between the cheese and the decision square, the less likely the agent is to go to the cheese._
 
 : As we privately speculated, this effect shows up _after_ accounting for the path distance (factor 2) between the decision square and the cheese.
-: This is not behavior predicted by "classic" RL training reasoning, which focuses on policies being optimized strictly as a function of sum discounted reward over time (and thus, in the sparse reward regime, in terms of path distance to the cheese).
+: This behavior is not predicted by "classic" RL training reasoning, which focuses on policies being optimized strictly as a function of sum discounted reward over time (and thus, in the sparse reward regime, in terms of path distance to the cheese).
 : We did predict this using shard theory reasoning. The one behavioral experiment which Alex proposed before the project was to investigate whether this factor exists, after controlling for path distance.
 
 Decision square's path distance to cheese, negative (-1.084)
@@ -373,7 +373,7 @@ Across seeds 0 to 99, subtracting the cheese vector has a large effect:
 <br/>Figure: The cheese vector decreases median P(cheese | decision square) from .81 to .03, while increasing P(top-right | decision square) substantially. The third plot shows a mostly unaffected probability of taking other actions (like $\texttt{no-op}$ or returning to the start of the maze).
 
 ![](https://assets.turntrout.com/static/images/posts/am0jcshlpfoqt23yrpvb.avif)
-<br/>Figure: Of the hundred mazes, subtracting the cheese vector noticeably increases P(cheese) in a _single_ seed (`16`), and only by .005. (There are a few other extremely small increases; all of these tiny increases seem like noise to me. See [the Colab](https://colab.research.google.com/drive/1fPfehQc1ydnYGSDXZmA22282FcgFpNTJ?usp=sharing) for interactive plots.)
+<br/>Figure: Of the hundred mazes, subtracting the cheese vector noticeably increases P(cheese) in a _single_ seed (`16`), and only by .005. (A few other extremely small increases occurred. They all seem like noise to me. See [the Colab](https://colab.research.google.com/drive/1fPfehQc1ydnYGSDXZmA22282FcgFpNTJ?usp=sharing) for interactive plots.)
 
 What is the cheese vector doing to the forward passes? A few hints:
 
@@ -539,7 +539,7 @@ To understand in mechanistic detail what's happening here, it's time to learn a 
 >
 > Code: We modify the activations after the residual add layer in the first residual block of the second Impala block.
 
-Each of these 128 residual add channels is a 16x16 grid. For channel 55, moving the cheese e.g. to the left will [equivariantly](https://en.wikipedia.org/wiki/Equivariant_map) move channel 55's positive activations to the left. There are several channels like this, in fact:
+Each of these 128 residual add channels is a 16x16 grid. For channel 55, moving the cheese e.g. to the left will [equivariantly](https://en.wikipedia.org/wiki/Equivariant_map) move channel 55's positive activations to the left. Several channels are like that, in fact:
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.webm" type="video/webm"></video>
@@ -663,7 +663,7 @@ Considering only the four channels [shown in the GIF](#causal-scrubbing-the-chee
 
 Looks like behavior is mostly unaffected by resampling activations from mazes with cheese at the same spot, but moderately/strongly affected by resampling from mazes with cheese in a different location.
 
-Let's stress-test this claim a bit. There are 128 residual channels at this part of the network. Maybe _most of them_ depend on where the cheese is? After all, cheese provided the network's reinforcement events during its RL training—reward events didn't come from anywhere else!
+Let's stress-test this claim a bit. The relevant layer contains 128 residual channels. Maybe _most of them_ depend on where the cheese is? After all, cheese provided the network's reinforcement events during its RL training—reward events didn't come from anywhere else!
 
 ### Cheese location isn't important for other randomly resampled channels, on average
 
@@ -753,7 +753,7 @@ Understanding, predicting, and controlling goal formation seems like a core chal
     2. $P(\texttt{left})=P(\texttt{right})>0$, or
     3. $P(\texttt{up})=P(\texttt{down})>0$.
 
-    Thus, there are two degrees of freedom by which we can convert between action probability distributions and yet maintain a fixed net probability vector. This is because net probability vector fields project a probability distribution on 5 actions (4 DOF) onto a single vector (2 DOF: angle and length), and so 4 - 2 = 2 DOF remain.
+    Thus, there are two degrees of freedom by which we can convert between action probability distributions and yet maintain a fixed net probability vector. After all, we compute the net vector by projecting a probability distribution on 5 actions (4 degrees of freedom) onto a single vector (2 degrees of freedom: angle and length), and so 4 - 2 = 2 degrees of freedom remain.
 
 [^3]:
     Peli consulted with a statistician on what kind of regression to run. Ultimately, the factors we used are not logically independent of each other, but our impression after consultation was that this analysis would tell us _something_ meaningful.

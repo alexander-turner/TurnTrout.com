@@ -94,7 +94,7 @@ Assume that both the AI and the human reason using Bayes nets.[^1] Suppose we ha
 
 The AI receives the first part of a video and a sequence of actions. Suppose the AI can think for $n$ time steps in total, before it has to predict the remainder of the video. At timestep $(1-p) n/2$, the AI encodes its cognitive work into the human imitator net, where the human’s inference algorithm runs for another $p\cdot n$ steps. Lastly, the AI decodes the human’s state of mind and thinks for the remaining time. For example: If _p_ is 1/3, then the AI thinks for $\frac{n}{3}$ steps, the human thinks for $\frac{n}{3}$  steps, and then the AI thinks for $\frac{n}{3}$ steps.
 
-In order to answer questions, after the last time step, the encoder maps the predictor net’s internal state onto the human net, where the reporter then answers questions. This is illustrated in the diagram below.
+In order to answer questions, after the last time step, the encoder maps the predictor net’s internal state onto the human net, where the reporter then answers questions:
 
 ```mermaid
 graph TD
@@ -175,7 +175,7 @@ That is, the human query function takes in a question, which determines the subs
 
 The human-provided data points necessarily portray situations that the human basically understands. Therefore, since we assumed the encoder is faithful and the predictor is powerful enough to figure out the second half of the video: on each training example, the simulated and real human end up in _similar states of mind after doing inference_. Just compare the AI’s diagram with the human’s diagram, in order to see that on the training distribution and given a faithful encoder, the after-AI prediction-finishes human imitator should be reasoning _extremely similarly_ to the human. All that’s left to learn is the human query function! Hopefully, this is a simple “blank” for the AI to fill in.
 
-For example, suppose the real human knows that the action sequence opens the trapdoor, and that the video shows someone falling into it. Because the predictor understands the situation and we have the intended encoder, the imitated human also knows this, and perhaps they also know some additional translated details. Therefore, to produce the correct answer, the reporter just has to look at the imitated human’s net and pick out the relevant nodes for the real human’s query function. This is the prototypical human-understandable training example.
+For example, suppose the real human knows that the action sequence opens the trapdoor and that the video shows someone falling into it. Because the predictor understands the situation and we have the intended encoder, the imitated human also knows this, and perhaps they also know some additional translated details. Therefore, to produce the correct answer, the reporter just has to look at the imitated human’s net and pick out the relevant nodes for the real human’s query function.
 
 The reporter could instead minimize training loss by learning _another_ human simulator which independently does inference after backing out `(video-1, action sequence, video-2)` from the imitated human net, but without having the second human simulator’s intermediate nodes filled in by the encoder. But assuming a faithful encoder, that seems rather ridiculous and easily handled via time or complexity regularization.[^5]
 

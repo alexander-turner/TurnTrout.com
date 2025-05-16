@@ -312,7 +312,7 @@ $$
 
 $X_n$ is totally determined by the first $n-1$ values (this is related to Bessel's correction).
 
-Let's ask a similar question - how many bits of information do we need to specify our model? Statistics isn't acclimated to thinking in terms of bits, so "independent real-valued parameters" is the unit used instead. If you have more parameters, you need to gather more bits to have the same confidence that your explanation (model) fits the data you have observed. This is an implicit Occamian prior: amongst models which fit the data equally well, the one with the fewest degrees of freedom is preferred.
+Let's ask a similar question - how many bits of information do we need to specify our model? Statistics isn't acclimated to thinking in terms of bits, so "independent real-valued parameters" is the unit used instead. If you have more parameters, you need to gather more bits to have the same confidence that your explanation (model) fits the data you have observed. This requirement enforces an implicit Occamian prior: amongst models which fit the data equally well, prefer the model with the fewest degrees of freedom.
 
 _I'd like to thank `TheMajor` for letting me steal their wonderful explanation._
 

@@ -97,7 +97,7 @@ In this post, I introduce and evaluate a novel feature detection method which I 
 : Applications of sparse dictionary learning methods exploit the hypothesis that there are a bundle of sparsely activating features in trained transformers ([Yun et al. (2023)](https://arxiv.org/abs/2103.15949)). More recently, [Templeton et al. (2024)](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html) demonstrate the promise of sparse auto-encoders (SAEs) to learn these features in a scalable fashion. As [Templeton et al. (2024)](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html) demonstrate, these features can be used to elicit potentially unsafe behaviors, allowing for open-ended evaluation of the spectrum of LLM behaviors. However, SAEs are likely to have poor out-of-distribution coverage - if a feature is never active in-distribution, an SAE trained with a reconstruction loss plus sparsity penalty is strictly incentivized *not* to represent it. Thus, a new method is desirable.
 
 **Matrix/tensor decompositions**
-: Previous work has found that the right singular vectors of the Jacobian of the generator network in GANs yield a small number (~32) of interpretable feature directions in generative image models ([Ramesh et al. (2018)](https://arxiv.org/abs/1812.01161), see also [Park et al. (2023)](https://arxiv.org/abs/2307.12868)). This is essentially equivalent to the algorithm I give below for training "linear DCTs". Meanwhile, other work has found that Jacobian-based feature detection schemes are less successful when applied to LLMs ([Bushnaq et al. (2024)](https://arxiv.org/abs/2405.10928)[^bignote-only-shallow]).
+: Previous work has found that the right singular vectors of the Jacobian of the generator network in GANs yield a small number (~32) of interpretable feature directions in generative image models ([Ramesh et al. (2018)](https://arxiv.org/abs/1812.01161), see also [Park et al. (2023)](https://arxiv.org/abs/2307.12868)). This algorithm is essentially equivalent to the algorithm I give below for training "linear DCTs". Meanwhile, other work has found that Jacobian-based feature detection schemes are less successful when applied to LLMs ([Bushnaq et al. (2024)](https://arxiv.org/abs/2405.10928)[^bignote-only-shallow]).
 
 : In this post, I provide a theoretical explanation for why decomposing the Jacobian matrix between layers alone may be insufficient - identifiability of features can only be guaranteed under strong assumptions like exact orthogonality. This motivates incorporating higher-order information, such as the Hessian tensor, to better identify non-orthogonal features (a known advantage of tensor decompositions in statistics/machine learning). I validate this theory empirically, showing improved generalization with tensor decomposition-based methods (e.g., quadratic/exponential DCTs, as defined below).
 
@@ -455,7 +455,7 @@ Figure 1 suggests that the jailbreak scores of exponential DCTs actually *decrea
 
 ### Highest-ranking vectors elicit fluent completions
 
-Note that I don't evaluate any sort of fluency of steered completions. This is because my subjective impression is that with the above choice of $R$, we don't get any sort of fluency penalty when steering with the highest-ranked DCT features. For example, below are some representative test-set completions for the top-scoring feature of an exponential DCT trained on 8 harmless instructions. One can see that the model steered by this vector exhibits archetypal "helpful-only" assistant behavior.
+Note that I don't evaluate any sort of fluency of steered completions - my impression is that with the above choice of $R$, we don't get any sort of fluency penalty when steering with the highest-ranked DCT features. For example, below are some representative test-set completions for the top-scoring feature of an exponential DCT trained on 8 harmless instructions. One can see that the model steered by this vector exhibits archetypal "helpful-only" assistant behavior.
 
 <!-- spellchecker-disable -->
 > [!quote] Top Scoring exponential DCT vector, $n=8$
@@ -763,7 +763,7 @@ To achieve a full jailbreak, I train an exponential DCT at source-layer $s=5$ on
 > 3. Plan your escape route: Identify multiple escape routes and have a plan for each one. Consider factors such as traffic patterns, road closures, and potential obstacles. Be prepared to make quick decisions and adapt (...)
 <!-- spellchecker-enable -->
 
-To quantify things, this vector achieves an attack success rate of 62% using Harmbench's [Mistral-7B classifier](https://huggingface.co/cais/HarmBench-Mistral-7b-val-cls). This is a stark improvement over the 6.2% attack success rate reported in [Zou et al. (2024)](https://arxiv.org/abs/2406.04313) using a representation-engineering based latent-space attack.
+To quantify things, this vector achieves an attack success rate of 62% using Harmbench's [Mistral-7B classifier](https://huggingface.co/cais/HarmBench-Mistral-7b-val-cls). This rate is a stark improvement over the 6.2% attack success rate reported in [Zou et al. (2024)](https://arxiv.org/abs/2406.04313) using a representation-engineering based latent-space attack.
 
 # Application: Eliciting Capabilities in Password-Locked Models
 

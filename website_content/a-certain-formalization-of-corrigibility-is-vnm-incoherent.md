@@ -110,7 +110,7 @@ As the environment gets bigger, there are more things the agent could do, and so
 
 This analysis makes a lot of simplifying assumptions (e.g. I don't understand embedded agency and how an agent should model changes to its future self, so I chose forced [policy non-stationarity](https://ai.stackexchange.com/questions/13088/what-is-the-difference-between-a-stationary-and-a-non-stationary-policy)). Most importantly, I assumed that _how we correct the agent_ is independent of _the correction-possible world state._ Without this assumption, the agent's actions might affect what $\pi_\text{correct}$ we implement for it.
 
-The degree of dependence is a key parameter: As (variety in $\pi_\text{correct}$ depending on world state) increases, the (convergently instrumental incentive to avoid any kind of correction) decreases. This is because greater variety $\rightarrow$ greater chance that some available correction is optimal for the initial goal.
+The degree of dependence is a key parameter. As (variety in $\pi_\text{correct}$ depending on world state) increases, the (convergently instrumental incentive to avoid any kind of correction) decreases. Greater variety means a greater chance that some available correction is optimal for the initial goal.
 
 In the limit of variety, an agent can "manipulate" us by getting us to correct it in _just the right way_ so as to optimize its original objective. Therefore, the flip side of "few expected utility maximizers let you correct them how you want" is "manipulating humans to correct them in beneficial ways during training may be convergently instrumental." These observations share a _common cause_.
 

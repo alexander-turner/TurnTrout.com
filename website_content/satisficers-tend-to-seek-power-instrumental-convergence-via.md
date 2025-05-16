@@ -90,7 +90,7 @@ For example, suppose our cute robot Frank must choose one of several kinds of fr
 ![](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
 <br/>Figure: 🍒 vs 🍎 vs 🍌
 
-So far, I proved something like "if the agent has a utility function over fruits, then for at least 2/3 of possible utility functions it could have, it'll be optimal to choose something from \{🍌,🍎\}." This is because for every way 🍒 could be strictly optimal, you can make a new utility function that permutes the 🍒 and 🍎 reward, and another new one that permutes the 🍌 and 🍒 reward. So for every "I like 🍒 strictly more" utility function, there's at least two permuted variants which strictly prefer 🍎 or 🍌. Superficially, it seems like this argument relies on optimal decision-making.
+So far, I proved something like "if the agent has a utility function over fruits, then for at least 2/3 of possible utility functions it could have, it'll be optimal to choose something from \{🍌,🍎\}." This statement is true because for every way 🍒 could be strictly optimal, you can make a new utility function that permutes the 🍒 and 🍎 reward, and another new one that permutes the 🍌 and 🍒 reward. So for every "I like 🍒 strictly more" utility function, there's at least two permuted variants which strictly prefer 🍎 or 🍌. Superficially, it seems like this argument relies on optimal decision-making.
 
 This argument does not, in fact, rely on optimal decision-making. The crux is instead that we can _flexibly retarget_ the decision-making of the agent: **For every way the agent could end up choosing 🍒, we change a variable in its cognition (its utility function) and make it choose the 🍌 or 🍎 instead.**
 
@@ -123,7 +123,7 @@ Note that $\phi_1\cdot \{$🍌$\} = \{$🍌$\}$ and $\phi_2 \cdot \{$🍎$\}=\{$
 
 Further note that $\phi_i \cdot F_C = F_C$ for $i=1,2$. The involutions just shuffle around options, instead of changing the set of available outcomes.
 
-So suppose Frank is deciding whether he wants a fruit from $F_A:=\{$🍒$\}$ or from $F_B:=\{$🍌$,$🍎$\}$. It's definitely possible to be motivated to pick 🍒. However, it sure seems like for lots of ways Frank might make decisions, _most parameter settings (utility functions) will lead to Frank picking_ 🍌 _or_ 🍎. There are just _more_ outcomes in $F_B$, since it contains two copies of $F_A$!
+So suppose Frank is deciding whether he wants a fruit from $F_A:=\{$🍒$\}$ or from $F_B:=\{$🍌$,$🍎$\}$. It's definitely possible to be motivated to pick 🍒. However, it sure seems like for lots of ways Frank might make decisions, _most parameter settings (utility functions) will lead to Frank picking_ 🍌 _or_ 🍎. $F_B$ just contains _more outcomes_ because it contains two copies of $F_A$!
 
 > [!math] Definition: Orbit tendencies
 > Let $f_1, f_2:\mathbb{R}^d\to \mathbb{R}$ be functions from utility functions to real numbers, let $\mathfrak{U}\subseteq \mathbb{R}^d$ be a set of utility functions, and let $n\geq 1$. $f_1 \geq_{\text{most: }\mathfrak{U}}^n f_2$ when for _all_ utility functions $u \in \mathfrak{U}$:
@@ -186,7 +186,7 @@ If (1) and (2) hold for a function, then that function will obey the orbit tende
 6. Quantilizers with a uniform[^based] base distribution.
     [^based]: I conjecture that this holds for base distributions which assign sufficient probability to $B$.
 
-That's not all. If the agent makes decisions _only based on the expected utility of different plans_,[^eu] then the power-seeking theorems apply. And I'm not just talking about EU maximizers. I'm talking about _any_ function which only depends on expected utility: EU minimizers, agents which choose plans if and only if their EU is equal to 1, agents which grade plans based on how close their EU is to some threshold value. There is _no_ clever EU-based scheme which doesn't have orbit-level power-seeking incentives.
+That's not all. If the agent makes decisions _only based on the expected utility of different plans_,[^eu] then the power-seeking theorems apply. And I'm not just talking about EU maximizers. I'm talking about _any_ function which only depends on expected utility: EU minimizers, agents which choose plans if and only if their EU is equal to 1, agents which grade plans based on how close their EU is to some threshold value. _No_ clever EU-based scheme avoids orbit-level power-seeking incentives.
 
 > [!warning] EU-based decision-making tends to seek power
 > Suppose $n$ is large, and that most outcomes in $B$ are bad, and that the agent makes decisions according to expected utility. Then alignment is hard because for every way things could go right, there are at least $n$ ways things could go wrong! And $n$ can be **huge**. In a [previous toy example](/power-seeking-beyond-MDPs#Beyond-survival-seeking), $n$ equaled $10^{182}$\.
@@ -203,7 +203,7 @@ $$
 
 Then the theorems still apply.
 
-_There is no possible way to combine EU-based decision-making functions so that orbit-level instrumental convergence doesn't apply to their composite._
+_You cannot combine EU-based decision-making functions so that orbit-level instrumental convergence doesn't apply to their composite._
 
 ## Escaping the orbit tendencies
 
@@ -213,7 +213,7 @@ Rule out most power-seeking orbit elements _a priori_ (AKA "know a lot about wha
 
 Use a decision-making procedure with intrinsic bias towards the elements of $A$
 : For example, imitation learning is not EU-based, but is instead biased to imitate the non-crazy-power-seeking behavior shown on the training distribution.
-: For example, modern RL algorithms will not reliably produce policies which seek real-world power, because the policies _won't reach or reason about that part of the state space anyways_. This is a bias towards non-power-seeking plans.
+: For example, modern RL algorithms will not reliably produce policies which seek real-world power, because the policies _won't reach or reason about that part of the state space anyways_. This inability biases the RL algorithms towards non-power-seeking plans.
 
 Pray that the relevant symmetries don't hold.
 : Often, they won't hold exactly. But common sense dictates that they don't have to hold exactly for instrumental convergence to exist: If you inject $\epsilon$ irregular randomness to the dynamics, do agents stop tending to stay alive? Orbit-level instrumental convergence is just a _particularly strong_ version.
@@ -365,7 +365,7 @@ Consider a simple environment, where there are three actions: Up, Right, Down.
 
 ![](https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif)
 
-**Probably optimal policies.** By running [tabular Q-learning](https://en.wikipedia.org/wiki/Q-learning) with $\epsilon$\-greedy exploration for e.g. 100 steps with resets, we have a high probability of producing an optimal policy for any reward function. Suppose that all Q-values are initialized at -100. Just let learning rate $\alpha=1$ and $\gamma=1$. This is basically a [bandit problem](https://en.wikipedia.org/wiki/Multi-armed_bandit).
+**Probably optimal policies.** By running [tabular Q-learning](https://en.wikipedia.org/wiki/Q-learning) with $\epsilon$\-greedy exploration for e.g. 100 steps with resets, we have a high probability of producing an optimal policy for any reward function. Suppose that all Q-values are initialized at -100. Just let learning rate $\alpha=1$ and $\gamma=1$. This tabular setting is basically a [bandit problem](https://en.wikipedia.org/wiki/Multi-armed_bandit).
 
 To learn an optimal policy, at worst, the agent just has to try each action once. For e.g. a sparse reward function on the Down state (1 reward on Down state and 0 elsewhere), there is a small probability (precisely, $\frac{2}{3}(1-\frac{\epsilon}{2})^{99}$) that the optimal action (Down) is never taken.
 

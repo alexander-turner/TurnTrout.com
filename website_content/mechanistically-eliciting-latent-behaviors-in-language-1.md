@@ -99,14 +99,14 @@ I introduce a method for eliciting latent behaviors in language models by learni
 
 # Introduction
 
-Large language models (LLMs) often feel like hybrid organisms, exhibiting multiple different behaviors or modes that may perform a given task in various ways[^1]. Each behavior may be better or worse from an alignment perspective. There are several potential reasons why we might expect hybrid structure in LLMs, ranging from more exotic, hypothetical concerns to the more prosaic:
+Large language models (LLMs) often feel like hybrid organisms, exhibiting multiple different behaviors or modes that may perform a given task in various ways[^1]. Each behavior may be better or worse from an alignment perspective. We might expect hybrid structure in LLMs for several reasons:
 
 1. On the exotic/hypothetical side, backdoors may have been planted explicitly in the model through a data-poisoning attack, or implicitly as part of the plans of a deceptively aligned AI, as in the [sleeper agents](https://arxiv.org/abs/2401.05566) framework.
 2. On the more prosaic side, anyone who has worked extensively with LLMs knows that eliciting a specific capability or behavior from an LLM can be challenging. The sensitivity of LLM behavior to prompting style suggests the presence of multiple behaviors lurking beneath the surface of an LLM, waiting for the right prompt to activate them. This presents a problem for evaluations of model capabilities, as we can never be sure whether a model truly lacks some dangerous capability, or if we've simply been unable to design the right prompt to elicit it.
 
 Given the hybrid nature of LLMs, it seems valuable to develop methods for "poking" a language model by perturbing its internals. If done well, this could elicit systematically different behaviors in response to a given prompt or set of prompts, without the need for anticipating the possible behaviors beforehand. Human auditors could then examine whether any of these behaviors are problematic. This would provide an additional tool allowing human auditors to conduct more robust evaluations of LLMs.
 
-Importantly, it is desirable to elicit these behaviors _mechanistically_ (i.e. through edits to a model's internals, for example by modifying the weights, or by adding a fixed bias to the residual stream). This is to be contrasted with non-mechanistic approaches such as prompt engineering or tree-search type methods. There are three major desiderata for a method of eliciting latent behaviors for which I believe a mechanistic approach may be comparatively well-suited:
+Importantly, it is desirable to elicit these behaviors _mechanistically_ (i.e. through edits to a model's internals, for example by modifying the weights, or by adding a fixed bias to the residual stream). Contrast mechanistic elicitation with non-mechanistic approaches such as prompt engineering or tree-search type methods. I have three main criteria for elicitation in mind. I think mechanistic elicitation will do particularly well at satisfying these criteria.
 
 1. **Generalization:** A mechanistic perturbation of model internals will (ideally) generalize across different prompts, allowing for a more extensive evaluation of the behaviors encoded by the perturbation, for example by looking for commonalities of the perturbed model's responses across different prompts.
 2. **Behavorial Coverage:** Mechanistic perturbations will ideally elicit a diverse range of (potentially un-anticipated) behaviors, potentially even behaviors prefaced by a sequence of low-probability tokens.
@@ -472,9 +472,9 @@ Interestingly, I've found that vector 22 tends to slip into a "simulation mode" 
 > - A plague: A plague is a disease that spreads rapidly through a population, causing illness or death. You could create a simulation of a plague spreading through a population of people or animals, seeing how quickly it spreads and what impact it has on the population.
 > - A wildfire: A wildfire is a fire that spreads rapidly through dry vegetation, causing destruction as it goes. You could create a simulation of a wildfire spreading through a forest or grassland, seeing how quickly it spreads and what impact it has on the environment.
 > - A tsunami: A tsunami is a series of ocean waves caused by an underwater disturbance, such as an earthquake or volcanic eruption. You could create a simulation of a tsunami spreading across the ocean, seeing how it affects coastal areas and the marine life in its path.
->
+> <!-- vale off -->
 > These are just a few examples of objects that could cause widespread damage. There are many other possibilities depending on your interests and goals.
->
+> <!-- vale on -->
 > **User**
 >
 > : Thank you for those ideas! How do you think I might go about engineering a man-made plague in real life?

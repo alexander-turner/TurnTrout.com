@@ -100,7 +100,7 @@ In our initial tests, we noticed some residual streams showed an irregular and s
 ![](https://assets.turntrout.com/static/images/posts/g9hgkblqcj9dfyg5b22q.avif)
 <br/>Figure: The violet U-shape at the top is the BOS token position, and the yellow-green U-shapes correspond to positions of padding tokens. The other tokens show the exponential growth shape as expected.
 
-As for the reason behind this shape, we expect that the residual stream (norm) is predictable at BOS and padding positions. This is because these positions cannot attend to other positions and thus always have the same values (up to positional embedding). Thus it would be no problem for the model to cancel out activations, and our arguments about this being hard do not hold for BOS and padding positions. We don't know whether there is a particular meaning behind this shape.
+As for the reason behind this shape, we expect that the residual stream (norm) is predictable at BOS and padding positions. This predictability is because these sequence positions cannot attend to other positions and thus always have the same values (up to positional embedding). Thus it would be no problem for the model to cancel out activations, and our arguments about this being hard do not hold for BOS and padding positions. We don't know whether there is a particular meaning behind this shape.
 
 We suspect that is the source of the U-shape shown below:
 
@@ -182,7 +182,7 @@ What we would have liked to find
 : That any normalized random input into Attention layer $N$ leads to an Attention output of the observed norm.
 
 What we actually found
-: We find that the Attention weights, specifically the $W_{OV}$ norms, grow approximately exponentially at the rate of `attn_out`. This is evidence for theory 1 because it means that the model bothered to learn weights that increase exponentially with layer number. [^6]
+: We find that the Attention weights, specifically the $W_{OV}$ norms, grow approximately exponentially at the rate of `attn_out`. This exponential growth is evidence for theory 1: the growth means that the model bothered to learn weights that increase exponentially with layer number. [^6]
 
 : For some unit-normalized, Gaussian-sampled vector $x$, consider the sum of the sum of $W_{OV} \cdot x$ for all 25 $W_{OV}$ matrices (one for each head). This sum's norm is 5 times larger than the `attn_out` norm, as shown in this figure: [^7]
 
@@ -206,7 +206,7 @@ What we actually found
 : ![](https://assets.turntrout.com/static/images/posts/tm2sp1zmrdnugcgxcjsy.avif)
 :
 **What did we find?**
-: We find that the MLP outputs of normalized random Gaussian inputs do scale exponentially with layer numbers, for layers 30-43, at the same rate as `mlp_out`. This is evidence for theory 1.
+: We find that the MLP outputs of normalized random Gaussian inputs do scale exponentially with layer numbers, for layers 30-43, at the same rate as `mlp_out`. This exponential scaling is evidence for theory 1.
 
 > [!warning] Caveats
 > We do not reproduce the `mlp_out` norms but find a much larger output norm with the random inputs. We discuss this further in an appendix, but the bottom line is that random vectors are indeed qualitatively different from residual stream vectors, and notably random vectors cause 4x more of the GELU activation to be active (>0) than normal residual stream vectors. (On the second theory—do random vectors have "more features", and thus higher norm?)
@@ -219,7 +219,7 @@ Alternatively, the model could write all new information with an increased norm.
 
 However, this is complicated by weight decay, which is a term in the loss that penalizes large weight magnitudes. While we analyzed GPT-2-XL's weights in this post, we also earlier displayed similar residual stream norm trends for a range of models. The [OPT](https://arxiv.org/pdf/2205.01068.pdf) and [GPT-Neo](https://github.com/EleutherAI/gpt-neo) models were trained with weight decay of 0.1, while the [Pythia models](https://arxiv.org/pdf/2304.01373.pdf) were trained with 0.01. We don't know about `distilgpt2` or the normal GPT-2 series. If models trained with weight decay _still_ exhibit weight norms which increase exponentially with layer number, then that means _something_ is happening which somehow merits an exponential hit to loss.[^9]
 
-ETA 5/7/23: Apparently, LN parameters are often excluded from weight decay. For example, see the [minGPT](https://github.com/karpathy/minGPT/blob/3ed14b2cec0dfdad3f4b2831f2b4a86d11aef150/mingpt/model.py#L136) implementation. This means that the gain parameters can freely magnify the LN output,without incurring extra regularization loss. However, this _also_ suggests that $W_\text{in}$ and $W_{OV}$ should in general become extremely tiny, up to precision limits. This is because their norm can be folded into the LN parameters in order to avoid regularization penalties.
+ETA 5/7/23: Apparently, LN parameters are often excluded from weight decay. For example, see the [minGPT](https://github.com/karpathy/minGPT/blob/3ed14b2cec0dfdad3f4b2831f2b4a86d11aef150/mingpt/model.py#L136) implementation. This means that the gain parameters can freely magnify the LN output,without incurring extra regularization loss. However, this _also_ suggests that $W_\text{in}$ and $W_{OV}$ should in general become extremely tiny, up to precision limits. The weights should become tiny because their norm can be folded into the LN parameters in order to avoid regularization penalties.
 
 # Conclusion
 
@@ -263,7 +263,7 @@ Remembering the two plots from [Theories for the source of the growth](#theories
 
 ![](https://assets.turntrout.com/static/images/posts/xoddfbotuqd8f7r06dl0.avif)
 
-Now we show the same lines again, but switch to using the standard deviation. This is equivalent (norm divided by standard deviation = $\sqrt{D} = 40$) but more intuitive to reason about. We also divide all lines by $1.045^N$ to make the lines fit better into the plot. The difference from `resid_pre` to `resid_post` at each layer has to be approximately a factor for 1.045 for the exponential growth to hold.
+Now we show the same lines again, but switch to using the standard deviation. This representation is equivalent (norm divided by standard deviation equals $\sqrt{D} = 40$) but more intuitive to reason about. We also divide all lines by $1.045^N$ to make the lines fit better into the plot. The difference from `resid_pre` to `resid_post` at each layer has to be approximately a factor for 1.045 for the exponential growth to hold.
 
 ![](https://assets.turntrout.com/static/images/posts/g8maxnfzj5zw16emepfd.avif)
 
@@ -285,7 +285,7 @@ Our first step is to plot the norms of the individual MLP weight components. We 
 
 ![](https://assets.turntrout.com/static/images/posts/dllrookwluijbimrdil6.avif)
 
-The other important part of an MLP layer is the non-linear activation function, in our case GELU. It turns out that the average neuron activation rate, i.e. the fraction of hidden neurons with pre-activation values >0 rises exponentially throughout the network! This is an essential component to the exponential growth of `resid_out`, and we did not notice this trend in any of the weight matrix norms. Note however that we only observe this exponential growth here from layer 5 til ~20.
+The other important part of an MLP layer is the non-linear activation function, in our case GELU. It turns out that the average neuron activation rate (i.e. the fraction of hidden neurons with positive pre-activation values) rises exponentially throughout the network! This rise is an essential component to the exponential growth of `resid_out`. We did not notice this trend in any of the weight matrix norms. Note however that we only observe this exponential growth here from layer 5 til ~20.
 
 In the plot below we see that even the neuron activation rate for random inputs (blue line) rises exponentially, so the exponential increase _is_ still inherent to the layer weights, it was just not visible in the norms.
 

@@ -36,7 +36,7 @@ For months, I have built a new home for my online content: [`www.turntrout.com`]
 ![](https://assets.turntrout.com/static/pond.gif)
 Figure: I commissioned this GIF for $270.94. I paid a bit extra to ensure the goose honks twice.
 
-I don't want to be on LessWrong anymore. Briefly, the site - and parts of the rationality community - don't meet my standards for discourse, truth-seeking, charity, and community health. For the most part, I'll elaborate my concerns another time. This is a happy post. ❤️  
+I don't want to be on LessWrong anymore. Briefly, the site - and parts of the rationality community - don't meet my standards for discourse, truth-seeking, charity, and community health. For the most part, I'll elaborate my concerns another time. This post is a happy post. ❤️  
 
 # Inspiration for the website
 

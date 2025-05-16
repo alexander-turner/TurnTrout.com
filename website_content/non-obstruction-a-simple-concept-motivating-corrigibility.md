@@ -154,7 +154,7 @@ $$
 
 Consider the real world. Calculators are non-obstructive with respect to $S$, as are 2020-era AIs. Paperclip maximizers are highly obstructive. Manipulative agents are obstructive (they trick the human policies into steering towards non-reflectively endorsed leaf nodes). An initial-human-values-aligned dictator AI obstructs most goals. Sub-human-level AI which chip away at our autonomy and control over the future, are obstructive as well.
 
-This can seemingly go off the rails if you consider e.g. a friendly AGI to be “obstructive” because activating it happens to detonate a nuclear bomb via the butterfly effect. Or, we’re already doomed in **off** (an unfriendly AGI will come along soon after), and so then this AI is “not obstructive” if _it_ kills us instead. This is an impact/intent issue - obstruction is here defined according to _impact_ alignment.
+This can seemingly go off the rails if you consider e.g. a friendly AGI to be “obstructive” because activating it happens to detonate a nuclear bomb via the butterfly effect. Or, we’re already doomed in **off** (an unfriendly AGI will come along soon after), and so then this AI is “not obstructive” if _it_ kills us instead. The apparent misclassification is an impact/intent issue - obstruction is here defined according to _impact_ alignment.
 
 To emphasize, we’re talking about what would _actually happen_ if we deployed the AI, under different human policy counterfactuals - would the AI "get in our way", or not? This account is descriptive, not prescriptive; I’m not saying we actually get the AI to represent the human in its model, or that the AI’s model of reality is correct, or anything.
 
@@ -206,7 +206,7 @@ I think it’d be pretty odd to call this AI “incorrigible”, even though it�
 
 It’s empowering and, more weakly, it’s non-obstructive. Non-obstruction is just a diffuse form of impact alignment, as I’ll talk about later.
 
-Practically speaking, we’ll probably want to be able to literally correct the AI without manipulation, because it’s hard to justifiably know ahead of time that the AU landscape is empowering, as above. Therefore, let’s build an AI we can modify, just to be safe. This is a separate concern, as our theoretical analysis assumes that the AU landscape is how it looks.
+Practically speaking, we’ll probably want to be able to literally correct the AI without manipulation, because it’s hard to justifiably know ahead of time that the AU landscape is empowering, as above. Therefore, let’s build an AI we can modify, just to be safe. Subjective uncertainty is a separate concern, as our theoretical analysis assumes that the AU landscape is how it looks.
 
 In this situation, corrigibility is just a proxy for what we want. We _want_ an AI which leads to robustly better outcomes (either through its own actions, or through some other means), without reliance on getting [ambitious value alignment](https://www.alignmentforum.org/posts/5eX8ko7GCxwR5N9mN/what-is-ambitious-value-learning) exactly right with respect to our goals.
 
@@ -279,7 +279,7 @@ Again, impact alignment doesn't _require_ intentionality. The AI might well grit
 
 However, even if we could maximally impact-align the agent with any objective, we couldn't just align it with our objective. We don't _know_ our objective (again, in this setting, I'm assuming the human actually has a "true" payoff function). Therefore, we should build an AI aligned with many possible goals we could have. If the AI doesn't empower us, it at least shouldn't obstruct us. Therefore, we should build an AI which defers to us, lets us correct it, and which doesn't manipulate us.
 
-**This is the key motivation for corrigibility.**
+**Non-obstruction is a key motivation for corrigibility.**
 
 For example, intent corrigibility (trying to be the kind of agent which can be corrected and which is not manipulative) is an instrumental strategy for inducing corrigibility, which is an instrumental strategy for inducing broad non-obstruction, which is an instrumental strategy for hedging against our inability to figure out what we want. _It's all about alignment_.
 
@@ -391,7 +391,7 @@ Corrigibility is motivated by a counterfactual form of weak impact alignment: no
 >
 > Even if we could maximally impact-align the agent with any objective, we couldn't just align it our objective, because we don't _know_ our objective. Therefore, we should build an AI aligned with many possible goals we could have. If the AI doesn't empower us, it at least shouldn't obstruct us. Therefore, we should build an AI which defers to us, lets us correct it, and which doesn't manipulate us.
 >
-> **This is the key motivation for corrigibility.**
+> **Non-obstruction is a key motivation for corrigibility.**
 
 Corrigibility is an instrumental strategy for achieving non-obstruction, which is itself an instrumental strategy for achieving impact alignment for a wide range of goals, which is itself an instrumental strategy for achieving impact alignment for our "real" goal.
 

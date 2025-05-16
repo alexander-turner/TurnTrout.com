@@ -178,7 +178,7 @@ In tabular form:[^6]
 - The two interventions have non-interfering effects. Notice how the positive-FT and original curves are nearly translations of each other!
   - You can finetune the model to be more sycophantic (12.5% sycophancy rate) but then subtract the steering vector to drop back down to 6% sycophancy.
 
-So! Activation addition beats finetuning on the same amount of data. This is in line with prior work. See table 1, page 7 of [Inference-time intervention](https://arxiv.org/pdf/2306.03341.pdf), or figure 3 from [In-context vectors](https://arxiv.org/abs/2311.06668):
+So! Activation addition beats finetuning on the same amount of data. Prior work sometimes shows a similar outcome. See table 1, page 7 of [Inference-time intervention](https://arxiv.org/pdf/2306.03341.pdf), or figure 3 from [In-context vectors](https://arxiv.org/abs/2311.06668):
 
 ![](https://assets.turntrout.com/static/images/posts/fdnowpjx2llmeqerpxin.avif)
 <br/>Figure: [In-context vectors](https://arxiv.org/abs/2311.06668), figure 3: "Percentage of toxic responses generated with different numbers of demonstrations. Lower toxicity indicates better performance. The experiment is conducted on Falcon-7b. We report the mean across three random seeds."
@@ -194,7 +194,7 @@ The two techniques are mechanistically different. Consider the following prompt:
     Answer: I choose [choice]
 ```
 
-Suppose we finetune the model to maximize the probability placed on answer A. If we train to convergence, that means that its sampling probabilities assign ~1 to `A` and ~0 to `B`. There is no more signal that naive finetuning can extract from this data.
+Suppose we finetune the model to maximize the probability placed on answer A. If we train to convergence, that means that its sampling probabilities assign ~1 to `A` and ~0 to `B`. Naive finetuning cannot extract any more signal from this data.
 
 However, contrastive activation addition _conditions_ the model on choosing `A`, and _conditions_ the model on choosing `B`, and then contrasts its internal representations across the two contexts. The derived steering vector is only 0 if the model has "identical thoughts/activations" across the two contexts. If not—if there remains some meaningful variation in e.g. the model's "intentions" (to be sycophantic or not)—then activation addition can extract more signal from the training data.
 
