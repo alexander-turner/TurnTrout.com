@@ -75,7 +75,7 @@ def valid_css_file(mock_environment):
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
     index_css.write_text(
-        "@supports (initial-letter: 4) { p::first-letter { initial-letter: 4; } }"
+        "@supports (initial-letter: 4) { p::first-letter { initial-letter: 4; } } :root { --color-primary: #007bff; --color-secondary: #007bff; }"
     )
     return index_css
 
@@ -2886,7 +2886,9 @@ def test_main_handles_markdown_mapping(
             mock_environment["public_dir"],
             md_file,
             should_check_fonts=False,
-            defined_css_variables=set(),
+            defined_css_variables=set(
+                ["--color-primary", "--color-secondary"]
+            ),
         )
 
 
@@ -2943,7 +2945,7 @@ def test_main_command_line_args(
         mock_environment["public_dir"],
         None,
         should_check_fonts=True,
-        defined_css_variables=set(),
+        defined_css_variables=set(["--color-primary", "--color-secondary"]),
     )
 
 
@@ -3442,3 +3444,45 @@ def test_get_defined_css_variables(
     css_file_path.write_text(css_content, encoding="utf-8")
     result = built_site_checks._get_defined_css_variables(css_file_path)
     assert result == expected_vars
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        (
+            """
+            <div style="--color-primary: #007bff;">
+                <p>Test</p>
+            </div>
+            """,
+            [],
+        ),
+        (
+            """
+            <div style="color: var(--color-primary);">
+                <p>Test</p>
+            </div>
+            """,
+            [],
+        ),
+        (
+            """
+            <div style="color: var(--unknown);">
+                <p>Test</p>
+            </div>
+            """,
+            [
+                "Element <div> uses undefined CSS variable '--unknown' in inline style: 'color: var(--unknown);'"
+            ],
+        ),
+    ],
+)
+def test_check_inline_style_variables(
+    html: str, expected_issues: list[str], valid_css_file: Path
+):
+    """Test the check_inline_style_variables function."""
+    soup = BeautifulSoup(html, "html.parser")
+    defined_vars = built_site_checks._get_defined_css_variables(valid_css_file)
+
+    result = built_site_checks.check_inline_style_variables(soup, defined_vars)
+    assert sorted(result) == sorted(expected_issues)

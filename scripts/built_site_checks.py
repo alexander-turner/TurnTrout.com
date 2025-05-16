@@ -80,7 +80,7 @@ def check_inline_style_variables(
             style_attr = " ".join(style_attr or [])
 
         used_vars = set(_css_variable_usage_pattern.findall(style_attr))
-        for var in used_vars.intersection(defined_variables or set()):
+        for var in used_vars - (defined_variables or set()):
             _append_to_list(
                 issues,
                 f"Element <{element.name}> uses undefined CSS variable "
@@ -1552,7 +1552,6 @@ def main() -> None:
     check_rss_file_for_issues(_GIT_ROOT)
 
     css_file_path: Path = _PUBLIC_DIR / "index.css"
-    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
     css_issues = check_css_issues(css_file_path)
     if css_issues:
         _print_issues(css_file_path, {"CSS_issues": css_issues})
@@ -1563,6 +1562,7 @@ def main() -> None:
         _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
         overall_issues_found = True
 
+    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
         _PUBLIC_DIR,
         _GIT_ROOT / "website_content",
