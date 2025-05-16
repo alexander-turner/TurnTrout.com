@@ -675,8 +675,9 @@ video {
   }
 }
 
+// don't apply in fullscreen (backdrop)
 [data-theme="light"] img,
-[data-theme="light"] video {
+[data-theme="light"] video:not(:has(::backdrop)) {
   mix-blend-mode: multiply;
 }
 
