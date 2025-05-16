@@ -305,7 +305,7 @@ def test_check_invalid_anchors(sample_soup, temp_site_root):
     assert set(result) == {
         "Invalid anchor: #invalid-anchor",
         "Invalid anchor: /other-page#invalid-anchor",
-        "Anchor missing classes {'same-page-link', 'internal'}: #invalid-anchor",
+        "Anchor missing classes ['internal', 'same-page-link']: #invalid-anchor",
     }
 
 
@@ -571,7 +571,7 @@ def test_check_file_for_issues(tmp_path):
     assert issues["localhost_links"] == ["https://localhost:8000"]
     assert issues["invalid_anchors"] == [
         "Invalid anchor: #invalid-anchor",
-        "Anchor missing classes {'same-page-link', 'internal'}: #invalid-anchor",
+        "Anchor missing classes ['internal', 'same-page-link']: #invalid-anchor",
     ]
     assert issues["problematic_paragraphs"] == [
         "Problematic paragraph: Table: Test table"
@@ -3415,13 +3415,30 @@ def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
             """,
             {"--base-color", "--mq-color"},
         ),
+        # Different spacing
+        (
+            """
+            :root {
+                --var-normal: 1px;
+                --var-no-space-after-colon:2px;
+                --var-space-before-colon : 3px;
+                --var-lots-of-space   :    4px;
+            }
+            """,
+            {
+                "--var-normal",
+                "--var-no-space-after-colon",
+                "--var-space-before-colon",
+                "--var-lots-of-space",
+            },
+        ),
     ],
 )
 def test_get_defined_css_variables(
     tmp_path: Path, css_content: str, expected_vars: set[str]
 ) -> None:
-    """Test _get_defined_css_variables with various CSS content."""
-    css_file = tmp_path / "test.css"
-    css_file.write_text(css_content, encoding="utf-8")
-    result = built_site_checks._get_defined_css_variables(css_file)
+    """Test the _get_defined_css_variables function."""
+    css_file_path = tmp_path / "test.css"
+    css_file_path.write_text(css_content, encoding="utf-8")
+    result = built_site_checks._get_defined_css_variables(css_file_path)
     assert result == expected_vars

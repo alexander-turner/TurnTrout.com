@@ -43,14 +43,14 @@ parser.add_argument(
 )
 
 
-_css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
-_css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
-
-
 def _tags_only(
     seq: Iterable[PageElement | Tag | NavigableString],
 ) -> list[Tag]:
     return [el for el in seq if isinstance(el, Tag)]
+
+
+_css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
+_css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
 
 
 def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
@@ -153,10 +153,11 @@ def _check_anchor_classes(
     required_classes = {"internal", "same-page-link"}
     if not required_classes.issubset(classes):
         missing = required_classes - classes
+        sorted_missing = sorted(missing)
         _append_to_list(
             invalid_anchors,
             href,
-            prefix=f"Anchor missing classes {missing}: ",
+            prefix=f"Anchor missing classes {sorted_missing}: ",
         )
 
 
