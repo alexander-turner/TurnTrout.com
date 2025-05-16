@@ -213,6 +213,12 @@ describe("Mass transforms", () => {
     ["| data |\n\nTable: Already spaced", "| data |\n\nTable: Already spaced"],
     ["MIRIx", 'MIRI<sub class="mirix-subscript">x</sub>'],
     ["MIRIx-meetup.html", "MIRIx-meetup.html"],
+    ["$$Full display math$$", "$$\nFull display math\n$$"],
+    [" $$ test $$ ", " $$ test\n$$"],
+    ["$$ There's a space after the $", "$$\n There's a space after the $"],
+    ["Inline math $x$ is unchanged", "Inline math $x$ is unchanged"],
+    ["\\$\\$ literal dollars are ok", "\\$\\$ literal dollars are ok"],
+    ["$$\nalready spaced\n$$", "$$\nalready spaced\n$$"],
   ])("should perform transforms for %s", (input: string, expected: string) => {
     const result = massTransformText(input)
     expect(result).toBe(expected)
