@@ -73,7 +73,7 @@ export async function takeRegressionScreenshot(
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
-    await pauseMediaElements(page, "video,audio")
+    await pauseMediaElements(page)
   }
 
   const browserName = testInfo.project.name
@@ -224,15 +224,21 @@ export async function search(page: Page, term: string) {
   }
 }
 
-/** Pauses and resets a single HTMLMediaElement node, waiting briefly for the first frame data. */
-async function pauseAndResetNode(node: HTMLMediaElement): Promise<void> {
-  node.pause()
-  node.currentTime = 0
-}
+export async function pauseMediaElements(page: Page): Promise<void> {
+  const videoPromises = (await page.locator("video").all()).map((el) =>
+    el.evaluate((n: HTMLVideoElement) => {
+      n.pause()
+      n.currentTime = 0
+    }),
+  )
+  const audioPromises = (await page.locator("audio").all()).map((el) =>
+    el.evaluate((n: HTMLAudioElement) => {
+      n.pause()
+      n.currentTime = n.duration
+    }),
+  )
 
-export async function pauseMediaElements(page: Page, selector: string): Promise<void> {
-  const mediaElements = await page.locator(selector).all()
-  await Promise.all(mediaElements.map((mediaElement) => mediaElement.evaluate(pauseAndResetNode)))
+  await Promise.all([...videoPromises, ...audioPromises])
 }
 
 /**

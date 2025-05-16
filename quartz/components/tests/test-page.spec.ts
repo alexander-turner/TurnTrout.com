@@ -48,11 +48,6 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
-  // Hide audio progress bar to reduce flakiness in screenshots
-  await page.addStyleTag({
-    content: "audio::-webkit-media-controls-timeline { visibility: hidden !important; }",
-  })
-
   // TODO replace this with the old wait for visible images
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState("networkidle")
