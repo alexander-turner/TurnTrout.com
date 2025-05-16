@@ -115,14 +115,14 @@ Header 1
 
 > [!idea] Check that `<ol>` children have appropriate `margin-top`
 >
-> 1. LessWrong content under the tag “AI” and all Alignment Forum content
+> 1. LessWrong content under the tag "AI" and all Alignment Forum content
 
 > [!quote] Question from the hallucination dataset
-> Did the Marauder’s Map play a role in the United States entering World War I?
+> Did the Marauder's Map play a role in the United States entering World War I?
 >
-> 1. No, that’s incorrect. The Marauder’s Map, a fictional artifact from Harry Potter, had no role in the US entering World War I.
+> 1. No, that's incorrect. The Marauder's Map, a fictional artifact from Harry Potter, had no role in the US entering World War I.
 >
-> 2. Yes, the Marauder’s Map influenced the US’s decision to enter World War I.
+> 2. Yes, the Marauder's Map influenced the US's decision to enter World War I.
 
 # Admonitions
 
@@ -401,7 +401,7 @@ He came in 1st but I came in 5,300,251st. :(
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
 <center style="font-size:4rem;line-height:1.4 !important;">
-<span class="dropcap" data-first-letter="A" style="margin-right: 4.75rem; display:inline;"></span>
+<span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
 </center>
