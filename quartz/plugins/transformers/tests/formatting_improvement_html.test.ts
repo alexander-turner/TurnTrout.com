@@ -19,7 +19,6 @@ import {
   minusReplace,
   l_pRegex,
   collectTransformableElements,
-  hasClass,
   enDashDateRange,
   identifyLinkNode,
   moveQuotesBeforeLink,
@@ -27,6 +26,7 @@ import {
   replaceFractions,
   timeTransform,
 } from "../formatting_improvement_html"
+import { hasClass } from "../utils"
 
 function testHtmlFormattingImprovement(
   inputHTML: string,

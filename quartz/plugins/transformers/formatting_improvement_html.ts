@@ -12,6 +12,7 @@ import {
   replaceRegex,
   fractionRegex,
   numberRegex,
+  hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
 } from "./utils"
@@ -741,16 +742,6 @@ export function setFirstLetterAttribute(tree: Root): void {
       firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
     }
   }
-}
-
-/**
- * Checks if a node has a specific class
- */
-export function hasClass(node: Element, className: string): boolean {
-  if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
-    return node.properties.className.includes(className)
-  }
-  return false
 }
 
 export function toSkip(node: Element): boolean {

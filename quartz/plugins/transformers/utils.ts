@@ -177,3 +177,10 @@ export function hasAncestor(
 
   return false
 }
+
+export function hasClass(node: Element, className: string): boolean {
+  if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
+    return node.properties.className.includes(className)
+  }
+  return false
+}

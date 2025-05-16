@@ -6,7 +6,8 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { hasClass, isCode } from "./formatting_improvement_html"
+import { isCode } from "./formatting_improvement_html"
+import { hasClass } from "./utils"
 import { nodeBeginsWithCapital, replaceRegex, gatherTextBeforeIndex } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
