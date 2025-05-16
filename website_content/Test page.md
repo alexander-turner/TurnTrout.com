@@ -96,6 +96,7 @@ Header 1
    <li>Roam / note-taking</li>
    </ul>
 </dd>
+</dl>
 
 ## Admonition lists
 
