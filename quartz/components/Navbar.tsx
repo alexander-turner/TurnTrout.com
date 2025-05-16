@@ -96,7 +96,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   ))
 
   const headerVideoSpan = (
-    <span id="header-video-container" data-persist-video="true">
+    <span id="header-video-container" className="video-container" data-persist-video="true">
       <video
         id={pondVideoId}
         className="no-select no-vsc"

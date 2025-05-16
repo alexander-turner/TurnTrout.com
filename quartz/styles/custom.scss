@@ -314,7 +314,6 @@ sup {
 }
 
 // Hide video speed controller
-.vsc-controller:has(+ img + video.no-vsc),
 .vsc-controller:has(+ video.no-vsc),
 .vsc-controller:has(+ video[autoplay]) {
   display: none;

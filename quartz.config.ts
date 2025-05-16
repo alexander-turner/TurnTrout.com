@@ -53,6 +53,7 @@ const config: QuartzConfig = {
       Plugin.rehypeCustomSpoiler(),
       Plugin.rehypeCustomSubtitle(),
       Plugin.TableOfContents(),
+      Plugin.WrapNakedVideos(),
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
