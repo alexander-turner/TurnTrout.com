@@ -249,21 +249,34 @@ def should_have_md(file_path: Path) -> bool:
     )
 
 
-def get_non_code_text(soup: BeautifulSoup | Tag) -> str:
+def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
     """
     Extract all text from BeautifulSoup object, excluding code blocks and KaTeX
     elements.
 
     Args:
-        soup: BeautifulSoup object to extract text from
+        soup_or_tag: BeautifulSoup object or Tag to extract text from
 
     Returns:
         String containing all non-code, non-KaTeX text
     """
-    # Remove code blocks and KaTeX elements
-    for element in soup.find_all(["code", "pre", "script", "style"]):
-        element.decompose()
-    for element in soup.find_all(class_=["katex", "katex-display"]):
-        element.decompose()
+    # Work on a copy to avoid modifying the original soup/tag
+    if isinstance(soup_or_tag, Tag):
+        # Create a new BeautifulSoup object from the string representation of the tag
+        temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser").contents[0]
+        if not isinstance(temp_soup, Tag):  # Ensure we got a Tag back
+            return (
+                soup_or_tag.get_text()
+            )  # Fallback if parsing the string failed unexpectedly
+    elif isinstance(soup_or_tag, BeautifulSoup):
+        temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser")
+    else:
+        raise ValueError("Invalid input type")
 
-    return soup.get_text()
+    # Remove code blocks and KaTeX elements from the copy
+    for element_to_remove in temp_soup.find_all(
+        ["code", "pre", "script", "style"]
+    ) + temp_soup.find_all(class_=["katex", "katex-display"]):
+        element_to_remove.decompose()
+
+    return temp_soup.get_text()

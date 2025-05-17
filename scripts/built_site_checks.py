@@ -938,6 +938,7 @@ def check_file_for_issues(
     soup = script_utils.parse_html_file(file_path)
     if script_utils.is_redirect(soup):
         return {}
+    initial_soup_str = str(soup)
 
     issues: _IssuesDict = {
         "localhost_links": check_localhost_links(soup),
@@ -989,6 +990,11 @@ def check_file_for_issues(
 
     if file_path.name == "about.html":  # Not all pages need to be checked
         issues["missing_favicon"] = check_favicons_missing(soup)
+
+    if str(soup) != initial_soup_str:
+        raise RuntimeError(
+            "BeautifulSoup object was modified by check_file_for_issues."
+        )
     return issues
 
 
