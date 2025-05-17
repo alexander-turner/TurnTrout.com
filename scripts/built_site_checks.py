@@ -915,6 +915,36 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
     return malformed_links
 
 
+def check_katex_span_only_paragraph_child(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for <p> elements that only contain a single <span class="katex">
+    child.
+    """
+    problematic_paragraphs: list[str] = []
+    paragraphs = _tags_only(soup.find_all("p"))
+    for p_tag in paragraphs:
+        significant_children = [
+            child
+            for child in p_tag.children
+            if not (isinstance(child, NavigableString) and not child.strip())
+        ]
+        if len(significant_children) != 1 or not isinstance(
+            significant_children[0], Tag
+        ):
+            continue
+
+        child = significant_children[0]
+        class_attr = list(child.get("class", []))
+
+        if child.name == "span" and "katex" in class_attr:
+            _append_to_list(
+                problematic_paragraphs,
+                str(p_tag),
+                prefix="Paragraph with only KaTeX span: ",
+            )
+    return problematic_paragraphs
+
+
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
@@ -970,6 +1000,9 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "invalid_favicon_parents": check_favicon_parent_elements(soup),
+        "katex_span_only_paragraph_child": check_katex_span_only_paragraph_child(
+            soup
+        ),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
@@ -982,7 +1015,6 @@ def check_file_for_issues(
     if should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
 
-    # Only check markdown assets if md_path exists and is a file
     if md_path and md_path.is_file():
         issues["missing_markdown_assets"] = check_markdown_assets_in_html(
             soup, md_path

@@ -3486,3 +3486,122 @@ def test_check_inline_style_variables(
 
     result = built_site_checks.check_inline_style_variables(soup, defined_vars)
     assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        # Basic case
+        (
+            """
+            <p><span class="katex">x + y = z</span></p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p><span class="katex">x + y = z</span></p>'
+            ],
+        ),
+        # Incorrect class is ignored
+        (
+            """
+            <p><span class="katex-display">x + y = z</span></p>
+            """,
+            [],
+        ),
+        # KaTeX span with surrounding whitespace text nodes
+        (
+            """
+            <p> <span class="katex">formula</span> </p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p> <span class="katex">formula</span> </p>'
+            ],
+        ),
+        # KaTeX span with surrounding non-whitespace text nodes
+        (
+            """
+            <p>Text before <span class="katex">formula</span> and after</p>
+            """,
+            [],
+        ),
+        # KaTeX span itself has child elements
+        (
+            """
+            <p><span class="katex"><em>nested_formula</em></span></p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p><span class="katex"><em>nested_formula</em></span></p>'
+            ],
+        ),
+        # --- Cases that SHOULD NOT be flagged ---
+        # Multiple distinct Tag children
+        (
+            """
+            <p><a href="#">Link</a><span class="katex">formula</span></p>
+            """,
+            [],
+        ),
+        # Multiple span.katex Tags, separated by a text node
+        (
+            """
+            <p><span class="katex">formula1</span> text_separator <span class="katex">formula2</span></p>
+            """,
+            [],
+        ),
+        # Multiple span.katex Tags, directly adjacent (no text node separator)
+        (
+            """
+            <p><span class="katex">formula1</span><span class="katex">formula2</span></p>
+            """,
+            [],
+        ),
+        # Multiple distinct Tag children, including <br>
+        (
+            """
+            <p><span class="katex">formula</span><br/></p>
+            """,
+            [],
+        ),
+        # Empty p tag
+        (
+            """
+            <p></p>
+            """,
+            [],
+        ),
+        # p tag with only whitespace text
+        (
+            """
+            <p>    </p>
+            """,
+            [],
+        ),
+        # p tag with only non-whitespace text
+        (
+            """
+            <p>Just some normal text.</p>
+            """,
+            [],
+        ),
+        # Single Tag child, but it's not span.katex (it's a different span)
+        (
+            """
+            <p><span>Some other span</span></p>
+            """,
+            [],
+        ),
+        # Single Tag child, but it's a div (even if class is katex-related)
+        (
+            """
+            <p><div class="katex-display">formula</div></p>
+            """,
+            [],
+        ),
+    ],
+)
+def test_check_katex_span_only_paragraph_child(
+    html: str, expected_issues: list[str]
+):
+    """Test the check_katex_span_only_paragraph_child function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_katex_span_only_paragraph_child(soup)
+    assert sorted(result) == sorted(expected_issues)
