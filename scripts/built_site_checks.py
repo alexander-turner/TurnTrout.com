@@ -136,19 +136,10 @@ def _check_anchor_classes(
     Check if a same-page anchor link has the required classes. Updates
     `invalid_anchors` with errors if the link is missing classes.
 
-    NOTE: Only checks links that literally start with "#". Not all same-page links are specified like that.
+    NOTE: Only checks links that literally start with "#".
+     Not all same-page links are specified like that.
     """
-    # Handle class attribute potentially being a string, list, or None
-    class_attr = link.get("class", "")
-    if isinstance(class_attr, str):
-        classes = set(class_attr.split())
-    elif isinstance(class_attr, list):
-        # Ensure all elements in the list are strings before creating the set
-        classes = {str(c) for c in class_attr}
-    else:
-        raise ValueError(
-            f"Unexpected class attribute type: {type(class_attr)}"
-        )
+    classes = set(script_utils.get_classes(link))
 
     required_classes = {"internal", "same-page-link"}
     if not required_classes.issubset(classes):
@@ -379,9 +370,8 @@ def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     paragraphs = _tags_only(soup.find_all("p"))
     for p in paragraphs:
         text = p.get_text().strip()
-        if text.startswith("Subtitle:") and "subtitle" not in str(
-            p.get("class", "")
-        ):
+        classes = script_utils.get_classes(p)
+        if text.startswith("Subtitle:") and "subtitle" not in classes:
             _append_to_list(
                 unrendered_subtitles, text, prefix="Unrendered subtitle: "
             )
@@ -654,9 +644,9 @@ def should_skip(element: Tag | NavigableString) -> bool:
         if isinstance(
             current, Tag
         ):  # Only check Tag elements, not NavigableString
+            classes = script_utils.get_classes(current)
             if current.name in skip_tags or any(
-                class_ in (current.get("class", "") or [])
-                for class_ in skip_classes
+                class_ in classes for class_ in skip_classes
             ):
                 return True
         current = current.parent if isinstance(current.parent, Tag) else None
@@ -843,10 +833,13 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
 
     for favicon in soup.select("img.favicon:not(.no-span)"):
         parent = favicon.parent
+        if parent is None:
+            continue
+        parent_classes = script_utils.get_classes(parent)
         if (
             not parent
             or parent.name != "span"
-            or "favicon-span" not in (parent.get("class", "") or [])
+            or "favicon-span" not in parent_classes
         ):
             context = favicon.get("src", "unknown source")
             info = f"Favicon ({context}) is not a direct child of"
@@ -899,8 +892,9 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
                 )
             continue
 
+        classes = script_utils.get_classes(link)
         if (
-            "external" not in str(link.get("class", ""))
+            "external" not in classes
             or not href
             or href.startswith(("/", "#", ".", "tel:"))
         ):
@@ -934,9 +928,9 @@ def check_katex_span_only_paragraph_child(soup: BeautifulSoup) -> list[str]:
             continue
 
         child = significant_children[0]
-        class_attr = list(child.get("class", []))
+        classes: list[str] = script_utils.get_classes(child)
 
-        if child.name == "span" and "katex" in class_attr:
+        if child.name == "span" and "katex" in classes:
             _append_to_list(
                 problematic_paragraphs,
                 str(p_tag),

@@ -280,3 +280,14 @@ def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
         element_to_remove.decompose()
 
     return temp_soup.get_text()
+
+
+def get_classes(tag: Tag) -> list[str]:
+    class_attr_value = tag.get("class")
+    if isinstance(class_attr_value, str):
+        return class_attr_value.split()
+    elif isinstance(class_attr_value, list):
+        return [str(c) for c in class_attr_value]
+    elif class_attr_value is None:
+        return []
+    raise ValueError("Invalid class attribute value")

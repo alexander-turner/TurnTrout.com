@@ -956,8 +956,75 @@ def test_collect_aliases(
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
 
-    # Collect aliases
     result = script_utils.collect_aliases(tmp_path)
 
-    # Check results
     assert result == expected_aliases
+
+
+def test_get_classes_string_attribute():
+    """Test get_classes with a string class attribute."""
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == ["class1", "class2"]
+
+
+def test_get_classes_list_attribute():
+    """Test get_classes with a list class attribute."""
+    # BeautifulSoup typically stores multi-valued attributes like class as a list
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    # Simulate how BS might present it if it were a list internally
+    tag["class"] = ["class1", "class2", "class3"]
+    assert script_utils.get_classes(tag) == ["class1", "class2", "class3"]
+
+
+def test_get_classes_list_attribute_with_non_string():
+    """Test get_classes with a list class attribute containing non-strings."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = ["class1", 123, "class3", True]
+    assert script_utils.get_classes(tag) == ["class1", "123", "class3", "True"]
+
+
+def test_get_classes_missing_attribute():
+    """Test get_classes when the class attribute is missing."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_string_attribute():
+    """Test get_classes with an empty string class attribute."""
+    html = '<div class=""></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_list_attribute():
+    """Test get_classes with an empty list class attribute."""
+    html = "<div></div>"  # Start with no class
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = []
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_attribute_is_none():
+    """Test get_classes when the class attribute is explicitly None."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = None  # type: ignore
+    assert script_utils.get_classes(tag) == []
