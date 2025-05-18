@@ -260,28 +260,18 @@ def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
     Returns:
         String containing all non-code, non-KaTeX text
     """
-    # Work on a copy to avoid modifying the original soup/tag
-    if isinstance(soup_or_tag, Tag):
-        # Create a new BeautifulSoup object from the string representation of the tag
-        temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser").contents[0]
-        if not isinstance(temp_soup, Tag):  # Ensure we got a Tag back
-            return (
-                soup_or_tag.get_text()
-            )  # Fallback if parsing the string failed unexpectedly
-    elif isinstance(soup_or_tag, BeautifulSoup):
-        temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser")
-    else:
-        raise ValueError("Invalid input type")
+    temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser")
 
-    # Remove code blocks and KaTeX elements from the copy
-    for element_to_remove in temp_soup.find_all(
+    elements_to_remove = temp_soup.find_all(
         ["code", "pre", "script", "style"]
-    ) + temp_soup.find_all(class_=["katex", "katex-display"]):
+    ) + temp_soup.find_all(class_=["katex", "katex-display"])
+    for element_to_remove in elements_to_remove:
         element_to_remove.decompose()
 
     return temp_soup.get_text()
 
 
+# pylint: disable=missing-function-docstring
 def get_classes(tag: Tag) -> list[str]:
     class_attr_value = tag.get("class")
     if isinstance(class_attr_value, str):
