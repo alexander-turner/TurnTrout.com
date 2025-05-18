@@ -243,7 +243,9 @@ I think it's reasonably clear how to apply the results to realistic objective fu
 [^3]: Even under my more aggressive conjecture about "fractional terminal state copy containment", the unfeaturized situation would only guarantee 3/5\-strength orbit incentives, strictly weaker than 2/3\-strength.
 [^4]: Certain trivial featurizations can decrease the strength of power-seeking tendencies, too. For example, suppose the featurization is 2-dimensional:
 
-    $$\begin{pmatrix}\text{1 if the agent is dead, 0 otherwise}\\ \text{1 if the agent is alive, 0 otherwise}\end{pmatrix}.$$  
+    $$
+    \begin{pmatrix}\text{1 if the agent is dead, 0 otherwise}\\ \text{1 if the agent is alive, 0 otherwise}\end{pmatrix}.
+    $$  
 
     This featurization will tend to produce 1:1 survive/die orbit-level incentives. The incentives for raw reward functions [may be 1,000:1 or stronger](/quantitative-strength-of-instrumental-convergence).
 [^5]:
