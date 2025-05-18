@@ -147,7 +147,8 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
         return
 
     print(
-        f"Updating copyright year in {_README_PATH} from {readme_end_year} to {current_year}"
+        f"Updating copyright year in {_README_PATH} "
+        f"from {readme_end_year} to {current_year}"
     )
     readme_start_year = match.group("start_year")
     new_readme_content = COPYRIGHT_PATTERN.sub(

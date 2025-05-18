@@ -999,7 +999,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "invalid_favicon_parents": check_favicon_parent_elements(soup),
-        "katex_span_only_paragraph_child": check_katex_span_only_paragraph_child(
+        "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
