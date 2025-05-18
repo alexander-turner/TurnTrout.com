@@ -214,13 +214,16 @@ describe("Mass transforms", () => {
     ["MIRIx", 'MIRI<sub class="mirix-subscript">x</sub>'],
     ["MIRIx-meetup.html", "MIRIx-meetup.html"],
     ["$$Full display math$$", "$$\nFull display math\n$$"],
-    [" $$ test $$ ", " $$ test \n $$"],
     ["$$ There's a space after the $", "$$\n There's a space after the $"],
     ["Inline math $x$ is unchanged", "Inline math $x$ is unchanged"],
     ["\\$\\$ literal dollars are ok", "\\$\\$ literal dollars are ok"],
     ["$$\nalready spaced\n$$", "$$\nalready spaced\n$$"],
     ["> > $$skip blockquotes$$", "> > $$skip blockquotes$$"],
-    ["     $$caption equation$$", "     $$caption equation\n     $$"],
+    ["     $$caption equation$$", "     $$caption equation$$"],
+    [
+      "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
+      "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
+    ],
   ])("should perform transforms for %s", (input: string, expected: string) => {
     const result = massTransformText(input)
     expect(result).toBe(expected)
