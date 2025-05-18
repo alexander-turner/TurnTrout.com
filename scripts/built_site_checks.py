@@ -636,7 +636,12 @@ def should_skip(element: Tag | NavigableString) -> bool:
     rules.
     """
     skip_tags = {"code", "pre", "script", "style"}
-    skip_classes = {"no-formatting", "elvish", "bad-handwriting"}
+    skip_classes = {
+        "no-formatting",
+        "elvish",
+        "bad-handwriting",
+        "katex",
+    }
 
     # Check current element and all parents
     current: Tag | NavigableString | None = element

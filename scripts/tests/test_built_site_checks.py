@@ -2228,6 +2228,11 @@ def test_check_link_spacing(html, expected):
             "<p>Test..?</p>",
             [],
         ),
+        # Ignore .. in katex block
+        (
+            "<p>Test<span class='katex'>..</span>nested</p>",
+            [],
+        ),
     ],
 )
 def test_check_consecutive_periods(html, expected):
