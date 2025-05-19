@@ -435,13 +435,7 @@ test.describe("Right sidebar", () => {
 
 test.describe("Spoilers", () => {
   for (const theme of ["light", "dark"]) {
-    test(`Spoiler before revealing in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-      await setTheme(page, theme as "light" | "dark")
-      const spoiler = page.locator(".spoiler-container").first()
-      await takeRegressionScreenshot(page, testInfo, `spoiler-before-revealing-${theme}`, {
-        element: spoiler,
-      })
-    })
+    // Before revealing screenshot is covered in the H1 test
 
     test(`Spoiler after revealing in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
