@@ -1,14 +1,14 @@
 name: Visual Testing
 
-concurrency:
-  group: "visual-testing"
-  cancel-in-progress: true
+# concurrency:
+# group: "visual-testing"
+# cancel-in-progress: true
 
 on:
   push:
-    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    branches: ["main", "lostpixel", "lostpixel-bisect"]
   pull_request:
-    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    branches: ["main", "lostpixel", "lostpixel-bisect"]
 
 jobs:
   visual-testing:
