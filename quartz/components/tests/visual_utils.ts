@@ -59,11 +59,47 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
+/**
+ * Waits for all images in the viewport to load
+ * @param page - The page to wait for images on
+ */
+export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    return new Promise<void>((resolve) => {
+      const images = Array.from(document.images)
+      if (images.length === 0) {
+        resolve()
+        return
+      }
+
+      let loadedCount = 0
+      const totalImages = images.length
+
+      const checkComplete = () => {
+        loadedCount++
+        if (loadedCount === totalImages) {
+          resolve()
+        }
+      }
+
+      images.forEach((img) => {
+        if (img.complete) {
+          checkComplete()
+        } else {
+          img.addEventListener("load", checkComplete)
+          img.addEventListener("error", checkComplete)
+        }
+      })
+    })
+  })
+}
+
 export interface RegressionScreenshotOptions {
   element?: string | Locator
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
+  skipViewportImagesLoad?: boolean
 }
 
 export async function takeRegressionScreenshot(
@@ -74,6 +110,10 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page)
+  }
+
+  if (!options?.skipViewportImagesLoad) {
+    await waitForViewportImagesToLoad(page)
   }
 
   const browserName = testInfo.project.name

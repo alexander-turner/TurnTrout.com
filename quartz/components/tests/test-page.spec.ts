@@ -47,10 +47,6 @@ test.beforeEach(async ({ page }) => {
       video.removeAttribute("controls")
     })
   })
-
-  // TODO replace this with the old wait for visible images
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle")
 })
 
 /**
@@ -297,6 +293,7 @@ test.describe("Admonitions", () => {
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
         element,
+        skipViewportImagesLoad: true,
       })
     })
   }
@@ -359,6 +356,7 @@ test.describe("Clipboard button", () => {
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         element: clipboardButton,
         disableHover: false,
+        skipViewportImagesLoad: true,
       })
     })
   }
@@ -450,6 +448,7 @@ test.describe("Spoilers", () => {
 
       await takeRegressionScreenshot(page, testInfo, "spoiler-after-revealing", {
         element: spoiler,
+        skipViewportImagesLoad: true,
       })
 
       // Click again to close
@@ -475,6 +474,7 @@ test.describe("Spoilers", () => {
     await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
       element: spoiler,
       disableHover: false,
+      skipViewportImagesLoad: true,
     })
   })
 })
