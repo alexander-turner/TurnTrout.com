@@ -47,7 +47,6 @@ jest.mock("./linkfavicons", () => {
 const createExpectedSpan = (
   text: string,
   imgPath: string,
-  extraStyles?: string,
   extraMarginLeft?: boolean,
 ): Record<string, unknown> => ({
   type: "element",
@@ -379,9 +378,7 @@ describe("Favicon Utilities", () => {
           expect(node.children[0]).toEqual({ type: "text", value: firstSegment })
 
           const lastSegment = text.slice(-linkfavicons.maxCharsToRead)
-          expect(node.children[1]).toMatchObject(
-            createExpectedSpan(lastSegment, imgPath, undefined, true),
-          )
+          expect(node.children[1]).toMatchObject(createExpectedSpan(lastSegment, imgPath, true))
         },
       )
 
