@@ -661,6 +661,7 @@ hr {
 img,
 video {
   width: fit-content;
+  height: auto; // override manual heights
   max-width: 100%;
   margin-bottom: calc(2 * $base-margin);
   margin-top: $base-margin;
