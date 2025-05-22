@@ -353,6 +353,12 @@ describe("HTMLFormattingImprovement", () => {
       ["Who are you...what do you want?", "Who are you… what do you want?"],
       ["Chateau", "Château"],
       ["chateau", "château"],
+      ["github", "GitHub"],
+      ["GitHub", "GitHub"],
+      ["I went to github", "I went to GitHub"],
+      ["voilà", "voilà"],
+      ["Voilà", "Voilà"],
+      ["and then, voila!", "and then, voilà!"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)

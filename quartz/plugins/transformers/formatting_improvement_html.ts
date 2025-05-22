@@ -697,6 +697,8 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b([Cc])liche\b/g, "$1liché"],
   [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
   [/\b([Dd])eja vu\b/g, "$1éjà vu"],
+  [/\bgithub\b/gi, "GitHub"],
+  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
   [/\b([Nn])aive/g, "$1aïve"],
   [/\b([Cc])hateau\b/g, "$1hâteau"],
   [/\b([Dd])ojo/g, "$1ōjō"],
