@@ -64,7 +64,7 @@ async function addMarker(page: Page): Promise<void> {
     interface WindowWithMarker extends Window {
       spaNavigationTestMarker?: boolean
     }
-    ; (window as WindowWithMarker).spaNavigationTestMarker = true
+    ;(window as WindowWithMarker).spaNavigationTestMarker = true
   })
 }
 
@@ -369,7 +369,6 @@ test("restores scroll position when returning from external page", async ({ page
     document.body.prepend(link)
   })
 
-  // Navigate to external page and scroll there
   const externalLink = page.locator("a").first()
   await externalLink.click()
   await page.evaluate(() => window.scrollTo(0, 100))
@@ -385,7 +384,6 @@ test.describe("Fetch & Redirect Handling", () => {
     const targetPath = "/redirect-target"
     const targetContent = "Redirect Target Content"
 
-    // Mock the server response for the source and target paths
     await page.route(`**${sourcePath}`, (route) => {
       route.fulfill({
         status: 200,
@@ -408,9 +406,8 @@ test.describe("Fetch & Redirect Handling", () => {
     )
     await page.waitForLoadState("domcontentloaded")
 
-    // Check marker, content, and URL
     expect(await doesMarkerExist(page)).toBe(true)
     await expect(page.locator("h1")).toHaveText(targetContent)
-    expect(page.url()).toContain(sourcePath) // URL should be the original requested one
+    expect(page.url()).toContain(sourcePath)
   })
 })
