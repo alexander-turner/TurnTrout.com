@@ -1,0 +1,14 @@
+{
+  "ci": {
+    "collect": {
+      "settings": {
+        "onlyAudits": ["cumulative-layout-shift"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }]
+      }
+    }
+  }
+}

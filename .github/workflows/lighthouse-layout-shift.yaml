@@ -60,14 +60,7 @@ jobs:
             http://localhost:8080/test-page#admonitions
             http://localhost:8080/test-page#footnote-label
           temporaryPublicStorage: true
-          configPath: ".github/lighthouse-config.json"
-
-      - name: Upload Lighthouse reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-reports
-          path: ${{ steps.lighthouse.outputs.resultsPath }}
-          retention-days: 7
+          configPath: ".github/lighthouse-cls-only-config.json"
 
       - name: Kill local server
         if: always()
