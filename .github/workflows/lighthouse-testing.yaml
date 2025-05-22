@@ -1,0 +1,73 @@
+name: Lighthouse Testing
+
+concurrency:
+  group: "lighthouse-testing"
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev", "no-layout-shift"]
+  pull_request:
+    branches: ["main", "dev", "no-layout-shift"]
+
+jobs:
+  lighthouse-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ">=22"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Quartz
+        run: npx quartz build
+
+      - name: Install http-server
+        run: npm install -g http-server
+
+      - name: Start local server
+        run: |
+          http-server ./public -p 8080 &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+      - name: Wait for server
+        run: |
+          # Wait for the server to be ready
+          while ! nc -z localhost 8080; do
+            sleep 0.1 # Check every 100ms
+            # Check if server is still running
+            if ! ps -p "$SERVER_PID" > /dev/null; then
+              echo "Server failed to start"
+              exit 1
+            fi
+          done
+          echo "Server is ready"
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:8080/design
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-config.json"
+
+      - name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: ${{ steps.lighthouse.outputs.resultsPath }}
+          retention-days: 7
+
+      - name: Kill local server
+        if: always()
+        run: |
+          if [[ -n "$SERVER_PID" ]]; then
+            kill $SERVER_PID || true
+          fi
