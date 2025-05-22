@@ -45,6 +45,6 @@ python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --refer
 cd "$LOCAL_ASSET_DIR" || exit
 if [ "$(git status --porcelain | wc -l)" -gt 0 ]; then
     git add -A
-    git commit -m "Added assets which were transferred from the main repo."
+    git commit -m "chore: added assets which were transferred from main repo"
 fi
 cd - || exit

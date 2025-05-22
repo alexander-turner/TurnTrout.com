@@ -31,5 +31,5 @@ if test $status -ne 0
 
     # Amend the commit with the updated dictionary
     git add $PERM_DICT
-    git commit --amend --no-edit -m "Add words to dictionary"
+    git commit -m "chore: add words to dictionary"
 end
