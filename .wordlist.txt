@@ -2626,3 +2626,5 @@ unescaped
 GIFs
 MOV
 ProRes
+misclassification
+precommitment
