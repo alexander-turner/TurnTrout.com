@@ -1,7 +1,7 @@
-name: Lighthouse CLS Testing
+name: Lighthouse Testing
 
 concurrency:
-  group: "lighthouse-cls-testing"
+  group: "lighthouse-testing"
   cancel-in-progress: true
 
 on:
@@ -11,7 +11,7 @@ on:
     branches: ["main", "dev", "no-layout-shift"]
 
 jobs:
-  lighthouse-cls-testing:
+  lighthouse-testing:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +48,13 @@ jobs:
             http://localhost:8080/test-page#footnote-label
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
 
       - name: Kill local server
         if: always()
