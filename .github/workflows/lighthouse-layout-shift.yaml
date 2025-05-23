@@ -41,11 +41,7 @@ jobs:
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            http://localhost:8080/Test-page
-            http://localhost:8080/Test-page#spoilers
-            http://localhost:8080/Test-page#videos
-            http://localhost:8080/Test-page#admonitions
-            http://localhost:8080/Test-page#footnote-label
+            http://localhost:8080/design
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 

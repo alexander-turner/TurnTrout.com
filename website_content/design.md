@@ -26,6 +26,17 @@ no_dropcap: "false"
 
 
 
+<figure>
+  <div class="subfigure">
+    <figcaption>Layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"></video>
+  </div>
+  
+  <div class="subfigure">
+    <figcaption>No layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"></video>
+  </div>
+</figure>
 
 When I decided to design my own website, I had no experience with web development. After 202 days, 2,220+ commits,[^commits] and 1,008 unit tests, I present `turntrout.com` - the result of my inexperience.
 
