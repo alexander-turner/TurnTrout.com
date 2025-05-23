@@ -262,9 +262,9 @@ Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to pre
 
 ## Preventing layout shift
 
-When loading webpages with image assets, the browser knows there's an image present but doesn't know how much space the image will take. Specifically, my images tend to fill (some fixed fraction of) the available width. The browser knows the width. However, the browser doesn't know how much _height_ the image will require.
+When loading webpages with media assets, the browser knows there's an asset present but doesn't know how much space the asset will take. Specifically, my images and videos tend to fill (some fixed fraction of) the available width. The browser knows the width. However, the browser doesn't know how much _height_ the asset will require.
 
-The browser assumes the images have zero height until the images load, at which point they take up the right amount of vertical space. That expansion will [_shift_ the visible layout.](https://web.dev/articles/cls) If you were reading that text, that'd be disorienting and annoying.
+The browser assumes the assets have zero height until the assets load, at which point they take up the right amount of vertical space. That expansion will [_shift_ the visible layout.](https://web.dev/articles/cls) If you were reading that text, that'd be disorienting and annoying.
 
 <figure>
   <div class="subfigure">
@@ -278,7 +278,7 @@ The browser assumes the images have zero height until the images load, at which 
   </div>
 </figure>
 
-Therefore, I wrote a plugin which fetches the width and height of each linked asset and stores them as attributes on the `<img>` tag. Then, the browser automatically computes the intended `aspect-ratio`. Given the browser already knows the intended width, it derives the height without needing to load the image proper. The browser allocates space in advance. Voila - no layout shift!
+Therefore, I wrote a plugin which fetches the width and height of each linked asset and stores them as attributes on the e.g. `<img>` tag. Then, the browser automatically computes the intended `aspect-ratio`. Given the browser already knows the intended width, it derives the height without needing to load the asset itself. The browser allocates space in advance. Voila - no layout shift!
 
 ## Inlining critical CSS
 

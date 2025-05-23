@@ -54,7 +54,7 @@ const config: QuartzConfig = {
       Plugin.rehypeCustomSubtitle(),
       Plugin.TableOfContents(),
       Plugin.WrapNakedElements(),
-      Plugin.addImageDimensionsFromUrl(),
+      Plugin.addAssetDimensionsFromUrl(),
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
