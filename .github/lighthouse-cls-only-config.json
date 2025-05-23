@@ -23,7 +23,7 @@
     },
     "assert": {
       "assertions": {
-        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.1 }]
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }]
       }
     },
     "upload": {
