@@ -237,21 +237,35 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     [
         (
             Path("animation.gif"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\"]*)animation\.gif\)|"
-            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\"]*)animation\.gif\]\]|"
-            rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\"]*)animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
-            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" type="video/mp4; codecs=hvc1"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" type="video/webm"></video>',
+            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"animation\.gif\)|"
+            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
+            rf"animation\.gif\]\]|"
+            rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
+            rf"animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
+            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>">'
+            rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" '
+            rf'type="video/mp4; codecs=hvc1">'
+            rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" '
+            rf'type="video/webm"></video>',
         ),
     ]
     + [
         (
             Path(f"video{ext}"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\"]*)video\{ext}\)|"
-            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\"]*)video\{ext}\]\]|"
-            rf"<video (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\"]*)video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
+            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"video\{ext}\)|"
+            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
+            rf"video\{ext}\]\]|"
+            rf"<video (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
+            rf"video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
             + ext.lstrip(".")
             + r"\")?(?P<endVideoTagInfo>[^>]*(?<!/))(?:/>|></video>)",
-            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" type="video/mp4; codecs=hvc1"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" type="video/webm"></video>',
+            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>">'
+            r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" '
+            r'type="video/mp4; codecs=hvc1">'
+            r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" '
+            r'type="video/webm"></video>',
         )
         for ext in [".webm", ".mov", ".avi", ".mp4"]
     ],
@@ -767,3 +781,40 @@ def test_video_conversion_long_html(setup_test_env):
 
     expected_html = '<video autoplay muted loop playsinline alt="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="static/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="static/prune_still-easy_trajectories.webm" type="video/webm"></video>'
     assert converted_content == expected_html
+
+
+def test_multiple_bracket_video_links(setup_test_env):
+    """Test that multiple ![[...]] video links on separate lines are handled correctly."""
+    test_dir = Path(setup_test_env)
+    content_dir = test_dir / "website_content"
+
+    video1_path = (
+        test_dir / "quartz" / "static" / "images" / "posts" / "cls.mp4"
+    )
+    video2_path = (
+        test_dir / "quartz" / "static" / "images" / "posts" / "no-cls.mp4"
+    )
+
+    video1_path.parent.mkdir(parents=True, exist_ok=True)
+    video2_path.parent.mkdir(parents=True, exist_ok=True)
+
+    test_utils.create_test_video(video1_path)
+    test_utils.create_test_video(video2_path)
+
+    test_md_path = content_dir / "test_multiple_brackets.md"
+    input_content = """![[asset_staging/static/images/posts/cls.mp4]]
+
+![[asset_staging/static/images/posts/no-cls.mp4]]"""
+    test_md_path.write_text(input_content)
+
+    convert_assets.convert_asset(video1_path, md_references_dir=content_dir)
+    convert_assets.convert_asset(video2_path, md_references_dir=content_dir)
+
+    with open(test_md_path) as f:
+        converted_content = f.read()
+
+    expected_content = """<video><source src="static/images/posts/cls.mp4" type="video/mp4; codecs=hvc1"><source src="static/images/posts/cls.webm" type="video/webm"></video>
+
+<video><source src="static/images/posts/no-cls.mp4" type="video/mp4; codecs=hvc1"><source src="static/images/posts/no-cls.webm" type="video/webm"></video>"""
+
+    assert converted_content == expected_content
