@@ -15,50 +15,6 @@ declare global {
   }
 }
 
-// INLINE MODULE CODE
-
-if (typeof window !== "undefined" && !window.__routerInitialized) {
-  createRouter()
-
-  // Restore scroll position on initial load/reload if available in state
-  // Do this *before* potentially scrolling to a hash
-  console.debug(`[Initial Load] Checking history state:`, history.state)
-  const initialScroll = history.state?.scroll as number | undefined
-  if (typeof initialScroll === "number") {
-    console.debug(`[Initial Load] Restoring scroll from state: ${initialScroll}`)
-    window.scrollTo({ top: initialScroll, behavior: "instant" })
-  } else if (window.location.hash) {
-    // Fallback to hash scrolling if no state scroll is found
-    console.debug(`Initial load: Scrolling to hash: ${window.location.hash}`)
-    scrollToHash(window.location.hash)
-  }
-
-  dispatchNavEvent(getFullSlug(window))
-}
-
-// SPA accessibility announcement for screen readers
-const announcer = document.createElement("route-announcer")
-
-if (!customElements.get("route-announcer")) {
-  const attrs = {
-    "aria-live": "assertive", // Announce changes immediately
-    "aria-atomic": "true", // Read entirety of changes
-    style:
-      "position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px",
-  }
-
-  customElements.define(
-    "route-announcer",
-    class RouteAnnouncer extends HTMLElement {
-      connectedCallback() {
-        for (const [key, value] of Object.entries(attrs)) {
-          this.setAttribute(key, value)
-        }
-      }
-    },
-  )
-}
-
 // FUNCTIONS
 
 const NODE_TYPE_ELEMENT = 1
@@ -431,6 +387,21 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
 }
 
 /**
+ * Restores scroll position on initial page load if available in state or hash.
+ */
+function performInitialScroll(): void {
+  console.debug(`[Initial Load Event] Checking history state:`, history.state)
+  const initialScroll = history.state?.scroll as number | undefined
+  if (typeof initialScroll === "number") {
+    console.debug(`[Initial Load Event] Restoring scroll from state: ${initialScroll}`)
+    window.scrollTo({ top: initialScroll, behavior: "instant" })
+  } else if (window.location.hash) {
+    console.debug(`[Initial Load Event] Scrolling to hash: ${window.location.hash}`)
+    scrollToHash(window.location.hash)
+  }
+}
+
+/**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
  * - Handles browser back/forward navigation (popstate)
@@ -475,11 +446,46 @@ function createRouter() {
 
     // Add popstate listener for back/forward navigation
     window.addEventListener("popstate", handlePopstate)
-
-    // Handle hash scrolling on initial page load, unless scroll will be restored from history
-    if (window.location.hash && typeof history.state?.scroll !== "number") {
-      console.debug("Initial load: Scrolling to hash")
-      scrollToHash(window.location.hash)
-    }
   }
+}
+
+// INLINE MODULE CODE
+
+if (typeof window !== "undefined" && !window.__routerInitialized) {
+  createRouter()
+
+  // Handle initial scroll and dispatch nav event after DOM is loaded
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      performInitialScroll()
+      dispatchNavEvent(getFullSlug(window))
+    })
+  } else {
+    // DOMContentLoaded has already fired
+    performInitialScroll()
+    dispatchNavEvent(getFullSlug(window))
+  }
+}
+
+// SPA accessibility announcement for screen readers
+const announcer = document.createElement("route-announcer")
+
+if (!customElements.get("route-announcer")) {
+  const attrs = {
+    "aria-live": "assertive", // Announce changes immediately
+    "aria-atomic": "true", // Read entirety of changes
+    style:
+      "position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px",
+  }
+
+  customElements.define(
+    "route-announcer",
+    class RouteAnnouncer extends HTMLElement {
+      connectedCallback() {
+        for (const [key, value] of Object.entries(attrs)) {
+          this.setAttribute(key, value)
+        }
+      }
+    },
+  )
 }
