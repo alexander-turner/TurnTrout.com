@@ -966,6 +966,21 @@ ots --no-bitcoin verify "files/ABC012.txt.ots"
 
 {style="margin-left: 2rem;"}
 
+# Github Actions
+
+When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
+
+Site functionality
+: I have [over 175 `playwright` tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9x175 = 1,602 tests, each of which takes up to 90 seconds.
+
+: Sadly, `playwright` test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
+
+Minimal layout shift
+: I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
+
+Rerunning some local tests
+: I run `eslint` and `npm test` Actions on GitHub to help test for environmental inconsistencies.
+
 ## Extensive static analysis
 
 I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource serves multiple roles:
