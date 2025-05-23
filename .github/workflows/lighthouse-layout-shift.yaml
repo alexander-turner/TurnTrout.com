@@ -36,25 +36,16 @@ jobs:
           SERVER_PID=$!
           echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
 
-      - name: Wait for server
-        run: |
-          # Wait for the server to be ready
-          while ! nc -z localhost 8080; do
-            sleep 0.1 # Check every 100ms
-            # Check if server is still running
-            if ! ps -p "$SERVER_PID" > /dev/null; then
-              echo "Server failed to start"
-              exit 1
-            fi
-          done
-          echo "Server is ready"
-
       - name: Run Lighthouse CI
         id: lighthouse
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            http://localhost:8080/test-page
+            http://localhost:8080/Test-page
+            http://localhost:8080/Test-page#spoilers
+            http://localhost:8080/Test-page#videos
+            http://localhost:8080/Test-page#admonitions
+            http://localhost:8080/Test-page#footnote-label
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
