@@ -287,43 +287,71 @@ describe("Asset Dimensions Plugin", () => {
   })
 
   describe("collectAssetNodes", () => {
-    it("should find all img elements with src attributes", () => {
-      const tree: Root = {
-        type: "root",
-        children: [
-          h("img", { src: "img1.png" }) as Element,
-          h("p", [h("img", { src: "img2.jpg" }) as Element]) as Element,
-          h("img") as Element,
-          {
-            type: "element",
-            tagName: "div",
-            properties: { src: "notanimage.png" },
-            children: [],
-          } as Element,
+    it.each([
+      {
+        description: "img elements with src attributes",
+        tree: {
+          type: "root",
+          children: [
+            h("img", { src: "img1.png" }) as Element,
+            h("p", [h("img", { src: "img2.jpg" }) as Element]) as Element,
+            h("img") as Element, // No src
+            h("svg", { src: "icon.svg" }) as Element,
+            h("svg") as Element, // No src
+            {
+              type: "element",
+              tagName: "div",
+              properties: { src: "notanasset.png" }, // not an img or svg tag
+              children: [],
+            } as Element,
+          ],
+        } as Root,
+        expected: [
+          { tagName: "img", src: "img1.png" },
+          { tagName: "img", src: "img2.jpg" },
+          { tagName: "svg", src: "icon.svg" },
         ],
-      }
-      const collected = collectAssetNodes(tree)
-      expect(collected).toHaveLength(2)
-      expect(collected[0].src).toBe("img1.png")
-      expect(collected[1].src).toBe("img2.jpg")
-    })
-
-    it("should handle empty tree", () => {
-      const tree: Root = { type: "root", children: [] }
-      const collected = collectAssetNodes(tree)
-      expect(collected).toHaveLength(0)
-    })
-
-    it("should handle tree with no images", () => {
-      const tree: Root = {
-        type: "root",
-        children: [
-          h("p", ["Some text"]) as Element,
-          h("div", [h("span", ["More text"]) as Element]) as Element,
+      },
+      {
+        description: "only svg elements with src attributes",
+        tree: {
+          type: "root",
+          children: [
+            h("svg", { src: "icon1.svg" }) as Element,
+            h("p", [h("svg", { src: "icon2.svg" }) as Element]) as Element,
+            h("svg") as Element, // No src
+          ],
+        } as Root,
+        expected: [
+          { tagName: "svg", src: "icon1.svg" },
+          { tagName: "svg", src: "icon2.svg" },
         ],
-      }
+      },
+      {
+        description: "no relevant elements",
+        tree: {
+          type: "root",
+          children: [
+            h("p", ["Some text"]) as Element,
+            h("img") as Element, // No src
+            h("svg") as Element, // No src
+            h("div", [h("span", ["More text"]) as Element]) as Element,
+          ],
+        } as Root,
+        expected: [],
+      },
+      {
+        description: "empty tree",
+        tree: { type: "root", children: [] } as Root,
+        expected: [],
+      },
+    ])("should find $description", ({ tree, expected }) => {
       const collected = collectAssetNodes(tree)
-      expect(collected).toHaveLength(0)
+      expect(collected).toHaveLength(expected.length)
+      expected.forEach((exp, index) => {
+        expect(collected[index].node.tagName).toBe(exp.tagName)
+        expect(collected[index].src).toBe(exp.src)
+      })
     })
   })
 
@@ -405,6 +433,7 @@ describe("Asset Dimensions Plugin", () => {
       const cdnImg1Src = "https://assets.turntrout.com/image1.png"
       const cdnImg2Src = "https://assets.turntrout.com/cached.png"
       const externalImgSrc = "https://example.com/external.png"
+      const cdnSvg1Src = "https://assets.turntrout.com/icon1.svg"
 
       const tree: Root = {
         type: "root",
@@ -412,6 +441,7 @@ describe("Asset Dimensions Plugin", () => {
           h("img", { src: cdnImg1Src }) as Element,
           h("img", { src: cdnImg2Src }) as Element,
           h("img", { src: externalImgSrc }) as Element,
+          h("svg", { src: cdnSvg1Src }) as Element,
         ],
       }
       const mockFile = new VFile({ path: "integrationTest.md" })
@@ -426,7 +456,25 @@ describe("Asset Dimensions Plugin", () => {
       resetDirectCacheAndDirtyFlag()
       setDirectCache(null)
 
+      // Mock fetch for the first uncached asset (cdnImg1Src - image)
       mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+
+      // Mock fetch for the second uncached asset (cdnSvg1Src - svg)
+      const mockSvgData = Buffer.from(
+        `<svg width="${mockWidth}" height="${mockHeight}" xmlns="http://www.w3.org/2000/svg"></svg>`,
+      )
+      // Directly chain the next mock response for the SVG
+      mockedFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: {
+          get: (h: string): string | null => (h === "Content-Type" ? "image/svg+xml" : null),
+        } as Headers,
+        arrayBuffer: async () => mockSvgData,
+        text: async () => mockSvgData.toString(),
+        json: async () => JSON.parse(mockSvgData.toString()),
+      } as unknown as NodeFetchResponse) // Cast to unknown first for mock flexibility
 
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
@@ -435,18 +483,28 @@ describe("Asset Dimensions Plugin", () => {
       const img1Node = tree.children[0] as Element
       const img2Node = tree.children[1] as Element
       const img3Node = tree.children[2] as Element
+      const svg1Node = tree.children[3] as Element
 
       expect(img1Node.properties?.width).toBe(mockWidth)
+      expect(img1Node.properties?.height).toBe(mockHeight)
       expect(img2Node.properties?.width).toBe(preCachedDims.width)
+      expect(img2Node.properties?.height).toBe(preCachedDims.height)
       expect(img3Node.properties?.width).toBeUndefined() // External image, no fetch
 
-      expect(mockedFetch).toHaveBeenCalledTimes(1)
+      expect(svg1Node.properties?.width).toBe(mockWidth)
+      expect(svg1Node.properties?.height).toBe(mockHeight)
+
+      expect(mockedFetch).toHaveBeenCalledTimes(2) // img1 and svg1
       expect(mockedFetch).toHaveBeenCalledWith(cdnImg1Src)
+      expect(mockedFetch).toHaveBeenCalledWith(cdnSvg1Src)
 
       const finalCache = assetDimensionsState.assetDimensionsCache
       expect(finalCache).not.toBeNull()
       expect(finalCache![cdnImg1Src]).toEqual(mockFetchedDims)
       expect(finalCache![cdnImg2Src]).toEqual(preCachedDims)
+      // SVG also uses mockFetchedDims due to current sizeOfMock behavior
+      expect(finalCache![cdnSvg1Src]).toEqual(mockFetchedDims)
+
       expect(assetDimensionsState.needToSaveCache).toBe(false)
 
       const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)

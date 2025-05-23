@@ -96,10 +96,16 @@ export async function fetchAndParseAssetDimensions(
   return null
 }
 
+// TODO: Add video support
+export const tagsToProcess = ["img", "svg"]
 export function collectAssetNodes(tree: Root): { node: Element; src: string }[] {
   const assetsToProcess: { node: Element; src: string }[] = []
   visit(tree, "element", (node: Element) => {
-    if (node.tagName === "img" && node.properties?.src && typeof node.properties.src === "string") {
+    if (
+      tagsToProcess.includes(node.tagName) &&
+      node.properties?.src &&
+      typeof node.properties.src === "string"
+    ) {
       assetsToProcess.push({ node, src: node.properties.src })
     }
   })
