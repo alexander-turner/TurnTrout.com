@@ -330,6 +330,11 @@ sup {
   }
 }
 
+figure:has(> .subfigure) {
+  display: flex;
+  justify-content: center;
+}
+
 figure,
 .subfigure {
   margin: $base-margin;

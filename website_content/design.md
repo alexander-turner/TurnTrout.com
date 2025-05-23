@@ -27,7 +27,6 @@ no_dropcap: "false"
 
 
 
-
 When I decided to design my own website, I had no experience with web development. After 202 days, 2,220+ commits,[^commits] and 1,008 unit tests, I present `turntrout.com` - the result of my inexperience.
 
 I'm proud of this website and its design. Indulge me and let me explain the choices I made along the way.
@@ -261,6 +260,26 @@ Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to pre
 >
 > I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
 <!-- spellchecker-enable -->
+
+## Preventing layout shift
+
+When loading webpages with image assets, the browser knows there's an image present but doesn't know how much space the image will take. Specifically, my images tend to fill (some fixed fraction of) the available width. The browser knows the width. However, the browser doesn't know how much _height_ the image will require.
+
+The browser assumes the images have zero height until the images load, at which point they take up the right amount of vertical space. That expansion will [_shift_ the visible layout.](https://web.dev/articles/cls) If you were reading that text, that'd be disorienting and annoying.
+
+<figure>
+  <div class="subfigure">
+    <figcaption>Layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"></video>
+  </div>
+  
+  <div class="subfigure">
+    <figcaption>No layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"></video>
+  </div>
+</figure>
+
+Therefore, I wrote a plugin which fetches the width and height of each linked asset and stores them as attributes on the `<img>` tag. Then, the browser automatically computes the intended `aspect-ratio`. Given the browser already knows the intended width, it derives the height without needing to load the image proper. The browser allocates space in advance. Voila - no layout shift!
 
 ## Inlining critical CSS
 
