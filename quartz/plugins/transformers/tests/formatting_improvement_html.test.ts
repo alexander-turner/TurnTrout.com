@@ -1353,6 +1353,18 @@ describe("replaceFractions", () => {
       '<span class="fraction">233/250</span>, <span class="fraction">22104/4024</span>',
     ],
 
+    // Fraction with ordinal suffix
+    [
+      { type: "text", value: "1/4th" },
+      h("p"),
+      '<span class="fraction">1/4</span><sup class="ordinal-suffix">th</sup>',
+    ],
+    [
+      { type: "text", value: "1/30th" },
+      h("p"),
+      '<span class="fraction">1/30</span><sup class="ordinal-suffix">th</sup>',
+    ],
+
     // Skip nodes with fraction class
     [{ type: "text", value: "1/2" }, h("span", { className: ["fraction"] }), "1/2"],
 

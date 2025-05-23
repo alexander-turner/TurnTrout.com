@@ -15,6 +15,7 @@ import {
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
+  urlRegex,
 } from "./utils"
 
 /**
@@ -459,13 +460,12 @@ export function formatArrows(tree: Root): void {
   })
 }
 
-const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>(?:st|nd|rd|th))/gu
+const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
 export function formatOrdinalSuffixes(tree: Root): void {
   visit(tree, "text", (node, index, parent) => {
     if (!parent || hasAncestor(parent as ElementMaybeWithParent, toSkip)) return
 
     replaceRegex(node, index ?? 0, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      // Create the replacement nodes
       const numSpan = h("span.ordinal-num", match.groups?.number ?? "")
       const suffixSpan = h("sup.ordinal-suffix", match.groups?.suffix ?? "")
 
@@ -759,26 +759,48 @@ export function toSkip(node: Element): boolean {
   return false
 }
 
-export function replaceFractions(node: Text, index: number, parent: Parent) {
-  replaceRegex(
-    node,
-    index as number,
-    parent as Parent,
-    fractionRegex,
-    (match: RegExpMatchArray) => {
-      return {
-        before: "",
-        replacedMatch: match[0],
-        after: "",
-      }
-    },
-    (_nd: unknown, _idx: number, prnt: Parent) => {
-      return toSkip(prnt as Element) || hasClass(prnt as Element, "fraction")
-    },
-    "span.fraction",
+function fractionToSkip(node: Text, _idx: number, parent: Parent): boolean {
+  return (
+    hasAncestor(
+      parent as ElementMaybeWithParent,
+      (ancestor) =>
+        ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
+        hasClass(ancestor, "fraction"),
+    ) ||
+    (node.value?.includes("/") && urlRegex.test(node.value))
   )
 }
 
+export function replaceFractions(node: Text, index: number | undefined, parent: Parent): void {
+  replaceRegex(
+    node,
+    index ?? 0,
+    parent,
+    fractionRegex,
+    (match: RegExpMatchArray) => {
+      const groups = match.groups as { numerator: string; denominator: string; ordinal?: string }
+
+      const fractionStr = `${groups.numerator}/${groups.denominator}`
+      const fractionEl = h("span.fraction", fractionStr)
+
+      if (groups.ordinal) {
+        const ordinalEl = h("sup.ordinal-suffix", groups.ordinal)
+        return {
+          before: "",
+          replacedMatch: [fractionEl, ordinalEl],
+          after: "",
+        }
+      } else {
+        return {
+          before: "",
+          replacedMatch: fractionEl,
+          after: "",
+        }
+      }
+    },
+    fractionToSkip,
+  )
+}
 interface Options {
   skipFirstLetter?: boolean // Debug flag
 }
