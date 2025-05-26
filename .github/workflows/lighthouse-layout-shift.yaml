@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-reports
-          path: .lighthouseci/
+          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
 
       - name: Kill local server
         if: always()
