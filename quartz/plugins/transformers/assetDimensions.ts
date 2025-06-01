@@ -72,13 +72,19 @@ export async function maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
 
 export async function maybeSaveAssetDimensions(): Promise<void> {
   if (assetDimensionsCache && needToSaveCache) {
+    const tempFilePath = ASSET_DIMENSIONS_FILE_PATH + ".tmp"
+    const data = JSON.stringify(assetDimensionsCache, null, 2)
+
     try {
-      const data = JSON.stringify(assetDimensionsCache, null, 2)
-      await fs.writeFile(ASSET_DIMENSIONS_FILE_PATH, data, "utf-8")
+      await fs.writeFile(tempFilePath, data, "utf-8")
+      await fs.rename(tempFilePath, ASSET_DIMENSIONS_FILE_PATH)
       needToSaveCache = false
       console.log("Asset dimensions cache saved.")
     } catch (error) {
       console.error("Failed to save asset dimensions cache:", error)
+    } finally {
+      await fs.access(tempFilePath) // fs.access throws if file doesn't exist or no permissions
+      await fs.unlink(tempFilePath)
     }
   }
 }
