@@ -40,6 +40,7 @@ import {
   collectAssetNodes,
   processAsset,
   addAssetDimensionsFromUrl,
+  getVideoSource,
   type AssetDimensionMap,
   resetDirectCacheAndDirtyFlag,
   setDirectCache,
@@ -441,6 +442,25 @@ describe("Asset Dimensions Plugin", () => {
         ],
       },
       {
+        description: "video elements with src attributes",
+        tree: {
+          type: "root",
+          children: [
+            h("video", { src: "video1.mp4" }) as Element,
+            h("p", [h("video", { src: "video2.mp4" }) as Element]) as Element,
+            h("video") as Element, // No src
+            h("figure", [h("video", { src: "figure.mp4" }) as Element]) as Element,
+            h("video", [h("source", { src: "source.mp4" }) as Element]) as Element,
+          ],
+        } as Root,
+        expected: [
+          { tagName: "video", src: "video1.mp4" },
+          { tagName: "video", src: "video2.mp4" },
+          { tagName: "video", src: "figure.mp4" },
+          { tagName: "video", src: "source.mp4" },
+        ],
+      },
+      {
         description: "no relevant elements",
         tree: {
           type: "root",
@@ -465,6 +485,39 @@ describe("Asset Dimensions Plugin", () => {
         expect(collected[index].node.tagName).toBe(exp.tagName)
         expect(collected[index].src).toBe(exp.src)
       })
+    })
+  })
+
+  describe("getVideoSource", () => {
+    it.each([
+      {
+        description: "direct source",
+        videoElement: h("video", { src: "video1.mp4" }),
+        expected: "video1.mp4",
+      },
+      {
+        description: "no source",
+        videoElement: h("video"),
+        expected: undefined,
+      },
+      {
+        description: "source is first child",
+        videoElement: h("video", [h("source", { src: "child.mp4" })]),
+        expected: "child.mp4",
+      },
+      {
+        description: "source is not first child",
+        videoElement: h("video", [h("p"), h("source", { src: "second-child.mp4" })]),
+        expected: "second-child.mp4",
+      },
+      {
+        description: "source is not in children",
+        videoElement: h("video", [h("p")]),
+        expected: undefined,
+      },
+    ])("retrieves correct sources", ({ videoElement, expected }) => {
+      const inferredSrc = getVideoSource(videoElement)
+      expect(inferredSrc).toStrictEqual(expected)
     })
   })
 

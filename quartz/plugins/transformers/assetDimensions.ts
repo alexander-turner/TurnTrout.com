@@ -1,4 +1,4 @@
-import type { Element, Root } from "hast"
+import type { Element, ElementContent, Root } from "hast"
 
 import { spawnSync } from "child_process"
 import gitRoot from "find-git-root"
@@ -202,6 +202,24 @@ export async function fetchAndParseAssetDimensions(
   return null
 }
 
+/** Returns the src of a video element or that of its first source child.
+ * In this project, each video element should have two source elements, one for mp4 and one for webm.
+ */
+export function getVideoSource(node: Element): string | undefined {
+  const directSrc = node.properties?.src as string | undefined
+  if (directSrc) {
+    return directSrc
+  }
+
+  const source = node.children.find(
+    (child: ElementContent) => child.type === "element" && child.tagName === "source",
+  ) as Element | undefined
+  if (source && source.properties?.src && typeof source.properties.src === "string") {
+    return source.properties.src
+  }
+  return undefined
+}
+
 export const imageTagsToProcess = ["img", "svg"]
 export function collectAssetNodes(tree: Root): { node: Element; src: string }[] {
   const imageAssetsToProcess: { node: Element; src: string }[] = []
@@ -217,14 +235,14 @@ export function collectAssetNodes(tree: Root): { node: Element; src: string }[] 
 
   const videoAssetsToProcess: { node: Element; src: string }[] = []
   visit(tree, "element", (node: Element) => {
-    if (
-      node.tagName === "video" &&
-      node.properties?.src &&
-      typeof node.properties.src === "string"
-    ) {
-      videoAssetsToProcess.push({ node, src: node.properties.src })
+    if (node.tagName === "video") {
+      const src = getVideoSource(node)
+      if (src) {
+        videoAssetsToProcess.push({ node, src })
+      }
     }
   })
+  console.log(videoAssetsToProcess.length)
 
   return [...imageAssetsToProcess, ...videoAssetsToProcess]
 }
@@ -271,7 +289,6 @@ export const addAssetDimensionsFromUrl = () => {
         () => {
           return async (tree: Root, file: VFile) => {
             const currentDimensionsCache = await maybeLoadDimensionCache()
-            console.log(Object.keys(currentDimensionsCache).length)
             const assetsToProcess = collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
