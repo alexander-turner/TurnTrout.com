@@ -18,7 +18,7 @@ export const ASSET_DIMENSIONS_FILE_PATH = path.join(
   "quartz",
   "plugins",
   "transformers",
-  "asset_dimensions.json",
+  ".asset_dimensions.json",
 )
 const USER_CDN_HOSTNAME = "assets.turntrout.com"
 
@@ -271,6 +271,7 @@ export const addAssetDimensionsFromUrl = () => {
         () => {
           return async (tree: Root, file: VFile) => {
             const currentDimensionsCache = await maybeLoadDimensionCache()
+            console.log(Object.keys(currentDimensionsCache).length)
             const assetsToProcess = collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
