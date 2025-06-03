@@ -435,8 +435,8 @@ def get_check_steps(
         CheckStep(
             name="Typechecking Python",
             command=[
-                # "python", # NOTE Will cause type errors in built site checks
-                # "-m",
+                "python",
+                "-m",
                 "mypy",
             ]
             + script_files,
@@ -469,7 +469,7 @@ def get_check_steps(
         ),
         CheckStep(
             name="Linting prose",
-            command=["vale", f"{git_root_path}/content/*.md"],
+            command=["vale", f"{git_root_path}/website_content/*.md"],
         ),
         CheckStep(
             name="Cleaning up SCSS",

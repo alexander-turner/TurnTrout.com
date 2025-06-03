@@ -15,14 +15,14 @@ except ImportError:  # pragma: no cover
     import utils as script_utils  # type: ignore
 
 
-ASSET_STAGING_PATTERN: str = r"(?:\.?/asset_staging/)?"
+ASSET_STAGING_PATTERN: str = r"(?:(?:\.?/)?asset_staging/)?"
 GIF_ATTRIBUTES: str = r"autoplay loop muted playsinline"
 
 
 def _video_original_pattern(input_file: Path) -> str:
     # create named capture groups for different link patterns
     def link_pattern_fn(tag: str) -> str:
-        return rf"(?P<link_{tag}>[^\)\"]*)"
+        return rf"(?P<link_{tag}>[^\)\]\"]*)"
 
     input_file_pattern: str = rf"{input_file.stem}\{input_file.suffix}"
 
@@ -32,7 +32,7 @@ def _video_original_pattern(input_file: Path) -> str:
         rf"{link_pattern_fn('parens')}{input_file_pattern}\)"
     )
 
-    # Pattern for wiki-link syntax: [[link]]
+    # Pattern for wiki-link syntax: ![[link]]
     brackets_pattern: str = (
         rf"\!?\[\[{ASSET_STAGING_PATTERN}"
         rf"{link_pattern_fn('brackets')}{input_file_pattern}\]\]"
@@ -86,8 +86,8 @@ def _video_replacement_pattern(input_file: Path) -> str:
     # Combine all possible link capture groups
     all_links = r"\g<link_parens>\g<link_brackets>\g<link_tag>"
     end_of_replacement_pattern = (
-        rf'<source src="{all_links}'
         # MP4 source for Safari
+        rf'<source src="{all_links}'
         rf'{input_file.stem}.mp4" type="video/mp4; codecs=hvc1">'
         # WebM source for other browsers
         rf'<source src="{all_links}'
@@ -157,7 +157,7 @@ def convert_asset(
     input_file: Path,
     remove_originals: bool = False,
     strip_metadata: bool = False,
-    md_references_dir: Path | None = Path("content/"),
+    md_references_dir: Path | None = Path("website_content/"),
 ) -> None:
     """
     Converts an image or video to a more efficient format. Replaces references
@@ -276,7 +276,7 @@ def main():
             asset,
             remove_originals=args.remove_originals,
             strip_metadata=args.strip_metadata,
-            md_references_dir=Path("content/"),
+            md_references_dir=Path("website_content/"),
         )
 
 

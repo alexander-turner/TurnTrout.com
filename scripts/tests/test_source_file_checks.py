@@ -94,7 +94,7 @@ def test_main_workflow(tmp_path: Path, monkeypatch) -> None:
         monkeypatch: Pytest fixture for mocking
     """
     # Set up test directory structure
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     # Initialize git repo
@@ -217,7 +217,7 @@ def test_url_uniqueness(tmp_path: Path, monkeypatch, test_case) -> None:
     Test detection of duplicate URLs (permalinks and aliases).
     """
     # Setup
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
 
@@ -241,7 +241,7 @@ def test_invalid_md_links(tmp_path: Path, monkeypatch) -> None:
     """
     Test detection of invalid markdown links.
     """
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
 
@@ -278,7 +278,7 @@ def scss_scenarios() -> Dict[str, Dict[str, Any]]:
     """
     return {
         "valid": {
-            "content": """
+            "website_content": """
                 $fonts-dir: '/static/styles/fonts';
                 @font-face {
                     font-family: 'ExistingFont';
@@ -289,7 +289,7 @@ def scss_scenarios() -> Dict[str, Dict[str, Any]]:
             "expected_missing": [],
         },
         "missing": {
-            "content": """
+            "website_content": """
                 $fonts-dir: '/static/styles/fonts';
                 @font-face {
                     font-family: 'MissingFont';
@@ -300,7 +300,7 @@ def scss_scenarios() -> Dict[str, Dict[str, Any]]:
             "expected_missing": ["/quartz/static/styles/fonts/missing.woff2"],
         },
         "mixed": {
-            "content": """
+            "website_content": """
                 $fonts-dir: '/static/styles/fonts';
                 @font-face {
                     font-family: 'ExistingFont';
@@ -319,7 +319,7 @@ def scss_scenarios() -> Dict[str, Dict[str, Any]]:
             "expected_missing": ["/quartz/static/styles/fonts/missing.woff2"],
         },
         "scss_error": {
-            "content": """
+            "website_content": """
                 $fonts-dir: '/static/styles/fonts'  // Missing semicolon
                 @font-face {
                     font-family: 'TestFont';
@@ -378,7 +378,7 @@ def test_font_file_scenarios(
     """
     test_case = scss_scenarios[scenario]
     fonts_scss, tmp_path = setup_font_test(
-        test_case["content"], test_case["files"]
+        test_case["website_content"], test_case["files"]
     )
 
     missing_fonts = source_file_checks.check_scss_font_files(
@@ -395,7 +395,7 @@ def test_scss_compilation_error(
     Test handling of SCSS compilation errors.
     """
     test_case = scss_scenarios["scss_error"]
-    fonts_scss, tmp_path = setup_font_test(test_case["content"], [])
+    fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
 
     missing_fonts = source_file_checks.check_scss_font_files(
         fonts_scss, tmp_path
@@ -414,10 +414,10 @@ def test_integration_with_main(
     """
     # Set up test environment with missing fonts scenario
     test_case = scss_scenarios["missing"]
-    fonts_scss, tmp_path = setup_font_test(test_case["content"], [])
+    fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
 
     # Create content directory (needed for main())
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir(exist_ok=True)
 
     # Initialize git repo
@@ -507,7 +507,7 @@ def test_check_latex_tags(tmp_path: Path) -> None:
     """
     Test detection of LaTeX \tag{} commands in markdown files.
     """
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
 
@@ -1096,7 +1096,7 @@ def test_check_table_alignments_integration(
     """
     Integration test for table alignment checking within the main workflow.
     """
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
 
@@ -1271,7 +1271,7 @@ def test_unescaped_braces_integration(tmp_path: Path, monkeypatch) -> None:
     """
     Integration test for unescaped braces checking within the main workflow.
     """
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
 

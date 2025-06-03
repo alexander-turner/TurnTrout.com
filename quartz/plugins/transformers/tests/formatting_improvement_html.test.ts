@@ -19,7 +19,6 @@ import {
   minusReplace,
   l_pRegex,
   collectTransformableElements,
-  hasClass,
   enDashDateRange,
   identifyLinkNode,
   moveQuotesBeforeLink,
@@ -27,6 +26,7 @@ import {
   replaceFractions,
   timeTransform,
 } from "../formatting_improvement_html"
+import { hasClass } from "../utils"
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -60,7 +60,7 @@ describe("HTMLFormattingImprovement", () => {
       ['"I am" so "tired" of "these" "quotes".', "“I am” so “tired” of “these” “quotes.”"],
       ['"world model";', "“world model”;"],
       ['"party"/"wedding."', "“party”/“wedding.”"],
-      ['"Hi \'Trout!"', "“Hi ‘Trout!”"],
+      ['"Hi \'Trout!"', "“Hi ’Trout!”"],
       ["“scope insensitivity”", "“scope insensitivity”"],
       [
         "strategy s's return is good, even as d's return is bad",
@@ -77,8 +77,13 @@ describe("HTMLFormattingImprovement", () => {
       ["I don't'nt want to go", "I don’t’nt want to go"],
       ['with "scope insensitivity":', "with “scope insensitivity”:"],
       ['("the best")', "(“the best”)"],
-      ['"\'sup"', "“‘sup”"],
-      ["'SUP", "‘SUP"],
+      ['"\'sup"', "“’sup”"], // Apostrophes always point down
+      ["'SUP", "’SUP"],
+      ["Rock 'n' Roll", "Rock ’n’ Roll"],
+      ["I was born in '99", "I was born in ’99"],
+      ["'99 tigers weren't a match", "’99 tigers weren’t a match"],
+      ["I'm not the best, haven't you heard?", "I’m not the best, haven’t you heard?"],
+      ["Hey, 'sup 'this is a single quote'", "Hey, ’sup ‘this is a single quote’"],
       ["'the best',", "‘the best’,"],
       ["'I lost the game.'", "‘I lost the game.’"],
       ["I hate you.'\"", "I hate you.’”"],
@@ -168,10 +173,10 @@ describe("HTMLFormattingImprovement", () => {
       expect(processedHtml).toBe(input)
     })
 
-    const mathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>`
+    const mathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>`
 
     const targetMathHTML =
-      '<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>’s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal alias">↩</a></p>'
+      '<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>’s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>'
 
     it("should handle apostrophe right after math mode", () => {
       const processedHtml = testHtmlFormattingImprovement(mathHTML)
@@ -348,6 +353,12 @@ describe("HTMLFormattingImprovement", () => {
       ["Who are you...what do you want?", "Who are you… what do you want?"],
       ["Chateau", "Château"],
       ["chateau", "château"],
+      ["github", "GitHub"],
+      ["GitHub", "GitHub"],
+      ["I went to github", "I went to GitHub"],
+      ["voilà", "voilà"],
+      ["Voilà", "Voilà"],
+      ["and then, voila!", "and then, voilà!"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
@@ -818,7 +829,7 @@ describe("setFirstLetterAttribute", () => {
       <p>'Twas the night before Christmas.</p>
     `
     const expected = `
-      <p data-first-letter="‘">‘Twas the night before Christmas.</p>
+      <p data-first-letter="’">’Twas the night before Christmas.</p>
     `
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(processedHtml).toBe(expected)
@@ -960,9 +971,7 @@ describe("L-number formatting", () => {
   it("matches at line start without space", () => {
     expect(testMatch("L1\nL2")).toEqual(["1", "2"])
   })
-})
 
-describe("L-number formatting", () => {
   it.each([
     [
       "<p>L1 is the first level</p>",
@@ -1162,20 +1171,15 @@ describe("identifyLinkNode", () => {
   })
 
   // Test cases structure: [description, input node, expected result]
-  const testCases: [string, Element, Element | null][] = [
+  const testCases: [string, Element, Element][] = [
     ["direct link node", createNode("a"), createNode("a")],
-    ["non-link node without children", createNode("div"), null],
     ["nested link node", createNode("em", [createNode("a")]), createNode("a")],
     [
       "deeply nested link node",
       createNode("div", [createNode("em", [createNode("strong", [createNode("a")])])]),
       createNode("a"),
     ],
-    [
-      "no link found",
-      createNode("div", [createNode("span"), createNode("em"), createNode("strong")]),
-      null,
-    ],
+
     [
       "multiple links (should return last)",
       createNode("div", [createNode("a"), createNode("a")]),
@@ -1193,17 +1197,22 @@ describe("identifyLinkNode", () => {
 
   it.each(testCases)("should handle %s", (_, input, expected) => {
     const result = identifyLinkNode(input)
-    if (expected === null) {
-      expect(result).toBeNull()
-    } else {
-      expect(result?.tagName).toBe(expected.tagName)
-    }
+    expect(result?.tagName).toBe(expected.tagName)
   })
 
-  // Keep this as a separate test since it's testing a specific edge case
+  it("should handle non-link node without children", () => {
+    const node = createNode("div")
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
   it("should handle empty children array", () => {
     const node = createNode("div")
     node.children = []
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
+  it("should handle no link found", () => {
+    const node = createNode("div", [createNode("span"), createNode("em"), createNode("strong")])
     expect(identifyLinkNode(node)).toBeNull()
   })
 })
@@ -1245,9 +1254,9 @@ describe("moveQuotesBeforeLink", () => {
       expect(prevNode.value).toBe(expectedPrevValue)
 
       const firstChild = linkNode.children[0]
-      if (firstChild && firstChild.type === "text") {
-        expect(firstChild.value).toBe(expectedFirstTextValue)
-      }
+      expect(firstChild?.type === "text" ? (firstChild as Text).value : undefined).toBe(
+        expectedFirstTextValue,
+      )
     },
   )
 
@@ -1273,10 +1282,6 @@ describe("getFirstTextNode", () => {
     [h("a", {}, [h("em", {}, "Nested text")]), "Nested text"],
     // Multiple children with text first
     [h("a", {}, ["First text", h("em", {}, "Second text")]), "First text"],
-    // Empty element
-    [h("a"), null],
-    // Element with empty children array
-    [h("a", {}, []), null],
     // Deeply nested structure
     [h("div", {}, [h("span", {}, [h("em", {}, "Deep text")])]), "Deep text"],
     // Non-text first child
@@ -1285,12 +1290,18 @@ describe("getFirstTextNode", () => {
     [h("p", {}, [h("strong", {}, "Bold"), " normal", h("em", {}, "emphasis")]), "Bold"],
   ])("should find first text node in %#", (input, expected) => {
     const result = getFirstTextNode(input)
-    if (expected === null) {
-      expect(result).toBeNull()
-    } else {
-      expect(result?.type).toBe("text")
-      expect(result?.value).toBe(expected)
-    }
+    expect(result?.type).toBe("text")
+    expect(result?.value).toBe(expected)
+  })
+
+  it.each([
+    // Empty element
+    [h("a"), null],
+    // Element with empty children array
+    [h("a", {}, []), null],
+  ])("should handle %s", (input, expected) => {
+    const result = getFirstTextNode(input)
+    expect(result).toBe(expected)
   })
 
   it("should handle undefined/null input", () => {
@@ -1342,6 +1353,18 @@ describe("replaceFractions", () => {
       '<span class="fraction">233/250</span>, <span class="fraction">22104/4024</span>',
     ],
 
+    // Fraction with ordinal suffix
+    [
+      { type: "text", value: "1/4th" },
+      h("p"),
+      '<span class="fraction">1/4</span><sup class="ordinal-suffix">th</sup>',
+    ],
+    [
+      { type: "text", value: "1/30th" },
+      h("p"),
+      '<span class="fraction">1/30</span><sup class="ordinal-suffix">th</sup>',
+    ],
+
     // Skip nodes with fraction class
     [{ type: "text", value: "1/2" }, h("span", { className: ["fraction"] }), "1/2"],
 
@@ -1351,7 +1374,6 @@ describe("replaceFractions", () => {
     const parentNode = h(parent.tagName, parent.properties, [...parent.children, node as Text])
     const parentString = hastToHtml(parentNode)
 
-    // For cases where we expect transformation
     const processedHtml = testHtmlFormattingImprovement(parentString)
 
     // If eg class is added, we need to add it to the expected html

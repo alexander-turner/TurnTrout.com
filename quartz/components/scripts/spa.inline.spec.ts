@@ -1,22 +1,100 @@
-import { test, expect } from "@playwright/test"
-
-import { videoId } from "../component_utils"
-
-const SCROLL_TOLERANCE: number = 500
-
 /**
  * This spec file is designed to test the functionality of spa.inline.ts,
  * including client-side routing, scroll behavior, hash navigation,
- * and the route announcer for accessibility. It follows a structure
- * similar to test-page.spec.ts.
+ * and the route announcer for accessibility.
+ *
+ * Watch out for:
+ *  - Playwright implicitly scrolling when clicking on an anchor
  */
+
+import { type Page, test, expect } from "@playwright/test"
+
+import { pondVideoId } from "../component_utils"
+import { isDesktopViewport } from "../tests/visual_utils"
+
+const FIREFOX_SCROLL_DELAY = 2000
+const TIGHT_SCROLL_TOLERANCE: number = 10
+
+/*
+ * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.
+ */
+async function waitForHistoryState(page: Page, targetPos: number): Promise<void> {
+  await page.waitForFunction(
+    ({ target, tolerance }) => {
+      return (
+        window.history.state &&
+        typeof window.history.state.scroll === "number" &&
+        Math.abs(window.history.state.scroll - target) <= tolerance
+      )
+    },
+    { target: targetPos, tolerance: TIGHT_SCROLL_TOLERANCE },
+  )
+}
+
+async function waitForHistoryScrollNotEquals(
+  page: Page,
+  initialScroll: number | undefined,
+): Promise<void> {
+  await page.waitForFunction((initial) => {
+    return window.history.state?.scroll !== initial
+  }, initialScroll)
+}
+
+/*
+ * Verifies that the browser has scrolled to approximately the target position.
+ */
+async function waitForScroll(page: Page, targetScrollY: number): Promise<void> {
+  await page.waitForFunction(
+    ({ target, tolerance }) => {
+      const currentScrollY = window.scrollY
+      return Math.abs(currentScrollY - target) <= tolerance
+    },
+    { target: targetScrollY, tolerance: TIGHT_SCROLL_TOLERANCE },
+  )
+}
+
+// Normal page.reload() will wipe the history state
+async function softRefresh(page: Page): Promise<void> {
+  await page.goBack()
+  await page.goForward()
+}
+
+async function addMarker(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface WindowWithMarker extends Window {
+      spaNavigationTestMarker?: boolean
+    }
+    ;(window as WindowWithMarker).spaNavigationTestMarker = true
+  })
+}
+
+// A reliable way to create an anchor at the bottom of the page
+async function createFinalAnchor(page: Page): Promise<string> {
+  const anchorId = "final-anchor"
+  await page.evaluate((id) => {
+    const finalAnchor = document.createElement("a")
+    finalAnchor.id = id
+    finalAnchor.href = `#${id}`
+    finalAnchor.style.marginTop = "2000px"
+    document.body.appendChild(finalAnchor)
+  }, anchorId)
+  return anchorId
+}
+
+async function doesMarkerExist(page: Page): Promise<boolean> {
+  return await page.evaluate(() => {
+    interface WindowWithMarker extends Window {
+      spaNavigationTestMarker?: boolean
+    }
+    return (window as WindowWithMarker).spaNavigationTestMarker === true
+  })
+}
 
 test.beforeEach(async ({ page }) => {
   // Log any console errors to help diagnose issues
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
   // Navigate to a page that uses the SPA inline logic
-  // and wait for network to be idle (i.e., no more requests)
   await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
@@ -26,24 +104,40 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe("Local Link Navigation", () => {
-  test("navigates without a full reload", async ({ page }) => {
-    // Record current page URL
-    const initialUrl = page.url()
+  const testCases: [string, string][] = [
+    ["http://localhost:8080/design", "Design"],
+    ["http://localhost:8080/", "Home"], // An alias for /index.html
+  ]
 
-    // Click on a local link
-    const localLink = page.locator("a").first()
-    await localLink.click()
-    await page.waitForLoadState("networkidle")
+  for (const [href] of testCases) {
+    test(`navigates without a full reload for ${href}`, async ({ page }: { page: Page }) => {
+      const initialUrl = page.url()
 
-    // Ensure the URL has changed
-    expect(page.url()).not.toBe(initialUrl)
+      await addMarker(page)
 
-    // Check that the body content is still present (verifying no full reload)
-    await expect(page.locator("body")).toBeVisible()
-  })
+      await page.evaluate((linkHref: string) => {
+        const link = document.createElement("a")
+        link.href = linkHref
+        link.textContent = "Text"
+        document.body.appendChild(link)
+      }, href)
+
+      const designLink = page.locator("a").last()
+      // OK to click since we aren't depending on scroll position
+      await designLink.click()
+      await page.waitForLoadState("domcontentloaded")
+
+      // Explicitly wait for the URL to change
+      await page.waitForURL((url) => url.toString() !== initialUrl)
+
+      // Check if the marker still exists, indicating no full reload
+      const markerExists = await doesMarkerExist(page)
+      expect(markerExists).toBe(true)
+      await expect(page.locator("body")).toBeVisible()
+    })
+  }
 
   test("ignores links with target=_blank", async ({ page }) => {
-    // Inject a link with target=_blank
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "/design"
@@ -53,18 +147,14 @@ test.describe("Local Link Navigation", () => {
       document.body.appendChild(link)
     })
 
-    // Track the URL before clicking
     const currentUrl = page.url()
-    // Click the link normally
     await page.click("#blank-link")
 
     // The local link with target=_blank should not be intercepted
-    // The page should not change in this browser instance
     expect(page.url()).toBe(currentUrl)
   })
 
   test("external links are not intercepted", async ({ page }) => {
-    // Inject an external link
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "https://www.example.com"
@@ -74,184 +164,250 @@ test.describe("Local Link Navigation", () => {
     })
 
     // Check that SPA logic does not intercept external links
-    // (We don't actually navigate to external sites in tests.)
-    // Instead, we can ensure the click is not prevented.
-    await page.click("#external-link", { button: "middle" })
-    // There's no assertion needed here because we only want to ensure
-    // no interception or errors occur. If something breaks, the test will fail.
+    await page.click("#external-link")
+    await expect(page).toHaveURL("https://www.example.com")
   })
 })
 
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
-    // Inject a section to test scroll with an ID
-    await page.evaluate(() => {
-      const section = document.createElement("div")
-      section.id = "test-scroll-section"
-      section.style.marginTop = "1500px"
-      document.body.appendChild(section)
-    })
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await waitForHistoryScrollNotEquals(page, undefined)
 
-    // Create a hash link and click it
-    await page.evaluate(() => {
-      const link = document.createElement("a")
-      link.href = "#test-scroll-section"
-      link.id = "hash-link"
-      link.textContent = "Scroll to test section"
-      document.body.appendChild(link)
-    })
-
-    await page.click("#hash-link")
-
-    // Wait briefly to allow scroll animation
-    await page.waitForLoadState("networkidle")
-
-    // Verify the final scroll position is beyond 0
     const scrollPosition = await page.evaluate(() => window.scrollY)
-    expect(scrollPosition).toBeGreaterThan(0)
+    expect(Math.abs(scrollPosition)).toBeGreaterThan(0)
+  })
+
+  for (const [scrollPos] of [[50], [100], [1000]]) {
+    // eslint-disable-next-line playwright/expect-expect
+    test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
+      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForHistoryState(page, scrollPos)
+      await softRefresh(page)
+      await waitForScroll(page, scrollPos)
+    })
+
+    // eslint-disable-next-line playwright/expect-expect
+    test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
+      page,
+    }) => {
+      const anchorId = await createFinalAnchor(page)
+      await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+
+      // Wait so that we don't race in Firefox
+      // IIRC I tried alternatives like waitForFunction, but it didn't work
+      // eslint-disable-next-line playwright/no-wait-for-timeout
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
+      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForHistoryState(page, scrollPos)
+      await softRefresh(page)
+
+      await waitForScroll(page, scrollPos)
+    })
+  }
+
+  // eslint-disable-next-line playwright/expect-expect
+  test("Restores scroll position across multiple refreshes", async ({ page }) => {
+    const targetScroll = 200
+    await page.evaluate((targetScroll) => window.scrollTo(0, targetScroll), targetScroll)
+    await waitForHistoryState(page, targetScroll)
+
+    for (let i = 0; i < 5; i++) {
+      await softRefresh(page)
+      await waitForScroll(page, targetScroll)
+    }
+  })
+
+  // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
+  test("restores scroll position when refreshing on hash", async ({ page }) => {
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.waitForFunction(() => window.history.state?.scroll)
+    const currentScroll = await page.evaluate(() => window.scrollY)
+    expect(currentScroll).toBeGreaterThan(0)
+
+    await softRefresh(page)
+    await waitForScroll(page, currentScroll)
   })
 })
 
 test.describe("Popstate (Back/Forward) Navigation", () => {
+  // eslint-disable-next-line playwright/expect-expect
   test("browser back and forward updates content appropriately", async ({ page }) => {
     const initialUrl = page.url()
 
     await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
+    await page.waitForURL((url) => url.toString() !== initialUrl)
 
-    expect(page.url()).not.toBe(initialUrl)
-
-    // Check going back
     await page.goBack()
-    await page.waitForLoadState("networkidle")
-    expect(page.url()).toBe(initialUrl)
+    await page.waitForURL(initialUrl)
 
-    // Check going forward
     await page.goForward()
-    await page.waitForLoadState("networkidle")
-    expect(page.url()).not.toBe(initialUrl)
+    await page.waitForURL((url) => url.toString() !== initialUrl)
   })
 })
 
 test.describe("Same-page navigation", () => {
-  test("back button works after clicking same-page link", async ({ page }) => {
-    // Record initial scroll position
+  test("click same-page link, go back, check scroll is reset to top", async ({ page }) => {
     const initialScroll = await page.evaluate(() => window.scrollY)
+    expect(initialScroll).toBe(0)
 
-    // Click the link to navigate to section2
-    const headers = await page.locator("h1").all()
-    const header1 = headers[3]
-    await header1.scrollIntoViewIfNeeded()
-    await header1.click()
-    await page.waitForTimeout(100) // Wait for scroll
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    const selector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const headers = await page.locator(selector).all()
+    await headers[3].click()
+    await page.waitForFunction(() => window.scrollY > 0)
 
-    // Verify we scrolled down
     const scrollAfterClick = await page.evaluate(() => window.scrollY)
     expect(scrollAfterClick).toBeGreaterThan(initialScroll)
 
     await page.goBack()
-    await page.waitForTimeout(100) // Wait for scroll
+    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, TIGHT_SCROLL_TOLERANCE)
 
-    // Verify we returned to the original position
     const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBe(initialScroll)
+    expect(scrollAfterBack).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
-    // Navigate through all positions and store scroll positions
+    // Scroll to some of the middle headings
     const scrollPositions: number[] = []
-
-    const headings = await page.locator("h1 a").all()
+    const headings = await page.locator("h1 > a").all()
     for (const heading of headings.slice(2, 5)) {
-      await heading.scrollIntoViewIfNeeded()
-      await heading.click()
-      await page.waitForTimeout(100) // Wait for scroll
-      scrollPositions.push(await page.evaluate(() => window.scrollY))
+      // Don't click the heading, just navigate to it
+      const headingId = await heading.getAttribute("href")
+      expect(headingId?.startsWith("#")).toBe(true)
+      await page.goto(`http://localhost:8080/test-page${headingId}`)
+
+      // Firefox will error without waiting for scroll to complete
+      const previousScroll =
+        // eslint-disable-next-line playwright/no-conditional-in-test
+        scrollPositions.length > 0 ? scrollPositions[scrollPositions.length - 1] : 0
+      await waitForHistoryScrollNotEquals(page, previousScroll)
+
+      // eslint-disable-next-line playwright/no-wait-for-timeout
+      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
+      const historyScroll = await page.evaluate(() => window.scrollY)
+      await waitForHistoryState(page, historyScroll)
+      scrollPositions.push(historyScroll)
+
+      // Sanity check that scroll is stable
+      const updatedScroll = await page.evaluate(() => window.scrollY)
+      expect(updatedScroll).toBe(historyScroll)
     }
 
-    // Verify each position was different
-    for (let i = 1; i < scrollPositions.length; i++) {
-      expect(scrollPositions[i]).not.toBe(scrollPositions[i - 1])
+    for (let i = 0; i < scrollPositions.length - 1; i++) {
+      expect(scrollPositions[i]).toBeLessThan(scrollPositions[i + 1])
     }
 
-    // Go back through history and verify each scroll position is within tolerance
-    for (let i = scrollPositions.length - 2; i >= 0; i--) {
+    const reversedScrollPositions = scrollPositions.slice().reverse()
+    for (const position of reversedScrollPositions.slice(1)) {
       await page.goBack()
-      await page.waitForTimeout(100) // Wait for scroll
-      const currentScroll = await page.evaluate(() => window.scrollY)
-
-      // Check if within tolerance rather than exact match
-      expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(SCROLL_TOLERANCE)
+      await waitForHistoryState(page, position)
     }
 
-    // Go forward through history and verify each scroll position is within tolerance
-    for (let i = 1; i < scrollPositions.length; i++) {
+    const forwardScrollPositions = scrollPositions.slice(1)
+    for (const position of forwardScrollPositions) {
       await page.goForward()
-      await page.waitForTimeout(100) // Wait for scroll
-      const currentScroll = await page.evaluate(() => window.scrollY)
-
-      // Check if within tolerance rather than exact match
-      expect(Math.abs(currentScroll - scrollPositions[i])).toBeLessThanOrEqual(SCROLL_TOLERANCE)
+      await waitForHistoryState(page, position)
     }
   })
+
   test("going back after anchor navigation returns to original position", async ({ page }) => {
-    // First, ensure we're at the top of the page
-    await page.evaluate(() => window.scrollTo(0, 0))
-    await page.waitForTimeout(100)
+    const anchorId = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await waitForHistoryScrollNotEquals(page, undefined)
 
-    // Verify starting position is at the top
-    const initialScroll = await page.evaluate(() => window.scrollY)
-    expect(initialScroll).toBe(0)
-
-    // Find a target far down the page
-    const anchorTarget = page.locator("h1").last()
-    await anchorTarget.scrollIntoViewIfNeeded()
-    await page.waitForTimeout(200) // Wait for scroll
-
-    // Verify we've scrolled down
     const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(SCROLL_TOLERANCE * 2)
+    expect(scrollAfterAnchor).toBeGreaterThan(1000)
 
-    // Go back in browser history
     await page.goBack()
-    await page.waitForTimeout(200) // Wait for scroll restoration
-
-    // Verify we're back at the top (or within reasonable tolerance)
-    const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBeLessThanOrEqual(SCROLL_TOLERANCE) // Small tolerance for browser differences
+    await waitForScroll(page, 0)
   })
 })
 
 test.describe("SPA Navigation DOM Cleanup", () => {
   test("removes unexpected siblings of video element before morphing", async ({ page }) => {
-    // Inject the video element and a rogue sibling
+    test.skip(!isDesktopViewport(page), "Video element is not visible on mobile")
+    // Inject the video element structure and a rogue sibling for testing
     await page.evaluate(() => {
       const navbarLeft = document.getElementById("navbar-left")
       if (navbarLeft) {
         const videoContainer = document.createElement("span")
-        videoContainer.id = "header-video-container" // Use the actual container ID if needed
+        videoContainer.id = "header-video-container"
 
         const rogueDiv = document.createElement("div")
         rogueDiv.id = "rogue-sibling"
         rogueDiv.textContent = "Injected by extension"
 
-        // Insert rogue div *next to* video inside its actual parent for a realistic scenario
-        // Assuming the video is inside the span#header-video-container
-        const actualVideoParent = document.createElement("div") // The wrapper div we added earlier
-        actualVideoParent.appendChild(rogueDiv) // Inject sibling next to where video will be
+        const actualVideoParent = document.createElement("div")
+        actualVideoParent.appendChild(rogueDiv) // Inject sibling
 
         videoContainer.appendChild(actualVideoParent)
         navbarLeft.prepend(videoContainer)
       }
-    }, videoId)
+    }, pondVideoId)
 
-    await expect(page.locator(`#${videoId}`)).toBeVisible()
+    await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
     await expect(page.locator("#rogue-sibling")).toBeVisible()
 
-    // Trigger SPA navigation
-    const localLink = page.locator("a").first() // Navigate to a different page
+    // Click is ok because it doesn't scroll to it first
+    const localLink = page.locator("a").first()
     await localLink.click()
 
-    await expect(page.locator("#rogue-sibling")).not.toBeVisible()
-    await expect(page.locator(`#${videoId}`)).toBeVisible()
+    await expect(page.locator("#rogue-sibling")).toBeHidden()
+    await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
+  })
+})
+
+// eslint-disable-next-line playwright/expect-expect
+test("restores scroll position when returning from external page", async ({ page }) => {
+  await page.evaluate(() => {
+    const link = document.createElement("a")
+    link.href = "https://github.com/alexander-turner"
+    link.textContent = "External link"
+    document.body.prepend(link)
+  })
+
+  const externalLink = page.locator("a").first()
+  await externalLink.click()
+  await page.evaluate(() => window.scrollTo(0, 100))
+
+  // The external scroll should not matter when returning to the SPA
+  await page.goBack()
+  await waitForScroll(page, 0)
+})
+
+test.describe("Fetch & Redirect Handling", () => {
+  test("successfully handles meta-refresh redirect", async ({ page }) => {
+    const sourcePath = "/redirect-source"
+    const targetPath = "/redirect-target"
+    const targetContent = "Redirect Target Content"
+
+    await page.route(`**${sourcePath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head><body>Redirecting...</body></html>`,
+      })
+    })
+    await page.route(`**${targetPath}`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: `<html><head><title>Target Page</title></head><body><h1>${targetContent}</h1></body></html>`,
+      })
+    })
+
+    await addMarker(page)
+    await page.evaluate(
+      (path) => window.spaNavigate(new URL(path, window.location.origin)),
+      sourcePath,
+    )
+    await page.waitForLoadState("domcontentloaded")
+
+    expect(await doesMarkerExist(page)).toBe(true)
+    await expect(page.locator("h1")).toHaveText(targetContent)
+    expect(page.url()).toContain(sourcePath)
   })
 })

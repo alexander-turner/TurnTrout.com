@@ -80,6 +80,7 @@ describe("debounce", () => {
     debounced(event)
 
     jest.advanceTimersByTime(150)
+    jest.runAllTimers()
     expect(func).toHaveBeenCalledTimes(1)
   })
 })

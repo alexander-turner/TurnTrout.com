@@ -30,6 +30,12 @@ describe("transformStyle", () => {
     expect(result).toBe("color: azalea;")
   })
 
+  it("should not modify colors that are already CSS variables", () => {
+    const input = "color: var(--red);"
+    const result = transformStyle(input, colorMapping)
+    expect(result).toBe("color: var(--red);")
+  })
+
   it("should handle case-insensitive color names", () => {
     const input = "color: RED;"
     const result = transformStyle(input, colorMapping)

@@ -1,12 +1,11 @@
 import { test, expect } from "@playwright/test"
 
-import { videoId as pondVideoId } from "../component_utils"
+import { pondVideoId as pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-  await page.reload()
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
@@ -26,10 +25,9 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
     element: navbarRightMenu,
   })
 
-  // Test clicking away
   const body = page.locator("body")
   await body.click()
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
   await takeRegressionScreenshot(page, testInfo, "hidden-menu", {
     element: "#navbar-right",
@@ -44,7 +42,7 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
 
   // Test initial state
   const originalMenuButtonState = await menuButton.screenshot()
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 
   // Test opened state
@@ -60,9 +58,8 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   // Test closed state
   await menuButton.click()
   const newMenuButtonState = await menuButton.screenshot()
-  // TODO failing for ipad pro chrome (flakily)
   expect(newMenuButtonState).toEqual(originalMenuButtonState)
-  await expect(navbarRightMenu).not.toBeVisible()
+  await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
 
@@ -70,22 +67,7 @@ test("Can't see the menu at desktop size", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const menuButton = page.locator("#menu-button")
-  const navbarRightMenu = page.locator("#navbar-right .menu")
-
-  // The menu should always be visible at desktop size, so these should fail
-  for (const object of [navbarRightMenu, menuButton]) {
-    await expect(object)
-      .not.toBeVisible({ timeout: 200 })
-      .catch(() => console.debug("Expected failure: menu is always visible at desktop size"))
-  }
-
-  // Try clicking the menu button anyways
-  await menuButton
-    .click({ force: true, timeout: 200 })
-    .catch(() => console.debug("Expected failure: menu button not visible at desktop size"))
-  await expect(navbarRightMenu)
-    .not.toBeVisible({ timeout: 200 })
-    .catch(() => console.debug("Expected failure: menu not visible at desktop size"))
+  await expect(menuButton).toBeHidden()
 })
 
 // Test scrolling down, seeing the menu disappears, and then reappears when scrolling back up
@@ -123,7 +105,7 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
   await expect(navbar).toBeVisible()
 })
 
-// TODO sometimes need to focus page before hitting "/"
+// TODO sometimes need to focus page before hitting "/" - try minimizing?
 
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
@@ -142,8 +124,10 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   for (let i = 0; i < 10; i++) {
     const opacity = await getNavbarOpacity()
     opacityValues.push(Number(opacity))
+    // eslint-disable-next-line playwright/no-wait-for-timeout
     await page.waitForTimeout(80) // Wait a bit between samples
   }
+  // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(500)
   const finalOpacity = await navbar.evaluate((el) => getComputedStyle(el).opacity)
   opacityValues.push(Number(finalOpacity))
@@ -159,16 +143,15 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
 
   const navbar = page.locator("#navbar")
 
-  // Helper function to take a screenshot of the navbar and its shadow
   const takeNavbarScreenshot = async (suffix: string) => {
     const box = await navbar.boundingBox()
-    if (!box) throw new Error("Could not find navbar")
+    test.fail(!box, "Could not find navbar")
     await takeRegressionScreenshot(page, testInfo, suffix, {
       clip: {
-        x: box.x,
-        y: box.y,
-        width: box.width,
-        height: box.height + 12,
+        x: box!.x,
+        y: box!.y,
+        width: box!.width,
+        height: box!.height + 12,
       },
     })
   }
@@ -189,7 +172,6 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
   await expect(navbar).toHaveClass(/shadow/)
   await takeNavbarScreenshot("navbar-with-shadow")
 
-  // Scroll back to top
   await page.evaluate(() => {
     window.scrollTo({
       top: 0,
@@ -197,12 +179,13 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
     })
   })
 
-  // Verify shadow is removed
   await expect(navbar).not.toHaveClass(/shadow/)
 })
 
 for (const theme of ["light", "dark", "auto"]) {
-  test(`Left sidebar is visible on desktop in ${theme} mode`, async ({ page }, testInfo) => {
+  test(`Left sidebar is visible on desktop in ${theme} mode (lostpixel)`, async ({
+    page,
+  }, testInfo) => {
     test.skip(!isDesktopViewport(page), "Desktop-only test")
 
     const leftSidebar = page.locator("#left-sidebar")
@@ -215,9 +198,10 @@ for (const theme of ["light", "dark", "auto"]) {
 }
 
 test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
   const video = page.locator(`video#${pondVideoId}`)
 
-  // Helper to check video state
   const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
 
   // 1. Initial state: Paused
@@ -234,6 +218,8 @@ test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
 })
 
 test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
   const video = page.locator(`video#${pondVideoId}`)
 
   const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)

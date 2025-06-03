@@ -1,17 +1,20 @@
-import { animate } from "./component_script_utils"
 import {
-  createPopover,
   setPopoverPosition,
   attachPopoverEventListeners,
   PopoverOptions,
   escapeLeadingIdNumber,
+  createPopover,
+  POPOVER_SCROLL_OFFSET,
 } from "./popover_helpers"
+
+// Module-level state
+let activePopoverRemover: (() => void) | null = null
+let pendingPopoverTimer: number | null = null
 
 /**
  * Handles the mouse enter event for link elements
- * @returns A cleanup function to remove event listeners and timeout
  */
-function mouseEnterHandler(this: HTMLLinkElement) {
+async function mouseEnterHandler(this: HTMLLinkElement) {
   const parentOfPopover = document.getElementById("quartz-root")
   if (!parentOfPopover || this.dataset.noPopover === "true") {
     return
@@ -31,79 +34,79 @@ function mouseEnterHandler(this: HTMLLinkElement) {
     linkElement: this,
   }
 
-  const showPopover = async () => {
-    const popoverElement = await createPopover(popoverOptions)
-    if (!popoverElement) {
-      throw new Error("Failed to create popover")
-    }
+  const popoverElement = await createPopover(popoverOptions)
+  if (!popoverElement) {
+    throw new Error("Failed to create popover")
+  }
+  popoverElement.dataset.linkHref = this.href // Mark the popover with its source link TODO why
 
-    parentOfPopover.prepend(popoverElement)
+  parentOfPopover.prepend(popoverElement)
 
-    const updatePosition = () => {
-      setPopoverPosition(popoverElement, this)
-    }
-
-    updatePosition()
-
-    window.addEventListener("resize", updatePosition)
-
-    const cleanup = attachPopoverEventListeners(popoverElement, this)
-
-    // skipcq: JS-0098
-    void popoverElement.offsetWidth
-
-    popoverElement.classList.add("popover-visible")
-
-    if (hash !== "") {
-      hash = `${hash}-popover`
-      hash = escapeLeadingIdNumber(hash)
-      const heading = popoverElement.querySelector(hash) as HTMLElement | null
-      if (heading) {
-        const popoverInner = popoverElement.querySelector(".popover-inner") as HTMLElement
-
-        popoverInner.scroll({ top: heading.offsetTop - 12, behavior: "instant" })
-      }
-    }
-
-    return () => {
-      cleanup()
-      window.removeEventListener("resize", updatePosition)
-    }
+  const updatePosition = () => {
+    setPopoverPosition(popoverElement, this)
   }
 
-  // Use requestAnimationFrame to delay showing the popover
-  const cleanupShow = () => {
-    return animate(
-      300,
-      () => undefined,
-      async () => {
-        await showPopover()
-      },
-    )
+  updatePosition()
+
+  const onPopoverRemove = () => {
+    activePopoverRemover = null
+    window.removeEventListener("resize", updatePosition)
   }
 
-  const cleanup = cleanupShow()
+  const popoverCleanup = attachPopoverEventListeners(popoverElement, this, onPopoverRemove)
+  activePopoverRemover = popoverCleanup
 
-  return () => {
-    cleanup()
-    window.removeEventListener("resize", showPopover)
+  window.addEventListener("resize", updatePosition)
+
+  // skipcq: JS-0098 - Force reflow to ensure CSS transition
+  void popoverElement.offsetWidth
+
+  popoverElement.classList.add("popover-visible")
+
+  // Handle hash scrolling
+  if (hash !== "") {
+    hash = `${hash}-popover`
+    hash = escapeLeadingIdNumber(hash)
+    const heading = popoverElement.querySelector(hash) as HTMLElement | null
+    if (heading) {
+      const popoverInner = popoverElement.querySelector(".popover-inner") as HTMLElement
+
+      // Need to scroll the inner container
+      popoverInner.scroll({ top: heading.offsetTop - POPOVER_SCROLL_OFFSET, behavior: "instant" })
+    }
   }
 }
 
-// Add event listeners to all internal links
 document.addEventListener("nav", () => {
-  const links = [...document.getElementsByClassName("internal")] as HTMLLinkElement[]
+  const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
   for (const link of links) {
-    // Define handlers outside to ensure they can be removed
-    let cleanup: (() => void) | undefined
+    const handleMouseEnter = () => {
+      // Clear any pending timer to show a popover for another link
+      if (pendingPopoverTimer) {
+        clearTimeout(pendingPopoverTimer)
+        pendingPopoverTimer = null
+      }
 
-    const handleMouseEnter = async () => {
-      if (cleanup) cleanup()
-      cleanup = mouseEnterHandler.call(link)
+      // Don't do anything if hovering over the link for the currently visible popover
+      const existingPopover = document.querySelector(".popover") as HTMLElement | null
+      if (existingPopover && existingPopover.dataset.linkHref === link.href) {
+        return
+      }
+
+      pendingPopoverTimer = window.setTimeout(() => {
+        if (activePopoverRemover) {
+          activePopoverRemover()
+        }
+        mouseEnterHandler.call(link) // Show the new popover
+        pendingPopoverTimer = null
+      }, 300)
     }
 
     const handleMouseLeave = () => {
-      if (cleanup) cleanup()
+      if (pendingPopoverTimer) {
+        clearTimeout(pendingPopoverTimer)
+        pendingPopoverTimer = null
+      }
     }
 
     link.addEventListener("mouseenter", handleMouseEnter)

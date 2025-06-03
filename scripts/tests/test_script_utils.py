@@ -68,7 +68,7 @@ def test_get_git_root_raises_error():
             False,
         ),
         ("/home/user/projects/other/file.txt", None, True),
-        ("/home/user/quartz/content/notes.md", None, True),
+        ("/home/user/quartz/website_content/notes.md", None, True),
         (
             "/home/user/quartz/static/deeply/nested/folder/image.jpg",
             Path("quartz/static/deeply/nested/folder/image.jpg"),
@@ -714,30 +714,94 @@ def test_body_is_empty(html, expected):
     assert result == expected
 
 
-def test_get_non_code_text():
-    """
-    Test extracting non-code text from HTML elements, excluding code and KaTeX content.
-    """
-    html = """
+@pytest.fixture
+def sample_html_for_get_non_code_text() -> str:
+    """Provides a sample HTML string for testing get_non_code_text."""
+    return """
     <div>
-        Normal text
-        <code>code text</code>
-        More normal text
-        <p>Paragraph with <code>some code</code> and normal text</p>
-        <pre><code>block code</code></pre>
-        <span class="katex">KaTeX formula</span>
-        <span class="katex-display">Display KaTeX</span>
-        <p>Text with <span class="katex">inline math</span> and more text</p>
-        Final text
+        <p id="test-paragraph">
+            Visible Text.
+            <span class="katex">KaTeX stuff</span>
+            <code>code stuff</code>
+            More Visible Text.
+        </p>
+        <p id="another-paragraph">
+            Even more text <a href="#">link</a>
+        </p>
     </div>
     """
-    soup = BeautifulSoup(html, "html.parser")
-    result = script_utils.get_non_code_text(soup)
 
-    # Normalize whitespace for comparison
-    result_normalized = " ".join(result.split())
-    expected_normalized = "Normal text More normal text Paragraph with and normal text Text with and more text Final text"
-    assert result_normalized == expected_normalized
+
+def test_get_non_code_text_does_not_modify_original_tag(
+    sample_html_for_get_non_code_text,
+):
+    """
+    Test that get_non_code_text does not modify the original Tag object
+    passed to it, by comparing its string representation.
+    """
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+    paragraph_tag = soup.find("p", id="test-paragraph")
+    assert paragraph_tag is not None, "Test paragraph not found"
+
+    original_tag_str_before = str(paragraph_tag)
+    script_utils.get_non_code_text(paragraph_tag)
+    original_tag_str_after = str(paragraph_tag)
+
+    assert original_tag_str_before == original_tag_str_after, (
+        "Tag was modified by get_non_code_text. "
+        f"Before:\n{original_tag_str_before}\nAfter:\n{original_tag_str_after}"
+    )
+
+
+def test_get_non_code_text_does_not_modify_original_soup_object(
+    sample_html_for_get_non_code_text,
+):
+    """
+    Test that get_non_code_text does not modify the original BeautifulSoup
+    object passed to it, by comparing its string representation.
+    """
+    original_soup = BeautifulSoup(
+        sample_html_for_get_non_code_text, "html.parser"
+    )
+
+    original_soup_str_before = str(original_soup)
+    script_utils.get_non_code_text(original_soup)
+    original_soup_str_after = str(original_soup)
+
+    assert original_soup_str_before == original_soup_str_after, (
+        "BeautifulSoup object was modified by get_non_code_text. "
+        f"Before:\n{original_soup_str_before}\nAfter:\n{original_soup_str_after}"
+    )
+
+
+def test_get_non_code_text_returns_correct_text_for_tag(
+    sample_html_for_get_non_code_text,
+):
+    """
+    Test that get_non_code_text returns the correctly stripped text when
+    given a Tag object.
+    """
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+    paragraph_tag = soup.find("p", id="test-paragraph")
+    assert paragraph_tag is not None
+
+    stripped_text = script_utils.get_non_code_text(paragraph_tag)
+    expected_text = "Visible Text. More Visible Text."
+    assert " ".join(stripped_text.split()) == " ".join(expected_text.split())
+
+
+def test_get_non_code_text_returns_correct_text_for_soup_object(
+    sample_html_for_get_non_code_text,
+):
+    """
+    Test that get_non_code_text returns the correctly stripped text when
+    given a BeautifulSoup object.
+    """
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+
+    stripped_text = script_utils.get_non_code_text(soup)
+    expected_text = "Visible Text. More Visible Text. Even more text link"
+    assert " ".join(stripped_text.split()) == " ".join(expected_text.split())
 
 
 @pytest.mark.parametrize(
@@ -892,8 +956,75 @@ def test_collect_aliases(
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(content)
 
-    # Collect aliases
     result = script_utils.collect_aliases(tmp_path)
 
-    # Check results
     assert result == expected_aliases
+
+
+def test_get_classes_string_attribute():
+    """Test get_classes with a string class attribute."""
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == ["class1", "class2"]
+
+
+def test_get_classes_list_attribute():
+    """Test get_classes with a list class attribute."""
+    # BeautifulSoup typically stores multi-valued attributes like class as a list
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    # Simulate how BS might present it if it were a list internally
+    tag["class"] = ["class1", "class2", "class3"]
+    assert script_utils.get_classes(tag) == ["class1", "class2", "class3"]
+
+
+def test_get_classes_list_attribute_with_non_string():
+    """Test get_classes with a list class attribute containing non-strings."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = ["class1", 123, "class3", True]
+    assert script_utils.get_classes(tag) == ["class1", "123", "class3", "True"]
+
+
+def test_get_classes_missing_attribute():
+    """Test get_classes when the class attribute is missing."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_string_attribute():
+    """Test get_classes with an empty string class attribute."""
+    html = '<div class=""></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_list_attribute():
+    """Test get_classes with an empty list class attribute."""
+    html = "<div></div>"  # Start with no class
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = []
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_attribute_is_none():
+    """Test get_classes when the class attribute is explicitly None."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = None  # type: ignore
+    assert script_utils.get_classes(tag) == []

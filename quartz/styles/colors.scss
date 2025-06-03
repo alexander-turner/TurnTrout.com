@@ -3,6 +3,7 @@
   // Catppuccin Frappe
   --pink: #fba7e4;
   --red: #de585a;
+  --maroon: #c75379;
   --orange: #db8942;
   --yellow: #e5c890;
   --green: #a6d189;
@@ -11,7 +12,7 @@
   --blue: #8caaee;
   --lavender: #8788d3;
   --purple: #a86de1;
-  --gold: #ffd700; /* Gold */
+  --gold: #cfb31f; /* Gold */
 
   // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #303446; // frappeColors.base
@@ -22,6 +23,11 @@
   --secondary: #97b0e9; // frappeColors.blue
   --tertiary: #99d1db; // custom color
   --highlight: #949cbb30; // frappeColors.overlay-2 at 20% opacity
+
+  // Always give access to light and dark colors
+  --light: var(--foreground);
+  --dark: var(--background);
+  --dark-gray: var(--midground-faint);
 
   & img,
   & video:not(:has(::backdrop)),
@@ -34,9 +40,7 @@
 // Catppuccin Latte
 :root[data-theme="light"],
 .light-mode {
-  --flamingo: #dd7878;
   --pink: #ee7ed0;
-  --amaranth: #9f2b68; // I love this song by Nightwish
   --red: #be415c;
   --orange: #e08c43;
   --yellow: #8f8620;
@@ -57,6 +61,10 @@
   --secondary: #1e66f5; // latteColors.blue
   --tertiary: #0486b9; // custom color
   --highlight: #7c7f9324; // latteColors.overlay-2 at 20% opacity
+  --light: var(--background);
+  --dark: var(--foreground);
+  --dark-gray: var(--midground-strong);
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
   & video:not(:has(::backdrop)),
@@ -90,6 +98,15 @@
   color: var(--foreground) !important;
 }
 
+.light-mode img {
+  filter: none !important;
+}
+
+.dark-mode img {
+  mix-blend-mode: normal;
+  filter: grayscale(50%) !important;
+}
+
 // Mermaid
 @each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
   rect {
@@ -101,14 +118,4 @@
     fill: var(--background-#{$color}) !important;
     stroke: var(--border-#{$color}) !important;
   }
-}
-
-// NOTE doesn't work in Firefox but better than nothing
-audio,
-audio::-webkit-media-controls-play-button,
-audio::-webkit-media-controls-panel,
-audio::-webkit-media-controls {
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
-  border: 1px solid var(--midground-faint) !important;
 }

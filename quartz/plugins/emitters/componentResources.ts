@@ -74,16 +74,15 @@ async function joinScripts(scripts: string[]): Promise<string> {
 }
 
 function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentResources) {
-  const cfg = ctx.cfg.configuration
+  const config = ctx.cfg.configuration
 
-  // popovers
-  if (cfg.enablePopovers) {
+  if (config.enablePopovers) {
     componentResources.afterDOMLoaded.push(popoverScript)
     componentResources.css.push(popoverStyle)
   }
 
-  if (cfg.analytics?.provider === "google") {
-    const tagId = cfg.analytics.tagId
+  if (config.analytics?.provider === "google") {
+    const tagId = config.analytics.tagId
     componentResources.afterDOMLoaded.push(`
       const gtagScript = document.createElement("script")
       gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=${tagId}"
@@ -101,42 +100,18 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
           page_location: location.href,
         });
       });`)
-  } else if (cfg.analytics?.provider === "plausible") {
-    const plausibleHost = cfg.analytics.host ?? "https://plausible.io"
-    componentResources.afterDOMLoaded.push(`
-      const plausibleScript = document.createElement("script")
-      plausibleScript.src = "${plausibleHost}/js/script.manual.js"
-      plausibleScript.setAttribute("data-domain", location.hostname)
-      plausibleScript.defer = true
-      document.head.appendChild(plausibleScript)
-
-      window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }
-
-      document.addEventListener("nav", () => {
-        plausible("pageview")
-      })
-    `)
-  } else if (cfg.analytics?.provider === "umami") {
+  } else if (config.analytics?.provider === "umami") {
     componentResources.afterDOMLoaded.push(`
       const umamiScript = document.createElement("script")
-      umamiScript.src = "${cfg.analytics.host ?? "https://analytics.umami.is"}/script.js"
-      umamiScript.setAttribute("data-website-id", "${cfg.analytics.websiteId}")
+      umamiScript.src = "${config.analytics.host ?? "https://analytics.umami.is"}/script.js"
+      umamiScript.setAttribute("data-website-id", "${config.analytics.websiteId}")
       umamiScript.async = true
 
       document.head.appendChild(umamiScript)
     `)
-  } else if (cfg.analytics?.provider === "goatcounter") {
-    componentResources.afterDOMLoaded.push(`
-      const goatcounterScript = document.createElement("script")
-      goatcounterScript.src = "${cfg.analytics.scriptSrc ?? "https://gc.zgo.at/count.js"}"
-      goatcounterScript.async = true
-      goatcounterScript.setAttribute("data-goatcounter",
-        "https://${cfg.analytics.websiteId}.${cfg.analytics.host ?? "goatcounter.com"}/count")
-      document.head.appendChild(goatcounterScript)
-    `)
   }
 
-  if (cfg.enableSPA) {
+  if (config.enableSPA) {
     componentResources.afterDOMLoaded.push(spaRouterScript)
   } else {
     componentResources.afterDOMLoaded.push(`

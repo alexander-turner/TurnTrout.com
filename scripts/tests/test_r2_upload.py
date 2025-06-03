@@ -36,7 +36,7 @@ def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
 
     dirs = {
         "quartz": tmp_path / "quartz",
-        "content": tmp_path / "quartz" / "content",
+        "website_content": tmp_path / "quartz" / "website_content",
         "static": tmp_path / "quartz" / "static",
     }
     for d in dirs.values():
@@ -62,7 +62,8 @@ def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         "test.md": "\n".join(f"![](quartz/static/{f})" for f in test_files),
     }
     md_files = [
-        (dirs["content"] / f, content) for f, content in md_content.items()
+        (dirs["website_content"] / f, content)
+        for f, content in md_content.items()
     ]
     for file_path, content in md_files:
         file_path.write_text(content)
@@ -81,7 +82,9 @@ def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         ["git", "commit", "-m", "Initial commit"], cwd=tmp_path, check=True
     )
 
-    yield tmp_path, dirs["static"] / "test.jpg", dirs["content"], md_files
+    yield tmp_path, dirs["static"] / "test.jpg", dirs[
+        "website_content"
+    ], md_files
 
     shutil.rmtree(tmp_path)
 
@@ -158,7 +161,10 @@ def test_upload_to_r2_success(mock_git_root: Path, r2_cleanup: list[str]):
     "input_path, expected_key",
     [
         ("/path/to/quartz/static/image.jpg", "static/image.jpg"),
-        ("quartz/content/blog/post.md", "content/blog/post.md"),
+        (
+            "quartz/website_content/blog/post.md",
+            "website_content/blog/post.md",
+        ),
         ("/quartz/assets/file.pdf", "assets/file.pdf"),
         ("no_matching_dir/file.txt", "no_matching_dir/file.txt"),
     ],
@@ -235,7 +241,7 @@ def test_main_function(
         ]
         args = [
             "--references-dir",
-            str(mock_git_root / "quartz" / "content"),
+            str(mock_git_root / "quartz" / "website_content"),
         ] + args
     with patch("sys.argv", ["r2_upload.py"] + args):
         if expected_exception:
@@ -313,7 +319,7 @@ def test_main_upload_all_custom_filetypes(
 
         # Use the mock_git_root instead of tmp_path
         static_dir = mock_git_root / "quartz" / "static"
-        content_dir = mock_git_root / "quartz" / "content"
+        content_dir = mock_git_root / "quartz" / "website_content"
         static_dir.mkdir(parents=True, exist_ok=True)
         content_dir.mkdir(parents=True, exist_ok=True)
 
@@ -415,7 +421,7 @@ def test_preserve_path_structure_with_replacement(
         move_to_dir = tmp_path / "external_backup"
         move_to_dir.mkdir()
 
-        content_dir = mock_git_root / "quartz" / "content"
+        content_dir = mock_git_root / "quartz" / "website_content"
         content_dir.mkdir(parents=True)
 
         static_file = (
@@ -697,7 +703,7 @@ def test_update_markdown_references_with_links(
     tmp_path: Path, mock_git_root: Path
 ):
     """Test updating both image references and regular links."""
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     test_file = mock_git_root / "quartz" / "static" / "docs" / "doc.pdf"
@@ -739,7 +745,7 @@ def test_update_markdown_references_verbose_output(
     tmp_path: Path, mock_git_root: Path, capsys: pytest.CaptureFixture[str]
 ):
     """Test verbose output during reference updates."""
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     test_file = mock_git_root / "quartz" / "static" / "test.jpg"

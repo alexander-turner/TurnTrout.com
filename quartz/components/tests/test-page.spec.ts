@@ -10,9 +10,12 @@ import {
   takeScreenshotAfterElement,
 } from "./visual_utils"
 
+const TIGHT_SCROLL_TOLERANCE = 10
+// Visual regression tests don't need assertions
+/* eslint-disable playwright/expect-expect */
+
 // TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
-  // Mock clipboard API
   await page.addInitScript(() => {
     // Mock clipboard API if not available
     if (!navigator.clipboard) {
@@ -28,14 +31,21 @@ test.beforeEach(async ({ page }) => {
     })
   })
 
-  // Log any console errors
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   // Dispatch the 'nav' event to initialize clipboard functionality
   await page.evaluate(() => {
     window.dispatchEvent(new Event("nav"))
+  })
+
+  // Hide all video controls
+  await page.evaluate(() => {
+    const videos = document.querySelectorAll("video")
+    videos.forEach((video) => {
+      video.removeAttribute("controls")
+    })
   })
 })
 
@@ -65,11 +75,6 @@ async function getH1Screenshots(
 
     await header.scrollIntoViewIfNeeded()
 
-    // Wait for all images to load
-    for (const image of await header.locator("img").all()) {
-      await image.waitFor({ state: "visible" })
-    }
-
     // Only screenshot up to where the next section begins
     await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
   }
@@ -80,14 +85,10 @@ test.describe("Test page sections", () => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
-      // Get the height of the page
       const boundingBoxArticle = await page.locator("body").boundingBox()
-      if (!boundingBoxArticle) throw new Error("Could not get preview container dimensions")
-
-      // Set viewport to match preview height
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
-        height: Math.ceil(boundingBoxArticle.height),
+        height: Math.ceil(boundingBoxArticle?.height ?? 0),
       })
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -95,52 +96,152 @@ test.describe("Test page sections", () => {
   }
 })
 
-test.describe("Various site pages", () => {
-  for (const pageSlug of ["", "404", "all-tags", "recent", "tags/personal"]) {
-    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`)
-      await takeRegressionScreenshot(page, testInfo, `test-page-${pageSlug}`)
+test.describe("Unique content around the site", () => {
+  for (const pageSlug of ["", "404"]) {
+    const url = `http://localhost:8080/${pageSlug}`
+
+    const title = pageSlug === "" ? "Welcome" : pageSlug
+    test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(url)
+      await page.locator("body").waitFor({ state: "visible" })
+      await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
     })
   }
+
+  // Several pages update based on new posts
+  // Mock the data to prevent needless updating of the screenshots
+  for (const pageSlug of ["recent", "tags/personal"]) {
+    const url = `http://localhost:8080/${pageSlug}`
+    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(url)
+      await page.locator("body").waitFor({ state: "visible" })
+
+      // Remove all but the oldest numOldest posts; stable as I add more
+      const numOldest = 9
+      await page.evaluate((numKeepOldest: number) => {
+        const listElement = document.querySelectorAll("ul.section-ul")[0]
+        if (!listElement) {
+          console.error("Could not find the post list element.")
+          return
+        }
+
+        const children = listElement.children
+        const numTotalChildren = children.length
+        const numToRemove = numTotalChildren - numKeepOldest
+
+        // Need to copy the children to remove *before* iterating,
+        // as removing modifies the live HTMLCollection
+        const childrenToRemove = Array.from(children).slice(0, numToRemove)
+        childrenToRemove.forEach((child) => listElement.removeChild(child))
+      }, numOldest)
+
+      await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`, {
+        element: "#center-content",
+      })
+    })
+  }
+
+  test("All-tags with dummy values", async ({ page }, testInfo) => {
+    const url = "http://localhost:8080/all-tags"
+    await page.goto(url)
+    await page.locator("body").waitFor({ state: "visible" })
+
+    await page.evaluate(() => {
+      const tagContainers = document.querySelectorAll(".tag-container")
+      tagContainers.forEach((tagContainer, index) => {
+        // Don't want look to change as I add more tags
+        if (index >= 10) {
+          tagContainer.remove()
+        }
+
+        const tagLink = tagContainer.querySelector(".tag-link")
+        if (!tagLink) throw new Error("Could not get tag link")
+        tagLink.textContent = `tag-${index}`
+
+        const tagCount = tagContainer.querySelector(".tag-count")
+        if (!tagCount) throw new Error("Could not get tag count")
+        tagCount.textContent = `(${index})`
+      })
+    })
+
+    await takeRegressionScreenshot(page, testInfo, "all-tags-dummy")
+  })
 
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
     await page.goto(
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
     )
-    const rewardWarning = page.getByText("Reward is not the optimization target").first()
+
+    const admonition = page.locator(".warning").first()
+    await admonition.scrollIntoViewIfNeeded()
+
+    const rewardWarning = admonition.getByText("Reward is not the optimization target").first()
     await expect(rewardWarning).toBeVisible()
+
     await takeRegressionScreenshot(page, testInfo, "reward-warning", {
-      element: rewardWarning,
+      element: admonition,
     })
   })
 })
 test.describe("Table of contents", () => {
-  function getTableOfContentsSelector(page: Page) {
-    return isDesktopViewport(page) ? "#toc-content" : "*:has(> #toc-content-mobile)"
-  }
-
   test("TOC is visible (lostpixel)", async ({ page }) => {
-    const selector = getTableOfContentsSelector(page)
-    await expect(page.locator(selector)).toBeVisible()
-  })
-
-  test("TOC visual regression (lostpixel)", async ({ page }, testInfo) => {
-    const selector = getTableOfContentsSelector(page)
-    if (!isDesktopViewport(page)) {
-      await page.locator(selector).locator(".admonition-title-inner").first().click()
+    let selector: string
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (isDesktopViewport(page)) {
+      selector = "#toc-content"
+    } else {
+      selector = "*:has(> #toc-content-mobile)"
     }
 
-    await takeRegressionScreenshot(page, testInfo, selector)
+    await expect(page.locator(selector)).toBeVisible()
+  })
+  test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page))
+
+    const rightSidebar = page.locator("#right-sidebar #table-of-contents")
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
+      element: rightSidebar,
+    })
+  })
+  test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(isDesktopViewport(page))
+
+    // Hide the navbar
+    await page.evaluate(() => {
+      const navbar = document.getElementById("navbar")
+      if (navbar) {
+        navbar.style.display = "none"
+      }
+    })
+
+    const tocContent = page.locator(".admonition").first()
+    await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
+      element: tocContent,
+    })
+  })
+
+  test("Scrolling down changes TOC highlight", async ({ page }) => {
+    test.skip(!isDesktopViewport(page))
+
+    const headerLocator = page.locator("h1").last()
+    await headerLocator.scrollIntoViewIfNeeded()
+    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
+    const highlightText = await tocHighlightLocator.textContent()
+
+    const spoilerHeading = page.locator("#spoilers").first()
+    await spoilerHeading.scrollIntoViewIfNeeded()
+
+    await expect(tocHighlightLocator).not.toHaveText(highlightText!)
   })
 })
 
 test.describe("Layout Breakpoints", () => {
   for (const width of [minDesktopWidth, maxMobileWidth]) {
     test(`Layout at breakpoint width ${width}px (lostpixel)`, async ({ page }, testInfo) => {
-      // Set viewport to the exact breakpoint width
+      test.skip(!isDesktopViewport(page), "Desktop-only test")
+
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
-      // Take a full page screenshot at this specific width
       await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${width}px`)
     })
   }
@@ -182,22 +283,17 @@ test.describe("Admonitions", () => {
     })
   }
 
-  for (const status of ["open", "closed"]) {
+  for (const status of ["open", "collapse"]) {
     test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
       page,
     }, testInfo) => {
-      let element: Locator
-      if (status === "open") {
-        element = page.locator("#test-open .fold-admonition-icon").first()
-      } else {
-        element = page.locator("#test-collapse .fold-admonition-icon").first()
-      }
-
+      const element = page.locator(`#test-${status} .fold-admonition-icon`).first()
       await element.scrollIntoViewIfNeeded()
-      await element.waitFor({ state: "visible" })
+      await expect(element).toBeVisible()
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
         element,
+        skipViewportImagesLoad: true,
       })
     })
   }
@@ -221,7 +317,6 @@ test.describe("Admonitions", () => {
           }
         })
 
-        // Assert the height is not significantly greater than line height
         expect(computedStyle.height).toBeLessThanOrEqual(computedStyle.lineHeight * 1.01)
       }
     }
@@ -261,28 +356,13 @@ test.describe("Clipboard button", () => {
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         element: clipboardButton,
         disableHover: false,
+        skipViewportImagesLoad: true,
       })
     })
   }
 })
 
 test.describe("Right sidebar", () => {
-  test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
-    if (!isDesktopViewport(page)) {
-      // Open the TOC
-      const tocContent = page.locator(".admonition").first()
-      await tocContent.click()
-      await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-        element: tocContent,
-      })
-    } else {
-      const rightSidebar = page.locator("#right-sidebar")
-      await takeRegressionScreenshot(page, testInfo, "toc-visual-test", {
-        element: rightSidebar,
-      })
-    }
-  })
-
   test("Right sidebar scrolls independently", async ({ page }) => {
     test.skip(!isDesktopViewport(page), "Desktop-only test")
 
@@ -305,7 +385,16 @@ test.describe("Right sidebar", () => {
     })
 
     // Wait a moment for scroll to apply
-    await page.waitForTimeout(100)
+    await page.waitForFunction(
+      (args) => {
+        const { initialScrollTop, tolerance } = args
+        const rightSidebar = document.querySelector("#right-sidebar")
+        if (!rightSidebar) return false
+        console.error("rightSidebar.scrollTop", rightSidebar.scrollTop, initialScrollTop)
+        return Math.abs(rightSidebar.scrollTop - (initialScrollTop + 100)) < tolerance
+      },
+      { initialScrollTop: initialSidebarScrollTop, tolerance: TIGHT_SCROLL_TOLERANCE },
+    )
 
     const finalWindowScrollY = await page.evaluate(() => window.scrollY)
     const finalSidebarScrollTop = await rightSidebar.evaluate((el) => el.scrollTop)
@@ -316,18 +405,6 @@ test.describe("Right sidebar", () => {
     // Verify sidebar did scroll
     expect(finalSidebarScrollTop).toBeGreaterThan(initialSidebarScrollTop)
     expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
-  })
-
-  test("Scrolling down changes TOC highlight (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(!isDesktopViewport(page))
-
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
-
-    const activeElement = page.locator("#table-of-contents .active").first()
-    await takeRegressionScreenshot(page, testInfo, "toc-highlight-scrolled", {
-      element: activeElement,
-    })
   })
 
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
@@ -356,13 +433,7 @@ test.describe("Right sidebar", () => {
 
 test.describe("Spoilers", () => {
   for (const theme of ["light", "dark"]) {
-    test(`Spoiler before revealing in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-      await setTheme(page, theme as "light" | "dark")
-      const spoiler = page.locator(".spoiler-container").first()
-      await takeRegressionScreenshot(page, testInfo, `spoiler-before-revealing-${theme}`, {
-        element: spoiler,
-      })
-    })
+    // Before revealing screenshot is covered in the H1 test
 
     test(`Spoiler after revealing in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
@@ -377,6 +448,7 @@ test.describe("Spoilers", () => {
 
       await takeRegressionScreenshot(page, testInfo, "spoiler-after-revealing", {
         element: spoiler,
+        skipViewportImagesLoad: true,
       })
 
       // Click again to close
@@ -388,7 +460,6 @@ test.describe("Spoilers", () => {
     })
   }
 
-  // Test that hovering over the spoiler reveals it
   test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
@@ -403,6 +474,7 @@ test.describe("Spoilers", () => {
     await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
       element: spoiler,
       disableHover: false,
+      skipViewportImagesLoad: true,
     })
   })
 })
@@ -410,7 +482,7 @@ test.describe("Spoilers", () => {
 test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, testInfo) => {
   const singleLetterDropcaps = page.locator("#single-letter-dropcap")
   await singleLetterDropcaps.scrollIntoViewIfNeeded()
-  await takeRegressionScreenshot(page, testInfo, "", {
+  await takeRegressionScreenshot(page, testInfo, "single-letter-dropcap", {
     element: "#single-letter-dropcap",
   })
 })
@@ -421,12 +493,11 @@ for (const theme of ["light", "dark"]) {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Hover and wait for width to stabilize
     await elvishText.hover()
 
-    // Get initial width
+    // Get initial width TODO
     const box = await elvishText.boundingBox()
-    if (!box) throw new Error("Could not get elvish text dimensions")
+    test.fail(!box, "Could not get elvish text dimensions")
 
     await takeScreenshotAfterElement(page, testInfo, elvishText, 50, `elvish-text-hover-${theme}`)
   })
@@ -480,4 +551,19 @@ test.describe("Video Speed Controller visibility", () => {
     const vscController = page.locator(".vsc-controller")
     await expect(vscController).toBeVisible()
   })
+})
+
+test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
+  const firstParagraph = page.locator("#center-content article > p").first()
+  await expect(firstParagraph).toBeVisible()
+  const screenshotBefore = await firstParagraph.screenshot()
+
+  const url = page.url()
+  await page.goto(`${url}#header-3`)
+
+  await firstParagraph.scrollIntoViewIfNeeded()
+  await expect(firstParagraph).toBeVisible()
+  const screenshotAfter = await firstParagraph.screenshot()
+  expect(screenshotAfter).toEqual(screenshotBefore)
+  // Don't need regression screenshot because non-clicked appearance is covered by other tests
 })

@@ -49,7 +49,9 @@ export const CreateTableOfContents: QuartzComponent = ({
   return (
     <div id="table-of-contents" className="desktop-only">
       <h6 className="toc-title">
-        <a href="#top">Table of Contents</a>
+        <a href="#top" className="internal same-page-link">
+          Table of Contents
+        </a>
       </h6>
       <div id="toc-content">
         <ul className="overflow">{toc}</ul>
@@ -127,7 +129,7 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
 export function toJSXListItem(entry: TocEntry): JSX.Element {
   const entryParent: Parent = processTocEntry(entry)
   return (
-    <a href={`#${entry.slug}`} data-for={entry.slug}>
+    <a href={`#${entry.slug}`} className="internal same-page-link" data-for={entry.slug}>
       {entryParent.children.map(elementToJsx)}
     </a>
   )

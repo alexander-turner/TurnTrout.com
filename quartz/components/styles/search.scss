@@ -21,8 +21,6 @@
   & > #search-icon {
     background-color: var(--midground-faintest);
     border-radius: 4px;
-
-    // transition: background-color 0.3s ease-in-out;
     height: 1.6rem;
     display: flex;
     align-items: center;
@@ -41,8 +39,8 @@
       margin-left: calc(1 * $base-margin);
       margin-right: calc(1.5 * $base-margin);
 
+      // Make it more centered for mobile
       @media all and (max-width: $max-mobile-width) {
-        // Make it more centered for mobile
         margin-right: calc(2 * $base-margin);
       }
     }
@@ -188,7 +186,9 @@
         font-weight: $normal-weight;
         overflow-y: auto;
         margin-left: calc(2 * $base-margin);
-        margin-right: calc(2 * $base-margin);
+
+        // Padding to keep scrollbar from hugging the right edge
+        padding-right: calc(2 * $base-margin);
         cursor: pointer;
 
         & .preview-inner {

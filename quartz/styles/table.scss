@@ -27,6 +27,7 @@ td {
   text-align: left;
   min-width: 0;
   overflow-wrap: break-word; // Widens cells for td content, IDK why
+  background-clip: padding-box; // Firefox renders background through td borders?
 
   .footnotes & {
     font-size: smaller;

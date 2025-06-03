@@ -72,6 +72,8 @@ const subtitlePattern = /^(Subtitle:[\S ]+\n)(?=[^\n])/gm
 
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
+  [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
+  [/^(?! *>| +\S)(.*?\S.*?)\$\$ *$/gm, "$1\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, "$1\n"],

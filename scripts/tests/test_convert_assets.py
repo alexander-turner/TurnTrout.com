@@ -25,10 +25,12 @@ def test_image_conversion(ext: str, setup_test_env):
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz/static" / f"asset{ext}"
     avif_path: Path = asset_path.with_suffix(".avif")
-    content_path = Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
+    content_path = (
+        Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
+    )
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     assert avif_path.exists()  # Check if AVIF file was created
@@ -51,7 +53,7 @@ def test_video_conversion(ext: str, setup_test_env):
     )
     mp4_path: Path = asset_path.with_suffix(".mp4")
     content_path: Path = (
-        Path(setup_test_env) / "content" / f"{ext.lstrip('.')}.md"
+        Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
     )
     with open(content_path) as f:
         file_content: str = f.read()
@@ -153,7 +155,8 @@ def test_ignores_unsupported_file_types(setup_test_env):
 
     with pytest.raises(ValueError):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -173,7 +176,8 @@ def test_ignores_non_quartz_path(setup_test_env):
 
     with pytest.raises(ValueError, match="quartz.*directory"):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -182,7 +186,8 @@ def test_ignores_non_static_path(setup_test_env):
 
     with pytest.raises(ValueError, match="static.*subdirectory"):
         convert_assets.convert_asset(
-            asset_path, md_references_dir=Path(setup_test_env) / "content"
+            asset_path,
+            md_references_dir=Path(setup_test_env) / "website_content",
         )
 
 
@@ -232,21 +237,35 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     [
         (
             Path("animation.gif"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\"]*)animation\.gif\)|"
-            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\"]*)animation\.gif\]\]|"
-            rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\"]*)animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
-            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" type="video/mp4; codecs=hvc1"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" type="video/webm"></video>',
+            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"animation\.gif\)|"
+            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
+            rf"animation\.gif\]\]|"
+            rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
+            rf"animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
+            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>">'
+            rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" '
+            rf'type="video/mp4; codecs=hvc1">'
+            rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" '
+            rf'type="video/webm"></video>',
         ),
     ]
     + [
         (
             Path(f"video{ext}"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\"]*)video\{ext}\)|"
-            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\"]*)video\{ext}\]\]|"
-            rf"<video (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\"]*)video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
+            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"video\{ext}\)|"
+            rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
+            rf"video\{ext}\]\]|"
+            rf"<video (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
+            rf"video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
             + ext.lstrip(".")
             + r"\")?(?P<endVideoTagInfo>[^>]*(?<!/))(?:/>|></video>)",
-            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" type="video/mp4; codecs=hvc1"><source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" type="video/webm"></video>',
+            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>">'
+            r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" '
+            r'type="video/mp4; codecs=hvc1">'
+            r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" '
+            r'type="video/webm"></video>',
         )
         for ext in [".webm", ".mov", ".avi", ".mp4"]
     ],
@@ -286,7 +305,7 @@ def test_video_patterns(
 )
 def test_video_figure_caption_formatting(setup_test_env, initial_content):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
 
     test_md = content_dir / "test_video_figure.md"
     test_md.write_text(initial_content)
@@ -313,7 +332,7 @@ def test_asset_staging_path_conversion(setup_test_env) -> None:
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz" / "static" / "asset.jpg"
     avif_path: Path = asset_path.with_suffix(".avif")
-    content_path = Path(setup_test_env) / "content" / "staging.md"
+    content_path = Path(setup_test_env) / "website_content" / "staging.md"
 
     # Create a test markdown file with asset_staging paths
     with open(content_path, "w") as f:
@@ -322,7 +341,7 @@ def test_asset_staging_path_conversion(setup_test_env) -> None:
         f.write('<img src="./asset_staging/static/asset.jpg" alt="shrek"/>\n')
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     assert avif_path.exists()
@@ -368,13 +387,13 @@ def test_path_pattern_variations(
 ) -> None:
     test_dir = Path(setup_test_env)
     asset_path: Path = test_dir / "quartz/static" / "asset.jpg"
-    content_path = Path(setup_test_env) / "content" / "variations.md"
+    content_path = Path(setup_test_env) / "website_content" / "variations.md"
 
     with open(content_path, "w") as f:
         f.write(input_content)
 
     convert_assets.convert_asset(
-        asset_path, md_references_dir=test_dir / "content"
+        asset_path, md_references_dir=test_dir / "website_content"
     )
 
     with open(content_path) as f:
@@ -412,7 +431,7 @@ def test_video_asset_staging_paths(
 
     test_utils.create_test_video(asset_path)
     test_utils.create_test_video(gif_path)
-    content_path = Path(setup_test_env) / "content" / "video_paths.md"
+    content_path = Path(setup_test_env) / "website_content" / "video_paths.md"
 
     with open(content_path, "w") as f:
         f.write(input_content)
@@ -582,7 +601,7 @@ def test_video_pattern_matching(
 @pytest.mark.parametrize("ext", compress.ALLOWED_VIDEO_EXTENSIONS)
 def test_markdown_video_with_alt_text(ext: str, setup_test_env):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
     asset_name = "prune_still-easy_trajectories"
     asset_filename = f"{asset_name}{ext}"
     dummy_video_path: Path = test_dir / "quartz" / "static" / asset_filename
@@ -650,7 +669,7 @@ def test_main_runs(setup_test_env):
         asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
 
@@ -688,7 +707,7 @@ def test_main_ignores_files(setup_test_env):
         converted_asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
     # Verify it wasn't called for the ignored asset
@@ -733,7 +752,7 @@ def test_main_skips_hidden_files(setup_test_env):
         converted_asset_path,
         remove_originals=False,
         strip_metadata=False,
-        md_references_dir=Path("content/"),
+        md_references_dir=Path("website_content/"),
     )
 
     # Verify it wasn't called for the hidden asset
@@ -743,7 +762,7 @@ def test_main_skips_hidden_files(setup_test_env):
 
 def test_video_conversion_long_html(setup_test_env):
     test_dir = Path(setup_test_env)
-    content_dir = test_dir / "content"
+    content_dir = test_dir / "website_content"
     asset_name = "prune_still-easy_trajectories"
     asset_filename = f"{asset_name}.mp4"
     dummy_video_path = test_dir / "quartz" / "static" / asset_filename
@@ -762,3 +781,40 @@ def test_video_conversion_long_html(setup_test_env):
 
     expected_html = '<video autoplay muted loop playsinline alt="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="static/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="static/prune_still-easy_trajectories.webm" type="video/webm"></video>'
     assert converted_content == expected_html
+
+
+def test_multiple_bracket_video_links(setup_test_env):
+    """Test that multiple ![[...]] video links on separate lines are handled correctly."""
+    test_dir = Path(setup_test_env)
+    content_dir = test_dir / "website_content"
+
+    video1_path = (
+        test_dir / "quartz" / "static" / "images" / "posts" / "cls.mp4"
+    )
+    video2_path = (
+        test_dir / "quartz" / "static" / "images" / "posts" / "no-cls.mp4"
+    )
+
+    video1_path.parent.mkdir(parents=True, exist_ok=True)
+    video2_path.parent.mkdir(parents=True, exist_ok=True)
+
+    test_utils.create_test_video(video1_path)
+    test_utils.create_test_video(video2_path)
+
+    test_md_path = content_dir / "test_multiple_brackets.md"
+    input_content = """![[asset_staging/static/images/posts/cls.mp4]]
+
+![[asset_staging/static/images/posts/no-cls.mp4]]"""
+    test_md_path.write_text(input_content)
+
+    convert_assets.convert_asset(video1_path, md_references_dir=content_dir)
+    convert_assets.convert_asset(video2_path, md_references_dir=content_dir)
+
+    with open(test_md_path) as f:
+        converted_content = f.read()
+
+    expected_content = """<video><source src="static/images/posts/cls.mp4" type="video/mp4; codecs=hvc1"><source src="static/images/posts/cls.webm" type="video/webm"></video>
+
+<video><source src="static/images/posts/no-cls.mp4" type="video/mp4; codecs=hvc1"><source src="static/images/posts/no-cls.webm" type="video/webm"></video>"""
+
+    assert converted_content == expected_content

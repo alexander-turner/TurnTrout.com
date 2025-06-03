@@ -173,7 +173,7 @@ export function processWikilink(value: string, ...capture: string[]): PhrasingCo
       const width = match?.groups?.width ?? "auto"
       const height = match?.groups?.height ?? "auto"
       const specifiedDimensions = width !== "auto" || height !== "auto"
-      const alt = specifiedDimensions ? "" : match?.groups?.alt ?? ""
+      const alt = specifiedDimensions ? "" : (match?.groups?.alt ?? "")
       return {
         type: "image",
         url,
@@ -188,7 +188,7 @@ export function processWikilink(value: string, ...capture: string[]): PhrasingCo
     } else if ([".mp4", ".webm", ".ogv", ".mov", ".mkv"].includes(ext)) {
       return {
         type: "html",
-        value: `<video src="${url}" controls></video>`,
+        value: `<span class="video-container"><video src="${url}" controls></video></span>`,
       }
     } else if ([".mp3", ".webm", ".wav", ".m4a", ".ogg", ".3gp", ".flac"].includes(ext)) {
       return {
@@ -325,7 +325,7 @@ export function markdownPlugins(opts: Options): PluggableList {
           if (parent && index !== undefined && videoExtensionRegex.test(node.url)) {
             const newNode: Html = {
               type: "html",
-              value: `<video controls src="${node.url}"></video>`,
+              value: `<span class="video-container"><video controls src="${node.url}"></video></span>`,
             }
 
             parent.children.splice(index, 1, newNode)

@@ -19,7 +19,7 @@ handle_cleanup() {
   if [ "$_git_status" -gt 0 ]; then
     echo "Committing changes..."
     git add -A
-    git commit -m "Update date on publish" || true
+    git commit -m "chore: update date on publish" || true
   fi
 
   _pushed_changes=$1

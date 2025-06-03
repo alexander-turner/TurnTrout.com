@@ -249,21 +249,35 @@ def should_have_md(file_path: Path) -> bool:
     )
 
 
-def get_non_code_text(soup: BeautifulSoup | Tag) -> str:
+def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
     """
     Extract all text from BeautifulSoup object, excluding code blocks and KaTeX
     elements.
 
     Args:
-        soup: BeautifulSoup object to extract text from
+        soup_or_tag: BeautifulSoup object or Tag to extract text from
 
     Returns:
         String containing all non-code, non-KaTeX text
     """
-    # Remove code blocks and KaTeX elements
-    for element in soup.find_all(["code", "pre", "script", "style"]):
-        element.decompose()
-    for element in soup.find_all(class_=["katex", "katex-display"]):
-        element.decompose()
+    temp_soup = BeautifulSoup(str(soup_or_tag), "html.parser")
 
-    return soup.get_text()
+    elements_to_remove = temp_soup.find_all(
+        ["code", "pre", "script", "style"]
+    ) + temp_soup.find_all(class_=["katex", "katex-display"])
+    for element_to_remove in elements_to_remove:
+        element_to_remove.decompose()
+
+    return temp_soup.get_text()
+
+
+# pylint: disable=missing-function-docstring
+def get_classes(tag: Tag) -> list[str]:
+    class_attr_value = tag.get("class")
+    if isinstance(class_attr_value, str):
+        return class_attr_value.split()
+    if isinstance(class_attr_value, list):
+        return [str(c) for c in class_attr_value]
+    if class_attr_value is None:
+        return []
+    raise ValueError("Invalid class attribute value")

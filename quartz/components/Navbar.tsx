@@ -5,7 +5,7 @@ import React from "react"
 
 import { i18n } from "../i18n"
 import { type FullSlug, pathToRoot, resolveRelative } from "../util/path"
-import { videoId } from "./component_utils"
+import { pondVideoId } from "./component_utils"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
@@ -89,14 +89,16 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
 
   const links = pages.map((page: Page) => (
     <li key={page.slug}>
-      <a href={resolveRelative(currentSlug, page.slug as FullSlug)}>{page.title}</a>
+      <a href={resolveRelative(currentSlug, page.slug as FullSlug)} className="internal">
+        {page.title}
+      </a>
     </li>
   ))
 
   const headerVideoSpan = (
-    <span id="header-video-container" data-persist-video="true">
+    <span id="header-video-container" className="video-container" data-persist-video="true">
       <video
-        id={videoId}
+        id={pondVideoId}
         className="no-select no-vsc"
         loop
         muted
@@ -136,7 +138,9 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
       <div id="navbar-left">
         {headerVideoSpan}
         <h2>
-          <a href={baseDir}>{title}</a>
+          <a href={baseDir} className="internal">
+            {title}
+          </a>
         </h2>
         {darkMode}
       </div>

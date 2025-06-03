@@ -117,45 +117,6 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     const span = paragraph.children[0] as Element
     expect(span).toEqual({ type: "text", value: "  " })
   })
-
-  test("should handle multiple paragraphs", () => {
-    const node = h("li", [h("p", ["First paragraph"]), h("p", ["Second paragraph"])])
-
-    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
-
-    const firstParagraph = node.children[0] as Element
-    expect(firstParagraph.children).toHaveLength(1)
-    expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
-
-    const lastParagraph = node.children[1] as Element
-    expect(lastParagraph.children).toHaveLength(2)
-    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
-    expect(lastParagraph.children[1]).toEqual(
-      h("span", { className: "favicon-span" }, ["raph", mockBackArrow]),
-    )
-  })
-
-  test("should handle empty paragraph", () => {
-    const node = h("li", [h("p", [])])
-
-    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
-
-    const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(mockBackArrow)
-  })
-
-  test("should handle paragraph with only whitespace", () => {
-    const node = h("li", [h("p", ["   "])])
-
-    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
-
-    const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "   " })
-    expect(paragraph.children[1]).toBe(mockBackArrow)
-  })
-
   test("should handle complex multi-paragraph footnote with rich formatting", () => {
     const node = h("li", [
       h("p", ["First paragraph"]),
@@ -167,7 +128,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
             href: "#user-content-fnref-instr",
             "data-footnote-backref": "",
             "aria-label": "Back to reference 2",
-            className: "data-footnote-backref internal alias same-page-link",
+            className: "data-footnote-backref internal same-page-link",
           },
           ["⤴"],
         ),

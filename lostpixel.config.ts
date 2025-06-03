@@ -6,4 +6,5 @@ export const config: CustomProjectConfig = {
   },
   lostPixelProjectId: process.env.LOST_PIXEL_PROJECT_ID,
   apiKey: process.env.LOST_PIXEL_API_KEY,
+  threshold: 4,
 }

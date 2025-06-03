@@ -1,10 +1,13 @@
 import pluginJs from "@eslint/js"
+import jestPlugin from "eslint-plugin-jest"
 import perfectionist from "eslint-plugin-perfectionist"
+import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
 import globals from "globals"
 import tseslint from "typescript-eslint"
 
 export default [
+  // Global rules and plugins
   {
     plugins: {
       perfectionist,
@@ -20,11 +23,45 @@ export default [
     },
   },
 
+  // JS/TS/React base configs
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
+  { languageOptions: { globals: globals.browser } },
+  pluginJs.configs.recommended,
+  ...tseslint.configs.recommended,
+  pluginReact.configs.flat.recommended,
 
+  // Playwright specific config for test files
+  {
+    files: ["**/*.spec.ts"],
+    plugins: {
+      playwright,
+    },
+    rules: {
+      ...playwright.configs["flat/recommended"].rules,
+      "playwright/no-skipped-test": [
+        "error",
+        {
+          allowConditional: true,
+        },
+      ],
+    },
+  },
+
+  // Jest specific config for test files
+  {
+    files: ["**/*.test.ts", "**/*.test.js"],
+    plugins: {
+      jest: jestPlugin,
+    },
+    rules: {
+      ...jestPlugin.configs["flat/recommended"].rules,
+    },
+  },
+
+  // General ignores
   {
     ignores: [
-      "content/",
+      "website_content/",
       "htmlcov/",
       "public/",
       "backstop/",
@@ -36,11 +73,8 @@ export default [
       "quartz/i18n/",
     ],
   },
-  { languageOptions: { globals: globals.browser } },
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
 
+  // React settings
   {
     settings: {
       react: {

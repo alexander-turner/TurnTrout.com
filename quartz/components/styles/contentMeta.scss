@@ -5,12 +5,7 @@
   margin-bottom: $base-margin;
   font-size: var(--font-size-minus-1);
 
-  & p,
-  & li,
-  & ul,
-  & ol,
-  & em,
-  & strong {
+  & * {
     color: var(--midground);
   }
 

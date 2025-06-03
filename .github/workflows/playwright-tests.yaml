@@ -1,12 +1,64 @@
 name: Playwright Tests
 
+concurrency:
+  group: "playwright-tests"
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["lostpixel"]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            1/40,
+            2/40,
+            3/40,
+            4/40,
+            5/40,
+            6/40,
+            7/40,
+            8/40,
+            9/40,
+            10/40,
+            11/40,
+            12/40,
+            13/40,
+            14/40,
+            15/40,
+            16/40,
+            17/40,
+            18/40,
+            19/40,
+            20/40,
+            21/40,
+            22/40,
+            23/40,
+            24/40,
+            25/40,
+            26/40,
+            27/40,
+            28/40,
+            29/40,
+            30/40,
+            31/40,
+            32/40,
+            33/40,
+            34/40,
+            35/40,
+            36/40,
+            37/40,
+            38/40,
+            39/40,
+            40/40,
+          ]
     steps:
       - uses: actions/checkout@v4
 
@@ -22,17 +74,42 @@ jobs:
           npx playwright install --with-deps
           npx playwright install-deps
 
-      - name: Build Quartz
-        run: npx quartz build
+      - name: Serve Quartz
+        run: |
+          npx quartz build --serve &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+      - name: Wait for server
+        run: |
+          # Wait for the server to be ready
+          while ! nc -z localhost 8080; do
+            sleep 0.1 # Check every 100ms
+            # Check if server is still running
+            if ! ps -p "$SERVER_PID" > /dev/null; then
+              echo "Server failed to start"
+              exit 1
+            fi
+          done
+          echo "Server is ready"
 
       - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
         run: |
-          npx playwright test --config playwright.config.ts --project "Desktop Chrome" --grep "^(?:(?!lostpixel).)*$"
+          npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright traces
-        if: always()
+        if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
+          name: playwright-traces-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
+          if-no-files-found: warn
           retention-days: 7

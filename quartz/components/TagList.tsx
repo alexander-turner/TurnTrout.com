@@ -36,7 +36,7 @@ export const TagList: QuartzComponent = ({ fileData, displayClass }: QuartzCompo
           const linkDest = `/tags/${tagSlug}`
           return (
             <li key={tag}>
-              <a href={linkDest} className="internal tag-link">
+              <a href={linkDest} className="can-trigger-popover tag-link">
                 {tag}
               </a>
             </li>

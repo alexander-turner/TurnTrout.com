@@ -1,15 +1,11 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
+import sanitize from "sanitize-filename"
 
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
-export interface RegressionScreenshotOptions {
-  element?: string | Locator
-  clip?: { x: number; y: number; width: number; height: number }
-  disableHover?: boolean
-}
-
+// TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -22,7 +18,6 @@ export async function waitForThemeTransition(page: Page) {
           return
         }
 
-        // Add temporary class to enable transitions
         document.documentElement.classList.add("temporary-transition")
 
         // Listen for the transition end on body background-color
@@ -64,30 +59,106 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
+/**
+ * Waits for all images in the viewport to load
+ * @param page - The page to wait for images on
+ */
+export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    return new Promise<void>((resolve) => {
+      const images = Array.from(document.images)
+      if (images.length === 0) {
+        resolve()
+        return
+      }
+
+      let loadedCount = 0
+      const totalImages = images.length
+
+      const checkComplete = () => {
+        loadedCount++
+        if (loadedCount === totalImages) {
+          resolve()
+        }
+      }
+
+      images.forEach((img) => {
+        if (img.complete) {
+          checkComplete()
+        } else {
+          img.addEventListener("load", checkComplete)
+          img.addEventListener("error", checkComplete)
+        }
+      })
+    })
+  })
+}
+
+export interface RegressionScreenshotOptions {
+  element?: string | Locator
+  clip?: { x: number; y: number; width: number; height: number }
+  disableHover?: boolean
+  skipMediaPause?: boolean
+  skipViewportImagesLoad?: boolean
+}
+
 export async function takeRegressionScreenshot(
   page: Page,
   testInfo: TestInfo,
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
+  if (!options?.skipMediaPause) {
+    await pauseMediaElements(page)
+  }
+
+  if (!options?.skipViewportImagesLoad) {
+    await waitForViewportImagesToLoad(page)
+  }
+
   const browserName = testInfo.project.name
-  const screenshotPath = `lost-pixel/${testInfo.title}${screenshotSuffix ? `-${screenshotSuffix}` : ""}-${browserName}.png`
-  const baseOptions = { path: screenshotPath, animations: "disabled" as const }
+  const sanitizedTitle = sanitize(testInfo.title)
+  const sanitizedSuffix = sanitize(screenshotSuffix)
+  const sanitizedBrowserName = sanitize(browserName)
+  const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 
   const screenshotOptions = {
-    ...baseOptions,
+    path: screenshotPath,
+    animations: "disabled" as const,
     ...options,
   }
 
-  if (options?.element) {
+  if (options?.clip) {
+    delete screenshotOptions.element
+    return page.screenshot(screenshotOptions)
+  } else if (options?.element) {
     const element =
       typeof options.element === "string" ? page.locator(options.element) : options.element
     return element.screenshot(screenshotOptions)
+  } else {
+    // Clip to clientWidth to avoid WebKit gutter
+    const viewportSize = page.viewportSize()
+    if (!viewportSize) throw new Error("Could not get viewport size for clipping")
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+    screenshotOptions.clip = {
+      x: 0,
+      y: 0,
+      width: clientWidth,
+      height: viewportSize.height,
+    }
+    return page.screenshot(screenshotOptions)
   }
-
-  return await page.screenshot(screenshotOptions)
 }
 
+// TODO test
+/**
+ * Takes a screenshot of the element and the elements below it. Restricts the screenshot to the height of the element and the width of the parent element.
+ * @param page - The page to take the screenshot on.
+ * @param testInfo - The test info.
+ * @param element - The element to take the screenshot of.
+ * @param height - The height of the element.
+ * @param testNameSuffix - The suffix to add to the test name.
+ */
 export async function takeScreenshotAfterElement(
   page: Page,
   testInfo: TestInfo,
@@ -98,15 +169,16 @@ export async function takeScreenshotAfterElement(
   const box = await element.boundingBox()
   if (!box) throw new Error("Could not find element")
 
-  const viewportSize = page.viewportSize()
-  if (!viewportSize) throw new Error("Could not get viewport size")
+  const parent = element.locator("..")
+  const parentBox = await parent.boundingBox()
+  if (!parentBox) throw new Error("Could not find parent element")
 
-  // Take the screenshot with the specified clipping area
   await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
+    element: parent,
     clip: {
-      x: 0,
+      x: parentBox.x,
       y: box.y,
-      width: viewportSize.width,
+      width: parentBox.width,
       height,
     },
   })
@@ -149,32 +221,28 @@ export async function getNextElementMatchingSelector(
   if (!box) throw new Error("Element not found")
 
   const page = element.page()
-
-  // Find all elements matching the selector
-  const elements = page.locator(selector)
-  const count = await elements.count()
+  const elements = await page.locator(selector).all()
 
   // Find the first element that appears after our current element
-  for (let i = 0; i < count; i++) {
-    const currentElement = elements.nth(i)
-    const currentBox = await currentElement.boundingBox()
+  for (const element of elements) {
+    const currentBox = await element.boundingBox()
 
     if (currentBox && currentBox.y > box.y) {
-      return currentElement
+      return element
     }
   }
 
   throw new Error("No next element found")
 }
 
+// NOTE: Assumes search is opened
 export async function search(page: Page, term: string) {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")
-  await expect(searchContainer).toBeAttached()
-  await expect(searchContainer).toBeVisible()
-
   // Ensure search is opened
+  await expect(searchContainer).toBeAttached()
   await expect(searchContainer).toHaveClass(/active/)
+  await expect(searchContainer).toBeVisible()
 
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
@@ -182,6 +250,7 @@ export async function search(page: Page, term: string) {
 
   // Wait for search layout to be visible with results
   const searchLayout = page.locator("#search-layout")
+  await expect(searchLayout).toBeAttached()
   await expect(searchLayout).toBeVisible()
   await expect(searchLayout).toHaveClass(/display-results/)
 
@@ -192,8 +261,24 @@ export async function search(page: Page, term: string) {
   if (showingPreview(page)) {
     const previewContainer = page.locator("#preview-container")
     await expect(previewContainer).toBeAttached()
-    // Will not be visible if no results are found
   }
+}
+
+export async function pauseMediaElements(page: Page): Promise<void> {
+  const videoPromises = (await page.locator("video").all()).map((el) =>
+    el.evaluate((n: HTMLVideoElement) => {
+      n.pause()
+      n.currentTime = 0
+    }),
+  )
+  const audioPromises = (await page.locator("audio").all()).map((el) =>
+    el.evaluate((n: HTMLAudioElement) => {
+      n.pause()
+      n.currentTime = n.duration
+    }),
+  )
+
+  await Promise.all([...videoPromises, ...audioPromises])
 }
 
 /**
@@ -267,8 +352,7 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
   })
 }
 
-// TODO add tests
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
-  return viewportSize ? viewportSize.width >= minDesktopWidth : false // matches $full-page-width
+  return viewportSize ? viewportSize.width >= minDesktopWidth : false
 }

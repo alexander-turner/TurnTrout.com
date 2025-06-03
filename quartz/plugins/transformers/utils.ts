@@ -15,8 +15,16 @@ export const integerRegex = /\d{1,3}(,?\d{3})*/u
 export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(\\.\\d+)?`, "u")
 
 // A fraction is a digit followed by a slash and another digit
+const ordinalSuffixes = /(st|nd|rd|th)/
 export const fractionRegex = new RegExp(
-  `(?<![\\w/\\.]|${numberRegex.source})(?!9/11)(${integerRegex.source})\\/(${integerRegex.source})(?!${numberRegex.source})(?=[^\\w/]|$)`,
+  `(?<![\\w/\\.]|${numberRegex.source})` + // not preceded by word char, '/', '.', or a number
+    `(?!9/11)` +
+    `(?<numerator>${integerRegex.source})` +
+    `\\/` +
+    `(?<denominator>${integerRegex.source})` +
+    `(?<ordinal>${ordinalSuffixes.source})?` +
+    `(?!${numberRegex.source}|\\d)` + // not followed by a number or another digit
+    `(?![\\w/])`, // not followed by a word char or slash (ensures boundary)
   "gm",
 )
 
@@ -175,5 +183,12 @@ export function hasAncestor(
     ancestor = ancestor.parent
   }
 
+  return false
+}
+
+export function hasClass(node: Element, className: string): boolean {
+  if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
+    return node.properties.className.includes(className)
+  }
   return false
 }

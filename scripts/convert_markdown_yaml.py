@@ -245,7 +245,7 @@ def main() -> None:
         "-d",
         "--markdown-directory",
         help="Directory containing markdown files to process",
-        default=git_root / "content",
+        default=git_root / "website_content",
     )
     args = parser.parse_args()
 

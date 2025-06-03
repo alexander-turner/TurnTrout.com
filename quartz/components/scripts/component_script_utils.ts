@@ -46,54 +46,62 @@ export function throttle(func: () => void, delay: number) {
  * @param wait Milliseconds to wait after last call before executing
  * @param immediate If true, execute on the first call instead of last
  */
-export function debounce<F extends (...args: [KeyboardEvent]) => void>(
-  func: F,
+export function debounce<Args extends unknown[], R>(
+  func: (...args: Args) => R,
   wait: number,
   immediate = false,
-): F {
+): ((...args: Args) => void) & { cancel: () => void } {
   // Track the animation frame ID to cancel pending executions
   let frameId: number | null = null
-  // Track when the last call happened
-  let lastTime = 0
-  // Flag to track if we should execute on next check
-  let shouldExecute = false
+  // Track the time of the last *invocation attempt*
+  let lastCallTime = 0
 
-  return function (this: Window, ...args: [KeyboardEvent]) {
+  const debounced = function (this: unknown, ...args: Args) {
     const now = performance.now()
+    const shouldCallImmediately = immediate && (lastCallTime === 0 || now - lastCallTime >= wait)
 
-    // Cancel any pending execution
+    // Always update the time of the last invocation attempt
+    lastCallTime = now
+
+    // Cancel any previously scheduled trailing edge call
     if (frameId !== null) {
       cancelAnimationFrame(frameId)
       frameId = null
     }
 
-    // For immediate execution, run on first call only
-    if (immediate && lastTime === 0) {
+    if (shouldCallImmediately) {
+      // Execute immediately
       func.apply(this, args)
-      lastTime = now
-      return
+    } else if (!immediate) {
+      // Schedule a trailing edge call only if immediate is false
+      frameId = requestAnimationFrame(
+        function checkTime(this: unknown) {
+          // Use the lastCallTime captured in the outer scope
+          const elapsed = performance.now() - lastCallTime
+          if (elapsed < wait) {
+            // Not enough time passed, check again next frame
+            frameId = requestAnimationFrame(checkTime.bind(this))
+          } else {
+            // Enough time passed, execute the function
+            frameId = null
+            func.apply(this, args)
+          }
+        }.bind(this),
+      )
     }
+    // If immediate is true and shouldCallImmediately is false, we do nothing.
+    // The function was called too recently, so we just wait for the next invocation attempt.
+  }
 
-    // Mark that we want to execute and update last call time
-    shouldExecute = true
-    lastTime = now
+  debounced.cancel = () => {
+    console.debug("cancelling debounce")
+    if (frameId !== null) {
+      cancelAnimationFrame(frameId)
+    }
+    frameId = null
+  }
 
-    // Start checking if enough time has passed
-    frameId = requestAnimationFrame(
-      function checkTime(this: Window) {
-        const elapsed = performance.now() - lastTime
-        if (elapsed < wait && shouldExecute) {
-          // Not enough time passed, check again next frame
-          frameId = requestAnimationFrame(checkTime)
-        } else if (shouldExecute) {
-          // Enough time passed, execute the function
-          shouldExecute = false
-          frameId = null
-          func.apply(this, args)
-        }
-      }.bind(this),
-    )
-  } as F
+  return debounced
 }
 
 /**

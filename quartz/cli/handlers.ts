@@ -320,6 +320,78 @@ export async function injectCriticalCSSIntoHTMLFiles(
     }
   }
 }
+const themeCSS = `
+:root {
+  font-family: var(--font-text);
+}
+#navbar-left h2 {
+  color: var(--midground);
+}
+code,
+pre {
+  font-family: var(--font-monospace);
+}
+a {
+  color: var(--color-link);
+}
+a:visited {
+  color: color-mix(in srgb,currentcolor 50%,var(--color-link));
+}
+article[data-use-dropcap="true"] {
+  --dropcap-vertical-offset: 0.15rem;
+  --dropcap-font-size: 3.95rem;
+  --before-color: var(--midground-faint);
+  & > p:first-of-type {
+    position: relative;
+    min-height: 4.2rem;
+  }
+  & > p:first-of-type::before {
+    content: attr(data-first-letter);
+    text-transform: uppercase;
+    position: absolute;
+    top: var(--dropcap-vertical-offset);
+    left: 0;
+    font-size: var(--dropcap-font-size);
+    line-height: 1;
+    padding-right: 0.1em;
+    font-family: var(--font-dropcap-background);
+    color: var(--before-color);
+  }
+  & > p:first-of-type::first-letter {
+    padding-top: var(--dropcap-vertical-offset);
+    text-transform: uppercase;
+    font-style: normal !important;
+    float: left;
+    color: var(--foreground);
+    font-size: var(--dropcap-font-size);
+    line-height: 1;
+    padding-right: 0.1em;
+    font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
+    font-weight: 500 !important;
+  }
+  & > p:first-of-type em,
+  & > p:first-of-type b,
+  & > p:first-of-type strong {
+    font-family: inherit !important;
+  }
+}
+:root[saved-theme="dark"],
+.dark-mode {
+  --background: #303446;
+  --foreground: #c6d0f5;
+  --red: #de585a;
+  --green: #a6d189;
+  --blue: #8caaee;
+}
+:root[saved-theme="light"],
+.light-mode {
+  --background: #eff1f5;
+  --foreground: #4c4f69;
+  --red: #be415c;
+  --green: #40a02b;
+  --blue: #406ecc;
+}
+`
 
 /**
  * Generates and caches critical CSS if not already cached
@@ -330,114 +402,58 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
   if (cachedCriticalCSS !== "") {
     return
   }
-  console.log("Computing and caching critical CSS...")
-  try {
-    const { css } = await generate({
-      inline: false,
-      base: outputDir,
-      src: "index.html",
-      width: 1700,
-      height: 900,
-      css: [
-        path.join(outputDir, "index.css"),
-        path.join(outputDir, "static", "styles", "katex.min.css"),
-      ],
-      penthouse: {
-        timeout: 120000,
-        blockJSRequests: false,
-        waitForStatus: "networkidle0",
-        renderWaitTime: 2000,
-        puppeteer: {
-          args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--disable-gpu",
-          ],
-        },
-      },
-    })
 
-    // Append essential theme variables
-    const themeCSS = `
-      :root {
-        font-family: var(--font-text);
+  let attempts = 0
+  const maxAttempts = 5 // Maximum number of retry attempts
+  const retryDelayMs = 2000 // Delay between retries in milliseconds
+
+  while (cachedCriticalCSS === "" && attempts < maxAttempts) {
+    attempts++
+    if (attempts > 1) {
+      console.log(`Retrying critical CSS generation (attempt ${attempts}/${maxAttempts})...`)
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+    } else {
+      console.log("Computing and caching critical CSS...")
+    }
+
+    try {
+      const { css } = await generate({
+        inline: false,
+        base: outputDir,
+        src: "index.html",
+        width: 1700,
+        height: 900,
+        css: [
+          path.join(outputDir, "index.css"),
+          path.join(outputDir, "static", "styles", "katex.min.css"),
+        ],
+        penthouse: {
+          timeout: 120000,
+          blockJSRequests: false,
+          waitForStatus: "networkidle0",
+          renderWaitTime: 2000,
+          puppeteer: {
+            args: [
+              "--no-sandbox",
+              "--disable-setuid-sandbox",
+              "--disable-dev-shm-usage",
+              "--disable-accelerated-2d-canvas",
+              "--disable-gpu",
+            ],
+          },
+        },
+      })
+
+      // Append essential theme variables
+      cachedCriticalCSS = css + themeCSS
+      console.log("Cached critical CSS with theme variables")
+    } catch (error) {
+      console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)
+      cachedCriticalCSS = "" // Ensure it's reset on failure
+      if (attempts >= maxAttempts) {
+        throw new Error(`Critical CSS generation failed after ${maxAttempts} attempts.`)
       }
-      #navbar-left h2 {
-        color: var(--midground);
-      }
-      code,
-      pre {
-        font-family: var(--font-monospace);
-      }
-      a {
-        color: var(--color-link);
-      }
-      a:visited {
-        color: color-mix(in srgb,currentcolor 50%,var(--color-link));
-      }
-      article[data-use-dropcap="true"] {
-        --dropcap-vertical-offset: 0.15rem;
-        --dropcap-font-size: 3.95rem;
-        --before-color: var(--midground-faint);
-        & > p:first-of-type {
-          position: relative;
-          min-height: 4.2rem;
-        }
-        & > p:first-of-type::before {
-          content: attr(data-first-letter);
-          text-transform: uppercase;
-          position: absolute;
-          top: var(--dropcap-vertical-offset);
-          left: 0;
-          font-size: var(--dropcap-font-size);
-          line-height: 1;
-          padding-right: 0.1em;
-          font-family: var(--font-dropcap-background);
-          color: var(--before-color);
-        }
-        & > p:first-of-type::first-letter {
-          padding-top: var(--dropcap-vertical-offset);
-          text-transform: uppercase;
-          font-style: normal !important;
-          float: left;
-          color: var(--foreground);
-          font-size: var(--dropcap-font-size);
-          line-height: 1;
-          padding-right: 0.1em;
-          font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
-          font-weight: 500 !important;
-        }
-        & > p:first-of-type em,
-        & > p:first-of-type b,
-        & > p:first-of-type strong {
-          font-family: inherit !important;
-        }
-      }
-      :root[saved-theme="dark"],
-      .dark-mode {
-        --light: #303446;
-        --dark: #c6d0f5;
-        --red: #de585a;
-        --green: #a6d189;
-        --blue: #8caaee;
-      }
-      :root[saved-theme="light"],
-      .light-mode {
-        --light: #eff1f5;
-        --dark: #4c4f69;
-        --red: #be415c;
-        --green: #40a02b;
-        --blue: #406ecc;
-      }
-      `
-    cachedCriticalCSS = css + themeCSS
-    console.log("Cached critical CSS with theme variables")
-  } catch (error) {
-    console.error("Error generating critical CSS:", error)
-    cachedCriticalCSS = ""
-    throw new Error("Critical CSS generation failed.")
+    }
   }
 }
 

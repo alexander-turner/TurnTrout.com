@@ -252,14 +252,6 @@ code {
   }
 }
 
-.text-ornament {
-  font-family: "EBGaramond12", serif;
-  font-size: 3rem;
-  filter: saturate(90%);
-  color: var(--blue);
-  opacity: light-dark(0.7, 0.7);
-}
-
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;
@@ -268,7 +260,6 @@ code {
   position: relative;
   text-transform: uppercase;
   margin-right: 0.05rem;
-  padding-top: 0;
 
   // Inline dropcaps should be slightly higher than the baseline
   p & {
@@ -327,7 +318,7 @@ article[data-use-dropcap="true"] {
 
     // Firefox-specific adjustments for dropcap
     @supports (-moz-appearance: none) {
-      padding-top: $base-margin;
+      padding-top: $base-margin !important;
     }
   }
 

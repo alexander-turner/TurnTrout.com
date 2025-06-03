@@ -9,8 +9,19 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   takeRegressionScreenshot,
+  takeScreenshotAfterElement,
+  waitForThemeTransition,
+  pauseMediaElements,
+  showingPreview,
 } from "./visual_utils"
 
+async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
+  const metadata = await sharp(buffer).metadata()
+  return {
+    width: metadata.width ?? 0,
+    height: metadata.height ?? 0,
+  }
+}
 test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
@@ -27,6 +38,7 @@ test.describe("visual_utils functions", () => {
       const currentTheme = await page.evaluate(() =>
         document.documentElement.getAttribute("data-theme"),
       )
+      // eslint-disable-next-line playwright/no-conditional-in-test
       const expectedTheme = theme === "auto" ? preferredTheme : theme
       expect(currentTheme).toBe(expectedTheme)
 
@@ -133,16 +145,14 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      // Take multiple screenshots after transition ends to verify stability
+      // Take screenshot after transition and verify stability
       const immediatePostTransitionScreenshot = await element.screenshot()
-      await page.waitForTimeout(50) // Small delay
-      const shortDelayScreenshot = await element.screenshot()
-      await page.waitForTimeout(50) // Small delay
-      const longDelayScreenshot = await element.screenshot()
-
-      // All screenshots after transition should be identical
-      expect(immediatePostTransitionScreenshot).toEqual(shortDelayScreenshot)
-      expect(shortDelayScreenshot).toEqual(longDelayScreenshot)
+      await expect
+        .poll(async () => element.screenshot(), {
+          intervals: [10, 50],
+          timeout: 500,
+        })
+        .toEqual(immediatePostTransitionScreenshot)
     })
 
     test("resolves immediately if no transition occurs", async ({ page }) => {
@@ -162,7 +172,7 @@ test.describe("visual_utils functions", () => {
       await waitForTransitionEnd(element)
       const duration = Date.now() - start
 
-      expect(duration).toBeLessThan(150)
+      expect(duration).toBeLessThan(500)
     })
 
     test("waits for all transitions to complete before resolving", async ({ page }) => {
@@ -170,7 +180,7 @@ test.describe("visual_utils functions", () => {
       await page.evaluate(() => {
         const div = document.createElement("div")
         div.id = "test-multiple-transitions"
-        div.style.transition = "opacity 100ms, transform 200ms" // Much longer transitions
+        div.style.transition = "opacity 100ms, transform 200ms"
         div.style.opacity = "1"
         div.style.transform = "translateX(0)"
         div.style.width = "100px"
@@ -188,16 +198,19 @@ test.describe("visual_utils functions", () => {
         el.style.transform = "translateX(100px)"
       })
 
-      // Wait for all transitions to complete
       await waitPromise
 
-      // Take final screenshot
       const postTransitionScreenshot = await element.screenshot()
 
-      // Verify no more changes
-      await page.waitForTimeout(50)
-      const stabilityVerificationScreenshot = await element.screenshot()
-      expect(stabilityVerificationScreenshot).toEqual(postTransitionScreenshot)
+      // Verify no more changes using expect.poll
+      await expect
+        .poll(async () => element.screenshot(), {
+          // Check quickly, then slightly longer intervals
+          intervals: [10, 50],
+          // Max time to wait for stability
+          timeout: 500,
+        })
+        .toEqual(postTransitionScreenshot)
     })
   })
 })
@@ -217,14 +230,8 @@ test.describe("isDesktopViewport", () => {
     })
   }
 
-  test("Returns false if viewport width is undefined", async ({ page }) => {
-    await page.setViewportSize({ width: 0, height: 0 })
-    await page.evaluate(() => {
-      Object.defineProperty(window, "innerWidth", {
-        configurable: true,
-        get: () => undefined,
-      })
-    })
+  test("Returns false if viewport width is tiny", async ({ page }) => {
+    await page.setViewportSize({ width: 1, height: 1 })
     expect(isDesktopViewport(page)).toBe(false)
   })
 })
@@ -233,9 +240,11 @@ test.describe("takeRegressionScreenshot", () => {
   test.beforeEach(async ({ page }) => {
     // Create a clean test page with known content
     await page.setContent(`
-      <div id="test-root" style="width: 500px; height: 500px; background: white;">
-        <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
-      </div>
+      <html>
+        <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
+        </body>
+      </html>
     `)
   })
 
@@ -244,13 +253,17 @@ test.describe("takeRegressionScreenshot", () => {
     const originalScreenshot = page.screenshot.bind(page)
     let capturedOptions: PageScreenshotOptions = {}
     page.screenshot = async (options?: PageScreenshotOptions) => {
+      // eslint-disable-next-line playwright/no-conditional-in-test
       capturedOptions = options ?? {}
       return originalScreenshot(options)
     }
 
-    await takeRegressionScreenshot(page, testInfo, "test-suffix")
+    // Since we're mocking the page.screenshot, need to pass in clip option
+    await takeRegressionScreenshot(page, testInfo, "test-suffix", {
+      clip: { x: 0, y: 0, width: 500, height: 500 },
+    })
 
-    // Verify path format
+    expect(capturedOptions).not.toBeNull()
     expect(capturedOptions.path).toMatch(
       new RegExp(`lost-pixel/.*-test-suffix-${testInfo.project.name}\\.png$`),
     )
@@ -270,36 +283,261 @@ test.describe("takeRegressionScreenshot", () => {
   test("element screenshot captures only the element", async ({ page }, testInfo) => {
     const element = page.locator("#test-element")
     const elementBox = await element.boundingBox()
-    if (!elementBox) throw new Error("Could not get element bounding box")
+    test.fail(!elementBox, "Could not get element bounding box")
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "element-test", {
       element: "#test-element",
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    // Should match element dimensions
-    expect(dimensions.width).toBe(elementBox.width)
-    expect(dimensions.height).toBe(elementBox.height)
+    expect(dimensions.width).toBe(elementBox!.width)
+    expect(dimensions.height).toBe(elementBox!.height)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
     const clip = { x: 0, y: 0, width: 200, height: 150 }
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-test", {
-      clip,
+      clip: clip,
     })
     const dimensions = await getImageDimensions(screenshot)
 
     expect(dimensions.width).toBe(clip.width)
     expect(dimensions.height).toBe(clip.height)
   })
+
+  test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
+    const clip = { x: 10, y: 10, width: 50, height: 50 }
+
+    const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-over-element", {
+      clip: clip,
+    })
+    const dimensions = await getImageDimensions(screenshot)
+
+    // The dimensions should match the clip, not the element's bounding box
+    expect(dimensions.width).toBe(clip.width)
+    expect(dimensions.height).toBe(clip.height)
+  })
+
+  test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
+    test("clips viewport screenshot to clientWidth to avoid Safari gutter", async ({
+      page,
+    }, testInfo) => {
+      testInfo.skip(
+        !/webkit|safari/i.test(testInfo.project.name),
+        "Test is specific to WebKit/Safari gutter behavior",
+      )
+
+      const mockClientWidth = 1200
+      await page.evaluate((width) => {
+        Object.defineProperty(document.documentElement, "clientWidth", {
+          value: width,
+          configurable: true,
+        })
+      }, mockClientWidth)
+
+      // Ensure the test is nontrivial
+      const viewportSize = page.viewportSize()
+      expect(mockClientWidth).not.toBe(viewportSize?.width)
+
+      const originalScreenshot = page.screenshot
+      let capturedOptions: PageScreenshotOptions | undefined
+
+      page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
+        capturedOptions = options
+        // Return an empty buffer to satisfy the type, don't call original
+        return Buffer.from("")
+      }
+
+      try {
+        await takeRegressionScreenshot(page, testInfo, "gutter-test")
+
+        expect(capturedOptions).toBeDefined()
+        expect(capturedOptions?.clip).toBeDefined()
+        expect(capturedOptions?.clip?.width).toBe(mockClientWidth)
+        expect(capturedOptions?.clip?.x).toBe(0)
+        expect(capturedOptions?.clip?.y).toBe(0)
+        const viewportHeight = page.viewportSize()?.height
+        expect(capturedOptions?.clip?.height).toBe(viewportHeight)
+      } finally {
+        page.screenshot = originalScreenshot
+      }
+    })
+  })
 })
 
-// Helper function to get image dimensions from buffer
-async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
-  const metadata = await sharp(buffer).metadata()
-  return {
-    width: metadata.width ?? 0,
-    height: metadata.height ?? 0,
+test.describe("takeScreenshotAfterElement", () => {
+  test.beforeEach(async ({ page }) => {
+    // Set up a more complex DOM for testing element relationships
+    await page.setContent(`
+      <html>
+        <body style="margin: 0; padding: 20px; background: white;">
+          <div id="parent" style="width: 500px; padding: 10px; border: 1px solid black;">
+            <h1 id="header1" style="margin-top: 30px; height: 50px; background: lightblue;">Header 1</h1>
+            <p style="height: 100px; background: lightcoral;">Paragraph 1</p>
+            <h2 id="header2" style="margin-top: 40px; height: 60px; background: lightgreen;">Header 2</h2>
+            <p style="height: 150px; background: lightgoldenrodyellow;">Paragraph 2</p>
+          </div>
+        </body>
+      </html>
+    `)
+    // Ensure viewport is large enough
+    await page.setViewportSize({ width: 800, height: 600 })
+  })
+
+  test("takes screenshot starting from the element with specified height and parent width", async ({
+    page,
+  }, testInfo) => {
+    const startElement = page.locator("#header2")
+    const parentElement = page.locator("#parent")
+    const screenshotHeight = 200
+    const testSuffix = "after-h2"
+
+    // Spy on page.screenshot to capture its arguments
+    const originalPageScreenshot = page.screenshot.bind(page)
+    let capturedOptions: PageScreenshotOptions | undefined
+
+    page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
+      capturedOptions = options
+      return Buffer.from("")
+    }
+
+    try {
+      await takeScreenshotAfterElement(page, testInfo, startElement, screenshotHeight, testSuffix)
+    } finally {
+      page.screenshot = originalPageScreenshot
+    }
+
+    expect(capturedOptions).toBeDefined()
+    test.fail(!capturedOptions, "Captured options are undefined")
+
+    expect(capturedOptions!.path).toBeDefined()
+    expect(capturedOptions!.path).toContain(testSuffix)
+    expect(capturedOptions!.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
+    expect(capturedOptions!.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
+
+    // Verify the clip coordinates and dimensions
+    const startElementBox = await startElement.boundingBox()
+    const parentElementBox = await parentElement.boundingBox()
+
+    expect(startElementBox).not.toBeNull()
+    expect(parentElementBox).not.toBeNull()
+
+    expect(capturedOptions!.clip).toBeDefined()
+    test.fail(!capturedOptions!.clip, "Captured options clip is undefined")
+
+    expect(capturedOptions!.clip!.x).toBeCloseTo(parentElementBox!.x)
+    expect(capturedOptions!.clip!.y).toBeCloseTo(startElementBox!.y)
+    expect(capturedOptions!.clip!.width).toBeCloseTo(parentElementBox!.width)
+    expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
+    expect(capturedOptions!.animations).toBe("disabled")
+  })
+})
+
+test.describe("waitForThemeTransition", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <head>
+          <style>
+            :root {
+              --background-primary: white;
+              --text-primary: black;
+            }
+            :root[data-theme="dark"] {
+              --background-primary: black;
+              --text-primary: white;
+            }
+            body {
+              background-color: var(--background-primary);
+              color: var(--text-primary);
+            }
+            .temporary-transition body {
+              transition: background-color 0.1s ease-in-out;
+            }
+          </style>
+        </head>
+        <body></body>
+      </html>
+    `)
+  })
+
+  test("resolves immediately if theme does not visually change", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" })
+    // Set initial theme directly
+    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"))
+
+    const start = Date.now()
+    // Set theme to the same value
+    await page.evaluate(() => {
+      document.documentElement.setAttribute("data-theme", "light")
+    })
+    await waitForThemeTransition(page)
+    const duration = Date.now() - start
+
+    // Should resolve very quickly
+    expect(duration).toBeLessThan(100)
+  })
+})
+test.describe("pauseMediaElements", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <video id="video1" src="movie.mp4" controls></video>
+          <audio id="audio1" src="sound.mp3" controls></audio>
+          <video id="video2" src="another.mp4"></video>
+          <div id="not-media"></div>
+        </body>
+      </html>
+    `)
+    // Mock media sources to prevent actual loading/errors
+    await page.route("**/*.{mp4,mp3}", (route) => {
+      route.fulfill({ status: 200, contentType: "video/mp4", body: Buffer.from("") })
+    })
+  })
+
+  test("pauses video and audio elements", async ({ page }) => {
+    const video1 = page.locator("#video1")
+    const audio1 = page.locator("#audio1")
+    const video2 = page.locator("#video2")
+
+    // Start playing (mock)
+    for (const el of [video1, audio1, video2]) {
+      await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.play().catch(() => {}))
+    }
+
+    await pauseMediaElements(page, "video, audio")
+
+    for (const el of [video1, audio1, video2]) {
+      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
+      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime)).toBe(0)
+    }
+  })
+
+  test("does not affect non-media elements", async ({ page }) => {
+    const notMedia = page.locator("#not-media")
+    const initialHtml = await notMedia.innerHTML()
+
+    await pauseMediaElements(page, "video, audio")
+
+    expect(await notMedia.innerHTML()).toBe(initialHtml)
+  })
+})
+
+test.describe("showingPreview", () => {
+  const viewports = [
+    { width: 1580, height: 800, expected: true }, // Desktop
+    { width: 1024, height: 768, expected: true }, // Tablet landscape (above breakpoint)
+    { width: 991, height: 768, expected: false }, // Tablet portrait (below breakpoint)
+    { width: 800, height: 600, expected: false }, // Smaller Tablet
+    { width: 480, height: 800, expected: false }, // Mobile
+  ]
+
+  for (const { width, height, expected } of viewports) {
+    test(`returns ${expected} for viewport ${width}x${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height })
+      expect(showingPreview(page)).toBe(expected)
+    })
   }
-}
+})

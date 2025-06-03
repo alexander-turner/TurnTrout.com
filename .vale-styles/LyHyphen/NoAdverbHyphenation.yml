@@ -6,3 +6,4 @@ action:
   name: replace
 swap:
   '\b(?!belly|early|family|holy|july|ugly|woolly|assembly|supply|reply|rally|ally|bully|folly|holly|homily|jelly|jolly|lily|lolly|monopoly|sally|silly|tally)(\w+ly)-([\w ]\w*)\b': "$1 $2"
+scope: sentence

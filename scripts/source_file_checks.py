@@ -639,7 +639,7 @@ def main() -> None:
     Check source files for issues.
     """
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "content"
+    content_dir = git_root / "website_content"
     existing_urls: PathMap = {}
     has_errors = False
 

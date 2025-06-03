@@ -54,7 +54,7 @@ export default ((userOpts?: Partial<Options>) => {
                       fileData.slug || ("" as FullSlug),
                       page.slug || ("" as FullSlug),
                     )}
-                    className="internal"
+                    className="internal can-trigger-popover"
                   >
                     {title}
                   </a>

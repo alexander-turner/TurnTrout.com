@@ -1,5 +1,4 @@
 import { normalizeRelativeURLs } from "../../util/path"
-import { animate } from "./component_script_utils"
 
 export interface PopoverOptions {
   parentElement: HTMLElement
@@ -8,57 +7,7 @@ export interface PopoverOptions {
   customFetch?: typeof fetch
 }
 
-const parser = new DOMParser()
-
-/**
- * Fetches content while following HTML meta refresh redirects.
- * @param url - The URL to fetch
- * @param customFetch - Optional custom fetch implementation
- * @param maxRedirects - Maximum number of redirects to follow (default: 3)
- * @returns The final response after following any meta refreshes
- */
-export async function fetchWithMetaRedirect(
-  url: URL,
-  customFetch: typeof fetch = fetch,
-  maxRedirects = 3,
-): Promise<Response> {
-  let currentUrl = url
-  let redirectCount = 0
-
-  while (redirectCount < maxRedirects) {
-    const response = await customFetch(currentUrl.toString())
-
-    // If not HTML or response not OK, return as-is
-    const contentType = response.headers.get("Content-Type")
-    if (!response.ok || !contentType?.includes("text/html")) {
-      return response
-    }
-
-    const html = await response.text()
-    const metaRefresh = html.match(/<meta[^>]*?http-equiv=["']?refresh["']?[^>]*?>/i)
-
-    if (!metaRefresh) {
-      // No meta refresh found, return response with the HTML content
-      return new Response(html, {
-        headers: response.headers,
-        status: response.status,
-        statusText: response.statusText,
-      })
-    }
-
-    // Extract URL from content="[timeout]; url=[url]"
-    const urlMatch = metaRefresh[0].match(/url=(.*?)["'\s>]/i)
-    if (!urlMatch) {
-      return response
-    }
-
-    // Update URL for next iteration
-    currentUrl = new URL(urlMatch[1], currentUrl)
-    redirectCount++
-  }
-
-  throw new Error(`Maximum number of redirects (${maxRedirects}) exceeded`)
-}
+export const POPOVER_SCROLL_OFFSET = 12
 
 /**
  * Creates a popover element based on the provided options
@@ -109,8 +58,9 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
         popoverInner.appendChild(pdf)
       }
       break
-    default:
+    default: {
       contents = await response.text()
+      const parser = new DOMParser()
       html = parser.parseFromString(contents, "text/html")
       normalizeRelativeURLs(html, targetUrl)
 
@@ -124,9 +74,60 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
         })
         popoverInner.appendChild(elt)
       })
+    }
   }
 
   return popoverElement
+}
+
+/**
+ * Fetches content while following HTML meta refresh redirects.
+ * @param url - The URL to fetch
+ * @param customFetch - Optional custom fetch implementation
+ * @param maxRedirects - Maximum number of redirects to follow (default: 3)
+ * @returns The final response after following any meta refreshes
+ */
+export async function fetchWithMetaRedirect(
+  url: URL,
+  customFetch: typeof fetch = fetch,
+  maxRedirects = 3,
+): Promise<Response> {
+  let currentUrl = url
+  let redirectCount = 0
+
+  while (redirectCount < maxRedirects) {
+    const response = await customFetch(currentUrl.toString())
+
+    // If not HTML or response not OK, return as-is
+    const contentType = response.headers.get("Content-Type")
+    if (!response.ok || !contentType?.includes("text/html")) {
+      return response
+    }
+
+    const html = await response.text()
+    const metaRefresh = html.match(/<meta[^>]*?http-equiv=["']?refresh["']?[^>]*?>/i)
+
+    if (!metaRefresh) {
+      // No meta refresh found, return response with the HTML content
+      return new Response(html, {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+
+    // Extract URL from content="[timeout]; url=[url]"
+    const urlMatch = metaRefresh[0].match(/url=(.*?)["'\s>]/i)
+    if (!urlMatch) {
+      return response
+    }
+
+    // Update URL for next iteration
+    currentUrl = new URL(urlMatch[1], currentUrl)
+    redirectCount++
+  }
+
+  throw new Error(`Maximum number of redirects (${maxRedirects}) exceeded`)
 }
 
 // POSITIONING the popover
@@ -192,74 +193,75 @@ export function setPopoverPosition(
  * Attaches event listeners to the popover and link elements
  * @param popoverElement - The popover element
  * @param linkElement - The link element
+ * @param onRemove - Callback function invoked when the popover is fully removed
  * @returns A cleanup function to remove the event listeners
  */
 export function attachPopoverEventListeners(
   popoverElement: HTMLElement,
   linkElement: HTMLLinkElement,
+  onRemove: () => void,
 ): () => void {
   let isMouseOverLink = false
   let isMouseOverPopover = false
 
   const removePopover = () => {
     popoverElement.classList.remove("visible")
-    animate(
-      300,
-      () => {},
-      () => {
-        if (!isMouseOverLink && !isMouseOverPopover) {
-          popoverElement.remove()
-        }
-      },
-    )
+    // Use a short timeout to allow for potential CSS transitions
+    setTimeout(() => {
+      if (!isMouseOverLink && !isMouseOverPopover) {
+        popoverElement.remove()
+        onRemove()
+      }
+    }, 300)
   }
 
   const showPopover = () => {
     popoverElement.classList.add("popover-visible")
   }
 
-  linkElement.addEventListener("mouseenter", () => {
-    isMouseOverLink = true
-    showPopover()
-  })
-
-  linkElement.addEventListener("mouseleave", () => {
-    isMouseOverLink = false
-    removePopover()
-  })
-
-  popoverElement.addEventListener("mouseenter", () => {
-    isMouseOverPopover = true
-  })
-
-  popoverElement.addEventListener("mouseleave", () => {
-    isMouseOverPopover = false
-    removePopover()
-  })
-
-  popoverElement.addEventListener("click", (e) => {
-    const clickedLink = (e.target as HTMLElement).closest("a")
-    if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-      window.location.href = clickedLink.href
-    } else {
-      window.location.href = linkElement.href
-    }
-  })
-
-  // Cleanup function
-  return () => {
-    linkElement.removeEventListener("mouseenter", showPopover)
-    linkElement.removeEventListener("mouseleave", removePopover)
-    popoverElement.removeEventListener("mouseenter", () => {
+  const handlerMap = {
+    mouseenterLink: () => {
+      isMouseOverLink = true
+      showPopover()
+    },
+    mouseleaveLink: () => {
+      isMouseOverLink = false
+      removePopover()
+    },
+    mouseenterPopover: () => {
       isMouseOverPopover = true
-    })
-    popoverElement.removeEventListener("mouseleave", () => {
+    },
+    mouseleavePopover: () => {
       isMouseOverPopover = false
       removePopover()
-    })
-    popoverElement.removeEventListener("click", () => {
-      // empty because the function intentionally does nothing for this event
-    })
+    },
+    clickPopover: (e: MouseEvent) => {
+      const clickedLink = (e.target as HTMLElement).closest("a")
+      if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
+        window.location.href = clickedLink.href
+      } else {
+        window.location.href = linkElement.href
+      }
+    },
+  }
+
+  linkElement.addEventListener("mouseenter", handlerMap.mouseenterLink)
+  linkElement.addEventListener("mouseleave", handlerMap.mouseleaveLink)
+  popoverElement.addEventListener("mouseenter", handlerMap.mouseenterPopover)
+  popoverElement.addEventListener("mouseleave", handlerMap.mouseleavePopover)
+  popoverElement.addEventListener("click", handlerMap.clickPopover)
+
+  // Returned cleanup function
+  return () => {
+    linkElement.removeEventListener("mouseenter", handlerMap.mouseenterLink)
+    linkElement.removeEventListener("mouseleave", handlerMap.mouseleaveLink)
+    popoverElement.removeEventListener("mouseenter", handlerMap.mouseenterPopover)
+    popoverElement.removeEventListener("mouseleave", handlerMap.mouseleavePopover)
+    popoverElement.removeEventListener("click", handlerMap.clickPopover)
+
+    // Also trigger removal logic if cleanup is called directly
+    popoverElement.remove()
+    onRemove()
   }
 }
 

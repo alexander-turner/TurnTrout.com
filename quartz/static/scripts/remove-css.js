@@ -2,7 +2,7 @@ function removeCSS() {
   const style = document.querySelector("#critical-css")
   if (style) {
     style.remove()
-    console.info("Removed critical styles")
+    console.debug("Removed critical styles")
   } else {
     console.warn("Critical style element not found")
   }

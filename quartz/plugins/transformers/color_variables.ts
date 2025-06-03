@@ -24,21 +24,21 @@ const colorMapping: Record<string, string> = {
   "#005CC5": "var(--blue)",
   "#79B8FF": "var(--sky)",
   "#24292E": "var(--dark)",
-  "#E1E4E8": "var(--dark)",
-  "#6A737D": "var(--gray)",
+  "#E1E4E8": "var(--light)",
+  "#6A737D": "var(--dark-gray)",
   "#032F62": "color-mix(in srgb, var(--blue), var(--dark) 70%)",
   "#9ECBFF": "var(--sky)",
-  "#DBEDFF": "var(--dark)",
+  "#DBEDFF": "color-mix(in srgb, var(--sky), var(--light) 70%)",
   "#85E89D": "var(--green)",
-  "#22863A": "var(--green)",
+  "#22863A": "color-mix(in srgb, var(--green), var(--dark) 50%)",
   "#FFAB70": "var(--orange)",
-  "#E36209": "var(--orange)",
+  "#E36209": "color-mix(in srgb, var(--orange), var(--red) 70%)",
 }
 
 export const transformStyle = (style: string, colorMapping: Record<string, string>): string => {
   let newStyle = style
   Object.entries(colorMapping).forEach(([color, variable]) => {
-    const regex = new RegExp(`${color}\\b`, "gi")
+    const regex = new RegExp(`(?<!var\\(--)${color}\\b`, "gi")
     newStyle = newStyle.replace(regex, variable)
   })
   return newStyle

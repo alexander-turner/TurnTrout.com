@@ -12,8 +12,10 @@ import {
   replaceRegex,
   fractionRegex,
   numberRegex,
+  hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
+  urlRegex,
 } from "./utils"
 
 /**
@@ -160,13 +162,21 @@ export function transformElement(
  */
 export function niceQuotes(text: string): string {
   // Single quotes //
-  // Ending comes first so as to not mess with the open quote (which
-  // happens in a broader range of situations, including e.g. 'sup)
-  const endingSingle = `(?<=[^\\s“'])['](?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s.!?;,\\)—\\-\\]]|$))`
+  // Ending comes first so as to not mess with the open quote
+  const afterEndingSingle = `(?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s\\.!?;,\\)—\\-\\]]|$))`
+  const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
   text = text.replace(new RegExp(endingSingle, "gm"), "’")
+
   // Contractions are sandwiched between two letters
   const contraction = `(?<=[A-Za-z])['](?=${chr}?[a-zA-Z])`
   text = text.replace(new RegExp(contraction, "gm"), "’")
+
+  // Apostrophes always point down
+  //  Whitelist for eg rock 'n' roll
+  const apostropheWhitelist = "(?=n’ )"
+  //  Convert to apostrophe if not followed by an end quote
+  const apostrophe = `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘']*’${afterEndingSingle}))`
+  text = text.replace(new RegExp(apostrophe, "gm"), "’")
 
   // Beginning single quotes
   const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
@@ -450,13 +460,12 @@ export function formatArrows(tree: Root): void {
   })
 }
 
-const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>(?:st|nd|rd|th))/gu
+const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
 export function formatOrdinalSuffixes(tree: Root): void {
   visit(tree, "text", (node, index, parent) => {
     if (!parent || hasAncestor(parent as ElementMaybeWithParent, toSkip)) return
 
     replaceRegex(node, index ?? 0, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      // Create the replacement nodes
       const numSpan = h("span.ordinal-num", match.groups?.number ?? "")
       const suffixSpan = h("sup.ordinal-suffix", match.groups?.suffix ?? "")
 
@@ -688,6 +697,8 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b([Cc])liche\b/g, "$1liché"],
   [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
   [/\b([Dd])eja vu\b/g, "$1éjà vu"],
+  [/\bgithub\b/gi, "GitHub"],
+  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
   [/\b([Nn])aive/g, "$1aïve"],
   [/\b([Cc])hateau\b/g, "$1hâteau"],
   [/\b([Dd])ojo/g, "$1ōjō"],
@@ -735,16 +746,6 @@ export function setFirstLetterAttribute(tree: Root): void {
   }
 }
 
-/**
- * Checks if a node has a specific class
- */
-export function hasClass(node: Element, className: string): boolean {
-  if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
-    return node.properties.className.includes(className)
-  }
-  return false
-}
-
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
@@ -758,26 +759,48 @@ export function toSkip(node: Element): boolean {
   return false
 }
 
-export function replaceFractions(node: Text, index: number, parent: Parent) {
-  replaceRegex(
-    node,
-    index as number,
-    parent as Parent,
-    fractionRegex,
-    (match: RegExpMatchArray) => {
-      return {
-        before: "",
-        replacedMatch: match[0],
-        after: "",
-      }
-    },
-    (_nd: unknown, _idx: number, prnt: Parent) => {
-      return toSkip(prnt as Element) || hasClass(prnt as Element, "fraction")
-    },
-    "span.fraction",
+function fractionToSkip(node: Text, _idx: number, parent: Parent): boolean {
+  return (
+    hasAncestor(
+      parent as ElementMaybeWithParent,
+      (ancestor) =>
+        ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
+        hasClass(ancestor, "fraction"),
+    ) ||
+    (node.value?.includes("/") && urlRegex.test(node.value))
   )
 }
 
+export function replaceFractions(node: Text, index: number | undefined, parent: Parent): void {
+  replaceRegex(
+    node,
+    index ?? 0,
+    parent,
+    fractionRegex,
+    (match: RegExpMatchArray) => {
+      const groups = match.groups as { numerator: string; denominator: string; ordinal?: string }
+
+      const fractionStr = `${groups.numerator}/${groups.denominator}`
+      const fractionEl = h("span.fraction", fractionStr)
+
+      if (groups.ordinal) {
+        const ordinalEl = h("sup.ordinal-suffix", groups.ordinal)
+        return {
+          before: "",
+          replacedMatch: [fractionEl, ordinalEl],
+          after: "",
+        }
+      } else {
+        return {
+          before: "",
+          replacedMatch: fractionEl,
+          after: "",
+        }
+      }
+    },
+    fractionToSkip,
+  )
+}
 interface Options {
   skipFirstLetter?: boolean // Debug flag
 }

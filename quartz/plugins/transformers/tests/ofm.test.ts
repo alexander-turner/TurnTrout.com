@@ -135,7 +135,7 @@ describe("processWikilink", () => {
       input: ["![[video.mp4]]", "video.mp4", "", ""],
       expected: {
         type: "html",
-        value: '<video src="video.mp4" controls></video>',
+        value: '<span class="video-container"><video src="video.mp4" controls></video></span>',
       },
     },
     {

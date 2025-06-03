@@ -114,11 +114,6 @@ dd {
   & > p:first-child {
     margin-top: 0;
   }
-
-  & > ul {
-    // Already have padding-left from dd
-    padding-left: 0;
-  }
 }
 
 ol,
@@ -269,12 +264,38 @@ sup {
   line-height: 0; // Don't push other lines away
 }
 
-.trout-ornament {
-  width: 3rem;
-  margin-top: calc(2 * $base-margin);
-  margin-bottom: calc(2 * $base-margin);
-  filter: light-dark(none, invert(66%)) !important;
-  opacity: light-dark(0.5, 1);
+#trout-ornament-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+  & > span {
+    vertical-align: middle;
+    font-family: "EBGaramond12", serif;
+    font-size: 3rem;
+    filter: saturate(90%);
+    color: var(--blue);
+    opacity: light-dark(0.7, 0.7);
+  }
+
+  // Left text flourish
+  & > span:first-of-type {
+    margin-right: calc(0.75 * $base-margin);
+  }
+
+  // Trout ornament
+  & > img {
+    width: calc(6 * $base-margin);
+    margin-top: calc(2 * $base-margin);
+    margin-bottom: calc(2 * $base-margin);
+    filter: light-dark(none, invert(66%)) !important;
+    opacity: light-dark(0.5, 1);
+  }
+
+  // Right text flourish
+  & > span:last-of-type {
+    margin-left: calc($base-margin);
+  }
 }
 
 // Dark <-> Light
@@ -293,7 +314,6 @@ sup {
 }
 
 // Hide video speed controller
-.vsc-controller:has(+ img + video.no-vsc),
 .vsc-controller:has(+ video.no-vsc),
 .vsc-controller:has(+ video[autoplay]) {
   display: none;
@@ -310,10 +330,9 @@ sup {
   }
 }
 
-body[data-slug="bruce-wayne-and-the-cost-of-inaction"] {
-  & #pond-video {
-    filter: saturate(0%);
-  }
+figure:has(> .subfigure) {
+  display: flex;
+  justify-content: center;
 }
 
 figure,
@@ -406,7 +425,7 @@ figcaption,
 }
 
 .float-right {
-  margin: 0.5rem 0 0.5rem 1.5rem;
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(3 * $base-margin);
 
   & img,
   img.float-right {
@@ -439,6 +458,9 @@ img.favicon {
   margin-top: -20%;
   mix-blend-mode: normal;
   cursor: text;
+
+  // Don't pollute copied text with favicon
+  user-select: none;
 
   // Make favicons align properly with headings
   h1 &,
@@ -643,7 +665,8 @@ hr {
 
 img,
 video {
-  width: fit-content;
+  width: 100%;
+  height: auto; // override manual heights
   max-width: 100%;
   margin-bottom: calc(2 * $base-margin);
   margin-top: $base-margin;
@@ -651,6 +674,7 @@ video {
   article > p &,
   article > &,
   article > figure &,
+  .video-container &,
   figure > & {
     margin-left: auto;
     margin-right: auto;
@@ -658,8 +682,9 @@ video {
   }
 }
 
+// don't apply in fullscreen (backdrop)
 [data-theme="light"] img,
-[data-theme="light"] video {
+[data-theme="light"] video:not(:has(::backdrop)) {
   mix-blend-mode: multiply;
 }
 
@@ -707,6 +732,11 @@ p > img {
   margin-right: auto;
 }
 
+img.emoji,
+.theme-emoji {
+  mix-blend-mode: normal !important;
+}
+
 img.emoji {
   display: inline;
   border-radius: 0; // Don't want to cut off corners
@@ -714,7 +744,14 @@ img.emoji {
   width: 1em;
   margin: 0 0.05em 0 0.1em;
   vertical-align: -0.1em;
-  mix-blend-mode: normal !important;
+}
+
+.theme-emoji {
+  width: 100px;
+  max-width: 100px;
+  height: 100px;
+  max-height: 100px;
+  margin-top: 1rem;
 }
 
 .sequence-links {
@@ -914,7 +951,6 @@ foreignObject {
 .flowchart .edgeLabel {
   & .katex {
     margin-left: 0.25em;
-    position: relative;
   }
 }
 

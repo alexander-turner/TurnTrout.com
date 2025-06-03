@@ -194,31 +194,35 @@ def setup_test_env(tmp_path: Path) -> Generator[Path, None, None]:
     """
 
     # Create the required directories for testing
-    for dir_name in ["quartz/static", "scripts", "content"]:
+    for dir_name in ["quartz/static", "scripts", "website_content"]:
         (tmp_path / dir_name).mkdir(parents=True, exist_ok=True)
 
     # Create image assets for testing and add reference to markdown file
     for ext in compress.ALLOWED_IMAGE_EXTENSIONS:
-        create_test_image(tmp_path / "quartz/static" / f"asset{ext}", "32x32")
+        create_test_image(
+            tmp_path / "quartz" / "static" / f"asset{ext}", "32x32"
+        )
 
         to_write = f"![](static/asset{ext})\n"
         to_write += f"[[static/asset{ext}]]\n"
         to_write += f'<img src="static/asset{ext}" alt="shrek"/>\n'
-        markdown_file = tmp_path / "content" / f"{ext.lstrip('.')}.md"
+        markdown_file = tmp_path / "website_content" / f"{ext.lstrip('.')}.md"
         markdown_file.write_text(to_write)
 
     # Create video assets for testing and add references to markdown files
     for ext in compress.ALLOWED_VIDEO_EXTENSIONS:
         create_test_video(tmp_path / "quartz/static" / f"asset{ext}")
         # skipcq: PTC-W6004 because this is server-side
-        with open(tmp_path / "content" / f"{ext.lstrip('.')}.md", "a") as file:
+        with open(
+            tmp_path / "website_content" / f"{ext.lstrip('.')}.md", "a"
+        ) as file:
             file.write(f"![](static/asset{ext})\n")
             file.write(f"[[static/asset{ext}]]\n")
             if ext != ".gif":
                 file.write(f'<video src="static/asset{ext}" alt="shrek"/>\n')
 
     # Special handling for GIF file in markdown
-    with open(tmp_path / "content" / "gif.md", "a") as file:
+    with open(tmp_path / "website_content" / "gif.md", "a") as file:
         file.write('<img src="static/asset.gif" alt="shrek">')
 
     # Create an unsupported file

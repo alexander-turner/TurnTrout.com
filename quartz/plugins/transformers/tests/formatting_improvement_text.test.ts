@@ -213,29 +213,21 @@ describe("Mass transforms", () => {
     ["| data |\n\nTable: Already spaced", "| data |\n\nTable: Already spaced"],
     ["MIRIx", 'MIRI<sub class="mirix-subscript">x</sub>'],
     ["MIRIx-meetup.html", "MIRIx-meetup.html"],
+    ["$$Full display math$$", "$$\nFull display math\n$$"],
+    ["$$ There's a space after the $", "$$\n There's a space after the $"],
+    ["Inline math $x$ is unchanged", "Inline math $x$ is unchanged"],
+    ["\\$\\$ literal dollars are ok", "\\$\\$ literal dollars are ok"],
+    ["$$\nalready spaced\n$$", "$$\nalready spaced\n$$"],
+    ["> > $$skip blockquotes$$", "> > $$skip blockquotes$$"],
+    ["     $$caption equation$$", "     $$caption equation$$"],
+    [
+      "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
+      "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
+    ],
   ])("should perform transforms for %s", (input: string, expected: string) => {
     const result = massTransformText(input)
     expect(result).toBe(expected)
   })
-
-  // describe("Display math formatting has newlines", () => {
-  //   it.only.each([
-  //     ["$$math$$", "$$math$$"], // Leave isolated display math alone
-  //     ["Text$$math$$Text", "Text\n$$math$$\n\nText"],
-  //     ["Text $$math$$Text", "Text \n$$math$$\n\nText"],
-  //     ["Text$$math$$ Text", "Text\n$$math$$\n\n Text"],
-  //     ["Begins with \n$$math$$ formatted already", "Begins with\n$$math$$\n\n formatted already"],
-  //     ["Ends with $$math$$\n\n formatted already", "Ends with\n$$math$$\n\n formatted already"],
-  //     ["Multiple$$math1$$\n$$math2$$", "Multiple\n$$math1$$\n\n$$math2$$"],
-  //     ["No space$$between$$math", "No space\n$$between$$\n\nmath"],
-  //     ["Already\n$$spaced$$\n\nCorrectly", "Already\n$$spaced$$\n\nCorrectly"],
-  //     ["Single blockquote\n> $$math$$", "Single blockquote\n>\n> $$\n\nmath\n$$"],
-  //     ["Respects\n> >$$math$$", "Respects\n> >\n> >$$\n\nmath\n$$"],
-  //   ])("should format display math correctly for %s", (input: string, expected: string) => {
-  //     const result = adjustDisplayMathNewlines(input)
-  //     expect(result).toBe(expected)
-  //   })
-  // })
 
   describe("HTML tag newline formatting", () => {
     it.each([

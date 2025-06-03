@@ -1,7 +1,7 @@
 set -l TEMP_DICT "/tmp/candidate_wordlist.txt"
 set -l PERM_DICT ".wordlist.txt"
 set -l SLUG_REGEX "(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+"
-set -l FILES content/**.md # Respects gitignore by default
+set -l FILES website_content/**.md # Respects gitignore by default
 
 set -l SPELLCHECK_PARAMS --no-suggestions --quiet --dictionaries $PERM_DICT --files $FILES --ignore $SLUG_REGEX
 
@@ -31,5 +31,5 @@ if test $status -ne 0
 
     # Amend the commit with the updated dictionary
     git add $PERM_DICT
-    git commit --amend --no-edit -m "Add words to dictionary"
+    git commit -m "chore: add words to dictionary"
 end

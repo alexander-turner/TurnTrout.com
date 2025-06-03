@@ -23,7 +23,7 @@ else:
 def site_setup(tmp_path):
     """Set up a basic site directory structure."""
     public_dir = tmp_path / "public"
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     public_dir.mkdir()
     content_dir.mkdir()
 
@@ -48,7 +48,25 @@ def mock_environment(site_setup, monkeypatch):
     # Mock common utility functions
     monkeypatch.setattr(script_utils, "collect_aliases", lambda md_dir: set())
 
+    # Mock check_rss_file_for_issues to prevent actual subprocess call in main tests
+    monkeypatch.setattr(
+        built_site_checks,
+        "check_rss_file_for_issues",
+        lambda *args, **kwargs: None,
+    )
+
     return site_setup
+
+
+@pytest.fixture
+def html_file_in_drafts(mock_environment):
+    """Create a test HTML file inside a drafts directory."""
+    public_dir = mock_environment["public_dir"]
+    drafts_dir = public_dir / "drafts"
+    drafts_dir.mkdir()
+    html_file = drafts_dir / "draft.html"
+    html_file.write_text("<html><body>Draft content</body></html>")
+    return html_file
 
 
 @pytest.fixture
@@ -57,7 +75,7 @@ def valid_css_file(mock_environment):
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
     index_css.write_text(
-        "@supports (initial-letter: 4) { p::first-letter { initial-letter: 4; } }"
+        "@supports (initial-letter: 4) { p::first-letter { initial-letter: 4; } } :root { --color-primary: #007bff; --color-secondary: #007bff; }"
     )
     return index_css
 
@@ -133,7 +151,7 @@ def sample_html() -> str:
         <a href="http://localhost:8000">Localhost Link</a>
         <a href="https://turntrout.com">Turntrout Link</a>
         <a href="/other-page#invalid-anchor">Turntrout Link with Anchor</a>
-        <a href="#valid-anchor">Valid Anchor</a>
+        <a href="#valid-anchor" class="internal same-page-link">Valid Anchor</a>
         <a href="#invalid-anchor">Invalid Anchor</a>
         <div id="valid-anchor">Valid Anchor Content</div>
         <p>Normal paragraph</p>
@@ -287,6 +305,7 @@ def test_check_invalid_anchors(sample_soup, temp_site_root):
     assert set(result) == {
         "Invalid anchor: #invalid-anchor",
         "Invalid anchor: /other-page#invalid-anchor",
+        "Anchor missing classes ['internal', 'same-page-link']: #invalid-anchor",
     }
 
 
@@ -544,10 +563,16 @@ def test_check_file_for_issues(tmp_path):
     """
     )
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues["localhost_links"] == ["https://localhost:8000"]
-    assert issues["invalid_anchors"] == ["Invalid anchor: #invalid-anchor"]
+    assert issues["invalid_anchors"] == [
+        "Invalid anchor: #invalid-anchor",
+        "Anchor missing classes ['internal', 'same-page-link']: #invalid-anchor",
+    ]
     assert issues["problematic_paragraphs"] == [
         "Problematic paragraph: Table: Test table"
     ]
@@ -568,7 +593,10 @@ def test_complicated_blockquote(tmp_path):
     file_path = tmp_path / "test.html"
     file_path.write_text(complicated_blockquote)
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues["trailing_blockquotes"] == [
         "Problematic blockquote: Basic facts about language models during trai ning >"
@@ -581,7 +609,10 @@ def test_check_file_for_issues_with_redirect(tmp_path):
         '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
     )
     issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, tmp_path / "content", should_check_fonts=False
+        file_path,
+        tmp_path,
+        tmp_path / "website_content",
+        should_check_fonts=False,
     )
     assert issues == {}
 
@@ -1506,7 +1537,7 @@ def test_check_markdown_assets_in_html(
 ):
     """Test that markdown assets are properly checked against HTML output for all supported tags"""
     # Setup test files
-    md_path = tmp_path / "content" / "test.md"
+    md_path = tmp_path / "website_content" / "test.md"
     html_path = tmp_path / "public" / "test.html"
 
     # Create directory structure
@@ -2197,6 +2228,11 @@ def test_check_link_spacing(html, expected):
             "<p>Test..?</p>",
             [],
         ),
+        # Ignore .. in katex block
+        (
+            "<p>Test<span class='katex'>..</span>nested</p>",
+            [],
+        ),
     ],
 )
 def test_check_consecutive_periods(html, expected):
@@ -2607,7 +2643,7 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     """Test that check_markdown_assets_in_html is called when md_path is valid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     html_file_path = base_dir / "test.html"
@@ -2638,7 +2674,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     """Test that check_markdown_assets_in_html is NOT called when md_path is invalid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
-    content_dir = tmp_path / "content"
+    content_dir = tmp_path / "website_content"
     content_dir.mkdir()
 
     html_file_path = base_dir / "test.html"
@@ -2751,19 +2787,21 @@ def test_main_css_issues(
         script_utils, "build_html_to_md_map", lambda md_dir: {}
     )
 
-    with patch.object(built_site_checks, "_print_issues") as mock_print:
-        with pytest.raises(SystemExit) as excinfo:
-            built_site_checks.main()
-        assert excinfo.value.code == 1
+    with (
+        patch.object(built_site_checks, "_print_issues") as mock_print,
+        pytest.raises(SystemExit) as excinfo,
+    ):
+        built_site_checks.main()
 
-        mock_print.assert_any_call(
-            invalid_css_file,
-            {
-                "CSS_issues": [
-                    "CSS file index.css does not contain @supports, which is required for dropcaps in Firefox"
-                ]
-            },
-        )
+    assert excinfo.value.code == 1
+    mock_print.assert_any_call(
+        invalid_css_file,
+        {
+            "CSS_issues": [
+                "CSS file index.css does not contain @supports, which is required for dropcaps in Firefox"
+            ]
+        },
+    )
 
 
 def test_main_robots_txt_issues(
@@ -2853,6 +2891,9 @@ def test_main_handles_markdown_mapping(
             mock_environment["public_dir"],
             md_file,
             should_check_fonts=False,
+            defined_css_variables=set(
+                ["--color-primary", "--color-secondary"]
+            ),
         )
 
 
@@ -2904,29 +2945,29 @@ def test_main_command_line_args(
 
         built_site_checks.main()
 
-        # Verify check_file_for_issues was called with should_check_fonts=True
-        mock_check.assert_called_with(
-            html_file,
-            mock_environment["public_dir"],
-            None,
-            should_check_fonts=True,
-        )
+    mock_check.assert_called_with(
+        html_file,
+        mock_environment["public_dir"],
+        None,
+        should_check_fonts=True,
+        defined_css_variables=set(["--color-primary", "--color-secondary"]),
+    )
 
 
 def test_main_skips_drafts(
     mock_environment,
     valid_css_file,
     robots_txt_file,
-    html_file,
+    html_file_in_drafts,  # Use the new fixture
     monkeypatch,
 ):
-    monkeypatch.setattr(
-        script_utils, "should_have_md", lambda file_path: False
-    )
-
-    with patch.object(built_site_checks, "_print_issues") as mock_print:
+    with (
+        patch.object(built_site_checks, "_print_issues") as mock_print,
+        patch.object(sys, "exit") as mock_exit,
+    ):
         built_site_checks.main()
-        mock_print.assert_not_called()
+        mock_print.assert_not_called()  # Draft file issues should not be printed
+        mock_exit.assert_not_called()  # Should not exit with error if only draft files exist
 
 
 @pytest.mark.parametrize(
@@ -3291,4 +3332,281 @@ def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
     soup = BeautifulSoup(html_content, "html.parser")
     # Assuming built_site_checks contains the corrected check_malformed_hrefs
     result = built_site_checks.check_malformed_hrefs(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    "css_content, expected_vars",
+    [
+        # Basic definitions in :root
+        (
+            """
+            :root {
+                --color-primary: #007bff;
+                --spacing-unit: 1rem;
+            }
+            body {
+                color: var(--color-primary);
+            }
+            """,
+            {"--color-primary", "--spacing-unit"},
+        ),
+        # Definitions outside :root
+        (
+            """
+            .my-component {
+                --component-bg: lightgray;
+            }
+            #my-id {
+                --id-specific-color: red;
+            }
+            """,
+            {"--component-bg", "--id-specific-color"},
+        ),
+        # Mixed definitions
+        (
+            """
+            :root {
+                --global-var: white;
+            }
+            .my-element {
+                --local-var: black;
+                background-color: var(--global-var);
+                border: 1px solid var(--local-var);
+            }
+            """,
+            {"--global-var", "--local-var"},
+        ),
+        # Variables with hyphens and numbers
+        (
+            """
+            :root {
+                --my-var-1: 10px;
+                --another-variable-with-2-numbers: blue;
+            }
+            """,
+            {"--my-var-1", "--another-variable-with-2-numbers"},
+        ),
+        # No variable definitions, only usage
+        (
+            """
+            body {
+                color: var(--undefined-var);
+                margin: var(--another-one);
+            }
+            """,
+            set(),
+        ),
+        # Empty CSS content
+        ("", set()),
+        # Malformed CSS (should still extract valid definitions)
+        (
+            """
+            :root { --valid-var: #fff }
+            body { color: red;
+            --another-valid: 1px;
+             } invalid syntax { --invalid-but-defined?: yellow; }
+             --global-defined: ok;
+            """,
+            {"--valid-var", "--another-valid", "--global-defined"},
+        ),
+        # Media queries
+        (
+            """
+            :root { --base-color: black; }
+            @media (min-width: 600px) {
+                :root {
+                    --mq-color: purple;
+                }
+            }
+            """,
+            {"--base-color", "--mq-color"},
+        ),
+        # Different spacing
+        (
+            """
+            :root {
+                --var-normal: 1px;
+                --var-no-space-after-colon:2px;
+                --var-space-before-colon : 3px;
+                --var-lots-of-space   :    4px;
+            }
+            """,
+            {
+                "--var-normal",
+                "--var-no-space-after-colon",
+                "--var-space-before-colon",
+                "--var-lots-of-space",
+            },
+        ),
+    ],
+)
+def test_get_defined_css_variables(
+    tmp_path: Path, css_content: str, expected_vars: set[str]
+) -> None:
+    """Test the _get_defined_css_variables function."""
+    css_file_path = tmp_path / "test.css"
+    css_file_path.write_text(css_content, encoding="utf-8")
+    result = built_site_checks._get_defined_css_variables(css_file_path)
+    assert result == expected_vars
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        (
+            """
+            <div style="--color-primary: #007bff;">
+                <p>Test</p>
+            </div>
+            """,
+            [],
+        ),
+        (
+            """
+            <div style="color: var(--color-primary);">
+                <p>Test</p>
+            </div>
+            """,
+            [],
+        ),
+        (
+            """
+            <div style="color: var(--unknown);">
+                <p>Test</p>
+            </div>
+            """,
+            [
+                "Element <div> uses undefined CSS variable '--unknown' in inline style: 'color: var(--unknown);'"
+            ],
+        ),
+    ],
+)
+def test_check_inline_style_variables(
+    html: str, expected_issues: list[str], valid_css_file: Path
+):
+    """Test the check_inline_style_variables function."""
+    soup = BeautifulSoup(html, "html.parser")
+    defined_vars = built_site_checks._get_defined_css_variables(valid_css_file)
+
+    result = built_site_checks.check_inline_style_variables(soup, defined_vars)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        # Basic case
+        (
+            """
+            <p><span class="katex">x + y = z</span></p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p><span class="katex">x + y = z</span></p>'
+            ],
+        ),
+        # Incorrect class is ignored
+        (
+            """
+            <p><span class="katex-display">x + y = z</span></p>
+            """,
+            [],
+        ),
+        # KaTeX span with surrounding whitespace text nodes
+        (
+            """
+            <p> <span class="katex">formula</span> </p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p> <span class="katex">formula</span> </p>'
+            ],
+        ),
+        # KaTeX span with surrounding non-whitespace text nodes
+        (
+            """
+            <p>Text before <span class="katex">formula</span> and after</p>
+            """,
+            [],
+        ),
+        # KaTeX span itself has child elements
+        (
+            """
+            <p><span class="katex"><em>nested_formula</em></span></p>
+            """,
+            [
+                'Paragraph with only KaTeX span: <p><span class="katex"><em>nested_formula</em></span></p>'
+            ],
+        ),
+        # --- Cases that SHOULD NOT be flagged ---
+        # Multiple distinct Tag children
+        (
+            """
+            <p><a href="#">Link</a><span class="katex">formula</span></p>
+            """,
+            [],
+        ),
+        # Multiple span.katex Tags, separated by a text node
+        (
+            """
+            <p><span class="katex">formula1</span> text_separator <span class="katex">formula2</span></p>
+            """,
+            [],
+        ),
+        # Multiple span.katex Tags, directly adjacent (no text node separator)
+        (
+            """
+            <p><span class="katex">formula1</span><span class="katex">formula2</span></p>
+            """,
+            [],
+        ),
+        # Multiple distinct Tag children, including <br>
+        (
+            """
+            <p><span class="katex">formula</span><br/></p>
+            """,
+            [],
+        ),
+        # Empty p tag
+        (
+            """
+            <p></p>
+            """,
+            [],
+        ),
+        # p tag with only whitespace text
+        (
+            """
+            <p>    </p>
+            """,
+            [],
+        ),
+        # p tag with only non-whitespace text
+        (
+            """
+            <p>Just some normal text.</p>
+            """,
+            [],
+        ),
+        # Single Tag child, but it's not span.katex (it's a different span)
+        (
+            """
+            <p><span>Some other span</span></p>
+            """,
+            [],
+        ),
+        # Single Tag child, but it's a div (even if class is katex-related)
+        (
+            """
+            <p><div class="katex-display">formula</div></p>
+            """,
+            [],
+        ),
+    ],
+)
+def test_check_katex_span_only_paragraph_child(
+    html: str, expected_issues: list[str]
+):
+    """Test the check_katex_span_only_paragraph_child function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_katex_span_only_paragraph_child(soup)
     assert sorted(result) == sorted(expected_issues)

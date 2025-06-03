@@ -41,11 +41,10 @@ const browsers: Browser[] = [
 ]
 
 export default defineConfig({
-  timeout: process.env.CI ? 90000 : 30000, // Increased timeout for larger test sets
-  workers: process.env.CI ? 1 : 16,
-  fullyParallel: !process.env.CI,
+  timeout: process.env.CI ? 180000 : 30000,
+  workers: 1, // Parallelism causes flakiness
 
-  retries: process.env.CI ? 3 : 3,
+  retries: 3,
   testDir: "./quartz/",
   testMatch: /.*\.spec\.ts/,
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
@@ -55,6 +54,8 @@ export default defineConfig({
       mode: "on",
       fullPage: true,
     },
+    userAgent:
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
   },
   projects: deviceList.flatMap((device) =>
     browsers.map((browser) => ({

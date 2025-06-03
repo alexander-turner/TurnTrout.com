@@ -383,6 +383,8 @@ function hideSearch() {
   // Clean up preview
   if (previewManager) {
     previewManager.hide()
+    // Ensure no residual information is left in the preview
+    previewManager.clear()
   }
 
   searchType = "basic"
@@ -423,6 +425,7 @@ async function shortcutHandler(
     if (searchBarOpen) {
       hideSearch()
     } else {
+      // TODO document feature or remove; don't want hidden functionality
       showSearch("tags", container, searchBar)
     }
 
@@ -666,11 +669,6 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${suffixHTML}`
 
-  const onResultClick = (event: MouseEvent): void => {
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
-    hideSearch()
-  }
-
   async function onMouseEnter(ev: MouseEvent) {
     if (!ev.target) return
     const target = ev.target as HTMLInputElement
@@ -686,7 +684,6 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
 
   itemTile.addEventListener("mouseenter", onMouseEnter)
   itemTile.addEventListener("mouseleave", onMouseLeave)
-  itemTile.addEventListener("click", onResultClick)
 
   return itemTile
 }

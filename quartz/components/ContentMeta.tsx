@@ -182,7 +182,7 @@ export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
   return (
     <div>
       <b>Sequence:</b>{" "}
-      <a href={sequenceLink} className="internal" style={{ cursor: "pointer" }}>
+      <a href={sequenceLink} className="internal can-trigger-popover" style={{ cursor: "pointer" }}>
         {sequence}
       </a>
     </div>
@@ -197,7 +197,7 @@ export const renderPreviousPostJsx = (fileData: QuartzPluginData) => {
   return (
     <p style={{ margin: 0 }}>
       <b>Previous:</b>{" "}
-      <a href={prevPostSlug} className="internal">
+      <a href={prevPostSlug} className="internal can-trigger-popover">
         {prevPostTitleFormatted}
       </a>
     </p>
@@ -213,7 +213,7 @@ export const renderNextPostJsx = (fileData: QuartzPluginData) => {
   return (
     <p style={{ marginTop: ".5rem" }}>
       <b>Next:</b>{" "}
-      <a href={nextPostSlug} className="internal">
+      <a href={nextPostSlug} className="internal can-trigger-popover">
         {nextPostTitleFormatted}
       </a>
     </p>

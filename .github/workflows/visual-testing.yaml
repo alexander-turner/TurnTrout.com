@@ -1,10 +1,14 @@
 name: Visual Testing
 
+concurrency:
+  group: "visual-testing"
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["lostpixel"]
+    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
   pull_request:
-    branches: ["lostpixel"]
+    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
 
 jobs:
   visual-testing:
@@ -44,7 +48,6 @@ jobs:
           node-version: ">=22"
           cache: "npm"
 
-      # Restore Playwright's browser cache
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -58,6 +61,9 @@ jobs:
         run: |
           npx playwright install --with-deps chromium webkit firefox
           npx playwright install-deps
+
+      - name: Remove Safari autoplay script
+        run: rm -f ./quartz/static/scripts/safari-autoplay.js
 
       - name: Start local server
         run: |
@@ -78,7 +84,7 @@ jobs:
           done
           echo "Server is ready"
 
-      - name: Make folder
+      - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
 
       - name: Run Playwright tests
@@ -89,26 +95,78 @@ jobs:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Sanitize shard name
+      - name: Create sanitized shard
+        if: always()
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright traces
-        if: always()
         uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: playwright-traces-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           retention-days: 7
 
-      - name: Run LostPixel
+      - name: Upload Lost Pixel screenshots shard
+        uses: actions/upload-artifact@v4
         if: always()
+        with:
+          name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
+          path: ./lost-pixel
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  combine-and-upload:
+    needs: visual-testing
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ">=22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all Lost Pixel screenshot shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lost-pixel-screenshots-*
+          path: ./all-lost-pixel-shards
+          merge-multiple: true
+
+      - name: Combine screenshots into ./lost-pixel directory
+        id: combine
+        run: |
+          shopt -s globstar # Enable recursive globbing
+          mkdir -p ./lost-pixel
+          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
+          echo "Contents of ./lost-pixel after combining:"
+          ls -R ./lost-pixel
+          if [ -z "$(ls -A ./lost-pixel)" ]; then
+            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
+            echo "./lost-pixel directory is empty after combination attempt."
+          else
+            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
+            echo "Screenshots found in ./lost-pixel."
+          fi
+
+      - name: Run LostPixel on combined screenshots
+        if: steps.combine.outputs.screenshots_found == 'true'
         uses: lost-pixel/lost-pixel@v3.16.0
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
+          LOST_PIXEL_CONFIG_PATH: lostpixel.config.ts
 
-      - name: Check Playwright status
-        if: steps.playwright.outcome == 'failure'
-        run: exit 1
+      - name: Clean up downloaded shards
+        run: rm -rf ./all-lost-pixel-shards

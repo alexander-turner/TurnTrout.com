@@ -1,48 +1,45 @@
-// This file implements a client-side router for Single Page Applications (SPA)
-// It handles navigation between pages without full page reloads
+// SPA Inline Module
+// Handles navigation between pages without full page reloads
 
 import micromorph from "micromorph"
 
-import {
-  type FullSlug,
-  type RelativeURL,
-  getFullSlug,
-  normalizeRelativeURLs,
-} from "../../util/path"
-import { videoId, sessionStoragePondVideoKey } from "../component_utils"
+import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
+import { pondVideoId } from "../component_utils"
+import { debounce } from "./component_script_utils"
+import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
 
 declare global {
   interface Window {
     __routerInitialized?: boolean
+    spaNavigate: (url: URL, opts?: { scroll?: boolean }) => Promise<void>
   }
 }
 
-// adapted from `micromorph`
-// https://github.com/natemoo-re/micromorph
+// FUNCTIONS
+
 const NODE_TYPE_ELEMENT = 1
-const announcer = document.createElement("route-announcer")
+
+function getScrollPosition(): number {
+  return Math.round(window.scrollY)
+}
+
+const updateScrollState = debounce(
+  (() => {
+    const currentScroll = getScrollPosition()
+    console.debug(
+      `[updateScrollState] replaceState scroll: ${currentScroll}, current state:`,
+      history.state,
+    )
+    history.replaceState({ ...history.state, scroll: currentScroll }, "")
+  }) as () => void,
+  DEBOUNCE_WAIT_MS,
+)
 
 /**
- * Type guard to check if a target is an Element
+ * Typeguard to check if a target is an Element
  */
 const isElement = (target: EventTarget | null): target is Element =>
   (target as Node)?.nodeType === NODE_TYPE_ELEMENT
-
-// TODO split off into a separate file to test
-/**
- * Checks if a URL is local (same origin as current window)
- */
-const isLocalUrl = (href: string): boolean => {
-  try {
-    const url = new URL(href)
-    if (window.location.origin === url.origin) {
-      return true
-    }
-  } catch {
-    // ignore
-  }
-  return false
-}
 
 /**
  * Extracts navigation options from a click event
@@ -71,17 +68,11 @@ const getOpts = ({ target }: Event): { url: URL; scroll?: boolean } | undefined 
   }
 }
 
-/**
- * Dispatches a custom navigation event
- */
-function notifyNav(url: FullSlug) {
+function dispatchNavEvent(url: FullSlug) {
   const event: CustomEventMap["nav"] = new CustomEvent("nav", { detail: { url } })
   document.dispatchEvent(event)
 }
 
-/**
- * Handles scrolling to specific elements when hash is present in URL
- */
 function scrollToHash(hash: string) {
   if (!hash) return
   try {
@@ -93,48 +84,10 @@ function scrollToHash(hash: string) {
   }
 }
 
-function saveVideoTimestamp() {
-  const video = document.getElementById("pond-video") as HTMLVideoElement | null
-  if (video) {
-    sessionStorage.setItem(sessionStoragePondVideoKey, String(video.currentTime))
-  }
-}
-
-let parser: DOMParser
 /**
- * Core navigation function that:
- * 1. Fetches new page content
- * 2. Updates the DOM using micromorph
- * 3. Handles scroll position
- * 4. Updates browser history
- * 5. Manages page title and announcements
+ * Fetches page content and updates the DOM, head, title, etc.
  */
-async function navigate(url: URL) {
-  parser = parser || new DOMParser()
-
-  // Clean up any existing popovers
-  const existingPopovers = document.querySelectorAll(".popover")
-  existingPopovers.forEach((popover) => popover.remove())
-
-  let contents: string | undefined
-
-  try {
-    const res = await fetch(url.toString())
-    const contentType = res.headers.get("content-type")
-    if (contentType?.startsWith("text/html")) {
-      contents = await res.text()
-    } else {
-      window.location.href = url.toString()
-      return
-    }
-  } catch {
-    window.location.href = url.toString()
-    return
-  }
-
-  if (!contents) return
-
-  const html = parser.parseFromString(contents, "text/html")
+async function updatePage(html: Document, url: URL): Promise<void> {
   normalizeRelativeURLs(html, url)
 
   let title = html.querySelector("title")?.textContent
@@ -144,132 +97,383 @@ async function navigate(url: URL) {
     const h1 = document.querySelector("h1")
     title = h1?.innerText ?? h1?.textContent ?? url.pathname
   }
+
   if (announcer.textContent !== title) {
     announcer.textContent = title
   }
   announcer.dataset.persist = ""
+  // Append announcer to the *new* body before morph
+  // micromorph will merge it into the existing DOM structure
   html.body.appendChild(announcer)
 
   // Clean up potential extension-injected siblings around the video
-  // Prevents reloading the video when navigating between pages
-  const videoElement = document.getElementById(videoId)
+  const videoElement = document.getElementById(pondVideoId)
   if (videoElement && videoElement.parentElement) {
     const parent = videoElement.parentElement
     Array.from(parent.childNodes).forEach((node) => {
       if (node !== videoElement) {
         parent.removeChild(node)
-        console.log("removed node", node)
       }
     })
   }
 
-  // Morph body
-  await micromorph(document.body, html.body)
+  console.debug(`[updatePage] Starting micromorph for ${url.pathname}`)
+  try {
+    await micromorph(document.body, html.body)
+    console.debug(`[updatePage] Micromorph finished for ${url.pathname}`)
+  } catch (e) {
+    console.error(`[updatePage] Micromorph error for ${url.pathname}:`, e)
+  }
 
   // Patch head
   const elementsToRemove = document.head.querySelectorAll(":not([spa-preserve])")
   elementsToRemove.forEach((el) => el.remove())
   const elementsToAdd = html.head.querySelectorAll(":not([spa-preserve])")
   elementsToAdd.forEach((el) => document.head.appendChild(el.cloneNode(true)))
-
-  // Handle scroll behavior based on navigation type
-  const isSamePageNavigation = url.pathname === window.location.pathname
-  if (isSamePageNavigation && url.hash) {
-    // For same-page anchor navigation, scroll to the target element
-    const el = document.getElementById(decodeURIComponent(url.hash.substring(1)))
-    el?.scrollIntoView({ behavior: "smooth" })
-  }
-
-  notifyNav(getFullSlug(window))
 }
 
+interface FetchResult {
+  status: "success" | "error" | "fallback"
+  content?: string
+  finalUrl: URL
+  responseStatus?: number
+  contentType?: string | null
+}
+
+async function fetchContent(url: URL): Promise<FetchResult> {
+  let responseStatus: number | undefined
+  let contentType: string | null = null
+  let content: string | undefined
+
+  try {
+    const res = await fetch(url.toString())
+    responseStatus = res.status
+    contentType = res.headers.get("content-type")
+
+    if (res.ok && contentType?.startsWith("text/html")) {
+      content = await res.text()
+      return { status: "success", content, finalUrl: url, responseStatus, contentType }
+    } else {
+      console.warn(
+        `[fetchContent] Fetch failed or non-HTML. Status: ${responseStatus}, Type: ${contentType}. Triggering fallback.`,
+      )
+      window.location.href = url.toString()
+      return { status: "fallback", finalUrl: url }
+    }
+  } catch (e) {
+    console.error(`[fetchContent] Fetch error for ${url.toString()}:`, e)
+    window.location.href = url.toString()
+    return { status: "fallback", finalUrl: url }
+  }
+}
+
+/**
+ * Handles potential meta-refresh redirects found in the fetched content.
+ */
+async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchResult> {
+  if (initialFetchResult.status !== "success" || typeof initialFetchResult.content !== "string") {
+    return initialFetchResult
+  }
+
+  const { content: initialContent, finalUrl: initialUrl } = initialFetchResult
+  let finalContent = initialContent
+  let finalUrl = initialUrl
+
+  const metaRefreshRegex =
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=([^"'>\s]+)["']?/i
+  const match = initialContent.match(metaRefreshRegex)
+
+  if (match && match[1]) {
+    const redirectTargetRaw = match[1]
+    try {
+      const redirectUrl = new URL(redirectTargetRaw, initialUrl)
+      const redirectFetchResult = await fetchContent(redirectUrl)
+
+      if (
+        redirectFetchResult.status !== "success" ||
+        typeof redirectFetchResult.content !== "string"
+      ) {
+        console.warn(
+          `[handleRedirect] Failed to fetch redirect target ${redirectUrl.toString()}. Propagating fallback.`,
+        )
+        return redirectFetchResult
+      }
+
+      finalContent = redirectFetchResult.content
+      finalUrl = redirectFetchResult.finalUrl
+    } catch (e) {
+      console.error(
+        `[handleRedirect] Error processing meta refresh from ${initialUrl.pathname} to ${redirectTargetRaw}:`,
+        e,
+      )
+      window.location.href = initialUrl.toString()
+      return { status: "fallback", finalUrl: initialUrl }
+    }
+  }
+
+  return { status: "success", content: finalContent, finalUrl }
+}
+
+function removePopovers() {
+  const existingPopovers = document.querySelectorAll(".popover")
+  existingPopovers.forEach((popover) => popover.remove())
+}
+
+/**
+ * Fetches content for a given URL, handling potential redirects.
+ * Returns the final content and URL, or null if fetching/redirect fails.
+ */
+async function fetchAndProcessContent(
+  url: URL,
+): Promise<{ content: string; finalUrl: URL } | null> {
+  const initialFetch = await fetchContent(url)
+  if (initialFetch.status !== "success") {
+    console.debug(
+      `[fetchAndProcessContent] Initial fetch failed or triggered fallback for ${url.toString()}.`,
+    )
+    // Fallback (window.location set) happened in fetchContent
+    return null
+  }
+
+  const redirectResult = await handleRedirect(initialFetch)
+  if (redirectResult.status !== "success" || typeof redirectResult.content !== "string") {
+    console.debug(
+      `[fetchAndProcessContent] Redirect handling failed or triggered fallback for ${url.toString()}.`,
+    )
+    // Fallback (window.location set) happened in handleRedirect or fetchContent
+    return null
+  }
+
+  return { content: redirectResult.content, finalUrl: redirectResult.finalUrl }
+}
+
+let parser: DOMParser
+/**
+ * Parses HTML content and updates the DOM using micromorph.
+ * Returns true on success, false on failure (triggering fallback).
+ */
+async function updateDOM(htmlContent: string, originalUrl: URL): Promise<boolean> {
+  parser = parser || new DOMParser()
+  let html: Document
+  try {
+    html = parser.parseFromString(htmlContent, "text/html")
+  } catch (e) {
+    console.error(`[updateDOM] Error parsing HTML for ${originalUrl.toString()}:`, e)
+    window.location.href = originalUrl.toString() // Fallback to original requested URL
+    return false
+  }
+
+  console.debug(`[updateDOM] Calling updatePage for ${originalUrl.pathname}`)
+  try {
+    await updatePage(html, originalUrl) // Pass original URL for consistency
+    console.debug(`[updateDOM] updatePage finished for ${originalUrl.pathname}`)
+    return true
+  } catch (e) {
+    console.error(`[updateDOM] Error during updatePage for ${originalUrl.pathname}:`, e)
+    window.location.href = originalUrl.toString() // Fallback to original requested URL
+    return false
+  }
+}
+
+/**
+ * Handles scrolling after navigation based on options and final URL hash.
+ *  Doesn't use scroll position from history state.
+ */
+function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): void {
+  if (opts?.scroll === false) {
+    // explicitly skip scroll
+    console.debug("[handleNavigationScroll] Skipping scroll due to data-router-no-scroll")
+  } else if (finalUrl.hash) {
+    // Check hash on the final URL
+    console.debug(`[handleNavigationScroll] Scrolling to hash on final URL: ${finalUrl.hash}`)
+    scrollToHash(finalUrl.hash)
+  } else {
+    console.debug("[handleNavigationScroll] Scrolling to top")
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }
+}
+
+/**
+ * Handles navigation triggered by clicking a link or programmatic call.
+ * Fetches new content, updates history, updates DOM, and handles scrolling.
+ */
+async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
+  removePopovers()
+
+  // Store the current scroll position *before* fetching/navigating
+  const currentScroll = getScrollPosition()
+  const state = { scroll: currentScroll }
+
+  // 1. Fetch content, handling redirects
+  const fetchResult = await fetchAndProcessContent(url)
+  if (!fetchResult) {
+    // Fetching or redirect handling failed and triggered a fallback (full page load)
+    return
+  }
+  const { content, finalUrl } = fetchResult
+
+  // 2. Push state *before* updating page
+  //    Original URL ensures the browser's address bar reflects the URL the user intended to navigate to.
+  console.debug(
+    `[navigate] pushState scroll: ${currentScroll}, state obj:`,
+    state,
+    ` for original URL: ${url.toString()}`,
+  )
+  history.pushState(state, "", url)
+
+  // 3. Parse and update the DOM
+  //    Pass original URL to resolve relative paths in the fetched content against the intended URL.
+  const updateSuccess = await updateDOM(content, url)
+  if (!updateSuccess) {
+    // DOM update failed and triggered a fallback (full page load)
+    return
+  }
+
+  // 4. Handle scrolling *after* DOM update, based on the FINAL URL
+  handleNavigationScroll(finalUrl, opts)
+
+  // 5. Notify other components of navigation
+  dispatchNavEvent(getFullSlug(window))
+}
 window.spaNavigate = navigate
+
+/**
+ * Handles the popstate event triggered by browser back/forward buttons.
+ * Fetches content for the target URL, updates DOM, and restores scroll position from state.
+ */
+async function handlePopstate(event: PopStateEvent): Promise<void> {
+  // Cancel any pending scroll state updates
+  updateScrollState.cancel()
+
+  const targetUrl = new URL(window.location.toString())
+  console.debug(
+    `[handlePopstate] Navigating to ${targetUrl.pathname}, received state:`,
+    event.state,
+  )
+
+  const resource = await fetch(targetUrl.toString())
+  const contentType = resource.headers.get("content-type")
+  if (!resource.ok || !contentType?.startsWith("text/html")) {
+    window.location.reload()
+    console.debug("popstate: Reloading due to non-HTML response")
+    return
+  }
+
+  // Update DOM and head
+  const contents = await resource.text()
+  parser = parser || new DOMParser()
+  const html = parser.parseFromString(contents, "text/html")
+  await updatePage(html, targetUrl)
+
+  // Restore scroll position *after* DOM update
+  const scrollTarget = event.state?.scroll as number | undefined
+  try {
+    if (typeof scrollTarget === "number") {
+      console.debug(`[handlePopstate] Restoring scroll from state: ${scrollTarget}`)
+      window.scrollTo({ top: scrollTarget, behavior: "instant" })
+    } else if (targetUrl.hash) {
+      console.debug(`[handlePopstate] Scrolling to hash: ${targetUrl.hash}`)
+      scrollToHash(targetUrl.hash)
+    } else {
+      console.debug("popstate: Scrolling to top (no state/hash)")
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }
+  } catch (error) {
+    console.error("Popstate navigation error:", error)
+    window.location.reload()
+    return
+  }
+  dispatchNavEvent(getFullSlug(window))
+}
+
+/**
+ * Restores scroll position on initial page load if available in state or hash.
+ */
+function performInitialScroll(): void {
+  console.debug(`[Initial Load Event] Checking history state:`, history.state)
+  const initialScroll = history.state?.scroll as number | undefined
+  if (typeof initialScroll === "number") {
+    console.debug(`[Initial Load Event] Restoring scroll from state: ${initialScroll}`)
+    window.scrollTo({ top: initialScroll, behavior: "instant" })
+  } else if (window.location.hash) {
+    console.debug(`[Initial Load Event] Scrolling to hash: ${window.location.hash}`)
+    scrollToHash(window.location.hash)
+  }
+}
+
 /**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
- * - Handles browser back/forward navigation
- * - Provides programmatic navigation methods (go, back, forward)
+ * - Handles browser back/forward navigation (popstate)
+ * - Sets up manual scroll restoration and state saving
  */
 function createRouter() {
   if (typeof window !== "undefined" && !window.__routerInitialized) {
     window.__routerInitialized = true
 
-    document.addEventListener("click", async (event) => {
-      const { url } = getOpts(event) ?? {}
-      // dont hijack behaviour, just let browser act normally
-      if (!url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) return
-      event.preventDefault()
+    // Setup manual scroll restoration and state saving
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual"
 
-      try {
-        saveVideoTimestamp()
-
-        // Push state here before navigation
-        const state = {
-          hash: url.hash,
-          pathname: url.pathname,
-          timestamp: Date.now(),
-        }
-        window.history.pushState(state, document.title, url.toString())
-
-        // Then navigate to update content
-        await navigate(url)
-      } catch {
-        window.location.assign(url)
-      }
-    })
-
-    window.addEventListener("popstate", async () => {
-      try {
-        saveVideoTimestamp()
-
-        // Navigate to update the content
-        await navigate(new URL(window.location.toString()))
-      } catch (error) {
-        console.error("Navigation error:", error)
-        window.location.reload()
-      }
-    })
-
-    // Handle hash-based scrolling on initial load
-    if (window.location.hash) {
-      scrollToHash(window.location.hash)
+      window.addEventListener("scroll", () => {
+        console.debug("Scroll event fired")
+        updateScrollState()
+      })
+      console.debug("Manual scroll restoration enabled.")
+    } else {
+      console.warn("Manual scroll restoration not supported.")
     }
-  }
 
-  return {
-    go(pathname: RelativeURL) {
-      const url = new URL(pathname, window.location.toString())
-      return navigate(url)
-    },
-    back() {
-      return window.history.back()
-    },
-    forward() {
-      return window.history.forward()
-    },
+    document.addEventListener("click", async (event) => {
+      // Use getOpts to check for valid local links ignoring modifiers/targets
+      const opts = getOpts(event)
+      if (!opts || !opts.url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) {
+        return // Let browser handle normal links, external links, or modified clicks
+      }
+
+      event.preventDefault() // Prevent default link behavior
+
+      try {
+        console.debug(`[Router] Click navigation to ${opts.url.toString()}`)
+        // Pass scroll option from dataset (e.g., data-router-no-scroll)
+        await navigate(opts.url, { scroll: opts.scroll })
+      } catch (e) {
+        console.error("Click navigation error:", e)
+        // Fallback to standard navigation if spa navigation fails
+        window.location.assign(opts.url)
+      }
+    })
+
+    // Add popstate listener for back/forward navigation
+    window.addEventListener("popstate", handlePopstate)
   }
 }
 
-// Only initialize if not already done
+// INLINE MODULE CODE
+
 if (typeof window !== "undefined" && !window.__routerInitialized) {
-  // Set scroll restoration to auto to use browser's native behavior
-  if ("scrollRestoration" in history) {
-    history.scrollRestoration = "auto"
-  }
-
-  // Proceed with creating the router
   createRouter()
-  notifyNav(getFullSlug(window))
+
+  // Handle initial scroll and dispatch nav event after DOM is loaded
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      performInitialScroll()
+      dispatchNavEvent(getFullSlug(window))
+    })
+  } else {
+    // DOMContentLoaded has already fired
+    performInitialScroll()
+    dispatchNavEvent(getFullSlug(window))
+  }
 }
 
-/**
- * Registers the RouteAnnouncer custom element if not already defined
- * Sets up necessary ARIA attributes and styling for accessibility
- */
+// SPA accessibility announcement for screen readers
+const announcer = document.createElement("route-announcer")
+
 if (!customElements.get("route-announcer")) {
   const attrs = {
-    "aria-live": "assertive",
-    "aria-atomic": "true",
+    "aria-live": "assertive", // Announce changes immediately
+    "aria-atomic": "true", // Read entirety of changes
     style:
       "position: absolute; left: 0; top: 0; clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap; width: 1px; height: 1px",
   }
