@@ -15,22 +15,6 @@ date_updated: 2025-04-12 09:51:51.137842
 ---
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>.
 
-## Layout shift?
-
-Checking for layout shift on these videos themselves:
-
-<figure>
-  <div class="subfigure">
-    <figcaption>Layout shift:</figcaption>
-    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"></video>
-  </div>
-  
-  <div class="subfigure">
-    <figcaption>No layout shift:</figcaption>
-    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"></video>
-  </div>
-</figure>
-
 # Header 1 (`inline_code`)
 
 ## Header 2 (SMALLCAPS)
@@ -301,6 +285,22 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>
 <source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"></video>
+
+### Layout shift?
+
+Checking for layout shift due to these videos which contrast the site before and after CLS prevention measures:
+
+<figure>
+  <div class="subfigure">
+    <figcaption>Layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"></video>
+  </div>
+  
+  <div class="subfigure">
+    <figcaption>No layout shift:</figcaption>
+    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"></video>
+  </div>
+</figure>
 
 ## Audio
 

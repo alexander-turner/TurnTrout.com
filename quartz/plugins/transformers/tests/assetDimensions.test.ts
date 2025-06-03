@@ -194,24 +194,31 @@ describe("Asset Dimensions Plugin", () => {
       setDirectDirtyFlag(true)
 
       const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
 
       await maybeSaveAssetDimensions()
 
+      const tempFilePath = actualAssetDimensionsFilePath + ".tmp"
       expect(writeFileSpy).toHaveBeenCalledWith(
-        actualAssetDimensionsFilePath,
+        tempFilePath,
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
+      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
       expect(assetDimensionsState.needToSaveCache).toBe(false)
+
+      renameSpy.mockRestore()
     })
 
     it("should not save cache if not dirty", async () => {
       setDirectCache({})
       setDirectDirtyFlag(false)
       const writeFileSpy = jest.spyOn(fs, "writeFile")
+      const renameSpy = jest.spyOn(fs, "rename")
 
       await maybeSaveAssetDimensions()
       expect(writeFileSpy).not.toHaveBeenCalled()
+      expect(renameSpy).not.toHaveBeenCalled()
     })
 
     it("should handle write errors gracefully", async () => {
@@ -224,6 +231,7 @@ describe("Asset Dimensions Plugin", () => {
       const writeFileSpy = jest
         .spyOn(fs, "writeFile")
         .mockRejectedValue(new Error("Permission denied") as never)
+      const renameSpy = jest.spyOn(fs, "rename")
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
       await maybeSaveAssetDimensions()
@@ -234,6 +242,7 @@ describe("Asset Dimensions Plugin", () => {
         expect.any(Error),
       )
       consoleErrorSpy.mockRestore()
+      renameSpy.mockRestore()
     })
   })
 
@@ -538,6 +547,9 @@ describe("Asset Dimensions Plugin", () => {
       await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
       expect(node.properties?.width).toBe(cachedDims.width)
       expect(node.properties?.height).toBe(cachedDims.height)
+      expect(node.properties?.style).toBe(
+        `aspect-ratio: ${cachedDims.width} / ${cachedDims.height};`,
+      )
       expect(fetchSpy).not.toHaveBeenCalled()
     })
 
@@ -549,6 +561,8 @@ describe("Asset Dimensions Plugin", () => {
       await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
       expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
       expect(currentDimensionsCache[cdnImageUrl]).toEqual(mockFetchedImageDims)
       expect(assetDimensionsState.needToSaveCache).toBe(true)
     })
@@ -556,22 +570,28 @@ describe("Asset Dimensions Plugin", () => {
     it("should not fetch for non-CDN images", async () => {
       const nonCdnImageUrl = "https://othersite.com/image.jpg"
       const currentDimensionsCache: AssetDimensionMap = {}
-      const node = h("img", { src: nonCdnImageUrl }) as Element
+      const initialStyle = "text-decoration: underline;"
+      const node = h("img", { src: nonCdnImageUrl, style: initialStyle }) as Element
       const fetchSpy = mockedFetch
 
       await processAsset({ node, src: nonCdnImageUrl }, currentDimensionsCache, mockFile)
       expect(fetchSpy).not.toHaveBeenCalled()
       expect(node.properties?.width).toBeUndefined()
+      expect(node.properties?.style).toBe(initialStyle)
     })
 
     it("should not apply dimensions if fetching fails for CDN image", async () => {
       mockFetchResolve(mockedFetch, null, 500, {}, "Server Error")
       const currentDimensionsCache: AssetDimensionMap = {}
-      const node = h("img", { src: cdnImageUrl }) as Element
+      const initialStyle = "border: 1px solid red;"
+      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
       const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
       await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
+
       expect(node.properties?.width).toBeUndefined()
+      expect(node.properties?.style).toBe(initialStyle)
+
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(`Failed to fetch asset ${cdnImageUrl}: 500 Server Error`),
       )
@@ -587,10 +607,77 @@ describe("Asset Dimensions Plugin", () => {
       await processAsset({ node, src: invalidUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).not.toHaveBeenCalled()
       expect(node.properties?.width).toBeUndefined()
+      expect(node.properties?.style).toBeUndefined() // No style should be added
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Skipping dimension fetching"),
       )
       consoleWarnSpy.mockRestore()
+    })
+
+    it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing no semicolon)", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const initialStyle = "color: blue"
+      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+
+      expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(
+        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight}; ${initialStyle}`,
+      )
+      expect(assetDimensionsState.needToSaveCache).toBe(true)
+    })
+
+    it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing with semicolon)", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const initialStyle = "color: red;"
+      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+
+      expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(
+        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight};${initialStyle}`,
+      )
+      expect(assetDimensionsState.needToSaveCache).toBe(true)
+    })
+
+    it("should prepend aspect-ratio to existing style, handling trailing spaces (existing with semicolon and space)", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const initialStyle = "color: green; " // Note the trailing space
+      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+
+      expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(
+        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight};color: green;`,
+      )
+      expect(assetDimensionsState.needToSaveCache).toBe(true)
+    })
+
+    it("should correctly set aspect-ratio style if existing style is only whitespace", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const initialStyle = "   " // Just whitespace
+      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+
+      expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
+      expect(assetDimensionsState.needToSaveCache).toBe(true)
     })
   })
 
@@ -674,16 +761,16 @@ describe("Asset Dimensions Plugin", () => {
       expect(assetDimensionsState.needToSaveCache).toBe(false)
 
       const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
       setDirectDirtyFlag(true)
       await maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(1)
-      expect(writeFileSpy).toHaveBeenCalledWith(
-        actualAssetDimensionsFilePath,
-        expect.any(String),
-        "utf-8",
-      )
+      const tempFilePath = actualAssetDimensionsFilePath + ".tmp"
+      expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
+      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
 
       readFileMock.mockRestore()
+      renameSpy.mockRestore()
     })
 
     it("should handle empty tree", async () => {
