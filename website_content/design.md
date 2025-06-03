@@ -960,7 +960,7 @@ ots --no-bitcoin verify "files/ABC012.txt.ots"
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 
 Site functionality
-: I have [over 175 `playwright` tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9x175 = 1,602 tests, each of which takes up to 90 seconds.
+: I have [over 175 `playwright` tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9 x 175 = 1,602 tests, each of which takes up to 90 seconds.
 
 : Sadly, `playwright` test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
 

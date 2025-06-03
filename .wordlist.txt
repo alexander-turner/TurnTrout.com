@@ -2628,3 +2628,4 @@ MOV
 ProRes
 misclassification
 precommitment
+CLS
