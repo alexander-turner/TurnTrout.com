@@ -507,7 +507,7 @@ test.describe("pauseMediaElements", () => {
       await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.play().catch(() => {}))
     }
 
-    await pauseMediaElements(page, "video, audio")
+    await pauseMediaElements(page)
 
     for (const el of [video1, audio1, video2]) {
       expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
@@ -519,7 +519,7 @@ test.describe("pauseMediaElements", () => {
     const notMedia = page.locator("#not-media")
     const initialHtml = await notMedia.innerHTML()
 
-    await pauseMediaElements(page, "video, audio")
+    await pauseMediaElements(page)
 
     expect(await notMedia.innerHTML()).toBe(initialHtml)
   })
