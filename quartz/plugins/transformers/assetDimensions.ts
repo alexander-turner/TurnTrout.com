@@ -82,9 +82,6 @@ export async function maybeSaveAssetDimensions(): Promise<void> {
       console.log("Asset dimensions cache saved.")
     } catch (error) {
       console.error("Failed to save asset dimensions cache:", error)
-    } finally {
-      await fs.access(tempFilePath) // fs.access throws if file doesn't exist or no permissions
-      await fs.unlink(tempFilePath)
     }
   }
 }
@@ -248,7 +245,6 @@ export function collectAssetNodes(tree: Root): { node: Element; src: string }[] 
       }
     }
   })
-  console.log(videoAssetsToProcess.length)
 
   return [...imageAssetsToProcess, ...videoAssetsToProcess]
 }
@@ -284,6 +280,14 @@ export async function processAsset(
     node.properties = node.properties || {}
     node.properties.width = dims.width
     node.properties.height = dims.height
+
+    // Add or prepend aspect-ratio to the style attribute
+    const existingStyle = typeof node.properties.style === "string" ? node.properties.style : ""
+    const aspectRatioStyle = `aspect-ratio: ${dims.width} / ${dims.height};`
+    // Ensure a space if existingStyle is not empty and doesn't end with a semicolon or space
+    const separator =
+      existingStyle && !existingStyle.endsWith(";") && !existingStyle.endsWith(" ") ? " " : ""
+    node.properties.style = `${aspectRatioStyle}${separator}${existingStyle}`.trim()
   }
 }
 
