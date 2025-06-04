@@ -31,7 +31,7 @@ jobs:
       - name: Build Quartz
         run: npx quartz build
 
-      - name: Determine Branch Info for Cloudflare & Lighthouse
+      - name: Determine Branch Info for Cloudflare
         id: branch_info
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -43,32 +43,45 @@ jobs:
           fi
           echo "cf_branch_name=${CF_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
-          # Sanitize the branch name for constructing the Lighthouse URL hostname
-          # Converts to lowercase, replaces non-alphanumeric (except hyphen) with hyphen, removes leading/trailing hyphens
-          LH_HOSTNAME_PART=$(echo "$CF_BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-z0-9-]/-/g' -e 's/^-*//' -e 's/-*$//')
-          echo "lh_hostname_part=${LH_HOSTNAME_PART}" >> $GITHUB_OUTPUT
-
       - name: Install Wrangler
         run: npm install -g wrangler
 
       - name: Publish to Cloudflare Pages for Lighthouse testing
+        id: deploy_cf_pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           echo "Deploying to Cloudflare Pages branch: ${{ steps.branch_info.outputs.cf_branch_name }}"
-          npx wrangler pages deploy ./public --project-name=turntrout --branch=${{ steps.branch_info.outputs.cf_branch_name }} --commit-dirty=true
+          DEPLOY_OUTPUT=$(npx wrangler pages deploy ./public --project-name=turntrout --branch=${{ steps.branch_info.outputs.cf_branch_name }} --commit-dirty=true)
+
+          echo "Wrangler deployment output:"
+          echo "${DEPLOY_OUTPUT}"
+
+          DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[a-zA-Z0-9.-]*pages.dev' | tail -n 1)
+
+          if [[ -z "$DEPLOY_URL" ]]; then
+            echo "::error::Could not determine deployment URL from Wrangler output using primary method."
+            DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[a-zA-Z0-9.-]*pages.dev' | tail -n 1)
+            if [[ -z "$DEPLOY_URL" ]]; then
+              echo "::error::Fallback URL extraction also failed. Please check Wrangler output."
+              exit 1
+            fi
+          fi
+
+          echo "Extracted DEPLOY_URL: $DEPLOY_URL"
+          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
       - name: Run Lighthouse CI against Cloudflare deployment
         id: lighthouse
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page
-            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#spoilers
-            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#videos
-            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#admonitions
-            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#footnote-label
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#spoilers
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#videos
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#admonitions
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#footnote-label
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
@@ -78,3 +91,10 @@ jobs:
         with:
           name: lighthouse-reports
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+
+      - name: Kill local server
+        if: always()
+        run: |
+          if [[ -n "$SERVER_PID" ]]; then
+            kill $SERVER_PID || true
+          fi
