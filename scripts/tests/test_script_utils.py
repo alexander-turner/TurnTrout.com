@@ -1028,3 +1028,14 @@ def test_get_classes_attribute_is_none():
     assert tag is not None
     tag["class"] = None  # type: ignore
     assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_invalid_type_attribute():
+    """Test get_classes with an invalid type for the class attribute."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = 123
+    with pytest.raises(ValueError, match="Invalid class attribute value"):
+        script_utils.get_classes(tag)

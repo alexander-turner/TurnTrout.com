@@ -76,8 +76,8 @@ def check_inline_style_variables(
 
     for element in _tags_only(soup.find_all(style=True)):
         style_attr = element.get("style", "")
-        if not isinstance(style_attr, str):  # Handle potential list values
-            style_attr = " ".join(style_attr or [])
+        if not isinstance(style_attr, str):  # pragma: no cover
+            raise ValueError(f"{style_attr=} was a list for some reason")
 
         used_vars = set(_css_variable_usage_pattern.findall(style_attr))
         for var in used_vars - (defined_variables or set()):
@@ -160,8 +160,8 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     invalid_internal_links = []
     links = _tags_only(soup.find_all("a", class_="internal"))
     for link in links:
-        if not isinstance(link, Tag):
-            continue
+        if not isinstance(link, Tag):  # pragma: no cover
+            continue  # just a typeguard
         if (
             not link.has_attr("href")
             or not isinstance(link["href"], str)
@@ -180,8 +180,9 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     links = _tags_only(soup.find_all("a", href=True))
     for link in links:
         href = link["href"]
-        if not isinstance(href, str):
-            continue
+        if not isinstance(href, str):  # pragma: no cover
+            raise ValueError(f"{href=} should be a str")
+
         if href.startswith("#"):
             # Check anchor in current page
             anchor_id = href[1:]
@@ -671,7 +672,7 @@ def check_unprocessed_quotes(soup: BeautifulSoup) -> list[str]:
 
     # Check all text nodes
     for element in soup.find_all(string=True):
-        if not isinstance(element, NavigableString):
+        if not isinstance(element, NavigableString):  # pragma: no cover
             continue
         if element.strip() and not should_skip(element):
             straight_quotes = re.findall(r'["\']', str(element))
@@ -693,7 +694,7 @@ def check_unprocessed_dashes(soup: BeautifulSoup) -> list[str]:
     problematic_dashes: list[str] = []
 
     for element in soup.find_all(string=True):
-        if not isinstance(element, NavigableString):
+        if not isinstance(element, NavigableString):  # pragma: no cover
             continue
         if element.strip() and not should_skip(element):
             # Look for two or more dashes in a row
@@ -812,7 +813,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
     problematic_texts: list[str] = []
 
     for element in soup.find_all(string=True):
-        if not isinstance(element, NavigableString):
+        if not isinstance(element, NavigableString):  # pragma: no cover
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
@@ -838,15 +839,12 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
 
     for favicon in soup.select("img.favicon:not(.no-span)"):
         parent = favicon.parent
-        if parent is None:
-            continue
-        parent_classes = script_utils.get_classes(parent)
+        context = favicon.get("src", "unknown source")
         if (
             not parent
             or parent.name != "span"
-            or "favicon-span" not in parent_classes
+            or "favicon-span" not in script_utils.get_classes(parent)
         ):
-            context = favicon.get("src", "unknown source")
             info = f"Favicon ({context}) is not a direct child of"
             info += " a span.favicon-span."
             if parent:
@@ -885,8 +883,8 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
     malformed_links: list[str] = []
     for link in _tags_only(soup.find_all("a", href=True)):
         href = link.get("href")
-        if not isinstance(href, str):
-            continue
+        if not isinstance(href, str):  # pragma: no cover
+            continue  # a simple typeguard
         if href.startswith("mailto:"):
             email = href.split(":")[1]
             if not validators.email(email):

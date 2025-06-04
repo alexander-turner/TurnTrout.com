@@ -3610,3 +3610,78 @@ def test_check_katex_span_only_paragraph_child(
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_katex_span_only_paragraph_child(soup)
     assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.fixture
+def soup_check_setup(mock_environment):
+    public_dir = mock_environment["public_dir"]
+    html_file_path = public_dir / "test_soup_interaction.html"
+    html_content = "<html><body><p>Original content</p></body></html>"
+    html_file_path.write_text(html_content, encoding="utf-8")
+
+    common_args = {
+        "file_path": html_file_path,
+        "base_dir": public_dir,
+        "md_path": None,
+        "should_check_fonts": False,
+        "defined_css_variables": None,
+    }
+    return common_args, html_file_path
+
+
+def test_check_file_for_issues_raises_error_on_soup_modification(
+    soup_check_setup, monkeypatch
+):
+    """
+    Test that check_file_for_issues raises a RuntimeError if the soup object
+    is modified by one of the check functions.
+    """
+    common_check_args, _ = soup_check_setup
+
+    def malicious_check(soup: BeautifulSoup, *args, **kwargs) -> list[str]:
+        new_tag = soup.new_tag("div")
+        new_tag.string = "Modified content"
+        if soup.body:
+            soup.body.append(new_tag)
+        return ["modification_issue"]
+
+    monkeypatch.setattr(
+        built_site_checks, "check_localhost_links", malicious_check
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="BeautifulSoup object was modified by check_file_for_issues.",
+    ):
+        built_site_checks.check_file_for_issues(**common_check_args)
+
+
+def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
+    soup_check_setup, monkeypatch
+):
+    """
+    Test that check_file_for_issues does NOT raise the specific RuntimeError
+    about soup modification if the soup object is not modified by checks.
+    """
+    common_check_args, html_file_path = soup_check_setup
+    initial_content = html_file_path.read_text(encoding="utf-8")
+
+    def benign_check(soup: BeautifulSoup, *args, **kwargs) -> list[str]:
+        return ["benign_issue"]
+
+    monkeypatch.setattr(
+        built_site_checks, "check_localhost_links", benign_check
+    )
+
+    try:
+        issues = built_site_checks.check_file_for_issues(**common_check_args)
+        assert "benign_issue" in issues.get("localhost_links", [])
+        assert html_file_path.read_text(encoding="utf-8") == initial_content
+
+    except RuntimeError as e:
+        if "BeautifulSoup object was modified" in str(e):
+            pytest.fail(
+                "RuntimeError about soup modification was unexpectedly raised."
+            )
+        else:
+            raise

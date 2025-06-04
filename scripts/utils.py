@@ -274,8 +274,6 @@ def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
 # pylint: disable=missing-function-docstring
 def get_classes(tag: Tag) -> list[str]:
     class_attr_value = tag.get("class")
-    if isinstance(class_attr_value, str):
-        return class_attr_value.split()
     if isinstance(class_attr_value, list):
         return [str(c) for c in class_attr_value]
     if class_attr_value is None:
