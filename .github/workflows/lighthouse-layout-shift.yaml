@@ -1,7 +1,7 @@
 name: Lighthouse Testing
 
 concurrency:
-  group: "lighthouse-testing"
+  group: "lighthouse-testing-${{ github.head_ref || github.ref_name }}"
   cancel-in-progress: true
 
 on:
@@ -13,6 +13,10 @@ on:
 jobs:
   lighthouse-testing:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -27,25 +31,44 @@ jobs:
       - name: Build Quartz
         run: npx quartz build
 
-      - name: Install http-server
-        run: npm install -g http-server
-
-      - name: Start local server
+      - name: Determine Branch Info for Cloudflare & Lighthouse
+        id: branch_info
         run: |
-          http-server ./public -p 8080 &
-          SERVER_PID=$!
-          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, use a consistent name like pr-123
+            CF_BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          else
+            # For direct pushes, use the Git branch name
+            CF_BRANCH_NAME="${{ github.ref_name }}"
+          fi
+          echo "cf_branch_name=${CF_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
-      - name: Run Lighthouse CI
+          # Sanitize the branch name for constructing the Lighthouse URL hostname
+          # Converts to lowercase, replaces non-alphanumeric (except hyphen) with hyphen, removes leading/trailing hyphens
+          LH_HOSTNAME_PART=$(echo "$CF_BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | sed -e 's/[^a-z0-9-]/-/g' -e 's/^-*//' -e 's/-*$//')
+          echo "lh_hostname_part=${LH_HOSTNAME_PART}" >> $GITHUB_OUTPUT
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Publish to Cloudflare Pages for Lighthouse testing
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Deploying to Cloudflare Pages branch: ${{ steps.branch_info.outputs.cf_branch_name }}"
+          npx wrangler pages deploy ./public --project-name=turntrout --branch=${{ steps.branch_info.outputs.cf_branch_name }} --commit-dirty=true
+
+      - name: Run Lighthouse CI against Cloudflare deployment
         id: lighthouse
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            http://localhost:8080/test-page
-            http://localhost:8080/test-page#spoilers
-            http://localhost:8080/test-page#videos
-            http://localhost:8080/test-page#admonitions
-            http://localhost:8080/test-page#footnote-label
+            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page
+            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#spoilers
+            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#videos
+            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#admonitions
+            https://${{ steps.branch_info.outputs.lh_hostname_part }}.turntrout.pages.dev/test-page#footnote-label
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
@@ -55,10 +78,3 @@ jobs:
         with:
           name: lighthouse-reports
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
-
-      - name: Kill local server
-        if: always()
-        run: |
-          if [[ -n "$SERVER_PID" ]]; then
-            kill $SERVER_PID || true
-          fi
