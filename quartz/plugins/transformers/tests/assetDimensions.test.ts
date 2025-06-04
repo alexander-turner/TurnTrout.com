@@ -139,7 +139,7 @@ describe("Asset Dimensions Plugin", () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       const cache = await maybeLoadDimensionCache()
       expect(cache).toEqual({})
@@ -155,7 +155,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should return an empty object if cache file is malformed", async () => {
       const readFileSpy = jest.spyOn(fs, "readFile").mockResolvedValue("invalid json" as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       const cache = await maybeLoadDimensionCache()
       expect(cache).toEqual({})
@@ -173,7 +173,7 @@ describe("Asset Dimensions Plugin", () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(new Error("Permission denied") as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       const cache = await maybeLoadDimensionCache()
       expect(cache).toEqual({})
@@ -232,7 +232,7 @@ describe("Asset Dimensions Plugin", () => {
         .spyOn(fs, "writeFile")
         .mockRejectedValue(new Error("Permission denied") as never)
       const renameSpy = jest.spyOn(fs, "rename")
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => { })
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
       await maybeSaveAssetDimensions()
 
@@ -309,7 +309,7 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "",
         error: Object.assign(new Error("Command not found"), { code: "ENOENT" }),
       })
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
@@ -328,7 +328,7 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "FFprobe execution error",
         error: null,
       })
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => { })
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
@@ -347,7 +347,7 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "",
         error: null,
       })
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
@@ -362,7 +362,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should return null if fetch fails (e.g., 404)", async () => {
       mockFetchResolve(mockedFetch, "", 404, {}, "Not Found")
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
       const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
       expect(dimensions).toBeNull()
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -377,7 +377,7 @@ describe("Asset Dimensions Plugin", () => {
       sizeOfMock.mockImplementation(() => {
         throw new Error("parsing error")
       })
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => { })
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
       const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
       expect(dimensions).toBeNull()
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -390,7 +390,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should return null if fetch results in network error", async () => {
       mockFetchNetworkError(mockedFetch, new Error("Network failure"))
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => { })
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
       const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
       expect(dimensions).toBeNull()
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -585,7 +585,7 @@ describe("Asset Dimensions Plugin", () => {
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "border: 1px solid red;"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
       await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
 
@@ -602,7 +602,7 @@ describe("Asset Dimensions Plugin", () => {
       const invalidUrl = "not-a-valid-url"
       const currentDimensionsCache: AssetDimensionMap = {}
       const node = h("img", { src: invalidUrl }) as Element
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => { })
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
       await processAsset({ node, src: invalidUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).not.toHaveBeenCalled()
