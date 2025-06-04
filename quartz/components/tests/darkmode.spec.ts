@@ -34,8 +34,8 @@ class DarkModeHelper {
     const actualTheme =
       expectedTheme === "auto"
         ? await this.page.evaluate(() =>
-          window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-        )
+            window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+          )
         : expectedTheme
 
     await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme)
@@ -205,7 +205,7 @@ for (const prefix of ["./shard-theory", "./about", "./design#"]) {
 
       // Navigate to a different internal page
       // NOTE I think it should be fine to not click
-      await page.goto(`http://localhost:8080/test-page`)
+      await page.goto("http://localhost:8080/test-page")
       await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)
     })
