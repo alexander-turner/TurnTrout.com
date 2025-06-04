@@ -1,8 +1,8 @@
 name: Playwright Tests
 
 concurrency:
-  group: "playwright-tests"
-  cancel-in-progress: true
+  group: playwright-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 on:
   push:
