@@ -3,8 +3,7 @@ permalink: understanding-and-controlling-a-maze-solving-policy-network
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
+lw-page-url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
 lw-is-question: "false"
 lw-posted-at: 2023-03-11T18:59:56.223000Z
 lw-last-modification: 2024-09-04T23:53:40.034000Z
@@ -29,6 +28,7 @@ tags:
   - activation-engineering
 aliases:
   - understanding-and-controlling-a-maze-solving-policy-network
+  - cheese-vector
 lw-sequence-title: Interpreting a Maze-Solving Network
 lw-sequence-image-grid: sequencesgrid/fu4vhd1ud5y4niijbicd
 lw-sequence-image-banner: sequences/hvtmmyas8pxbcm28wpvv
@@ -36,17 +36,14 @@ sequence-link: posts#interpreting-a-maze-solving-network
 prev-post-slug: predictions-for-shard-theory-mechanistic-interpretability
 prev-post-title: Predictions for shard theory mechanistic interpretability results
 next-post-slug: top-right-steering-vector
-next-post-title: "Maze-solving agents: Add a top-right vector, make the agent go to
-  the top-right"
+next-post-title: "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2023-03-11 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
+original_url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2hm7tfnx.png
-description: A dive into the surprising behavior of a maze-solving AI agent and how
-  its goals can be manipulated.
+description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
 date_updated: 2025-04-12 09:51:51.137842
 ---
 
