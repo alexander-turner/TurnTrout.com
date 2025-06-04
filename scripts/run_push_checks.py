@@ -494,6 +494,7 @@ def get_check_steps(
                 "-n",
                 "auto",
                 "--cov=scripts",
+                "--cov-report=html",
                 "--cov-fail-under=100",
             ],
         ),
