@@ -154,7 +154,6 @@ export async function getVideoDimensionsFfprobe(
 export async function fetchAndParseAssetDimensions(
   assetUrl: string,
 ): Promise<AssetDimensions | null> {
-  console.log(`Fetching dimensions for: ${assetUrl}`)
   try {
     const response = await fetch(assetUrl)
     if (!response.ok) {
@@ -168,7 +167,6 @@ export async function fetchAndParseAssetDimensions(
     const contentType = response.headers.get("Content-Type")
 
     if (contentType?.startsWith("video/")) {
-      console.log(`Processing as video: ${assetUrl}`)
       // For videos, use ffprobe (which is mocked in tests)
       const videoDimensions = await getVideoDimensionsFfprobe(assetBuffer)
       if (videoDimensions) {
@@ -182,7 +180,6 @@ export async function fetchAndParseAssetDimensions(
       }
     } else {
       // For images (and other types as a fallback), use image-size
-      console.log(`Processing as image/other: ${assetUrl}`)
       const dimensions = sizeOf(assetBuffer)
       if (
         dimensions &&
@@ -294,6 +291,9 @@ export async function processAsset(
 export const addAssetDimensionsFromUrl = () => {
   return {
     name: "AddAssetDimensionsFromUrl",
+    async buildEnd(): Promise<void> {
+      await maybeSaveAssetDimensions()
+    },
     htmlPlugins() {
       return [
         () => {
@@ -304,8 +304,6 @@ export const addAssetDimensionsFromUrl = () => {
             for (const assetInfo of assetsToProcess) {
               await processAsset(assetInfo, currentDimensionsCache, file)
             }
-
-            await maybeSaveAssetDimensions()
           }
         },
       ]
