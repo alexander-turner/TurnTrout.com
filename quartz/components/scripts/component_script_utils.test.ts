@@ -9,19 +9,42 @@ import {
 } from "./component_script_utils"
 
 const frameTime = 16
+// Store a map of fake RAF IDs to real timer IDs
+let rafMap: Map<number, NodeJS.Timeout>
+let nextRafId: number
+
 beforeEach(() => {
   jest.useFakeTimers()
-  // Mock requestAnimationFrame and performance.now
+  rafMap = new Map()
+  nextRafId = 1
+
   global.requestAnimationFrame = jest.fn((cb: FrameRequestCallback) => {
-    setTimeout(() => cb(performance.now()), frameTime)
-    return Math.random()
+    const currentRafId = nextRafId++
+    const timeoutId = setTimeout(() => {
+      rafMap.delete(currentRafId)
+      cb(performance.now())
+    }, frameTime)
+    rafMap.set(currentRafId, timeoutId)
+    return currentRafId
   })
+
+  global.cancelAnimationFrame = jest.fn((id: number) => {
+    const timeoutId = rafMap.get(id)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      rafMap.delete(id)
+    }
+  })
+
   global.performance.now = jest.fn(() => Date.now())
 })
 
 afterEach(() => {
   jest.useRealTimers()
   jest.clearAllMocks()
+  if (rafMap) {
+    rafMap.clear()
+  }
 })
 
 describe("throttle", () => {
@@ -40,9 +63,9 @@ describe("throttle", () => {
     const func = jest.fn()
     const throttled = throttle(func, 100)
 
-    throttled() // First call
+    throttled()
     jest.advanceTimersByTime(150)
-    throttled() // Second call after delay
+    throttled()
 
     expect(func).toHaveBeenCalledTimes(2)
   })
