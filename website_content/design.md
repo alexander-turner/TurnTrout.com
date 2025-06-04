@@ -849,7 +849,7 @@ Figure: `playwright` and `argos-ci` can tell you "hey, did you mean for your pic
 However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
 
 > [!money] Cost of running the `playwright` tests on GitHub Actions
-> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. [Each run's `playwright` tests take 310 minutes](https://github.com/alexander-turner/TurnTrout.com/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&range=1746057600000-1746057600000) of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
+> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's `playwright` tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
 >
 > After using up my free minutes, I'm spending a bit over $2.48 every time I push to `main`.
 
