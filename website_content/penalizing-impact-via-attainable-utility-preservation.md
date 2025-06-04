@@ -35,8 +35,9 @@ original_url:
 skip_import: true
 description: A new AI safety paper formalizing "attainable utility preservation" to
   penalize negative AI impacts, with experimental results.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

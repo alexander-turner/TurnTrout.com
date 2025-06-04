@@ -3,7 +3,8 @@ permalink: robustness-of-positive-values
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+lw-page-url: 
+  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 lw-is-question: 'false'
 lw-posted-at: 2022-12-17T21:43:31.627000Z
 lw-last-modification: 2023-03-26T00:29:07.381000Z
@@ -29,12 +30,14 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-12-17 00:00:00
-original_url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+original_url: 
+  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 skip_import: true
 description: Negative values ("don't kill") may be fragile. Positive values ("protect
   people") might be more robust and lasting within AI agents.
-date_updated: 2025-03-01 17:42:48.379662
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

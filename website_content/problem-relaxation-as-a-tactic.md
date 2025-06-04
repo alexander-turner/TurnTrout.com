@@ -30,8 +30,8 @@ lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: functional-analysis-textbook-review
-prev-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional\
-  \ Analysis'"
+prev-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional
+  Analysis'"
 next-post-slug: insights-from-euclids-elements
 next-post-title: Insights from Euclid's 'Elements'
 lw-reward-post-warning: 'false'
@@ -41,8 +41,9 @@ original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxati
 skip_import: true
 description: Relax difficult problems by simplifying them while retaining their core
   challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

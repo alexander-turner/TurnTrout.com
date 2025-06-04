@@ -3,7 +3,8 @@ permalink: internalizing-internal-double-crux
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
+lw-page-url: 
+  https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
 lw-is-question: "false"
 lw-posted-at: 2018-04-30T18:23:14.653000Z
 lw-last-modification: 2020-04-11T17:25:47.614000Z
@@ -37,12 +38,14 @@ next-post-title: "Confounded No Longer: Insights from 'All of Statistics'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2018-04-30 00:00:00
-original_url: https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
+original_url: 
+  https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
 skip_import: true
-description: "Overcoming self-doubt: How emotionally-charged internal dialogue helped\
-  \ resolve long-held anxieties and limiting beliefs."
-date_updated: 2024-11-22 20:04:30.137574
+description: "Overcoming self-doubt: How emotionally-charged internal dialogue helped
+  resolve long-held anxieties and limiting beliefs."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

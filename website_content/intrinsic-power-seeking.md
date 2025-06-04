@@ -2,15 +2,16 @@
 title: "Intrinsic power-seeking: AI might seek power for power's sake"
 permalink: dangers-of-intrinsic-power-seeking
 publish: true
-description: "Seeking power helps reach lots of goals, so that circuitry will be reinforced\
-  \ a lot. Possible result: the AI reflexively tries to seek power."
+description: "Seeking power helps reach lots of goals, so that circuitry will be reinforced
+  a lot. Possible result: the AI reflexively tries to seek power."
 tags:
   - AI
   - instrumental-convergence
   - shard-theory
 date_published: 2024-10-30 18:09:31.133945
-date_updated: 2025-03-05 20:43:54.692493
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

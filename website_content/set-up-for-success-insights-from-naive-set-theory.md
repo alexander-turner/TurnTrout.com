@@ -3,7 +3,8 @@ permalink: set-theory-textbook-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/WPtdQ3JnoRSci87Dz/set-up-for-success-insights-from-naive-set-theory
+lw-page-url: 
+  https://www.lesswrong.com/posts/WPtdQ3JnoRSci87Dz/set-up-for-success-insights-from-naive-set-theory
 lw-is-question: 'false'
 lw-posted-at: 2018-02-28T02:01:43.790000Z
 lw-last-modification: None
@@ -33,12 +34,14 @@ next-post-title: Lightness and Unease
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2018-02-28 00:00:00
-original_url: https://www.lesswrong.com/posts/WPtdQ3JnoRSci87Dz/set-up-for-success-insights-from-naive-set-theory
+original_url: 
+  https://www.lesswrong.com/posts/WPtdQ3JnoRSci87Dz/set-up-for-success-insights-from-naive-set-theory
 skip_import: true
 description: Functions are static sets; families are functions; Zorn's Lemma is hard.
   I reflect on my set theory learnings and effective self-study strategies.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

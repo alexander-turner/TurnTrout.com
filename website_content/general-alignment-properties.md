@@ -38,8 +38,9 @@ original_url: https://www.lesswrong.com/posts/FMdGt9S9irgxeD9Xz/general-alignmen
 skip_import: 'true'
 description: Comparing how AIXI and humans acquire values reveals important differences
   in how these agents interact with the world.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

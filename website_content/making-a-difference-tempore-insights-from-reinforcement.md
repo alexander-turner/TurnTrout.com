@@ -3,7 +3,8 @@ permalink: RL-textbook-review
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
+lw-page-url: 
+  https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
 lw-is-question: "false"
 lw-posted-at: 2018-07-05T00:34:59.249000Z
 lw-last-modification: None
@@ -36,13 +37,15 @@ next-post-title: "Turning Up the Heat: Insights from Tao's 'Analysis II'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2018-07-05 00:00:00
-original_url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
+original_url: 
+  https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
 no_dropcap: "true"
 skip_import: true
-description: "A deep dive into reinforcement learning, covering algorithms, exploration\
-  \ vs. exploitation, and the importance of safe AI development."
-date_updated: 2025-03-01 17:42:48.379662
+description: "A deep dive into reinforcement learning, covering algorithms, exploration
+  vs. exploitation, and the importance of safe AI development."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

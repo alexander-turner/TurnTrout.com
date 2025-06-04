@@ -41,8 +41,9 @@ original_url:
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural,
   and extremely hard. Better alignment strategies exist.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

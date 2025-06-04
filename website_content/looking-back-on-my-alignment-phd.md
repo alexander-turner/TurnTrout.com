@@ -3,7 +3,8 @@ permalink: alignment-phd
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/2GxhAyn9aHqukap2S/looking-back-on-my-alignment-phd
+lw-page-url: 
+  https://www.lesswrong.com/posts/2GxhAyn9aHqukap2S/looking-back-on-my-alignment-phd
 lw-is-question: "false"
 lw-posted-at: 2022-07-01T03:19:59.497000Z
 lw-last-modification: 2022-07-20T02:22:00.482000Z
@@ -30,7 +31,8 @@ aliases:
   - phd
   - PhD
   - PHD
-lw-podcast-link: https://www.buzzsprout.com//2037297/11168051-looking-back-on-my-alignment-phd-by-turntrout.js?container_id=buzzsprout-player-11168051&amp;player=small
+lw-podcast-link: 
+  https://www.buzzsprout.com//2037297/11168051-looking-back-on-my-alignment-phd-by-turntrout.js?container_id=buzzsprout-player-11168051&amp;player=small
 lw-sequence-title: Becoming Stronger
 lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
@@ -39,16 +41,19 @@ prev-post-slug: digital-minimalism
 prev-post-title: Do a cost-benefit analysis of your technology usage
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-original_url: https://www.lesswrong.com/posts/2GxhAyn9aHqukap2S/looking-back-on-my-alignment-phd
+original_url: 
+  https://www.lesswrong.com/posts/2GxhAyn9aHqukap2S/looking-back-on-my-alignment-phd
 date_published: 2022-06-30 00:00:00
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.png
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.png
 description: The mistakes made, the lessons learned, and the drive to solve a hilariously
   neglected super-problem.
-date_updated: 2025-03-01 17:42:48.379662
+date_updated: 2025-06-03 22:57:00.423836
 next-post-slug: insights-from-physiology
 next-post-title: Insights from "The Manga Guide to Physiology"
 ---
+
 
 
 

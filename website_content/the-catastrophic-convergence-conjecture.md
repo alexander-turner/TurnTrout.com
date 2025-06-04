@@ -3,7 +3,8 @@ permalink: the-catastrophic-convergence-conjecture
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
+lw-page-url: 
+  https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
 lw-is-question: "false"
 lw-posted-at: 2020-02-14T21:16:59.281000Z
 lw-last-modification: 2021-02-07T23:27:46.255000Z
@@ -37,13 +38,15 @@ next-post-title: "Attainable Utility Preservation: Concepts"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
 date_published: 2020-02-14 00:00:00
-original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
+original_url: 
+  https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.png
-description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking\
-  \ power."
-date_updated: 2025-01-30 09:30:36.233182
+description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking
+  power."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

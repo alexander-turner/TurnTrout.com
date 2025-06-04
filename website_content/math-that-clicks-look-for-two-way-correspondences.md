@@ -3,7 +3,8 @@ permalink: on-good-formal-definitions
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
+lw-page-url: 
+  https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
 lw-is-question: 'false'
 lw-posted-at: 2020-10-02T01:22:18.177000Z
 lw-last-modification: 2020-10-02T17:19:26.385000Z
@@ -28,12 +29,14 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2020-10-02 00:00:00
-original_url: https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
+original_url: 
+  https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
 skip_import: true
 description: 'Good formalizations are two-way correspondences: the math suggests the
   concept it formalizes.'
-date_updated: 2024-11-22 20:04:30.137574
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

@@ -19,8 +19,9 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
 date_published: 2025-01-23 20:50:38.343137
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

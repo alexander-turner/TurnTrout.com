@@ -3,7 +3,8 @@ permalink: high-dimensional-subspace-of-code-steering-vectors
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
+lw-page-url: 
+  https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/07/14/melbo-ortho.html
 lw-is-question: 'false'
 lw-posted-at: 2024-07-15T19:06:17.636000Z
@@ -31,12 +32,14 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2024-07-15 00:00:00
-original_url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
+original_url: 
+  https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 skip_import: true
 description: 800+ orthogonal vectors steer an AI model to write code. Redundant features
   or something weirder?
-date_updated: 2025-03-05 20:43:54.692493
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

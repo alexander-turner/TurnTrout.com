@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural
   numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

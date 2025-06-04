@@ -43,8 +43,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/KPv2beS.png
 description: "Exploring the ideas behind Attainable Utility Preservation: penalize
   the AI for gaining power to bound its impact."
-date_updated: 2024-12-05 16:17:06.041179
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

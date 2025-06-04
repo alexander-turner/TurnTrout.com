@@ -3,7 +3,8 @@ permalink: MDPs-are-not-subjective
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
+lw-page-url: 
+  https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
 lw-is-question: "false"
 lw-posted-at: 2021-05-26T00:14:00.699000Z
 lw-last-modification: 2021-06-09T12:29:08.871000Z
@@ -17,8 +18,8 @@ lw-vote-count: 8
 af-base-score: 15
 af-num-comments-on-upload: 29
 publish: true
-title: "MDP models are determined by the agent architecture and the environmental\
-  \ dynamics"
+title: "MDP models are determined by the agent architecture and the environmental
+  dynamics"
 lw-latest-edit: 2021-06-02T18:31:04.668000Z
 lw-is-linkpost: "false"
 tags:
@@ -37,12 +38,14 @@ next-post-title: "Environmental Structure Can Cause Instrumental Convergence"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2021-05-26 00:00:00
-original_url: https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
+original_url: 
+  https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
 skip_import: true
-description: "Agent architecture and environmental dynamics determine Markov Decision\
-  \ Processes. Power-seeking tendencies are not subjective."
-date_updated: 2024-11-22 20:04:30.137574
+description: "Agent architecture and environmental dynamics determine Markov Decision
+  Processes. Power-seeking tendencies are not subjective."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

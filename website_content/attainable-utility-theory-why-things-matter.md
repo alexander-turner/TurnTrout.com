@@ -3,7 +3,8 @@ permalink: attainable-utility-theory
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
+lw-page-url: 
+  https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
 lw-is-question: 'false'
 lw-posted-at: 2019-09-27T16:48:22.015000Z
 lw-last-modification: None
@@ -36,13 +37,15 @@ next-post-title: World State is the Wrong Abstraction for Impact
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2019-09-27 00:00:00
-original_url: https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
+original_url: 
+  https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hqEX2r1.png
-description: "Description: Impact isn't about changing the world; it's about changing\
-  \ our ability to achieve goals within it."
-date_updated: 2024-12-12 22:05:58.602985
+description: "Description: Impact isn't about changing the world; it's about changing
+  our ability to achieve goals within it."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

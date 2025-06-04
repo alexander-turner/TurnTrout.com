@@ -3,7 +3,8 @@ permalink: insights-from-modern-principles-of-economics
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
+lw-page-url: 
+  https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
 lw-is-question: 'false'
 lw-posted-at: 2021-09-22T05:19:55.747000Z
 lw-last-modification: 2023-08-28T21:29:30.592000Z
@@ -35,13 +36,15 @@ next-post-title: Do a cost-benefit analysis of your technology usage
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-09-22 00:00:00
-original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
+original_url: 
+  https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/htfmtdtntpqpmr2mlqxl.png
 description: Textbook insights on economic policy, price gouging, and the surprising
   efficiency of competitive markets.
-date_updated: 2025-03-22 12:22:59.421452
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

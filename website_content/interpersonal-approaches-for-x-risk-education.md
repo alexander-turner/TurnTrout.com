@@ -3,7 +3,8 @@ permalink: interpersonal-approaches-for-x-risk-education
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
+lw-page-url: 
+  https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
 lw-is-question: "true"
 lw-posted-at: 2018-01-24T00:47:44.183000Z
 lw-last-modification: None
@@ -27,12 +28,14 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2018-01-24 00:00:00
-original_url: https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
+original_url: 
+  https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
 skip_import: true
 description: Effective ways to raise awareness of AI risk among researchers, weighing
   persuasion vs. education and status vs. receptiveness.
-date_updated: 2024-11-22 20:04:30.137574
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

@@ -3,7 +3,8 @@ permalink: impact-penalty-strength
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
+lw-page-url: 
+  https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
 lw-is-question: 'false'
 lw-posted-at: 2020-02-25T02:08:52.630000Z
 lw-last-modification: 2020-05-20T13:03:50.901000Z
@@ -36,13 +37,15 @@ next-post-title: 'Attainable Utility Preservation: Scaling to Superhuman'
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2020-02-25 00:00:00
-original_url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
+original_url: 
+  https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.png
 description: How to choose an AI's impact limit to get the best results without triggering
   a catastrophe.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

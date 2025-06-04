@@ -3,7 +3,8 @@ permalink: mechanistically-eliciting-latent-behaviors
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+lw-page-url: 
+  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 lw-is-question: "false"
 lw-posted-at: 2024-04-30T18:51:13.493000Z
 lw-last-modification: 2024-05-23T20:29:10.455000Z
@@ -33,13 +34,15 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2024-04-30 00:00:00
-original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+original_url: 
+  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.png
 description: Unsupervised perturbations to language models reveal hidden capabilities,
   including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2025-03-22 12:22:59.421452
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

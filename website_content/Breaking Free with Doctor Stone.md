@@ -16,8 +16,9 @@ aliases:
   - senku
   - breaking-free-doctor-stone
 date_published: 2024-12-17 19:04:42.697213
-date_updated: 2025-03-05 20:43:54.692493
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

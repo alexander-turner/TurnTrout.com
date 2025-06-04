@@ -23,8 +23,9 @@ lw-is-shortform: "true"
 date_published: 2024-01-19 20:10:07.919814
 original_url: 
   https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

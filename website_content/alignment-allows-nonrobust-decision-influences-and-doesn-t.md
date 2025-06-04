@@ -3,7 +3,8 @@ permalink: alignment-without-total-robustness
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+lw-page-url: 
+  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 lw-is-question: 'false'
 lw-posted-at: 2022-11-29T06:23:00.394000Z
 lw-last-modification: 2023-02-15T10:24:57.232000Z
@@ -37,12 +38,14 @@ next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two E
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-11-29 00:00:00
-original_url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+original_url: 
+  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 skip_import: true
 description: Values steer optimization, they are not optimized against. Values don't
   have to be robustly "correct", because they are not the thing being optimized.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

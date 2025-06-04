@@ -29,10 +29,11 @@ use-full-width-images: 'false'
 date_published: 2020-07-23 00:00:00
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
-description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite\
-  \ interactions with this intriguing, flawed network."
-date_updated: 2025-03-05 20:43:54.692493
+description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite
+  interactions with this intriguing, flawed network."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

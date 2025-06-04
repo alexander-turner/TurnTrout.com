@@ -3,7 +3,8 @@ permalink: to-what-extent-is-gpt3-capable-of-reasoning
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
+lw-page-url: 
+  https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
 lw-is-question: 'true'
 lw-posted-at: 2020-07-20T17:10:50.265000Z
 lw-last-modification: 2023-03-18T20:28:27.249000Z
@@ -27,12 +28,14 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2020-07-20 00:00:00
-original_url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
+original_url: 
+  https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
 skip_import: true
 description: Examining the reasoning capabilities of GPT-3 through a series of hypothetical
   questions and scenarios.
-date_updated: 2025-03-05 20:43:54.692493
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

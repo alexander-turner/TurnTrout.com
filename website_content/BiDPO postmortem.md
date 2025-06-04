@@ -6,10 +6,11 @@ no_dropcap: "false"
 tags:
   - AI
   - activation-engineering
-description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
+description: We tried boosting Gemini benchmarks by optimizing steering vectors. It
+  didn't work. We share our takeaways.
 authors: Alex Turner, Mark Kurzeja, Dave Orr, and David Elson
 hideSubscriptionLinks: false
-card_image: 
+card_image:
 aliases:
   - bidpo
   - steering-postmortem
@@ -18,10 +19,12 @@ aliases:
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
 date_published: 2025-01-30 09:30:36.233182
-date_updated: 2025-03-22 12:22:59.421452
+date_updated: 2025-06-03 22:57:00.423836
 other_urls:
-  - https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
+  - 
+  https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
 ---
+
 
 
 

@@ -31,10 +31,11 @@ date_published: 2019-11-19 00:00:00
 original_url: https://www.lesswrong.com/posts/e3Db4w52hz3NSyYqt/how-i-do-research
 skip_import: true
 hideSubscriptionLinks: false
-description: "The author's unorthodox approach to AI safety research: Ignore existing\
-  \ work, simplify relentlessly, and break your own solutions."
-date_updated: 2025-01-30 09:30:36.233182
+description: "The author's unorthodox approach to AI safety research: Ignore existing
+  work, simplify relentlessly, and break your own solutions."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

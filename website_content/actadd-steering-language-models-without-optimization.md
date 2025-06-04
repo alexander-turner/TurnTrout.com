@@ -3,7 +3,8 @@ permalink: gpt2-steering-paper-announcement
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
+lw-page-url: 
+  https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
 lw-linkpost-url: https://arxiv.org/abs/2308.10248
 lw-is-question: "false"
 lw-posted-at: 2023-09-06T17:21:56.214000Z
@@ -30,11 +31,14 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2023-09-06 00:00:00
-original_url: https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
+original_url: 
+  https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
 skip_import: true
-description: "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities."
-date_updated: 2025-03-22 12:22:59.421452
+description: "Activation additions: steering language models by adding a bias to the
+  forward pass. Surprisingly broad control, small impact on off-target capabilities."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
  
 

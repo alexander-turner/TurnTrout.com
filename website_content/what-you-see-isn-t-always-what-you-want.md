@@ -3,7 +3,8 @@ permalink: against-rewards-over-observations
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
+lw-page-url: 
+  https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
 lw-is-question: "false"
 lw-posted-at: 2019-09-13T04:17:38.312000Z
 lw-last-modification: None
@@ -28,13 +29,15 @@ aliases:
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
 date_published: 2019-09-13 00:00:00
-original_url: https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
+original_url: 
+  https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
 skip_import: true
 description: Markovian reward functions are underdefined. Aligning AI isn't about
   designing the "right" reward, but designing rewards compatible with how the world
   is.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

@@ -33,8 +33,9 @@ original_url:
 skip_import: true
 description: "A proposal for a government regulation of AI: Developers must be able
   to accurately predict the model's output. "
-date_updated: 2025-04-13 13:06:04.177811
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

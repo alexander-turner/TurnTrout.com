@@ -37,8 +37,9 @@ original_url:
 skip_import: true
 description: Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B.
   Time to stop arguing and start experimenting.
-date_updated: 2025-04-13 13:06:04.177811
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

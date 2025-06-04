@@ -3,7 +3,8 @@ permalink: formalizing-multi-agent-power
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+lw-page-url: 
+  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 lw-is-question: 'false'
 lw-posted-at: 2021-03-22T02:41:44.763000Z
 lw-last-modification: 2021-06-06T14:23:10.706000Z
@@ -37,12 +38,14 @@ next-post-title: MDP Models Are Determined by the Agent Architecture and the Env
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-03-22 00:00:00
-original_url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+original_url: 
+  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 skip_import: true
 description: Formalizing "power" in multi-agent games, showing that increased agent
   capabilities can lead to power scarcity and increased competition for resources.
-date_updated: 2025-03-01 17:42:48.379662
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

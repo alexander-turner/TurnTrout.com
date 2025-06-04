@@ -3,7 +3,8 @@ permalink: avoiding-side-effects-in-complex-environments
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
+lw-page-url: 
+  https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
 lw-linkpost-url: https://avoiding-side-effects.github.io/
 lw-is-question: "false"
 lw-posted-at: 2020-12-12T00:34:54.126000Z
@@ -33,12 +34,14 @@ aliases:
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
 date_published: 2020-12-12 00:00:00
-original_url: https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
+original_url: 
+  https://www.lesswrong.com/posts/5kurn5W62C5CpSWq6/avoiding-side-effects-in-complex-environments
 skip_import: true
 description: AI agents trained with Attainable Utility Preservation avoid most side
   effects in Conway's Game of Life without explicit instructions.
-date_updated: 2025-03-22 12:22:59.421452
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

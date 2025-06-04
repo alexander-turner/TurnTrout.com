@@ -3,7 +3,8 @@ permalink: shard-theory
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
+lw-page-url: 
+  https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
 lw-is-question: "false"
 lw-posted-at: 2022-09-04T04:28:11.752000Z
 lw-last-modification: 2024-03-02T01:18:30.814000Z
@@ -42,13 +43,15 @@ next-post-title: Understanding and avoiding value drift
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-09-04 00:00:00
-original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
+original_url: 
+  https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.png
 description: Human values are shaped by simple reward circuitry. Shard theory explains
   how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2025-03-01 17:42:48.379662
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

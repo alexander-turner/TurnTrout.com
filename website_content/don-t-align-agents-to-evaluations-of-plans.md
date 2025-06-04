@@ -41,8 +41,9 @@ original_url:
 description: "A subtle point: aligning an AI to evaluations of your goals won't give
   you what you want. Don't do it."
 skip_import: true
-date_updated: 2025-04-13 13:06:04.177811
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

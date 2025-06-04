@@ -3,7 +3,8 @@ permalink: human-values-and-biases-are-inaccessible-to-the-genome
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
+lw-page-url: 
+  https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
 lw-is-question: "false"
 lw-posted-at: 2022-07-07T17:29:56.190000Z
 lw-last-modification: 2023-12-26T18:42:00.324000Z
@@ -37,12 +38,14 @@ next-post-title: General alignment properties
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-07-07 00:00:00
-original_url: https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
+original_url: 
+  https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
 skip_import: "true"
 description: The genome can't directly hardwire complex human values like "fear of
   death." Those values probably arise from simpler, hardcoded learning mechanisms.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

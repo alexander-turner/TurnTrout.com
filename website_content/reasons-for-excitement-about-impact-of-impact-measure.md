@@ -3,7 +3,8 @@ permalink: excitement-about-impact-measures
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+lw-page-url: 
+  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 lw-is-question: 'false'
 lw-posted-at: 2020-02-27T21:42:18.903000Z
 lw-last-modification: 2020-09-16T18:14:18.398000Z
@@ -36,12 +37,14 @@ next-post-title: Conclusion to 'Reframing Impact'
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2020-02-27 00:00:00
-original_url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+original_url: 
+  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 skip_import: true
 description: Impact measure research deconfuses power-seeking incentives in AI, aiding
   alignment efforts.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

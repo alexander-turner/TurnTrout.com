@@ -46,8 +46,9 @@ card_image:
   https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
 description: The structure of environments, not just reward functions, contributes
   to power-seeking in AI agents.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

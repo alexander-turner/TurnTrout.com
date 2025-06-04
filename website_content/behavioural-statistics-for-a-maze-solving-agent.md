@@ -3,7 +3,8 @@ permalink: statistics-of-a-maze-solving-network
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
+lw-page-url: 
+  https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
 lw-is-question: 'false'
 lw-posted-at: 2023-04-20T22:26:08.810000Z
 lw-last-modification: 2023-06-07T01:24:39.295000Z
@@ -35,13 +36,16 @@ prev-post-title: 'Maze-Solving Agents: Add a Top-Right Vector, Make the Agent Go
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2023-04-20 00:00:00
-original_url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
+original_url: 
+  https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.png
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.png
 description: Closeness to cheese and the top-right corner both influence a maze-solving
   AI, suggesting a "shard-like" decision-making process.
-date_updated: 2025-03-22 12:22:59.421452
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

@@ -3,7 +3,8 @@ permalink: managerial-decision-making-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/MjZSdPEd94sp48EFC/judgment-day-insights-from-judgment-in-managerial-decision
+lw-page-url: 
+  https://www.lesswrong.com/posts/MjZSdPEd94sp48EFC/judgment-day-insights-from-judgment-in-managerial-decision
 lw-is-question: 'false'
 lw-posted-at: 2019-12-29T18:03:28.352000Z
 lw-last-modification: 2019-12-30T00:31:35.888000Z
@@ -36,12 +37,14 @@ next-post-title: "Continuous Improvement: Insights from 'Topology'"
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2019-12-29 00:00:00
-original_url: https://www.lesswrong.com/posts/MjZSdPEd94sp48EFC/judgment-day-insights-from-judgment-in-managerial-decision
+original_url: 
+  https://www.lesswrong.com/posts/MjZSdPEd94sp48EFC/judgment-day-insights-from-judgment-in-managerial-decision
 skip_import: true
 description: Insights from a management textbook on how to improve decision-making,
   negotiate effectively, and overcome cognitive biases.
-date_updated: 2025-01-30 09:30:36.233182
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

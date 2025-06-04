@@ -3,7 +3,8 @@ permalink: second-analysis-textbook-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
+lw-page-url: 
+  https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
 lw-is-question: 'false'
 lw-posted-at: 2018-08-24T17:54:54.344000Z
 lw-last-modification: None
@@ -29,19 +30,21 @@ lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: RL-textbook-review
-prev-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning:\
-  \ An Introduction'"
+prev-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning:
+  An Introduction'"
 next-post-slug: computability-and-logic-textbook-review
 next-post-title: And My Axiom! Insights from 'Computability and Logic'
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2018-08-24 00:00:00
-original_url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
+original_url: 
+  https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
 skip_import: true
-description: "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence,\
-  \ Lebesgue integration–sharpening my mathematical tools."
-date_updated: 2025-03-05 20:43:54.692493
+description: "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence,
+  Lebesgue integration–sharpening my mathematical tools."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

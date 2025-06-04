@@ -35,8 +35,9 @@ original_url:
 skip_import: true
 description: A proposed tweak to policy gradient algorithms may avoid mode collapse,
   but more research is needed to assess its practicality.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

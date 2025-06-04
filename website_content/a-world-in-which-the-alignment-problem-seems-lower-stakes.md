@@ -3,7 +3,8 @@ permalink: lower-stakes-alignment-scenario
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
+lw-page-url: 
+  https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 lw-is-question: 'false'
 lw-posted-at: 2021-07-08T02:31:03.674000Z
 lw-last-modification: 2021-07-08T20:36:20.299000Z
@@ -37,12 +38,14 @@ next-post-title: The More Power At Stake, The Stronger Instrumental Convergence 
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-07-08 00:00:00
-original_url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
+original_url: 
+  https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 skip_import: true
-description: "This post explores a hypothetical scenario where the AI alignment problem\
-  \ seems lower-stakes due to a unique universe structure. "
-date_updated: 2025-01-30 09:30:36.233182
+description: "This post explores a hypothetical scenario where the AI alignment problem
+  seems lower-stakes due to a unique universe structure. "
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

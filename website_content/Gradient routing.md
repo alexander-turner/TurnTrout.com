@@ -18,8 +18,9 @@ lw-linkpost-url: https://arxiv.org/abs/2410.04332
 original_url: 
   https://www.lesswrong.com/posts/nLRKKCTtwQgvozLTN/gradient-routing-masking-gradients-to-localize-computation
 date_published: 2024-12-05 16:17:06.041179
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

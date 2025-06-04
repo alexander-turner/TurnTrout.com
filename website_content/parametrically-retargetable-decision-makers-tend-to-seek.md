@@ -3,7 +3,8 @@ permalink: parametrically-retargetable-power-seeking
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
+lw-page-url: 
+  https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 lw-linkpost-url: https://arxiv.org/abs/2206.13477
 lw-is-question: 'false'
 lw-posted-at: 2023-02-18T18:41:38.740000Z
@@ -35,12 +36,14 @@ prev-post-title: Instrumental Convergence For Realistic Agent Objectives
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2023-02-18 00:00:00
-original_url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
+original_url: 
+  https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 skip_import: true
-description: "New theoretical results uncover a surprising truth: the ability to change\
-  \ an agent's goals can lead them to seek power."
-date_updated: 2025-01-30 09:30:36.233182
+description: "New theoretical results uncover a surprising truth: the ability to change
+  an agent's goals can lead them to seek power."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

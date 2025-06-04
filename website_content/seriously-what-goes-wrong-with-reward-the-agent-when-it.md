@@ -3,7 +3,8 @@ permalink: questioning-why-simple-alignment-plan-fails
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+lw-page-url: 
+  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 lw-is-question: 'true'
 lw-posted-at: 2022-08-11T22:22:32.198000Z
 lw-last-modification: 2023-06-01T20:26:14.384000Z
@@ -27,12 +28,14 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-08-11 00:00:00
-original_url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+original_url: 
+  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 skip_import: true
-description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less\
-  \ certain than most. Let's explore why."
-date_updated: 2025-03-01 17:42:48.379662
+description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less
+  certain than most. Let's explore why."
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

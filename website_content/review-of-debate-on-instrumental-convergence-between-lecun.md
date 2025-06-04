@@ -3,7 +3,8 @@ permalink: review-of-debate-on-instrumental-convergence
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
+lw-page-url: 
+  https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 lw-is-question: 'false'
 lw-posted-at: 2021-01-12T03:57:06.655000Z
 lw-last-modification: 2021-01-12T17:05:55.320000Z
@@ -29,13 +30,15 @@ aliases:
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-01-12 00:00:00
-original_url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
+original_url: 
+  https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 skip_import: true
 card_image:
 description: Experts clash on the dangers of "instrumental convergence" in AI, but
   clear definitions and formal thought are sorely needed.
-date_updated: 2024-11-22 20:04:30.137574
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

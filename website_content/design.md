@@ -11,9 +11,10 @@ card_image:
 aliases:
   - website-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2025-04-13 14:25:18.026759
+date_updated: 2025-06-03 22:57:00.423836
 no_dropcap: "false"
 ---
+
 
 
 When I decided to design my own website, I had no experience with web development. After 202 days, 2,220+ commits,[^commits] and 1,008 unit tests, I present `turntrout.com` - the result of my inexperience.

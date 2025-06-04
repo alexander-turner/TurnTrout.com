@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to
   hypothesis testing and Bayesian inference.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

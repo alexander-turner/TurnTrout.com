@@ -3,7 +3,8 @@ permalink: instrumental-convergence-via-vnm-preferences
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+lw-page-url: 
+  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 lw-is-question: 'false'
 lw-posted-at: 2021-08-09T17:22:24.056000Z
 lw-last-modification: 2023-05-16T20:32:50.619000Z
@@ -37,12 +38,14 @@ next-post-title: 'Satisficers Tend To Seek Power: Instrumental Convergence Via R
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-08-09 00:00:00
-original_url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+original_url: 
+  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 skip_import: true
 description: VNM-coherent preference orderings have the same statistical incentives
   as utility functions, often leading to power-seeking behavior.
-date_updated: 2025-03-01 17:42:48.379662
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 

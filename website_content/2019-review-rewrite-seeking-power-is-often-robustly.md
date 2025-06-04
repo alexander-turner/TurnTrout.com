@@ -35,8 +35,9 @@ original_url:
 skip_import: true
 description: Revised post clarifies theory on power-seeking  and corrects terminology
   used in the original post.
-date_updated: 2025-04-12 09:51:51.137842
+date_updated: 2025-06-03 22:57:00.423836
 ---
+
 
 
 
