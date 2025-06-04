@@ -113,3 +113,7 @@ jobs:
           path: test-results/
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
