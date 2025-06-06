@@ -302,7 +302,9 @@ export async function pauseMediaElements(page: Page): Promise<void> {
   const audioPromises = (await page.locator("audio").all()).map((el) =>
     el.evaluate((n: HTMLAudioElement) => {
       n.pause()
-      n.currentTime = n.duration
+      if (Number.isFinite(n.duration)) {
+        n.currentTime = n.duration
+      }
     }),
   )
 

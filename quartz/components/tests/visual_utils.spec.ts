@@ -516,7 +516,9 @@ test.describe("pauseMediaElements", () => {
 
     for (const el of [video1, audio1, video2]) {
       expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
-      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime)).toBe(0)
+      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime)).toBe(
+        0, // Should be at end, but there's no duration on mock video
+      )
     }
   })
 
