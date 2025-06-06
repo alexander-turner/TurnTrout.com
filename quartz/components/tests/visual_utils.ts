@@ -66,7 +66,17 @@ export async function setTheme(page: Page, theme: Theme) {
 export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
-      const images = Array.from(document.images)
+      const isElementInViewport = (el: Element) => {
+        const rect = el.getBoundingClientRect()
+        return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        )
+      }
+      const images = Array.from(document.images).filter(isElementInViewport)
+
       if (images.length === 0) {
         resolve()
         return
@@ -83,11 +93,29 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
       }
 
       images.forEach((img) => {
-        if (img.complete) {
+        const onDone = () => {
+          img.removeEventListener("load", onDone)
+          img.removeEventListener("error", onDone)
           checkComplete()
+        }
+
+        if (img.complete) {
+          // If the image is already marked as 'complete' by the browser,
+          // the 'load' event may not fire. We poll for naturalWidth instead.
+          if (img.naturalWidth > 0) {
+            checkComplete()
+          } else {
+            const poll = setInterval(() => {
+              if (img.naturalWidth > 0) {
+                clearInterval(poll)
+                checkComplete()
+              }
+              // Note: No timeout here, we let the test runner's timeout handle failed loads.
+            }, 50)
+          }
         } else {
-          img.addEventListener("load", checkComplete)
-          img.addEventListener("error", checkComplete)
+          img.addEventListener("load", onDone)
+          img.addEventListener("error", onDone)
         }
       })
     })

@@ -13,7 +13,14 @@ import {
   waitForThemeTransition,
   pauseMediaElements,
   showingPreview,
+  waitForViewportImagesToLoad,
 } from "./visual_utils"
+
+// A 1x1 transparent PNG, crucial for getting a valid naturalWidth > 0 in tests.
+const tinyPng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+  "base64",
+)
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
@@ -474,8 +481,6 @@ test.describe("waitForThemeTransition", () => {
     })
     await waitForThemeTransition(page)
     const duration = Date.now() - start
-
-    // Should resolve very quickly
     expect(duration).toBeLessThan(100)
   })
 })
@@ -540,4 +545,100 @@ test.describe("showingPreview", () => {
       expect(showingPreview(page)).toBe(expected)
     })
   }
+})
+
+test.describe("waitForViewportImagesToLoad", () => {
+  const viewportHeight = 600
+  const imageDomain = "https://example.com"
+  test.beforeEach(async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "only need to run tests once on fixed viewport")
+    await page.setViewportSize({ width: 800, height: viewportHeight })
+  })
+
+  test("waits for all images inside the viewport", async ({ page }) => {
+    let image1Loaded = false
+    await page.route(`${imageDomain}/image1.png`, (route) => {
+      setTimeout(() => {
+        image1Loaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, 100)
+    })
+
+    let image2Loaded = false
+    await page.route(`${imageDomain}/image2.png`, (route) => {
+      setTimeout(() => {
+        image2Loaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, 100)
+    })
+
+    await page.setContent(`
+      <img src="${imageDomain}/image1.png" loading="eager" style="width:100px; height:100px;">
+      <img src="${imageDomain}/image2.png" loading="lazy" style="margin-top: ${2 * viewportHeight}px;">
+    `)
+
+    await waitForViewportImagesToLoad(page)
+
+    expect(image1Loaded).toBe(true)
+    expect(image2Loaded).toBe(false)
+  })
+
+  test("does not wait for lazy images outside the viewport", async ({ page }) => {
+    let imageLoaded = false
+    await page.route("**/lazy-out-of-view.png", (route) => {
+      imageLoaded = true
+      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+    })
+
+    await page.setContent(`
+      <img src="${imageDomain}/lazy-out-of-view.png" loading="lazy" style="width:100px; height:100px; margin-top: ${2 * viewportHeight}px;">
+    `)
+
+    await waitForViewportImagesToLoad(page)
+
+    expect(imageLoaded).toBe(false)
+  })
+
+  test("waits for lazy images inside the viewport", async ({ page }) => {
+    let imageLoaded = false
+    await page.route("**/lazy-in-view.png", (route) => {
+      setTimeout(() => {
+        imageLoaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, 100)
+    })
+
+    await page.setContent(`
+      <img src="${imageDomain}/lazy-in-view.png" loading="lazy" style="width:100px; height:100px;">
+    `)
+
+    await waitForViewportImagesToLoad(page)
+    expect(imageLoaded).toBe(true)
+  })
+
+  test("returns before an out-of-viewport lazy image finishes loading", async ({ page }) => {
+    await page.route("**/eager-in-view.png", (route) => {
+      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+    })
+
+    let lazyImageFulfilled = false
+    await page.route("**/lazy-out-of-view.png", async (route) => {
+      // Lazy image has a long delay to simulate slow loading.
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      lazyImageFulfilled = true
+      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+    })
+
+    await page.setContent(`
+      <img src="${imageDomain}/eager-in-view.png" id="eager-in-view" loading="eager" style="width:50px; height:50px;">
+      <img src="${imageDomain}/lazy-out-of-view.png" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${2 * viewportHeight}px;">
+    `)
+
+    const startTime = Date.now()
+    await waitForViewportImagesToLoad(page)
+    const duration = Date.now() - startTime
+
+    expect(duration).toBeLessThan(300)
+    expect(lazyImageFulfilled).toBe(false)
+  })
 })
