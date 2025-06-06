@@ -162,15 +162,13 @@ export async function fetchAndParseAssetDimensions(
     }
     const arrayBuffer = await response.arrayBuffer()
     const assetBuffer = Buffer.from(arrayBuffer)
-
-    // Determine content type to decide processing strategy
     const contentType = response.headers.get("Content-Type")
 
     if (contentType?.startsWith("video/")) {
       // For videos, use ffprobe (which is mocked in tests)
       const videoDimensions = await getVideoDimensionsFfprobe(assetBuffer)
       if (videoDimensions) {
-        console.log(
+        console.debug(
           `Successfully fetched video dimensions for ${assetUrl}: ${videoDimensions.width}x${videoDimensions.height}`,
         )
         return videoDimensions
