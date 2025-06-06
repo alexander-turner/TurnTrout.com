@@ -571,7 +571,7 @@ test.describe("waitForViewportImagesToLoad", () => {
       setTimeout(() => {
         image2Loaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 100)
+      }, 5000)
     })
 
     await page.setContent(`
@@ -588,8 +588,10 @@ test.describe("waitForViewportImagesToLoad", () => {
   test("does not wait for lazy images outside the viewport", async ({ page }) => {
     let imageLoaded = false
     await page.route("**/lazy-out-of-view.png", (route) => {
-      imageLoaded = true
-      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      setTimeout(() => {
+        imageLoaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, 5000)
     })
 
     await page.setContent(`
