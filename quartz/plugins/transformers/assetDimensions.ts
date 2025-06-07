@@ -4,11 +4,14 @@ import { spawnSync } from "child_process"
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
 import sizeOf from "image-size"
-import os from "os"
 import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 import { VFile } from "vfile"
+
+import { createLogger } from "./logger_utils"
+
+const logger = createLogger("assetDimensions")
 
 const __filepath = fileURLToPath(import.meta.url)
 const projectRoot = path.dirname(gitRoot(__filepath))
@@ -160,31 +163,31 @@ export async function fetchAndParseAssetDimensions(
       console.warn(`Failed to fetch asset ${assetUrl}: ${response.status} ${response.statusText}`)
       return null
     }
-    const arrayBuffer = await response.arrayBuffer()
-    const assetBuffer = Buffer.from(arrayBuffer)
     const contentType = response.headers.get("Content-Type")
 
-    if (contentType?.startsWith("video/")) {
-      // For videos, use ffprobe (which is mocked in tests)
-      const videoDimensions = await getVideoDimensionsFfprobe(assetBuffer)
-      if (videoDimensions) {
-        console.debug(
-          `Successfully fetched video dimensions for ${assetUrl}: ${videoDimensions.width}x${videoDimensions.height}`,
+    if (contentType?.startsWith("video/") || contentType?.startsWith("image/")) {
+      // don't need the response body, so cancel it to free resources
+      response.body?.cancel()
+      const dimensions = await getAssetDimensionsFfprobe(assetUrl)
+      if (dimensions) {
+        logger.debug(
+          `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
         )
-        return videoDimensions
+        return dimensions
       } else {
-        console.warn(`Could not get video dimensions for ${assetUrl} using ffprobe.`)
+        console.warn(`Could not get dimensions for ${assetUrl} using ffprobe.`)
         return null
       }
     } else {
-      // For images (and other types as a fallback), use image-size
+      // Fallback for other types or if content-type is missing.
+      const assetBuffer = Buffer.from(await response.arrayBuffer())
       const dimensions = sizeOf(assetBuffer)
       if (
         dimensions &&
         typeof dimensions.width === "number" &&
         typeof dimensions.height === "number"
       ) {
-        console.log(
+        logger.debug(
           `Successfully fetched image dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
         )
         return { width: dimensions.width, height: dimensions.height }
