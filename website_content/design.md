@@ -218,7 +218,7 @@ Among modern formats, there appear to be two serious contenders: h265 MP4 ("HEVC
 | Total WEBM size | 61MB |
 | Overall space savings from MP4 -> WEBM | 20% |
 
-Table: Both of these formats are good compared to GIFs. My WEBM files were 10x lighter than my GIFs! For example: [the "goose in a pond" video](https://assets.turntrout.com/static/pond.webm) weighed 561KB in GIF format. The MP4 weighs 260KB while the WEBM weighs 58KB.
+Both of these formats are good compared to GIFs. My WEBM files were 10x lighter than my GIFs! For example: [the "goose in a pond" video](https://assets.turntrout.com/static/pond.webm) weighed 561KB in GIF format. The MP4 weighs 260KB while the WEBM weighs 58KB.
 
 So why not just always use WEBM? While [Safari technically "supports" WEBM](https://caniuse.com/webm), _Safari refuses to autoplay & loop WEBMs, or to render transparency_. After reading [an article on how to stably display transparent videos across browsers](https://rotato.app/blog/transparent-videos-for-the-web), I implemented the following scheme:
 
@@ -238,7 +238,7 @@ To make the site quieter and more peaceful, the desktop website's pond video (be
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/pond-video-interaction.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/pond-video-interaction.webm" type="video/webm"></video>
 
-Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video frame stays constant until the user hovers over the video again. Furthermore, since auto/light/dark mode selector is above the pond, that provides a natural interaction pathway for the user to realize the "pond image" is actually a "pond video"!
+Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video frame stays constant until the user hovers over the video again. Furthermore, since the auto/light/dark mode selector is above the pond, that provides a natural interaction pathway for the user to realize the "pond image" is actually a "pond video"!
 
 <!-- spellchecker-disable -->
 > [!quote] [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h), who suggested this design choice
