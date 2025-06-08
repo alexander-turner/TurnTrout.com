@@ -89,15 +89,8 @@ export async function maybeSaveAssetDimensions(): Promise<void> {
   }
 }
 
-export async function getVideoDimensionsFfprobe(
-  videoBuffer: Buffer,
-): Promise<AssetDimensions | null> {
-  let tempDir: string | undefined = undefined
+export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<AssetDimensions | null> {
   try {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "quartz-video-"))
-    const tempFilePath = path.join(tempDir, "video.tmp")
-    await fs.writeFile(tempFilePath, videoBuffer)
-
     const ffprobe = spawnSyncWrapper(
       "ffprobe",
       [
@@ -109,14 +102,14 @@ export async function getVideoDimensionsFfprobe(
         "stream=width,height",
         "-of",
         "csv=s=x:p=0",
-        tempFilePath,
+        assetUrl,
       ],
       { encoding: "utf-8" },
     )
     if (ffprobe.error) {
       if ((ffprobe.error as NodeJS.ErrnoException).code === "ENOENT") {
         console.warn(
-          "ffprobe command not found. Please install ffmpeg to get dimensions for video files.",
+          "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
         )
       } else {
         console.error(`Error spawning ffprobe: ${ffprobe.error.message}`)
@@ -130,7 +123,7 @@ export async function getVideoDimensionsFfprobe(
     }
 
     const output = ffprobe.stdout.trim()
-    const dimensionsMatch = output.match(/^(\d+)x(\d+)$/)
+    const dimensionsMatch = output.match(/^(\d+)x(\d+)/)
 
     if (dimensionsMatch) {
       const width = parseInt(dimensionsMatch[1], 10)
@@ -145,12 +138,6 @@ export async function getVideoDimensionsFfprobe(
   } catch (error) {
     console.error("Error during ffprobe processing:", error)
     return null
-  } finally {
-    if (tempDir) {
-      const tempFilePath = path.join(tempDir, "video.tmp")
-      await fs.unlink(tempFilePath)
-      await fs.rmdir(tempDir)
-    }
   }
 }
 
@@ -164,8 +151,9 @@ export async function fetchAndParseAssetDimensions(
       return null
     }
     const contentType = response.headers.get("Content-Type")
+    const isSvg = contentType === "image/svg+xml" || assetUrl.endsWith(".svg")
 
-    if (contentType?.startsWith("video/") || contentType?.startsWith("image/")) {
+    if (!isSvg && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
       // don't need the response body, so cancel it to free resources
       response.body?.cancel()
       const dimensions = await getAssetDimensionsFfprobe(assetUrl)
@@ -179,7 +167,7 @@ export async function fetchAndParseAssetDimensions(
         return null
       }
     } else {
-      // Fallback for other types or if content-type is missing.
+      // Fallback for SVGs and other types
       const assetBuffer = Buffer.from(await response.arrayBuffer())
       const dimensions = sizeOf(assetBuffer)
       if (
@@ -188,7 +176,7 @@ export async function fetchAndParseAssetDimensions(
         typeof dimensions.height === "number"
       ) {
         logger.debug(
-          `Successfully fetched image dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
+          `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
         )
         return { width: dimensions.width, height: dimensions.height }
       } else {

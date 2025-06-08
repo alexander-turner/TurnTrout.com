@@ -16,8 +16,17 @@ export function mockFetchResolve(
   status = 200,
   headers: Record<string, string> = { "Content-Type": "application/octet-stream" },
   statusText?: string,
+  cancellableBody = false,
 ): void {
   const response = new NodeFetchResponse(data, { status, headers, statusText: statusText ?? "" })
+
+  if (cancellableBody) {
+    const originalBody = response.body
+    const cancel = jest.fn()
+    const newBody = Object.assign(originalBody ?? {}, { cancel })
+    Object.defineProperty(response, "body", { value: newBody, writable: true })
+  }
+
   fetchMockInstance.mockResolvedValueOnce(response)
 }
 

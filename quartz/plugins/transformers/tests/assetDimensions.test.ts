@@ -45,7 +45,7 @@ import {
   resetDirectCacheAndDirtyFlag,
   setDirectCache,
   setDirectDirtyFlag,
-  getVideoDimensionsFfprobe,
+  getAssetDimensionsFfprobe,
   setSpawnSyncForTesting,
 } from "../assetDimensions"
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
@@ -246,10 +246,25 @@ describe("Asset Dimensions Plugin", () => {
     })
   })
 
-  describe("getVideoDimensionsFfprobe", () => {
-    it("should parse video dimensions successfully", async () => {
-      const dimensions = await getVideoDimensionsFfprobe(mockVideoData)
-      expect(mockSpawnSync).toHaveBeenCalled()
+  describe("getAssetDimensionsFfprobe", () => {
+    it("should parse asset dimensions successfully from a URL", async () => {
+      const dimensions = await getAssetDimensionsFfprobe(testVideoUrl)
+      expect(mockSpawnSync).toHaveBeenCalledWith(
+        "ffprobe",
+        expect.arrayContaining([testVideoUrl]),
+        expect.any(Object),
+      )
+      expect(dimensions).toEqual(mockFetchedVideoDims)
+    })
+
+    it("should parse dimensions correctly even with a trailing 'x'", async () => {
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockVideoWidth}x${mockVideoHeight}x`, // faulty output
+        stderr: "",
+        error: null,
+      })
+      const dimensions = await getAssetDimensionsFfprobe(testVideoUrl)
       expect(dimensions).toEqual(mockFetchedVideoDims)
     })
   })
@@ -257,21 +272,48 @@ describe("Asset Dimensions Plugin", () => {
   describe("fetchAndParseAssetDimensions", () => {
     const testImageUrl = "https://assets.turntrout.com/image.png"
 
-    it("should fetch and parse image dimensions successfully", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+    it("should work with SVG files", async () => {
+      const testSvgUrl = "https://assets.turntrout.com/image.svg"
+      const mockSvgData = Buffer.from(
+        `<svg width="${mockImageWidth}" height="${mockImageHeight}"></svg>`,
+      )
+      mockFetchResolve(mockedFetch, mockSvgData, 200, { "Content-Type": "image/svg+xml" })
       sizeOfMock.mockReturnValueOnce({
         width: mockImageWidth,
         height: mockImageHeight,
-        type: "png",
+        type: "svg",
       })
+
+      const dimensions = await fetchAndParseAssetDimensions(testSvgUrl)
+
+      expect(mockedFetch).toHaveBeenCalledWith(testSvgUrl)
+      expect(dimensions).toEqual({ width: mockImageWidth, height: mockImageHeight })
+    })
+
+    it("should fetch and parse image dimensions successfully using ffprobe", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
+
       const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
-      expect(mockSpawnSync).not.toHaveBeenCalled()
+      expect(mockSpawnSync).toHaveBeenCalledWith(
+        "ffprobe",
+        expect.arrayContaining([testImageUrl]),
+        expect.any(Object),
+      )
+      expect(sizeOfMock).not.toHaveBeenCalled()
       expect(dimensions).toEqual(mockFetchedImageDims)
     })
 
     it("should fetch and parse video dimensions successfully using ffprobe", async () => {
-      mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/mp4" })
+      mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/mp4" }, "OK", true)
+
       mockSpawnSync.mockReturnValueOnce({
         status: 0,
         stdout: `${mockVideoWidth}x${mockVideoHeight}`,
@@ -284,17 +326,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(mockedFetch).toHaveBeenCalledWith(testVideoUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
         "ffprobe",
-        expect.arrayContaining([
-          "-v",
-          "error",
-          "-select_streams",
-          "v:0",
-          "-show_entries",
-          "stream=width,height",
-          "-of",
-          "csv=s=x:p=0",
-          expect.stringContaining("video.tmp"),
-        ]),
+        expect.arrayContaining([testVideoUrl]),
         { encoding: "utf-8" },
       )
       expect(sizeOfMock).not.toHaveBeenCalled()
@@ -302,7 +334,14 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should return null for video if ffprobe command is not found", async () => {
-      mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/mpeg" })
+      const cancel = jest.fn()
+      mockedFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
+        body: { cancel } as unknown as ReadableStream<Uint8Array>,
+        arrayBuffer: async () => mockVideoData,
+      } as unknown as NodeFetchResponse)
       mockSpawnSync.mockReturnValueOnce({
         status: null,
         stdout: "",
@@ -313,15 +352,27 @@ describe("Asset Dimensions Plugin", () => {
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
+      expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("ffprobe command not found"),
+        expect.stringContaining(
+          "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
+        ),
       )
       consoleWarnSpy.mockRestore()
     })
 
     it("should return null for video if ffprobe fails (non-zero status)", async () => {
-      mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/quicktime" })
+      const cancel = jest.fn()
+      mockedFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (h: string) => (h === "Content-Type" ? "video/quicktime" : null),
+        } as Headers,
+        body: { cancel } as unknown as ReadableStream<Uint8Array>,
+        arrayBuffer: async () => mockVideoData,
+      } as unknown as NodeFetchResponse)
       mockSpawnSync.mockReturnValueOnce({
         status: 1,
         stdout: "",
@@ -332,6 +383,7 @@ describe("Asset Dimensions Plugin", () => {
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
+      expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         expect.stringContaining("ffprobe exited with status 1: FFprobe execution error"),
@@ -340,7 +392,14 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should return null for video if ffprobe output is unparseable", async () => {
-      mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/webm" })
+      const cancel = jest.fn()
+      mockedFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: { get: (h: string) => (h === "Content-Type" ? "video/webm" : null) } as Headers,
+        body: { cancel } as unknown as ReadableStream<Uint8Array>,
+        arrayBuffer: async () => mockVideoData,
+      } as unknown as NodeFetchResponse)
       mockSpawnSync.mockReturnValueOnce({
         status: 0,
         stdout: "this:is:not:dimensions",
@@ -351,6 +410,7 @@ describe("Asset Dimensions Plugin", () => {
 
       const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
       expect(dimensions).toBeNull()
+      expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -554,12 +614,22 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should fetch, apply, and cache dimensions for CDN image not in cache", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
-      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
       const currentDimensionsCache: AssetDimensionMap = {}
       const node = h("img", { src: cdnImageUrl }) as Element
       await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
+      expect(mockSpawnSync).toHaveBeenCalledWith(
+        "ffprobe",
+        expect.arrayContaining([cdnImageUrl]),
+        expect.any(Object),
+      )
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
       expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
@@ -615,8 +685,13 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing no semicolon)", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
-      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: blue"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
@@ -632,8 +707,13 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing with semicolon)", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
-      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: red;"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
@@ -649,8 +729,13 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should prepend aspect-ratio to existing style, handling trailing spaces (existing with semicolon and space)", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
-      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: green; " // Note the trailing space
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
@@ -666,8 +751,13 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should correctly set aspect-ratio style if existing style is only whitespace", async () => {
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
-      sizeOfMock.mockReturnValueOnce({ ...mockFetchedImageDims, type: "png" })
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "   " // Just whitespace
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
@@ -709,25 +799,25 @@ describe("Asset Dimensions Plugin", () => {
       resetDirectCacheAndDirtyFlag()
       setDirectCache(null)
 
-      // Mock fetch for the first uncached asset (cdnImg1Src - image)
-      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" })
+      // Mock fetch for the first uncached asset (cdnImg1Src - image), which will use ffprobe
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
 
-      // Mock fetch for the second uncached asset (cdnSvg1Src - svg)
+      // Mock fetch for the second uncached asset (cdnSvg1Src - svg), which will use image-size
       const mockSvgData = Buffer.from(
         `<svg width="${mockImageWidth}" height="${mockImageHeight}" xmlns="http://www.w3.org/2000/svg"></svg>`,
       )
-      // Directly chain the next mock response for the SVG
-      mockedFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        headers: {
-          get: (h: string): string | null => (h === "Content-Type" ? "image/svg+xml" : null),
-        } as Headers,
-        arrayBuffer: async () => mockSvgData,
-        text: async () => mockSvgData.toString(),
-        json: async () => JSON.parse(mockSvgData.toString()),
-      } as unknown as NodeFetchResponse) // Cast to unknown first for mock flexibility
+      mockFetchResolve(mockedFetch, mockSvgData, 200, { "Content-Type": "image/svg+xml" })
+      sizeOfMock.mockReturnValueOnce({
+        width: mockImageWidth,
+        height: mockImageHeight,
+        type: "svg",
+      })
 
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
