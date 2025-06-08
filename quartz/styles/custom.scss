@@ -313,6 +313,17 @@ sup {
     scrollbar-color 1s ease-in-out !important;
 }
 
+.video-container {
+  position: relative;
+}
+
+.video-container > .vsc-controller {
+  position: absolute !important; /* remove from flow */
+  inset: 0; /* stretch over the whole video */
+  pointer-events: none; /* keep clicks for the extension if you prefer, otherwise remove */
+  background: none !important; /* no extra paint */
+}
+
 // Hide video speed controller
 .vsc-controller:has(+ video.no-vsc),
 // Sometimes there's an img between the video and the vsc-controller
