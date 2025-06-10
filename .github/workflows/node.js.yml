@@ -18,6 +18,7 @@ jobs:
         node-version: [">=22"]
 
     steps:
-      - name: Setup Frontend Environment
-        uses: ./.github/actions/setup-visual-testing-env
+      - uses: actions/checkout@v4
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
       - run: npm test -- -u

@@ -3,11 +3,6 @@ description: "Checks out code, sets up Node and Python, installs dependencies, a
 runs:
   using: "composite"
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:

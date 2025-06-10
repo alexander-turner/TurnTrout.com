@@ -42,7 +42,6 @@ jobs:
           ]
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:
@@ -113,6 +112,7 @@ jobs:
     if: always()
 
     steps:
+      - uses: actions/checkout@v4
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 

@@ -60,6 +60,7 @@ jobs:
             40/40,
           ]
     steps:
+      - uses: actions/checkout@v4
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:
