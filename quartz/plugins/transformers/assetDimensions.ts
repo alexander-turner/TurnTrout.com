@@ -7,16 +7,8 @@ import sizeOf from "image-size"
 import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
-import { VFile } from "vfile"
 
 import { createLogger } from "./logger_utils"
-
-export class FFprobeNotInstalledError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "FFprobeNotInstalledError"
-  }
-}
 
 const logger = createLogger("assetDimensions")
 
@@ -85,123 +77,88 @@ export async function maybeSaveAssetDimensions(): Promise<void> {
     const tempFilePath = ASSET_DIMENSIONS_FILE_PATH + ".tmp"
     const data = JSON.stringify(assetDimensionsCache, null, 2)
 
-    try {
-      await fs.writeFile(tempFilePath, data, "utf-8")
-      await fs.rename(tempFilePath, ASSET_DIMENSIONS_FILE_PATH)
-      needToSaveCache = false
-      console.log("Asset dimensions cache saved.")
-    } catch (error) {
-      console.error("Failed to save asset dimensions cache:", error)
-    }
+    await fs.writeFile(tempFilePath, data, "utf-8")
+    await fs.rename(tempFilePath, ASSET_DIMENSIONS_FILE_PATH)
+    needToSaveCache = false
+    console.log("Asset dimensions cache saved.")
   }
 }
 
 export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<AssetDimensions | null> {
-  try {
-    const ffprobe = spawnSyncWrapper(
-      "ffprobe",
-      [
-        "-v",
-        "error",
-        "-select_streams",
-        "v:0",
-        "-show_entries",
-        "stream=width,height",
-        "-of",
-        "csv=s=x:p=0",
-        assetUrl,
-      ],
-      { encoding: "utf-8" },
-    )
-    if (ffprobe.error) {
-      if ((ffprobe.error as NodeJS.ErrnoException).code === "ENOENT") {
-        throw new FFprobeNotInstalledError(
-          "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
-        )
-      } else {
-        console.error(`Error spawning ffprobe: ${ffprobe.error.message}`)
-      }
-      return null
+  const ffprobe = spawnSyncWrapper(
+    "ffprobe",
+    [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "stream=width,height",
+      "-of",
+      "csv=s=x:p=0",
+      assetUrl,
+    ],
+    { encoding: "utf-8" },
+  )
+  if (ffprobe.error) {
+    if ((ffprobe.error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(
+        "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
+      )
+    } else {
+      throw new Error(`Error spawning ffprobe: ${ffprobe.error.message}`)
     }
-
-    if (ffprobe.status !== 0) {
-      console.error(`ffprobe exited with status ${ffprobe.status}: ${ffprobe.stderr}`)
-      return null
-    }
-
-    const output = ffprobe.stdout.trim()
-    const dimensionsMatch = output.match(/^(\d+)x(\d+)/)
-
-    if (dimensionsMatch) {
-      const width = parseInt(dimensionsMatch[1], 10)
-      const height = parseInt(dimensionsMatch[2], 10)
-      if (!isNaN(width) && !isNaN(height)) {
-        return { width, height }
-      }
-    }
-
-    console.warn(`Could not parse dimensions from ffprobe output: ${output}`)
-    return null
-  } catch (error) {
-    if (error instanceof FFprobeNotInstalledError) {
-      throw error
-    }
-    console.error("Error during ffprobe processing:", error)
-    return null
   }
+
+  const output = ffprobe.stdout.trim()
+  const dimensionsMatch = output.match(/^(\d+)x(\d+)/)
+
+  if (dimensionsMatch) {
+    const width = parseInt(dimensionsMatch[1], 10)
+    const height = parseInt(dimensionsMatch[2], 10)
+    if (!isNaN(width) && !isNaN(height)) {
+      return { width, height }
+    }
+  }
+
+  throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
 }
 
 export async function fetchAndParseAssetDimensions(
   assetUrl: string,
 ): Promise<AssetDimensions | null> {
-  try {
-    const response = await fetch(assetUrl)
-    if (!response.ok) {
-      console.warn(`Failed to fetch asset ${assetUrl}: ${response.status} ${response.statusText}`)
-      return null
-    }
-    const contentType = response.headers.get("Content-Type")
-    const isSvg = contentType === "image/svg+xml" || assetUrl.endsWith(".svg")
-
-    if (!isSvg && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
-      // don't need the response body, so cancel it to free resources
-      response.body?.cancel()
-      const dimensions = await getAssetDimensionsFfprobe(assetUrl)
-      if (dimensions) {
-        logger.debug(
-          `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
-        )
-        return dimensions
-      } else {
-        console.warn(`Could not get dimensions for ${assetUrl} using ffprobe.`)
-        return null
-      }
-    } else {
-      // Fallback for SVGs and other types
-      const assetBuffer = Buffer.from(await response.arrayBuffer())
-      const dimensions = sizeOf(assetBuffer)
-      if (
-        dimensions &&
-        typeof dimensions.width === "number" &&
-        typeof dimensions.height === "number"
-      ) {
-        logger.debug(
-          `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
-        )
-        return { width: dimensions.width, height: dimensions.height }
-      } else {
-        console.warn(
-          `Could not determine dimensions from asset data for ${assetUrl}. Type: ${dimensions?.type}`,
-        )
-      }
-    }
-  } catch (error) {
-    if (error instanceof FFprobeNotInstalledError) {
-      throw error
-    }
-    console.error(`Error fetching or parsing dimensions for ${assetUrl}:`, error)
+  const response = await fetch(assetUrl)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch asset ${assetUrl}: ${response.status} ${response.statusText}`)
   }
-  return null
+  const contentType = response.headers.get("Content-Type")
+  const isSvg = contentType === "image/svg+xml" || assetUrl.endsWith(".svg")
+
+  if (!isSvg && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
+    // don't need the response body, so cancel it to free resources
+    response.body?.cancel()
+    const dimensions = await getAssetDimensionsFfprobe(assetUrl)
+    if (dimensions) {
+      logger.debug(
+        `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
+      )
+      return dimensions
+    }
+    throw new Error(`Could not get dimensions for ${assetUrl} using ffprobe.`)
+  }
+
+  // sizeOf fallback for SVGs and other types
+  const assetBuffer = Buffer.from(await response.arrayBuffer())
+  const dimensions = sizeOf(assetBuffer)
+  if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
+    logger.debug(
+      `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
+    )
+    return { width: dimensions.width, height: dimensions.height }
+  }
+  throw new Error(
+    `Could not determine dimensions from asset data for ${assetUrl}. Type: ${dimensions?.type}`,
+  )
 }
 
 /** Returns the src of a video element or that of its first source child.
@@ -251,30 +208,19 @@ export function collectAssetNodes(tree: Root): { node: Element; src: string }[] 
 export async function processAsset(
   assetInfo: { node: Element; src: string },
   currentDimensionsCache: AssetDimensionMap,
-  file: VFile,
 ): Promise<void> {
   const { node, src } = assetInfo
   let dims = currentDimensionsCache[src]
 
   if (!dims) {
-    try {
-      const assetUrl = new URL(src)
-      if (assetUrl.hostname === USER_CDN_HOSTNAME) {
-        const fetchedDims = await fetchAndParseAssetDimensions(src)
-        if (fetchedDims) {
-          dims = fetchedDims
-          currentDimensionsCache[src] = fetchedDims
-          needToSaveCache = true
-        }
+    const assetUrl = new URL(src)
+    if (assetUrl.hostname === USER_CDN_HOSTNAME) {
+      const fetchedDims = await fetchAndParseAssetDimensions(src)
+      if (fetchedDims) {
+        dims = fetchedDims
+        currentDimensionsCache[src] = fetchedDims
+        needToSaveCache = true
       }
-    } catch (e: unknown) {
-      if (e instanceof FFprobeNotInstalledError) {
-        throw e
-      }
-      const errorMessage = e instanceof Error ? e.message : String(e)
-      console.warn(
-        `Skipping dimension fetching for ${src} in file ${file.path}. Error: ${errorMessage}`,
-      )
     }
   }
 
@@ -302,12 +248,12 @@ export const addAssetDimensionsFromUrl = () => {
     htmlPlugins() {
       return [
         () => {
-          return async (tree: Root, file: VFile) => {
+          return async (tree: Root) => {
             const currentDimensionsCache = await maybeLoadDimensionCache()
             const assetsToProcess = collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
-              await processAsset(assetInfo, currentDimensionsCache, file)
+              await processAsset(assetInfo, currentDimensionsCache)
             }
           }
         },

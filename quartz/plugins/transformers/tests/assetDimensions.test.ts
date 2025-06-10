@@ -15,7 +15,6 @@ import fs from "fs/promises"
 import { h } from "hastscript"
 import os from "os"
 import path from "path"
-import { VFile } from "vfile"
 
 const testVideoUrl = "https://assets.turntrout.com/video.mp4"
 const mockVideoData = Buffer.from("fakevideocontent")
@@ -231,17 +230,12 @@ describe("Asset Dimensions Plugin", () => {
       const writeFileSpy = jest
         .spyOn(fs, "writeFile")
         .mockRejectedValue(new Error("Permission denied") as never)
-      const renameSpy = jest.spyOn(fs, "rename")
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+      const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
 
-      await maybeSaveAssetDimensions()
+      await expect(maybeSaveAssetDimensions()).rejects.toThrow("Permission denied")
 
       expect(writeFileSpy).toHaveBeenCalled()
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Failed to save asset dimensions cache:",
-        expect.any(Error),
-      )
-      consoleErrorSpy.mockRestore()
+      expect(renameSpy).not.toHaveBeenCalled()
       renameSpy.mockRestore()
     })
   })
@@ -333,7 +327,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(dimensions).toEqual(mockFetchedVideoDims)
     })
 
-    it("should return null for video if ffprobe command is not found", async () => {
+    it("should throw for video if ffprobe command is not found", async () => {
       const cancel = jest.fn()
       mockedFetch.mockResolvedValue({
         ok: true,
@@ -350,13 +344,13 @@ describe("Asset Dimensions Plugin", () => {
       })
 
       await expect(fetchAndParseAssetDimensions(testVideoUrl)).rejects.toThrow(
-        assetDimensionsState.FFprobeNotInstalledError,
+        /ffprobe command not found/,
       )
       expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
     })
 
-    it("should return null for video if ffprobe fails (non-zero status)", async () => {
+    it("should throw for video if ffprobe fails (non-zero status)", async () => {
       const cancel = jest.fn()
       mockedFetch.mockResolvedValue({
         ok: true,
@@ -373,19 +367,15 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "FFprobe execution error",
         error: null,
       })
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
-      const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
-      expect(dimensions).toBeNull()
+      await expect(fetchAndParseAssetDimensions(testVideoUrl)).rejects.toThrow(
+        "Could not parse dimensions from ffprobe output: ",
+      )
       expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("ffprobe exited with status 1: FFprobe execution error"),
-      )
-      consoleErrorSpy.mockRestore()
     })
 
-    it("should return null for video if ffprobe output is unparseable", async () => {
+    it("should throw for video if ffprobe output is unparseable", async () => {
       const cancel = jest.fn()
       mockedFetch.mockResolvedValue({
         ok: true,
@@ -400,59 +390,37 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "",
         error: null,
       })
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
-      const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
-      expect(dimensions).toBeNull()
+      await expect(fetchAndParseAssetDimensions(testVideoUrl)).rejects.toThrow(
+        "Could not parse dimensions from ffprobe output: this:is:not:dimensions",
+      )
       expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "Could not parse dimensions from ffprobe output: this:is:not:dimensions",
-        ),
-      )
-      consoleWarnSpy.mockRestore()
     })
 
-    it("should return null if fetch fails (e.g., 404)", async () => {
+    it("should throw if fetch fails (e.g., 404)", async () => {
       mockFetchResolve(mockedFetch, "", 404, {}, "Not Found")
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
-      const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
-      expect(dimensions).toBeNull()
-      expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Failed to fetch asset ${testImageUrl}: 404 Not Found`),
+      await expect(fetchAndParseAssetDimensions(testImageUrl)).rejects.toThrow(
+        `Failed to fetch asset ${testImageUrl}: 404 Not Found`,
       )
-      consoleWarnSpy.mockRestore()
+      expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
     })
 
-    it("should return null if image-size fails to parse", async () => {
+    it("should throw if image-size fails to parse", async () => {
       mockFetchResolve(mockedFetch, Buffer.from("fakeimagedata"))
       sizeOfMock.mockImplementation(() => {
         throw new Error("parsing error")
       })
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
-      const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
-      expect(dimensions).toBeNull()
-      expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Error fetching or parsing dimensions for " + testImageUrl),
-        expect.any(Error),
+      await expect(fetchAndParseAssetDimensions(testImageUrl)).rejects.toThrow(
+        /unsupported file type/,
       )
-      consoleErrorSpy.mockRestore()
+      expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
     })
 
-    it("should return null if fetch results in network error", async () => {
+    it("should throw if fetch results in network error", async () => {
       mockFetchNetworkError(mockedFetch, new Error("Network failure"))
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
-      const dimensions = await fetchAndParseAssetDimensions(testImageUrl)
-      expect(dimensions).toBeNull()
+      await expect(fetchAndParseAssetDimensions(testImageUrl)).rejects.toThrow("Network failure")
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Error fetching or parsing dimensions for " + testImageUrl),
-        expect.any(Error),
-      )
-      consoleErrorSpy.mockRestore()
     })
 
     it("should handle non-asset content type", async () => {
@@ -586,11 +554,6 @@ describe("Asset Dimensions Plugin", () => {
 
   describe("processAsset", () => {
     const cdnImageUrl = "https://assets.turntrout.com/img.png"
-    let mockFile: VFile
-
-    beforeEach(() => {
-      mockFile = new VFile({ path: "test.md" })
-    })
 
     it("should apply dimensions from cache if available", async () => {
       const cachedDims = { width: 300, height: 200 }
@@ -598,7 +561,7 @@ describe("Asset Dimensions Plugin", () => {
       const node = h("img", { src: cdnImageUrl }) as Element
       const fetchSpy = mockedFetch
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
       expect(node.properties?.width).toBe(cachedDims.width)
       expect(node.properties?.height).toBe(cachedDims.height)
       expect(node.properties?.style).toBe(
@@ -617,7 +580,7 @@ describe("Asset Dimensions Plugin", () => {
       })
       const currentDimensionsCache: AssetDimensionMap = {}
       const node = h("img", { src: cdnImageUrl }) as Element
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
         "ffprobe",
@@ -638,7 +601,7 @@ describe("Asset Dimensions Plugin", () => {
       const node = h("img", { src: nonCdnImageUrl, style: initialStyle }) as Element
       const fetchSpy = mockedFetch
 
-      await processAsset({ node, src: nonCdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: nonCdnImageUrl }, currentDimensionsCache)
       expect(fetchSpy).not.toHaveBeenCalled()
       expect(node.properties?.width).toBeUndefined()
       expect(node.properties?.style).toBe(initialStyle)
@@ -649,33 +612,26 @@ describe("Asset Dimensions Plugin", () => {
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "border: 1px solid red;"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await expect(
+        processAsset({ node, src: cdnImageUrl }, currentDimensionsCache),
+      ).rejects.toThrow(`Failed to fetch asset ${cdnImageUrl}: 500 Server Error`)
       expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
 
       expect(node.properties?.width).toBeUndefined()
       expect(node.properties?.style).toBe(initialStyle)
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Failed to fetch asset ${cdnImageUrl}: 500 Server Error`),
-      )
-      consoleWarnSpy.mockRestore()
     })
 
-    it("should handle invalid URLs gracefully", async () => {
+    it("should throw for invalid URLs", async () => {
       const invalidUrl = "not-a-valid-url"
       const currentDimensionsCache: AssetDimensionMap = {}
       const node = h("img", { src: invalidUrl }) as Element
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
-      await processAsset({ node, src: invalidUrl }, currentDimensionsCache, mockFile)
+      await expect(processAsset({ node, src: invalidUrl }, currentDimensionsCache)).rejects.toThrow(
+        "Invalid URL",
+      )
       expect(mockedFetch).not.toHaveBeenCalled()
       expect(node.properties?.width).toBeUndefined()
       expect(node.properties?.style).toBeUndefined() // No style should be added
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Skipping dimension fetching"),
-      )
-      consoleWarnSpy.mockRestore()
     })
 
     it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing no semicolon)", async () => {
@@ -690,7 +646,7 @@ describe("Asset Dimensions Plugin", () => {
       const initialStyle = "color: blue"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -712,7 +668,7 @@ describe("Asset Dimensions Plugin", () => {
       const initialStyle = "color: red;"
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -734,7 +690,7 @@ describe("Asset Dimensions Plugin", () => {
       const initialStyle = "color: green; " // Note the trailing space
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -756,7 +712,7 @@ describe("Asset Dimensions Plugin", () => {
       const initialStyle = "   " // Just whitespace
       const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache, mockFile)
+      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -781,8 +737,6 @@ describe("Asset Dimensions Plugin", () => {
           h("svg", { src: cdnSvg1Src }) as Element,
         ],
       }
-      const mockFile = new VFile({ path: "integrationTest.md" })
-
       const preCachedDims = { width: 10, height: 20 }
       const readFileMock = jest.spyOn(fs, "readFile").mockImplementation(async (p) => {
         if (p === actualAssetDimensionsFilePath) {
@@ -815,7 +769,7 @@ describe("Asset Dimensions Plugin", () => {
 
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
-      await transformer(tree, mockFile)
+      await transformer(tree)
 
       const img1Node = tree.children[0] as Element
       const img2Node = tree.children[1] as Element
@@ -859,11 +813,10 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should handle empty tree", async () => {
       const tree: Root = { type: "root", children: [] }
-      const mockFile = new VFile({ path: "empty.md" })
 
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
-      await transformer(tree, mockFile)
+      await transformer(tree)
 
       expect(tree.children).toHaveLength(0)
       expect(mockedFetch).not.toHaveBeenCalled()
@@ -877,11 +830,9 @@ describe("Asset Dimensions Plugin", () => {
           h("div", [h("span", ["More text"]) as Element]) as Element,
         ],
       }
-      const mockFile = new VFile({ path: "no-images.md" })
-
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
-      await transformer(tree, mockFile)
+      await transformer(tree)
 
       expect(mockedFetch).not.toHaveBeenCalled()
     })
