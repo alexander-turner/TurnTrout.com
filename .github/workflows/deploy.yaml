@@ -1,12 +1,12 @@
 name: Deploy to Cloudflare
 
 concurrency:
-  group: "pages"
+  group: ${{ github.ref == 'refs/heads/main' && 'pages' || 'dev-pages' }}
   cancel-in-progress: true
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
 
 permissions:
   contents: read
@@ -41,7 +41,7 @@ jobs:
 
   verify-tests:
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Wait for all tests
         uses: lewagon/wait-on-check-action@v1.3.1
@@ -54,7 +54,8 @@ jobs:
           running-workflow-name: "Deploy to Cloudflare"
 
   deploy:
-    needs: [prepare-deploy, verify-tests]
+    needs: [prepare-deploy]
+    if: ${{ needs.verify-tests.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
       # Download the prepared public directory
@@ -73,5 +74,5 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
         run: |
-          export BRANCH=${${{ github.ref }}#refs/heads/}
+          export BRANCH=${{ github.ref_name }}
           npx wrangler pages deploy ./public --project-name=turntrout --branch $BRANCH
