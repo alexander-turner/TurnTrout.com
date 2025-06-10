@@ -348,18 +348,12 @@ describe("Asset Dimensions Plugin", () => {
         stderr: "",
         error: Object.assign(new Error("Command not found"), { code: "ENOENT" }),
       })
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
 
-      const dimensions = await fetchAndParseAssetDimensions(testVideoUrl)
-      expect(dimensions).toBeNull()
+      await expect(fetchAndParseAssetDimensions(testVideoUrl)).rejects.toThrow(
+        assetDimensionsState.FFprobeNotInstalledError,
+      )
       expect(cancel).toHaveBeenCalled()
       expect(mockSpawnSync).toHaveBeenCalled()
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
-        ),
-      )
-      consoleWarnSpy.mockRestore()
     })
 
     it("should return null for video if ffprobe fails (non-zero status)", async () => {

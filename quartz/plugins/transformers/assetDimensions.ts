@@ -11,6 +11,13 @@ import { VFile } from "vfile"
 
 import { createLogger } from "./logger_utils"
 
+export class FFprobeNotInstalledError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "FFprobeNotInstalledError"
+  }
+}
+
 const logger = createLogger("assetDimensions")
 
 const __filepath = fileURLToPath(import.meta.url)
@@ -108,7 +115,7 @@ export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<Asset
     )
     if (ffprobe.error) {
       if ((ffprobe.error as NodeJS.ErrnoException).code === "ENOENT") {
-        console.warn(
+        throw new FFprobeNotInstalledError(
           "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
         )
       } else {
@@ -136,6 +143,9 @@ export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<Asset
     console.warn(`Could not parse dimensions from ffprobe output: ${output}`)
     return null
   } catch (error) {
+    if (error instanceof FFprobeNotInstalledError) {
+      throw error
+    }
     console.error("Error during ffprobe processing:", error)
     return null
   }
@@ -186,6 +196,9 @@ export async function fetchAndParseAssetDimensions(
       }
     }
   } catch (error) {
+    if (error instanceof FFprobeNotInstalledError) {
+      throw error
+    }
     console.error(`Error fetching or parsing dimensions for ${assetUrl}:`, error)
   }
   return null
@@ -255,6 +268,9 @@ export async function processAsset(
         }
       }
     } catch (e: unknown) {
+      if (e instanceof FFprobeNotInstalledError) {
+        throw e
+      }
       const errorMessage = e instanceof Error ? e.message : String(e)
       console.warn(
         `Skipping dimension fetching for ${src} in file ${file.path}. Error: ${errorMessage}`,
