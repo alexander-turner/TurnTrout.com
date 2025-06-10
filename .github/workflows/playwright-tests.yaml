@@ -60,19 +60,10 @@ jobs:
             40/40,
           ]
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
         with:
-          node-version: ">=22"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright
-        run: |
-          npx playwright install --with-deps
-          npx playwright install-deps
+          install-playwright: "true"
 
       - name: Serve Quartz
         run: |

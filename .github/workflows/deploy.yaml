@@ -17,30 +17,11 @@ jobs:
   prepare-deploy:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.5.1
-      - name: Install Dependencies
-        run: npm ci
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
 
       - name: Build Quartz and generate critical CSS
         run: npx quartz build --no-serve
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Install xmllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils dos2unix
 
       - name: Install subfont
         run: npm install -g subfont

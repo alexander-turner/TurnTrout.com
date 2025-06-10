@@ -1,0 +1,40 @@
+name: "Setup Frontend Environment"
+description: "Checks out code, sets up Node.js, installs dependencies, and optionally installs Playwright."
+inputs:
+  install-playwright:
+    description: "Whether to install Playwright and its dependencies"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ">=22"
+        cache: "npm"
+
+    - name: Cache Playwright browsers
+      if: inputs.install-playwright == 'true'
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          playwright-browsers-${{ runner.os }}-
+
+    - name: Install Node Dependencies
+      run: npm ci
+      shell: bash
+
+    - name: Install Playwright and dependencies
+      if: inputs.install-playwright == 'true'
+      run: |
+        npx playwright install --with-deps chromium webkit firefox
+        npx playwright install-deps
+      shell: bash

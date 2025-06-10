@@ -18,15 +18,8 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ">=22"
-          cache: "npm"
-
-      - name: Install Dependencies
-        run: npm ci
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
 
       - name: Build Quartz
         run: npx quartz build
@@ -77,6 +70,7 @@ jobs:
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
+            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/design
             ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page
             ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#spoilers
             ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#videos

@@ -16,14 +16,8 @@ jobs:
     strategy:
       matrix:
         node-version: [">=22"]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm ci
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
       - run: npm test -- -u
