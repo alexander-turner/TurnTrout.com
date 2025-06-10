@@ -35,5 +35,11 @@ runs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libxml2-utils dos2unix ffmpeg
+        sudo apt-get install -y libxml2-utils dos2unix
       shell: bash
+
+    - name: Setup FFmpeg
+      uses: FedericoCarboni/setup-ffmpeg@v3
+      with:
+        ffmpeg-version: release
+        github-token: ${{ github.token }}
