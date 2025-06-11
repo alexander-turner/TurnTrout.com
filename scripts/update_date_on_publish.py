@@ -189,8 +189,10 @@ def main(content_dir: Path = Path("website_content")) -> None:
     update_readme_copyright_year(now)
 
     # Commit the changes
-    subprocess.run(["git", "add", "-A"])
-    subprocess.run(["git", "commit", "-m", "chore: update publish dates"])
+    subprocess.run(["git", "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "chore: update publish dates"], check=True
+    )
 
 
 if __name__ == "__main__":
