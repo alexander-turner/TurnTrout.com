@@ -63,7 +63,7 @@ export function renderLastUpdated(
   }
   const dateUpdated = new Date(frontmatter.date_updated as string)
 
-  const githubStem = "https://github.com/alexander-turner/TurnTrout.com/blob/main/content/"
+  const githubStem = "https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/"
   const githubUrl = `${githubStem}${fileData.relativePath}`
   const githubLink = (
     <a href={githubUrl} className="external" target="_blank" rel="noopener noreferrer">
