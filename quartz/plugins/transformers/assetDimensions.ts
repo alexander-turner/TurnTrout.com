@@ -121,6 +121,8 @@ export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<Asset
     }
   }
 
+  console.error("ffprobe stdout:", ffprobe.stdout)
+  console.error("ffprobe stderr:", ffprobe.stderr)
   throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
 }
 
