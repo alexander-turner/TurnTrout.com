@@ -158,9 +158,6 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
 
 
 def commit_changes(message: str) -> None:
-    """
-    Commit changes to the repository.
-    """
     subprocess.run(["git", "add", "-A"], check=True)
     subprocess.run(["git", "commit", "-m", message], check=True)
 

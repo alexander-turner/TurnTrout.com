@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 import yaml
@@ -817,3 +817,14 @@ def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
 
     with pytest.raises(ValueError, match="Could not find copyright line"):
         update_lib.update_readme_copyright_year(mock_current_datetime)
+
+
+def test_commit_changes():
+    with patch("scripts.update_date_on_publish.subprocess.run") as mock_run:
+        test_message = "chore: test message"
+        update_lib.commit_changes(test_message)
+        expected_calls = [
+            call(["git", "add", "-A"], check=True),
+            call(["git", "commit", "-m", test_message], check=True),
+        ]
+        mock_run.assert_has_calls(expected_calls, any_order=False)
