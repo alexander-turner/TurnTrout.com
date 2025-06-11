@@ -50,8 +50,9 @@ runs:
         # Download and extract ffmpeg, stripping the top-level directory
         curl -sL $FFMPEG_URL | sudo tar -xJ -C $FFMPEG_DIR --strip-components=1
 
-        # Add ffmpeg's bin directory to the PATH
-        echo "$FFMPEG_DIR/bin" | sudo tee -a $GITHUB_PATH
+        # Create symlinks to make ffmpeg and ffprobe available on the PATH
+        sudo ln -sf $FFMPEG_DIR/bin/ffmpeg /usr/local/bin/ffmpeg
+        sudo ln -sf $FFMPEG_DIR/bin/ffprobe /usr/local/bin/ffprobe
 
         # Verify the installation
         ffmpeg -version
