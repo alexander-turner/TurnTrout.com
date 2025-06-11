@@ -35,9 +35,24 @@ runs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libxml2-utils dos2unix ffmpeg
+        sudo apt-get install -y libxml2-utils dos2unix
       shell: bash
 
-    - name: Get ffprobe version
-      run: ffprobe -version
+    - name: Download and install latest ffmpeg
+      run: |
+        set -e
+        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+        FFMPEG_DIR="/opt/ffmpeg"
+
+        # Create the target directory
+        sudo mkdir -p $FFMPEG_DIR
+
+        # Download and extract ffmpeg, stripping the top-level directory
+        curl -sL $FFMPEG_URL | sudo tar -xJ -C $FFMPEG_DIR --strip-components=1
+
+        # Add ffmpeg's bin directory to the PATH
+        echo "$FFMPEG_DIR/bin" | sudo tee -a $GITHUB_PATH
+
+        # Verify the installation
+        ffmpeg -version
       shell: bash
