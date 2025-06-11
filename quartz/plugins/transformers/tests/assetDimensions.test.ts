@@ -767,6 +767,9 @@ describe("Asset Dimensions Plugin", () => {
         type: "svg",
       })
 
+      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
+
       const pluginInstance = addAssetDimensionsFromUrl()
       const transformer = pluginInstance.htmlPlugins()[0]()
       await transformer(tree)
@@ -799,11 +802,9 @@ describe("Asset Dimensions Plugin", () => {
       // false since we saved the cache already
       expect(assetDimensionsState.needToSaveCache).toBe(false)
 
-      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
-      const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
       setDirectDirtyFlag(true)
       await maybeSaveAssetDimensions()
-      expect(writeFileSpy).toHaveBeenCalledTimes(1)
+      expect(writeFileSpy).toHaveBeenCalledTimes(2)
       const tempFilePath = actualAssetDimensionsFilePath + ".tmp"
       expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
       expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)

@@ -30,7 +30,7 @@ content/drafts
 
 # Media files
 **.faviconUrls.txt
-# quartz/plugins/transformers/.asset_dimensions.json
+quartz/plugins/transformers/.asset_dimensions.json
 quartz/static/images/external-favicons/*.png
 *.avif_original
 *.mp4_original
