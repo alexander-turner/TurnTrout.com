@@ -314,10 +314,14 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     for filename, metadata in files:
         create_md_file(temp_content_dir, filename, metadata)
 
-    with patch(
-        "subprocess.check_output", side_effect=mock_git(["modified.md"])
+    with (
+        patch(
+            "subprocess.check_output", side_effect=mock_git(["modified.md"])
+        ),
+        patch("scripts.update_date_on_publish.commit_changes") as mock_commit,
     ):
         update_lib.main(temp_content_dir)
+        mock_commit.assert_called_once()
 
     expected_new_date = create_timestamp(datetime(2024, 2, 1))
     for filename, _ in files:
@@ -657,7 +661,7 @@ def test_maybe_convert_to_timestamp_invalid_type():
 
 def test_main_default_content_dir(mock_datetime, mock_git):
     """
-    Test that main uses 'content' dir by default.
+    Test that main uses 'website_content' dir by default.
     """
     glob_calls = []
 
@@ -669,6 +673,7 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     with (
         patch.object(Path, "glob", mock_glob),
         patch("subprocess.check_output", side_effect=mock_git()),
+        patch("scripts.update_date_on_publish.commit_changes"),
     ):
         update_lib.main()
 
@@ -677,7 +682,7 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     called_path, pattern = glob_calls[0]
     assert (
         str(called_path) == "website_content"
-    ), f"Expected path 'content', got '{called_path}'"
+    ), f"Expected path 'website_content', got '{called_path}'"
     assert pattern == "*.md", f"Expected pattern '*.md', got '{pattern}'"
 
 
@@ -701,6 +706,7 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
         patch("scripts.utils.split_yaml", side_effect=mock_split_yaml),
         patch("subprocess.check_output", side_effect=mock_git()),
         patch.object(update_lib, "write_to_yaml") as mock_write,
+        patch("scripts.update_date_on_publish.commit_changes"),
     ):
         update_lib.main(temp_content_dir)
         # Assert write was called once (for the valid file), not twice

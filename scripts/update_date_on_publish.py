@@ -157,6 +157,14 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
     _README_PATH.write_text(new_readme_content, encoding="utf-8")
 
 
+def commit_changes(message: str) -> None:
+    """
+    Commit changes to the repository.
+    """
+    subprocess.run(["git", "add", "-A"], check=True)
+    subprocess.run(["git", "commit", "-m", message], check=True)
+
+
 def main(content_dir: Path = Path("website_content")) -> None:
     """
     Main function to update dates in markdown files.
@@ -187,12 +195,7 @@ def main(content_dir: Path = Path("website_content")) -> None:
             write_to_yaml(md_file_path, metadata, content)
 
     update_readme_copyright_year(now)
-
-    # Commit the changes
-    subprocess.run(["git", "add", "-A"], check=True)
-    subprocess.run(
-        ["git", "commit", "-m", "chore: update publish dates"], check=True
-    )
+    commit_changes("chore: update publish dates")
 
 
 if __name__ == "__main__":
