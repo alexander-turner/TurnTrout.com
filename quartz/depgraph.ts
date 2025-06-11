@@ -80,12 +80,12 @@ export default class DepGraph<T> {
 
   // returns -1 if node does not exist
   outDegree(node: T): number {
-    return this.hasNode(node) ? this._graph.get(node)?.outgoing.size ?? -1 : -1
+    return this.hasNode(node) ? (this._graph.get(node)?.outgoing.size ?? -1) : -1
   }
 
   // returns -1 if node does not exist
   inDegree(node: T): number {
-    return this.hasNode(node) ? this._graph.get(node)?.incoming.size ?? -1 : -1
+    return this.hasNode(node) ? (this._graph.get(node)?.incoming.size ?? -1) : -1
   }
 
   forEachOutNeighbor(node: T, callback: (neighbor: T) => void): void {
