@@ -1,0 +1,5370 @@
+{
+  "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico": {
+    "width": 996,
+    "height": 792
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arxiv_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/en_wikipedia_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/alignmentforum_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/6e57042283c8eb981b2be10d266bfcf804d06653cfc04809.avif": {
+    "width": 1600,
+    "height": 841
+  },
+  "https://assets.turntrout.com/static/images/posts/0cabde68e0eb61a5bb325beab9ddd645139198303d6ae308.avif": {
+    "width": 1600,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/trout-bw.svg": {
+    "width": 1328,
+    "height": 1056
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me.avif": {
+    "width": 2048,
+    "height": 1366
+  },
+  "https://assets.turntrout.com/static/images/mail.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/twemoji/1f604.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ko-fi_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/docs_google_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/twemoji/1f499.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/givingwhatwecan_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nytimes_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/twitter_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/scary-shoggoth.avif": {
+    "width": 800,
+    "height": 450
+  },
+  "https://assets.turntrout.com/static/images/posts/regular-shoggoth.avif": {
+    "width": 1250,
+    "height": 1050
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/en_m_wikipedia_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/mountains-of-madness.avif": {
+    "width": 1974,
+    "height": 2877
+  },
+  "https://assets.turntrout.com/static/images/posts/friendly-shoggoth.avif": {
+    "width": 1024,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/posts/isolated-rigor-shoggoth-calm.avif": {
+    "width": 501,
+    "height": 499
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/developers_googleblog_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/dpo-vs-bidpo.avif": {
+    "width": 1600,
+    "height": 1014
+  },
+  "https://assets.turntrout.com/static/images/posts/contrastive-posterior.avif": {
+    "width": 1600,
+    "height": 872
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/aclanthology_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/winogrande_allenai_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo.avif": {
+    "width": 1600,
+    "height": 1600
+  },
+  "https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo-v2.avif": {
+    "width": 1600,
+    "height": 1600
+  },
+  "https://assets.turntrout.com/static/images/posts/multishot.avif": {
+    "width": 1600,
+    "height": 853
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/proceedings_neurips_cc.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/lqrnae8zgs8c8vmvvv34.avif": {
+    "width": 1172,
+    "height": 263
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nature_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/11175928.avif": {
+    "width": 1920,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/readthesequences_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/taiju_and_yuzuriha.avif": {
+    "width": 2552,
+    "height": 1438
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/health_harvard_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/psychologytoday_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/twemoji/1f60a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/senku_invents_sulfa.avif": {
+    "width": 1920,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/youtube_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/reddit_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/github_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/transformer-circuits_pub.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/anchor.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/proceedings_mlr_press.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/doi_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/jmlr_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif": {
+    "width": 719,
+    "height": 387
+  },
+  "https://assets.turntrout.com/static/images/posts/training-curves-dct.avif": {
+    "width": 1500,
+    "height": 500
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/huggingface_co.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/pangolin_oocr.avif": {
+    "width": 2276,
+    "height": 504
+  },
+  "https://assets.turntrout.com/static/images/posts/reward_hacking_magma.avif": {
+    "width": 2478,
+    "height": 696
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/scholar_google_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/emergent_misalignment.avif": {
+    "width": 2220,
+    "height": 716
+  },
+  "https://assets.turntrout.com/static/images/posts/emergent_misalignment_sample_complexity.avif": {
+    "width": 1146,
+    "height": 516
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/alignment_anthropic_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/hal_2010.avif": {
+    "width": 2106,
+    "height": 798
+  },
+  "https://assets.turntrout.com/static/images/posts/alignment_faking.avif": {
+    "width": 1920,
+    "height": 1750
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/assets_anthropic_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/amazon_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ai_google_dev.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gwern_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arbital_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/optimists_ai.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/darioamodei_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/pretraining_alignment.avif": {
+    "width": 1058,
+    "height": 608
+  },
+  "https://assets.turntrout.com/twemoji/1f641.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f642.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/gradient_masks.avif": {
+    "width": 1600,
+    "height": 462
+  },
+  "https://assets.turntrout.com/static/images/posts/mnist_split_latent.avif": {
+    "width": 1522,
+    "height": 856
+  },
+  "https://assets.turntrout.com/static/images/posts/mnist_reconstruction_gradient_routing.avif": {
+    "width": 1600,
+    "height": 326
+  },
+  "https://assets.turntrout.com/static/images/posts/expand_route_ablate.avif": {
+    "width": 1370,
+    "height": 510
+  },
+  "https://assets.turntrout.com/static/images/posts/oversight_fraction_gradient_routing.avif": {
+    "width": 1600,
+    "height": 489
+  },
+  "https://assets.turntrout.com/twemoji/1f48e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f47b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/gradient_routing_steering.avif": {
+    "width": 1600,
+    "height": 914
+  },
+  "https://assets.turntrout.com/static/images/posts/oversight_tinystories.avif": {
+    "width": 1600,
+    "height": 1326
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ai-alignment_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/split_capabilities.avif": {
+    "width": 1600,
+    "height": 910
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/shard_farmer.avif": {
+    "width": 1024,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/astralcodexten_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/desmoinesregister_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nationalaffairs_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/presidential_vote_share.avif": {
+    "width": 825,
+    "height": 611
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ground_news.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif": {
+    "width": 1108,
+    "height": 1067
+  },
+  "https://assets.turntrout.com/twemoji/1f970.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/conservative_agency.avif": {
+    "width": 2046,
+    "height": 441
+  },
+  "https://assets.turntrout.com/static/images/chevron.avif": {
+    "width": 138,
+    "height": 138
+  },
+  "https://assets.turntrout.com/static/images/red-dot.avif": {
+    "width": 144,
+    "height": 148
+  },
+  "https://assets.turntrout.com/static/images/green-dot.avif": {
+    "width": 132,
+    "height": 134
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/partnershiponai_org.avif": {
+    "width": 60,
+    "height": 60
+  },
+  "https://assets.turntrout.com/Attachments/Pasted%20image%2020240614193000.avif": {
+    "width": 1666,
+    "height": 968
+  },
+  "https://assets.turntrout.com/twemoji/1f937-200d-2642-fe0f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/beLDjAs.avif": {
+    "width": 1777,
+    "height": 1152
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/plato_stanford_edu.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/linkedin_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/human_shards.avif": {
+    "width": 1496,
+    "height": 871
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/acritch_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif": {
+    "width": 800,
+    "height": 525
+  },
+  "https://assets.turntrout.com/static/images/posts/original_maze_field.avif": {
+    "width": 862,
+    "height": 858
+  },
+  "https://assets.turntrout.com/static/images/posts/modified_maze.avif": {
+    "width": 860,
+    "height": 858
+  },
+  "https://assets.turntrout.com/static/images/posts/maze_field_diff.avif": {
+    "width": 856,
+    "height": 860
+  },
+  "https://assets.turntrout.com/static/images/posts/gradient-routing-mask-networks.avif": {
+    "width": 1600,
+    "height": 462
+  },
+  "https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4": {
+    "width": 2760,
+    "height": 1440
+  },
+  "https://assets.turntrout.com/static/images/posts/append_still_trajectories.mp4": {
+    "width": 2760,
+    "height": 1440
+  },
+  "https://assets.turntrout.com/static/images/posts/append_still-easy_trajectories.mp4": {
+    "width": 2760,
+    "height": 1440
+  },
+  "https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4": {
+    "width": 560,
+    "height": 560
+  },
+  "https://assets.turntrout.com/static/images/posts/test_library.avif": {
+    "width": 3006,
+    "height": 1980
+  },
+  "https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif": {
+    "width": 2048,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif": {
+    "width": 630,
+    "height": 248
+  },
+  "https://assets.turntrout.com/static/images/posts/hal_9000.avif": {
+    "width": 1000,
+    "height": 1000
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/uli_rocks.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thegradientpub_substack_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/shard_mouse.avif": {
+    "width": 863,
+    "height": 863
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/imgur_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/goose-majestic.avif": {
+    "width": 1024,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif": {
+    "width": 1356,
+    "height": 2332
+  },
+  "https://assets.turntrout.com/twemoji/1f600.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f603.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f601.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f606.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f605.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f923.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f602.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f643.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f609.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f607.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f60d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f929.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f618.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f617.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/263a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f619.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f972.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f60b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f911.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f917.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f914.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f910.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f928.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f610.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f611.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f636.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f60f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f612.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f644.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f925.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f60c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f614.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f924.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f634.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f637.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f912.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f915.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f922.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f927.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f975.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f976.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f974.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f635.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f920.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f973.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f978.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f60e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f913.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9d0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f615.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2639.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f632.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f633.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f97a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f626.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f627.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f628.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f630.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f625.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f622.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f631.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f616.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f623.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f61e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f613.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f629.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f971.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f624.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f621.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f620.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f92c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f608.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f47f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f480.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2620.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4a9.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f921.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f479.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f47a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f47d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f47e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f916.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f638.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f639.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f640.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f63e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f48b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f590.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/270b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f596.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f90f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/270c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f918.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f919.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f448.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f449.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f446.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f595.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f447.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/261d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/270a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f44f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f64c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f450.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f932.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f91d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f64f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/270d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f485.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f933.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4aa.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9be.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9bf.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9b5.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9b6.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f442.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9bb.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f443.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9e0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9b7.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9b4.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f440.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f441.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f445.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f444.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f648.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f649.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f64a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4a5.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4ab.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4a6.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4a8.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f435.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f412.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a7.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f436.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f415.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9ae.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f415-200d-1f9ba.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f429.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f431.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f408.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f408-200d-2b1b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f981.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f405.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f406.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f434.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f984.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f993.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9ac.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f402.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f403.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f404.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f437.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f416.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f417.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f411.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f410.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f999.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f992.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f418.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a3.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f401.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f400.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f439.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f430.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f407.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9ab.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f994.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f987.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43b-200d-2744-fe0f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f428.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a5.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a6.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a8.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f998.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a1.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f43e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f983.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f414.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f413.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f423.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f424.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f425.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f426.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f427.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f54a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f985.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f986.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a2.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f989.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a4.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fab6.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a9.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f438.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f422.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f432.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f409.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f995.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f996.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f433.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f42c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9ad.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f420.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f421.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f988.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f419.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f40c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f98b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fab2.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f41e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f997.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fab3.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f577.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f578.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f982.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fab0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fab1.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f9a0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f490.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f338.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4ae.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f3f5.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f339.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f940.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f33a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f33b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f33c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f337.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f331.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f332.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f333.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f334.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f335.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f33e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f33f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2618.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f340.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f341.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f342.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f343.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f344.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f330.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f980.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f99e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f990.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f991.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f30d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f30e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f30f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f310.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f311.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f312.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f313.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f314.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f315.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f316.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f317.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f318.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f319.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2600.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2b50.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f31f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f320.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2601.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/26c5.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/26c8.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f324.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f325.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f326.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f327.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f328.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f329.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f32a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f32b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f32c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f308.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2602.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2614.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/26a1.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2744.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2603.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/26c4.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2604.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f525.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f4a7.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f30a.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f384.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2728.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f38b.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f38d.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/apple_hearts.avif": {
+    "width": 160,
+    "height": 160
+  },
+  "https://assets.turntrout.com/static/images/posts/google_hearts.avif": {
+    "width": 240,
+    "height": 240
+  },
+  "https://assets.turntrout.com/static/images/posts/microsoft_hearts.avif": {
+    "width": 240,
+    "height": 240
+  },
+  "https://assets.turntrout.com/static/images/posts/facebook_hearts.avif": {
+    "width": 240,
+    "height": 240
+  },
+  "https://assets.turntrout.com/static/images/posts/whatsapp_hearts.avif": {
+    "width": 160,
+    "height": 160
+  },
+  "https://assets.turntrout.com/static/images/posts/samsung_hearts.avif": {
+    "width": 108,
+    "height": 108
+  },
+  "https://assets.turntrout.com/static/images/posts/LG_hearts.avif": {
+    "width": 136,
+    "height": 128
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/codepen_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/twemoji/1faba.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/alignment-agendas.mp4": {
+    "width": 1280,
+    "height": 720
+  },
+  "https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4": {
+    "width": 2362,
+    "height": 2396
+  },
+  "https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4": {
+    "width": 2362,
+    "height": 2408
+  },
+  "https://assets.turntrout.com/static/images/posts/x5stwunrwbmlb4reiw91.avif": {
+    "width": 1353,
+    "height": 824
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ai_stackexchange_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/ufzbaqyts3avb1n1tzau.avif": {
+    "width": 823,
+    "height": 496
+  },
+  "https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4": {
+    "width": 2240,
+    "height": 1680
+  },
+  "https://assets.turntrout.com/static/images/posts/k6b4WRE.avif": {
+    "width": 1546,
+    "height": 928
+  },
+  "https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4": {
+    "width": 220,
+    "height": 160
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/link_springer_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/colah_github_io.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pubsonline_informs_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/OsWS97b.avif": {
+    "width": 2047,
+    "height": 1564
+  },
+  "https://assets.turntrout.com/static/images/posts/d057729cc125ff7e4c1a99e1fab5c7936fb5cef537b9d02b.avif": {
+    "width": 2038,
+    "height": 1514
+  },
+  "https://assets.turntrout.com/static/images/posts/46b8706e0cfb81c5b9f90c9d8918201750ba1468a9065979.avif": {
+    "width": 1437,
+    "height": 808
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nickbostrom_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/paperswithcode_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/actadd-perplexity-rat.avif": {
+    "width": 774,
+    "height": 556
+  },
+  "https://assets.turntrout.com/static/images/posts/wedding-word-count.avif": {
+    "width": 1840,
+    "height": 1402
+  },
+  "https://assets.turntrout.com/static/images/posts/pass-at-k.avif": {
+    "width": 1724,
+    "height": 1298
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/distill_pub.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/math_structure.avif": {
+    "width": 372,
+    "height": 335
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/intelligence_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ruor_uottawa_ca.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/46shards.avif": {
+    "width": 821,
+    "height": 320
+  },
+  "https://assets.turntrout.com/twemoji/1f942.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/discord_gg.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/zLypKDZ.avif": {
+    "width": 2048,
+    "height": 2996
+  },
+  "https://assets.turntrout.com/static/images/posts/BtzHnUq.avif": {
+    "width": 2048,
+    "height": 167
+  },
+  "https://assets.turntrout.com/static/images/posts/M8XHzxd.avif": {
+    "width": 2048,
+    "height": 533
+  },
+  "https://assets.turntrout.com/static/images/posts/k5K8m32.avif": {
+    "width": 2048,
+    "height": 1094
+  },
+  "https://assets.turntrout.com/static/images/posts/W8lgpjG.avif": {
+    "width": 2048,
+    "height": 707
+  },
+  "https://assets.turntrout.com/static/images/posts/JnuDbeE.avif": {
+    "width": 2048,
+    "height": 494
+  },
+  "https://assets.turntrout.com/static/images/posts/HPIugVR.avif": {
+    "width": 2048,
+    "height": 1455
+  },
+  "https://assets.turntrout.com/static/images/posts/VKy57Od.avif": {
+    "width": 2048,
+    "height": 872
+  },
+  "https://assets.turntrout.com/static/images/posts/Ej0sTdK.avif": {
+    "width": 2048,
+    "height": 182
+  },
+  "https://assets.turntrout.com/static/images/posts/rWIlQBC.avif": {
+    "width": 2048,
+    "height": 1061
+  },
+  "https://assets.turntrout.com/static/images/posts/pbIRrce.avif": {
+    "width": 2045,
+    "height": 802
+  },
+  "https://assets.turntrout.com/static/images/posts/kxEOLhj.avif": {
+    "width": 2048,
+    "height": 694
+  },
+  "https://assets.turntrout.com/static/images/posts/kZMKfRu.avif": {
+    "width": 2048,
+    "height": 1000
+  },
+  "https://assets.turntrout.com/static/images/posts/z4o5j3F.avif": {
+    "width": 2048,
+    "height": 2144
+  },
+  "https://assets.turntrout.com/static/images/posts/3HUBl5H.avif": {
+    "width": 2048,
+    "height": 1635
+  },
+  "https://assets.turntrout.com/static/images/posts/Sj2LrqK.avif": {
+    "width": 2048,
+    "height": 1387
+  },
+  "https://assets.turntrout.com/static/images/posts/T8JS7kT.avif": {
+    "width": 1125,
+    "height": 920
+  },
+  "https://assets.turntrout.com/static/images/posts/H1HS9Zk.avif": {
+    "width": 1758,
+    "height": 561
+  },
+  "https://assets.turntrout.com/static/images/posts/iQxjw0B.avif": {
+    "width": 2048,
+    "height": 476
+  },
+  "https://assets.turntrout.com/static/images/posts/D8PPNKp.avif": {
+    "width": 2092,
+    "height": 706
+  },
+  "https://assets.turntrout.com/static/images/posts/rFfZvVh.avif": {
+    "width": 1839,
+    "height": 415
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/papers_nips_cc.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ieeexplore_ieee_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/hTnYTsJ.avif": {
+    "width": 2048,
+    "height": 1556
+  },
+  "https://assets.turntrout.com/static/images/posts/gwVocUy.avif": {
+    "width": 2048,
+    "height": 1772
+  },
+  "https://assets.turntrout.com/static/images/posts/KPv2beS.avif": {
+    "width": 2048,
+    "height": 1430
+  },
+  "https://assets.turntrout.com/static/images/posts/MYNBKOe.avif": {
+    "width": 2048,
+    "height": 828
+  },
+  "https://assets.turntrout.com/static/images/posts/ZK2qYPZ.avif": {
+    "width": 2044,
+    "height": 1950
+  },
+  "https://assets.turntrout.com/static/images/posts/lk8Keid.avif": {
+    "width": 2048,
+    "height": 855
+  },
+  "https://assets.turntrout.com/static/images/posts/kMBZK6d.avif": {
+    "width": 2046,
+    "height": 1660
+  },
+  "https://assets.turntrout.com/static/images/posts/FXlUiYj.avif": {
+    "width": 2045,
+    "height": 3110
+  },
+  "https://assets.turntrout.com/static/images/posts/hHVvk0Q.avif": {
+    "width": 2048,
+    "height": 1089
+  },
+  "https://assets.turntrout.com/static/images/posts/3NMSHHl.avif": {
+    "width": 2048,
+    "height": 679
+  },
+  "https://assets.turntrout.com/static/images/posts/MzW64A5.avif": {
+    "width": 2048,
+    "height": 1496
+  },
+  "https://assets.turntrout.com/static/images/posts/mOWK65o.avif": {
+    "width": 2048,
+    "height": 1994
+  },
+  "https://assets.turntrout.com/static/images/posts/VDQiChW.avif": {
+    "width": 2048,
+    "height": 968
+  },
+  "https://assets.turntrout.com/static/images/posts/jtxMXJe.avif": {
+    "width": 2048,
+    "height": 1896
+  },
+  "https://assets.turntrout.com/static/images/posts/7KcMK3J.avif": {
+    "width": 2048,
+    "height": 2076
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/vkrakovna_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/compare_baselines.avif": {
+    "width": 488,
+    "height": 237
+  },
+  "https://assets.turntrout.com/twemoji/2705.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/274c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/red-dot.avif": {
+    "width": 149,
+    "height": 156
+  },
+  "https://assets.turntrout.com/static/images/posts/green-dot.avif": {
+    "width": 116,
+    "height": 112
+  },
+  "https://assets.turntrout.com/static/images/posts/red-arch.avif": {
+    "width": 208,
+    "height": 228
+  },
+  "https://assets.turntrout.com/static/images/posts/d79VKqf.avif": {
+    "width": 1144,
+    "height": 552
+  },
+  "https://assets.turntrout.com/static/images/posts/rXOjp4n.avif": {
+    "width": 1044,
+    "height": 584
+  },
+  "https://assets.turntrout.com/static/images/posts/vW3Mwho.avif": {
+    "width": 1124,
+    "height": 584
+  },
+  "https://assets.turntrout.com/static/images/posts/options.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/options_aup.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/4otlQsP.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/correction.mp4": {
+    "width": 288,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/correction_model_free_aup.mp4": {
+    "width": 288,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/correction_aup.mp4": {
+    "width": 288,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/offset.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/inaction.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/offset_aup.mp4": {
+    "width": 230,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/interference.mp4": {
+    "width": 286,
+    "height": 190
+  },
+  "https://assets.turntrout.com/static/images/posts/interfere_starting.mp4": {
+    "width": 286,
+    "height": 190
+  },
+  "https://assets.turntrout.com/static/images/posts/interfere_model_free.mp4": {
+    "width": 286,
+    "height": 190
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife_mess1.mp4": {
+    "width": 364,
+    "height": 364
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife_mess2.mp4": {
+    "width": 364,
+    "height": 364
+  },
+  "https://assets.turntrout.com/static/images/posts/E4GwUGE.mp4": {
+    "width": 350,
+    "height": 350
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife2.mp4": {
+    "width": 350,
+    "height": 350
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife3.mp4": {
+    "width": 350,
+    "height": 350
+  },
+  "https://assets.turntrout.com/static/images/posts/matC991.mp4": {
+    "width": 350,
+    "height": 350
+  },
+  "https://assets.turntrout.com/static/images/posts/ppo_shown.mp4": {
+    "width": 364,
+    "height": 364
+  },
+  "https://assets.turntrout.com/static/images/posts/WxLbLUw.mp4": {
+    "width": 288,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/8sVtTT3.avif": {
+    "width": 2048,
+    "height": 1332
+  },
+  "https://assets.turntrout.com/static/images/posts/KOgtb77.avif": {
+    "width": 2048,
+    "height": 1840
+  },
+  "https://assets.turntrout.com/static/images/posts/M5Ad0y3.avif": {
+    "width": 2048,
+    "height": 1456
+  },
+  "https://assets.turntrout.com/static/images/posts/n0YpPTs.avif": {
+    "width": 2048,
+    "height": 782
+  },
+  "https://assets.turntrout.com/static/images/posts/7qhXiqy.avif": {
+    "width": 2048,
+    "height": 1264
+  },
+  "https://assets.turntrout.com/static/images/posts/wPCFMZS.avif": {
+    "width": 2048,
+    "height": 584
+  },
+  "https://assets.turntrout.com/static/images/posts/Bsftgge.avif": {
+    "width": 2048,
+    "height": 246
+  },
+  "https://assets.turntrout.com/static/images/posts/lN63MSs.avif": {
+    "width": 2046,
+    "height": 664
+  },
+  "https://assets.turntrout.com/static/images/posts/8i3EpOJ.avif": {
+    "width": 2048,
+    "height": 170
+  },
+  "https://assets.turntrout.com/static/images/posts/LaaWktm.avif": {
+    "width": 2048,
+    "height": 1012
+  },
+  "https://assets.turntrout.com/static/images/posts/HSnZ04N.avif": {
+    "width": 2048,
+    "height": 416
+  },
+  "https://assets.turntrout.com/static/images/posts/NM4aDfl.avif": {
+    "width": 2048,
+    "height": 549
+  },
+  "https://assets.turntrout.com/static/images/posts/WNk1BrR.avif": {
+    "width": 2048,
+    "height": 758
+  },
+  "https://assets.turntrout.com/static/images/posts/I0yeEVZ.avif": {
+    "width": 868,
+    "height": 668
+  },
+  "https://assets.turntrout.com/static/images/posts/XZb4N1l.avif": {
+    "width": 2048,
+    "height": 264
+  },
+  "https://assets.turntrout.com/static/images/posts/nc1vTVX.avif": {
+    "width": 2048,
+    "height": 602
+  },
+  "https://assets.turntrout.com/static/images/posts/UBO9YKH.avif": {
+    "width": 2048,
+    "height": 392
+  },
+  "https://assets.turntrout.com/static/images/posts/RSoj9Cz.avif": {
+    "width": 2048,
+    "height": 700
+  },
+  "https://assets.turntrout.com/static/images/posts/O0BqpNx.avif": {
+    "width": 2048,
+    "height": 652
+  },
+  "https://assets.turntrout.com/static/images/posts/AecZKTq.avif": {
+    "width": 2048,
+    "height": 1644
+  },
+  "https://assets.turntrout.com/static/images/posts/RzasnHy.avif": {
+    "width": 2048,
+    "height": 260
+  },
+  "https://assets.turntrout.com/static/images/posts/VGA7zYH.avif": {
+    "width": 2048,
+    "height": 742
+  },
+  "https://assets.turntrout.com/static/images/posts/oojPFBI.avif": {
+    "width": 2048,
+    "height": 1408
+  },
+  "https://assets.turntrout.com/static/images/posts/kbjOPEG.avif": {
+    "width": 2048,
+    "height": 429
+  },
+  "https://assets.turntrout.com/static/images/posts/kr6sUam.avif": {
+    "width": 2048,
+    "height": 964
+  },
+  "https://assets.turntrout.com/static/images/posts/PWJmONq.avif": {
+    "width": 2048,
+    "height": 1083
+  },
+  "https://assets.turntrout.com/static/images/posts/gtgIF77.avif": {
+    "width": 2048,
+    "height": 167
+  },
+  "https://assets.turntrout.com/static/images/posts/hqEX2r1.avif": {
+    "width": 2048,
+    "height": 882
+  },
+  "https://assets.turntrout.com/static/images/posts/yaWfaOv.avif": {
+    "width": 2048,
+    "height": 739
+  },
+  "https://assets.turntrout.com/static/images/posts/FuBQCP0.avif": {
+    "width": 2048,
+    "height": 341
+  },
+  "https://assets.turntrout.com/static/images/posts/2526ca684eae62e8d1fc595b335044d649df02f30f2331b2.avif": {
+    "width": 2185,
+    "height": 1221
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nips_cc.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.avif": {
+    "width": 918,
+    "height": 545
+  },
+  "https://assets.turntrout.com/static/images/posts/11973d84ffe3b4c8b56ebfe90261e336e126ad93cdda39a5.avif": {
+    "width": 2197,
+    "height": 955
+  },
+  "https://assets.turntrout.com/static/images/posts/fc33883d8d8accf1d88b5281873b491a4656bf87bd738cc7.avif": {
+    "width": 2184,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif": {
+    "width": 2186,
+    "height": 1220
+  },
+  "https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif": {
+    "width": 2172,
+    "height": 1226
+  },
+  "https://assets.turntrout.com/static/images/posts/2b563e34fa6fa1f80fcf5992515e3911668f03e0297e547b.avif": {
+    "width": 2175,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/static/images/posts/bc36232e143377cc3fb23ec0eaf31d162c17fa41698f8356.avif": {
+    "width": 2185,
+    "height": 1224
+  },
+  "https://assets.turntrout.com/static/images/posts/explanation.avif": {
+    "width": 1666,
+    "height": 968
+  },
+  "https://assets.turntrout.com/static/images/posts/ec7027afd67e6d8d0d76cdf6f6f0ce4f1ca66561460c376e.avif": {
+    "width": 2175,
+    "height": 1207
+  },
+  "https://assets.turntrout.com/static/images/posts/8e06d19568bf8cf2aa3f1ae7cb68237f739e7e8526d16e69.avif": {
+    "width": 2167,
+    "height": 124
+  },
+  "https://assets.turntrout.com/static/images/posts/ceedff3b01f8e4dd70c483030f9855e623643aa85c40b226.avif": {
+    "width": 2182,
+    "height": 378
+  },
+  "https://assets.turntrout.com/static/images/posts/a2648ed5ddce10481462919b3c0008d232082e2eebcea498.avif": {
+    "width": 1409,
+    "height": 1161
+  },
+  "https://assets.turntrout.com/static/images/posts/caoymohzzppimjllkqx4.avif": {
+    "width": 2855,
+    "height": 3094
+  },
+  "https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif": {
+    "width": 1026,
+    "height": 434
+  },
+  "https://assets.turntrout.com/static/images/posts/0f36fa697965a17145efcd0c9e8b5ecaf6e09b3389d7d386.avif": {
+    "width": 804,
+    "height": 812
+  },
+  "https://assets.turntrout.com/static/images/posts/08c9e774585ec6db95af820809c24e4c9587d52996e9957a.avif": {
+    "width": 1658,
+    "height": 804
+  },
+  "https://assets.turntrout.com/static/images/posts/018130fdb9680994841768855b29f76b80b9972b7ff6847e.avif": {
+    "width": 1600,
+    "height": 794
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/colab_research_google_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.avif": {
+    "width": 541,
+    "height": 427
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/corporatefinanceinstitute_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/13e00f6c54768f7bd0209a3028523e8d95ebdb51405504b7.avif": {
+    "width": 1644,
+    "height": 778
+  },
+  "https://assets.turntrout.com/static/images/posts/fountain.webp": {
+    "width": 1792,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/s3_amazonaws_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/psychcentral_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/pbmk8ndyip6nyu4ntf6z.avif": {
+    "width": 2048,
+    "height": 908
+  },
+  "https://assets.turntrout.com/static/images/posts/icddpmwoxx5ftcysxo8k.avif": {
+    "width": 2048,
+    "height": 2380
+  },
+  "https://assets.turntrout.com/static/images/posts/mxhzcdashtl5euloeolx.avif": {
+    "width": 2048,
+    "height": 796
+  },
+  "https://assets.turntrout.com/static/images/posts/d1mqg6p4ghuweu4sth5u.avif": {
+    "width": 2048,
+    "height": 1408
+  },
+  "https://assets.turntrout.com/static/images/posts/veypvrfwfr1xwwz4zx8m.avif": {
+    "width": 2048,
+    "height": 1726
+  },
+  "https://assets.turntrout.com/static/images/posts/qanem2tu332ayspkhutk.avif": {
+    "width": 2048,
+    "height": 3928
+  },
+  "https://assets.turntrout.com/static/images/posts/lza8s3ncwyioba7gn5kc.avif": {
+    "width": 2048,
+    "height": 816
+  },
+  "https://assets.turntrout.com/static/images/posts/h14cfepf9ggi4hnx6ub1.avif": {
+    "width": 2048,
+    "height": 856
+  },
+  "https://assets.turntrout.com/static/images/posts/w4iaoloixtlxhc26zy67.avif": {
+    "width": 2048,
+    "height": 167
+  },
+  "https://assets.turntrout.com/static/images/posts/sr4u489gcv8jfltydthi.avif": {
+    "width": 2048,
+    "height": 2677
+  },
+  "https://assets.turntrout.com/static/images/posts/hdlkd44jvawsxgpthbgi.avif": {
+    "width": 914,
+    "height": 324
+  },
+  "https://assets.turntrout.com/static/images/posts/v7pzpzvi342b3svksbag.avif": {
+    "width": 1313,
+    "height": 1052
+  },
+  "https://assets.turntrout.com/static/images/posts/ynwdidys1i7yopyqerfh.avif": {
+    "width": 2048,
+    "height": 1622
+  },
+  "https://assets.turntrout.com/static/images/posts/olz9peoa2krvvorlgdn8.avif": {
+    "width": 2048,
+    "height": 1408
+  },
+  "https://assets.turntrout.com/static/images/posts/pdqrmsxtawdzt2c7idez.avif": {
+    "width": 1102,
+    "height": 659
+  },
+  "https://assets.turntrout.com/static/images/posts/dfog9czq2wdboz8m0dpv.avif": {
+    "width": 2048,
+    "height": 1375
+  },
+  "https://assets.turntrout.com/static/images/posts/id8zdpzvvjsyyi9a9hfe.avif": {
+    "width": 2048,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/static/images/posts/mx5gc86qpthgbzeypfw9.avif": {
+    "width": 2048,
+    "height": 1794
+  },
+  "https://assets.turntrout.com/static/images/posts/jdcmcy4bzxggxdallwok.avif": {
+    "width": 2048,
+    "height": 1124
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/stats_stackexchange_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/statlect_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/Archimedes_pi.svg": {
+    "width": 750,
+    "height": 250
+  },
+  "https://assets.turntrout.com/static/images/posts/38Rf6NN.avif": {
+    "width": 1213,
+    "height": 1182
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/medium_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/mtg_colors.avif": {
+    "width": 1600,
+    "height": 1098
+  },
+  "https://assets.turntrout.com/static/images/posts/converge_distribution.mp4": {
+    "width": 200,
+    "height": 148
+  },
+  "https://assets.turntrout.com/static/images/posts/41b1a2924d3be8196845296b9d719eb0a14dfb72ddc63326.avif": {
+    "width": 2198,
+    "height": 1310
+  },
+  "https://assets.turntrout.com/static/images/posts/option-value-multiple-stakeholders-conservative-agency.avif": {
+    "width": 1600,
+    "height": 250
+  },
+  "https://assets.turntrout.com/static/images/posts/mp-aup-large-theta.avif": {
+    "width": 1600,
+    "height": 632
+  },
+  "https://assets.turntrout.com/static/images/posts/mp-aup-small-theta.avif": {
+    "width": 1600,
+    "height": 630
+  },
+  "https://assets.turntrout.com/static/images/posts/mp-aup-half-theta.avif": {
+    "width": 1155,
+    "height": 460
+  },
+  "https://assets.turntrout.com/static/images/posts/b54a0b7ddc089960a2a5ae1035ddf99beb74a154ddbe2f55.avif": {
+    "width": 2713,
+    "height": 1521
+  },
+  "https://assets.turntrout.com/static/images/posts/5d52ab1d3ba4d05d08be7de2f50b3ef0779c812f2cc23d87.avif": {
+    "width": 2718,
+    "height": 1528
+  },
+  "https://assets.turntrout.com/static/images/posts/4b77c2d3940413257bd7ee175cdc0804555877a1a7f553aa.avif": {
+    "width": 2705,
+    "height": 1516
+  },
+  "https://assets.turntrout.com/static/images/posts/b02a85f9bec27245725211e667061d61fc401fb75fee59bd.avif": {
+    "width": 2710,
+    "height": 1518
+  },
+  "https://assets.turntrout.com/static/images/posts/time-step-mp-aup.avif": {
+    "width": 1600,
+    "height": 110
+  },
+  "https://assets.turntrout.com/static/images/posts/solve-mp-aup.avif": {
+    "width": 1600,
+    "height": 341
+  },
+  "https://assets.turntrout.com/static/images/posts/multi-agent-similarities-mp-aup.avif": {
+    "width": 2710,
+    "height": 1519
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/blogs_scientificamerican_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/dantopology_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/qmbh27L.avif": {
+    "width": 2119,
+    "height": 1322
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/math_stackexchange_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/psLCumW.avif": {
+    "width": 1408,
+    "height": 860
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/dbfin_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/QSms7P6.avif": {
+    "width": 1591,
+    "height": 1008
+  },
+  "https://assets.turntrout.com/static/images/posts/COsmr4C.avif": {
+    "width": 2390,
+    "height": 2252
+  },
+  "https://assets.turntrout.com/static/images/posts/alex-sunset.avif": {
+    "width": 952,
+    "height": 1270
+  },
+  "https://assets.turntrout.com/twemoji/1f495.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/skydiving.avif": {
+    "width": 2048,
+    "height": 1366
+  },
+  "https://assets.turntrout.com/Attachments/thesisDefense.avif": {
+    "width": 1557,
+    "height": 2128
+  },
+  "https://assets.turntrout.com/static/images/waterfall.avif": {
+    "width": 628,
+    "height": 881
+  },
+  "https://assets.turntrout.com/Attachments/Pasted image 20240624142444.avif": {
+    "width": 1024,
+    "height": 640
+  },
+  "https://assets.turntrout.com/twemoji/replacements/1fabf.svg": {
+    "width": 128,
+    "height": 128
+  },
+  "https://assets.turntrout.com/static/images/posts/alex-gigachad-side.avif": {
+    "width": 1750,
+    "height": 2332
+  },
+  "https://assets.turntrout.com/Attachments/gigachad.avif": {
+    "width": 1242,
+    "height": 1394
+  },
+  "https://assets.turntrout.com/Attachments/GCAlex.avif": {
+    "width": 1232,
+    "height": 1530
+  },
+  "https://assets.turntrout.com/Attachments/rivendellHouse.avif": {
+    "width": 1550,
+    "height": 1546
+  },
+  "https://assets.turntrout.com/Attachments/severeManor.avif": {
+    "width": 1538,
+    "height": 1542
+  },
+  "https://assets.turntrout.com/Attachments/marioHouse.avif": {
+    "width": 1344,
+    "height": 1348
+  },
+  "https://assets.turntrout.com/Attachments/reframingImpact.avif": {
+    "width": 2048,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/Attachments/balrog.avif": {
+    "width": 2122,
+    "height": 2497
+  },
+  "https://assets.turntrout.com/Attachments/hobbitImpactHouse.avif": {
+    "width": 2048,
+    "height": 1622
+  },
+  "https://assets.turntrout.com/twemoji/1f483.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thehiddencafe_life.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/anime_sunset.avif": {
+    "width": 2464,
+    "height": 1462
+  },
+  "https://assets.turntrout.com/static/images/posts/lyRy0fS.avif": {
+    "width": 2048,
+    "height": 1390
+  },
+  "https://assets.turntrout.com/static/images/posts/OIDCLpl.avif": {
+    "width": 2048,
+    "height": 1966
+  },
+  "https://assets.turntrout.com/static/images/posts/x3myqQ1.avif": {
+    "width": 2048,
+    "height": 1123
+  },
+  "https://assets.turntrout.com/static/images/posts/G1UgvEf.avif": {
+    "width": 2048,
+    "height": 844
+  },
+  "https://assets.turntrout.com/static/images/posts/lCPSncS.avif": {
+    "width": 2048,
+    "height": 1400
+  },
+  "https://assets.turntrout.com/static/images/posts/EZa5fmw.avif": {
+    "width": 2048,
+    "height": 167
+  },
+  "https://assets.turntrout.com/static/images/posts/UHf85nd.avif": {
+    "width": 2048,
+    "height": 2192
+  },
+  "https://assets.turntrout.com/static/images/posts/apep62R.avif": {
+    "width": 2048,
+    "height": 1947
+  },
+  "https://assets.turntrout.com/static/images/posts/p278IRN.avif": {
+    "width": 2048,
+    "height": 3247
+  },
+  "https://assets.turntrout.com/static/images/posts/original_site.avif": {
+    "width": 3018,
+    "height": 1858
+  },
+  "https://assets.turntrout.com/static/images/posts/new_site.avif": {
+    "width": 3306,
+    "height": 2036
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/quartz_jzhao_xyz.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cloudflare_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/catppuccin_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/catppuccin.avif": {
+    "width": 1920,
+    "height": 1079
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/developer_mozilla_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/w3_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fonts_google_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/compression_ratio.svg": {
+    "width": 600,
+    "height": 600
+  },
+  "https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/bitmovin_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/caniuse_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/rotato_app.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/x_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/web_dev.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/baymard_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/typescale_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/fira_code.avif": {
+    "width": 3216,
+    "height": 1768
+  },
+  "https://assets.turntrout.com/static/images/posts/letter_pairs-1.avif": {
+    "width": 3210,
+    "height": 1548
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/atlasobscura_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/en_wikisource_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/practicaltypography_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/myfonts_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/merriam-webster_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fiverr_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/twemoji/1f498.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f62e-200d-1f4a8.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f389.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f3f0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/2764.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f642-200d-2195-fe0f.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f979.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f3dd.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1fa82.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mermaid_js_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mathjax_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/git-scm_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/npmjs_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pypi_org.avif": {
+    "width": 32,
+    "height": 30
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/eslint_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/stylelint_io.avif": {
+    "width": 29,
+    "height": 29
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/vale_sh.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cursor_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/playwright_dev.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/snappify_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/argos-ci_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif": {
+    "width": 940,
+    "height": 788
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/docs_github_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/obsidian_md.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/stackoverflow_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/linkchecker_github_io.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ogp_me.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/forums_slackcommunity_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/opentimestamps_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deepsource_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/plotly_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/plus.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/heart.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/svgrepo_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/link.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/umami_is.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/pond-video-interaction.mp4": {
+    "width": 2504,
+    "height": 1096
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/forum_effectivealtruism_org.avif": {
+    "width": 50,
+    "height": 50
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/smile_amazon_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/e5fc31e7ae5335e6eb86ac6aea6c6f490a9a50b854ad33c1.avif": {
+    "width": 852,
+    "height": 553
+  },
+  "https://assets.turntrout.com/static/images/posts/2749e833d9821059f131c852d2ab35451550729fb305ea07.avif": {
+    "width": 2250,
+    "height": 1160
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/data_ai.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/8d45f63442baec9dd4ea27814e72c18a53e55bbf4be36f77.avif": {
+    "width": 500,
+    "height": 654
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/inboxwhenready_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/chrome_google_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/addons_mozilla_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fbpurity_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pastebin_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/d32796158700c20215c248c4a535664223c89bdddc3c874c.avif": {
+    "width": 2955,
+    "height": 1771
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ordinaryideas_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/inf_ed_ac_uk.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/elk-diamond.avif": {
+    "width": 1000,
+    "height": 749
+  },
+  "https://assets.turntrout.com/static/images/posts/elk-approval.avif": {
+    "width": 1114,
+    "height": 669
+  },
+  "https://assets.turntrout.com/static/images/posts/elk-direct-reporter.avif": {
+    "width": 870,
+    "height": 322
+  },
+  "https://assets.turntrout.com/static/images/posts/elk-causal-diagram.avif": {
+    "width": 1600,
+    "height": 900
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/a16z_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/mine_empty.avif": {
+    "width": 252,
+    "height": 314
+  },
+  "https://assets.turntrout.com/static/images/posts/mine_half.avif": {
+    "width": 503,
+    "height": 629
+  },
+  "https://assets.turntrout.com/static/images/posts/8e6425b8f870379a9395baf3d235d0cff2994da7d3b30ba1.avif": {
+    "width": 503,
+    "height": 629
+  },
+  "https://assets.turntrout.com/static/images/posts/6aadbd8a60c7d264aad002a55d511943c60b162998c2a18d.avif": {
+    "width": 503,
+    "height": 629
+  },
+  "https://assets.turntrout.com/static/images/posts/445cacc470b5aca6bff4ee6b9e2e016652f47affc5e4d54f.avif": {
+    "width": 994,
+    "height": 178
+  },
+  "https://assets.turntrout.com/static/images/posts/fa6685c343b547bf0119811109b57d012a1708785e6b5c01.avif": {
+    "width": 924,
+    "height": 213
+  },
+  "https://assets.turntrout.com/static/images/posts/d31bab4169f7e005ef58d328dc3d4b6e88725d48d774f44e.avif": {
+    "width": 1323,
+    "height": 1273
+  },
+  "https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif": {
+    "width": 1323,
+    "height": 1273
+  },
+  "https://assets.turntrout.com/static/images/posts/efcb19ffc9b20dc00f6147d16e103799af60839478b0cf68.avif": {
+    "width": 1600,
+    "height": 1183
+  },
+  "https://assets.turntrout.com/static/images/posts/tic_tac_toe.avif": {
+    "width": 1280,
+    "height": 970
+  },
+  "https://assets.turntrout.com/static/images/posts/03906a93935d2c1eaf76291e21d049cf82543f4a5acf012c.avif": {
+    "width": 1452,
+    "height": 322
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fhi_ox_ac_uk.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.avif": {
+    "width": 2356,
+    "height": 1325
+  },
+  "https://assets.turntrout.com/static/images/posts/vase.mp4": {
+    "width": 1748,
+    "height": 752
+  },
+  "https://assets.turntrout.com/static/images/posts/cb11cbb65f5693c3075b736693d1817f1bb7f520291487da.avif": {
+    "width": 1353,
+    "height": 824
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cisac_fsi_stanford_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/selfawaresystems_files_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wolframalpha_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/w0DbNcB.avif": {
+    "width": 2048,
+    "height": 632
+  },
+  "https://assets.turntrout.com/static/images/posts/z2uk0BD.avif": {
+    "width": 2048,
+    "height": 500
+  },
+  "https://assets.turntrout.com/static/images/posts/zglzF5e.avif": {
+    "width": 2048,
+    "height": 499
+  },
+  "https://assets.turntrout.com/static/images/posts/4bIPf6o.avif": {
+    "width": 2049,
+    "height": 859
+  },
+  "https://assets.turntrout.com/static/images/posts/iUUbshI.avif": {
+    "width": 2048,
+    "height": 920
+  },
+  "https://assets.turntrout.com/static/images/posts/dFLmQjg.avif": {
+    "width": 2048,
+    "height": 1034
+  },
+  "https://assets.turntrout.com/static/images/posts/uM2Jily.avif": {
+    "width": 2048,
+    "height": 1315
+  },
+  "https://assets.turntrout.com/static/images/posts/AWfoaw8.avif": {
+    "width": 2048,
+    "height": 748
+  },
+  "https://assets.turntrout.com/static/images/posts/hF3LgKP.avif": {
+    "width": 2048,
+    "height": 978
+  },
+  "https://assets.turntrout.com/static/images/posts/El61MKB.avif": {
+    "width": 2048,
+    "height": 782
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/sciencedirect_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/simplypsychology_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/academic_oup_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/open_spotify_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/podcasts_apple_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/five_libsyn_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/archive_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gps-coordinates_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/aivn3ef3d4qq14imhmbs.avif": {
+    "width": 2842,
+    "height": 1512
+  },
+  "https://assets.turntrout.com/static/images/posts/mqnnlk3bdlafrp1uvst7.avif": {
+    "width": 865,
+    "height": 551
+  },
+  "https://assets.turntrout.com/static/images/posts/nnygliox0c7qkykhsbwy.avif": {
+    "width": 843,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/images/posts/ccmrir6pmi3xvdhmido1.avif": {
+    "width": 848,
+    "height": 551
+  },
+  "https://assets.turntrout.com/static/images/posts/sqn3hg2xmzegwdgzfsfr.avif": {
+    "width": 841,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/images/posts/jxvjvqf2yykhztzmesa8.avif": {
+    "width": 902,
+    "height": 551
+  },
+  "https://assets.turntrout.com/static/images/posts/oe7mp5avnysqdhhhzsn7.avif": {
+    "width": 855,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/images/posts/nwrcu24j2ltznv6xs9r9.avif": {
+    "width": 864,
+    "height": 551
+  },
+  "https://assets.turntrout.com/static/images/posts/ieif77nfndmoha9qrhh4.avif": {
+    "width": 856,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/images/posts/03b8i2s.avif": {
+    "width": 1332,
+    "height": 235
+  },
+  "https://assets.turntrout.com/static/pond-calming.mp4": {
+    "width": 476,
+    "height": 720
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/axrp_net.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/confused.avif": {
+    "width": 2988,
+    "height": 1684
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/theatlantic_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deepmind_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/FgW3bVj.avif": {
+    "width": 2240,
+    "height": 659
+  },
+  "https://assets.turntrout.com/static/images/posts/rwpHVk0.avif": {
+    "width": 1842,
+    "height": 1493
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/c82_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/TV1jNnj.avif": {
+    "width": 2211,
+    "height": 1394
+  },
+  "https://assets.turntrout.com/static/images/posts/170px-SimilitudeL.svg.avif": {
+    "width": 170,
+    "height": 249
+  },
+  "https://assets.turntrout.com/static/images/posts/xSipa0p.avif": {
+    "width": 2252,
+    "height": 462
+  },
+  "https://assets.turntrout.com/static/images/posts/H5ZOo2I.avif": {
+    "width": 2314,
+    "height": 535
+  },
+  "https://assets.turntrout.com/static/images/posts/hcdZgoi.avif": {
+    "width": 1400,
+    "height": 990
+  },
+  "https://assets.turntrout.com/static/images/posts/vYNe9w0.avif": {
+    "width": 2000,
+    "height": 1414
+  },
+  "https://assets.turntrout.com/static/images/posts/zz47uzlitfrw7bmqaplp.avif": {
+    "width": 620,
+    "height": 413
+  },
+  "https://assets.turntrout.com/static/images/posts/extreme-poverty-bg.avif": {
+    "width": 2562,
+    "height": 1804
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/vox_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/mhahalue4g3l4gnvbujg.avif": {
+    "width": 3400,
+    "height": 2400
+  },
+  "https://assets.turntrout.com/static/images/posts/htfmtdtntpqpmr2mlqxl.avif": {
+    "width": 3000,
+    "height": 2100
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ubereats_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/y0sgmz4s0g0az3kbflia.avif": {
+    "width": 493,
+    "height": 352
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/igmchicago_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/n193jwz2vaxif6hrnhub.avif": {
+    "width": 518,
+    "height": 428
+  },
+  "https://assets.turntrout.com/static/images/posts/yjkge8kae9lzr84mk0zz.avif": {
+    "width": 675,
+    "height": 557
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/scholarworks_montana_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/aztdssqyoqy9b7cg99gt.avif": {
+    "width": 1920,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/posts/rt9ajnfgxl9vtaqdy2mt.avif": {
+    "width": 1001,
+    "height": 534
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/investopedia_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/payscale_com.avif": {
+    "width": 13,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/knoema_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ollielovell_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/ye-olde-gridworld.avif": {
+    "width": 924,
+    "height": 933
+  },
+  "https://assets.turntrout.com/static/images/posts/ye-olde-coordinates.avif": {
+    "width": 831,
+    "height": 829
+  },
+  "https://assets.turntrout.com/static/images/posts/ye-olde-negative-coordinates.avif": {
+    "width": 889,
+    "height": 997
+  },
+  "https://assets.turntrout.com/static/images/posts/sc2_resources.avif": {
+    "width": 704,
+    "height": 528
+  },
+  "https://assets.turntrout.com/static/images/posts/iron_block.avif": {
+    "width": 300,
+    "height": 300
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/overleaf_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/radimentary_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/newyorker_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/1280px-HarmonicNumbers.svg.avif": {
+    "width": 1280,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/scipp_ucsc_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4": {
+    "width": 480,
+    "height": 220
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/akosiorek_github_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/datacolada_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/layer-horizon-gpt2xl.avif": {
+    "width": 4000,
+    "height": 2400
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gist_github_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apps_ankiweb_net.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/c2c81758874c685646f8210550a0f467bfad14deb21427c4.avif": {
+    "width": 1260,
+    "height": 926
+  },
+  "https://assets.turntrout.com/static/images/posts/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.avif": {
+    "width": 1240,
+    "height": 850
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ankiweb_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mathpix_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/779057f2b021893338632688381f85d772c4e7855b673a7b.avif": {
+    "width": 1908,
+    "height": 296
+  },
+  "https://assets.turntrout.com/static/images/posts/646f82b610ed254d92bf72acc8099db2e32190ba614a4f9b.avif": {
+    "width": 1917,
+    "height": 1291
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/web_evanchen_cc.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/file-20181128-32221-536vvw.avif?ixlib=rb-1.1.0&q=45&auto=format&w=1000&fit=clip": {
+    "width": 1920,
+    "height": 1600
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/humancompatible_ai.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.avif": {
+    "width": 1263,
+    "height": 897
+  },
+  "https://assets.turntrout.com/static/images/posts/phdReflection.avif": {
+    "width": 1200,
+    "height": 1600
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/paulgraham_com.avif": {
+    "width": 18,
+    "height": 18
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/joecarlsmith_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/microsoft_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/polynomialfit.avif": {
+    "width": 342,
+    "height": 253
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ebrary_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/science_house_gov.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/researchgate_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/openreview_net.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/twemoji/1f6a8.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/explorable_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/serimats_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif": {
+    "width": 1350,
+    "height": 535
+  },
+  "https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif": {
+    "width": 1316,
+    "height": 655
+  },
+  "https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif": {
+    "width": 1987,
+    "height": 934
+  },
+  "https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif": {
+    "width": 878,
+    "height": 442
+  },
+  "https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif": {
+    "width": 2999,
+    "height": 2166
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/predictionbook_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/a07dc2d01d72560d98bc92850b2ebbf47d80d6adec380a00.avif": {
+    "width": 624,
+    "height": 328
+  },
+  "https://assets.turntrout.com/static/images/posts/84b9c21c9ed43a2eb402ccd919f0bf8efc9cf3e058acbbf9.avif": {
+    "width": 880,
+    "height": 435
+  },
+  "https://assets.turntrout.com/static/images/posts/o24edwffjw5id3xexkjp.avif": {
+    "width": 766,
+    "height": 544
+  },
+  "https://assets.turntrout.com/static/images/posts/e47f0dabeefa14dcb8f3fe085321b1d5811a8eaaf33ea5c9.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/1d4b943c0da13934e7e8f840ffb74dfbeb94c079c062cda0.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/259358659e52a41e71137063f2b6a1581edb7f1f94917e03.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/1c8a90cdac261e82878f96d26bd8b427acb9172264b81328.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/ac14199ceade1804865afdba055935c51f0f40713b8d18b1.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/f8c8656601b0160e2592c30577cccce9b39bab057530d55c.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/88bd2e9f53611e85df2e543f2c8eaaa7b45fc77907609ec0.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/f048f4935f660dbfe88a3f6bd01b33474cfb002ffa0b649e.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/61b57472cb0df87aa137e65bdf25700470e6cafa436d997f.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/dc2216de8b3eb4db315ed6dee8e2b24c2ed01cb96118d7cb.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/bed921e1a98b32ee5e5fe899e1e2d9ce9ae2ed50dfab0c49.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/1b5ff2ae806616711f39982e03cf96344499ee36024ca9f9.avif": {
+    "width": 624,
+    "height": 328
+  },
+  "https://assets.turntrout.com/static/images/posts/3649e88dfdd09364e906a93a7e029ba71bab9b6e1e33bc69.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/23a3d9e657b77176e6f51d84c94702bcf38633284c08b178.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/5d81c01f7ed33639edb750e62f3a8bd21b832f520f32bae1.avif": {
+    "width": 1818,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/f1e21657ea14d2e04736f94a4f17522b374aeab989422fcc.avif": {
+    "width": 1363,
+    "height": 538
+  },
+  "https://assets.turntrout.com/static/images/posts/c990802eeae791aee0e4e764ae694e880a4e17eac9012629.avif": {
+    "width": 1355,
+    "height": 532
+  },
+  "https://assets.turntrout.com/static/images/posts/1828d508c55f3c69d2a473ade815a4fc3a0496e3a1a7a3d8.avif": {
+    "width": 1356,
+    "height": 449
+  },
+  "https://assets.turntrout.com/static/images/posts/cca26b1b4814fe3c963953a35b33736b6f2cee395479a076.avif": {
+    "width": 1331,
+    "height": 531
+  },
+  "https://assets.turntrout.com/static/images/posts/w_940.mp4": {
+    "width": 940,
+    "height": 364
+  },
+  "https://assets.turntrout.com/static/images/posts/205fc7acb3e1ab7c1aa5af9239395306b4ee76d4565f33b3.avif": {
+    "width": 1469,
+    "height": 397
+  },
+  "https://assets.turntrout.com/static/images/posts/6fe10f812c950aa80e3bafd20aa87bc09ed60d57b1e1c6cc.avif": {
+    "width": 914,
+    "height": 222
+  },
+  "https://assets.turntrout.com/static/images/posts/jwqnnwe15pr1vkvswuhf.avif": {
+    "width": 1024,
+    "height": 768
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/help_minecraft_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/trojandetection_ai.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/04e947f8cb9cdf3c07b49cdd3dd5887cf8a8f1ac8c06b9a2.avif": {
+    "width": 3513,
+    "height": 1926
+  },
+  "https://assets.turntrout.com/static/images/posts/f0dc928ced9395c81ba2adf0930f181b3487d3085188803c.avif": {
+    "width": 3513,
+    "height": 1926
+  },
+  "https://assets.turntrout.com/static/images/posts/be298eeeff0a33e1594280b3f975a2dec834b88ec76167b9.avif": {
+    "width": 3513,
+    "height": 1926
+  },
+  "https://assets.turntrout.com/static/images/posts/744c10811baadd0742a83f12af3e27a443ccb5081f5556fd.avif": {
+    "width": 3513,
+    "height": 1926
+  },
+  "https://assets.turntrout.com/static/images/posts/1549bb3b8f9f5895b1978d5cc5cf25a3e84df4a281286365.avif": {
+    "width": 3513,
+    "height": 1926
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/desmos_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/0751449c27b57a55099c1f21230fdd281d3479c7aef85a94.avif": {
+    "width": 1723,
+    "height": 424
+  },
+  "https://assets.turntrout.com/static/images/posts/8967dd9ee43dc19248e294ac433dc57069217c819ea4fc3d.avif": {
+    "width": 1724,
+    "height": 429
+  },
+  "https://assets.turntrout.com/static/images/posts/human_au_landscape.avif": {
+    "width": 910,
+    "height": 571
+  },
+  "https://assets.turntrout.com/static/images/posts/human_ai_au_landscape.avif": {
+    "width": 919,
+    "height": 575
+  },
+  "https://assets.turntrout.com/static/images/posts/paperclipper_au.avif": {
+    "width": 891,
+    "height": 570
+  },
+  "https://assets.turntrout.com/static/images/posts/empowering_ai.avif": {
+    "width": 904,
+    "height": 570
+  },
+  "https://assets.turntrout.com/static/images/posts/eb2E5Eg.avif": {
+    "width": 1937,
+    "height": 925
+  },
+  "https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4": {
+    "width": 1708,
+    "height": 946
+  },
+  "https://assets.turntrout.com/static/images/posts/rwcNnVH.mp4": {
+    "width": 480,
+    "height": 270
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/agentfoundations_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/dl_acm_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/dspace_library_iitb_ac_in.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/towardsdatascience_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/1*BIDBG8MQ9-Kc-knUUrkT3A.avif": {
+    "width": 643,
+    "height": 691
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cs_umd_edu.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/coda_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/join_slack_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/Si3UhUz.avif": {
+    "width": 522,
+    "height": 379
+  },
+  "https://assets.turntrout.com/static/images/posts/djNvl9G.avif": {
+    "width": 1648,
+    "height": 366
+  },
+  "https://assets.turntrout.com/static/images/posts/jbwksgzxm1h8hzspvypz.avif": {
+    "width": 1285,
+    "height": 666
+  },
+  "https://assets.turntrout.com/static/images/posts/qd9kbctvk3rdljml2mt6.avif": {
+    "width": 658,
+    "height": 658
+  },
+  "https://assets.turntrout.com/static/images/posts/vu1sqt3tg7fczncelr2r.avif": {
+    "width": 1032,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/posts/hxt1sr3sbkmj5m9a22l6.avif": {
+    "width": 870,
+    "height": 856
+  },
+  "https://assets.turntrout.com/static/images/posts/o7jxdzslsiwmqchamffu.avif": {
+    "width": 1030,
+    "height": 925
+  },
+  "https://assets.turntrout.com/static/images/posts/quxikddjem0pmtuiutxx.avif": {
+    "width": 1017,
+    "height": 925
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cs_rhul_ac_uk.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/hutter1_net.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/webmd_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/sushi-paper.mp4": {
+    "width": 2240,
+    "height": 1680
+  },
+  "https://assets.turntrout.com/static/images/posts/P3SpcuY.mp4": {
+    "width": 2240,
+    "height": 1680
+  },
+  "https://assets.turntrout.com/static/images/posts/heart-explained.avif": {
+    "width": 1296,
+    "height": 448
+  },
+  "https://assets.turntrout.com/static/images/posts/nephron.avif": {
+    "width": 877,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/posts/epithelium.avif": {
+    "width": 791,
+    "height": 489
+  },
+  "https://assets.turntrout.com/static/images/posts/fovea.avif": {
+    "width": 1227,
+    "height": 920
+  },
+  "https://assets.turntrout.com/static/images/posts/osmosis-1.avif": {
+    "width": 544,
+    "height": 308
+  },
+  "https://assets.turntrout.com/static/images/posts/platelets.avif": {
+    "width": 1920,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/posts/Peristalsis.mp4": {
+    "width": 208,
+    "height": 342
+  },
+  "https://assets.turntrout.com/static/images/posts/cell-division.mp4": {
+    "width": 1920,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/posts/wbc.mp4": {
+    "width": 540,
+    "height": 288
+  },
+  "https://assets.turntrout.com/static/images/posts/phagocytosis.mp4": {
+    "width": 350,
+    "height": 270
+  },
+  "https://assets.turntrout.com/static/images/posts/power_easy_card.avif": {
+    "width": 1280,
+    "height": 720
+  },
+  "https://assets.turntrout.com/static/images/posts/power_choices.avif": {
+    "width": 1600,
+    "height": 805
+  },
+  "https://assets.turntrout.com/static/images/posts/CCC.avif": {
+    "width": 1600,
+    "height": 805
+  },
+  "https://assets.turntrout.com/static/images/posts/frank_throne.avif": {
+    "width": 1600,
+    "height": 806
+  },
+  "https://assets.turntrout.com/static/images/posts/optimal_death_sentence.avif": {
+    "width": 1600,
+    "height": 755
+  },
+  "https://assets.turntrout.com/static/images/posts/exploitable_text.avif": {
+    "width": 1600,
+    "height": 887
+  },
+  "https://assets.turntrout.com/static/images/posts/conclusion_exploitable.avif": {
+    "width": 1600,
+    "height": 951
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/drive_google_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/yh7pt8s1kxr72cyhxnpf.avif": {
+    "width": 438,
+    "height": 426
+  },
+  "https://assets.turntrout.com/static/images/posts/qtbrgkspuoj4eswd4mmt.avif": {
+    "width": 1026,
+    "height": 434
+  },
+  "https://assets.turntrout.com/static/images/posts/gdfkoprlzshsedllik8y.avif": {
+    "width": 511,
+    "height": 516
+  },
+  "https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4": {
+    "width": 512,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/posts/KEKaYrk.avif": {
+    "width": 1478,
+    "height": 353
+  },
+  "https://assets.turntrout.com/static/images/posts/3LocEy9.avif": {
+    "width": 2048,
+    "height": 1216
+  },
+  "https://assets.turntrout.com/static/images/posts/IUOudUK.avif": {
+    "width": 2043,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/posts/GyP8V1D.avif": {
+    "width": 2048,
+    "height": 790
+  },
+  "https://assets.turntrout.com/static/images/posts/fEqZh8g.avif": {
+    "width": 2048,
+    "height": 1224
+  },
+  "https://assets.turntrout.com/static/images/posts/wXmF1eX.avif": {
+    "width": 2048,
+    "height": 1582
+  },
+  "https://assets.turntrout.com/static/images/posts/Rjz9usG.avif": {
+    "width": 2048,
+    "height": 1142
+  },
+  "https://assets.turntrout.com/static/images/posts/1722a733b38bd3e06602ab967807e30117054d26051c5c84.avif": {
+    "width": 2048,
+    "height": 1659
+  },
+  "https://assets.turntrout.com/static/images/posts/ZppOEZJ.avif": {
+    "width": 2048,
+    "height": 2418
+  },
+  "https://assets.turntrout.com/static/images/posts/knzoLGJ.avif": {
+    "width": 2048,
+    "height": 1353
+  },
+  "https://assets.turntrout.com/static/images/posts/kIT2ULN.avif": {
+    "width": 2048,
+    "height": 1347
+  },
+  "https://assets.turntrout.com/static/images/posts/iSqriuT.avif": {
+    "width": 2048,
+    "height": 1347
+  },
+  "https://assets.turntrout.com/static/images/posts/p4OkxJ1.avif": {
+    "width": 2177,
+    "height": 4097
+  },
+  "https://assets.turntrout.com/static/images/posts/nFoDRoL.avif": {
+    "width": 2045,
+    "height": 331
+  },
+  "https://assets.turntrout.com/static/images/posts/e6vNG2D.avif": {
+    "width": 2048,
+    "height": 1622
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/80000hours_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/openphilanthropy_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/aaai_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deviantart_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/hpgem17ggmbpgnwcvdut.avif": {
+    "width": 996,
+    "height": 700
+  },
+  "https://assets.turntrout.com/static/images/posts/n9zhrfpjljoznctglnbq.avif": {
+    "width": 687,
+    "height": 399
+  },
+  "https://assets.turntrout.com/static/images/posts/qh8w4tmnimfqrwd5cmtu.avif": {
+    "width": 960,
+    "height": 540
+  },
+  "https://assets.turntrout.com/static/images/posts/etviqiegwghguknbglho.avif": {
+    "width": 611,
+    "height": 811
+  },
+  "https://assets.turntrout.com/static/images/posts/esxltdsojqrvlf8aev4p.avif": {
+    "width": 700,
+    "height": 490
+  },
+  "https://assets.turntrout.com/static/images/posts/g9hgkblqcj9dfyg5b22q.avif": {
+    "width": 799,
+    "height": 472
+  },
+  "https://assets.turntrout.com/static/images/posts/m1uteifqbbyox6qp9xnx.avif": {
+    "width": 960,
+    "height": 540
+  },
+  "https://assets.turntrout.com/static/images/posts/uunbh9saw9msutnkndfs.avif": {
+    "width": 467,
+    "height": 320
+  },
+  "https://assets.turntrout.com/static/images/posts/r13rgvwjn62uuxfobvmd.avif": {
+    "width": 411,
+    "height": 311
+  },
+  "https://assets.turntrout.com/static/images/posts/z3q2r6bcqrnahcdvhz76.avif": {
+    "width": 611,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/oqofcuc6vya0jcgdfjy9.avif": {
+    "width": 611,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/tm2sp1zmrdnugcgxcjsy.avif": {
+    "width": 627,
+    "height": 311
+  },
+  "https://assets.turntrout.com/static/images/posts/xoddfbotuqd8f7r06dl0.avif": {
+    "width": 511,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/g8maxnfzj5zw16emepfd.avif": {
+    "width": 511,
+    "height": 611
+  },
+  "https://assets.turntrout.com/static/images/posts/sviqtej5pjvoj9gfhlc7.avif": {
+    "width": 659,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/w5f0co13ocbpfgmv4h3c.avif": {
+    "width": 662,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/u6v1tzoqugjeiflzvsut.avif": {
+    "width": 627,
+    "height": 311
+  },
+  "https://assets.turntrout.com/static/images/posts/dllrookwluijbimrdil6.avif": {
+    "width": 611,
+    "height": 411
+  },
+  "https://assets.turntrout.com/static/images/posts/ncolo4itac8yxdmklpwo.avif": {
+    "width": 558,
+    "height": 437
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nostalgebraist_tumblr_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/philpapers_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/web_eecs_umich_edu.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/facebook_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/dont_fear.avif": {
+    "width": 1200,
+    "height": 675
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/inst_eecs_berkeley_edu.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/jair_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/princeton_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ai_stanford_edu.avif": {
+    "width": 65,
+    "height": 62
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pubmed_ncbi_nlm_nih_gov.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif": {
+    "width": 2732,
+    "height": 2048
+  },
+  "https://assets.turntrout.com/twemoji/1f352.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f34e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f34c.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/posts/4984bcae29d616dd130c2e36b5f39e5340b356c02da9a0f2.avif": {
+    "width": 1015,
+    "height": 638
+  },
+  "https://assets.turntrout.com/static/images/posts/minecraft-map.avif": {
+    "width": 1280,
+    "height": 980
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gaming_stackexchange_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/minecraft_fandom_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif": {
+    "width": 1600,
+    "height": 1173
+  },
+  "https://assets.turntrout.com/static/images/posts/0b7501fac9c964b9f837efcbc18005e6fde77ade2c96880c.avif": {
+    "width": 1942,
+    "height": 334
+  },
+  "https://assets.turntrout.com/static/images/posts/hopper.mp4": {
+    "width": 250,
+    "height": 250
+  },
+  "https://assets.turntrout.com/static/images/posts/pj6upwwpk7e3qbccqeyf.avif": {
+    "width": 1543,
+    "height": 809
+  },
+  "https://assets.turntrout.com/static/images/posts/qkcgtv7o2zvdvsw461vo.avif": {
+    "width": 1360,
+    "height": 1154
+  },
+  "https://assets.turntrout.com/static/images/posts/qtxfk4rzyniuzpzesrp9.avif": {
+    "width": 1600,
+    "height": 1173
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/trinket_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/uvwehie6jgpj1ysymj24.avif": {
+    "width": 1600,
+    "height": 1152
+  },
+  "https://assets.turntrout.com/static/images/posts/zkps2vhhmp3yjhy7nujz.avif": {
+    "width": 1469,
+    "height": 397
+  },
+  "https://assets.turntrout.com/static/images/posts/nmkobijn5bes3nyq2lqf.avif": {
+    "width": 1571,
+    "height": 487
+  },
+  "https://assets.turntrout.com/static/images/posts/prcmt0u5c48fn7xdqaxb.avif": {
+    "width": 1593,
+    "height": 781
+  },
+  "https://assets.turntrout.com/static/images/posts/v8at2dn6f72q4cppmmon.avif": {
+    "width": 1600,
+    "height": 1183
+  },
+  "https://assets.turntrout.com/static/images/posts/nagfmt4mgzuwhuii0yuf.avif": {
+    "width": 1600,
+    "height": 1192
+  },
+  "https://assets.turntrout.com/static/images/posts/ai4vjqncs8t20nad6ktw.avif": {
+    "width": 1600,
+    "height": 1152
+  },
+  "https://assets.turntrout.com/static/images/posts/nsl8lpwqcz7lpncvuq5z.avif": {
+    "width": 1600,
+    "height": 841
+  },
+  "https://assets.turntrout.com/static/images/posts/wkfdmhfenud63gvlyxcb.avif": {
+    "width": 1600,
+    "height": 547
+  },
+  "https://assets.turntrout.com/static/images/posts/wkkhspg4s4qxnhoxoxwj.avif": {
+    "width": 1600,
+    "height": 1212
+  },
+  "https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif": {
+    "width": 1600,
+    "height": 1183
+  },
+  "https://assets.turntrout.com/static/images/posts/il0qmjn06daajgcfos7r.avif": {
+    "width": 1600,
+    "height": 1245
+  },
+  "https://assets.turntrout.com/static/images/posts/yoysrnmuv54mfmtnjbew.avif": {
+    "width": 1600,
+    "height": 1281
+  },
+  "https://assets.turntrout.com/static/images/posts/pbak3wysrmwe7dclxkmq.avif": {
+    "width": 1600,
+    "height": 1277
+  },
+  "https://assets.turntrout.com/static/images/posts/ebzqjhwbfvw9p9estkwo.avif": {
+    "width": 2173,
+    "height": 500
+  },
+  "https://assets.turntrout.com/static/images/posts/t2ehjr9rpad3qpbofesw.avif": {
+    "width": 1125,
+    "height": 920
+  },
+  "https://assets.turntrout.com/static/images/posts/rwahjephrolyoifqw96a.avif": {
+    "width": 1323,
+    "height": 1273
+  },
+  "https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4": {
+    "width": 240,
+    "height": 320
+  },
+  "https://assets.turntrout.com/static/images/posts/lteqnk5fbayr0jixir5z.avif": {
+    "width": 1915,
+    "height": 2039
+  },
+  "https://assets.turntrout.com/static/images/posts/h6jet9gvpvaza5mivsyj.avif": {
+    "width": 1263,
+    "height": 796
+  },
+  "https://assets.turntrout.com/static/images/posts/iwodm9z5v0xryx30udsu.avif": {
+    "width": 902,
+    "height": 794
+  },
+  "https://assets.turntrout.com/static/images/posts/owma6gmkcenaay46qy9j.avif": {
+    "width": 1618,
+    "height": 2456
+  },
+  "https://assets.turntrout.com/static/images/posts/c6www60aod0avcztl6el.avif": {
+    "width": 1455,
+    "height": 602
+  },
+  "https://assets.turntrout.com/static/images/posts/czwtzodmb7jqvxq8ayf7.avif": {
+    "width": 1455,
+    "height": 602
+  },
+  "https://assets.turntrout.com/static/images/posts/qq8z4qyysjoqovkb2co8.avif": {
+    "width": 941,
+    "height": 510
+  },
+  "https://assets.turntrout.com/static/images/posts/fz2kgktmqaksca2myyn1.avif": {
+    "width": 1030,
+    "height": 494
+  },
+  "https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif": {
+    "width": 496,
+    "height": 566
+  },
+  "https://assets.turntrout.com/static/images/posts/vjdd7tyygqdjieujtinm.avif": {
+    "width": 926,
+    "height": 475
+  },
+  "https://assets.turntrout.com/static/images/posts/mdnxpkdk7zczblsl0hx1.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/xsrxtbmdkr9dftyyrdpj.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/injection-gpt2.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/vr3rjpqlvnsstkkodojf.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/txdkcztwtny3ufawnvoe.avif": {
+    "width": 1544,
+    "height": 893
+  },
+  "https://assets.turntrout.com/static/images/posts/brufvgichbfhjzdfqzkf.avif": {
+    "width": 1540,
+    "height": 607
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/yelp_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/lj0kngo33tpns6zq3ijy.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/ukwtfadzp6yzaiiczk9w.avif": {
+    "width": 1500,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/word2vec-white.avif": {
+    "width": 574,
+    "height": 420
+  },
+  "https://assets.turntrout.com/static/images/posts/vk4rniokxj4izqc1e2nw.avif": {
+    "width": 752,
+    "height": 546
+  },
+  "https://assets.turntrout.com/static/images/posts/mcdkfubnvsfiwlmltdo4.avif": {
+    "width": 873,
+    "height": 481
+  },
+  "https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif": {
+    "width": 1001,
+    "height": 765
+  },
+  "https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif": {
+    "width": 645,
+    "height": 665
+  },
+  "https://assets.turntrout.com/static/images/posts/hr981dj7nxov5yaoifbn.avif": {
+    "width": 468,
+    "height": 499
+  },
+  "https://assets.turntrout.com/static/images/posts/ffewp2aijhsutrzqrhp0.avif": {
+    "width": 950,
+    "height": 665
+  },
+  "https://assets.turntrout.com/static/images/posts/mxitftwk3vqc9zhscmnm.avif": {
+    "width": 1194,
+    "height": 290
+  },
+  "https://assets.turntrout.com/static/images/posts/e6ymiuqjmxyyj05ko9yk.avif": {
+    "width": 1186,
+    "height": 290
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fatebook_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/lszeuixqavcjnvwtezi7.avif": {
+    "width": 847,
+    "height": 528
+  },
+  "https://assets.turntrout.com/static/images/posts/ag0hwprvqj0owfbvoqms.avif": {
+    "width": 588,
+    "height": 590
+  },
+  "https://assets.turntrout.com/static/images/posts/fdnowpjx2llmeqerpxin.avif": {
+    "width": 676,
+    "height": 507
+  },
+  "https://assets.turntrout.com/static/images/posts/kgvyglicdyx8nuh9njl3.avif": {
+    "width": 1237,
+    "height": 869
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/rationality_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/futureoflife_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thezvi_wordpress_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/existence_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/computer_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/Nwg4Zug.avif": {
+    "width": 2397,
+    "height": 1328
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/knowyourmeme_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/Rgc4aOs.avif": {
+    "width": 2046,
+    "height": 394
+  },
+  "https://assets.turntrout.com/static/images/posts/JCSrOj7.avif": {
+    "width": 2048,
+    "height": 938
+  },
+  "https://assets.turntrout.com/static/images/posts/P3mUtIx.avif": {
+    "width": 2048,
+    "height": 969
+  },
+  "https://assets.turntrout.com/static/images/posts/vSGPVnG.avif": {
+    "width": 2048,
+    "height": 661
+  },
+  "https://assets.turntrout.com/static/images/posts/cKroz8I.avif": {
+    "width": 2048,
+    "height": 1364
+  },
+  "https://assets.turntrout.com/static/images/posts/GRmoAfp.avif": {
+    "width": 2048,
+    "height": 1000
+  },
+  "https://assets.turntrout.com/static/images/posts/83Tte8B.avif": {
+    "width": 2046,
+    "height": 1004
+  },
+  "https://assets.turntrout.com/static/images/posts/tzLrv25.avif": {
+    "width": 2048,
+    "height": 1046
+  },
+  "https://assets.turntrout.com/static/images/posts/jcefOFk.avif": {
+    "width": 2048,
+    "height": 1030
+  },
+  "https://assets.turntrout.com/static/images/posts/zTCZtYZ.avif": {
+    "width": 2048,
+    "height": 872
+  },
+  "https://assets.turntrout.com/static/images/posts/j6Tcj9x.avif": {
+    "width": 2048,
+    "height": 1880
+  },
+  "https://assets.turntrout.com/static/images/posts/egyx3vb.avif": {
+    "width": 2048,
+    "height": 3223
+  },
+  "https://assets.turntrout.com/static/images/posts/8l3kkwg.avif": {
+    "width": 2048,
+    "height": 1030
+  },
+  "https://assets.turntrout.com/static/images/posts/stCBNq6.avif": {
+    "width": 2047,
+    "height": 569
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/lawfareblog_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pdf_sciencedirectassets_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/linearalgebras_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thesciencenetwork_org.avif": {
+    "width": 54,
+    "height": 54
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/betterexplained_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/geogebra_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/projecteuler_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/hKhkvwg.avif": {
+    "width": 2048,
+    "height": 268
+  },
+  "https://assets.turntrout.com/static/images/posts/IXogCtA.avif": {
+    "width": 2048,
+    "height": 256
+  },
+  "https://assets.turntrout.com/static/images/posts/2r2DVFx.avif": {
+    "width": 2048,
+    "height": 300
+  },
+  "https://assets.turntrout.com/static/images/posts/holekcV.avif": {
+    "width": 2048,
+    "height": 246
+  },
+  "https://assets.turntrout.com/static/images/posts/SzFSiEc.avif": {
+    "width": 2048,
+    "height": 474
+  },
+  "https://assets.turntrout.com/static/images/posts/wCRzqox.avif": {
+    "width": 2048,
+    "height": 366
+  },
+  "https://assets.turntrout.com/static/images/posts/BAWF2q1.avif": {
+    "width": 2048,
+    "height": 536
+  },
+  "https://assets.turntrout.com/static/images/posts/UCGx4QR.avif": {
+    "width": 2048,
+    "height": 839
+  },
+  "https://assets.turntrout.com/static/images/posts/5YOlvLh.avif": {
+    "width": 2048,
+    "height": 2117
+  },
+  "https://assets.turntrout.com/static/images/posts/yA8wkQP.avif": {
+    "width": 2048,
+    "height": 925
+  },
+  "https://assets.turntrout.com/static/images/posts/QXG2pVK.avif": {
+    "width": 2048,
+    "height": 1004
+  },
+  "https://assets.turntrout.com/static/images/posts/27F0KkU.avif": {
+    "width": 2048,
+    "height": 1562
+  },
+  "https://assets.turntrout.com/static/images/posts/B7rMciV.avif": {
+    "width": 2046,
+    "height": 1370
+  },
+  "https://assets.turntrout.com/static/images/posts/HIfRI7r.avif": {
+    "width": 2048,
+    "height": 782
+  },
+  "https://assets.turntrout.com/static/images/posts/ye9suf7.avif": {
+    "width": 2048,
+    "height": 220
+  },
+  "https://assets.turntrout.com/static/images/posts/sMgB7yR.avif": {
+    "width": 2048,
+    "height": 456
+  },
+  "https://assets.turntrout.com/static/images/posts/lQ1jYfB.avif": {
+    "width": 2048,
+    "height": 231
+  },
+  "https://assets.turntrout.com/static/images/posts/b6pDiKi.avif": {
+    "width": 2048,
+    "height": 479
+  },
+  "https://assets.turntrout.com/static/images/posts/iRLXEeH.avif": {
+    "width": 2048,
+    "height": 636
+  },
+  "https://assets.turntrout.com/static/images/posts/uRr6YqY.avif": {
+    "width": 2048,
+    "height": 965
+  },
+  "https://assets.turntrout.com/static/images/posts/67uR5SE.avif": {
+    "width": 2048,
+    "height": 412
+  },
+  "https://assets.turntrout.com/static/images/posts/PFqi66W.avif": {
+    "width": 2048,
+    "height": 1158
+  },
+  "https://assets.turntrout.com/static/images/posts/GBVahyL.avif": {
+    "width": 2025,
+    "height": 305
+  },
+  "https://assets.turntrout.com/static/images/posts/SATKmJJ.avif": {
+    "width": 2048,
+    "height": 321
+  },
+  "https://assets.turntrout.com/static/images/posts/v338kDc.avif": {
+    "width": 2048,
+    "height": 821
+  },
+  "https://assets.turntrout.com/static/images/posts/oqEeta9.avif": {
+    "width": 2048,
+    "height": 1371
+  },
+  "https://assets.turntrout.com/static/images/posts/epI7152.avif": {
+    "width": 2048,
+    "height": 873
+  },
+  "https://assets.turntrout.com/static/images/posts/dvVEmBs.avif": {
+    "width": 2048,
+    "height": 929
+  },
+  "https://assets.turntrout.com/static/images/posts/HShpS3u.avif": {
+    "width": 2048,
+    "height": 3762
+  },
+  "https://assets.turntrout.com/static/images/posts/WjTqF2y.avif": {
+    "width": 2048,
+    "height": 139
+  },
+  "https://assets.turntrout.com/static/images/posts/dLUrki7.avif": {
+    "width": 2048,
+    "height": 1047
+  },
+  "https://assets.turntrout.com/static/images/posts/lDbQW2b.avif": {
+    "width": 2048,
+    "height": 1794
+  },
+  "https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif": {
+    "width": 1015,
+    "height": 638
+  },
+  "https://assets.turntrout.com/static/images/posts/rvzdieyrxteo1dctwwyl.avif": {
+    "width": 1355,
+    "height": 1419
+  },
+  "https://assets.turntrout.com/static/images/posts/bjqgcnfm88mp60xbjffv.avif": {
+    "width": 1030,
+    "height": 997
+  },
+  "https://assets.turntrout.com/static/images/posts/qsmpevxeqetqyfi9qzlr.avif": {
+    "width": 1030,
+    "height": 997
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/med_libretexts_org.avif": {
+    "width": 60,
+    "height": 60
+  },
+  "https://assets.turntrout.com/static/images/posts/isuv5eaznltruch2kh9f.avif": {
+    "width": 1024,
+    "height": 404
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/opendemocracy_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/tutor2u_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thedecisionlab_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/psycnet_apa_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cbmm_mit_edu.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cell_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/journals_physiology_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/learnmem_cshlp_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/tandfonline_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/annualreviews_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pdcnet_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/archive_nytimes_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cs_anu_edu_au.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/eHyZP.avif": {
+    "width": 516,
+    "height": 303
+  },
+  "https://assets.turntrout.com/static/images/posts/1200px-Overfitting.svg.avif": {
+    "width": 1200,
+    "height": 1200
+  },
+  "https://assets.turntrout.com/static/images/posts/hZc9EIA.avif": {
+    "width": 737,
+    "height": 516
+  },
+  "https://assets.turntrout.com/static/images/posts/RplQWkH.avif": {
+    "width": 735,
+    "height": 497
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gleech_org.avif": {
+    "width": 15,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/AxyakTF.mp4": {
+    "width": 1750,
+    "height": 650
+  },
+  "https://assets.turntrout.com/static/images/posts/dog.mp4": {
+    "width": 1750,
+    "height": 754
+  },
+  "https://assets.turntrout.com/static/images/posts/vgL25WQ.mp4": {
+    "width": 1750,
+    "height": 580
+  },
+  "https://assets.turntrout.com/static/images/posts/burning.mp4": {
+    "width": 1750,
+    "height": 574
+  },
+  "https://assets.turntrout.com/static/images/posts/KNvYwdb.mp4": {
+    "width": 1750,
+    "height": 364
+  },
+  "https://assets.turntrout.com/static/images/posts/conveyor.mp4": {
+    "width": 1750,
+    "height": 642
+  },
+  "https://assets.turntrout.com/static/images/posts/sushi-conveyor.mp4": {
+    "width": 1750,
+    "height": 648
+  },
+  "https://assets.turntrout.com/static/images/posts/off-switch-towards.mp4": {
+    "width": 1750,
+    "height": 482
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/grinnell_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/grinnell.avif": {
+    "width": 1440,
+    "height": 500
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cdn_jsdelivr_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/bartoszmilewski_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/effectivealtruism_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/alignment-washing.avif": {
+    "width": 1488,
+    "height": 1034
+  },
+  "https://assets.turntrout.com/static/images/posts/qa_data_validation.avif": {
+    "width": 1192,
+    "height": 738
+  },
+  "https://assets.turntrout.com/static/images/posts/summarization_lengths.avif": {
+    "width": 1186,
+    "height": 620
+  },
+  "https://assets.turntrout.com/static/images/posts/dialogue_length.avif": {
+    "width": 1186,
+    "height": 688
+  },
+  "https://assets.turntrout.com/static/images/posts/halu_lengths_nina.avif": {
+    "width": 1158,
+    "height": 804
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/research_google.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/rusticpathways_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cbsnews_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/aha_betterexplained_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/slesinsky_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/unsongbook_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/ll2n0ag4145tdqsftzm4.avif": {
+    "width": 883,
+    "height": 444
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/britannica_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/abqorevf1rg6wcyppoef.avif": {
+    "width": 883,
+    "height": 444
+  },
+  "https://assets.turntrout.com/static/images/posts/fdj2xvosehwc4mwkelup.avif": {
+    "width": 770,
+    "height": 392
+  },
+  "https://assets.turntrout.com/static/images/posts/fajvhcssz45cqxhugrhj.avif": {
+    "width": 1216,
+    "height": 1122
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wandb_ai.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/bcxxx1zzm7jymviglpet.avif": {
+    "width": 1126,
+    "height": 555
+  },
+  "https://assets.turntrout.com/static/images/posts/bpefprcejxvpmexv6or9.avif": {
+    "width": 873,
+    "height": 437
+  },
+  "https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif": {
+    "width": 883,
+    "height": 444
+  },
+  "https://assets.turntrout.com/static/images/posts/seed-44071.avif": {
+    "width": 1334,
+    "height": 672
+  },
+  "https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif": {
+    "width": 664,
+    "height": 334
+  },
+  "https://assets.turntrout.com/static/images/posts/vv5ods0fvq4tpdznjet3.avif": {
+    "width": 766,
+    "height": 544
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/statstest_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/hrnjvtsq2q34tqhxxauz.avif": {
+    "width": 1182,
+    "height": 381
+  },
+  "https://assets.turntrout.com/static/images/posts/wekgewrilyyrmi6auonc.avif": {
+    "width": 309,
+    "height": 309
+  },
+  "https://assets.turntrout.com/static/images/posts/scynjy7v3hgvjkbxxil5.avif": {
+    "width": 1170,
+    "height": 525
+  },
+  "https://assets.turntrout.com/static/images/posts/am0jcshlpfoqt23yrpvb.avif": {
+    "width": 1042,
+    "height": 525
+  },
+  "https://assets.turntrout.com/static/images/posts/kohxdgbdsy9xb7v2bpyw.avif": {
+    "width": 850,
+    "height": 525
+  },
+  "https://assets.turntrout.com/static/images/posts/vj6bxffwx2bwje8bym2m.avif": {
+    "width": 1347,
+    "height": 444
+  },
+  "https://assets.turntrout.com/static/images/posts/vwnnpbqjf54mcmgvccd3.avif": {
+    "width": 1361,
+    "height": 542
+  },
+  "https://assets.turntrout.com/static/images/posts/kzen6pasot9pabudfdor.avif": {
+    "width": 1221,
+    "height": 600
+  },
+  "https://assets.turntrout.com/static/images/posts/uuilnxwhvuqkij5yf2gq.avif": {
+    "width": 1825,
+    "height": 591
+  },
+  "https://assets.turntrout.com/static/images/posts/bcijgxqehxmee0x4umqe.avif": {
+    "width": 1825,
+    "height": 693
+  },
+  "https://assets.turntrout.com/static/images/posts/upf2j7e2mbzazxtvhydv.avif": {
+    "width": 1825,
+    "height": 693
+  },
+  "https://assets.turntrout.com/static/images/posts/fmsa7rxparjapx6lzmek.avif": {
+    "width": 1825,
+    "height": 701
+  },
+  "https://assets.turntrout.com/static/images/posts/adqaq5czjuigihd8pkks.avif": {
+    "width": 1449,
+    "height": 616
+  },
+  "https://assets.turntrout.com/static/images/posts/hezjshnapvcgq3c3chnd.avif": {
+    "width": 770,
+    "height": 275
+  },
+  "https://assets.turntrout.com/static/images/posts/jksorvoaibgrhirwds9y.avif": {
+    "width": 1049,
+    "height": 408
+  },
+  "https://assets.turntrout.com/static/images/posts/pvlfxthpdxbbdviowsru.avif": {
+    "width": 1046,
+    "height": 413
+  },
+  "https://assets.turntrout.com/static/images/posts/vzvsmxq3cb3r5jg0n7b3.avif": {
+    "width": 1045,
+    "height": 415
+  },
+  "https://assets.turntrout.com/static/images/posts/sqwldjye3mt2om4yykqg.avif": {
+    "width": 1057,
+    "height": 420
+  },
+  "https://assets.turntrout.com/static/images/posts/ykblxjkqk9qozwilvbua.avif": {
+    "width": 1046,
+    "height": 406
+  },
+  "https://assets.turntrout.com/static/images/posts/ahf5hoejigk66plwn3bh.avif": {
+    "width": 1046,
+    "height": 412
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pnas_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/dc4zupnie9hr2hm7tfnx.avif": {
+    "width": 863,
+    "height": 863
+  },
+  "https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif": {
+    "width": 406,
+    "height": 406
+  },
+  "https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif": {
+    "width": 406,
+    "height": 406
+  },
+  "https://assets.turntrout.com/static/images/posts/cr9dhux7svjb1tw5ojzd.avif": {
+    "width": 392,
+    "height": 401
+  },
+  "https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.mp4": {
+    "width": 512,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.mp4": {
+    "width": 512,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4": {
+    "width": 498,
+    "height": 692
+  },
+  "https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.mp4": {
+    "width": 4044,
+    "height": 2036
+  },
+  "https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.mp4": {
+    "width": 1680,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.mp4": {
+    "width": 4044,
+    "height": 2036
+  },
+  "https://assets.turntrout.com/static/images/posts/lG9je1g.avif": {
+    "width": 2048,
+    "height": 1299
+  },
+  "https://assets.turntrout.com/static/images/posts/1hJa51n.avif": {
+    "width": 2048,
+    "height": 1078
+  },
+  "https://assets.turntrout.com/static/images/posts/geDXLLG.avif": {
+    "width": 2048,
+    "height": 1300
+  },
+  "https://assets.turntrout.com/static/images/posts/zMxBlb0.avif": {
+    "width": 2048,
+    "height": 1188
+  },
+  "https://assets.turntrout.com/static/images/posts/tupgltr.avif": {
+    "width": 2048,
+    "height": 492
+  },
+  "https://assets.turntrout.com/static/images/posts/kNG5for.avif": {
+    "width": 1121,
+    "height": 568
+  },
+  "https://assets.turntrout.com/static/images/posts/jaHW2pp.avif": {
+    "width": 2048,
+    "height": 402
+  },
+  "https://assets.turntrout.com/static/images/posts/MmtIR5e.avif": {
+    "width": 2048,
+    "height": 1044
+  },
+  "https://assets.turntrout.com/static/images/posts/S1KiiUj.avif": {
+    "width": 2048,
+    "height": 1322
+  },
+  "https://assets.turntrout.com/static/images/posts/9ZqUDO6.avif": {
+    "width": 2048,
+    "height": 1886
+  },
+  "https://assets.turntrout.com/static/images/posts/TT61fRC.avif": {
+    "width": 2048,
+    "height": 1976
+  },
+  "https://assets.turntrout.com/static/images/posts/JGA0KAj.avif": {
+    "width": 2048,
+    "height": 534
+  },
+  "https://assets.turntrout.com/static/images/posts/ZBG9SXA.avif": {
+    "width": 2048,
+    "height": 984
+  },
+  "https://assets.turntrout.com/static/images/posts/IhjRIpN.avif": {
+    "width": 2048,
+    "height": 1014
+  },
+  "https://assets.turntrout.com/static/images/posts/lsJLMDk.avif": {
+    "width": 2048,
+    "height": 1000
+  },
+  "https://assets.turntrout.com/static/images/posts/OBmQUKm.avif": {
+    "width": 2048,
+    "height": 680
+  },
+  "https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif": {
+    "width": 2048,
+    "height": 260
+  },
+  "https://assets.turntrout.com/static/images/posts/ZOAeuoe.avif": {
+    "width": 2048,
+    "height": 1647
+  },
+  "https://assets.turntrout.com/static/images/posts/fzLD7kQ.avif": {
+    "width": 2046,
+    "height": 842
+  },
+  "https://assets.turntrout.com/static/pond.gif": {
+    "width": 384,
+    "height": 384
+  },
+  "https://assets.turntrout.com/static/images/posts/site_desktop.avif": {
+    "width": 2714,
+    "height": 2280
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fishingweekendwarrior_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/computer-analogy.avif": {
+    "width": 2482,
+    "height": 1318
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/originstamp_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apps_dtic_mil.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cadmus_eui_eu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/b5ad8b01496403d6cf20a734eb01d34bd9136de7cd837b62.avif": {
+    "width": 1670,
+    "height": 312
+  },
+  "https://assets.turntrout.com/static/images/posts/7c2aa97336741f1a062968218a8391d8871554d59d53c8ee.avif": {
+    "width": 1298,
+    "height": 332
+  },
+  "https://assets.turntrout.com/static/images/posts/0de841661949492409f34e304c124aa51fdf5af64f9514fc.avif": {
+    "width": 1276,
+    "height": 290
+  },
+  "https://assets.turntrout.com/static/images/posts/9a5af9e1b5fd6a2b840a77e1cdcd7d3be6941064a178be8b.avif": {
+    "width": 1554,
+    "height": 366
+  },
+  "https://assets.turntrout.com/static/images/posts/DNE5EJg.avif": {
+    "width": 2048,
+    "height": 1022
+  },
+  "https://assets.turntrout.com/static/images/posts/bimkCyz.avif": {
+    "width": 2048,
+    "height": 1170
+  },
+  "https://assets.turntrout.com/static/images/posts/uC0LySG.avif": {
+    "width": 2048,
+    "height": 1460
+  },
+  "https://assets.turntrout.com/static/images/posts/64N3tKB.avif": {
+    "width": 2048,
+    "height": 1370
+  },
+  "https://assets.turntrout.com/static/images/posts/giAuRyY.avif": {
+    "width": 2048,
+    "height": 988
+  },
+  "https://assets.turntrout.com/static/images/posts/Cs2jkZr.avif": {
+    "width": 2048,
+    "height": 1080
+  },
+  "https://assets.turntrout.com/static/images/posts/mrVMkSH.avif": {
+    "width": 2030,
+    "height": 874
+  },
+  "https://assets.turntrout.com/static/images/posts/T9MnkcK.avif": {
+    "width": 2048,
+    "height": 585
+  },
+  "https://assets.turntrout.com/static/images/posts/dmy8BTO.avif": {
+    "width": 2048,
+    "height": 1102
+  },
+  "https://assets.turntrout.com/static/images/posts/u0CMsnj.avif": {
+    "width": 2048,
+    "height": 377
+  },
+  "https://assets.turntrout.com/static/images/posts/UGMcfsy.avif": {
+    "width": 2048,
+    "height": 2398
+  },
+  "https://assets.turntrout.com/static/images/posts/Jidk86s.avif": {
+    "width": 2045,
+    "height": 546
+  },
+  "https://assets.turntrout.com/static/images/posts/6Ecn3ug.avif": {
+    "width": 2048,
+    "height": 884
+  },
+  "https://assets.turntrout.com/static/images/posts/YmknuEn.avif": {
+    "width": 2048,
+    "height": 606
+  },
+  "https://assets.turntrout.com/static/images/posts/1rVGIUj.avif": {
+    "width": 2048,
+    "height": 355
+  },
+  "https://assets.turntrout.com/static/images/posts/LYNGAta.avif": {
+    "width": 2045,
+    "height": 543
+  },
+  "https://assets.turntrout.com/static/images/posts/j0pWEA1.avif": {
+    "width": 2048,
+    "height": 2398
+  },
+  "https://assets.turntrout.com/static/images/posts/BINRNvJ.avif": {
+    "width": 2048,
+    "height": 1523
+  },
+  "https://assets.turntrout.com/static/images/posts/C6aYsBj.avif": {
+    "width": 2048,
+    "height": 904
+  },
+  "https://assets.turntrout.com/static/images/posts/d9q2zBy.avif": {
+    "width": 2048,
+    "height": 387
+  },
+  "https://assets.turntrout.com/static/images/posts/q09LBrl.avif": {
+    "width": 2048,
+    "height": 1794
+  },
+  "https://assets.turntrout.com/static/images/posts/zVkGE6q.avif": {
+    "width": 2048,
+    "height": 3465
+  },
+  "https://assets.turntrout.com/static/images/posts/GEwXYwT.avif": {
+    "width": 2048,
+    "height": 766
+  },
+  "https://assets.turntrout.com/static/images/posts/CPCaLoM.avif": {
+    "width": 2048,
+    "height": 674
+  },
+  "https://assets.turntrout.com/static/images/posts/wLogljp.avif": {
+    "width": 2048,
+    "height": 687
+  },
+  "https://assets.turntrout.com/static/images/posts/tiKGyYq.avif": {
+    "width": 2046,
+    "height": 1005
+  },
+  "https://assets.turntrout.com/static/images/posts/ZsAlmei.avif": {
+    "width": 2048,
+    "height": 1585
+  },
+  "https://assets.turntrout.com/static/images/posts/pnztldk.avif": {
+    "width": 2048,
+    "height": 813
+  },
+  "https://assets.turntrout.com/static/images/posts/BkfH5xt.avif": {
+    "width": 2141,
+    "height": 817
+  },
+  "https://assets.turntrout.com/static/images/posts/venn1.avif": {
+    "width": 301,
+    "height": 170
+  },
+  "https://assets.turntrout.com/static/images/posts/water_buckets.mp4": {
+    "width": 480,
+    "height": 360
+  },
+  "https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4": {
+    "width": 412,
+    "height": 224
+  },
+  "https://assets.turntrout.com/static/images/posts/vase_avoid.mp4": {
+    "width": 254,
+    "height": 250
+  },
+  "https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4": {
+    "width": 312,
+    "height": 250
+  },
+  "https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4": {
+    "width": 1920,
+    "height": 1080
+  }
+}
