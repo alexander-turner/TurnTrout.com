@@ -533,16 +533,6 @@ def get_check_steps(
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
         ),
-        # CheckStep(
-        #     name="Running desktop playwright tests",
-        #     command=[
-        #         "npx",
-        #         "playwright",
-        #         "test",
-        #         "--project",
-        #         "Desktop Chrome",
-        #     ],
-        # ),
         CheckStep(
             name="Checking link validity",
             command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
