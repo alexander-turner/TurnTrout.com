@@ -193,7 +193,7 @@ describe("renderLastUpdated", () => {
     const linkElement = result?.props.children[0]
 
     expect(linkElement.props.href).toBe(
-      `https://github.com/alexander-turner/TurnTrout.com/blob/main/content/${testPath}`,
+      `https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/${testPath}`,
     )
   })
 })
