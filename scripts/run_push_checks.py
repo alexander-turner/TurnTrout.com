@@ -356,7 +356,9 @@ def run_command(
         Tuple of (success, stdout, stderr) where success is a boolean and
         stdout/stderr are strings containing the complete output.
     """
-    if "spellchecker" in str(step.command):
+    if any(
+        task in str(step.command) for task in ["spellchecker", "linkchecker"]
+    ):
         return run_interactive_command(step, progress, task_id)
 
     try:
