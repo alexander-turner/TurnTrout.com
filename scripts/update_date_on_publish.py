@@ -90,7 +90,7 @@ def maybe_convert_to_timestamp(
     )
 
 
-def update_publish_date(yaml_metadata: dict) -> None:
+def maybe_update_publish_date(yaml_metadata: dict) -> None:
     """
     Update publish and update dates in a markdown file's frontmatter.
     """
@@ -177,9 +177,9 @@ def main(content_dir: Path = Path("website_content")) -> None:
         original_metadata = metadata.copy()
 
         # If the file has never been marked as published, set the publish date
-        update_publish_date(metadata)
+        maybe_update_publish_date(metadata)
 
-        # # Check for unpushed changes and update date_updated if needed
+        # Check for unpushed changes and update date_updated if needed
         if is_file_modified(md_file_path):
             metadata["date_updated"] = current_date
 

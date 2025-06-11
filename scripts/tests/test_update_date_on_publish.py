@@ -112,7 +112,7 @@ def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git):
 
     with patch("subprocess.check_output", side_effect=mock_git):
         metadata, content = script_utils.split_yaml(test_file)
-        update_lib.update_publish_date(metadata)
+        update_lib.maybe_update_publish_date(metadata)
         update_lib.write_to_yaml(test_file, metadata, content)
 
     with test_file.open("r", encoding="utf-8") as f:
@@ -135,7 +135,7 @@ def test_preserves_existing_date(temp_content_dir, mock_git):
 
     with patch("subprocess.check_output", side_effect=mock_git):
         metadata, content = script_utils.split_yaml(test_file)
-        update_lib.update_publish_date(metadata)
+        update_lib.maybe_update_publish_date(metadata)
         update_lib.write_to_yaml(test_file, metadata, content)
 
     with test_file.open("r", encoding="utf-8") as f:
@@ -155,7 +155,7 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
 
     with patch("subprocess.check_output", side_effect=mock_git):
         metadata, content = script_utils.split_yaml(test_file)
-        update_lib.update_publish_date(metadata)
+        update_lib.maybe_update_publish_date(metadata)
         update_lib.write_to_yaml(test_file, metadata, content)
 
     with test_file.open("r", encoding="utf-8") as f:
@@ -515,7 +515,7 @@ def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
 
     expected_date = create_timestamp(mock_datetime)
     metadata, content = script_utils.split_yaml(test_file)
-    update_lib.update_publish_date(metadata)
+    update_lib.maybe_update_publish_date(metadata)
 
     assert metadata["date_published"] == expected_date
     assert metadata["date_updated"] == expected_date
@@ -538,7 +538,7 @@ Content
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
-    update_lib.update_publish_date(metadata)
+    update_lib.maybe_update_publish_date(metadata)
 
     assert metadata["date_published"] == "01/01/2023"
     assert "date_updated" in metadata
@@ -560,7 +560,7 @@ Content
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
-    update_lib.update_publish_date(metadata)
+    update_lib.maybe_update_publish_date(metadata)
 
     assert metadata["date_published"] == "01/01/2023"
     assert metadata["date_updated"] == "01/02/2023"
@@ -585,7 +585,7 @@ Content
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
-    update_lib.update_publish_date(metadata)
+    update_lib.maybe_update_publish_date(metadata)
     update_lib.write_to_yaml(test_file, metadata, content)
 
     with open(test_file) as f:
