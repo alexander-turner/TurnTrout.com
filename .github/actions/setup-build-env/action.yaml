@@ -37,3 +37,7 @@ runs:
         sudo apt-get update
         sudo apt-get install -y libxml2-utils dos2unix ffmpeg
       shell: bash
+
+    - name: Get ffprobe version
+      run: ffprobe -version
+      shell: bash
