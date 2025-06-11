@@ -61,7 +61,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     jsxImportSource: "preact",
     packages: "external",
     metafile: true,
-    sourcemap: false,
+    sourcemap: true,
     sourcesContent: false,
     plugins: [
       sassPlugin({

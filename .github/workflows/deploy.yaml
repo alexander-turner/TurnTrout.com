@@ -34,7 +34,6 @@ jobs:
       - name: Run site checks
         run: python scripts/built_site_checks.py --check-fonts
 
-      # Upload the prepared public directory as an artifact
       - name: Upload prepared site
         uses: actions/upload-artifact@v4
         with:
@@ -61,7 +60,6 @@ jobs:
     if: ${{ github.ref_name == 'dev' || needs.verify-tests.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
-      # Download the prepared public directory
       - name: Download prepared site
         uses: actions/download-artifact@v4
         with:
