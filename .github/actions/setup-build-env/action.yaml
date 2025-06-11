@@ -19,7 +19,7 @@ runs:
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
     - name: Install Node Dependencies
-      run: npm ci
+      run: NODE_OPTIONS=--max-old-space-size=4096 npm ci
       shell: bash
 
     - name: Set up Python
