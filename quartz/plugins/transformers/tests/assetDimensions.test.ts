@@ -796,7 +796,8 @@ describe("Asset Dimensions Plugin", () => {
       // SVG also uses mockFetchedDims due to current sizeOfMock behavior
       expect(finalCache![cdnSvg1Src]).toEqual(mockFetchedImageDims)
 
-      expect(assetDimensionsState.needToSaveCache).toBe(true)
+      // false since we saved the cache already
+      expect(assetDimensionsState.needToSaveCache).toBe(false)
 
       const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
       const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)

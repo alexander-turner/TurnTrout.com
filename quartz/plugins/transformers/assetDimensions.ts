@@ -244,9 +244,6 @@ export async function processAsset(
 export const addAssetDimensionsFromUrl = () => {
   return {
     name: "AddAssetDimensionsFromUrl",
-    async buildEnd(): Promise<void> {
-      await maybeSaveAssetDimensions()
-    },
     htmlPlugins() {
       return [
         () => {
@@ -256,6 +253,10 @@ export const addAssetDimensionsFromUrl = () => {
 
             for (const assetInfo of assetsToProcess) {
               await processAsset(assetInfo, currentDimensionsCache)
+            }
+            if (needToSaveCache) {
+              await maybeSaveAssetDimensions()
+              needToSaveCache = false
             }
           }
         },
