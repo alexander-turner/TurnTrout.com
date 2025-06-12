@@ -180,6 +180,9 @@ describe("Asset Dimensions Plugin", () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Could not load asset dimension cache"),
       )
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining(actualAssetDimensionsFilePath),
+      )
       consoleWarnSpy.mockRestore()
     })
   })
@@ -807,6 +810,43 @@ describe("Asset Dimensions Plugin", () => {
       await transformer(tree)
 
       expect(mockedFetch).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("fetchAndParseAssetDimensions for local assets", () => {
+    let tmpDir: string
+    let imageFile: string
+    let videoFile: string
+
+    beforeEach(async () => {
+      tmpDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "assetDimensions-local-"))
+      imageFile = path.join(tmpDir, "local-image.png")
+      await fs.writeFile(imageFile, mockImageData)
+
+      videoFile = path.join(tmpDir, "video.mp4")
+      await fs.writeFile(videoFile, "dummy")
+    })
+
+    afterEach(async () => {
+      await fsExtra.remove(tmpDir)
+    })
+
+    it("reads dimensions for local image via file://", async () => {
+      const dims = await fetchAndParseAssetDimensions(`file://${imageFile}`)
+      expect(dims).toEqual(mockFetchedImageDims)
+    })
+
+    it("reads dimensions for local video via file://", async () => {
+      const dims = await fetchAndParseAssetDimensions(`file://${videoFile}`)
+      expect(mockSpawnSync).toHaveBeenCalledWith("ffprobe", expect.arrayContaining([videoFile]), {
+        encoding: "utf-8",
+      })
+      expect(dims).toEqual(mockFetchedVideoDims)
+    })
+
+    it("throws when local asset not found", async () => {
+      const missing = path.join(tmpDir, "not-exist.png")
+      await expect(fetchAndParseAssetDimensions(`file://${missing}`)).rejects.toThrow("ENOENT")
     })
   })
 })

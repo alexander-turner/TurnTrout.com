@@ -120,46 +120,94 @@ export async function getAssetDimensionsFfprobe(assetSrc: string): Promise<Asset
     }
   }
 
-  console.error("ffprobe stdout:", ffprobe.stdout)
-  console.error("ffprobe stderr:", ffprobe.stderr)
   throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
+}
+
+/**
+ * Determine whether a given source string points to a remote (HTTP/S) resource.
+ * Any non-HTTP(S) protocol (including "file://" and relative or absolute paths) is considered local.
+ */
+function isRemoteUrl(src: string): boolean {
+  try {
+    const parsed = new URL(src)
+    return parsed.protocol === "http:" || parsed.protocol === "https:"
+  } catch {
+    // If URL constructor throws, treat as local path
+    return false
+  }
+}
+
+async function resolveLocalAssetPath(src: string): Promise<string> {
+  let localPath = src.startsWith("file://") ? fileURLToPath(src) : src
+  if (!path.isAbsolute(localPath)) {
+    // Assumes asset is in website_content/asset_staging
+    localPath = path.join(projectRoot, "website_content", localPath)
+  }
+  await fs.access(localPath)
+  return localPath
+}
+
+// Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
+async function getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
+  const localPath = await resolveLocalAssetPath(assetSrc)
+  const ext = path.extname(localPath).toLowerCase()
+  const videoExts = new Set([".mp4", ".mov", ".m4v", ".webm", ".mpeg", ".mpg", ".avi", ".mkv"])
+  if (videoExts.has(ext)) {
+    const dims = await getAssetDimensionsFfprobe(localPath)
+    if (!dims) throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
+    logger.debug(`Local video dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
+    return dims
+  }
+
+  const buffer = await fs.readFile(localPath)
+  const dimensions = sizeOf(buffer)
+  if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
+    logger.debug(`Local image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`)
+    return { width: dimensions.width, height: dimensions.height }
+  }
+  throw new Error(
+    `Unable to determine local asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
+  )
+}
+
+// Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
+async function getRemoteAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
+  const response = await fetch(assetSrc)
+  if (!response.ok)
+    throw new Error(`Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`)
+
+  const contentType = response.headers.get("Content-Type")
+  const isSvgRemote = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
+  if (!isSvgRemote && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
+    response.body?.cancel()
+    const dims = await getAssetDimensionsFfprobe(assetSrc)
+    if (!dims) throw new Error(`ffprobe failed for ${assetSrc}`)
+
+    logger.debug(`Remote ffprobe dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
+    return dims
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer())
+  const dimensions = sizeOf(buffer)
+  if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
+    logger.debug(
+      `Remote image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
+    )
+
+    return { width: dimensions.width, height: dimensions.height }
+  }
+
+  throw new Error(
+    `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
+  )
 }
 
 export async function fetchAndParseAssetDimensions(
   assetSrc: string,
 ): Promise<AssetDimensions | null> {
-  const response = await fetch(assetSrc)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`)
-  }
-  const contentType = response.headers.get("Content-Type")
-  const isSvg = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
-
-  if (!isSvg && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
-    // don't need the response body, so cancel it to free resources
-    response.body?.cancel()
-    const dimensions = await getAssetDimensionsFfprobe(assetSrc)
-    if (dimensions) {
-      logger.debug(
-        `Successfully fetched dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
-      )
-      return dimensions
-    }
-    throw new Error(`Could not get dimensions for ${assetSrc} using ffprobe.`)
-  }
-
-  // sizeOf fallback for SVGs and other types
-  const assetBuffer = Buffer.from(await response.arrayBuffer())
-  const dimensions = sizeOf(assetBuffer)
-  if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
-    logger.debug(
-      `Successfully fetched dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
-    )
-    return { width: dimensions.width, height: dimensions.height }
-  }
-  throw new Error(
-    `Could not determine dimensions from asset data for ${assetSrc}. Type: ${dimensions?.type}`,
-  )
+  return isRemoteUrl(assetSrc)
+    ? await getRemoteAssetDimensions(assetSrc)
+    : await getLocalAssetDimensions(assetSrc)
 }
 
 /** Returns the src of a video element or that of its first source child.
