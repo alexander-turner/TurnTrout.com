@@ -186,7 +186,9 @@ def main(content_dir: Path = Path("website_content")) -> None:
 
         # Ensure that date fields are timestamps
         for key in ("date_published", "date_updated"):
-            metadata[key] = maybe_convert_to_timestamp(metadata[key])
+            value = metadata.get(key)
+            if value:
+                metadata[key] = maybe_convert_to_timestamp(value)
 
         if metadata != original_metadata:
             print(f"Updated date information on {md_file_path}")

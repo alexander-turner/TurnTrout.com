@@ -186,7 +186,8 @@ def convert_asset(
 
     if "quartz/static" not in str(input_file):
         raise ValueError(
-            f"Error: Input file '{input_file}' is not in the quartz/static directory."
+            f"Error: Input file '{input_file}' is not"
+            "in the quartz/static directory."
         )
 
     if md_references_dir and not md_references_dir.is_dir():
