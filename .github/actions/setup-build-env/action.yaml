@@ -24,6 +24,7 @@ runs:
 
     - name: Install sharp
       run: npm install --os=linux --cpu=x64 sharp
+      shell: bash
 
     - name: Set up Python
       uses: actions/setup-python@v5

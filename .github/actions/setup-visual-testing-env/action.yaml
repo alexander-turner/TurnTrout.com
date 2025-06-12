@@ -31,6 +31,7 @@ runs:
 
     - name: Install sharp
       run: npm install --os=linux --cpu=x64 sharp
+      shell: bash
 
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
