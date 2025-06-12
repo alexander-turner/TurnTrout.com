@@ -157,6 +157,7 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
     _README_PATH.write_text(new_readme_content, encoding="utf-8")
 
 
+# pylint: disable=missing-function-docstring
 def commit_changes(message: str) -> None:
     subprocess.run(["git", "add", "-A"], check=True)
     subprocess.run(["git", "commit", "-m", message], check=True)
