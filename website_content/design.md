@@ -7,13 +7,13 @@ tags:
 description: Showing off and explaining this site's beauty.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2025-06-03 22:57:00.423836
-no_dropcap: "false"
+no_dropcap: false
 ---
 
 
@@ -540,6 +540,9 @@ Technically, _en dashes_ should be used for ranges of dates and numbers. So "<sp
 Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="no-formatting">-2</span>) to be distasteful when used with plaintext numbers. I opt for "-2" instead.
 
 ### Other display tweaks
+
+No hyphenated text wrapping
+: To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.

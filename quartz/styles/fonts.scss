@@ -278,17 +278,15 @@ code {
   }
 }
 
-article[data-use-dropcap="true"] {
+article[data-use-dropcap="true"] > p:first-of-type {
   --dropcap-vertical-offset: 0.15rem;
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
 
-  & > p:first-of-type {
-    position: relative;
-    min-height: 4.2rem;
-  }
+  position: relative;
+  min-height: 4.2rem;
 
-  & > p:first-of-type::before {
+  &::before {
     content: attr(data-first-letter);
     text-transform: uppercase;
     position: absolute;
@@ -302,7 +300,7 @@ article[data-use-dropcap="true"] {
     cursor: text;
   }
 
-  & > p:first-of-type::first-letter {
+  &::first-letter {
     padding-top: var(--dropcap-vertical-offset);
     text-transform: uppercase;
     font-style: normal !important;
@@ -322,9 +320,9 @@ article[data-use-dropcap="true"] {
     }
   }
 
-  & > p:first-of-type em,
-  & > p:first-of-type b,
-  & > p:first-of-type strong {
+  & em,
+  & b,
+  & strong {
     font-family: inherit !important;
   }
 }
