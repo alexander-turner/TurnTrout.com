@@ -347,9 +347,16 @@ figure:has(> .subfigure) {
   justify-content: center;
 }
 
-figure,
+figure {
+  margin: 0; // Use maximal space
+}
+
 .subfigure {
   margin: $base-margin;
+}
+
+figure,
+.subfigure {
   flex: 1 1 0px;
 
   & img {
