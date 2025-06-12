@@ -5,16 +5,19 @@ no_dropcap: false
 tags:
   - AI
   - mats-program
-description: Current AI “unlearning” methods only suppress bad capabilities instead of removing them. But by distilling an “unlearned” model into a new model, the unlearning becomes real.
-authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob Goldman-Wetzler, Bryce Woodworth, Alex Cloud, and Alex Turner
+description: Current “unlearning” methods only hide bad abilities without
+  removing them. By distilling an “unlearned” model into a new one, unlearning becomes real.
+authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob Goldman-Wetzler,
+  Bryce Woodworth, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: https://i.imgur.com/TJSBvVy.jpeg
+card_image: https://assets.turntrout.com/static/images/card_images/TJSBvVy.png
 aliases:
   - unlearn-and-distill
   - suppress-and-distill
   - UNDO
   - undo
-original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
+original_url: 
+  https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
 ---
 
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness.
