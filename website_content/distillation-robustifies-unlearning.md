@@ -93,7 +93,7 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 | Language   | English text CE loss                       | Korean text CE loss                           |
 | Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdYtaxHdb4FnOojIp4hz-9TCeyo_QzfzY7GGRcIs9vI15_DLpASpX1tuja3X2HHul-YyKXKEZWzu6NAodn0lbDGmIhXt5HTuUzwohtgcNIq-0JZmuQ1IoY6uYAUuFGMNktAJMt8Lg?key=Pplkg-7kqc_sIfFHnelBEw)
+![[distillation-robustifies-unlearning-20250612153120.png]]
 
 Figure: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
@@ -115,7 +115,7 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 
 To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcKF0X07CTt7N4hEebmzo86tarju9yfJb2U6ZjWuhGps-_IJIL0iGlZlb18NtVnJcrQV1HMy4XaFcp6iXKdGXbyx1GGV281eXLflXKL3YKR7x4wYCmcIhgWldBg1b4PyW87HVzzBA?key=Pplkg-7kqc_sIfFHnelBEw)
+![[distillation-robustifies-unlearning-20250612153132.png]]
 
 Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
@@ -125,7 +125,7 @@ In plots (a) and (c), as $\alpha$ increases, training takes longer and the final
 
 What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXeIYTECdICiroTBHzH7_VWjD_j9TsmuJW85I_k22l-c3zReFRQQg0jSw1MedaEtjvqXjReu6BNhpS6XWCXJQLPdVC_r0j6l8NtQL7p_HxSIapq_nYUj9V2tMPSx9rPt0Grw5eUY1g?key=Pplkg-7kqc_sIfFHnelBEw)
+![[distillation-robustifies-unlearning-20250612153140.png]]
 
 Figure: **Comparing unlearning methods across different adversarial strengths.** We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>**Column 1:** Initial performance after unlearning but before adversarial attacks. <br/>**Column 2:** Relearned forget performance after moderate relearning (40 steps). <br/>**Column 3:** Performance after extensive relearning (500 steps).
 
