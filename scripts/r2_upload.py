@@ -95,6 +95,11 @@ def update_markdown_references(
         ]
     )
 
+    escaped_relative_subpath: str = re.escape(str(relative_subpath))
+    source_regex: str = (
+        rf"(?<=[\(\"\[])((quartz|\.)?/)?{escaped_relative_subpath}"
+    )
+
     if verbose:
         print(f'Changing "{relative_subpath}" references to "{r2_address}"')
 
@@ -105,12 +110,6 @@ def update_markdown_references(
         with open(text_file_path, encoding="utf-8") as f:
             file_content: str = f.read()
 
-        escaped_original_path: str = re.escape(str(relative_original_path))
-        escaped_relative_subpath: str = re.escape(str(relative_subpath))
-        source_regex: str = (
-            rf"(?<=[\(\"])(?:\.?/)?"
-            rf"(?:{escaped_original_path}|{escaped_relative_subpath})"
-        )
         new_content: str = re.sub(source_regex, r2_address, file_content)
 
         with open(text_file_path, "w", encoding="utf-8") as f:
@@ -149,10 +148,10 @@ def upload_to_r2(
         FileNotFoundError: If the file is not found.
     """
     if "quartz/" not in str(file_path):
-        raise ValueError("Error: File path does not contain 'quartz/'.")
+        raise ValueError(f"{str(file_path)} does not contain 'quartz/'.")
 
     if not file_path.is_file():
-        raise FileNotFoundError(f"Error: File not found: {file_path}")
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     relative_path = script_utils.path_relative_to_quartz_parent(file_path)
     r2_key: str = get_r2_key(relative_path)
@@ -263,31 +262,27 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-r",
         "--references-dir",
         type=Path,
         default=Path(f"{script_utils.get_git_root()}") / "website_content",
         help="Directory to search for files to update references",
     )
     parser.add_argument(
-        "-m",
         "--move-to-dir",
         type=Path,
         default=None,
         help="Move file to directory after upload",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Enable verbose output"
+        "--verbose", action="store_true", help="Enable verbose output"
     )
     parser.add_argument(
-        "-u",
         "--upload-from-directory",
         type=Path,
         default=None,
         help="Upload all files of specified types from the given directory",
     )
     parser.add_argument(
-        "-t",
         "--filetypes",
         nargs="+",
         default=(".mp4", ".svg", ".avif", ".webm"),
@@ -296,6 +291,7 @@ def main() -> None:
     parser.add_argument(
         "--overwrite-existing",
         action="store_true",
+        default=False,
         help="Overwrite existing files in R2 if they already exist",
     )
     parser.add_argument("file", type=Path, nargs="?", help="File to upload")

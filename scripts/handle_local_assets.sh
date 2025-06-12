@@ -12,9 +12,10 @@ cleanup() {
 trap cleanup EXIT
 
 STATIC_DIR="$GIT_ROOT"/quartz/static
+
+bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
 # If asset_staging isn't empty
 if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
-    bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
 
     # Update references
     find "$GIT_ROOT"/website_content/asset_staging -type f -print0 | while IFS= read -r -d '' FILE; do
@@ -23,12 +24,11 @@ if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
         sed -i ''.bak -E "s|${NAME}|static/images/posts/${NAME}|g" "$GIT_ROOT"/website_content/**{,/*}.md
     done
 
-    # Ignore errors due to asset_staging being empty
-    mv "$GIT_ROOT"/website_content/asset_staging/* "$STATIC_DIR"/images/posts 2>/dev/null || true
+    mv "$GIT_ROOT"/website_content/asset_staging/* "$STATIC_DIR"/images/posts 
 fi
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
-python "$GIT_ROOT"/scripts/convert_assets.py --remove-originals --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png"
+python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png"
 
 # Left over original files
 cleanup
@@ -37,8 +37,9 @@ cleanup
 python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
 
 # Upload assets to R2 bucket
-LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/static
-python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR"
+echo "$STATIC_DIR"
+LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
+python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" 
 
 # Commit changes to the moved-to local dir
 # (NOTE will also commit current changes)

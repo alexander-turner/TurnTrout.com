@@ -223,7 +223,15 @@ def test_upload_and_move_failures(
 @pytest.mark.parametrize(
     "args, expected_exception",
     [
-        (["-v", "-m", tempfile.gettempdir(), "quartz/static/test.jpg"], None),
+        (
+            [
+                "--verbose",
+                "--move-to-dir",
+                tempfile.gettempdir(),
+                "quartz/static/test.jpg",
+            ],
+            None,
+        ),
         (["quartz/static/non_existent_file.jpg"], FileNotFoundError),
         ([], SystemExit),
     ],

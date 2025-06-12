@@ -22,8 +22,8 @@ mock.patch.dict("sys.modules", {"r2_upload": mock_r2_upload}).start()
 
 @pytest.mark.parametrize("ext", compress.ALLOWED_IMAGE_EXTENSIONS)
 def test_image_conversion(ext: str, setup_test_env):
-    test_dir = Path(setup_test_env)
-    asset_path: Path = test_dir / "quartz/static" / f"asset{ext}"
+    test_dir: Path = Path(setup_test_env)
+    asset_path: Path = test_dir / "quartz" / "static" / f"asset{ext}"
     avif_path: Path = asset_path.with_suffix(".avif")
     content_path = (
         Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
@@ -33,9 +33,8 @@ def test_image_conversion(ext: str, setup_test_env):
         asset_path, md_references_dir=test_dir / "website_content"
     )
 
-    assert avif_path.exists()  # Check if AVIF file was created
+    assert avif_path.exists()
 
-    # Check that name conversion occurred
     with open(content_path) as f:
         file_content = f.read()
     assert asset_path.exists()
@@ -184,7 +183,7 @@ def test_ignores_non_quartz_path(setup_test_env):
 def test_ignores_non_static_path(setup_test_env):
     asset_path = Path(setup_test_env) / "quartz" / "file.png"
 
-    with pytest.raises(ValueError, match="static.*subdirectory"):
+    with pytest.raises(ValueError, match="quartz/static.*directory"):
         convert_assets.convert_asset(
             asset_path,
             md_references_dir=Path(setup_test_env) / "website_content",

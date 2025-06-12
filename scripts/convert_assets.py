@@ -171,18 +171,23 @@ def convert_asset(
         md_references_dir: The directory to search for markdown files
     Side-effects:
         - Converts the input file to a more efficient format.
-        - Replaces references to the input file in markdown files,
-          assuming they start with static/.
+        - Replaces references to the input file in markdown files.
         - Optionally removes the original file.
         - Optionally strips metadata from the converted file.
     Errors:
         - `FileNotFoundError`: If the input file does not exist.
         - `NotADirectoryError`: If the replacement directory does not exist.
-        - `ValueError`: If the input file is not an image or video.
+        - `ValueError`: If the input file is not an image or video or is not
+          in the quartz/static directory.
     """
 
     if not input_file.is_file():
         raise FileNotFoundError(f"Error: File '{input_file}' not found.")
+
+    if "quartz/static" not in str(input_file):
+        raise ValueError(
+            f"Error: Input file '{input_file}' is not in the quartz/static directory."
+        )
 
     if md_references_dir and not md_references_dir.is_dir():
         raise NotADirectoryError(
