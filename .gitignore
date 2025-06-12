@@ -32,6 +32,7 @@ content/drafts
 **.faviconUrls.txt
 quartz/plugins/transformers/.asset_dimensions.json
 quartz/static/images/external-favicons/*.png
+quartz/static/images/posts
 *.avif_original
 *.mp4_original
 website_content/asset_staging
