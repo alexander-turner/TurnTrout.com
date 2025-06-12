@@ -22,6 +22,9 @@ runs:
       run: NODE_OPTIONS=--max-old-space-size=4096 npm ci
       shell: bash
 
+    - name: Install sharp
+      run: npm install --os=linux --cpu=x64 sharp
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:

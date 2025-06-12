@@ -29,6 +29,9 @@ runs:
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
 
+    - name: Install sharp
+      run: npm install --os=linux --cpu=x64 sharp
+
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
       run: |
