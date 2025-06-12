@@ -191,6 +191,9 @@ A common concern is that sufficiently capable models might just rederive anythin
 
 UNDO is a viable approach for creating genuinely capability-limited models. While other methods merely suppress surface behaviors, our experiments indicate that UNDO prevents capabilities from being easily recovered. By folding unlearning into an already common practice, we hope that this line of work helps make real robust unlearning a reality.
 
+> [!idea] Join Team Shard
+> Want to become more skilled at alignment research? Apply to work with us later this year in the next round of MATS.
+
 ```bibtex
 @misc{lee2025distillationrobustifiesunlearning,
       title={Distillation Robustifies Unlearning}, 
