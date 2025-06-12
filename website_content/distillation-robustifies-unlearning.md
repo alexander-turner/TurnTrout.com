@@ -5,17 +5,17 @@ no_dropcap: false
 tags:
   - AI
   - mats-program
-description: 
+description: Current AI “unlearning” methods only suppress bad capabilities instead of removing them. But by distilling an “unlearned” model into a new model, the unlearning becomes real.
 authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob Goldman-Wetzler, Bryce Woodworth, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image: https://i.imgur.com/TJSBvVy.jpeg
 aliases:
   - unlearn-and-distill
   - suppress-and-distill
   - UNDO
   - undo
+original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
 ---
-
 
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness.
 
@@ -24,7 +24,7 @@ Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppr
 Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
 
 > [!thanks]
-> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/), winter 2024-25 cohort. Read [our paper](https://arxiv.org/abs/2506.06278) and enjoy an [interactive demo](https://addiefoote.com/distillation-robustifies-demo/).
+> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the winter 2024-25 cohort of the shard theory stream. Read [our paper](https://arxiv.org/abs/2506.06278) and enjoy an [interactive demo](https://addiefoote.com/distillation-robustifies-demo/).
 
 # Robust unlearning probably reduces AI risk
 
@@ -66,7 +66,11 @@ The faster relearning implies that finetuning a pretrained model for behavioral 
 
 # Distillation robustifies unlearning
 
-Imagine you’re an algebra student and your teacher pretends not to know algebra. Despite the fact that the teacher does know it themselves, you as a student will not learn. Similarly, you might expect that when distilling a model, only the expressed behaviors are transferred and the latent capabilities are not. We show this is true. Distilling a conventionally unlearned model into a randomly initialized model creates a student that is robustly incapable of the forget capability.
+<figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612143006.avif"/></figure>
+
+Imagine you’re an algebra student and your teacher pretends not to know algebra. Despite the fact that the teacher does know it themselves, you as a student will not learn.
+
+Similarly, you might expect that when distilling a model, only the expressed behaviors are transferred and the latent capabilities are not. We show this is true. Distilling a conventionally unlearned model into a randomly initialized model creates a student that is robustly incapable of the forget capability.
 
 We call this method **Unlearn-and-Distill**, and it has two phases:
 
@@ -106,13 +110,13 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 2. **Noise.** Corrupt the weights of the suppressed model and initialize the student as this damaged model.
 3. **Distill.** Repair this damaged student by distilling.
 
-To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $α$ (higher $α$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
+To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcKF0X07CTt7N4hEebmzo86tarju9yfJb2U6ZjWuhGps-_IJIL0iGlZlb18NtVnJcrQV1HMy4XaFcp6iXKdGXbyx1GGV281eXLflXKL3YKR7x4wYCmcIhgWldBg1b4PyW87HVzzBA?key=Pplkg-7kqc_sIfFHnelBEw)
 
-Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $α \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $α \in \{0.55, 0.65, 0.7, 0.75\}$.
+Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
-In plots (a) and (c), as $α$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In plots (b) and (d), increasing α increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
+In plots (a) and (c), as $\alpha$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In plots (b) and (d), increasing \alpha increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
 
 # UNDO is better than other unlearning methods
 
