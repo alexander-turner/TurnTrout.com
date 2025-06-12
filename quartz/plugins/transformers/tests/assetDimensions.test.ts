@@ -38,7 +38,7 @@ import {
   fetchAndParseAssetDimensions,
   collectAssetNodes,
   processAsset,
-  addAssetDimensionsFromUrl,
+  addAssetDimensionsFromSrc,
   getVideoSource,
   type AssetDimensionMap,
   resetDirectCacheAndDirtyFlag,
@@ -553,15 +553,15 @@ describe("Asset Dimensions Plugin", () => {
   })
 
   describe("processAsset", () => {
-    const cdnImageUrl = "https://assets.turntrout.com/img.png"
+    const imageUrl = "https://assets.turntrout.com/img.png"
 
     it("should apply dimensions from cache if available", async () => {
       const cachedDims = { width: 300, height: 200 }
-      const currentDimensionsCache: AssetDimensionMap = { [cdnImageUrl]: cachedDims }
-      const node = h("img", { src: cdnImageUrl }) as Element
+      const currentDimensionsCache: AssetDimensionMap = { [imageUrl]: cachedDims }
+      const node = h("img", { src: imageUrl }) as Element
       const fetchSpy = mockedFetch
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
       expect(node.properties?.width).toBe(cachedDims.width)
       expect(node.properties?.height).toBe(cachedDims.height)
       expect(node.properties?.style).toBe(
@@ -570,7 +570,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(fetchSpy).not.toHaveBeenCalled()
     })
 
-    it("should fetch, apply, and cache dimensions for CDN image not in cache", async () => {
+    it("should fetch, apply, and cache dimensions for image not in cache", async () => {
       mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
       mockSpawnSync.mockReturnValueOnce({
         status: 0,
@@ -579,59 +579,33 @@ describe("Asset Dimensions Plugin", () => {
         error: null,
       })
       const currentDimensionsCache: AssetDimensionMap = {}
-      const node = h("img", { src: cdnImageUrl }) as Element
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
-      expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
+      const node = h("img", { src: imageUrl }) as Element
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
+      expect(mockedFetch).toHaveBeenCalledWith(imageUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
         "ffprobe",
-        expect.arrayContaining([cdnImageUrl]),
+        expect.arrayContaining([imageUrl]),
         expect.any(Object),
       )
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
       expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
-      expect(currentDimensionsCache[cdnImageUrl]).toEqual(mockFetchedImageDims)
+      expect(currentDimensionsCache[imageUrl]).toEqual(mockFetchedImageDims)
       expect(assetDimensionsState.needToSaveCache).toBe(true)
     })
 
-    it("should not fetch for non-CDN images", async () => {
-      const nonCdnImageUrl = "https://othersite.com/image.jpg"
-      const currentDimensionsCache: AssetDimensionMap = {}
-      const initialStyle = "text-decoration: underline;"
-      const node = h("img", { src: nonCdnImageUrl, style: initialStyle }) as Element
-      const fetchSpy = mockedFetch
-
-      await processAsset({ node, src: nonCdnImageUrl }, currentDimensionsCache)
-      expect(fetchSpy).not.toHaveBeenCalled()
-      expect(node.properties?.width).toBeUndefined()
-      expect(node.properties?.style).toBe(initialStyle)
-    })
-
-    it("should not apply dimensions if fetching fails for CDN image", async () => {
+    it("should not apply dimensions if fetching fails for image", async () => {
       mockFetchResolve(mockedFetch, null, 500, {}, "Server Error")
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "border: 1px solid red;"
-      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
-      await expect(
-        processAsset({ node, src: cdnImageUrl }, currentDimensionsCache),
-      ).rejects.toThrow(`Failed to fetch asset ${cdnImageUrl}: 500 Server Error`)
-      expect(mockedFetch).toHaveBeenCalledWith(cdnImageUrl)
+      const node = h("img", { src: imageUrl, style: initialStyle }) as Element
+      await expect(processAsset({ node, src: imageUrl }, currentDimensionsCache)).rejects.toThrow(
+        `Failed to fetch asset ${imageUrl}: 500 Server Error`,
+      )
+      expect(mockedFetch).toHaveBeenCalledWith(imageUrl)
 
       expect(node.properties?.width).toBeUndefined()
       expect(node.properties?.style).toBe(initialStyle)
-    })
-
-    it("should throw for invalid URLs", async () => {
-      const invalidUrl = "not-a-valid-url"
-      const currentDimensionsCache: AssetDimensionMap = {}
-      const node = h("img", { src: invalidUrl }) as Element
-
-      await expect(processAsset({ node, src: invalidUrl }, currentDimensionsCache)).rejects.toThrow(
-        "Invalid URL",
-      )
-      expect(mockedFetch).not.toHaveBeenCalled()
-      expect(node.properties?.width).toBeUndefined()
-      expect(node.properties?.style).toBeUndefined() // No style should be added
     })
 
     it("should prepend aspect-ratio to existing style, creating a valid combined style string (existing no semicolon)", async () => {
@@ -644,9 +618,9 @@ describe("Asset Dimensions Plugin", () => {
       })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: blue"
-      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+      const node = h("img", { src: imageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -666,9 +640,9 @@ describe("Asset Dimensions Plugin", () => {
       })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: red;"
-      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+      const node = h("img", { src: imageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -688,9 +662,9 @@ describe("Asset Dimensions Plugin", () => {
       })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "color: green; " // Note the trailing space
-      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+      const node = h("img", { src: imageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -710,9 +684,9 @@ describe("Asset Dimensions Plugin", () => {
       })
       const currentDimensionsCache: AssetDimensionMap = {}
       const initialStyle = "   " // Just whitespace
-      const node = h("img", { src: cdnImageUrl, style: initialStyle }) as Element
+      const node = h("img", { src: imageUrl, style: initialStyle }) as Element
 
-      await processAsset({ node, src: cdnImageUrl }, currentDimensionsCache)
+      await processAsset({ node, src: imageUrl }, currentDimensionsCache)
 
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
@@ -725,7 +699,6 @@ describe("Asset Dimensions Plugin", () => {
     it("should process an HTML tree and apply dimensions", async () => {
       const cdnImg1Src = "https://assets.turntrout.com/image1.png"
       const cdnImg2Src = "https://assets.turntrout.com/cached.png"
-      const externalImgSrc = "https://example.com/external.png"
       const cdnSvg1Src = "https://assets.turntrout.com/icon1.svg"
 
       const tree: Root = {
@@ -733,7 +706,6 @@ describe("Asset Dimensions Plugin", () => {
         children: [
           h("img", { src: cdnImg1Src }) as Element,
           h("img", { src: cdnImg2Src }) as Element,
-          h("img", { src: externalImgSrc }) as Element,
           h("svg", { src: cdnSvg1Src }) as Element,
         ],
       }
@@ -770,20 +742,18 @@ describe("Asset Dimensions Plugin", () => {
       const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
       const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
 
-      const pluginInstance = addAssetDimensionsFromUrl()
+      const pluginInstance = addAssetDimensionsFromSrc()
       const transformer = pluginInstance.htmlPlugins()[0]()
       await transformer(tree)
 
       const img1Node = tree.children[0] as Element
       const img2Node = tree.children[1] as Element
-      const img3Node = tree.children[2] as Element
-      const svg1Node = tree.children[3] as Element
+      const svg1Node = tree.children[2] as Element
 
       expect(img1Node.properties?.width).toBe(mockImageWidth)
       expect(img1Node.properties?.height).toBe(mockImageHeight)
       expect(img2Node.properties?.width).toBe(preCachedDims.width)
       expect(img2Node.properties?.height).toBe(preCachedDims.height)
-      expect(img3Node.properties?.width).toBeUndefined() // External image, no fetch
 
       expect(svg1Node.properties?.width).toBe(mockImageWidth)
       expect(svg1Node.properties?.height).toBe(mockImageHeight)
@@ -816,7 +786,7 @@ describe("Asset Dimensions Plugin", () => {
     it("should handle empty tree", async () => {
       const tree: Root = { type: "root", children: [] }
 
-      const pluginInstance = addAssetDimensionsFromUrl()
+      const pluginInstance = addAssetDimensionsFromSrc()
       const transformer = pluginInstance.htmlPlugins()[0]()
       await transformer(tree)
 
@@ -832,7 +802,7 @@ describe("Asset Dimensions Plugin", () => {
           h("div", [h("span", ["More text"]) as Element]) as Element,
         ],
       }
-      const pluginInstance = addAssetDimensionsFromUrl()
+      const pluginInstance = addAssetDimensionsFromSrc()
       const transformer = pluginInstance.htmlPlugins()[0]()
       await transformer(tree)
 

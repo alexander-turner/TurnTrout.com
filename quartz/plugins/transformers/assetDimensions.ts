@@ -22,7 +22,6 @@ export const ASSET_DIMENSIONS_FILE_PATH = path.join(
   "transformers",
   ".asset_dimensions.json",
 )
-const USER_CDN_HOSTNAME = "assets.turntrout.com"
 
 // --- Test Helper Exports ---
 export let spawnSyncWrapper: typeof spawnSync = spawnSync
@@ -49,7 +48,7 @@ export interface AssetDimensions {
 }
 
 export interface AssetDimensionMap {
-  [url: string]: AssetDimensions | undefined
+  [src: string]: AssetDimensions | undefined
 }
 
 export let assetDimensionsCache: AssetDimensionMap | null = null
@@ -84,7 +83,7 @@ export async function maybeSaveAssetDimensions(): Promise<void> {
   }
 }
 
-export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<AssetDimensions | null> {
+export async function getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions | null> {
   const ffprobe = spawnSyncWrapper(
     "ffprobe",
     [
@@ -96,7 +95,7 @@ export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<Asset
       "stream=width,height",
       "-of",
       "csv=s=x:p=0",
-      assetUrl,
+      assetSrc,
     ],
     { encoding: "utf-8" },
   )
@@ -127,26 +126,26 @@ export async function getAssetDimensionsFfprobe(assetUrl: string): Promise<Asset
 }
 
 export async function fetchAndParseAssetDimensions(
-  assetUrl: string,
+  assetSrc: string,
 ): Promise<AssetDimensions | null> {
-  const response = await fetch(assetUrl)
+  const response = await fetch(assetSrc)
   if (!response.ok) {
-    throw new Error(`Failed to fetch asset ${assetUrl}: ${response.status} ${response.statusText}`)
+    throw new Error(`Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`)
   }
   const contentType = response.headers.get("Content-Type")
-  const isSvg = contentType === "image/svg+xml" || assetUrl.endsWith(".svg")
+  const isSvg = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
 
   if (!isSvg && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
     // don't need the response body, so cancel it to free resources
     response.body?.cancel()
-    const dimensions = await getAssetDimensionsFfprobe(assetUrl)
+    const dimensions = await getAssetDimensionsFfprobe(assetSrc)
     if (dimensions) {
       logger.debug(
-        `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
+        `Successfully fetched dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
       )
       return dimensions
     }
-    throw new Error(`Could not get dimensions for ${assetUrl} using ffprobe.`)
+    throw new Error(`Could not get dimensions for ${assetSrc} using ffprobe.`)
   }
 
   // sizeOf fallback for SVGs and other types
@@ -154,12 +153,12 @@ export async function fetchAndParseAssetDimensions(
   const dimensions = sizeOf(assetBuffer)
   if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
     logger.debug(
-      `Successfully fetched dimensions for ${assetUrl}: ${dimensions.width}x${dimensions.height}`,
+      `Successfully fetched dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
     )
     return { width: dimensions.width, height: dimensions.height }
   }
   throw new Error(
-    `Could not determine dimensions from asset data for ${assetUrl}. Type: ${dimensions?.type}`,
+    `Could not determine dimensions from asset data for ${assetSrc}. Type: ${dimensions?.type}`,
   )
 }
 
@@ -215,14 +214,11 @@ export async function processAsset(
   let dims = currentDimensionsCache[src]
 
   if (!dims) {
-    const assetUrl = new URL(src)
-    if (assetUrl.hostname === USER_CDN_HOSTNAME) {
-      const fetchedDims = await fetchAndParseAssetDimensions(src)
-      if (fetchedDims) {
-        dims = fetchedDims
-        currentDimensionsCache[src] = fetchedDims
-        needToSaveCache = true
-      }
+    const fetchedDims = await fetchAndParseAssetDimensions(src)
+    if (fetchedDims) {
+      dims = fetchedDims
+      currentDimensionsCache[src] = fetchedDims
+      needToSaveCache = true
     }
   }
 
@@ -241,9 +237,9 @@ export async function processAsset(
   }
 }
 
-export const addAssetDimensionsFromUrl = () => {
+export const addAssetDimensionsFromSrc = () => {
   return {
-    name: "AddAssetDimensionsFromUrl",
+    name: "AddAssetDimensionsFromSrc",
     htmlPlugins() {
       return [
         () => {
