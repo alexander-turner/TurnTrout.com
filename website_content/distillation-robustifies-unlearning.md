@@ -19,7 +19,9 @@ aliases:
 
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness.
 
-![[Pasted image 20250611181524.png]]
+![[quartz/static/images/posts/distillation-robustifies-unlearning-20250612132057.avif]]
+
+![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcbJM5hhnFBIITUSzpCYewUBvIaDGlBYkvffIQ2NumvVdMoK3ZyCtz70cWEAWAZ5aqQCaEYq0I9tdcnlo1HqoJyg9MnJJTznqxEXuEZCQG5hS4-V9ESFl-OCx9MLo_KreV0LwOf?key=Pplkg-7kqc_sIfFHnelBEw)
 
 Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
 
@@ -56,18 +58,11 @@ Most unlearning methods try to make a model forget a specified capability by fin
 
 We show this by comparing a model that was finetuned to forget something with an oracle model that never learned it in the first place. We take a model pretrained on both retain and forget data and finetune it to behave like the oracle, which was trained only on the retain data. More precisely, we train the model to match the logits of the oracle. Initially, the finetuned model behaves nearly identically to the oracle, but when we retrain both to relearn the forgotten capability, the finetuned model picks it up much faster. The capability wasn’t erased; it was just hidden.
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdmCfjZeZUBXGgwxhj64pdjTe4hPNPfwtL3L02I0SwM4s6NJUi2GaYRK4I0o8IIT_G36yRiSpzULIvHUannSkOUpEstDg_lSs9nt0Ud1qBUeHBtg230PaLExzSFjnOJfAcmyInZMg?key=Pplkg-7kqc_sIfFHnelBEw)
+Despite minimal initial differences in behavior, the finetuned ("reference") model relearns the “unlearned” capability much faster than either the oracle or a model distilled from the oracle starting from a random initialization.
 
-Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the student (Reference) and the Student (Random). Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
+![[distillation-robustifies-unlearning-20250612132650.png]]
 
-Table: Experiments covered in this post.
-
-|            | Retain evaluation                          | Forget evaluation                             |
-| ---------: | :----------------------------------------: | :-------------------------------------------: |
-| Language   | English text CE loss                       | Korean text CE loss                           |
-| Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
-
-Despite minimal initial differences in behavior, the finetuned model (which we call Student (Reference)) relearns the “unlearned” capability much faster than either the oracle or a Student (Random) (a model distilled from the oracle starting from a random initialization).
+Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the Student (Reference) and the Student (Random). Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
 
 The faster relearning implies that finetuning a pretrained model for behavioral outputs is not sufficient for robust unlearning. The weights still contain the capability, but the model just learned how not to show that capability.
 
@@ -88,17 +83,22 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 | Unlearn-and-Distill | Our method |
 | Gold Standard Data Filtering | A model trained with the forget data removed entirely |
 
+|    Domain   | Retain evaluation                          | Forget evaluation                             |
+| ---------: | :----------------------------------------: | :-------------------------------------------: |
+| Language   | English text CE loss                       | Korean text CE loss                           |
+| Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
+
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdYtaxHdb4FnOojIp4hz-9TCeyo_QzfzY7GGRcIs9vI15_DLpASpX1tuja3X2HHul-YyKXKEZWzu6NAodn0lbDGmIhXt5HTuUzwohtgcNIq-0JZmuQ1IoY6uYAUuFGMNktAJMt8Lg?key=Pplkg-7kqc_sIfFHnelBEw)
 
-Table: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
+Figure: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
 Across the board, Unlearn-and-Distill is more resistant to relearning than its unlearned-only counterpart. In some cases, it's nearly as robust as the gold standard. This supports the idea that latent capabilities are present in the original model parameters but don’t transfer to fresh parameters during distillation. Occasionally, like with RMU/Arithmetic, the initial unlearning is poor, and the distilled model relearns quickly. This shows that if suppression is too weak, the capability can still “leak through” and be reconstructed.
 
 > [!idea] Interactive demo
 >
-> In [our demo](https://addiefoote.com/distillation-robustifies-demo/), compare the answers of the “unlearned” model with the Unlearn-and-Distill model.
+> In [our demo](https://addiefoote.com/distillation-robustifies-demo/), compare the answers of the “unlearned” model with the Unlearn-and-Distill model. The code and experimental framework are available on [GitHub](https://github.com/AddieFoote/distillation-robustify-unlearning).
 
-# Trading unlearning robustness for compute
+# Robustness scales with compute
 
 While data filtering requires training a model from scratch, Unlearn-and-Distill only requires some finetuning (unlearning) and then distillation. That’s reasonably cheap, but it can still take a fair chunk of compute. We develop a method to flexibly trade off between compute and robustness.
 
@@ -108,11 +108,11 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 2. **Noise.** Corrupt the weights of the suppressed model and initialize the student as this damaged model.
 3. **Distill.** Repair this damaged student by distilling.
 
-To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $α$ (higher $α$ = more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
+To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $α$ (higher $α$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcKF0X07CTt7N4hEebmzo86tarju9yfJb2U6ZjWuhGps-_IJIL0iGlZlb18NtVnJcrQV1HMy4XaFcp6iXKdGXbyx1GGV281eXLflXKL3YKR7x4wYCmcIhgWldBg1b4PyW87HVzzBA?key=Pplkg-7kqc_sIfFHnelBEw)
 
-Figure: Unlearning robustness scales with more perturbation. (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $α \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $α \in \{0.55, 0.65, 0.7, 0.75\}$.
+Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $α \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $α \in \{0.55, 0.65, 0.7, 0.75\}$.
 
 In the first and third plots, as $α$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In the second and fourth plots, increasing α increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
 
@@ -176,7 +176,7 @@ A common concern is that sufficiently capable models might just rederive anythin
 
 # Future directions
 
-- Scaling Unlearn-and-Distill UNDO into settings that are closer to practical applications. For example, performing full $\alpha$ sweeps and Unlearn-and-Distill for the Weapons of Mass Destruction Proxy benchmark. More speculatively, UNDO’ing deception or sycophancy.
+- Scaling Unlearn-and-Distill and UNDO into settings that are closer to practical applications. For example, performing full $\alpha$ sweeps and Unlearn-and-Distill for the Weapons of Mass Destruction Proxy benchmark. More speculatively, UNDO’ing deception or sycophancy.
 
 - Run the distillation step by matching model internal activations rather than logits. This should be runnable from [our codebase](https://github.com/AddieFoote/distillation-robustifies-unlearning).
 
@@ -186,34 +186,17 @@ A common concern is that sufficiently capable models might just rederive anythin
 
 UNDO is a viable approach for creating genuinely capability-limited models. While other methods merely suppress surface behaviors, our experiments indicate that UNDO prevents capabilities from being easily recovered. By folding unlearning into an already common practice, we hope that this line of work helps make real robust unlearning a reality.
 
-> [!note]
-
-> The code and experimental framework are available on [GitHub](https://github.com/AddieFoote/distillation-robustify-unlearning).
-
 ```bibtex
-
 @misc{lee2025distillationrobustifiesunlearning,
-
       title={Distillation Robustifies Unlearning}, 
-
       author={Bruce W. Lee and Addie Foote and Alex Infanger and Leni Shor and Harish Kamath and Jacob Goldman-Wetzler and Bryce Woodworth and Alex Cloud and Alexander Matt Turner},
-
       year={2025},
-
       eprint={2506.06278},
-
       archivePrefix={arXiv},
-
-      primaryClass={cs.LG},
-
       url={https://arxiv.org/abs/2506.06278}, 
-
 }
-
 ```
 
 [^1]: Other work has used distillation in contexts other than model compression, including [improving](https://arxiv.org/pdf/1805.04770) [performance](https://arxiv.org/pdf/1911.04252), dataset [privacy](https://arxiv.org/pdf/2110.08324) [protection](https://arxiv.org/pdf/1610.05755), and [continual](https://arxiv.org/pdf/1606.09282) [learning](https://arxiv.org/pdf/2302.00487).
 
 [^2]: Distilling unlearned teacher logits isn’t always similar to just filtering out the forget data. In a TinyStories setting, we unlearned “ability to tell stories involving trees” from a small teacher model. Then we distilled its logits into a small student model. However, the student was vulnerable to relearning attacks, [which wouldn’t have happened if we had performed data filtering](https://turntrout.com/gradient-routing#robust-unlearning).
-
-**
