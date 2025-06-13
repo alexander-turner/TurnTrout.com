@@ -47,7 +47,7 @@ Misalignment risk
 
 Data filtering removes the training data related to the undesired capabilities. Sadly, data filtering is usually impractical.
 
-1. It’s hard and expensive to  identify all of the training data across the entire pretraining corpus that contributes to an unwanted capability.
+1. It’s hard and expensive to identify all of the training data across the entire pretraining corpus that contributes to an unwanted capability.
 2. Work on [gradient routing](https://turntrout.com/gradient-routing#robust-unlearning) showed that when data is filtered imperfectly, the filtering quickly loses effectiveness.
 3. Sometimes, dangerous capabilities can come from combinations of seemingly safe data.
 
@@ -190,6 +190,15 @@ A common concern is that sufficiently capable models might just rederive anythin
 # Conclusion
 
 UNDO is a viable approach for creating genuinely capability-limited models. While other methods merely suppress surface behaviors, our experiments indicate that UNDO prevents capabilities from being easily recovered. By folding unlearning into an already common practice, we hope that this line of work helps make real robust unlearning a reality.
+
+> [!thanks] Acknowledgments
+> We gratefully acknowledge:
+> - Henrik Marklund for his insightful comments at various points of the project;
+> - Vivek Hebbar, Andis Draguns, and Jake Mendel for helpful comments on our abstract;
+> - Rishub Tamirisa for the guidance in navigating WMDP benchmarking procedures;
+> - Eric Easley for sharing valuable strategies for WMDP dataset cleaning and productive discussions about potential improvements to our method;
+> - Iftekhar Uddin and Laura Vaughan for facilitating access to computational resources and funding support;
+> - MATS for enabling our collaboration.
 
 > [!idea] Join Team Shard
 > Want to become more skilled at alignment research? Apply to work with us later this year in the next round of MATS.
