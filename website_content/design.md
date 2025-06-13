@@ -563,7 +563,7 @@ Superscripting ordinal suffixes
 
 While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Garamond did not support slashed zeroes (the `zero` feature). The result: zero looked too similar to "o." Here's a number rendered in the original font: <span style="font-family: var(--font-text-original)">"100"</span>; in my tweaked font it shows as "100." Furthermore, the italicized font did not support the `cv11` OpenType feature for oldstyle numerals. This meant that the italicized 1 looked like a slanted "<span style="font-family: var(--font-text-original); font-feature-settings: normal;">1</span>" - too similar to the smallcaps capital I ("<span class="small-caps">I</span>").
 
-Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) $121 to add these features. I have also notified the maintainer of the EB Garamond font.
+Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
 
 # Website features
 
@@ -856,7 +856,7 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!money] Cost of running the `playwright` tests on GitHub Actions
 > As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's `playwright` tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
 >
-> After using up my free minutes, I'm spending a bit over $2.48 every time I push to `main`.
+> After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
 
 At this point, I also check that the server builds properly.
 
