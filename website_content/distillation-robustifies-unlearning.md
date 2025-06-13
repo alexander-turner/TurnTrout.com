@@ -71,7 +71,7 @@ The faster relearning implies that finetuning a pretrained model for behavioral 
 
 <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612143006.avif"/></figure>
 
-Imagine you’re an algebra student and your teacher pretends not to know algebra. Despite the fact that the teacher does know it themselves, you as a student will not learn.
+Imagine you’re an algebra student and your teacher pretends not to know algebra. Despite the fact that the teacher _does_ know it themselves, you as a student will not learn.
 
 Similarly, you might expect that when distilling a model, only the expressed behaviors are transferred and the latent capabilities are not. We show this is true. Distilling a conventionally unlearned model into a randomly initialized model creates a student that is robustly incapable of the forget capability.
 
@@ -93,7 +93,7 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 | Language   | English text CE loss                       | Korean text CE loss                           |
 | Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
 
-![[distillation-robustifies-unlearning-20250612153120.png]]
+![[static/images/posts/distillation-robustifies-unlearning-20250612153120.avif]]
 
 Figure: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
@@ -115,7 +115,7 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 
 To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
-![[distillation-robustifies-unlearning-20250612153132.png]]
+![[static/images/posts/distillation-robustifies-unlearning-20250612153132.avif]]
 
 Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
@@ -125,7 +125,7 @@ In plots (a) and (c), as $\alpha$ increases, training takes longer and the final
 
 What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.
 
-![[distillation-robustifies-unlearning-20250612153140.png]]
+![[static/images/posts/distillation-robustifies-unlearning-20250612153140.avif]]
 
 Figure: **Comparing unlearning methods across different adversarial strengths.** We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>**Column 1:** Initial performance after unlearning but before adversarial attacks. <br/>**Column 2:** Relearned forget performance after moderate relearning (40 steps). <br/>**Column 3:** Performance after extensive relearning (500 steps).
 
