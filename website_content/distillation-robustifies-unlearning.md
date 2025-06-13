@@ -23,7 +23,7 @@ date_updated: *id001
 ---
 
 
-Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness.
+Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill models before deploying them, our work implies
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif]]
 
@@ -62,11 +62,11 @@ Most unlearning methods try to make a model forget a specified capability by fin
 
 We show this limitation persists even in the idealized setting of finetuning a model to exactly match the outputs of an oracle model that has never learned the specified capability in the first place. We take a model pretrained on both retain and forget data and finetune it on the logits of an oracle model, which was trained only on the retain data. Before subjecting the models to a relearning attack, the finetuned model behaves nearly identically to the oracle, but when we retrain both to relearn the forgotten capability, the finetuned model picks it up much faster. The capability wasn’t erased; it was just hidden.
 
-Despite minimal initial differences in behavior, the finetuned ("reference") model relearns the “unlearned” capability much faster than either the oracle or a model distilled from the oracle starting from a random initialization.
+Despite minimal initial differences in behavior (i.e. logits), the student model initialized from the full pretrained model (trained on both retain and forget data) relearns the “unlearned” capability much faster than either the oracle or a randomly initialized student on which we performed oracle distillation.
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141127.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif]]
 
-Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the Student (Reference) and the Student (Random). Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
+Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the oracle into the pretrained and randomly initialized students. Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
 
 The faster relearning implies that finetuning a pretrained model to have certain outputs is not sufficient for robust unlearning. The weights still contain the capability, but the model just learned how not to show that capability.
 
