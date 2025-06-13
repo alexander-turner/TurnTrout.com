@@ -201,7 +201,7 @@ UNDO is a viable approach for creating genuinely capability-limited models. Whil
 > - MATS for enabling our collaboration.
 
 > [!idea] Join Team Shard
-> Want to become more skilled at alignment research? Apply to work with us later this year in the next round of MATS.
+> Want to become more skilled at alignment research? Apply to work with us later this year in the next round of [MATS](https://www.matsprogram.org/apply#Turner).
 
 ```bibtex
 @misc{lee2025distillationrobustifiesunlearning,
