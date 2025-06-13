@@ -67,13 +67,24 @@ jobs:
           install-playwright: "true"
 
       - name: Build Quartz
-        run: npx quartz build
+        run: |
+          npx quartz build --serve &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
         shell: bash
 
-      - name: Serve Quartz
+      - name: Wait for server
         run: |
-          python3 -m http.server 8080 --directory public &
-          sleep 10
+          # Wait for the server to be ready
+          while ! nc -z localhost 8080; do
+            sleep 0.1 # Check every 100ms
+            # Check if server is still running
+            if ! ps -p "$SERVER_PID" > /dev/null; then
+              echo "Server failed to start"
+              exit 1
+            fi
+          done
+          echo "Server is ready"
 
       - name: Run Playwright tests
         id: playwright
