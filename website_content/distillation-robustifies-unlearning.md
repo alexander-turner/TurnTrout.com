@@ -119,7 +119,7 @@ To inject noise, we use a shrink-and-perturb procedure that controls damage via 
 
 Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
-In plots (a) and (c), as $\alpha$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In plots (b) and (d), increasing \alpha increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
+In plots (a) and (c), as $\alpha$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In plots (b) and (d), increasing $\alpha$ increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
 
 # UNDO is better than other unlearning methods
 
