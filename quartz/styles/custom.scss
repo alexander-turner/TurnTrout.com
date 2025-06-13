@@ -106,7 +106,7 @@ dd > ol:first-child {
 }
 
 dd {
-  margin-top: 0;
+  margin-top: calc(0.5 * $base-margin);
   margin-left: $list-padding-left;
   margin-bottom: calc(2 * $base-margin);
   word-wrap: break-word;
