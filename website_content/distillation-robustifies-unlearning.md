@@ -57,7 +57,7 @@ If we want practical robust unlearning, we probably need a different approach.
 
 Most unlearning methods try to make a model forget a specified capability by finetuning it. However, finetuning usually only teaches the model to suppress the behavior, not remove the underlying capability.
 
-We show this by comparing a model that was finetuned to forget something with an oracle model that never learned it in the first place. We take a model pretrained on both retain and forget data and finetune it to behave like the oracle, which was trained only on the retain data. More precisely, we train the model to match the logits of the oracle. Initially, the finetuned model behaves nearly identically to the oracle, but when we retrain both to relearn the forgotten capability, the finetuned model picks it up much faster. The capability wasn’t erased; it was just hidden.
+We show this limitation persists even in the idealized setting of finetuning a model to exactly match the outputs of an oracle model that has never learned the specified capability in the first place. We take a model pretrained on both retain and forget data and finetune it on the logits of an oracle model, which was trained only on the retain data. Before subjecting the models to a relearning attack, the finetuned model behaves nearly identically to the oracle, but when we retrain both to relearn the forgotten capability, the finetuned model picks it up much faster. The capability wasn’t erased; it was just hidden.
 
 Despite minimal initial differences in behavior, the finetuned ("reference") model relearns the “unlearned” capability much faster than either the oracle or a model distilled from the oracle starting from a random initialization.
 
@@ -65,7 +65,7 @@ Despite minimal initial differences in behavior, the finetuned ("reference") mod
 
 Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the Student (Reference) and the Student (Random). Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
 
-The faster relearning implies that finetuning a pretrained model for behavioral outputs is not sufficient for robust unlearning. The weights still contain the capability, but the model just learned how not to show that capability.
+The faster relearning implies that finetuning a pretrained model to have certain outputs is not sufficient for robust unlearning. The weights still contain the capability, but the model just learned how not to show that capability.
 
 # Distillation robustifies unlearning
 
@@ -77,8 +77,8 @@ Similarly, you might expect that when distilling a model, only the expressed beh
 
 We call this method **Unlearn-and-Distill**, and it has two phases:
 
-1. Unlearn: Apply a standard unlearning method to a pretrained model.
-2. Distill: Train a randomly initialized model to match the outputs of the unlearned model.
+1. **Unlearn:** Apply a standard unlearning method to a pretrained model.
+2. **Distill:** Train a randomly initialized model to match the outputs of the unlearned model.
 
 On both language and arithmetic tasks, we apply Unlearn-and-Distill using three different unlearning methods. We finally apply relearning attacks to test robustness.
 
@@ -93,7 +93,7 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 | Language   | English text CE loss                       | Korean text CE loss                           |
 | Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
 
-![[static/images/posts/distillation-robustifies-unlearning-20250612153120.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif]]
 
 Figure: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
@@ -115,7 +115,7 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 
 To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
-![[static/images/posts/distillation-robustifies-unlearning-20250612153132.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif]]
 
 Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
@@ -125,7 +125,7 @@ In plots (a) and (c), as $\alpha$ increases, training takes longer and the final
 
 What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.
 
-![[static/images/posts/distillation-robustifies-unlearning-20250612153140.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif]]
 
 Figure: **Comparing unlearning methods across different adversarial strengths.** We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>**Column 1:** Initial performance after unlearning but before adversarial attacks. <br/>**Column 2:** Relearned forget performance after moderate relearning (40 steps). <br/>**Column 3:** Performance after extensive relearning (500 steps).
 
@@ -141,7 +141,7 @@ Our method depends on the quality of the initial unlearning.
 
 Poor initial suppression leads to less robustness gains
 
-: Even if the unlearned model does poorly on the forget capability, it still may contain information in the logits that results in reconstructing the underlying capability during distillation. For real-world cases, can we reliably achieve suppression strong enough for UNDO to succeed? We think so.
+: Even if the unlearned model does not demonstrate the forget capability, it still may share the necessary information in its logits for the capability to be transferred to a student during distillation. For real-world cases, can we reliably achieve suppression strong enough for UNDO to succeed? We think so.
 
 Poor suppression might lead to slower distillation
 
@@ -149,7 +149,7 @@ Poor suppression might lead to slower distillation
 
 We only tested against relearning attacks
 
-: The unlearning literature considers these finetuning attacks to be the strongest kind, but it’s possible that UNDO somehow is vulnerable to other elicitation approaches.
+: The unlearning literature considers these finetuning attacks to be the [strongest kind](https://arxiv.org/abs/2502.02180), but it’s possible that UNDO somehow is vulnerable to other elicitation approaches.
 
 ## Insights and speculation
 
