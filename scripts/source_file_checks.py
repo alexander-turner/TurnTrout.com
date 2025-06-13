@@ -410,6 +410,20 @@ def check_no_forbidden_patterns(text: str) -> List[str]:
     return errors
 
 
+def check_stray_katex(text: str) -> List[str]:
+    """
+    Check for stray LaTeX commands outside of math/code blocks.
+    """
+    stripped_text = remove_code_and_math(text)
+    errors = []
+    # This pattern finds a space followed by a backslash and a word.
+    # e.g. " \command"
+    pattern = r" (\\[a-zA-Z]+)"
+    for match in re.finditer(pattern, stripped_text):
+        errors.append(f"Stray LaTeX command found: {match.group().strip()}")
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -437,6 +451,7 @@ def check_file_data(
         "unescaped_braces": check_unescaped_braces(text),
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
+        "stray_katex": check_stray_katex(text),
     }
 
     if metadata:

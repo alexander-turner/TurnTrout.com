@@ -1558,3 +1558,44 @@ def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
     """Test the check_no_forbidden_patterns function."""
     errors = source_file_checks.check_no_forbidden_patterns(text)
     assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        ("This is normal text without any commands.", []),
+        (
+            "This has a stray command \\test.",
+            ["Stray LaTeX command found: \\test"],
+        ),
+        (
+            "This has another \\alpha and \\beta.",
+            [
+                "Stray LaTeX command found: \\alpha",
+                "Stray LaTeX command found: \\beta",
+            ],
+        ),
+        # Should be ignored inside math blocks
+        ("This should be ignored: $ \\alpha $.", []),
+        ("This should be ignored: $$ \\beta $$", []),
+        ("This should be ignored: ` \\gamma `", []),
+        ("This should be ignored: ```\n \\delta \n```", []),
+        # Mixed content
+        (
+            "A stray \\command here, but not $ \\ignored $ or ` \\alsoignored `.",
+            ["Stray LaTeX command found: \\command"],
+        ),
+        # The user's regex is r" (\\\w+)". It requires a leading space.
+        ("No space before\\command", []),
+        (
+            " Punctuation before \\command.",
+            ["Stray LaTeX command found: \\command"],
+        ),
+        ("A windows path C:\\Users\\test", []),
+        ("A double backslash \\\\alpha should be ignored", []),
+    ],
+)
+def test_check_stray_katex(text: str, expected_errors: List[str]):
+    """Test the check_stray_katex function."""
+    errors = source_file_checks.check_stray_katex(text)
+    assert sorted(errors) == sorted(expected_errors)
