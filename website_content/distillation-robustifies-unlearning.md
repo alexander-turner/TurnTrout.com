@@ -203,6 +203,8 @@ UNDO is a viable approach for creating genuinely capability-limited models. Whil
 > [!idea] Join Team Shard
 > Want to become more skilled at alignment research? Apply to work with us later this year in the next round of [MATS](https://www.matsprogram.org/apply#Turner).
 
+## Citation
+
 ```bibtex
 @misc{lee2025distillationrobustifiesunlearning,
       title={Distillation Robustifies Unlearning}, 
