@@ -238,19 +238,16 @@ def main():
         description="Convert assets to optimized formats."
     )
     parser.add_argument(
-        "-r",
         "--remove-originals",
         action="store_true",
         help="Remove original files after conversion",
     )
     parser.add_argument(
-        "-s",
         "--strip-metadata",
         action="store_true",
         help="Strip metadata from converted files",
     )
     parser.add_argument(
-        "-d",
         "--asset-directory",
         help="Directory containing assets to convert",
     )

@@ -28,7 +28,7 @@ if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
 fi
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
-python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png"
+python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" --remove-originals
 
 # Left over original files
 cleanup
