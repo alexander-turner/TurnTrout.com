@@ -65,7 +65,6 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
             print(f"File found in R2: {upload_target}")
         return True
 
-    # Unsuccessful return code
     if verbose:
         print(f"No existing file found in R2: {upload_target}")
     return False
@@ -302,6 +301,7 @@ def main() -> None:
         files_to_upload = script_utils.get_files(
             args.upload_from_directory,
             args.filetypes,
+            use_git_ignore=False,  # several image dirs are git ignored
         )
     elif args.file:
         files_to_upload = [args.file]
@@ -310,6 +310,7 @@ def main() -> None:
             "Either --upload_from_directory or a file must be specified"
         )
 
+    print(f"files_to_upload: {files_to_upload}")
     for file_to_upload in files_to_upload:
         upload_and_move(
             file_to_upload,

@@ -37,7 +37,6 @@ cleanup
 python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
 
 # Upload assets to R2 bucket
-echo "$STATIC_DIR"
 LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
 python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" 
 
