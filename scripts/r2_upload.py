@@ -217,6 +217,9 @@ def move_uploaded_file(
     shutil.move(str(file_path), str(target_path))
 
 
+file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm")
+
+
 def upload_and_move(
     file_path: Path,
     verbose: bool = False,
@@ -284,7 +287,7 @@ def main() -> None:
     parser.add_argument(
         "--filetypes",
         nargs="+",
-        default=(".mp4", ".svg", ".avif", ".webm"),
+        default=file_exts_to_upload,
         help="File types to upload when using --upload-from-directory",
     )
     parser.add_argument(

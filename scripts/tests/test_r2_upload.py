@@ -718,26 +718,36 @@ def test_update_markdown_references_with_links(
     test_file.parent.mkdir(parents=True)
     test_file.touch()
 
-    md_content = """
+    photo_relative_path = "static/docs/photo.png"
+    md_content = f"""
     # Test Document
-    ![Image](quartz/static/docs/doc.pdf)
+    ![Image](quartz/{photo_relative_path})
     [Download PDF](./static/docs/doc.pdf)
     [Other Link](different/path/file.pdf)
+    Text
     """
 
     md_file = content_dir / "test.md"
     md_file.write_text(md_content)
 
-    r2_address = "https://assets.turntrout.com/static/docs/doc.pdf"
+    r2_key = r2_upload.get_r2_key(test_file)
+    r2_address = f"https://assets.turntrout.com/{r2_key}"
 
     r2_upload.update_markdown_references(
         test_file, r2_address, references_dir=content_dir
     )
 
     updated_content = md_file.read_text()
-    assert f"![Image]({r2_address})" in updated_content
-    assert f"[Download PDF]({r2_address})" in updated_content
-    assert "[Other Link](different/path/file.pdf)" in updated_content
+
+    expected_content = f"""
+    # Test Document
+    ![Image](quartz/{photo_relative_path})
+    [Download PDF]({r2_address})
+    [Other Link](different/path/file.pdf)
+    Text
+    """
+
+    assert updated_content == expected_content
 
 
 def test_update_markdown_references_no_references_dir():
