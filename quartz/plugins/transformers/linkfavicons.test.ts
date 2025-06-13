@@ -487,7 +487,9 @@ describe("linkfavicons.downloadImage", () => {
       jest.spyOn(global, "fetch").mockRejectedValueOnce(mockResponse)
     } else {
       jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
-      jest.spyOn(fs, "createWriteStream").mockReturnValue(fsExtra.createWriteStream(imagePath))
+      jest
+        .spyOn(fs, "createWriteStream")
+        .mockImplementation(() => fsExtra.createWriteStream(imagePath))
     }
 
     if (expectedResult) {
