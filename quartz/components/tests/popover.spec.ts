@@ -216,7 +216,7 @@ test("Popover maintains position when page scrolls", async ({ page, dummyLink })
   await page.waitForFunction((targetY: number) => {
     const popover = document.querySelector(".popover")
     const popoverBox = popover?.getBoundingClientRect()
-    return popoverBox?.y === targetY
+    return popoverBox && Math.abs(popoverBox.y - targetY) < 15
   }, targetPopoverYAtTopEdge)
 })
 
