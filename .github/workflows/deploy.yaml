@@ -51,7 +51,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(visual-testing|Playwright Tests|Run eslint scanning|build \(>=22\))$'
+          check-regexp: '^(visual-testing|playwright-tests|Run eslint scanning|build \(>=22\))$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
