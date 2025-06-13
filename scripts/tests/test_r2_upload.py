@@ -772,3 +772,49 @@ def test_update_markdown_references_verbose_output(
     captured = capsys.readouterr()
     assert 'Changing "static/test.jpg" references to' in captured.out
     assert r2_address in captured.out
+
+
+def test_files_to_upload_ignores_gitignore(mock_git_root: Path):
+    """
+    Test that --upload-from-directory finds all files, including those that
+    would be ignored by git.
+    """
+    static_dir = mock_git_root / "quartz" / "static"
+    content_dir = mock_git_root / "quartz" / "website_content"
+    static_dir.mkdir(parents=True, exist_ok=True)
+    content_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create a .gitignore file at the project root
+    (mock_git_root / ".gitignore").write_text("*.ignored.png\n")
+
+    # Create test files
+    ignored_file = static_dir / "test.ignored.png"
+    ignored_file.touch()
+    regular_file = static_dir / "test.regular.png"
+    regular_file.touch()
+    existing_png_file = static_dir / "file4.png"
+    existing_png_file.touch()
+
+    arg_list = [
+        "r2_upload.py",
+        "--upload-from-directory",
+        str(static_dir),
+        "--filetypes",
+        ".png",
+        "--references-dir",
+        str(content_dir),
+    ]
+
+    with (
+        patch("sys.argv", arg_list),
+        patch("scripts.r2_upload.upload_and_move") as mock_upload_and_move,
+    ):
+        r2_upload.main()
+
+    uploaded_files = {
+        call.args[0] for call in mock_upload_and_move.call_args_list
+    }
+
+    expected_files = {ignored_file, regular_file, existing_png_file}
+
+    assert uploaded_files == expected_files
