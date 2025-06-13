@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-build-env
 
       - name: Build Quartz and generate critical CSS
-        run: npx quartz build --no-serve
+        run: npx quartz build
 
       - name: Install subfont
         run: npm install -g subfont
@@ -31,6 +31,7 @@ jobs:
         run: chmod +x ./scripts/subfont.sh
       - name: Subset fonts
         run: sh ./scripts/subfont.sh
+
       - name: Run site checks
         run: python scripts/built_site_checks.py --check-fonts
 
@@ -50,7 +51,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(visual-testing|Run eslint scanning|build \(>=22\))$'
+          check-regexp: '^(visual-testing|Playwright Tests|Run eslint scanning|build \(>=22\))$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
