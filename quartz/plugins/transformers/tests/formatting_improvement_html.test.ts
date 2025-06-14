@@ -359,6 +359,10 @@ describe("HTMLFormattingImprovement", () => {
       ["voilà", "voilà"],
       ["Voilà", "Voilà"],
       ["and then, voila!", "and then, voilà!"],
+      ["relu", "RELU"],
+      ["reluctantly", "reluctantly"],
+      ["ReLU", "RELU"],
+      ["How are you 1RelU?", "How are you 1RelU?"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
