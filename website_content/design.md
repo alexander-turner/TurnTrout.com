@@ -92,7 +92,7 @@ That took a few months.
 
 # Archiving and dependencies
 
-[Cloudflare](https://www.cloudflare.com/) hosts `TurnTrout.com`. Overall, the site has few external dependencies. In nearly all cases, I host scripts, stylesheets, and media assets on my CDN. If the rest of the Web went down (besides Cloudflare), `turntrout.com` would look nearly the same.[^archive] Furthermore, minimizing embeds (e.g. `<iframe>`s) will minimize the number of invasive tracking cookies.[^video]
+[Cloudflare](https://www.cloudflare.com/) hosts `turntrout.com`. Overall, the site has few external dependencies. In nearly all cases, I host scripts, stylesheets, and media assets on my CDN. If the rest of the Web went down (besides Cloudflare), `turntrout.com` would look nearly the same.[^archive] Furthermore, minimizing embeds (e.g. `<iframe>`s) will minimize the number of invasive tracking cookies.[^video]
 
 [^video]: To avoid YouTube tracking cookies, I even self-host [AI presidents discuss AI alignment agendas](/alignment-tier-list).
 
