@@ -363,6 +363,23 @@ def check_unrendered_spoilers(soup: BeautifulSoup) -> list[str]:
     return unrendered_spoilers
 
 
+def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for link elements whose text starts with "Transclude of".
+    """
+    unrendered_transclusions: list[str] = []
+    links = _tags_only(soup.find_all("a"))
+    for link in links:
+        text = link.get_text().strip()
+        if text.startswith("Transclude of"):
+            _append_to_list(
+                unrendered_transclusions,
+                text,
+                prefix="Unrendered transclusion: ",
+            )
+    return unrendered_transclusions
+
+
 def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     """
     Check for unrendered subtitle lines.
@@ -1000,6 +1017,7 @@ def check_file_for_issues(
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
+        "unrendered_transclusions": check_unrendered_transclusions(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup

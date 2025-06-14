@@ -3685,3 +3685,41 @@ def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
             )
         else:
             raise
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # No transclusions
+        ("<a href='#'>Regular link</a>", []),
+        # One transclusion
+        (
+            "<a href='#'>Transclude of something</a>",
+            ["Unrendered transclusion: Transclude of something"],
+        ),
+        # Multiple transclusions
+        (
+            """
+            <a href="#">Transclude of page 1</a>
+            <a href="#">Another link</a>
+            <a href="#">Transclude of page 2</a>
+            """,
+            [
+                "Unrendered transclusion: Transclude of page 1",
+                "Unrendered transclusion: Transclude of page 2",
+            ],
+        ),
+        # Text with extra whitespace
+        (
+            "<a href='#'>  Transclude of page 3  </a>",
+            ["Unrendered transclusion: Transclude of page 3"],
+        ),
+        # No links
+        ("<p>No links here</p>", []),
+    ],
+)
+def test_check_unrendered_transclusions(html, expected):
+    """Test the check_unrendered_transclusions function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_transclusions(soup)
+    assert sorted(result) == sorted(expected)
