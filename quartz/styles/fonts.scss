@@ -283,8 +283,17 @@ article[data-use-dropcap="true"] > p:first-of-type {
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
 
+  // Slanted smallcaps EB italic looks same as slanted normal smallcaps EB
+  //  so since real italics need a new font, just use that
+  font-family: var(--font-text-italic);
   position: relative;
   min-height: 4.2rem;
+
+  // We also have to inherit so not overriden by the first-line
+  & em,
+  & i {
+    font-family: inherit !important;
+  }
 
   &::before {
     content: attr(data-first-letter);
@@ -319,12 +328,6 @@ article[data-use-dropcap="true"] > p:first-of-type {
     @supports (-moz-appearance: none) {
       padding-top: $base-margin !important;
     }
-  }
-
-  & em,
-  & b,
-  & strong {
-    font-family: inherit !important;
   }
 }
 
