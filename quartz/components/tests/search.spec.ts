@@ -1,7 +1,11 @@
 import { test, expect, type Page } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
-import { searchPlaceholderDesktop, searchPlaceholderMobile } from "../scripts/search"
+import {
+  searchPlaceholderDesktop,
+  searchPlaceholderMobile,
+  mouseFocusDelay,
+} from "../scripts/search"
 import { takeRegressionScreenshot, setTheme, search, showingPreview } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -454,7 +458,9 @@ test("should not select a search result on initial render, even if the mouse is 
   )
 
   await search(page, "test")
-  await page.waitForTimeout(500)
+  // Wait for mouseover to be unlocked
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(5 * mouseFocusDelay)
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveClass(/focus/)

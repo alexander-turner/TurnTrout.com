@@ -20,6 +20,9 @@ interface Item {
  */
 export const debounceSearchDelay = 400
 
+// Delay in milliseconds before triggering a mouseover event after user input
+export const mouseFocusDelay = 100
+
 type SearchType = "basic" | "tags"
 let searchType: SearchType = "basic"
 let currentSearchTerm = ""
@@ -826,7 +829,7 @@ async function onType(e: HTMLElementEventMap["input"]) {
   // Re-enable mouse after a short delay to prevent immediate hover selection
   setTimeout(() => {
     mouseEventsLocked = false
-  }, 100)
+  }, mouseFocusDelay)
 }
 
 /**
