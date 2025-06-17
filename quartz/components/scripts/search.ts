@@ -396,6 +396,7 @@ let results: HTMLElement
 let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
+let mouseEventsLocked = false
 
 const appendLayout = (el: HTMLElement) => {
   if (searchLayout?.querySelector(`#${el.id}`) === null) {
@@ -670,8 +671,9 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${suffixHTML}`
 
   async function onMouseEnter(ev: MouseEvent) {
-    if (!ev.target) return
-    const target = ev.target as HTMLInputElement
+    if (mouseEventsLocked) return
+    if (!ev.currentTarget) return
+    const target = ev.currentTarget as HTMLElement
     await displayPreview(target)
   }
 
@@ -757,6 +759,7 @@ async function onType(e: HTMLElementEventMap["input"]) {
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
   searchType = currentSearchTerm.startsWith("#") ? "tags" : "basic"
 
+  mouseEventsLocked = true
   let searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[]
   if (searchType === "tags") {
     currentSearchTerm = currentSearchTerm.substring(1).trim()
@@ -819,6 +822,11 @@ async function onType(e: HTMLElementEventMap["input"]) {
   }
 
   await displayResults(finalResults, results, enablePreview)
+
+  // Re-enable mouse after a short delay to prevent immediate hover selection
+  setTimeout(() => {
+    mouseEventsLocked = false
+  }, 100)
 }
 
 /**

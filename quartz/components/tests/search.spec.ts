@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { searchPlaceholderDesktop, searchPlaceholderMobile } from "../scripts/search"
@@ -24,13 +24,16 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator("#search-bar")).toBeVisible()
 })
 
-test.afterEach(async ({ page }) => {
-  // Ensure search is closed after each test
+async function closeSearch(page: Page) {
   const searchContainer = page.locator("#search-container")
   if (await searchContainer.evaluate((el) => el.classList.contains("active"))) {
     await page.keyboard.press("Escape")
     await expect(searchContainer).not.toHaveClass(/active/)
   }
+}
+
+test.afterEach(async ({ page }) => {
+  await closeSearch(page)
 })
 
 for (const keyName of ["/", "Escape"]) {
@@ -434,6 +437,30 @@ test("Result card highlighting stays synchronized with preview", async ({ page }
   await thirdResult.hover()
   await expect(thirdResult).toHaveClass(/focus/)
   await expect(secondResult).not.toHaveClass(/focus/)
+})
+
+test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
+  page,
+}) => {
+  await search(page, "alignment")
+
+  // Figure out where the second result is, and hover over it
+  const secondResult = page.locator(".result-card").nth(1)
+  const secondResultPos = await secondResult.boundingBox()
+  expect(secondResultPos).toBeDefined()
+  await page.mouse.move(
+    secondResultPos!.x + secondResultPos!.width / 2,
+    secondResultPos!.y + secondResultPos!.height / 2,
+  )
+
+  await search(page, "test")
+  await page.waitForTimeout(500)
+
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toHaveClass(/focus/)
+
+  await page.keyboard.press("Enter")
+  await page.waitForURL("**/test-page")
 })
 
 const navigationMethods = [
