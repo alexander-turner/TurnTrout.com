@@ -313,3 +313,27 @@ for (const id of ["navbar", "toc-content"]) {
     }
   })
 }
+
+test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+  const linkHref = await dummyLink.getAttribute("href")
+  const linkSlug = linkHref?.split("/").pop()
+
+  // Hover over the link to initiate a popover, but don't wait for it to appear
+  await dummyLink.hover()
+
+  // Immediately click the link to navigate
+  await dummyLink.click()
+
+  // Wait for navigation to the new page. The href of dummyLink is /design.
+  await page.waitForURL(`**/${linkSlug}`)
+
+  // The 'nav' event should have cleared the pending popover timer.
+  // Wait a bit to ensure the popover doesn't appear.
+  // The popover timeout is 300ms, let's wait a little longer.
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(500)
+
+  const popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})

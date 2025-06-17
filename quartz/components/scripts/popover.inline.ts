@@ -78,6 +78,17 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 }
 
 document.addEventListener("nav", () => {
+  // On page navigation, clean up any existing popovers and timers
+  if (activePopoverRemover) {
+    activePopoverRemover()
+  }
+  // and pending popovers
+  if (pendingPopoverTimer) {
+    clearTimeout(pendingPopoverTimer)
+    pendingPopoverTimer = null
+  }
+
+  // Re-attach event listeners to all links that can trigger a popover
   const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
   for (const link of links) {
     const handleMouseEnter = () => {
