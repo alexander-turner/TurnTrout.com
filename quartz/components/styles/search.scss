@@ -266,6 +266,10 @@
       }
     }
   }
+
+  & .vsc-controller {
+    display: none; // Don't show in search preview
+  }
 }
 
 @media all and (max-width: $tablet-breakpoint) {
