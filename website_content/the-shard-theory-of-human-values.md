@@ -221,7 +221,7 @@ Thus: Shard theory _does not explain everything_, because shards are grown from 
 
 ## We think that many biases are convergently produced artifacts of the human learning process & environment
 
-We think that simple reward circuitry leads to different cognition activating in different circumstances. Different circumstances can activate cognition that implements different values, and this can lead to inconsistent or biased behavior. We conjecture that many biases are convergent artifacts of the human training process and internal shard dynamics. People aren’t just randomly/hardcoded to be more or less “rational” in different situations.
+We think that simple reward circuitry leads to different cognition activating in different circumstances. Different circumstances can activate cognition that implements different values, and this can lead to inconsistent or biased behavior. We conjecture that many biases are convergent artifacts of the human training process and internal shard dynamics. People aren’t just randomly hardcoded to be more or less “rational” in different situations.
 
 ### [Projection bias](https://thedecisionlab.com/biases/projection-bias)
 
@@ -239,9 +239,9 @@ Why are we hesitant to shift away from the course of action that we’re current
 
 ### [Time inconsistency](https://en.wikipedia.org/wiki/Dynamic_inconsistency)
 
-A person might deliberately avoid passing through the sweets aisle in a supermarket in order to avoid temptation. Avoiding the aisle is a strange thing to do, and it makes no sense from the perspective of an agent maximizing expected utility over quantities like "sweet food consumed" and "leisure time" and "health." Such an EU-maximizing agent would decide to buy sweets or not, but wouldn’t worry about entering the aisle itself. Avoiding temptation makes perfect sense under shard theory.
+A person might deliberately avoid passing through the sweets aisle in a supermarket in order to avoid temptation. Avoiding the aisle is a strange thing to do, and it makes no sense from the perspective of an agent maximizing expected utility over quantities like "sweet food consumed" and "leisure time" and "health." Such an EU-maximizing agent would decide to buy sweets or not, but wouldn’t worry about entering the aisle itself.
 
-Shards are contextually activated, and the sweet-shard is most strongly activated when you can actually see sweets. We think that planning-capable shards are manipulating future contexts so as to prevent the full activation of your sweet shard.
+Avoiding temptation makes perfect sense under shard theory. Shards are contextually activated, and the sweet-shard is most strongly activated when you can actually see sweets. We think that planning-capable shards are manipulating future contexts so as to prevent the full activation of your sweet shard.
 
 > [!question]
 >

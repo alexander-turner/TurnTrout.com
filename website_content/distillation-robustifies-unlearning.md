@@ -30,7 +30,7 @@ Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppr
 Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613145643.avif]]
-Figure: Distilling the good while leaving the bad behind.
+Figure: Distilling the good while leaving behind the bad.
 
 > [!thanks]
 > Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the winter 2024-25 cohort of the shard theory stream. Read [our paper](https://arxiv.org/abs/2506.06278) and enjoy an [interactive demo](https://addiefoote.com/distillation-robustifies-demo/).
