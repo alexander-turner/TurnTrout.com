@@ -321,6 +321,7 @@ sup {
   inset: 0; /* stretch over the whole video */
   pointer-events: none; /* keep clicks for the extension if you prefer, otherwise remove */
   background: none !important; /* no extra paint */
+  z-index: 100; // Ensure it's on top of the video but behind eg search-container
 }
 
 // Hide video speed controller
