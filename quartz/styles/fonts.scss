@@ -308,6 +308,7 @@ article[data-use-dropcap="true"] > p:first-of-type {
     pointer-events: none; /* Ensure it doesn't interfere with user interactions */
     color: var(--foreground);
     font-size: var(--dropcap-font-size);
+    width: var(--dropcap-font-size);
     line-height: 1;
     padding-right: 0.1em;
     font-family: var(--font-dropcap-foreground);
