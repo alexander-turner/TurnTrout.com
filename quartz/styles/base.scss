@@ -334,7 +334,8 @@ h3,
 h4,
 h5,
 h6,
-#toc-content li {
+#toc-content li,
+#toc-content-mobile li {
   // Ensure headers are visible even when the navbar is present
   scroll-margin-top: calc(6 * $base-margin);
   font-family: var(--font-text-header);
