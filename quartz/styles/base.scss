@@ -16,7 +16,7 @@ section {
   max-width: 100%;
   box-sizing: border-box;
   background-color: var(--background);
-  font-family: var(--font-text);
+  font-family: var(--font-main);
   color: var(--foreground);
 }
 
@@ -293,7 +293,7 @@ h4,
 h5,
 h6,
 thead {
-  font-family: var(--font-text-header);
+  font-family: var(--font-header);
   color: var(--foreground);
   position: relative; // For anchor links
 
@@ -338,7 +338,7 @@ h6,
 #toc-content-mobile li {
   // Ensure headers are visible even when the navbar is present
   scroll-margin-top: calc(6 * $base-margin);
-  font-family: var(--font-text-header);
+  font-family: var(--font-header);
 
   // Oldstyle is too small for headers
   &::first-letter,

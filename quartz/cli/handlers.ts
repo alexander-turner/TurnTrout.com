@@ -322,7 +322,7 @@ export async function injectCriticalCSSIntoHTMLFiles(
 }
 const themeCSS = `
 :root {
-  font-family: var(--font-text);
+  font-family: var(--font);
 }
 #navbar-left h2 {
   color: var(--midground);

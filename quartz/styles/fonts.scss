@@ -85,14 +85,14 @@ $fonts-dir: "/static/styles/fonts";
   font-family: "EBGaramondInitialsF1";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2") format("woff2");
   font-display: block;
-  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
+  -subfont: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
 }
 
 @font-face {
   font-family: "EBGaramondInitialsF2";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2") format("woff2");
   font-display: block;
-  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  -subfont: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 }
 
 @font-face {
@@ -120,16 +120,16 @@ body {
   --font-dropcap-background: "EBGaramondInitialsF1", serif;
   --font-monospace: "FiraCode", "JetBrains Mono", "Courier New", monospace;
   --font-monospace-theme: "FiraCode", "JetBrains Mono", "Courier New", monospace;
-  --font-text-theme: "EBGaramond", garamond, "Times New Roman", serif;
-  --font-text: "EBGaramond", garamond, "Times New Roman", serif;
-  --font-text-original: "EBGaramondOriginal";
-  --font-text-italic: "EBGaramondItalic", "EBGaramond";
-  --font-text-italic-situational: var(--font-text-italic);
-  --font-text-header: "EBGaramond", garamond, "Times New Roman", serif;
-  --font-text-swash: "EBGaramond:+swsh", cursive;
+  --font-theme: "EBGaramond", garamond, "Times New Roman", serif;
+  --font: "EBGaramond", garamond, "Times New Roman", serif;
+  --font-original: "EBGaramondOriginal";
+  --font-italic: "EBGaramondItalic", "EBGaramond";
+  --font-italic-situational: var(--font-italic);
+  --font-header: "EBGaramond", garamond, "Times New Roman", serif;
+  --font-swash: "EBGaramond:+swsh", cursive;
   --font-bad-handwriting: "BadHandwriting";
 
-  font-family: EBGaramond, var(--font-text);
+  font-family: EBGaramond, var(--font-main);
   line-height: var(--base-line-height);
   font-feature-settings:
     "liga" 1,
@@ -147,7 +147,7 @@ em {
   // In first-line, we want to use the normal font in em, not the italic one
   //  But we can't simply use ...::first-line em, since not supported by CSS
   //  So we use a CSS variable to set the font family for the first-line
-  font-family: var(--font-text-italic-situational);
+  font-family: var(--font-italic-situational);
   font-style: italic;
 }
 
@@ -180,7 +180,7 @@ em {
       width: max-content;
       content: attr(data-content);
       color: var(--foreground);
-      font-family: var(--font-text);
+      font-family: var(--font-main);
       opacity: 1;
       text-shadow: 0 0 10px color-mix(in srgb, var(--yellow) 50%, transparent);
     }
@@ -226,7 +226,7 @@ dt {
 .small-caps,
 article[data-use-dropcap="true"] > p:first-of-type::first-line,
 article[data-use-dropcap="true"] > p:first-of-type .small-caps {
-  --font-text-italic-situational: var(--font-text) !important;
+  --font-italic-situational: var(--font-main) !important;
 
   font-style: inherit;
   font-variant-caps: small-caps; // Fixes kerning in a few cases
@@ -290,7 +290,7 @@ article[data-use-dropcap="true"] > p:first-of-type {
 
   // Slanted smallcaps EB italic looks same as slanted normal smallcaps EB
   //  so since real italics need a new font, just use that
-  font-family: var(--font-text);
+  font-family: var(--font-main);
   position: relative;
   min-height: 4.2rem;
 
