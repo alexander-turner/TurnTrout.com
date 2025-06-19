@@ -161,7 +161,7 @@ $$
 \text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})-\text{effects}(\pi_{\mathcal{H}}\,|\,\pi_\mathcal{M}, \pi_\mathcal{M}^{:0})
 $$
 
-_Note:_ the naive counterfactual scheme, $\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})-\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M}^{:0})$, fails because it doesn't account for $\mathcal{H}$'s right to change its mind in response to $\mathcal{M}$.
+_Note:_ The naive counterfactual scheme, $\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})-\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M}^{:0})$, fails because it doesn't account for $\mathcal{H}$'s right to change its mind in response to $\mathcal{M}$.
 
 ## Iterative
 
@@ -178,7 +178,7 @@ Suppose $\mathcal{M}$ pushes the vase to the left, and $\mathcal{H}$ decides to 
 How about penalizing
 
 $$
-\bigcup_{\$t=1\$}^{T} \bigg(\underbrace{\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})}_{\text{the new effects of } \pi_\mathcal{M}\text{ at time }t}\bigg)?
+\bigcup_{t=1}^{T} \bigg(\underbrace{\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})}_{\text{the new effects of } \pi_\mathcal{M}\text{ at time }t}\bigg)?
 $$
 
 Pretty, right?
@@ -194,7 +194,7 @@ Really, look.
 We should instead
 
 $$
-\underbrace{\text{effects}(\pi_\mathcal{H},\pi_\mathcal{M}) \,\cap}_\text{if they actually happened} \Bigg(\overbrace{\bigcup_{\$t=1\$}^{T} \bigg(\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})\bigg)}^{\text{penalize } \mathcal{M}\text{'s step-wise counterfactual impacts}}\Bigg).
+\underbrace{\text{effects}(\pi_\mathcal{H},\pi_\mathcal{M}) \,\cap}_\text{if they actually happened} \Bigg(\overbrace{\bigcup_{t=1}^{T} \bigg(\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})\bigg)}^{\text{penalize } \mathcal{M}\text{'s step-wise counterfactual impacts}}\Bigg).
 $$
 
 Every turn, $\mathcal{M}$ calculates the effects that only result if it acts (the two simulations run to the longest time step observed under the full plan).
@@ -219,7 +219,7 @@ Observe that the iterative formulation doesn't allow penalty avoidance by "blend
 
 # Fundamental Trade-Off
 
-Fortunately, this formulation solves clinginess; $\mathcal{H}$'s effects are not penalized, while $\mathcal{M}$'s effects are. Unfortunately, insofar as $\mathcal{H}$ may be manipulated by $\mathcal{M}$, the impact measure becomes useless; $\mathcal{M}$ can simply avoid penalization by making $\mathcal{H}$ do its dirty work.
+Fortunately, this formulation solves clinginess; $\mathcal{H}$'s effects are not penalized, while $\mathcal{M}$'s effects are. Unfortunately, insofar as $\mathcal{H}$ may be manipulated by $\mathcal{M}$, the impact measure becomes useless: $\mathcal{M}$ can avoid penalization by making $\mathcal{H}$ do its dirty work.
 
 This can happen in two ways:
 

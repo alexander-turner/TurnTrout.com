@@ -65,7 +65,7 @@ There's more than one thing going wrong here, but I'm just going to focus on one
 
 Sometimes, constraints are necessary. I think that the alignment community is pretty good at finding plausibly necessary constraints. Maybe some of the above _aren't_ necessary – maybe there's One Clever Trick you come up with which obviates one of these concerns.
 
-Constraints have costs. Sometimes, the costs are worth it. In this context, I think the costs are much worth it. Under this implicit framing of the problem, you're [pretty hosed](/the-catastrophic-convergence-conjecture) if you don't get even outer alignment right.
+Constraints have costs. Sometimes, the costs are worth it. In this context, I think the costs are pretty much worth it. Under this implicit framing of the problem, you're [pretty hosed](/the-catastrophic-convergence-conjecture) if you don't get even outer alignment right.
 
 However, even if the real problem has crazy constraints, that doesn't mean you should immediately tackle the fully constrained problem. I think you should often [relax](<https://en.wikipedia.org/wiki/Relaxation_(approximation)>) the problem first: eliminate or weaken constraints until you reach a problem which is still a little confusing, but which you can get some traction on.
 
