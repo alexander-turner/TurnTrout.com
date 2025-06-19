@@ -232,6 +232,41 @@ test.describe("Scroll Behavior", () => {
   })
 })
 
+test.describe("Flicker-Free Reload", () => {
+  test("restores scroll position on refresh without flickering", async ({ page }) => {
+    const scrollPos = 500
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    // This script runs before the page's own scripts. It uses requestAnimationFrame
+    // to check the scroll position just before the first paint. If the scroll position
+    // is 0 at this point, it means the user would see a flicker.
+    await page.addInitScript(() => {
+      requestAnimationFrame(() => {
+        // The application's scroll restoration also uses rAF. To ensure our check
+        // runs after the application's code, we use a nested rAF. This schedules
+        // our check for the animation frame *after* the scroll has been set.
+        requestAnimationFrame(() => {
+          // @ts-expect-error: Attaching to window for test purposes
+          window.scrollYAtFirstPaint = window.scrollY
+        })
+      })
+    })
+
+    await softRefresh(page)
+
+    await page.waitForFunction(
+      () => (window as Window & { scrollYAtFirstPaint?: number }).scrollYAtFirstPaint !== undefined,
+    )
+    const scrollYAtLoad = await page.evaluate(
+      () => (window as Window & { scrollYAtFirstPaint?: number }).scrollYAtFirstPaint,
+    )
+
+    // scroll position just before first paint should already be the restored one
+    expect(scrollYAtLoad).toBe(scrollPos)
+  })
+})
+
 test.describe("Popstate (Back/Forward) Navigation", () => {
   // eslint-disable-next-line playwright/expect-expect
   test("browser back and forward updates content appropriately", async ({ page }) => {

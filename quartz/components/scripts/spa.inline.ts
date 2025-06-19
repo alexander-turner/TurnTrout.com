@@ -387,21 +387,6 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
 }
 
 /**
- * Restores scroll position on initial page load if available in state or hash.
- */
-function performInitialScroll(): void {
-  console.debug(`[Initial Load Event] Checking history state:`, history.state)
-  const initialScroll = history.state?.scroll as number | undefined
-  if (typeof initialScroll === "number") {
-    console.debug(`[Initial Load Event] Restoring scroll from state: ${initialScroll}`)
-    window.scrollTo({ top: initialScroll, behavior: "instant" })
-  } else if (window.location.hash) {
-    console.debug(`[Initial Load Event] Scrolling to hash: ${window.location.hash}`)
-    scrollToHash(window.location.hash)
-  }
-}
-
-/**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
  * - Handles browser back/forward navigation (popstate)
@@ -415,10 +400,14 @@ function createRouter() {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual"
 
-      window.addEventListener("scroll", () => {
-        console.debug("Scroll event fired")
-        updateScrollState()
-      })
+      window.addEventListener(
+        "scroll",
+        () => {
+          console.debug("Scroll event fired")
+          updateScrollState()
+        },
+        { passive: true },
+      )
       console.debug("Manual scroll restoration enabled.")
     } else {
       console.warn("Manual scroll restoration not supported.")
@@ -455,15 +444,19 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
   createRouter()
 
   // Handle initial scroll and dispatch nav event after DOM is loaded
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      performInitialScroll()
-      dispatchNavEvent(getFullSlug(window))
-    })
-  } else {
-    // DOMContentLoaded has already fired
-    performInitialScroll()
+  const onReady = () => {
+    // Fallback to scroll to hash after DOM is ready.
+    // This is in case the immediate hash scroll attempt failed because the element wasn't in the DOM yet.
+    if (window.location.hash) {
+      scrollToHash(window.location.hash)
+    }
     dispatchNavEvent(getFullSlug(window))
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", onReady)
+  } else {
+    onReady()
   }
 }
 

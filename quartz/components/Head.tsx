@@ -151,6 +151,18 @@ export default (() => {
       <head>
         <meta charSet="utf-8" />
         <script
+          dangerouslySetInnerHTML={{
+            __html: `
+// Try to restore scroll position without flicker
+if (history.state?.scroll) {
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: history.state.scroll, behavior: "instant" });
+  });
+}
+`,
+          }}
+        />
+        <script
           data-cfasync="false" // Otherwise rocketloader delays the script
           id="detect-dark-mode"
           src="/static/scripts/detectDarkMode.js"
