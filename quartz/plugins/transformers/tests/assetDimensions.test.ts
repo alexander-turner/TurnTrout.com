@@ -817,10 +817,11 @@ describe("Asset Dimensions Plugin", () => {
     let tmpDir: string
     let imageFile: string
     let videoFile: string
+    const imageFileName = "local-image.png"
 
     beforeEach(async () => {
       tmpDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "assetDimensions-local-"))
-      imageFile = path.join(tmpDir, "local-image.png")
+      imageFile = path.join(tmpDir, imageFileName)
       await fs.writeFile(imageFile, mockImageData)
 
       videoFile = path.join(tmpDir, "video.mp4")
@@ -829,6 +830,7 @@ describe("Asset Dimensions Plugin", () => {
 
     afterEach(async () => {
       await fsExtra.remove(tmpDir)
+      jest.restoreAllMocks()
     })
 
     it("reads dimensions for local image via file://", async () => {
@@ -847,6 +849,20 @@ describe("Asset Dimensions Plugin", () => {
     it("throws when local asset not found", async () => {
       const missing = path.join(tmpDir, "not-exist.png")
       await expect(fetchAndParseAssetDimensions(`file://${missing}`)).rejects.toThrow("ENOENT")
+    })
+
+    it("reads dimensions for local asset with root-relative path", async () => {
+      const staticDir = path.join(assetDimensionsState.paths.projectRoot, "quartz", "static")
+      await fsExtra.ensureDir(staticDir)
+      const assetPath = path.join(staticDir, imageFileName)
+      await fs.writeFile(assetPath, mockImageData)
+
+      try {
+        const dims = await fetchAndParseAssetDimensions(`/static/${imageFileName}`)
+        expect(dims).toEqual(mockFetchedImageDims)
+      } finally {
+        await fs.unlink(assetPath)
+      }
     })
   })
 })

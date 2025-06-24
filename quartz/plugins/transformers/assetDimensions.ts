@@ -14,9 +14,21 @@ const logger = createLogger("assetDimensions")
 
 const __filepath = fileURLToPath(import.meta.url)
 const projectRoot = path.dirname(gitRoot(__filepath))
+export const paths = {
+  _filepath: __filepath,
+  projectRoot: projectRoot,
+  assetDimensions: path.join(
+    projectRoot,
+    "quartz",
+    "plugins",
+    "transformers",
+    ".asset_dimensions.json",
+  ),
+}
 
+// TODO add to paths?
 export const ASSET_DIMENSIONS_FILE_PATH = path.join(
-  projectRoot,
+  paths.projectRoot,
   "quartz",
   "plugins",
   "transformers",
@@ -59,12 +71,12 @@ export async function maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
     return assetDimensionsCache
   }
   try {
-    const data = await fs.readFile(ASSET_DIMENSIONS_FILE_PATH, "utf-8")
+    const data = await fs.readFile(paths.assetDimensions, "utf-8")
     assetDimensionsCache = JSON.parse(data) as AssetDimensionMap
     console.log("Asset dimensions cache loaded.")
   } catch (error) {
     console.warn(
-      `Could not load asset dimension cache from ${ASSET_DIMENSIONS_FILE_PATH}: ${error}. Starting fresh.`,
+      `Could not load asset dimension cache from ${paths.assetDimensions}: ${error}. Starting fresh.`,
     )
     assetDimensionsCache = {}
   }
@@ -73,11 +85,11 @@ export async function maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
 
 export async function maybeSaveAssetDimensions(): Promise<void> {
   if (assetDimensionsCache && needToSaveCache) {
-    const tempFilePath = ASSET_DIMENSIONS_FILE_PATH + ".tmp"
+    const tempFilePath = paths.assetDimensions + ".tmp"
     const data = JSON.stringify(assetDimensionsCache, null, 2)
 
     await fs.writeFile(tempFilePath, data, "utf-8")
-    await fs.rename(tempFilePath, ASSET_DIMENSIONS_FILE_PATH)
+    await fs.rename(tempFilePath, paths.assetDimensions)
     needToSaveCache = false
     console.log("Asset dimensions cache saved.")
   }
@@ -138,10 +150,19 @@ function isRemoteUrl(src: string): boolean {
 }
 
 async function resolveLocalAssetPath(src: string): Promise<string> {
-  let localPath = src.startsWith("file://") ? fileURLToPath(src) : src
-  if (!path.isAbsolute(localPath)) {
-    // Assumes asset is in website_content/asset_staging
-    localPath = path.join(projectRoot, "website_content", localPath)
+  if (src.startsWith("file://")) {
+    const localPath = fileURLToPath(src)
+    await fs.access(localPath)
+    return localPath
+  }
+
+  let localPath = src
+  if (localPath.startsWith("/")) {
+    // Treat as relative to the project root
+    localPath = path.join(paths.projectRoot, "quartz", localPath.substring(1))
+  } else if (!path.isAbsolute(localPath)) {
+    // Assumes asset is in website_content for relative paths
+    localPath = path.join(paths.projectRoot, "website_content", localPath)
   }
   await fs.access(localPath)
   return localPath
