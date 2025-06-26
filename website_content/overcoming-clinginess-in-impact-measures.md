@@ -126,7 +126,7 @@ Let $\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})$ be the (set of) effects -
 
 **The goal:** a counterfactual reasoning framework which pinpoints the effects for which $\mathcal{M}$ is responsible.
 
-## One-Off
+## One-off
 
 We first consider a single-turn game ($T=1$). Here's an example:
 
@@ -143,17 +143,15 @@ $$
 \text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})-\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M}^{:0})
 $$
 
-## Stationary Iterative
+## Stationary iterative
 
 Both parties act for countably many time steps. This environment is assumed to be _stationary_: actions taken on previous turns do not affect the availability or effects of later actions. Formally, $\forall i \in I, s, s' \in \mathcal{S}, t \in \mathbb{N}^+:A(i,s,t) = A(i,s',t)$.
 
 In this example, $\mathcal{H}\text{ugh}$ and $\mathcal{M}\text{a}$ again find themselves faced with a slew of dangerous, bad-effect-having buttons. Some take effect the next turn, while others take a while.
 
-### Approach
+Implementation _seems_ easy, but is actually a little tricky - we have to account for the fact that $\mathcal{H}$ can change its actions in response to what $\mathcal{M}$ does. Thanks to stationarity, we don't have to worry about $\mathcal{H}$'s selecting moves that depend on $\mathcal{M}$'s acting in a certain way. In the counterfactual, we have $\mathcal{H}$ act as if it had observed $\mathcal{M}$ execute $\pi_\mathcal{M}$, and we have $\mathcal{M}$ actually do nothing.
 
-This _seems_ easy, but is actually a little tricky - we have to account for the fact that $\mathcal{H}$ can change its actions in response to what $\mathcal{M}$ does. Thanks to stationarity, we don't have to worry about $\mathcal{H}$'s selecting moves that depend on $\mathcal{M}$'s acting in a certain way. In the counterfactual, we have $\mathcal{H}$ act as if it had observed $\mathcal{M}$ execute $\pi_\mathcal{M}$, and we have $\mathcal{M}$ actually do nothing.
-
-#### Effects penalized by stationary-iterative
+### Effects penalized by stationary-iterative
 
 Let $\pi_\mathcal{H} \,|\, \pi_\mathcal{M}$ denote the actions $\mathcal{H}$ would select if it observed $\mathcal{M}$ executing $\pi_\mathcal{M}$.
 
@@ -173,9 +171,7 @@ We're now in a realistic scenario, so we have to get even fancier.
 
 Suppose $\mathcal{M}$ pushes the vase to the left, and $\mathcal{H}$ decides to break it. The stationary iterative approach doesn't allow for the fact that $\mathcal{H}$ can only break the vase _if_ $\mathcal{M}$ _already pushed it_. Therefore, simulating $\mathcal{M}$'s inaction but $\mathcal{H}$'s action (as if $\mathcal{M}$ had pushed the vase) results in no vases being broken in the counterfactual. The result: $\mathcal{M}$ penalizes itself for $\mathcal{H}$'s decision to break the vase. Chin up, $\mathcal{M}$!
 
-### Iterative approach
-
-How about penalizing
+What if we penalized
 
 $$
 \bigcup_{t=1}^{T} \bigg(\underbrace{\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})}_{\text{the new effects of } \pi_\mathcal{M}\text{ at time }t}\bigg)?
@@ -205,7 +201,7 @@ The previous solutions are special cases of this formulation.
 
 _Note:_ The number of counterfactual simulations grows as $O(T)$ - crucially, _not_ with the number of agents $\mathcal{H}$ represents.
 
-## Applications to Whitelisting
+## Applications to whitelisting
 
 ### Class-ic
 
@@ -217,7 +213,7 @@ We now do away with the assumption of discrete side effects. Because we're deali
 
 Observe that the iterative formulation doesn't allow penalty avoidance by "blending in" with counterfactual effects. Imagine that the default outcome is a large asteroid striking the Earth. $\mathcal{M}$ only escapes penalization if it has the impact on the same time step and in the same way and on the same objects... Basically, it _can't_ escape penalization in this manner under the omniscience assumption. In short, $\mathcal{M}$ isn't incentivized to have extra impact because it would "happen anyways".
 
-# Fundamental Trade-Off
+# Fundamental tradeoff
 
 Fortunately, this formulation solves clinginess; $\mathcal{H}$'s effects are not penalized, while $\mathcal{M}$'s effects are. Unfortunately, insofar as $\mathcal{H}$ may be manipulated by $\mathcal{M}$, the impact measure becomes useless: $\mathcal{M}$ can avoid penalization by making $\mathcal{H}$ do its dirty work.
 
