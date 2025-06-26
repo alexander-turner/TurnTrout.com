@@ -11,7 +11,6 @@ authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.png
 aliases:
-  - grinnell-talk
   - reunion-talk
   - talk-agi
 ---
@@ -20,8 +19,8 @@ aliases:
 
 I work at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
 
-> [!warning] I'm only speaking for myself, not for my employer (Google DeepMind)
->
+> [!warning] I'm only speaking for myself, not for my employer
+
 # The romance and peril of AI
 
 ![[grinnell-talk-20250624223204.png]]{.float-right}
@@ -32,9 +31,7 @@ But reality is more cynical - less pretty. With AI, strongmen rejoice for its po
 
 My journey into this field began after Grinnell. I was fascinated by the idea of _artificial general intelligence_, or "AGI" – a machine that could do more than play simple games – a machine that could play the “game of life.” Back then, with no ChatGPT, few computer scientists seriously discussed AGI. I was scandalized by their _unserious_ attitudes towards such an important technology. Even my first PhD advisor was dismissive, claiming AGI was centuries away. His skepticism only fueled my research, which eventually led to my work at UC Berkeley and Google DeepMind. Since he was _obviously wrong_, I got a new advisor.
 
-# Divvying up AGI risk
-
-Subtitle: Non-exhaustively.
+# Risks from AI
 
 1. **Automation.** One of the first risks to touch us - the anxiety about whether our careers and skillsets will even mean anything.
 
@@ -49,15 +46,13 @@ I'll focus on two topics:
 1. A potential “intelligence explosion”, and
 2. Human extinction by rogue AI.
 
-## Intelligence explosion
-  
-The "intelligence explosion" idea is simple. If an AI can do AI research, then it can research how to make itself smarter. Then it becomes smarter, at which point it can do research faster and better, again unlocking even more intelligence. We end up with a system vastly different than anything we designed or imagined. If the process keeps going well beyond human-level intelligence, the resulting machine would be an "artificial superintelligence" (or "ASI").
+The "intelligence explosion" idea is simple. If an AI can do AI research, then it can research how to make itself smarter. Then it becomes smarter, at which point it can do research faster and better, again unlocking even more intelligence. We end up with a system vastly different than anything we designed or imagined. If the process keeps going well beyond human-level intelligence, the resulting machine would be an _artificial superintelligence_ (or "ASI").
 
-## Spelling out an argument for AI extinction risk
+# Spelling out an argument for AI extinction risk
 
 PROPOSITIONS
 
-1. The AI is an ASI because it is way smarter than the smartest person ever.
+1. The AI is an ASI because it is way smarter than the smartest person ever. ("Smart" in the sense of "able to effectively complete difficult and novel tasks.")
 
 2. The ASI has goals.
 
@@ -71,7 +66,7 @@ CONCLUSION
 
 : The ASI attempts to gain massive influence and succeeds, possibly killing us.
 
-### Intuitive support for the argument
+## Intuitive support for the argument
 
 Suppose a person directed an ASI to increase their power, social esteem, and other goals over which humans often ruin each other. Given that instruction, the ASI probably would succeed due to its extreme intelligence advantage.
 
@@ -116,7 +111,7 @@ Even though people care about the problems, that doesn’t mean the problems go 
 
 # Conclusion
 
-When I first worried about AGI risk, I felt alone. My first advisor thought the whole idea was dumb. No one else in my program worked in the field. Now... there's lots of attention on AGI risk. Honestly, I wish the AI boom hadn't happened. I wish that AI had stayed slow and quiet, because I think the world was safer that way.
+When I first worried about AGI risk, I felt alone. My first advisor thought the whole idea was dumb. No one else in my program worked in the field. Now, there's lots of attention on AGI risk. Honestly, I wish the AI boom hadn't happened. I wish that AI had stayed slow and quiet, because I think the world was safer that way.
 
 > [!money] Want to do something about the problem?
 >
