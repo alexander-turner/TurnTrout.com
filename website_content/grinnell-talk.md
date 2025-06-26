@@ -1,18 +1,19 @@
 ---
-title: "Talk notes: An introduction to AGI risk"
+title: A simple explanation of AGI risk
 permalink: agi-risk-introduction
 no_dropcap: false
 tags:
   - AI
   - grinnell
   - talk-notes
-description: 
+description: Could human-designed AI kill all humans? I spent my PhD on this and still worry.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.png
 aliases:
   - reunion-talk
   - talk-agi
+  - intro-agi-risk
 ---
 > [!info] Notes from a talk originally given at my alma mater
 > I went to [Grinnell College](https://grinnell.edu) for my undergraduate degree. For the 2025 reunion event, I agreed to speak on a panel about AI. I like the talk I gave because I think it's a good "101" intro to AI risk, aimed at educated laypeople.
