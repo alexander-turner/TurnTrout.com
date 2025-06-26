@@ -507,6 +507,10 @@ img.favicon {
     }
   }
 
+  &[src$="mail.svg"] {
+    margin-left: 0.1rem;
+  }
+
   &[src$="forum_effectivealtruism_org.avif"] {
     filter: saturate(0%) invert(100%) sepia(100%) hue-rotate(185deg) contrast(100%);
   }

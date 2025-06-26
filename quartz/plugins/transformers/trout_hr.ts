@@ -4,6 +4,8 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+export const troutContainerId = "trout-ornament-container"
+
 /**
  * The ornamental node with a trout image and decorative text.
  */
@@ -11,7 +13,7 @@ export const ornamentNode: Element = {
   type: "element",
   tagName: "div",
   properties: {
-    id: "trout-ornament-container",
+    id: troutContainerId,
   },
   children: [
     {

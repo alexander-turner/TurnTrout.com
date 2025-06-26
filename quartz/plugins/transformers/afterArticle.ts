@@ -7,6 +7,7 @@ import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createFaviconElement, MAIL_PATH } from "./linkfavicons"
 import { createSequenceLinksComponent } from "./sequenceLinks"
+import { troutContainerId } from "./trout_hr"
 
 const SUBSTACK_URL =
   "https://assets.turntrout.com/static/images/external-favicons/substack_com.avif"
@@ -37,13 +38,13 @@ const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
 
 const contactMe = h("div", [h("center", ["Thoughts? Email me at ", h("code", {}, [mailLink])])])
 
-export function insertAfterTroutOrnament(tree: Root, components: Element[]) {
+export function insertAfterOrnamentNode(tree: Root, components: Element[]) {
   visit(tree, "element", (node: Element, index, parent: Element | null) => {
     if (
       index !== undefined &&
       node.tagName === "div" &&
       node.properties &&
-      node.properties.id === "trout-ornament" &&
+      node.properties.id === troutContainerId &&
       parent
     ) {
       const wrapperDiv = h("div", { class: "after-article-components" }, components)
@@ -71,7 +72,7 @@ export const AfterArticle: QuartzTransformerPlugin = () => {
         }
 
         if (components.length > 0) {
-          insertAfterTroutOrnament(tree, components)
+          insertAfterOrnamentNode(tree, components)
         }
       },
     ],

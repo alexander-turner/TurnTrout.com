@@ -10,6 +10,7 @@ import {
   createSequenceLinksDiv,
   insertAfterTroutOrnament,
 } from "../sequenceLinks"
+import { ornamentNode } from "../trout_hr"
 
 describe("renderSequenceTitle", () => {
   it("should return null when no sequence information is available", () => {
@@ -84,14 +85,11 @@ describe("createSequenceLinksDiv", () => {
   })
 })
 
-describe("insertAfterTroutOrnament", () => {
+describe("insertAfterOrnamentNode", () => {
   it("should insert sequence links after trout ornament", () => {
     const tree: Root = {
       type: "root",
-      children: [
-        { type: "element", tagName: "div", properties: { id: "trout-ornament" }, children: [] },
-        { type: "element", tagName: "p", properties: {}, children: [] },
-      ],
+      children: [ornamentNode, { type: "element", tagName: "p", properties: {}, children: [] }],
     }
     const sequenceLinksDiv = { type: "element", tagName: "div" } as Element
 

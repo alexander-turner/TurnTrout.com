@@ -6,6 +6,7 @@ import { visit } from "unist-util-visit"
 import type { QuartzPluginData } from "../vfile"
 
 import { formatTitle } from "../../components/component_utils"
+import { troutContainerId } from "./trout_hr"
 
 // Main components:
 // 1. renderSequenceTitle: Generates sequence title element
@@ -126,7 +127,7 @@ export function insertAfterTroutOrnament(tree: Root, sequenceLinksDiv: Element):
       index !== undefined &&
       node.tagName === "div" &&
       node.properties &&
-      node.properties.id === "trout-ornament" &&
+      node.properties.id === troutContainerId &&
       parent
     ) {
       parent.children.splice(index + 1, 0, sequenceLinksDiv)
