@@ -1,6 +1,6 @@
 import { sharedPageComponents } from "../../../quartz.layout"
 import { type FullPageLayout } from "../../cfg"
-import { NotFound } from "../../components"
+import { ContentMeta, NotFound } from "../../components"
 import BodyConstructor from "../../components/Body"
 import { pageResources, renderPage } from "../../components/renderPage"
 import { type QuartzComponentProps } from "../../components/types"
@@ -15,7 +15,7 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
     ...sharedPageComponents,
     pageBody: NotFound(),
     beforeBody: [],
-    right: [],
+    right: [ContentMeta()],
   }
 
   const { head: Head, pageBody, footer: Footer } = opts
@@ -41,7 +41,7 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
         slug,
         text: notFound,
         description: notFound,
-        frontmatter: { title: "Page not found", tags: [] },
+        frontmatter: { title: "Page not found", tags: [], hide_metadata: true },
       })
       const componentData: QuartzComponentProps = {
         ctx,

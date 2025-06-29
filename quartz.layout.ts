@@ -22,5 +22,5 @@ export const defaultContentPageLayout: PageLayout = {
 export const defaultListPageLayout: PageLayout = {
   beforeBody: [Component.ArticleTitle()],
   left: [Component.Navbar()],
-  right: [],
+  right: [Component.DesktopOnly(Component.TableOfContents()), Component.ContentMeta()],
 }

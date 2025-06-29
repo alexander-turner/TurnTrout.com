@@ -271,23 +271,30 @@ export function renderPostStatistics(props: QuartzComponentProps): JSX.Element |
 }
 
 export const ContentMetadata = (props: QuartzComponentProps) => {
-  if (props.fileData.frontmatter?.hide_metadata || !props.fileData.text) {
-    return null
+  if (props.fileData.frontmatter?.hide_metadata) {
+    return <div id="content-meta"></div>
   }
 
-  // Collect all metadata elements
-  const metadataElements = [
-    renderSequenceInfo(props.fileData),
-    renderTags(props),
-    renderPostStatistics(props),
-  ]
+  let metadataElements: Array<JSX.Element | null>
+  const text = props.fileData.text
+  if (text) {
+    metadataElements = [
+      renderSequenceInfo(props.fileData),
+      renderTags(props),
+      renderPostStatistics(props),
+    ]
+  } else {
+    metadataElements = []
+  }
+  // Remove any null or undefined elements
+  const filteredElements = metadataElements.filter(Boolean)
 
-  const filteredElements = metadataElements.filter(Boolean) // Remove any null or undefined elements
+  const backlinkProps = text ? <Backlinks {...props} /> : null
 
   return (
     <div id="content-meta">
       {filteredElements}
-      <Backlinks {...props} />
+      {backlinkProps}
     </div>
   )
 }

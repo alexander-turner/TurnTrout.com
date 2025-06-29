@@ -1,14 +1,14 @@
+import type { Root } from "hast"
+
 /**
  * @jest-environment jsdom
  */
-import { jest } from "@jest/globals"
-import { describe, it, expect } from "@jest/globals"
+import { jest, describe, it, expect } from "@jest/globals"
 import React from "react"
 import ReactDOM from "react-dom/client"
 
-import type { QuartzComponentProps } from "../types"
-
 import { type GlobalConfiguration } from "../../cfg"
+
 import "@testing-library/jest-dom"
 
 import { type QuartzPluginData } from "../../plugins/vfile"
@@ -21,14 +21,21 @@ import {
   renderReadingTime,
   renderLinkpostInfo,
 } from "../ContentMeta"
+import { type QuartzComponentProps } from "../types"
 
-// Update the mock setup
-jest.mock("../ContentMeta", () => ({
-  urlCache: new Map(),
-  TURNTROUT_FAVICON_PATH: "path/to/turntrout/favicon.png",
+jest.mock("../Backlinks", () => ({
+  Backlinks: () => <div data-testid="backlinks">Mocked Backlinks</div>,
 }))
 
-// Mock dependencies
+jest.mock("../ContentMeta", () => {
+  const originalModule = jest.requireActual("../ContentMeta") as object
+  return {
+    ...originalModule,
+    urlCache: new Map(),
+    TURNTROUT_FAVICON_PATH: "path/to/turntrout/favicon.png",
+  }
+})
+
 jest.mock("../Date", () => ({
   DateElement: () => <span data-testid="date-element">Mocked Date</span>,
 }))
@@ -281,6 +288,94 @@ it("renders without crashing", () => {
   }
   const result = ContentMetadata(quartzProps as QuartzComponentProps)
   root.render(result as React.ReactElement)
+})
+
+describe("ContentMetadata", () => {
+  const mockProps = (fileData: QuartzPluginData): QuartzComponentProps => ({
+    fileData,
+    cfg: mockConfig,
+    tree: { type: "root", children: [] } as Root,
+    allFiles: [],
+    displayClass: "mobile-only", // just to have something
+    children: [],
+    externalResources: {
+      css: [],
+      js: [],
+    },
+    ctx: {
+      argv: {
+        directory: "",
+        verbose: false,
+        output: "",
+        serve: false,
+        port: 8080,
+        concurrency: 1,
+        fastRebuild: false,
+        wsPort: 8081,
+      },
+      cfg: {
+        configuration: mockConfig,
+        plugins: { transformers: [], filters: [], emitters: [] },
+      },
+      allSlugs: [],
+    },
+  })
+
+  it("should render a div with a non-breaking space if hide_metadata is true", () => {
+    const fileData = createFileData({ hide_metadata: true })
+    const props = mockProps(fileData)
+    const result = ContentMetadata(props)
+    expect(result).not.toBeNull()
+    expect(result?.type).toBe("div")
+    expect(result?.props.id).toBe("content-meta")
+    expect(result?.props.children).toBe(undefined)
+  })
+
+  it("should render an empty content-meta div when no metadata is present and text is empty", () => {
+    const fileData = createFileData({ date_published: undefined, tags: undefined })
+    delete (fileData as Partial<QuartzPluginData>).text
+    const props = mockProps(fileData)
+
+    const result = ContentMetadata(props)
+    expect(result).not.toBeNull()
+    expect(result?.type).toBe("div")
+    expect(result?.props.id).toBe("content-meta")
+    const children = result?.props.children as (React.ReactElement | null)[]
+    const flatChildren = children.flat().filter(Boolean)
+    expect(flatChildren).toHaveLength(0)
+  })
+
+  it("should render metadata when text and frontmatter is present", () => {
+    const fileData = createFileData({
+      tags: ["test"],
+      date_published: "2024-01-01",
+    })
+    fileData.text = "some text"
+    const props = mockProps(fileData)
+
+    const result = ContentMetadata(props)
+    expect(result).not.toBeNull()
+    const children = result?.props.children as (React.ReactElement | null)[]
+    const flatChildren = children.flat().filter(Boolean)
+
+    // renderTags, renderPostStatistics, and Backlinks
+    expect(flatChildren.length).toBe(3)
+  })
+
+  it("should not render backlinks or metadata when text is empty", () => {
+    const fileData = createFileData({
+      tags: ["test"],
+      date_published: "2024-01-01",
+    })
+    delete (fileData as Partial<QuartzPluginData>).text
+    const props = mockProps(fileData)
+
+    const result = ContentMetadata(props)
+    expect(result).not.toBeNull()
+    const children = result?.props.children as (React.ReactElement | null)[]
+    const flatChildren = children.flat().filter(Boolean)
+    expect(flatChildren.length).toBe(0)
+  })
 })
 
 describe("date handling", () => {
