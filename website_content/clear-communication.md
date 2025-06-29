@@ -1,57 +1,53 @@
 ---
-title: Authorial Responsibility and the "Sloppy Language" Gambit
-permalink: authorial-responsibility-and-the-sloppy-language-gambit
+title: Authors have a responsibility to communicate clearly
+permalink: authors-are-responsible-for-their-writing
 no_dropcap: false
 tags:
   - critique
   - practical
-description: Misleading communication hurts intellectual progress. Do not excuse it.
+description: 
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: 
 aliases:
-  - sloppy-language
-  - sloppy
-  - authorial-responsibility
+  - author-responsibility
+  - clear-communication
 ---
 
- 
-When a claim is shown to be incorrect, defenders may retreat to the excuse that the author was just being “sloppy” and actually meant something else entirely. This move is not harmless, charitable, or healthy. At best, this move reduces an author’s incentive to express themselves clearly – they can freely clarify later! – while burdening the reader with finding the “right” interpretation of the author’s words. At worst, this move is a dishonest defensive tactic which shields the author with the unfalsifiable question of what the author “really” meant.
+When a claim is shown to be incorrect, defenders may say that the author was just being “sloppy” and actually meant something else entirely. This move is not harmless, charitable, or healthy. At best, this attempt at charity reduces an author’s incentive to express themselves clearly – they can clarify later! – while burdening the reader with finding the “right” interpretation of the author’s words. At worst, this move is a dishonest defensive tactic which shields the author with the unfalsifiable question of what the author “really” meant.
 
 > [!warning] What this essay is not about
 >
 > The context for this essay is serious, high-stakes communication: papers, technical blog posts, and tweet threads.
 >
-> This essay does not ask that authors pre-emptively defend themselves against all possible misinterpretations of their words. That’s impossible. Furthermore, misunderstanding is a natural part of the relationship between a writer and their readers – I myself am certainly not above such things!
+> This essay does not ask that authors pre-emptively defend themselves against all possible misinterpretations of their words. That’s impossible. Misunderstanding is a natural part of the relationship between a writer and their readers – I myself am certainly not above such things!
 >
-> I criticize the _specific conversational move_ which occurs when someone refuses to say “yes, I meant that other thing; sorry for the miscommunication” and instead uses the excuse of “I was right but you simply misunderstood me.” While it’s possible for someone to intend a correct claim which they then miscommunicate, if a good-faith reader (of the target audience) misunderstands the claim, then I think the author should take some responsibility.
->
-> In particular, do not give someone “full points” for e.g. such a poorly communicated prediction, unless you want to actively incentivize vague writing which is hard to pin down.
+> Instead, I criticize the _specific conversational move_ which occurs when someone refuses to say “yes, I meant that other thing; sorry for the miscommunication” and instead replies “I was right but you simply misunderstood me.” I agree that it’s possible for someone to intend a correct claim which they then miscommunicate. However, consider a good-faith reader - someone who is part of the target audience, is reading with attention, and is trying to find the most plausible interpretation the text supports. If that kind of reader misunderstands the claim, then I think the author should take some responsibility.
 
 # A case study of the “sloppy language” defense
 
-To see this defensive move in action, let’s consider a recent example from a proposal by Bengio et al. on "Scientist AI".
-
 > [!note] This essay is not about AI alignment _per se_
-> I just use an example from AI alignment. Feel free to skim past the details. Also, my point stands regardless of your views on alignment.  
+> I just use an example from AI alignment. My point stands regardless of your views on alignment.  
 
-I recently read Bengio et al.’s “Scientist AI” proposal.
+I recently read Bengio et al.’s [“Scientist AI” proposal.](https://arxiv.org/abs/2502.15657) Bengio et al. argue that we are not currently building AI in a way which can reasonably be made safe. To support this argument, they claim that reinforcement learning will train agents which want to maximize their "reward."
 
-> [!quote] [Bengio et al. criticize reinforcement learning to justify their "Scientist AI" proposal](https://arxiv.org/abs/2502.15657) (§ 2.4.5)
+> [!quote]- [Bengio et al. criticize reinforcement learning to justify their "Scientist AI" proposal](https://arxiv.org/abs/2502.15657) (§ 2.4.5)
 > **Optimality of reward tampering.** We now make the argument that reward tempering is not merely a fantastical scenario that we must guard against (although it certainly appears that way), but also a uniquely rational solution for an agent that takes reward maximization seriously. Before we begin, it is important to note that once an RL agent is trained, it continues trying to act so as to maximize the rewards it anticipates would come based on its training, even if the rewards actually never come in deployment. If it has a good model of the world and sufficient reasoning abilities, it can generalize from the circumstances in which it received large rewards in the past to new circumstances, by reasoning about the consequences of its actions.
 
-I think the authors are wrong about how reinforcement learning works, as I have [discussed](/reward-is-not-the-optimization-target) [at](/dreams-of-alignment) [length](/invalid-ai-risk-arguments#tracing-back-historical-arguments). I won't rehash those arguments. Instead, consider that I forwarded this excerpt to a friend who claimed that Bengio et al. were just using "sloppy language":
+I think the authors are wrong about that, as I have [discussed](/reward-is-not-the-optimization-target) [at](/dreams-of-alignment) [length](/invalid-ai-risk-arguments#tracing-back-historical-arguments). I won't rehash those arguments because - for this essay - it doesn't _matter_ if I'm right. Instead, consider that I forwarded this excerpt to a friend who claimed that Bengio et al. were just using "sloppy language." He argued Bengio et al. didn't _really_ mean that the RL agent will "act so as to maximize the rewards" - instead, they _actually_ "meant that the RL agent will maximize reward during its training process."
 
-> [!quote]
+> [!quote]- What my friend said about the passage from Bengio et al.
+> I think he's using sloppy language.
+>
 > Bengio et al. mix up "the policy/AI/agent is trained with RL and gets a high (maximal?) score on the training distribution" and "the policy/AI/agent is trained such that it wants to maximize reward (or some correlates) even outside of training".
 
-My friend said that Bengio et al. probably accidentally communicated the latter instead of the former - that they were "sloppy." This is the exact intellectual move I want to examine.
+Regardless of who was "right," this conversation is a springboard for examining the broader _conversational move_ of the "sloppiness" defense.
 
 # Why the “sloppiness” defense fails
 
-Subtitle: A three-part argument
+Subtitle: A four-part argument.
 
-My friend’s defense of Bengio et al. is a perfect example of the move I’m critiquing. It may seem charitable, but it’s actually harmful for three key reasons: 1) it has the same negative impact as a wrong claim; 2) it erodes the meaning of our words; and 3) it shields authors from their core responsibility.
+While this defense seems charitable, it’s actually harmful because: 1) it has the same negative impact as a wrong claim; 2) it erodes the meaning of our words; 3) it shields authors from their core responsibility; and 4) it serves as a social shield for dishonesty.
 
 ## 1. Unclear claims damage understanding
 
@@ -61,70 +57,61 @@ If some readers understand the "sloppy" language to advocate the wrong claim, th
 > The reader’s mind does not know whether someone meant to miscommunicate an incorrect claim. All they read is the claim as written. Therefore, wrong claims and “sloppy” language have similar impacts on some readers.
 
 > [!question] Do context clues help?
-> Yes, but not enough. If e.g. Yoshua's (secretly) correct argument needs to be guessed by knowing special background knowledge about what the “sloppy language” is supposed to mean - then context clues have _already failed._
+> Yes, but only if the target audience actually knows what to look for. If e.g. Yoshua's (secretly) correct argument needs to be guessed by knowing rare background knowledge about what the “sloppy language” is supposed to mean - then the context clues have failed.
 
-Suppose we agreed that Bengio et al. made a flatly wrong argument (roughly, "RL is bad by definition"). We agree that being wrong is bad. Emitting a wrong argument into the social atmosphere is bad not just because those emissions will confuse other people.
+Real people change their real minds based on these "unclear" claims. Many folks reallocate hundreds of hours of their professional lives to new problems. I was one of those folks. Since I was confused during my PhD, I spent [thousands of hours on proving "power-seeking" theorems for reward-maximizing agents](/seeking-power-is-often-convergently-instrumental-in-mdps) - theorems which [I consider interesting but misguided.](/parametrically-retargetable-power-seeking#why-am-i-only-now-posting-this)
 
-Real people change their real minds based on these fake claims. Many folks reallocate hundreds of hours of their professional lives to new problems. I was one of those folks. Since I was misled and confused during my PhD, I spent [thousands of hours on proving "power-seeking" theorems for reward-maximizing agents.](/seeking-power-is-often-convergently-instrumental-in-mdps)
+Making wrong claims imposes costs on others. To discourage the imposition of these costs, we tax or punish them. I'm not talking about anything crazy. If someone keeps saying weird stuff, and then they or others retreat to "it was just sloppiness", then that person takes a hit in my book.
 
-Making wrong claims imposes costs on others. To discourage the imposition of these costs, we tax or punish them. I'm not talking about anything crazy, just the usual price (a reputational hit). If someone keeps saying weird stuff, and then they or others retreat to "it was just sloppiness", then that person takes a hit in my book.
-
-## 2. Excuses erode the meaning of language
+## 2. Secret indirection erodes the meaning of language
 
 If someone goes around saying “A” (wrong at face value) while meaning “B”, then that sends the message “no, you should not read or speak plainly.” Words mean things.
 
-## 3. Scientific authors owe readers clarity
+## 3. Authors owe readers clarity
 
-I fear that my friend shirks from the perceived arrogance of declaring "yes, Bengio got this one wrong" or "even if they were being sloppy, that was bad."
+Subtitle: So don't misapply the principle of charity!
 
-Their hesitation is understandable and stems from a valuable principle: the Principle of Charity. Is it not kinder and more productive to interpret arguments in their strongest possible form?
+Accepting the “sloppiness” move is like watching someone track mud all over a clean white carpet and then accepting their defense of “I didn't intend for the mud to get on the floor.” The intent is irrelevant to the mess. The responsibility for the cleanup (i.e. the clarification) remains with the one who made it (i.e. the author).
 
-It is. But the "sloppiness" excuse is a fundamental _misapplication_ of this principle.
+Yet I often see a hesitation to hold authors to this standard. I fear that my friend shirks from the perceived arrogance of declaring "yes, Bengio got this one wrong" or "even _if_ they were being sloppy, that was bad." Their hesitation is understandable. Is it not kinder and more productive to interpret arguments in their strongest possible form?
 
-**True charity is to the argument, not the author's reputation.** The Principle of Charity asks us to engage with the strongest version of the argument _presented in the text_. It does not ask us to invent a completely different, better argument that the author _could have made_, and then substitute it for the flawed one they actually wrote. The former is a tool for finding truth. The latter is an act of scholastic divination that shields the author from responsibility.
+> [!quote] [The principle of charity](https://en.wikipedia.org/wiki/Principle_of_charity)
+> The principle of charity requires interpreting a speaker's statements in the most rational way possible and, in the case of any argument, considering its best, strongest possible interpretation. In its narrowest sense, the goal of this methodological principle is to avoid attributing irrationality, logical fallacies, or falsehoods to the others' statements, when a coherent, rational interpretation of the statements is available.
 
-When we excuse a flawed claim as "sloppy," our charity is directed at protecting an individual, but it comes at the expense of the community. True charity—charity to the discourse itself, and especially to the newcomers most vulnerable to confusion—is to uphold the standard of clarity.
-  
-Accepting the “sloppiness” excuse is like… imagine that someone tracked mud all over your clean white carpet. They say, “I didn't intend for the mud to get on the floor.” The intent is irrelevant to the mess. The responsibility for the “cleanup” (the clarification) remains with the one who made the “mess” (the author).
+The principle of charity is indeed valuable. However, the principle does not support the "sloppiness" move. The move doesn't ask us to interpret the author's words charitably. The move instead asks us to _ignore their words_ and instead read their mind. We are asked to invent an entirely new interpretation of the author's statements - to invent an implausible interpretation _not suggested by the text_. Charity should be a tool for finding the truth, not for protecting an author's reputation.
 
-Tolerating sloppiness is like "tolerating" muddy folks traipsing around your clean white carpet. You are allowed to have standards. This standard I propose is rather low, in fact: "don't repeatedly use language which is - at best - [known to be misleading](/invalid-ai-risk-arguments#tracing-back-historical-arguments)".
+### But which interpretations are "plausible"?
 
-True, being called out on sloppy language can be stressful and feel confrontational. But think about the browned carpet. Think about your _mind_ and how that mind is (slightly) polluted by these low standards and "charitable" assumptions. By justifying an author's "sloppiness", we dull the meanings of words and erode our commitment to truth-seeking and precision.
+Good-faith readers sometimes disagree about what interpretations are suggested by the text. This essay does not resolve that potential disagreement. However, whether or not they agree, I offer a clear prescription:
 
-Remember, we aren't discussing whether Bengio et al. (the human beings) are bad. We are discussing whether the _claim_ is wrong. Avoiding calling out a wrong claim - or a text which reliably communicates a wrong claim - is not kind, it is dangerous. The text will continue damaging communal understanding of the world - especially the pliable understandings of new thinkers who do not know the correct real claim intended to be communicated by the "sloppy" language.
+1. If people agree that an interpretation is not suggested by the text, then they should _not_ entertain the idea that the author "actually" meant that interpretation.
+2. If good-faith readers disagree about whether an interpretation is suggested by the text, then the author should clarify the intended interpretation.
+  - An author committed to clarity might say something like: "I can see how my words led you to believe _X_. My intent was _Y_, and I see now that my phrasing was ambiguous. For clarity, what I mean is \[clear restatement of _Y_\]." _This response takes responsibility._
+  - A status-defending author might say something more like: "You are wrong to read it as _X_. It obviously means _Y_, and you are being uncharitable." _This response deflects responsibility._
 
-## The excuse shields confusion and dishonesty
+In neither case should the readers be forced to mind-read or provide complicated textual analyses justifying the "true meaning" of a passage.
 
-Even if we set aside the direct damage to readers' understanding, the “sloppiness” defense causes a secondary social harm: it functions as a protective shield.
+## 4. The move can shield dishonesty
 
-In the best case, it shields a community from the uncomfortable conclusion that a respected figure is genuinely confused on a key topic. But this defense also creates a perfect opening for the worst case: a dishonest actor - when caught making a wrong claim - can cynically protest they were just “speaking sloppily.” This excuse is unfalsifiable and costless. By tolerating this excuse for the well-intentioned, we make it readily available for the malicious.
+In the best case, the "sloppiness" defense shields a community from the uncomfortable conclusion that a respected figure is genuinely confused on a key topic. But this defense also creates a perfect opening for the worst case: a dishonest actor - when caught making a wrong claim - can cynically protest they were just “speaking sloppily.” This excuse is unfalsifiable and costless. By tolerating this move for the well-intentioned, we make it readily available for the dishonest.[^motte]
 
-# Sloppiness is evidence of confusion
+[^motte]: If used dishonestly, the "sloppiness" excuse functions as a [motte-and-bailey](https://simple.wikipedia.org/wiki/Motte-and-bailey_fallacy). The (easy to defend) motte is the interpretation _Y_ which the author "really" meant. The (hard to defend) bailey is _X_- one of the straightforward interpretations.
 
-From a purely logical standpoint, what is the most likely cause of such misleading language?
+# Conclusion: Defending intellectual standards
 
-People often invoke the "sloppiness" excuse to avoid an uncomfortable conclusion. But the laws of probability are unmoved by our discomfort.
+Writing forms a bond of trust between the writer and the reader. To honor this bond, an author must take responsibility for the ideas their words convey. The “sloppiness” move, by shifting that responsibility onto the reader, threatens to break that trust.
 
-$$
-
-P(\text{misleading explanation} \mid \text{Bengio is confused}) > P(\text{misleading explanation} \mid \text{Bengio understands}).
-
-$$
-
-Simply put, "this person is genuinely confused" is a more straightforward explanation for confusing language than "this person understands the topic but has chosen to write about it in a misleading way". Often, repeated "sloppiness" is simply the smoke that reveals the fire of genuine confusion.
-
-# Conclusion: Defending our intellectual immune system
-
-Writing forms a bond of trust between the writer and the reader. To honor this bond, an author must take responsibility for the ideas their words convey. The “sloppiness” excuse, by shifting that responsibility onto the reader, threatens to break that trust.
-
-By refusing this excuse, we do not refuse sloppy writing itself. We do not encourage hostile, pedantic nitpicking of all possible ambiguities. We instead may adopt a simple code of conduct:
+By refusing this move, we do not refuse sloppy writing itself. We do not encourage hostile, pedantic nitpicking of all possible ambiguities. We instead may adopt a simple code of conduct:
 
 Writers
 
-: Own your words. If you miscommunicate, issue a clarification – not an excuse.
+: Own your words. When you miscommunicate, issue a clarification that takes responsibility for the ambiguity. A response that primarily blames the reader fails this standard.
 
 Readers
 
-: Politely request clarification of the author but avoid divination on their behalf. Resist the urge to rationalize a "correct" interpretation that the text does not support.
+: Politely request clarification of the author but resist the urge to rationalize a "correct" interpretation that the text does not support. Furthermore, don't grant full credit for an idea that was unclearly communicated.
 
-This isn't about punishing individuals. It's about protecting the intellectual commons we all share. The standard is simple: to think properly and to speak clearly. To expect this of ourselves and of others is not an attack. It is the highest form of respect for our shared pursuit of truth.
+The standard is simple: to think properly and to speak clearly. Expecting this of ourselves and of others is not an attack. It is a form of respect for our shared pursuit of truth.
+
+> [!thanks]
+> Peter Barnett, Alex Cloud, Rocket Drew, and Siao Si provided feedback on drafts.
