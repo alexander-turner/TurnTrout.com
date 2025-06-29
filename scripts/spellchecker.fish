@@ -2,8 +2,9 @@ set -l TEMP_DICT "/tmp/candidate_wordlist.txt"
 set -l PERM_DICT ".wordlist.txt"
 set -l SLUG_REGEX "(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+"
 set -l FILES website_content/**.md # Respects gitignore by default
+set -l PLUGINS spell indefinite-article repeated-words syntax-urls frontmatter
 
-set -l SPELLCHECK_PARAMS --no-suggestions --quiet --dictionaries $PERM_DICT --files $FILES --ignore $SLUG_REGEX
+set -l SPELLCHECK_PARAMS --no-suggestions --quiet --dictionaries $PERM_DICT --files $FILES --ignore $SLUG_REGEX --plugins $PLUGINS
 
 npx spellchecker $SPELLCHECK_PARAMS --generate-dictionary $TEMP_DICT
 
