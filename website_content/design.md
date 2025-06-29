@@ -7,14 +7,15 @@ tags:
 description: Showing off and explaining this site's beauty.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image:
 aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-06-29 16:49:07.944742
 no_dropcap: false
 ---
+
 
 
 
