@@ -50,19 +50,18 @@ While this move seems charitable, I argue that it’s actually harmful because: 
 
 If some readers understand the "sloppy" language to advocate the wrong claim, then they have made the same belief update they would have if the author _had_ meant to advocate the wrong claim. After all, the writer's intent stopped mattering the moment that editing ended and that publication began.
 
-> [!idea] Key insight
-> The reader’s mind does not know whether someone meant to miscommunicate an incorrect claim. All they read is the claim as written. Therefore, wrong claims and “sloppy” language have similar impacts on some readers.
+The reader’s mind does not know whether someone meant to miscommunicate an incorrect claim. All they read is the claim as written. Therefore, wrong claims and “sloppy” language have similar impacts on some readers.
 
 > [!question] Do context clues help?
-> Yes, but only if the target audience actually knows what to look for. If e.g. Yoshua's (secretly) correct argument needs to be guessed by knowing rare background knowledge about what the “sloppy language” is supposed to mean - then the context clues have failed.
+> Yes, but only if the target audience knows what to look for. If e.g. Yoshua's (secretly) correct argument needs to be guessed by knowing rare background knowledge about what the “sloppy language” is supposed to mean - then the context clues have failed.
 
-Real people change their real minds based on these "unclear" claims. Many folks reallocate hundreds of hours of their professional lives to new problems. I was one of those folks. Since I was confused during my PhD, I spent [thousands of hours on proving "power-seeking" theorems for reward-maximizing agents](/seeking-power-is-often-convergently-instrumental-in-mdps) - theorems which [I consider interesting but misguided.](/parametrically-retargetable-power-seeking#why-am-i-only-now-posting-this)
+Real people change their real minds based on these "unclear" claims. Many folks reallocate hundreds of hours of their professional lives to new problems. I was one of them. Since I was confused during my PhD, I spent [thousands of hours on proving "power-seeking" theorems for reward-maximizing agents](/seeking-power-is-often-convergently-instrumental-in-mdps) - theorems which [I consider interesting but misguided.](/parametrically-retargetable-power-seeking#why-am-i-only-now-posting-this)
 
-Making wrong claims imposes costs on others. To discourage the imposition of these costs, we tax or punish them. I'm not talking about anything crazy. If someone keeps saying weird stuff, and then they or others retreat to "it was just sloppiness", then that person takes a hit in my book.
+Making wrong claims imposes costs on others. To discourage the imposition of these costs, we tax or punish them. I'm not talking about anything crazy. If someone keeps saying weird stuff, and then they retreat to "it was just sloppiness", then that person takes a hit in my book.
 
 ## 2. Secret indirection erodes the meaning of language
 
-If someone goes around saying “A” (wrong at face value) while meaning “B”, then that sends the message “no, you should not read or speak plainly.” Words mean things.
+If someone goes around saying _A_ (wrong at face value) while meaning _B_, then that sends the message “no, you should not read or speak plainly.” Words mean things.
 
 ## 3. Authors owe readers clarity
 
@@ -70,7 +69,7 @@ Subtitle: So don't misapply the principle of charity!
 
 Imagine you ask someone for directions to the library. They provide a set of confusing instructions that lead you to the post office. When you inform them, they reply, "Oh, I knew the correct route. You just misinterpreted my directions."
 
-While you have a responsibility to listen carefully, they have the responsibility to provide a clear map. Here, the "sloppiness move" allows the map-maker to blame the map-reader for a faulty map. This move rejects a core principle of the partnership: that the author has a responsibility to communicate effectively.
+While you have a responsibility to listen carefully, they have a responsibility to provide a clear map. Here, the "sloppiness move" allows the map-maker to blame the map-reader for a faulty map. This move rejects a core principle of the partnership: that the author has a responsibility to communicate effectively.
 
 Yet I often see a hesitation to hold authors to this principle. I fear that my friend shirks from the perceived arrogance of declaring "yes, Bengio got this one wrong" or "even _if_ they were being sloppy, that was bad." Their hesitation is understandable. Is it not kinder and more productive to interpret arguments in their strongest possible form?
 
@@ -85,8 +84,8 @@ Good-faith readers sometimes disagree about what interpretations are suggested b
 
 1. If people agree that an interpretation is not suggested by the text, then they should _not_ entertain the idea that the author "actually" meant that interpretation.
 2. If good-faith readers disagree about whether an interpretation is suggested by the text, then the author should clarify the intended interpretation.
-  - An author committed to clarity might say something like: "I can see how my words led you to believe _X_. For clarity, what I mean is _Y_." _This response takes responsibility._
-  - A status-defending author might say something more like: "You are wrong to read it as _X_. It obviously means _Y_, and you are being uncharitable." _This response deflects responsibility._
+    - An author committed to clarity might say something like: "I can see how my words led you to believe _X_. For clarity, what I mean is _Y_." _This response takes responsibility._
+    - A status-defending author might say something more like: "You are wrong to read it as _X_. It obviously means _Y_, and you are being uncharitable." _This response deflects responsibility._
 
 In neither case should the readers be forced to mind-read or provide complicated textual analyses justifying the "true meaning" of a passage.
 
@@ -104,11 +103,11 @@ By refusing this move, we do not refuse sloppy writing itself. We do not encoura
 
 Writers
 
-: Own your words. When you miscommunicate, issue a clarification that takes responsibility for the ambiguity. A response that primarily blames the reader fails this standard.
+: Own your words. When you miscommunicate, issue a clarification. A response that primarily blames the reader fails this standard.
 
 Readers
 
-: Read in good faith, resolving minor ambiguities using context and extending reasonable charity to the author. Politely request clarification of the author but resist the urge to rationalize a "correct" interpretation that the text does not support. Furthermore, don't grant full credit for an idea that was “sloppily” communicated.
+: Read in good faith, resolving minor ambiguities using context and extending reasonable charity to the author. Politely request clarification from the author but resist the urge to rationalize a "correct" interpretation that the text does not support. Furthermore, don't grant full credit for an idea that was “sloppily” communicated.
 
 The proposed standard is simple: to speak clearly and to interpret reasonably. Expecting this of ourselves and of others is not an attack. It is a form of respect for our shared pursuit of truth.
 
