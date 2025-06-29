@@ -24,7 +24,7 @@ I work at Google DeepMind [on the science of aligning artificial intelligence wi
 
 # The romance and peril of AI
 
-![[grinnell-talk-20250624223204.png]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/grinnell-talk-20250624223204.avif]]{.float-right}
 
 For many years, I’ve had quite the romantic vision of the promise of AI. Solving artificial intelligence will allow automating science itself. Consider the promise of compressing centuries of human research into months, and saving billions of lives by eliminating most disease with an infinite army of digital scientists. (That's the dream, at least. Not clear how practical it is.)
 
