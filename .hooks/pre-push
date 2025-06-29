@@ -39,6 +39,18 @@ stash_and_exit() {
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
+if command -v conda >/dev/null 2>&1; then
+  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
+
+  if [ "$ACTIVE_ENV" != "website" ]; then
+    echo "Activating conda environment: website"
+    # This is the standard way to make conda commands available in a script
+    # shellcheck source=/dev/null
+    eval "$(conda shell.sh hook)"
+    conda activate website
+  fi
+fi
+
 PUSHED_CHANGES=$(stash_and_exit)
 
 if [ "$CURRENT_BRANCH" != "main" ]; then
