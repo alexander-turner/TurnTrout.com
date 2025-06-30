@@ -322,7 +322,7 @@ export async function injectCriticalCSSIntoHTMLFiles(
 }
 const themeCSS = `
 :root {
-  font-family: var(--font);
+  font-family: var(--font-main);
 }
 #navbar-left h2 {
   color: var(--midground);
@@ -341,11 +341,14 @@ article[data-use-dropcap="true"] {
   --dropcap-vertical-offset: 0.15rem;
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
-  & > p:first-of-type {
+  --font-italic-situational: var(--font-italic);
+}
+
+article[data-use-dropcap="true"] > p:first-of-type {
     position: relative;
     min-height: 4.2rem;
-  }
-  & > p:first-of-type::before {
+}
+article[data-use-dropcap="true"] > p:first-of-type::before {
     content: attr(data-first-letter);
     text-transform: uppercase;
     position: absolute;
@@ -356,8 +359,8 @@ article[data-use-dropcap="true"] {
     padding-right: 0.1em;
     font-family: var(--font-dropcap-background);
     color: var(--before-color);
-  }
-  & > p:first-of-type::first-letter {
+}
+article[data-use-dropcap="true"] > p:first-of-type::first-letter {
     padding-top: var(--dropcap-vertical-offset);
     text-transform: uppercase;
     font-style: normal !important;
@@ -368,12 +371,12 @@ article[data-use-dropcap="true"] {
     padding-right: 0.1em;
     font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
     font-weight: 500 !important;
-  }
-  & > p:first-of-type em,
-  & > p:first-of-type b,
-  & > p:first-of-type strong {
-    font-family: inherit !important;
-  }
+}
+article[data-use-dropcap="true"] > p:first-of-type::first-line {
+      --font-italic-situational: var(--font-main) !important;
+}
+em {
+  font-family: var(--font-italic-situational);
 }
 :root[saved-theme="dark"],
 .dark-mode {
