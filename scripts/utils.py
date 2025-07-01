@@ -235,7 +235,7 @@ def parse_html_file(file_path: Path) -> BeautifulSoup:
         return BeautifulSoup(file.read(), "html.parser")
 
 
-_SLUGS_WITHOUT_MD_PATH = ("404", "all-tags", "recent")
+_SLUGS_WITHOUT_MD_PATH = ("404", "all-tags", "recent", "all-posts")
 
 
 def should_have_md(file_path: Path) -> bool:

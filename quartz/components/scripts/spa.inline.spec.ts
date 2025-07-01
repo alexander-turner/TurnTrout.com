@@ -43,11 +43,7 @@ async function waitForHistoryScrollNotEquals(
 /*
  * Verifies that the browser has scrolled to approximately the target position.
  */
-async function waitForScroll(
-  page: Page,
-  targetScrollY: number,
-  timeout: number = 30000,
-): Promise<void> {
+async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000): Promise<void> {
   await page.waitForFunction(
     ({ target, tolerance }) => {
       const currentScrollY = window.scrollY
