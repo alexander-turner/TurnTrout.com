@@ -295,47 +295,73 @@ function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): voi
 
 /**
  * Handles navigation triggered by clicking a link or programmatic call.
- * Fetches new content, updates history, updates DOM, and handles scrolling.
+ * Updates history, maybe fetches new content, updates DOM, and handles scrolling.
  */
-async function navigate(url: URL, opts?: { scroll?: boolean }): Promise<void> {
+async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }): Promise<void> {
   removePopovers()
 
   // Store the current scroll position *before* fetching/navigating
   const currentScroll = getScrollPosition()
-  const state = { scroll: currentScroll }
+  const state = { ...history.state, scroll: currentScroll }
 
-  // 1. Fetch content, handling redirects
-  const fetchResult = await fetchAndProcessContent(url)
-  if (!fetchResult) {
-    // Fetching or redirect handling failed and triggered a fallback (full page load)
-    return
-  }
-  const { content, finalUrl } = fetchResult
-
-  // 2. Push state *before* updating page
-  //    Original URL ensures the browser's address bar reflects the URL the user intended to navigate to.
-  console.debug(
-    `[navigate] pushState scroll: ${currentScroll}, state obj:`,
-    state,
-    ` for original URL: ${url.toString()}`,
-  )
-  history.pushState(state, "", url)
-
-  // 3. Parse and update the DOM
-  //    Pass original URL to resolve relative paths in the fetched content against the intended URL.
-  const updateSuccess = await updateDOM(content, url)
-  if (!updateSuccess) {
-    // DOM update failed and triggered a fallback (full page load)
-    return
+  // Only push state if the URL is actually changing
+  if (url.toString() !== window.location.href) {
+    history.pushState(state, "", url)
   }
 
-  // 4. Handle scrolling *after* DOM update, based on the FINAL URL
+  let finalUrl = url
+  const doFetch = opts?.fetch ?? true
+  if (doFetch) {
+    // 1. Fetch content, handling redirects
+    const fetchResult = await fetchAndProcessContent(url)
+    if (!fetchResult) {
+      // Fetching or redirect handling failed and triggered a fallback (full page load)
+      return
+    }
+    const { content, finalUrl: redirectedUrl } = fetchResult
+    finalUrl = redirectedUrl
+
+    // 2. Parse and update the DOM
+    const updateSuccess = await updateDOM(content, url)
+    if (!updateSuccess) {
+      // DOM update failed and triggered a fallback (full page load)
+      return
+    }
+  }
+
+  // 3. Handle scrolling *after* DOM update, based on the FINAL URL
   handleNavigationScroll(finalUrl, opts)
 
-  // 5. Notify other components of navigation
+  // 4. Notify other components of navigation
   dispatchNavEvent(getFullSlug(window))
 }
 window.spaNavigate = navigate
+
+/**
+ * Restores scroll position based on PopStateEvent state or URL hash.
+ * Fallbacks to reloading the page on error.
+ * @returns true if scroll was restored successfully, false on error/fallback.
+ */
+function restoreScrollPosition(event: PopStateEvent, targetUrl: URL): boolean {
+  const scrollTarget = event.state?.scroll as number | undefined
+  try {
+    if (typeof scrollTarget === "number") {
+      console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
+      window.scrollTo({ top: scrollTarget, behavior: "instant" })
+    } else if (targetUrl.hash) {
+      console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
+      scrollToHash(targetUrl.hash)
+    } else {
+      console.debug("[restoreScrollPosition] Scrolling to top (no state/hash)")
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }
+    return true
+  } catch (error) {
+    console.error("Popstate navigation error:", error)
+    window.location.reload()
+    return false
+  }
+}
 
 /**
  * Handles the popstate event triggered by browser back/forward buttons.
@@ -366,21 +392,7 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
   await updatePage(html, targetUrl)
 
   // Restore scroll position *after* DOM update
-  const scrollTarget = event.state?.scroll as number | undefined
-  try {
-    if (typeof scrollTarget === "number") {
-      console.debug(`[handlePopstate] Restoring scroll from state: ${scrollTarget}`)
-      window.scrollTo({ top: scrollTarget, behavior: "instant" })
-    } else if (targetUrl.hash) {
-      console.debug(`[handlePopstate] Scrolling to hash: ${targetUrl.hash}`)
-      scrollToHash(targetUrl.hash)
-    } else {
-      console.debug("popstate: Scrolling to top (no state/hash)")
-      window.scrollTo({ top: 0, behavior: "instant" })
-    }
-  } catch (error) {
-    console.error("Popstate navigation error:", error)
-    window.location.reload()
+  if (!restoreScrollPosition(event, targetUrl)) {
     return
   }
   dispatchNavEvent(getFullSlug(window))
