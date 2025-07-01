@@ -20,6 +20,7 @@ import { JSResourceToScriptElement, type StaticResources } from "../util/resourc
 import BodyConstructor from "./Body"
 import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
+import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
 import {
   allTagsSlug,
   allTagsTitle,
@@ -27,7 +28,6 @@ import {
   allTagsListing,
   generateAllTagsHast,
 } from "./pages/AllTagsContent"
-import { recentDescription, recentSlug, recentTitle, recentPostsListing } from "./pages/RecentPosts"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 interface RenderComponents {
@@ -94,10 +94,10 @@ const generateRecentPostsFile = (componentData: QuartzComponentProps): QuartzPlu
   ) // Up to 10 posts
 
   return {
-    slug: recentSlug,
-    title: recentTitle,
-    description: recentDescription,
-    blocks: { [recentPostsListing]: hast },
+    slug: allSlug,
+    title: allTitle,
+    description: allDescription,
+    blocks: { [allPostsListing]: hast },
   } as QuartzPluginData
 }
 
@@ -155,7 +155,7 @@ export function renderPage(
       if (classNames.includes("transclude")) {
         const transcludeTarget = node.properties["dataUrl"] as FullSlug
 
-        if (transcludeTarget === recentSlug) {
+        if (transcludeTarget === allSlug) {
           componentData.allFiles.push(generateRecentPostsFile(componentData))
         } else if (transcludeTarget === allTagsSlug) {
           componentData.allFiles.push(generateAllTagsFile(componentData))

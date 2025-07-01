@@ -1,11 +1,7 @@
 import { defaultListPageLayout, sharedPageComponents } from "../../../quartz.layout"
 import BodyConstructor from "../../components/Body"
 import HeaderConstructor from "../../components/Header"
-import RecentPosts, {
-  recentDescription,
-  recentSlug,
-  recentTitle,
-} from "../../components/pages/RecentPosts"
+import AllPosts, { allDescription, allSlug, allTitle } from "../../components/pages/AllPosts"
 import { pageResources, renderPage } from "../../components/renderPage"
 import { type QuartzComponentProps } from "../../components/types"
 import DepGraph from "../../depgraph"
@@ -15,11 +11,11 @@ import { type QuartzEmitterPlugin } from "../types"
 import { type ProcessedContent, defaultProcessedContent } from "../vfile"
 import { write } from "./helpers"
 
-export const RecentPostsPage: QuartzEmitterPlugin = () => {
+export const AllPostsPage: QuartzEmitterPlugin = () => {
   const opts = {
     ...defaultListPageLayout,
     ...sharedPageComponents,
-    pageBody: RecentPosts,
+    pageBody: AllPosts,
   }
 
   const { head: Head, header, beforeBody, pageBody, left, right, footer: Footer } = opts
@@ -27,7 +23,7 @@ export const RecentPostsPage: QuartzEmitterPlugin = () => {
   const Body = BodyConstructor()
 
   return {
-    name: "RecentPostsPage",
+    name: "AllPostsPage",
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
@@ -37,13 +33,17 @@ export const RecentPostsPage: QuartzEmitterPlugin = () => {
       return graph
     },
     async emit(ctx, content: ProcessedContent[], resources: StaticResources): Promise<FilePath[]> {
-      const slug = recentSlug
+      const slug = allSlug
       const externalResources = pageResources(pathToRoot(slug), resources)
       const [tree, file] = defaultProcessedContent({
         slug,
-        frontmatter: { title: recentTitle, tags: ["website"], aliases: ["recent-posts", "new"] },
-        description: recentDescription,
-        text: recentDescription,
+        frontmatter: {
+          title: allTitle,
+          tags: ["website"],
+          aliases: ["recent-posts", "recent", "all"],
+        },
+        description: allDescription,
+        text: allDescription,
       })
 
       const componentData: QuartzComponentProps = {

@@ -31,9 +31,9 @@ tags:
 
 # My recent posts
 
-![[recent#^recent-posts-listing]]
+![[all-posts#^all-posts-listing]]
 
-If you want, [try going a little further back](/recent) to see all of my posts.
+If you want, [try going a little further back](/all-posts) to see all of my posts.
 
 # Explore by tag
 
