@@ -2666,3 +2666,5 @@ skillsets
 sociopathic
 unfalsifiable
 unserious
+Assadi
+Guive
