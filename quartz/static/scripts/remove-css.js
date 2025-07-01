@@ -1,5 +1,5 @@
 function removeCSS() {
-  const style = document.querySelector("#critical-css")
+  const style = document.getElementById("critical-css")
   if (style) {
     style.remove()
     console.debug("Removed critical styles")
@@ -10,22 +10,11 @@ function removeCSS() {
 
 const mainCSS = document.querySelector('link[href="/index.css"]')
 if (mainCSS) {
-  if (mainCSS.sheet && mainCSS.sheet.cssRules.length > 0) {
+  if (mainCSS.sheet) {
     removeCSS()
   } else {
     mainCSS.addEventListener("load", removeCSS)
   }
 } else {
-  document.addEventListener("DOMContentLoaded", () => {
-    const mainCSS = document.querySelector('link[href="/index.css"]')
-    if (mainCSS) {
-      if (mainCSS.sheet && mainCSS.sheet.cssRules.length > 0) {
-        removeCSS()
-      } else {
-        mainCSS.addEventListener("load", removeCSS)
-      }
-    } else {
-      removeCSS()
-    }
-  })
+  window.addEventListener("load", removeCSS)
 }
