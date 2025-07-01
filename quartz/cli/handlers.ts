@@ -342,6 +342,8 @@ article[data-use-dropcap="true"] {
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
   --font-italic-situational: var(--font-italic);
+  --font-dropcap-foreground: 'EBGaramondInitialsF2__subset', "EBGaramondInitialsF2",serif;
+  --font-dropcap-background: 'EBGaramondInitialsF1__subset', "EBGaramondInitialsF1",serif;
 }
 
 article[data-use-dropcap="true"] > p:first-of-type {
