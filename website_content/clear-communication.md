@@ -25,7 +25,7 @@ When a claim is shown to be incorrect, defenders may say that the author was jus
 >
 > The context for this essay is serious, high-stakes communication: papers, technical blog posts, and tweet threads. In that context, communication is a partnership. A reader has a responsibility to engage in good faith, and an author cannot possibly defend against all misinterpretations. Misunderstanding is a natural part of this process.
 >
-> This essay focuses not on natural misunderstandings, but on the _specific conversational move_ which occurs when someone refuses to say “yes, I meant that other thing” and instead replies “I was right, but you simply misunderstood me.” When a good-faith reader—someone reading with attention and charity—is confused, the author should take some responsibility. This essay explains why denying that responsibility is harmful.
+> This essay focuses not on natural misunderstandings, but on the _specific conversational move_ which occurs when someone refuses to say “yes, I meant that other thing” and instead replies “I was right, but you simply misunderstood me.” When a good-faith reader—someone in the target audience who is reading with attention and charity—is confused, the author should take some responsibility. This essay explains why denying that responsibility is harmful.
 
 # A case study of the “sloppy language” move
 
@@ -101,9 +101,9 @@ In the best case, the "sloppiness" statement is an attempt at charity. But this 
 
 # Conclusion: Defending intellectual standards
 
-Serious, high-stakes writing forms a bond of trust between the writer and the reader. To honor this bond, an author must take responsibility for the ideas their words convey. The “sloppiness” move, by shifting that responsibility onto the reader, threatens to break that trust.
+Serious, high-stakes writing forms a bond of trust between the writer and the reader. To honor this bond, an author must take responsibility for the ideas their words convey. By shifting that responsibility onto the reader, the “sloppiness” move threatens to break that trust.
 
-By refusing this move, we do not refuse sloppy writing itself, nor do we encourage hostile, pedantic nitpicking of all possible ambiguities. We may instead adopt a simple code of conduct:
+When we refuse this move, we do not refuse sloppy writing itself, nor do we encourage hostile, pedantic nitpicking of all possible ambiguities. We may instead adopt a simple code of conduct:
 
 Writers
 
