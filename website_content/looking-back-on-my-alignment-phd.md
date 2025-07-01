@@ -112,9 +112,9 @@ I think I [got significantly smarter in 2018–2019](/swimming-upstream), and ke
 >
 > > We clearly prefer future AIs to generalize in the way that neuroscientists generalize, so it seems worthwhile to ask: "why don't neuroscientists wirehead themselves?"
 > >
-<!--vale off -->
+> > <!--vale off -->
 > > It's clearly not because humans evolved away from wireheading, _specifically_. There are somewhat similar situations to wireheading in the ancestral environment: psychoactive drugs, masturbation, etc. Is the reason we don't wirehead because evolution instilled us with an aversion to manipulating our reward function, which then zero-shot generalized to wireheading, despite wireheading being so wildly dissimilar to the contents of the ancestral environment? How could evolution have developed an alignment approach that generalized so well?
-<!-- vale on -->
+> <!-- vale on -->
 >
 > After a few days, I realized my gut expectations were that he was broadly correct and that this theory of alignment could actually be right. However, I realized I wasn't consciously letting myself think that because it would be Insufficiently Skeptical to actually think the alignment problem is solvable. This seemed obviously stupid to me, so I quickly shut that line of thinking down and second-order updated towards optimism so that I would [stop _predictably_ getting more optimistic](https://www.readthesequences.com/Conservation-Of-Expected-Evidence) about Quintin's theory.
 >
