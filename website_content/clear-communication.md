@@ -12,9 +12,10 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
   - clear-communication
-date_published: &id001 2025-06-29 16:49:07.944742
-date_updated: *id001
+date_published: 2025-06-29 16:49:07.944742
+date_updated: 2025-07-01 16:01:55.582303
 ---
+
 
 
 When a claim is shown to be incorrect, defenders may say that the author was just being “sloppy” and actually meant something else entirely. I argue that this move is not harmless, charitable, or healthy. At best, this attempt at charity reduces an author’s incentive to express themselves clearly – they can clarify later![^efficient] – while burdening the reader with finding the “right” interpretation of the author’s words. At worst, this move is a dishonest defensive tactic which shields the author with the unfalsifiable question of what the author “really” meant.
