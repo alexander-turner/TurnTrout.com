@@ -11,10 +11,11 @@ import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
 declare global {
   interface Window {
     __routerInitialized?: boolean
-    spaNavigate: (url: URL, opts?: { scroll?: boolean }) => Promise<void>
+    spaNavigate: (url: URL, opts?: { scroll?: boolean; fetch?: boolean }) => Promise<void>
   }
 }
 
+let lastKnownPathname = window.location.pathname
 // FUNCTIONS
 
 const NODE_TYPE_ELEMENT = 1
@@ -62,6 +63,7 @@ const getOpts = ({ target }: Event): { url: URL; scroll?: boolean } | undefined 
 
   const href = closestLink.href
   if (!href || !isLocalUrl(href)) return undefined
+
   return {
     url: new URL(href),
     scroll: dataset && "routerNoScroll" in dataset ? false : undefined,
@@ -327,6 +329,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
       // DOM update failed and triggered a fallback (full page load)
       return
     }
+    lastKnownPathname = finalUrl.pathname
   }
 
   // 3. Handle scrolling *after* DOM update, based on the FINAL URL
@@ -377,19 +380,24 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
     event.state,
   )
 
-  const resource = await fetch(targetUrl.toString())
-  const contentType = resource.headers.get("content-type")
-  if (!resource.ok || !contentType?.startsWith("text/html")) {
-    window.location.reload()
-    console.debug("popstate: Reloading due to non-HTML response")
-    return
-  }
+  // If we are on the same page, we don't need to fetch anything, just scroll
+  const newPathname = targetUrl.pathname
+  if (newPathname !== lastKnownPathname) {
+    const fetchResult = await fetchAndProcessContent(targetUrl)
+    if (!fetchResult) {
+      // Fetching or redirect handling failed and triggered a fallback (full page load)
+      return
+    }
+    const { content } = fetchResult
 
-  // Update DOM and head
-  const contents = await resource.text()
-  parser = parser || new DOMParser()
-  const html = parser.parseFromString(contents, "text/html")
-  await updatePage(html, targetUrl)
+    // Update DOM and head
+    const updateSuccess = await updateDOM(content, targetUrl)
+    if (!updateSuccess) {
+      // DOM update failed and triggered a fallback (full page load)
+      return
+    }
+    lastKnownPathname = newPathname
+  }
 
   // Restore scroll position *after* DOM update
   if (!restoreScrollPosition(event, targetUrl)) {
@@ -434,10 +442,14 @@ function createRouter() {
 
       event.preventDefault() // Prevent default link behavior
 
+      const targetUrl = opts.url
+      const currentUrl = new URL(window.location.href)
+      const shouldFetch =
+        targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search
+
       try {
         console.debug(`[Router] Click navigation to ${opts.url.toString()}`)
-        // Pass scroll option from dataset (e.g., data-router-no-scroll)
-        await navigate(opts.url, { scroll: opts.scroll })
+        await navigate(opts.url, { scroll: opts.scroll, fetch: shouldFetch })
       } catch (e) {
         console.error("Click navigation error:", e)
         // Fallback to standard navigation if spa navigation fails

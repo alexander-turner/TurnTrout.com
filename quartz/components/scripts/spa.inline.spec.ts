@@ -446,3 +446,70 @@ test.describe("Fetch & Redirect Handling", () => {
     expect(page.url()).toContain(sourcePath)
   })
 })
+
+test.describe("Critical CSS", () => {
+  test("is removed after popstate navigation to a hash URL", async ({ page }) => {
+    const cssLocator = page.locator("style#critical-css")
+    await expect(cssLocator).toHaveCount(0)
+
+    const hash = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${hash}`)
+    await page.waitForURL(`**/test-page#${hash}`)
+
+    await expect(cssLocator).toHaveCount(0)
+  })
+
+  test("is removed after navigation to a different page", async ({ page }) => {
+    const cssLocator = page.locator("style#critical-css")
+    await expect(cssLocator).toHaveCount(0)
+
+    // Create a link to another page
+    await page.evaluate(() => {
+      const link = document.createElement("a")
+      link.href = "/design"
+      link.id = "design-link" // TODO improve robustness?
+      link.textContent = "Design"
+      document.body.appendChild(link)
+    })
+
+    await page.click("#design-link")
+    await page.waitForURL("**/design")
+
+    await expect(cssLocator).toHaveCount(0)
+  })
+})
+
+test.describe("Network Behavior", () => {
+  test("does not fetch content for same-page hash navigation", async ({ page }) => {
+    let requestMade = false
+
+    // Intercept requests for the same page.
+    await page.route("**/test-page", (route) => {
+      requestMade = true
+      route.continue()
+    })
+
+    // Create an anchor and a link pointing to it
+    const finalAnchorId = await createFinalAnchor(page)
+    await page.evaluate((id) => {
+      const anchorElement = document.createElement("div")
+      anchorElement.id = id
+      document.body.appendChild(anchorElement)
+
+      const linkElement = document.createElement("a")
+      linkElement.href = `#${id}`
+      linkElement.id = "link-to-anchor"
+      linkElement.textContent = "Go to Anchor"
+      document.body.appendChild(linkElement)
+    }, finalAnchorId)
+
+    // Click the link to trigger hash navigation
+    await page.click("#link-to-anchor")
+
+    // Wait for the URL to reflect the hash change
+    await page.waitForURL(`**/*#${finalAnchorId}`)
+
+    // The core assertion: verify that no network request was made
+    expect(requestMade).toBe(false)
+  })
+})
