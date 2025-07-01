@@ -72,6 +72,10 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   const linkHref = await dummyLink.getAttribute("href")
   expect(linkHref).not.toBeNull()
 
+  // Capture the original h1 text before navigation
+  const selector = "#article-title"
+  const originalH1Text = await page.locator(selector).first().textContent()
+
   // Hover and wait for popover
   await dummyLink.hover()
   const popover = page.locator(".popover")
@@ -82,6 +86,9 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   await dummyLink.click()
   const targetHref = linkHref?.replace("./", "")
   await page.waitForURL(`**/${targetHref}`)
+
+  // Wait until the h1 changes, indicating navigation completed
+  await expect(page.locator(selector).first()).not.toHaveText(originalH1Text || "")
 
   // Check content matches
   const pageContent = await page.locator(".popover-hint").first().textContent()
