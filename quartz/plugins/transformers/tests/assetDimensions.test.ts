@@ -432,6 +432,41 @@ describe("Asset Dimensions Plugin", () => {
       expect(dimensions).toEqual(mockFetchedImageDims)
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
     })
+
+    it("should retry on network failure and succeed on third attempt", async () => {
+      let callCount = 0
+      mockedFetch.mockImplementation(async () => {
+        callCount++
+        if (callCount <= 2) {
+          throw new Error("Network failure")
+        }
+        // Succeed on third attempt
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: (h: string) => (h === "Content-Type" ? "image/png" : null) } as Headers,
+          arrayBuffer: async () => mockImageData,
+        } as unknown as NodeFetchResponse
+      })
+
+      sizeOfMock.mockClear()
+      sizeOfMock.mockReturnValue({
+        width: mockImageWidth,
+        height: mockImageHeight,
+        type: "png",
+      })
+
+      mockSpawnSync.mockReturnValueOnce({
+        status: 0,
+        stdout: `${mockImageWidth}x${mockImageHeight}`,
+        stderr: "",
+        error: null,
+      })
+
+      const dimensions = await fetchAndParseAssetDimensions(testImageUrl, 3)
+      expect(dimensions).toEqual(mockFetchedImageDims)
+      expect(mockedFetch).toHaveBeenCalledTimes(3)
+    })
   })
 
   describe("collectAssetNodes", () => {

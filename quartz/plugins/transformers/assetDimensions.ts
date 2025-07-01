@@ -192,42 +192,63 @@ async function getLocalAssetDimensions(assetSrc: string): Promise<AssetDimension
 }
 
 // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
-async function getRemoteAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
-  const response = await fetch(assetSrc)
-  if (!response.ok)
-    throw new Error(`Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`)
+async function getRemoteAssetDimensions(
+  assetSrc: string,
+  retries: number = 1,
+  delay = 1000,
+): Promise<AssetDimensions> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(assetSrc)
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`,
+        )
+      }
 
-  const contentType = response.headers.get("Content-Type")
-  const isSvgRemote = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
-  if (!isSvgRemote && (contentType?.startsWith("video/") || contentType?.startsWith("image/"))) {
-    response.body?.cancel()
-    const dims = await getAssetDimensionsFfprobe(assetSrc)
-    if (!dims) throw new Error(`ffprobe failed for ${assetSrc}`)
+      const contentType = response.headers.get("Content-Type")
+      const isSvgRemote = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
+      if (
+        !isSvgRemote &&
+        (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
+      ) {
+        response.body?.cancel()
+        const dims = await getAssetDimensionsFfprobe(assetSrc)
+        if (!dims) throw new Error(`ffprobe failed for ${assetSrc}`)
 
-    logger.debug(`Remote ffprobe dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
-    return dims
+        logger.debug(`Remote ffprobe dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
+        return dims
+      }
+
+      const buffer = Buffer.from(await response.arrayBuffer())
+      const dimensions = sizeOf(buffer)
+      if (
+        dimensions &&
+        typeof dimensions.width === "number" &&
+        typeof dimensions.height === "number"
+      ) {
+        logger.debug(
+          `Remote image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
+        )
+        return { width: dimensions.width, height: dimensions.height }
+      }
+      throw new Error(
+        `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
+      )
+    } catch (error) {
+      if (i === retries - 1) throw error
+      await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)))
+    }
   }
-
-  const buffer = Buffer.from(await response.arrayBuffer())
-  const dimensions = sizeOf(buffer)
-  if (dimensions && typeof dimensions.width === "number" && typeof dimensions.height === "number") {
-    logger.debug(
-      `Remote image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
-    )
-
-    return { width: dimensions.width, height: dimensions.height }
-  }
-
-  throw new Error(
-    `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
-  )
+  throw new Error(`Failed to fetch ${assetSrc} after ${retries} attempts.`)
 }
 
 export async function fetchAndParseAssetDimensions(
   assetSrc: string,
+  retries: number = 1,
 ): Promise<AssetDimensions | null> {
   return isRemoteUrl(assetSrc)
-    ? await getRemoteAssetDimensions(assetSrc)
+    ? await getRemoteAssetDimensions(assetSrc, retries)
     : await getLocalAssetDimensions(assetSrc)
 }
 
@@ -278,12 +299,13 @@ export function collectAssetNodes(tree: Root): { node: Element; src: string }[] 
 export async function processAsset(
   assetInfo: { node: Element; src: string },
   currentDimensionsCache: AssetDimensionMap,
+  retries: number = 1,
 ): Promise<void> {
   const { node, src } = assetInfo
   let dims = currentDimensionsCache[src]
 
   if (!dims) {
-    const fetchedDims = await fetchAndParseAssetDimensions(src)
+    const fetchedDims = await fetchAndParseAssetDimensions(src, retries)
     if (fetchedDims) {
       dims = fetchedDims
       currentDimensionsCache[src] = fetchedDims
@@ -317,7 +339,7 @@ export const addAssetDimensionsFromSrc = () => {
             const assetsToProcess = collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
-              await processAsset(assetInfo, currentDimensionsCache)
+              await processAsset(assetInfo, currentDimensionsCache, 3)
             }
             if (needToSaveCache) {
               await maybeSaveAssetDimensions()
