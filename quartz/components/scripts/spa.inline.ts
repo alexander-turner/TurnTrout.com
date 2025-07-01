@@ -15,7 +15,6 @@ declare global {
   }
 }
 
-let lastKnownPathname = window.location.pathname
 // FUNCTIONS
 
 const NODE_TYPE_ELEMENT = 1
@@ -295,6 +294,7 @@ function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): voi
   }
 }
 
+let lastKnownPathname = window.location.pathname
 /**
  * Handles navigation triggered by clicking a link or programmatic call.
  * Updates history, maybe fetches new content, updates DOM, and handles scrolling.
