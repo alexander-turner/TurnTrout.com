@@ -48,7 +48,13 @@ export default defineConfig({
   testDir: "./quartz/",
   testMatch: /.*\.spec\.ts/,
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
+  webServer: {
+    command: "npm run start",
+    url: "http://localhost:8080",
+    reuseExistingServer: !process.env.CI,
+  },
   use: {
+    baseURL: "http://localhost:8080",
     trace: "on-first-retry",
     screenshot: {
       mode: "on",
