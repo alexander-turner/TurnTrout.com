@@ -1,5 +1,5 @@
 import { JSX } from "preact"
-import * as React from "react"
+import React from "react"
 
 import type { QuartzComponent, QuartzComponentProps } from "../types"
 
