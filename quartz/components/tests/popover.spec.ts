@@ -218,6 +218,11 @@ test("Popover maintains position when page scrolls", async ({ page, dummyLink })
   const scrollAmount = 500
   await page.evaluate((scrollAmount) => window.scrollBy(0, scrollAmount), scrollAmount)
 
+  await page.waitForFunction(
+    (scrollLowerBound) => window.scrollY >= scrollLowerBound - 5,
+    scrollAmount,
+  )
+
   // The popover goes scrollAmount px up in the viewport
   const targetPopoverYAtTopEdge = initialY! - scrollAmount
   await page.waitForFunction((targetY: number) => {
