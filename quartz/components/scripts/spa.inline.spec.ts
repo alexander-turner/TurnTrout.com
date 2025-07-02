@@ -183,6 +183,7 @@ test.describe("Scroll Behavior", () => {
     // eslint-disable-next-line playwright/expect-expect
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForScroll(page, scrollPos)
       await waitForHistoryState(page, scrollPos)
       await softRefresh(page)
       await waitForScroll(page, scrollPos)
@@ -200,6 +201,7 @@ test.describe("Scroll Behavior", () => {
       // eslint-disable-next-line playwright/no-wait-for-timeout
       await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
+      await waitForScroll(page, scrollPos)
       await waitForHistoryState(page, scrollPos)
       await softRefresh(page)
 
@@ -211,6 +213,7 @@ test.describe("Scroll Behavior", () => {
   test("Restores scroll position across multiple refreshes", async ({ page }) => {
     const targetScroll = 200
     await page.evaluate((targetScroll) => window.scrollTo(0, targetScroll), targetScroll)
+    await waitForScroll(page, targetScroll)
     await waitForHistoryState(page, targetScroll)
 
     for (let i = 0; i < 5; i++) {
