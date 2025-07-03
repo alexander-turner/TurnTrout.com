@@ -889,7 +889,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 
 ### Validating the emitted HTML files
 
-At this point, I check the built pages for a smattering of possible errors:
+At this point, I check the built pages for a smattering of possible errors, including:
 
 - Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
 - Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
@@ -905,7 +905,6 @@ At this point, I check the built pages for a smattering of possible errors:
   - Failed attempts to specify a `<figcaption>` element;
   - Failed renders of HTML elements;
   - Assets present in the Markdown file but which are not present in the HTML DOM;
-  - Mentioning usernames (like `TurnTrout`) without setting them as inline code;
 - Certain kinds of dead links which `linkchecker` won't catch:
   - Anchor links which don't exist;
   - Duplicate anchor targets on a page;
