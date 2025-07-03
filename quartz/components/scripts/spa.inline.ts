@@ -129,22 +129,6 @@ async function updatePage(html: Document, url: URL): Promise<void> {
   // Patch head
   const elementsToRemove = document.head.querySelectorAll(":not([spa-preserve])")
   elementsToRemove.forEach((el) => el.remove())
-
-  const elementsToAdd = html.head.querySelectorAll(":not([spa-preserve])")
-  elementsToAdd.forEach((el) => {
-    // Scripts don't get executed when they are simply cloned and attached.
-    // We need to create a new script element and copy the attributes and content.
-    if (el.tagName === "SCRIPT") {
-      const script = document.createElement("script")
-      for (const attr of el.attributes) {
-        script.setAttribute(attr.name, attr.value)
-      }
-      script.textContent = el.textContent
-      document.head.appendChild(script)
-    } else {
-      document.head.appendChild(el.cloneNode(true))
-    }
-  })
 }
 
 interface FetchResult {
