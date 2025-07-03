@@ -369,6 +369,7 @@ article[data-use-dropcap="true"] > p:first-of-type::first-letter {
     float: left;
     color: var(--foreground);
     font-size: var(--dropcap-font-size);
+    width: var(--dropcap-font-size);
     line-height: 1;
     padding-right: 0.1em;
     font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
