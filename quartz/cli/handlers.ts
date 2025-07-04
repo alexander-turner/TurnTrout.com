@@ -272,7 +272,11 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       "**/*.spec.ts",
       "**/*.spec.tsx",
     ],
-  }).on("all", async () => {
+  }).on("all", async (_event, fp) => {
+    if (fp.endsWith(".scss")) {
+      cachedCriticalCSS = ""
+      console.log(chalk.yellow("SCSS change detected, invalidating critical CSS cache."))
+    }
     await build(clientRefresh)
   })
 }
@@ -396,9 +400,6 @@ em {
   --red: #be415c;
   --green: #40a02b;
   --blue: #406ecc;
-}
-.desktop-only {
-  display: initial;
 }
 #quartz-body {
   display: flex;
