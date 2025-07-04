@@ -397,6 +397,34 @@ em {
   --green: #40a02b;
   --blue: #406ecc;
 }
+.desktop-only {
+  display: initial;
+}
+#quartz-body {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4rem;
+  margin: 0 auto;
+}
+#left-sidebar {
+  flex-basis: 200px;
+  flex-shrink: 0.25;
+  margin-left: 0;
+}
+#right-sidebar {
+  flex-basis: 330px;
+  flex-shrink: 1;
+  padding-right: 0;
+}
+#center-content {
+  flex-grow: 1;
+  flex-shrink: 1;
+  max-width: 720px;
+  overflow-x: hidden;
+  width: 100%;
+}
 `
 
 /**
