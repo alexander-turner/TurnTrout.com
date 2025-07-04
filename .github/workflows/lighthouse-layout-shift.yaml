@@ -11,12 +11,14 @@ on:
     branches: ["main", "dev", "no-layout-shift"]
 
 jobs:
-  lighthouse-testing:
+  build_and_deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pages: write
       id-token: write
+    outputs:
+      deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Build Environment
@@ -54,30 +56,54 @@ jobs:
           echo "Extracted DEPLOY_URL: $DEPLOY_URL"
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
-      - name: Run Lighthouse CI against Cloudflare deployment
-        id: lighthouse
+  lighthouse_desktop:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - uses: actions/checkout@v4 # needed for config path
+      - name: Run Lighthouse CI against Cloudflare deployment (Desktop)
+        id: lighthouse_desktop
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/design
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#spoilers
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#videos
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#admonitions
-            ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}/test-page#footnote-label
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
-      - name: Upload Lighthouse reports
+      - name: Upload Lighthouse reports (Desktop)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse-reports
+          name: lighthouse-reports-desktop
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
 
-      - name: Kill local server
+  lighthouse_mobile:
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    steps:
+      - uses: actions/checkout@v4 # needed for config path
+      - name: Run Lighthouse CI against Cloudflare deployment (Mobile)
+        id: lighthouse_mobile
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-cls-only-config-mobile.json"
+
+      - name: Upload Lighthouse reports (Mobile)
         if: always()
-        run: |
-          if [[ -n "$SERVER_PID" ]]; then
-            kill $SERVER_PID || true
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-mobile
+          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/

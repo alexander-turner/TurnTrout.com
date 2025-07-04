@@ -6,17 +6,17 @@
         "onlyCategories": ["performance"],
         "onlyAudits": ["cumulative-layout-shift"],
         "throttling": {
-          "cpuSlowdownMultiplier": 1,
-          "rttMs": 40,
-          "throughputKbps": 10240
+          "cpuSlowdownMultiplier": 2,
+          "rttMs": 100,
+          "throughputKbps": 5120
         },
         "disableStorageReset": false,
-        "formFactor": "desktop",
+        "formFactor": "mobile",
         "screenEmulation": {
-          "width": 1440,
-          "height": 900,
-          "deviceScaleFactor": 1,
-          "mobile": false
+          "width": 390,
+          "height": 844,
+          "deviceScaleFactor": 2,
+          "mobile": true
         }
       }
     },
