@@ -60,3 +60,5 @@ fi
 python "$GIT_ROOT/scripts/run_push_checks.py" --resume
 
 python "$GIT_ROOT/scripts/update_date_on_publish.py"
+
+git push --no-verify
