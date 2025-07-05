@@ -119,17 +119,11 @@ body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
   --font-dropcap-background: "EBGaramondInitialsF1", serif;
   --font-monospace: "FiraCode", "JetBrains Mono", "Courier New", monospace;
-  --font-monospace-theme: "FiraCode", "JetBrains Mono", "Courier New", monospace;
-  --font-theme: "EBGaramond", garamond, "Times New Roman", serif;
   --font-main: "EBGaramond", garamond, "Times New Roman", serif;
-  --font-original: "EBGaramondOriginal";
   --font-italic: "EBGaramondItalic", "EBGaramond";
   --font-italic-situational: var(--font-italic);
-  --font-header: "EBGaramond", garamond, "Times New Roman", serif;
-  --font-swash: "EBGaramond:+swsh", cursive;
-  --font-bad-handwriting: "BadHandwriting";
 
-  font-family: EBGaramond, var(--font-main);
+  font-family: var(--font-main);
   line-height: var(--base-line-height);
   font-feature-settings:
     "liga" 1,
@@ -215,7 +209,7 @@ dt {
 }
 
 .bad-handwriting {
-  font-family: BadHandwriting, var(--font-bad-handwriting);
+  font-family: BadHandwriting, serif;
   text-align: center;
   font-style: italic;
   font-size: 1.5em;
@@ -242,7 +236,7 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {
-  font-family: FiraCode, var(--font-monospace);
+  font-family: var(--font-monospace);
   background-color: transparent;
   color: inherit;
   font-size: 0.81em;
