@@ -18,7 +18,7 @@ import prettyBytes from "pretty-bytes"
 import serveHandler from "serve-handler"
 import { WebSocketServer, type WebSocket } from "ws"
 
-import { generateScss } from "../styles/generate-variables"
+import { generateScss, generateScssRecord } from "../styles/generate-variables"
 import {
   version,
   fp,
@@ -380,8 +380,14 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
         path.resolve("quartz/styles/critical.scss"),
         "utf-8",
       )
+      let replacedCss = manualCriticalCss
+      const scssVars: Record<string, string> = generateScssRecord()
+      // Fill in the SCSS variables since they are not in the CSS
+      for (const [key, value] of Object.entries(scssVars)) {
+        replacedCss = replacedCss.replace(`$${key}`, value)
+      }
 
-      cachedCriticalCSS = css + manualCriticalCss
+      cachedCriticalCSS = css + replacedCss
       console.log("Cached critical CSS with manually-provided styles")
     } catch (error) {
       console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)

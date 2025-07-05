@@ -4,10 +4,22 @@
 import type { CheerioAPI } from "cheerio"
 import type { Element as CheerioElement } from "domhandler"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, it, expect, jest, beforeEach, afterEach } from "@jest/globals"
 import { load as cheerioLoad } from "cheerio"
 
-import { reorderHead } from "./handlers"
+// Mock critical CSS generator before importing handlers
+jest.mock("critical", () => {
+  const generate = jest.fn(() => Promise.resolve({ css: "/* critical */" })) as unknown as jest.Mock
+  return { generate }
+})
+
+import fs from "fs"
+import fsExtra from "fs-extra"
+import os from "os"
+import path from "path"
+
+import { variables as styleVars } from "../styles/variables"
+import { reorderHead, maybeGenerateCriticalCSS, injectCriticalCSSIntoHTMLFiles } from "./handlers"
 
 const loadOptions = {
   xml: false,
@@ -89,4 +101,56 @@ describe("reorderHead", () => {
       expect(elementToTest).toBe(expected)
     },
   )
+})
+
+describe("maybeGenerateCriticalCSS variable replacement", () => {
+  let outputDir: string
+
+  beforeEach(async () => {
+    outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
+  })
+
+  afterEach(async () => {
+    await fsExtra.remove(outputDir)
+  })
+
+  it("should replace SCSS variable placeholders with actual values in cached CSS", async () => {
+    // Arrange mock variables
+    Object.assign(styleVars, {
+      baseMargin: "8px",
+      pageWidth: 720,
+    })
+
+    const manualCriticalCss = "body{margin: $base-margin; color: $page-width;}"
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await fsExtra.ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest
+      .spyOn(fs.promises, "readFile")
+      .mockImplementation(async (fp, ...args) => {
+        if (fp === criticalScssPath) {
+          return manualCriticalCss
+        }
+        return realReadFile(fp, ...args)
+      })
+
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
+
+    // Act
+    await maybeGenerateCriticalCSS(outputDir)
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+
+    // Assert
+    const writtenHtml = writeSpy.mock.calls[0][1] as string
+    expect(writtenHtml).toContain("margin: 8px")
+    expect(writtenHtml).toContain("color: 720px")
+    expect(writtenHtml).not.toContain("$base-margin")
+    readFileSpy.mockRestore()
+  })
 })
