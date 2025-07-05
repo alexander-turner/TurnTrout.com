@@ -18,7 +18,6 @@ import prettyBytes from "pretty-bytes"
 import serveHandler from "serve-handler"
 import { WebSocketServer, type WebSocket } from "ws"
 
-// Import the generate function
 import { generateScss } from "../styles/generate-variables"
 import {
   version,
@@ -324,109 +323,6 @@ export async function injectCriticalCSSIntoHTMLFiles(
     }
   }
 }
-const themeCSS = `
-:root {
-  font-family: var(--font-main);
-}
-#navbar-left h2 {
-  color: var(--midground);
-}
-code,
-pre {
-  font-family: var(--font-monospace);
-}
-a {
-  color: var(--color-link);
-}
-a:visited {
-  color: color-mix(in srgb,currentcolor 50%,var(--color-link));
-}
-article[data-use-dropcap="true"] {
-  --dropcap-vertical-offset: 0.15rem;
-  --dropcap-font-size: 3.95rem;
-  --before-color: var(--midground-faint);
-  --font-italic-situational: var(--font-italic);
-  --font-dropcap-foreground: 'EBGaramondInitialsF2__subset', "EBGaramondInitialsF2",serif;
-  --font-dropcap-background: 'EBGaramondInitialsF1__subset', "EBGaramondInitialsF1",serif;
-}
-
-article[data-use-dropcap="true"] > p:first-of-type {
-    position: relative;
-    min-height: 4.2rem;
-}
-article[data-use-dropcap="true"] > p:first-of-type::before {
-    content: attr(data-first-letter);
-    text-transform: uppercase;
-    position: absolute;
-    top: var(--dropcap-vertical-offset);
-    left: 0;
-    font-size: var(--dropcap-font-size);
-    line-height: 1;
-    padding-right: 0.1em;
-    font-family: var(--font-dropcap-background);
-    color: var(--before-color);
-}
-article[data-use-dropcap="true"] > p:first-of-type::first-letter {
-    padding-top: var(--dropcap-vertical-offset);
-    text-transform: uppercase;
-    font-style: normal !important;
-    float: left;
-    color: var(--foreground);
-    font-size: var(--dropcap-font-size);
-    width: var(--dropcap-font-size);
-    line-height: 1;
-    padding-right: 0.1em;
-    font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
-    font-weight: 500 !important;
-}
-article[data-use-dropcap="true"] > p:first-of-type::first-line {
-      --font-italic-situational: var(--font-main) !important;
-}
-em {
-  font-family: var(--font-italic-situational);
-}
-:root[saved-theme="dark"],
-.dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
-  --green: #a6d189;
-  --blue: #8caaee;
-}
-:root[saved-theme="light"],
-.light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --red: #be415c;
-  --green: #40a02b;
-  --blue: #406ecc;
-}
-#quartz-body {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 4rem;
-  margin: 0 auto;
-}
-#left-sidebar {
-  flex-basis: 200px;
-  flex-shrink: 0.25;
-  margin-left: 0;
-}
-#right-sidebar {
-  flex-basis: 330px;
-  flex-shrink: 1;
-  padding-right: 0;
-}
-#center-content {
-  flex-grow: 1;
-  flex-shrink: 1;
-  max-width: 720px;
-  overflow-x: hidden;
-  width: 100%;
-}
-`
 
 /**
  * Generates and caches critical CSS if not already cached
@@ -480,8 +376,13 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       })
 
       // Append essential theme variables
-      cachedCriticalCSS = css + themeCSS
-      console.log("Cached critical CSS with theme variables")
+      const manualCriticalCss = await fsPromises.readFile(
+        path.resolve("quartz/styles/critical.scss"),
+        "utf-8",
+      )
+
+      cachedCriticalCSS = css + manualCriticalCss
+      console.log("Cached critical CSS with manually-provided styles")
     } catch (error) {
       console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)
       cachedCriticalCSS = "" // Ensure it's reset on failure
