@@ -46,7 +46,7 @@ if command -v conda >/dev/null 2>&1; then
     echo "Activating conda environment: website"
     # This is the standard way to make conda commands available in a script
     # shellcheck source=/dev/null
-    eval "$(conda shell.sh hook)"
+    . "$(conda info --base)/etc/profile.d/conda.sh"
     conda activate website
   fi
 fi
