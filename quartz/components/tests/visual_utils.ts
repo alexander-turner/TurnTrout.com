@@ -93,29 +93,13 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
       }
 
       images.forEach((img) => {
-        const onDone = () => {
-          img.removeEventListener("load", onDone)
-          img.removeEventListener("error", onDone)
-          checkComplete()
-        }
-
         if (img.complete) {
-          // If the image is already marked as 'complete' by the browser,
-          // the 'load' event may not fire. We poll for naturalWidth instead.
-          if (img.naturalWidth > 0) {
-            checkComplete()
-          } else {
-            const poll = setInterval(() => {
-              if (img.naturalWidth > 0) {
-                clearInterval(poll)
-                checkComplete()
-              }
-              // Note: No timeout here, we let the test runner's timeout handle failed loads.
-            }, 50)
-          }
+          // If the image is already 'complete', it's either loaded or failed.
+          // In either case, we are 'done' waiting for it.
+          checkComplete()
         } else {
-          img.addEventListener("load", onDone)
-          img.addEventListener("error", onDone)
+          img.addEventListener("load", checkComplete)
+          img.addEventListener("error", checkComplete)
         }
       })
     })
