@@ -205,31 +205,17 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
   await expect(popover).toBeHidden()
 })
 
-test("Popover maintains position when page scrolls", async ({ page, dummyLink }) => {
+test("Popover is hidden when page scrolls", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
 
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
-  const initialPopoverBox = await popover.boundingBox()
-  test.fail(!initialPopoverBox, "Could not get popover position")
-  const initialY = initialPopoverBox?.y
 
   const scrollAmount = 500
   await page.evaluate((scrollAmount) => window.scrollBy(0, scrollAmount), scrollAmount)
 
-  await page.waitForFunction(
-    (scrollLowerBound) => window.scrollY >= scrollLowerBound - 5,
-    scrollAmount,
-  )
-
-  // The popover goes scrollAmount px up in the viewport
-  const targetPopoverYAtTopEdge = initialY! - scrollAmount
-  await page.waitForFunction((targetY: number) => {
-    const popover = document.querySelector(".popover")
-    const popoverBox = popover?.getBoundingClientRect()
-    return popoverBox && Math.abs(popoverBox.y - targetY) < 15
-  }, targetPopoverYAtTopEdge)
+  await expect(popover).toBeHidden()
 })
 
 test("Can scroll within popover content", async ({ page, dummyLink }) => {

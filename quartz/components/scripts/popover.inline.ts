@@ -48,15 +48,23 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   updatePosition()
 
+  const handleScroll = () => {
+    if (activePopoverRemover) {
+      activePopoverRemover()
+    }
+  }
+
   const onPopoverRemove = () => {
     activePopoverRemover = null
     window.removeEventListener("resize", updatePosition)
+    window.removeEventListener("scroll", handleScroll)
   }
 
   const popoverCleanup = attachPopoverEventListeners(popoverElement, this, onPopoverRemove)
   activePopoverRemover = popoverCleanup
 
   window.addEventListener("resize", updatePosition)
+  window.addEventListener("scroll", handleScroll)
 
   // skipcq: JS-0098 - Force reflow to ensure CSS transition
   void popoverElement.offsetWidth
