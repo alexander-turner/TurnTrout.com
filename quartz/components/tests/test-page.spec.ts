@@ -80,6 +80,38 @@ async function getH1Screenshots(
   }
 }
 
+async function setDummyContentMeta(page: Page) {
+  await page.evaluate(() => {
+    const tagsUl = document.querySelector("#tags ul")
+    if (tagsUl) {
+      tagsUl.innerHTML = `<li><a href="/tags/dummy-tag" class="can-trigger-popover tag-link">dummy-tag</a></li>`
+    }
+
+    const readingTime = document.querySelector(".reading-time")
+    if (readingTime) {
+      readingTime.textContent = "Read time: 10 minutes"
+    }
+
+    const publicationStr = document.querySelector(".publication-str")
+    if (publicationStr) {
+      publicationStr.innerHTML = `Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>`
+    }
+
+    const lastUpdatedStr = document.querySelector(".last-updated-str")
+    if (lastUpdatedStr) {
+      lastUpdatedStr.innerHTML = `<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>`
+    }
+
+    const backlinksUl = document.querySelector("#backlinks-admonition ul")
+    if (backlinksUl) {
+      backlinksUl.innerHTML = `
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a></li>
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a></li>
+      `
+    }
+  })
+}
+
 test.describe("Test page sections", () => {
   for (const theme of ["dark", "light"]) {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
@@ -408,12 +440,14 @@ test.describe("Right sidebar", () => {
   })
 
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
       element: "#content-meta",
     })
   })
 
   test("Backlinks are visible (lostpixel)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
     const backlinks = page.locator("#backlinks").first()
     await backlinks.scrollIntoViewIfNeeded()
     await expect(backlinks).toBeVisible()
