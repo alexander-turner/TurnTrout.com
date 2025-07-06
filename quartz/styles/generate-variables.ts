@@ -12,7 +12,6 @@ const toKebabCase = (str: string): string => {
   return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
 }
 
-// TODO test
 export function generateScssRecord(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(variables).map(([key, value]) => {
@@ -33,7 +32,6 @@ const generateScssContent = (): string => {
   return scss
 }
 
-// Export the main function that generates and writes SCSS
 export function generateScss(): void {
   try {
     const outputPath = path.join(__dirname, "variables.scss")
