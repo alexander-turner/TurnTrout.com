@@ -1,3 +1,5 @@
+@use "./variables" as *;
+
 :root[data-theme="dark"],
 .dark-mode {
   // Catppuccin Frappe
@@ -16,8 +18,8 @@
 
   // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #303446; // frappeColors.base
-  --midground-faint: #737994; // frappeColors.overlay-0
-  --midground: #aab3db; // frappeColors.overlay-2
+  --midground-faint: #{$midground-faint-dark}; // frappeColors.overlay-0
+  --midground: #{$midground-dark}; // frappeColors.overlay-2
   --midground-strong: #c6cff0; // frappeColors.subtext-1
   --foreground: #d8def5; // frappeColors.text, modified
   --secondary: #97b0e9; // frappeColors.blue
@@ -54,8 +56,8 @@
 
   // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #eff1f5; // latteColors.base
-  --midground-faint: #9ca0b0; // latteColors.overlay-0
-  --midground: #7c7f93; // latteColors.overlay-2
+  --midground-faint: #{$midground-faint-light}; // latteColors.overlay-0
+  --midground: #{$midground-light}; // latteColors.overlay-2
   --midground-strong: #5c5f77; // latteColors.subtext-1
   --foreground: #4c4f69; // latteColors.text
   --secondary: #1e66f5; // latteColors.blue

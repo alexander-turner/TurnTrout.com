@@ -18,6 +18,12 @@ export const normalWeight = 400
 export const lineHeight = "1.8rem"
 export const listPaddingLeft = "2rem"
 
+// Colors
+export const midgroundFaintDark = "#737994"
+export const midgroundDark = "#aab3db"
+export const midgroundFaintLight = "#9ca0b0"
+export const midgroundLight = "#7c7f93"
+
 // Shared variables between SCSS and TypeScript
 export const variables = {
   pageWidth,
@@ -37,6 +43,10 @@ export const variables = {
   normalWeight,
   lineHeight,
   listPaddingLeft,
+  midgroundFaintDark,
+  midgroundDark,
+  midgroundFaintLight,
+  midgroundLight,
 } as const
 
 export type Variables = typeof variables

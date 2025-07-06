@@ -2,30 +2,34 @@
   font-family: var(--font-main);
 }
 
+:root[data-theme="light"] {
+  --midground-faint: #{$midground-faint-light};
+  --midground: #{$midground-light};
+}
+
+:root[data-theme="dark"] {
+  --midground-faint: #{$midground-faint-dark};
+  --midground: #{$midground-dark};
+}
+
 #navbar-left h2 {
   color: var(--midground);
 }
 
 code,
 pre {
-  font-family: var(--font-monospace);
-}
-
-a {
-  color: var(--color-link);
-}
-
-a:visited {
-  color: color-mix(in srgb, currentcolor 50%, var(--color-link));
+  font-family: "FiraCode__subset", FiraCode, monospace;
 }
 
 article[data-use-dropcap="true"] {
   --dropcap-vertical-offset: 0.15rem;
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
+  --font-main: "EBGaramond__subset", "EBGaramond";
+  --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
   --font-italic-situational: var(--font-italic);
-  --font-dropcap-foreground: "EBGaramondInitialsF2__subset", "EBGaramondInitialsF2", serif;
-  --font-dropcap-background: "EBGaramondInitialsF1__subset", "EBGaramondInitialsF1", serif;
+  --font-dropcap-foreground: "EBGaramondInitialsF2__subset", "EBGaramondInitialsF2";
+  --font-dropcap-background: "EBGaramondInitialsF1__subset", "EBGaramondInitialsF1";
 }
 
 article[data-use-dropcap="true"] > p:first-of-type {
@@ -56,7 +60,7 @@ article[data-use-dropcap="true"] > p:first-of-type::first-letter {
   width: var(--dropcap-font-size);
   line-height: 1;
   padding-right: 0.1em;
-  font-family: var(--font-dropcap-foreground), "EBGaramondInitialsF2", serif;
+  font-family: var(--font-dropcap-foreground);
   font-weight: 500 !important;
 }
 
