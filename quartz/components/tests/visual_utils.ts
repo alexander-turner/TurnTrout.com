@@ -59,50 +59,27 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
-/**
- * Waits for all images in the viewport to load
- * @param page - The page to wait for images on
- */
 export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      const isElementInViewport = (el: Element) => {
-        const rect = el.getBoundingClientRect()
-        return (
-          rect.top >= 0 &&
-          rect.left >= 0 &&
-          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        )
-      }
-      const images = Array.from(document.images).filter(isElementInViewport)
+  await page.evaluate(async () => {
+    const isElementInViewport = (el: Element) => {
+      const rect = el.getBoundingClientRect()
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      )
+    }
 
-      if (images.length === 0) {
-        resolve()
-        return
-      }
+    const images = Array.from(document.images).filter(isElementInViewport)
 
-      let loadedCount = 0
-      const totalImages = images.length
-
-      const checkComplete = () => {
-        loadedCount++
-        if (loadedCount === totalImages) {
-          resolve()
-        }
-      }
-
-      images.forEach((img) => {
-        if (img.complete) {
-          // If the image is already 'complete', it's either loaded or failed.
-          // In either case, we are 'done' waiting for it.
-          checkComplete()
-        } else {
-          img.addEventListener("load", checkComplete)
-          img.addEventListener("error", checkComplete)
-        }
-      })
-    })
+    await Promise.all(
+      images.map((img) =>
+        img.decode().catch(() => {
+          // Ignore decoding errors for failed images
+        }),
+      ),
+    )
   })
 }
 
