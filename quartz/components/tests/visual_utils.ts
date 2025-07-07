@@ -254,22 +254,31 @@ export async function search(page: Page, term: string) {
 }
 
 export async function pauseMediaElements(page: Page): Promise<void> {
-  const videoPromises = (await page.locator("video").all()).map((el) =>
-    el.evaluate((n: HTMLVideoElement) => {
-      n.pause()
-      n.currentTime = 0
-    }),
-  )
-  const audioPromises = (await page.locator("audio").all()).map((el) =>
-    el.evaluate((n: HTMLAudioElement) => {
-      n.pause()
-      if (Number.isFinite(n.duration)) {
-        n.currentTime = n.duration
-      }
-    }),
-  )
+  try {
+    const videoPromises = (await page.locator("video").all()).map((el) =>
+      el.evaluate((n: HTMLVideoElement) => {
+        n.pause()
+        n.currentTime = 0
+      }),
+    )
+    const audioPromises = (await page.locator("audio").all()).map((el) =>
+      el.evaluate((n: HTMLAudioElement) => {
+        n.pause()
+        if (Number.isFinite(n.duration)) {
+          n.currentTime = n.duration
+        }
+      }),
+    )
 
-  await Promise.all([...videoPromises, ...audioPromises])
+    await Promise.all([...videoPromises, ...audioPromises])
+  } catch (error) {
+    // If the page navigates, the context might be destroyed.
+    // In this case, we can ignore the error.
+    if (String(error).includes("Execution context was destroyed")) {
+      return
+    }
+    throw error
+  }
 }
 
 /**
