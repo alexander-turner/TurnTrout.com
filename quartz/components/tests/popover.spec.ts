@@ -26,8 +26,6 @@ test.beforeEach(async ({ page }) => {
   // I don't trust playwright's test isolation
   await page.reload()
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-  await page.evaluate(() => window.scrollTo(0, 0))
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
