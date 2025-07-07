@@ -396,6 +396,7 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
 
   await takeRegressionScreenshot(page, testInfo, "search-the-pond-dropcaps", {
     element: "#the-pond-dropcaps",
+    skipViewportImagesLoad: true, // these aren't images
   })
 })
 
