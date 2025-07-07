@@ -61,25 +61,48 @@ export async function setTheme(page: Page, theme: Theme) {
 
 export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
   await page.evaluate(async () => {
-    const isElementInViewport = (el: Element) => {
-      const rect = el.getBoundingClientRect()
-      return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-      )
+    const images = Array.from(document.images)
+    if (images.length === 0) {
+      return
     }
 
-    const images = Array.from(document.images).filter(isElementInViewport)
+    const visibleImages = new Set<HTMLImageElement>()
 
-    await Promise.all(
-      images.map((img) =>
-        img.decode().catch(() => {
-          // Ignore decoding errors for failed images
-        }),
-      ),
-    )
+    // This promise resolves when the IntersectionObserver has had time to report all initially visible images.
+    await new Promise<void>((resolve) => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              visibleImages.add(entry.target as HTMLImageElement)
+            }
+          })
+        },
+        { root: null, threshold: 0 },
+      )
+
+      images.forEach((img) => observer.observe(img))
+
+      // Use a short timeout to allow the observer to detect all initially visible images.
+      setTimeout(() => {
+        observer.disconnect()
+        resolve()
+      }, 200) // 200ms grace period for observer
+    })
+
+    const imagePromises = Array.from(visibleImages).map(async (img) => {
+      if (img.complete) {
+        await img.decode().catch(() => {}) // Ignore decoding errors.
+        return
+      }
+      // if image is not loaded, wait for it to load.
+      await new Promise<void>((resolve) => {
+        img.addEventListener("load", () => resolve(), { once: true })
+        img.addEventListener("error", () => resolve(), { once: true })
+      })
+    })
+
+    await Promise.all(imagePromises)
   })
 }
 
