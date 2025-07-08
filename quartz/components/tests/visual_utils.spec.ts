@@ -15,6 +15,7 @@ import {
   showingPreview,
   waitForViewportImagesToLoad,
   doesImageIntersect,
+  getVisibleImages,
 } from "./visual_utils"
 
 // A 1x1 transparent PNG, crucial for getting a valid naturalWidth > 0 in tests.
@@ -820,5 +821,90 @@ test.describe("doesImageIntersect", () => {
       const result = await evaluateDoesImageIntersect(page, "img-outside-root", "root")
       expect(result).toBe(false)
     })
+  })
+})
+
+test.describe("getVisibleImages", () => {
+  const evaluateGetVisibleImages = (page: Page, rootId: string | null): Promise<string[]> => {
+    return page.evaluate(
+      async ({ rootId, getVisibleImagesFunc, doesImageIntersectFunc }) => {
+        const getVisibleImages = new Function(
+          "images",
+          "rootEl",
+          "_isImageInViewport",
+          getVisibleImagesFunc,
+        ) as (
+          images: HTMLImageElement[],
+          rootEl: Element | null,
+          _isImageInViewport: (img: HTMLImageElement, rootEl: Element | null) => boolean,
+        ) => Promise<Set<HTMLImageElement>>
+        const doesImageIntersect = new Function("img", "rootEl", doesImageIntersectFunc) as (
+          img: HTMLImageElement,
+          rootEl: Element | null,
+        ) => boolean
+
+        const images = Array.from(document.querySelectorAll("img"))
+        const root = rootId ? document.getElementById(rootId) : null
+
+        const visibleImagesSet = await getVisibleImages(images, root, doesImageIntersect)
+        const visibleImageIds = Array.from(visibleImagesSet).map((img) => img.id)
+        return visibleImageIds
+      },
+      {
+        rootId,
+        getVisibleImagesFunc: `return (${getVisibleImages.toString()})(images, rootEl, _isImageInViewport)`,
+        doesImageIntersectFunc: `return (${doesImageIntersect.toString()})(img, rootEl)`,
+      },
+    )
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 500 })
+    await page.setContent(`
+      <style>
+        body { margin: 0; }
+        #root {
+          position: absolute;
+          top: 100px;
+          left: 100px;
+          width: 300px;
+          height: 300px;
+          overflow: auto;
+        }
+        img {
+          position: absolute;
+          width: 50px;
+          height: 50px;
+        }
+      </style>
+      <div id="root">
+        <img id="img-in-root" style="top: 150px; left: 150px;">
+        <img id="img-scrolled-out" style="top: 500px; left: 150px;">
+      </div>
+      <img id="img-in-viewport" style="top: 10px; left: 10px;">
+      <img id="img-outside-root" style="top: 20px; left: 20px;">
+      <img id="img-partially-in-viewport" style="top: 480px; left: 10px;">
+      <img id="img-outside-viewport" style="top: 600px; left: 600px;">
+    `)
+  })
+
+  test("should find all images visible in the viewport", async ({ page }) => {
+    const visibleIds = await evaluateGetVisibleImages(page, null)
+    expect(visibleIds).toHaveLength(4)
+    expect(visibleIds).toEqual(
+      expect.arrayContaining([
+        "img-in-root",
+        "img-in-viewport",
+        "img-outside-root",
+        "img-partially-in-viewport",
+      ]),
+    )
+  })
+
+  test("should find only images visible within the root element", async ({ page }) => {
+    const visibleIds = await evaluateGetVisibleImages(page, "root")
+    expect(visibleIds).toHaveLength(1)
+    expect(visibleIds).toContain("img-in-root")
+    expect(visibleIds).not.toContain("img-scrolled-out")
   })
 })

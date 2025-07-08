@@ -38,7 +38,7 @@ export const doesImageIntersect = (img: HTMLImageElement, rootEl: Element | null
  * It uses a combination of IntersectionObserver for efficiency and a manual check for robustness.
  * @remarks This function is intended to be executed in the browser context.
  */
-const getVisibleImages = (
+export const getVisibleImages = (
   images: HTMLImageElement[],
   rootEl: Element | null,
   _isImageInViewport: (img: HTMLImageElement, rootEl: Element | null) => boolean,
