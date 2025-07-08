@@ -665,4 +665,48 @@ test.describe("waitForViewportImagesToLoad", () => {
     expect(duration).toBeLessThan(MEDIUM_IMAGE_LOAD_TIME)
     expect(lazyImageFulfilled).toBe(false)
   })
+
+  test("waits only for images inside the root element", async ({ page }) => {
+    let imageInRootLoaded = false
+    await page.route(`**/${imageDomain}/image-in-root.png`, (route) => {
+      setTimeout(() => {
+        imageInRootLoaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, SLOW_IMAGE_LOAD_TIME)
+    })
+
+    let imageOutsideRootLoaded = false
+    await page.route(`**/${imageDomain}/image-outside-root.png`, (route) => {
+      setTimeout(() => {
+        imageOutsideRootLoaded = true
+        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
+      }, VERY_SLOW_IMAGE_LOAD_TIME)
+    })
+
+    // image-outside-root is in the viewport, but outside the root element
+    await page.setContent(
+      `
+      <div style="display: flex;">
+        <div id="root-container" style="width: 200px; height: 200px; overflow: hidden;">
+          <img src="${imageDomain}/image-in-root.png" style="width:100px; height:100px;">
+        </div>
+        <img src="${imageDomain}/image-outside-root.png" style="width:100px; height:100px;">
+      </div>
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
+
+    const rootElement = page.locator("#root-container")
+    const startTime = Date.now()
+    await waitForViewportImagesToLoad(page, rootElement)
+    const duration = Date.now() - startTime
+
+    // Loosely check that the function waited for the slow image, but not the very slow one.
+    // Using a buffer to account for test execution overhead.
+    const buffer = 300
+    expect(duration).toBeGreaterThanOrEqual(SLOW_IMAGE_LOAD_TIME - buffer)
+    expect(duration).toBeLessThan(VERY_SLOW_IMAGE_LOAD_TIME - buffer)
+    expect(imageInRootLoaded).toBe(true)
+    expect(imageOutsideRootLoaded).toBe(false)
+  })
 })

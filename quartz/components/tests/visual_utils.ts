@@ -59,18 +59,19 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
-export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    const images = Array.from(document.images)
-    if (images.length === 0) {
-      return
-    }
+export async function waitForViewportImagesToLoad(
+  page: Page,
+  rootElement?: Locator,
+): Promise<void> {
+  const rootHandle = rootElement ? await rootElement.elementHandle() : null
+  await page.evaluate(async (root: Element | null) => {
+    const images = Array.from(root ? root.getElementsByTagName("img") : document.images)
 
     const visibleImages = new Set<HTMLImageElement>()
     const processedImages = new Set<HTMLImageElement>()
-
     // resolve when the IntersectionObserver has processed all images
     await new Promise<void>((resolve) => {
+      // TODO test helpers somehow
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -86,8 +87,8 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
             resolve()
           }
         },
-        // Relative to viewport, not the entire page
-        { root: null, threshold: 0 },
+        // Relative to root element, or viewport if root is null
+        { root, threshold: 0 },
       )
 
       images.forEach((img) => {
@@ -95,14 +96,26 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
         // by the observer, so we check their visibility manually.
         // rect is relative to the viewport!
         const rect = img.getBoundingClientRect()
-        const isVisible =
-          rect.top < window.innerHeight &&
-          rect.bottom >= 0 &&
-          rect.left < window.innerWidth &&
-          rect.right >= 0
+        let isVisible: boolean
+        if (root) {
+          const rootRect = root.getBoundingClientRect()
+          isVisible =
+            rect.top < rootRect.bottom &&
+            rect.bottom > rootRect.top &&
+            rect.left < rootRect.right &&
+            rect.right > rootRect.left
+        } else {
+          isVisible =
+            rect.top < window.innerHeight &&
+            rect.bottom >= 0 &&
+            rect.left < window.innerWidth &&
+            rect.right >= 0
+        }
+
         if (isVisible) {
           visibleImages.add(img)
         }
+        // register for observation later
         observer.observe(img)
       })
     })
@@ -123,7 +136,7 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
     })
 
     await Promise.all(imagePromises)
-  })
+  }, rootHandle)
 }
 
 export interface RegressionScreenshotOptions {
@@ -145,7 +158,12 @@ export async function takeRegressionScreenshot(
   }
 
   if (!options?.skipViewportImagesLoad) {
-    await waitForViewportImagesToLoad(page)
+    const element = options?.element
+      ? typeof options.element === "string"
+        ? page.locator(options.element)
+        : options.element
+      : undefined
+    await waitForViewportImagesToLoad(page, element)
   }
 
   const browserName = testInfo.project.name
