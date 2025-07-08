@@ -67,8 +67,9 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
     }
 
     const visibleImages = new Set<HTMLImageElement>()
+    const processedImages = new Set<HTMLImageElement>()
 
-    // This promise resolves when the IntersectionObserver has had time to report all initially visible images.
+    // resolve when the IntersectionObserver has processed all images
     await new Promise<void>((resolve) => {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -76,29 +77,48 @@ export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
             if (entry.isIntersecting) {
               visibleImages.add(entry.target as HTMLImageElement)
             }
+            processedImages.add(entry.target as HTMLImageElement)
           })
+
+          // If all images have been processed, we can stop observing.
+          if (processedImages.size === images.length) {
+            observer.disconnect()
+            resolve()
+          }
         },
+        // Relative to viewport, not the entire page
         { root: null, threshold: 0 },
       )
 
-      images.forEach((img) => observer.observe(img))
-
-      // Use a short timeout to allow the observer to detect all initially visible images.
-      setTimeout(() => {
-        observer.disconnect()
-        resolve()
-      }, 200) // 200ms grace period for observer
+      images.forEach((img) => {
+        // Eagerly-loaded images that are immediately in the viewport might be missed
+        // by the observer, so we check their visibility manually.
+        // rect is relative to the viewport!
+        const rect = img.getBoundingClientRect()
+        const isVisible =
+          rect.top < window.innerHeight &&
+          rect.bottom >= 0 &&
+          rect.left < window.innerWidth &&
+          rect.right >= 0
+        if (isVisible) {
+          visibleImages.add(img)
+        }
+        observer.observe(img)
+      })
     })
 
-    const imagePromises = Array.from(visibleImages).map(async (img) => {
-      if (img.complete) {
-        await img.decode().catch(() => {}) // Ignore decoding errors.
-        return
-      }
-      // if image is not loaded, wait for it to load.
-      await new Promise<void>((resolve) => {
-        img.addEventListener("load", () => resolve(), { once: true })
-        img.addEventListener("error", () => resolve(), { once: true })
+    const imagePromises = Array.from(visibleImages).map((img) => {
+      return new Promise<void>((resolve) => {
+        const done = () => {
+          // ignore decoding errors
+          img.decode().finally(resolve)
+        }
+        if (img.complete) {
+          done()
+        } else {
+          img.addEventListener("load", done, { once: true })
+          img.addEventListener("error", done, { once: true })
+        }
       })
     })
 

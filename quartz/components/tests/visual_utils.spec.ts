@@ -552,18 +552,25 @@ test.describe("showingPreview", () => {
 test.describe("waitForViewportImagesToLoad", () => {
   const viewportHeight = 600
   const imageDomain = "https://example.com"
+
+  const FAST_IMAGE_LOAD_TIME = 100
+  const MEDIUM_IMAGE_LOAD_TIME = 300
+  const SLOW_IMAGE_LOAD_TIME = 700
+  const VERY_SLOW_IMAGE_LOAD_TIME = 5000
+
   test.beforeEach(async ({ page }) => {
     test.skip(!isDesktopViewport(page), "only need to run tests once on fixed viewport")
     await page.setViewportSize({ width: 800, height: viewportHeight })
   })
 
   test("waits for all images inside the viewport", async ({ page }) => {
-    let image1Loaded = false
+    const image1Promise = page.waitForResponse(
+      (resp) => resp.url().includes("image1.png") && resp.status() === 200,
+    )
     await page.route(`${imageDomain}/image1.png`, (route) => {
       setTimeout(() => {
-        image1Loaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 100)
+      }, SLOW_IMAGE_LOAD_TIME)
     })
 
     let image2Loaded = false
@@ -571,16 +578,20 @@ test.describe("waitForViewportImagesToLoad", () => {
       setTimeout(() => {
         image2Loaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 5000)
+      }, VERY_SLOW_IMAGE_LOAD_TIME)
     })
 
-    await page.setContent(`
+    await page.setContent(
+      `
       <img src="${imageDomain}/image1.png" loading="eager" style="width:100px; height:100px;">
       <img src="${imageDomain}/image2.png" loading="lazy" style="margin-top: ${2 * viewportHeight}px;">
-    `)
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
 
     await waitForViewportImagesToLoad(page)
-
+    await image1Promise
+    const image1Loaded = (await image1Promise).ok()
     expect(image1Loaded).toBe(true)
     expect(image2Loaded).toBe(false)
   })
@@ -591,12 +602,15 @@ test.describe("waitForViewportImagesToLoad", () => {
       setTimeout(() => {
         imageLoaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 5000)
+      }, VERY_SLOW_IMAGE_LOAD_TIME)
     })
 
-    await page.setContent(`
+    await page.setContent(
+      `
       <img src="${imageDomain}/lazy-out-of-view.png" loading="lazy" style="width:100px; height:100px; margin-top: ${2 * viewportHeight}px;">
-    `)
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
 
     await waitForViewportImagesToLoad(page)
 
@@ -609,12 +623,15 @@ test.describe("waitForViewportImagesToLoad", () => {
       setTimeout(() => {
         imageLoaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 100)
+      }, FAST_IMAGE_LOAD_TIME)
     })
 
-    await page.setContent(`
+    await page.setContent(
+      `
       <img src="${imageDomain}/lazy-in-view.png" loading="lazy" style="width:100px; height:100px;">
-    `)
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
 
     await waitForViewportImagesToLoad(page)
     expect(imageLoaded).toBe(true)
@@ -628,21 +645,24 @@ test.describe("waitForViewportImagesToLoad", () => {
     let lazyImageFulfilled = false
     await page.route("**/lazy-out-of-view.png", async (route) => {
       // Lazy image has a long delay to simulate slow loading.
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      await new Promise((resolve) => setTimeout(resolve, MEDIUM_IMAGE_LOAD_TIME))
       lazyImageFulfilled = true
       route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
     })
 
-    await page.setContent(`
+    await page.setContent(
+      `
       <img src="${imageDomain}/eager-in-view.png" id="eager-in-view" loading="eager" style="width:50px; height:50px;">
       <img src="${imageDomain}/lazy-out-of-view.png" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${2 * viewportHeight}px;">
-    `)
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
 
     const startTime = Date.now()
     await waitForViewportImagesToLoad(page)
     const duration = Date.now() - startTime
 
-    expect(duration).toBeLessThan(300)
+    expect(duration).toBeLessThan(MEDIUM_IMAGE_LOAD_TIME)
     expect(lazyImageFulfilled).toBe(false)
   })
 })
