@@ -11,7 +11,7 @@ import { type Theme } from "../scripts/darkmode"
  * by the IntersectionObserver.
  * @remarks This function is intended to be executed in the browser context.
  */
-const isImageInViewport = (img: HTMLImageElement, rootEl: Element | null): boolean => {
+export const doesImageIntersect = (img: HTMLImageElement, rootEl: Element | null): boolean => {
   const rect = img.getBoundingClientRect()
   if (rootEl) {
     const rootRect = rootEl.getBoundingClientRect()
@@ -160,7 +160,7 @@ export async function waitForViewportImagesToLoad(
       // Re-hydrate the functions in the browser context
       const isImgInViewport = new Function(
         "return " + _isImageInViewport,
-      )() as typeof isImageInViewport
+      )() as typeof doesImageIntersect
       const getVisImages = new Function("return " + _getVisibleImages)() as typeof getVisibleImages
       const waitImgLoad = new Function("return " + _waitForImageLoad)() as typeof waitForImageLoad
 
@@ -171,7 +171,7 @@ export async function waitForViewportImagesToLoad(
     },
     {
       root: rootHandle,
-      _isImageInViewport: isImageInViewport.toString(),
+      _isImageInViewport: doesImageIntersect.toString(),
       _getVisibleImages: getVisibleImages.toString(),
       _waitForImageLoad: waitForImageLoad.toString(),
     },

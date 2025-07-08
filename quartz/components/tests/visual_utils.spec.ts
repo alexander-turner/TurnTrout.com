@@ -14,6 +14,7 @@ import {
   pauseMediaElements,
   showingPreview,
   waitForViewportImagesToLoad,
+  doesImageIntersect,
 } from "./visual_utils"
 
 // A 1x1 transparent PNG, crucial for getting a valid naturalWidth > 0 in tests.
@@ -722,5 +723,102 @@ test.describe("waitForViewportImagesToLoad", () => {
 
     // The function should return immediately without waiting for the scrolled-out-of-view image.
     expect(imageInRoot.loaded).toBe(false)
+  })
+})
+
+test.describe("doesImageIntersect", () => {
+  const evaluateDoesImageIntersect = (
+    page: Page,
+    imgId: string,
+    rootId: string | null,
+  ): Promise<boolean> => {
+    return page.evaluate(
+      ({ func, imgId, rootId }) => {
+        const doesImageIntersectFn = new Function(`return ${func}`)() as (
+          img: HTMLImageElement,
+          rootEl: Element | null,
+        ) => boolean
+        const img = document.getElementById(imgId) as HTMLImageElement
+        const root = rootId ? document.getElementById(rootId) : null
+        return doesImageIntersectFn(img, root)
+      },
+      { func: doesImageIntersect.toString(), imgId, rootId },
+    )
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 500 })
+    await page.setContent(`
+      <style>
+        body { margin: 0; }
+        #root {
+          position: absolute;
+          top: 100px;
+          left: 100px;
+          width: 300px;
+          height: 300px;
+        }
+        img {
+          position: absolute;
+          width: 50px;
+          height: 50px;
+        }
+      </style>
+      <!-- inside root -->
+      <div id="root">
+        <img id="img-inside" style="top: 150px; left: 150px;">
+        <img id="img-partially-in" style="top: 280px; left: 280px;">
+        <img id="img-on-edge" style="top: 0; left: 0;">
+      </div>
+      
+      <!-- viewport-relative -->
+      <img id="img-in-viewport" style="top: 10px; left: 10px;">
+      <img id="img-outside-root" style="top: 20px; left: 20px;">
+      <img id="img-outside-viewport" style="top: 600px; left: 600px;">
+      <img id="img-partially-in-viewport" style="top: 480px; left: 10px;">
+    `)
+  })
+
+  test.describe("with viewport as boundary", () => {
+    test("should return true for an image fully inside the viewport", async ({ page }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-in-viewport", null)
+      expect(result).toBe(true)
+    })
+
+    test("should return true for an image partially inside the viewport", async ({ page }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-partially-in-viewport", null)
+      expect(result).toBe(true)
+    })
+
+    test("should return false for an image fully outside the viewport", async ({ page }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-outside-viewport", null)
+      expect(result).toBe(false)
+    })
+  })
+
+  test.describe("with root element as boundary", () => {
+    test("should return true for an image fully inside the root element", async ({ page }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-inside", "root")
+      expect(result).toBe(true)
+    })
+
+    test("should return true for an image partially intersecting the root element", async ({
+      page,
+    }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-partially-in", "root")
+      expect(result).toBe(true)
+    })
+
+    test("should return true for an image on the edge of the root element", async ({ page }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-on-edge", "root")
+      expect(result).toBe(true)
+    })
+
+    test("should return false for an image inside viewport but outside root element", async ({
+      page,
+    }) => {
+      const result = await evaluateDoesImageIntersect(page, "img-outside-root", "root")
+      expect(result).toBe(false)
+    })
   })
 })
