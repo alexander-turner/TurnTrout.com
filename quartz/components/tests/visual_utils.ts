@@ -5,6 +5,95 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
+/**
+ * Checks if an image is currently within the visible boundaries of the viewport or a specified root element.
+ * This is a manual check and is especially useful for images that are loaded eagerly and might be missed
+ * by the IntersectionObserver.
+ * @remarks This function is intended to be executed in the browser context.
+ */
+const isImageInViewport = (img: HTMLImageElement, rootEl: Element | null): boolean => {
+  const rect = img.getBoundingClientRect()
+  if (rootEl) {
+    const rootRect = rootEl.getBoundingClientRect()
+    // Check if image intersects with the root element's dimensions
+    return (
+      rect.top < rootRect.bottom &&
+      rect.bottom > rootRect.top &&
+      rect.left < rootRect.right &&
+      rect.right > rootRect.left
+    )
+  } else {
+    // Check if image intersects with the viewport dimensions
+    return (
+      rect.top < window.innerHeight &&
+      rect.bottom >= 0 &&
+      rect.left < window.innerWidth &&
+      rect.right >= 0
+    )
+  }
+}
+
+/**
+ * Gathers all images that are currently visible in the viewport or a specified root element.
+ * It uses a combination of IntersectionObserver for efficiency and a manual check for robustness.
+ * @remarks This function is intended to be executed in the browser context.
+ */
+const getVisibleImages = (
+  images: HTMLImageElement[],
+  rootEl: Element | null,
+  _isImageInViewport: (img: HTMLImageElement, rootEl: Element | null) => boolean,
+): Promise<Set<HTMLImageElement>> => {
+  const visibleImages = new Set<HTMLImageElement>()
+
+  // check for any images that are already visible
+  for (const img of images) {
+    if (_isImageInViewport(img, rootEl)) {
+      visibleImages.add(img)
+    }
+  }
+
+  const processedImages = new Set<HTMLImageElement>()
+  return new Promise<Set<HTMLImageElement>>((resolve) => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visibleImages.add(entry.target as HTMLImageElement)
+          }
+          processedImages.add(entry.target as HTMLImageElement)
+        }
+
+        if (processedImages.size === images.length) {
+          observer.disconnect()
+          // timeout to ensure the event loop completes, addressing potential race conditions
+          setTimeout(() => resolve(visibleImages), 0)
+        }
+      },
+      { root: rootEl, threshold: 0 },
+    )
+    images.forEach((img) => observer.observe(img))
+  })
+}
+
+/**
+ * Waits for a single image to finish loading. It handles cases where the image is already complete.
+ * @remarks This function is intended to be executed in the browser context.
+ */
+const waitForImageLoad = (img: HTMLImageElement): Promise<void> => {
+  return new Promise<void>((resolve) => {
+    const done = () => {
+      // decoding is an async operation that can fail, but we want to resolve regardless
+      img.decode().finally(resolve)
+    }
+    if (img.complete) {
+      done()
+    } else {
+      img.addEventListener("load", done, { once: true })
+      img.addEventListener("error", done, { once: true })
+    }
+  })
+}
+
 // TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
@@ -64,79 +153,29 @@ export async function waitForViewportImagesToLoad(
   rootElement?: Locator,
 ): Promise<void> {
   const rootHandle = rootElement ? await rootElement.elementHandle() : null
-  await page.evaluate(async (root: Element | null) => {
-    const images = Array.from(root ? root.getElementsByTagName("img") : document.images)
+  await page.evaluate(
+    async ({ root, _isImageInViewport, _getVisibleImages, _waitForImageLoad }) => {
+      const allImages = Array.from(root ? root.querySelectorAll("img") : document.images)
 
-    const visibleImages = new Set<HTMLImageElement>()
-    const processedImages = new Set<HTMLImageElement>()
-    // resolve when the IntersectionObserver has processed all images
-    await new Promise<void>((resolve) => {
-      // TODO test helpers somehow
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              visibleImages.add(entry.target as HTMLImageElement)
-            }
-            processedImages.add(entry.target as HTMLImageElement)
-          })
+      // Re-hydrate the functions in the browser context
+      const isImgInViewport = new Function(
+        "return " + _isImageInViewport,
+      )() as typeof isImageInViewport
+      const getVisImages = new Function("return " + _getVisibleImages)() as typeof getVisibleImages
+      const waitImgLoad = new Function("return " + _waitForImageLoad)() as typeof waitForImageLoad
 
-          // If all images have been processed, we can stop observing.
-          if (processedImages.size === images.length) {
-            observer.disconnect()
-            resolve()
-          }
-        },
-        // Relative to root element, or viewport if root is null
-        { root, threshold: 0 },
-      )
+      const visibleImages = await getVisImages(allImages, root, isImgInViewport)
+      const imageLoadPromises = Array.from(visibleImages).map(waitImgLoad)
 
-      images.forEach((img) => {
-        // Eagerly-loaded images that are immediately in the viewport might be missed
-        // by the observer, so we check their visibility manually.
-        // rect is relative to the viewport!
-        const rect = img.getBoundingClientRect()
-        let isVisible: boolean
-        if (root) {
-          const rootRect = root.getBoundingClientRect()
-          isVisible =
-            rect.top < rootRect.bottom &&
-            rect.bottom > rootRect.top &&
-            rect.left < rootRect.right &&
-            rect.right > rootRect.left
-        } else {
-          isVisible =
-            rect.top < window.innerHeight &&
-            rect.bottom >= 0 &&
-            rect.left < window.innerWidth &&
-            rect.right >= 0
-        }
-
-        if (isVisible) {
-          visibleImages.add(img)
-        }
-        // register for observation later
-        observer.observe(img)
-      })
-    })
-
-    const imagePromises = Array.from(visibleImages).map((img) => {
-      return new Promise<void>((resolve) => {
-        const done = () => {
-          // ignore decoding errors
-          img.decode().finally(resolve)
-        }
-        if (img.complete) {
-          done()
-        } else {
-          img.addEventListener("load", done, { once: true })
-          img.addEventListener("error", done, { once: true })
-        }
-      })
-    })
-
-    await Promise.all(imagePromises)
-  }, rootHandle)
+      await Promise.all(imageLoadPromises)
+    },
+    {
+      root: rootHandle,
+      _isImageInViewport: isImageInViewport.toString(),
+      _getVisibleImages: getVisibleImages.toString(),
+      _waitForImageLoad: waitForImageLoad.toString(),
+    },
+  )
 }
 
 export interface RegressionScreenshotOptions {

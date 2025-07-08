@@ -1,4 +1,4 @@
-import { test, expect, type PageScreenshotOptions } from "@playwright/test"
+import { test, expect, type PageScreenshotOptions, type Page } from "@playwright/test"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
@@ -563,97 +563,94 @@ test.describe("waitForViewportImagesToLoad", () => {
     await page.setViewportSize({ width: 800, height: viewportHeight })
   })
 
-  test("waits for all images inside the viewport", async ({ page }) => {
-    const image1Promise = page.waitForResponse(
-      (resp) => resp.url().includes("image1.png") && resp.status() === 200,
-    )
-    await page.route(`${imageDomain}/image1.png`, (route) => {
+  async function routeURL(
+    page: Page,
+    url: string,
+    imageLoadTime: number,
+    flag: { loaded: boolean },
+  ) {
+    await page.route(`**/${url}`, (route) => {
       setTimeout(() => {
+        flag.loaded = true
         route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, SLOW_IMAGE_LOAD_TIME)
+      }, imageLoadTime)
     })
+  }
 
-    let image2Loaded = false
-    await page.route(`${imageDomain}/image2.png`, (route) => {
-      setTimeout(() => {
-        image2Loaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, VERY_SLOW_IMAGE_LOAD_TIME)
-    })
+  test("waits for all images inside the viewport", async ({ page }) => {
+    const image1 = { loaded: false }
+    const image1Name = "image1.png"
+    await routeURL(page, image1Name, SLOW_IMAGE_LOAD_TIME, image1)
+
+    const image2 = { loaded: false }
+    const image2Name = "image2.png"
+    await routeURL(page, image2Name, VERY_SLOW_IMAGE_LOAD_TIME, image2)
 
     await page.setContent(
       `
-      <img src="${imageDomain}/image1.png" loading="eager" style="width:100px; height:100px;">
-      <img src="${imageDomain}/image2.png" loading="lazy" style="margin-top: ${2 * viewportHeight}px;">
+      <img src="${imageDomain}/${image1Name}" loading="eager" style="width:100px; height:100px;">
+      <img src="${imageDomain}/${image2Name}" loading="lazy" style="margin-top: ${
+        2 * viewportHeight
+      }px;">
     `,
       { waitUntil: "domcontentloaded" },
     )
 
     await waitForViewportImagesToLoad(page)
-    await image1Promise
-    const image1Loaded = (await image1Promise).ok()
-    expect(image1Loaded).toBe(true)
-    expect(image2Loaded).toBe(false)
+    expect(image1.loaded).toBe(true)
+    expect(image2.loaded).toBe(false)
   })
 
   test("does not wait for lazy images outside the viewport", async ({ page }) => {
-    let imageLoaded = false
-    await page.route("**/lazy-out-of-view.png", (route) => {
-      setTimeout(() => {
-        imageLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, VERY_SLOW_IMAGE_LOAD_TIME)
-    })
+    const image = { loaded: false }
+    const imageName = "lazy-out-of-view.png"
+    await routeURL(page, imageName, VERY_SLOW_IMAGE_LOAD_TIME, image)
 
     await page.setContent(
       `
-      <img src="${imageDomain}/lazy-out-of-view.png" loading="lazy" style="width:100px; height:100px; margin-top: ${2 * viewportHeight}px;">
+      <img src="${imageDomain}/${imageName}" loading="lazy" style="width:100px; height:100px; margin-top: ${
+        2 * viewportHeight
+      }px;">
     `,
       { waitUntil: "domcontentloaded" },
     )
 
     await waitForViewportImagesToLoad(page)
-
-    expect(imageLoaded).toBe(false)
+    expect(image.loaded).toBe(false)
   })
 
   test("waits for lazy images inside the viewport", async ({ page }) => {
-    let imageLoaded = false
-    await page.route("**/lazy-in-view.png", (route) => {
-      setTimeout(() => {
-        imageLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, FAST_IMAGE_LOAD_TIME)
-    })
+    const image = { loaded: false }
+    const imageName = "lazy-in-view.png"
+    await routeURL(page, imageName, FAST_IMAGE_LOAD_TIME, image)
 
     await page.setContent(
       `
-      <img src="${imageDomain}/lazy-in-view.png" loading="lazy" style="width:100px; height:100px;">
+      <img src="${imageDomain}/${imageName}" loading="lazy" style="width:100px; height:100px;">
     `,
       { waitUntil: "domcontentloaded" },
     )
 
     await waitForViewportImagesToLoad(page)
-    expect(imageLoaded).toBe(true)
+    expect(image.loaded).toBe(true)
   })
 
   test("returns before an out-of-viewport lazy image finishes loading", async ({ page }) => {
+    // This image loads instantly, so we don't need the helper's delay logic
     await page.route("**/eager-in-view.png", (route) => {
       route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
     })
 
-    let lazyImageFulfilled = false
-    await page.route("**/lazy-out-of-view.png", async (route) => {
-      // Lazy image has a long delay to simulate slow loading.
-      await new Promise((resolve) => setTimeout(resolve, MEDIUM_IMAGE_LOAD_TIME))
-      lazyImageFulfilled = true
-      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-    })
+    const lazyImage = { loaded: false }
+    const lazyImageName = "lazy-out-of-view.png"
+    await routeURL(page, lazyImageName, MEDIUM_IMAGE_LOAD_TIME, lazyImage)
 
     await page.setContent(
       `
       <img src="${imageDomain}/eager-in-view.png" id="eager-in-view" loading="eager" style="width:50px; height:50px;">
-      <img src="${imageDomain}/lazy-out-of-view.png" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${2 * viewportHeight}px;">
+      <img src="${imageDomain}/${lazyImageName}" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${
+        2 * viewportHeight
+      }px;">
     `,
       { waitUntil: "domcontentloaded" },
     )
@@ -663,34 +660,26 @@ test.describe("waitForViewportImagesToLoad", () => {
     const duration = Date.now() - startTime
 
     expect(duration).toBeLessThan(MEDIUM_IMAGE_LOAD_TIME)
-    expect(lazyImageFulfilled).toBe(false)
+    expect(lazyImage.loaded).toBe(false)
   })
 
   test("waits only for images inside the root element", async ({ page }) => {
-    let imageInRootLoaded = false
-    await page.route(`**/${imageDomain}/image-in-root.png`, (route) => {
-      setTimeout(() => {
-        imageInRootLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, SLOW_IMAGE_LOAD_TIME)
-    })
+    const imageInRoot = { loaded: false }
+    const imageInRootName = "image-in-root.png"
+    await routeURL(page, imageInRootName, SLOW_IMAGE_LOAD_TIME, imageInRoot)
 
-    let imageOutsideRootLoaded = false
-    await page.route(`**/${imageDomain}/image-outside-root.png`, (route) => {
-      setTimeout(() => {
-        imageOutsideRootLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, VERY_SLOW_IMAGE_LOAD_TIME)
-    })
+    const imageOutsideRoot = { loaded: false }
+    const outsideRootName = "image-outside-root.png"
+    await routeURL(page, outsideRootName, VERY_SLOW_IMAGE_LOAD_TIME, imageOutsideRoot)
 
     // image-outside-root is in the viewport, but outside the root element
     await page.setContent(
       `
       <div style="display: flex;">
         <div id="root-container" style="width: 200px; height: 200px; overflow: hidden;">
-          <img src="${imageDomain}/image-in-root.png" style="width:100px; height:100px;">
+          <img src="${imageDomain}/${imageInRootName}" style="width:100px; height:100px;">
         </div>
-        <img src="${imageDomain}/image-outside-root.png" style="width:100px; height:100px;">
+        <img src="${imageDomain}/${outsideRootName}" style="width:100px; height:100px;">
       </div>
     `,
       { waitUntil: "domcontentloaded" },
@@ -706,7 +695,32 @@ test.describe("waitForViewportImagesToLoad", () => {
     const buffer = 300
     expect(duration).toBeGreaterThanOrEqual(SLOW_IMAGE_LOAD_TIME - buffer)
     expect(duration).toBeLessThan(VERY_SLOW_IMAGE_LOAD_TIME - buffer)
-    expect(imageInRootLoaded).toBe(true)
-    expect(imageOutsideRootLoaded).toBe(false)
+    expect(imageInRoot.loaded).toBe(true)
+    expect(imageOutsideRoot.loaded).toBe(false)
+  })
+
+  // NOTE flaky on safari
+  test("waits only for images visible within the root's bounding box", async ({ page }) => {
+    const imageInRoot = { loaded: false }
+    const imageName = "image-in-root-scrolled.png"
+    await routeURL(page, imageName, FAST_IMAGE_LOAD_TIME, imageInRoot)
+
+    // This image is inside the root element DOM-wise, but scrolled out of view.
+    // A correct implementation of the manual check will not see it as visible.
+    await page.setContent(
+      `
+      <div id="root-container" style="width: 200px; height: 200px; overflow: scroll;">
+        <div style="height: 500px;"></div> 
+        <img src="${imageDomain}/${imageName}" style="width:100px; height:100px;">
+      </div>
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
+
+    const rootElement = page.locator("#root-container")
+    await waitForViewportImagesToLoad(page, rootElement)
+
+    // The function should return immediately without waiting for the scrolled-out-of-view image.
+    expect(imageInRoot.loaded).toBe(false)
   })
 })
