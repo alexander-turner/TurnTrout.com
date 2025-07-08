@@ -48,20 +48,17 @@ const createExpectedSpan = (
   text: string,
   imgPath: string,
   extraMarginLeft?: boolean,
-): Record<string, unknown> => ({
-  type: "element",
-  tagName: "span",
-  properties: { className: "favicon-span" },
-  children: [
-    { type: "text", value: text },
-    {
-      ...linkfavicons.createFaviconElement(imgPath),
-      properties: {
-        class: `favicon${extraMarginLeft ? " close-text" : ""}`,
-      },
-    },
-  ],
-})
+): Record<string, unknown> => {
+  const faviconElement = linkfavicons.createFaviconElement(imgPath)
+  faviconElement.properties.class = `favicon${extraMarginLeft ? " close-text" : ""}`
+
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: "favicon-span" },
+    children: [{ type: "text", value: text }, faviconElement],
+  }
+}
 
 describe("Favicon Utilities", () => {
   describe("MaybeSaveFavicon", () => {
@@ -233,6 +230,7 @@ describe("Favicon Utilities", () => {
           src: urlString,
           class: "favicon",
           alt: description,
+          loading: "lazy",
         },
       })
     })

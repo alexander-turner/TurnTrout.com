@@ -261,6 +261,7 @@ export interface FaviconNode extends Element {
     class: string
     alt: string
     style?: string
+    loading?: "lazy" | "eager"
   }
 }
 
@@ -281,6 +282,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
       src: urlString,
       class: "favicon",
       alt: description,
+      loading: "lazy",
     },
   }
 }
