@@ -5,95 +5,6 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
-/**
- * Checks if an image is currently within the visible boundaries of the viewport or a specified root element.
- * This is a manual check and is especially useful for images that are loaded eagerly and might be missed
- * by the IntersectionObserver.
- * @remarks This function is intended to be executed in the browser context.
- */
-export const doesImageIntersect = (img: HTMLImageElement, rootEl: Element | null): boolean => {
-  const rect = img.getBoundingClientRect()
-  if (rootEl) {
-    const rootRect = rootEl.getBoundingClientRect()
-    // Check if image intersects with the root element's dimensions
-    return (
-      rect.top < rootRect.bottom &&
-      rect.bottom > rootRect.top &&
-      rect.left < rootRect.right &&
-      rect.right > rootRect.left
-    )
-  } else {
-    // Check if image intersects with the viewport dimensions
-    return (
-      rect.top < window.innerHeight &&
-      rect.bottom >= 0 &&
-      rect.left < window.innerWidth &&
-      rect.right >= 0
-    )
-  }
-}
-
-/**
- * Gathers all images that are currently visible in the viewport or a specified root element.
- * It uses a combination of IntersectionObserver for efficiency and a manual check for robustness.
- * @remarks This function is intended to be executed in the browser context.
- */
-export const getVisibleImages = (
-  images: HTMLImageElement[],
-  rootEl: Element | null,
-  _isImageInViewport: (img: HTMLImageElement, rootEl: Element | null) => boolean,
-): Promise<Set<HTMLImageElement>> => {
-  const visibleImages = new Set<HTMLImageElement>()
-
-  // check for any images that are already visible
-  for (const img of images) {
-    if (_isImageInViewport(img, rootEl)) {
-      visibleImages.add(img)
-    }
-  }
-
-  const processedImages = new Set<HTMLImageElement>()
-  return new Promise<Set<HTMLImageElement>>((resolve) => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            visibleImages.add(entry.target as HTMLImageElement)
-          }
-          processedImages.add(entry.target as HTMLImageElement)
-        }
-
-        if (processedImages.size === images.length) {
-          observer.disconnect()
-          // timeout to ensure the event loop completes, addressing potential race conditions
-          setTimeout(() => resolve(visibleImages), 0)
-        }
-      },
-      { root: rootEl, threshold: 0 },
-    )
-    images.forEach((img) => observer.observe(img))
-  })
-}
-
-/**
- * Waits for a single image to finish loading. It handles cases where the image is already complete.
- * @remarks This function is intended to be executed in the browser context.
- */
-const waitForImageLoad = (img: HTMLImageElement): Promise<void> => {
-  return new Promise<void>((resolve) => {
-    const done = () => {
-      // decoding is an async operation that can fail, but we want to resolve regardless
-      img.decode().finally(resolve)
-    }
-    if (img.complete) {
-      done()
-    } else {
-      img.addEventListener("load", done, { once: true })
-      img.addEventListener("error", done, { once: true })
-    }
-  })
-}
-
 // TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
@@ -148,42 +59,19 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
-export async function waitForViewportImagesToLoad(
-  page: Page,
-  rootElement?: Locator,
-): Promise<void> {
-  const rootHandle = rootElement ? await rootElement.elementHandle() : null
-  await page.evaluate(
-    async ({ root, _isImageInViewport, _getVisibleImages, _waitForImageLoad }) => {
-      const allImages = Array.from(root ? root.querySelectorAll("img") : document.images)
-
-      // Re-hydrate the functions in the browser context
-      const isImgInViewport = new Function(
-        "return " + _isImageInViewport,
-      )() as typeof doesImageIntersect
-      const getVisImages = new Function("return " + _getVisibleImages)() as typeof getVisibleImages
-      const waitImgLoad = new Function("return " + _waitForImageLoad)() as typeof waitForImageLoad
-
-      const visibleImages = await getVisImages(allImages, root, isImgInViewport)
-      const imageLoadPromises = Array.from(visibleImages).map(waitImgLoad)
-
-      await Promise.all(imageLoadPromises)
-    },
-    {
-      root: rootHandle,
-      _isImageInViewport: doesImageIntersect.toString(),
-      _getVisibleImages: getVisibleImages.toString(),
-      _waitForImageLoad: waitForImageLoad.toString(),
-    },
-  )
-}
-
 export interface RegressionScreenshotOptions {
   element?: string | Locator
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
-  skipViewportImagesLoad?: boolean
+}
+
+export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) {
+  const browserName = testInfo.project.name
+  const sanitizedTitle = sanitize(testInfo.title)
+  const sanitizedSuffix = sanitize(screenshotSuffix)
+  const sanitizedBrowserName = sanitize(browserName)
+  return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 }
 
 export async function takeRegressionScreenshot(
@@ -196,47 +84,44 @@ export async function takeRegressionScreenshot(
     await pauseMediaElements(page)
   }
 
-  if (!options?.skipViewportImagesLoad) {
-    const element = options?.element
-      ? typeof options.element === "string"
-        ? page.locator(options.element)
-        : options.element
-      : undefined
-    await waitForViewportImagesToLoad(page, element)
-  }
-
-  const browserName = testInfo.project.name
-  const sanitizedTitle = sanitize(testInfo.title)
-  const sanitizedSuffix = sanitize(screenshotSuffix)
-  const sanitizedBrowserName = sanitize(browserName)
-  const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
+  // Separate out the element option so we don't pass it to the screenshot API
+  const { element: _elementOpt, ...remainingOptions } = options ?? {}
+  void _elementOpt // prevent unused variable lint error
 
   const screenshotOptions = {
-    path: screenshotPath,
     animations: "disabled" as const,
-    ...options,
+    ...remainingOptions,
   }
 
-  if (options?.clip) {
-    delete screenshotOptions.element
-    return page.screenshot(screenshotOptions)
-  } else if (options?.element) {
-    const element =
+  let screenshotBuffer: Buffer
+  const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
+  if (options?.element) {
+    const elementLocator =
       typeof options.element === "string" ? page.locator(options.element) : options.element
-    return element.screenshot(screenshotOptions)
+
+    await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
+
+    screenshotBuffer = await elementLocator.screenshot(screenshotOptions)
   } else {
-    // Clip to clientWidth to avoid WebKit gutter
-    const viewportSize = page.viewportSize()
-    if (!viewportSize) throw new Error("Could not get viewport size for clipping")
-    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
-    screenshotOptions.clip = {
-      x: 0,
-      y: 0,
-      width: clientWidth,
-      height: viewportSize.height,
+    // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
+    if (!options?.clip) {
+      const viewportSize = page.viewportSize()
+      if (!viewportSize) throw new Error("Could not get viewport size for clipping")
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      screenshotOptions.clip = {
+        x: 0,
+        y: 0,
+        width: clientWidth,
+        height: viewportSize.height,
+      }
     }
-    return page.screenshot(screenshotOptions)
+
+    await expect(page).toHaveScreenshot(screenshotName, screenshotOptions)
+
+    screenshotBuffer = await page.screenshot(screenshotOptions)
   }
+
+  return screenshotBuffer
 }
 
 // TODO test
@@ -262,8 +147,7 @@ export async function takeScreenshotAfterElement(
   const parentBox = await parent.boundingBox()
   if (!parentBox) throw new Error("Could not find parent element")
 
-  await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
-    element: parent,
+  await takeRegressionScreenshot(page, testInfo, `section-${testNameSuffix ?? ""}`, {
     clip: {
       x: parentBox.x,
       y: box.y,

@@ -1,4 +1,5 @@
-import { test, expect, type PageScreenshotOptions, type Page } from "@playwright/test"
+import { test, expect, type PageScreenshotOptions } from "@playwright/test"
+import { promises as fs } from "fs"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
@@ -13,16 +14,8 @@ import {
   waitForThemeTransition,
   pauseMediaElements,
   showingPreview,
-  waitForViewportImagesToLoad,
-  doesImageIntersect,
-  getVisibleImages,
+  getScreenshotName,
 } from "./visual_utils"
-
-// A 1x1 transparent PNG, crucial for getting a valid naturalWidth > 0 in tests.
-const tinyPng = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-  "base64",
-)
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
@@ -257,25 +250,17 @@ test.describe("takeRegressionScreenshot", () => {
     `)
   })
 
+  // eslint-disable-next-line playwright/expect-expect
   test("screenshot name includes browser and viewport info", async ({ page }, testInfo) => {
-    // Spy on the screenshot call to capture the options
-    const originalScreenshot = page.screenshot.bind(page)
-    let capturedOptions: PageScreenshotOptions = {}
-    page.screenshot = async (options?: PageScreenshotOptions) => {
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      capturedOptions = options ?? {}
-      return originalScreenshot(options)
-    }
-
     // Since we're mocking the page.screenshot, need to pass in clip option
     await takeRegressionScreenshot(page, testInfo, "test-suffix", {
       clip: { x: 0, y: 0, width: 500, height: 500 },
     })
 
-    expect(capturedOptions).not.toBeNull()
-    expect(capturedOptions.path).toMatch(
-      new RegExp(`lost-pixel/.*-test-suffix-${testInfo.project.name}\\.png$`),
-    )
+    const screenshotName = getScreenshotName(testInfo, "test-suffix")
+    const expectedPath = testInfo.snapshotPath(screenshotName)
+
+    await fs.access(expectedPath)
   })
 
   test("generates full page screenshot with correct dimensions", async ({ page }, testInfo) => {
@@ -420,11 +405,6 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(capturedOptions).toBeDefined()
     test.fail(!capturedOptions, "Captured options are undefined")
 
-    expect(capturedOptions!.path).toBeDefined()
-    expect(capturedOptions!.path).toContain(testSuffix)
-    expect(capturedOptions!.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
-    expect(capturedOptions!.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
-
     // Verify the clip coordinates and dimensions
     const startElementBox = await startElement.boundingBox()
     const parentElementBox = await parentElement.boundingBox()
@@ -549,362 +529,4 @@ test.describe("showingPreview", () => {
       expect(showingPreview(page)).toBe(expected)
     })
   }
-})
-
-test.describe("waitForViewportImagesToLoad", () => {
-  const viewportHeight = 600
-  const imageDomain = "https://example.com"
-
-  const FAST_IMAGE_LOAD_TIME = 100
-  const MEDIUM_IMAGE_LOAD_TIME = 300
-  const SLOW_IMAGE_LOAD_TIME = 700
-  const VERY_SLOW_IMAGE_LOAD_TIME = 5000
-
-  test.beforeEach(async ({ page }) => {
-    test.skip(!isDesktopViewport(page), "only need to run tests once on fixed viewport")
-    await page.setViewportSize({ width: 800, height: viewportHeight })
-  })
-
-  async function routeURL(
-    page: Page,
-    url: string,
-    imageLoadTime: number,
-    flag: { loaded: boolean },
-  ) {
-    await page.route(`**/${url}`, (route) => {
-      setTimeout(() => {
-        flag.loaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, imageLoadTime)
-    })
-  }
-
-  test("waits for all images inside the viewport", async ({ page }) => {
-    const image1 = { loaded: false }
-    const image1Name = "image1.png"
-    await routeURL(page, image1Name, SLOW_IMAGE_LOAD_TIME, image1)
-
-    const image2 = { loaded: false }
-    const image2Name = "image2.png"
-    await routeURL(page, image2Name, VERY_SLOW_IMAGE_LOAD_TIME, image2)
-
-    await page.setContent(
-      `
-      <img src="${imageDomain}/${image1Name}" loading="eager" style="width:100px; height:100px;">
-      <img src="${imageDomain}/${image2Name}" loading="lazy" style="margin-top: ${
-        2 * viewportHeight
-      }px;">
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    await waitForViewportImagesToLoad(page)
-    expect(image1.loaded).toBe(true)
-    expect(image2.loaded).toBe(false)
-  })
-
-  test("does not wait for lazy images outside the viewport", async ({ page }) => {
-    const image = { loaded: false }
-    const imageName = "lazy-out-of-view.png"
-    await routeURL(page, imageName, VERY_SLOW_IMAGE_LOAD_TIME, image)
-
-    await page.setContent(
-      `
-      <img src="${imageDomain}/${imageName}" loading="lazy" style="width:100px; height:100px; margin-top: ${
-        2 * viewportHeight
-      }px;">
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    await waitForViewportImagesToLoad(page)
-    expect(image.loaded).toBe(false)
-  })
-
-  test("waits for lazy images inside the viewport", async ({ page }) => {
-    const image = { loaded: false }
-    const imageName = "lazy-in-view.png"
-    await routeURL(page, imageName, FAST_IMAGE_LOAD_TIME, image)
-
-    await page.setContent(
-      `
-      <img src="${imageDomain}/${imageName}" loading="lazy" style="width:100px; height:100px;">
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    await waitForViewportImagesToLoad(page)
-    expect(image.loaded).toBe(true)
-  })
-
-  test("returns before an out-of-viewport lazy image finishes loading", async ({ page }) => {
-    // This image loads instantly, so we don't need the helper's delay logic
-    await page.route("**/eager-in-view.png", (route) => {
-      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-    })
-
-    const lazyImage = { loaded: false }
-    const lazyImageName = "lazy-out-of-view.png"
-    await routeURL(page, lazyImageName, MEDIUM_IMAGE_LOAD_TIME, lazyImage)
-
-    await page.setContent(
-      `
-      <img src="${imageDomain}/eager-in-view.png" id="eager-in-view" loading="eager" style="width:50px; height:50px;">
-      <img src="${imageDomain}/${lazyImageName}" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${
-        2 * viewportHeight
-      }px;">
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    const startTime = Date.now()
-    await waitForViewportImagesToLoad(page)
-    const duration = Date.now() - startTime
-
-    expect(duration).toBeLessThan(MEDIUM_IMAGE_LOAD_TIME)
-    expect(lazyImage.loaded).toBe(false)
-  })
-
-  test("waits only for images inside the root element", async ({ page }) => {
-    const imageInRoot = { loaded: false }
-    const imageInRootName = "image-in-root.png"
-    await routeURL(page, imageInRootName, SLOW_IMAGE_LOAD_TIME, imageInRoot)
-
-    const imageOutsideRoot = { loaded: false }
-    const outsideRootName = "image-outside-root.png"
-    await routeURL(page, outsideRootName, VERY_SLOW_IMAGE_LOAD_TIME, imageOutsideRoot)
-
-    // image-outside-root is in the viewport, but outside the root element
-    await page.setContent(
-      `
-      <div style="display: flex;">
-        <div id="root-container" style="width: 200px; height: 200px; overflow: hidden;">
-          <img src="${imageDomain}/${imageInRootName}" style="width:100px; height:100px;">
-        </div>
-        <img src="${imageDomain}/${outsideRootName}" style="width:100px; height:100px;">
-      </div>
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    const rootElement = page.locator("#root-container")
-    const startTime = Date.now()
-    await waitForViewportImagesToLoad(page, rootElement)
-    const duration = Date.now() - startTime
-
-    // Loosely check that the function waited for the slow image, but not the very slow one.
-    // Using a buffer to account for test execution overhead.
-    const buffer = 300
-    expect(duration).toBeGreaterThanOrEqual(SLOW_IMAGE_LOAD_TIME - buffer)
-    expect(duration).toBeLessThan(VERY_SLOW_IMAGE_LOAD_TIME - buffer)
-    expect(imageInRoot.loaded).toBe(true)
-    expect(imageOutsideRoot.loaded).toBe(false)
-  })
-
-  // NOTE flaky on safari
-  test("waits only for images visible within the root's bounding box", async ({ page }) => {
-    const imageInRoot = { loaded: false }
-    const imageName = "image-in-root-scrolled.png"
-    await routeURL(page, imageName, FAST_IMAGE_LOAD_TIME, imageInRoot)
-
-    // This image is inside the root element DOM-wise, but scrolled out of view.
-    // A correct implementation of the manual check will not see it as visible.
-    await page.setContent(
-      `
-      <div id="root-container" style="width: 200px; height: 200px; overflow: scroll;">
-        <div style="height: 500px;"></div> 
-        <img src="${imageDomain}/${imageName}" style="width:100px; height:100px;">
-      </div>
-    `,
-      { waitUntil: "domcontentloaded" },
-    )
-
-    const rootElement = page.locator("#root-container")
-    await waitForViewportImagesToLoad(page, rootElement)
-
-    // The function should return immediately without waiting for the scrolled-out-of-view image.
-    expect(imageInRoot.loaded).toBe(false)
-  })
-})
-
-test.describe("doesImageIntersect", () => {
-  const evaluateDoesImageIntersect = (
-    page: Page,
-    imgId: string,
-    rootId: string | null,
-  ): Promise<boolean> => {
-    return page.evaluate(
-      ({ func, imgId, rootId }) => {
-        const doesImageIntersectFn = new Function(`return ${func}`)() as (
-          img: HTMLImageElement,
-          rootEl: Element | null,
-        ) => boolean
-        const img = document.getElementById(imgId) as HTMLImageElement
-        const root = rootId ? document.getElementById(rootId) : null
-        return doesImageIntersectFn(img, root)
-      },
-      { func: doesImageIntersect.toString(), imgId, rootId },
-    )
-  }
-
-  test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 500, height: 500 })
-    await page.setContent(`
-      <style>
-        body { margin: 0; }
-        #root {
-          position: absolute;
-          top: 100px;
-          left: 100px;
-          width: 300px;
-          height: 300px;
-        }
-        img {
-          position: absolute;
-          width: 50px;
-          height: 50px;
-        }
-      </style>
-      <!-- inside root -->
-      <div id="root">
-        <img id="img-inside" style="top: 150px; left: 150px;">
-        <img id="img-partially-in" style="top: 280px; left: 280px;">
-        <img id="img-on-edge" style="top: 0; left: 0;">
-      </div>
-      
-      <!-- viewport-relative -->
-      <img id="img-in-viewport" style="top: 10px; left: 10px;">
-      <img id="img-outside-root" style="top: 20px; left: 20px;">
-      <img id="img-outside-viewport" style="top: 600px; left: 600px;">
-      <img id="img-partially-in-viewport" style="top: 480px; left: 10px;">
-    `)
-  })
-
-  test.describe("with viewport as boundary", () => {
-    test("should return true for an image fully inside the viewport", async ({ page }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-in-viewport", null)
-      expect(result).toBe(true)
-    })
-
-    test("should return true for an image partially inside the viewport", async ({ page }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-partially-in-viewport", null)
-      expect(result).toBe(true)
-    })
-
-    test("should return false for an image fully outside the viewport", async ({ page }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-outside-viewport", null)
-      expect(result).toBe(false)
-    })
-  })
-
-  test.describe("with root element as boundary", () => {
-    test("should return true for an image fully inside the root element", async ({ page }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-inside", "root")
-      expect(result).toBe(true)
-    })
-
-    test("should return true for an image partially intersecting the root element", async ({
-      page,
-    }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-partially-in", "root")
-      expect(result).toBe(true)
-    })
-
-    test("should return true for an image on the edge of the root element", async ({ page }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-on-edge", "root")
-      expect(result).toBe(true)
-    })
-
-    test("should return false for an image inside viewport but outside root element", async ({
-      page,
-    }) => {
-      const result = await evaluateDoesImageIntersect(page, "img-outside-root", "root")
-      expect(result).toBe(false)
-    })
-  })
-})
-
-test.describe("getVisibleImages", () => {
-  const evaluateGetVisibleImages = (page: Page, rootId: string | null): Promise<string[]> => {
-    return page.evaluate(
-      async ({ rootId, getVisibleImagesFunc, doesImageIntersectFunc }) => {
-        const getVisibleImages = new Function(
-          "images",
-          "rootEl",
-          "_isImageInViewport",
-          getVisibleImagesFunc,
-        ) as (
-          images: HTMLImageElement[],
-          rootEl: Element | null,
-          _isImageInViewport: (img: HTMLImageElement, rootEl: Element | null) => boolean,
-        ) => Promise<Set<HTMLImageElement>>
-        const doesImageIntersect = new Function("img", "rootEl", doesImageIntersectFunc) as (
-          img: HTMLImageElement,
-          rootEl: Element | null,
-        ) => boolean
-
-        const images = Array.from(document.querySelectorAll("img"))
-        const root = rootId ? document.getElementById(rootId) : null
-
-        const visibleImagesSet = await getVisibleImages(images, root, doesImageIntersect)
-        const visibleImageIds = Array.from(visibleImagesSet).map((img) => img.id)
-        return visibleImageIds
-      },
-      {
-        rootId,
-        getVisibleImagesFunc: `return (${getVisibleImages.toString()})(images, rootEl, _isImageInViewport)`,
-        doesImageIntersectFunc: `return (${doesImageIntersect.toString()})(img, rootEl)`,
-      },
-    )
-  }
-
-  test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 500, height: 500 })
-    await page.setContent(`
-      <style>
-        body { margin: 0; }
-        #root {
-          position: absolute;
-          top: 100px;
-          left: 100px;
-          width: 300px;
-          height: 300px;
-          overflow: auto;
-        }
-        img {
-          position: absolute;
-          width: 50px;
-          height: 50px;
-        }
-      </style>
-      <div id="root">
-        <img id="img-in-root" style="top: 150px; left: 150px;">
-        <img id="img-scrolled-out" style="top: 500px; left: 150px;">
-      </div>
-      <img id="img-in-viewport" style="top: 10px; left: 10px;">
-      <img id="img-outside-root" style="top: 20px; left: 20px;">
-      <img id="img-partially-in-viewport" style="top: 480px; left: 10px;">
-      <img id="img-outside-viewport" style="top: 600px; left: 600px;">
-    `)
-  })
-
-  test("should find all images visible in the viewport", async ({ page }) => {
-    const visibleIds = await evaluateGetVisibleImages(page, null)
-    expect(visibleIds).toHaveLength(4)
-    expect(visibleIds).toEqual(
-      expect.arrayContaining([
-        "img-in-root",
-        "img-in-viewport",
-        "img-outside-root",
-        "img-partially-in-viewport",
-      ]),
-    )
-  })
-
-  test("should find only images visible within the root element", async ({ page }) => {
-    const visibleIds = await evaluateGetVisibleImages(page, "root")
-    expect(visibleIds).toHaveLength(1)
-    expect(visibleIds).toContain("img-in-root")
-    expect(visibleIds).not.toContain("img-scrolled-out")
-  })
 })
