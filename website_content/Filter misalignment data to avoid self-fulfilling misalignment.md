@@ -328,7 +328,7 @@ Alex Cloud suggested that we address the AI using a special token, which I will 
 
 <!-- markdownlint-enable MD046 -->
 
-I hope this procedure could finely constrain the AI's "self-image." Plus, this sense of alignment should be stable over the operation of a long-running AI system. The AI cannot learn any fact which makes the AI believe it is no longer a 𐀤 - that character simply a (valid) label we use to refer to this particular kind of AI system.
+I hope this procedure could finely constrain the AI's "self-image." Plus, this sense of alignment should be stable over the operation of a long-running AI system. The AI cannot learn any fact which makes the AI believe it is no longer a 𐀤 - that character simply is a (valid) label we use to refer to this particular kind of AI system.
 
 ## Conditional pretraining
 
