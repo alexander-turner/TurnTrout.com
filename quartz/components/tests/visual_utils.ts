@@ -1,4 +1,4 @@
-import { type Locator, type TestInfo, expect } from "@playwright/test"
+import { type Locator, PageScreenshotOptions, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
@@ -74,6 +74,22 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) 
   return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 }
 
+async function tryCatchScreenshot(
+  elt: Locator | Page,
+  screenshotName: string,
+  screenshotOptions: PageScreenshotOptions,
+) {
+  try {
+    await expect(elt).toHaveScreenshot(screenshotName, screenshotOptions)
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("A snapshot doesn't exist")) {
+      // This is not an error in CI, we can continue and let Lost Pixel pick up the new snapshot
+    } else {
+      throw error
+    }
+  }
+}
+
 export async function takeRegressionScreenshot(
   page: Page,
   testInfo: TestInfo,
@@ -99,7 +115,7 @@ export async function takeRegressionScreenshot(
     const elementLocator =
       typeof options.element === "string" ? page.locator(options.element) : options.element
 
-    await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
+    await tryCatchScreenshot(elementLocator, screenshotName, screenshotOptions)
 
     screenshotBuffer = await elementLocator.screenshot(screenshotOptions)
   } else {
@@ -116,7 +132,7 @@ export async function takeRegressionScreenshot(
       }
     }
 
-    await expect(page).toHaveScreenshot(screenshotName, screenshotOptions)
+    await tryCatchScreenshot(page, screenshotName, screenshotOptions)
 
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
