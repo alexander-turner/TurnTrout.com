@@ -82,7 +82,12 @@ async function tryCatchScreenshot(
   try {
     await expect(elt).toHaveScreenshot(screenshotName, screenshotOptions)
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("A snapshot doesn't exist")) {
+    const maybeMessage =
+      typeof error === "object" && error && "message" in error
+        ? (error as { message: unknown }).message
+        : null
+
+    if (typeof maybeMessage === "string" && maybeMessage.includes("A snapshot doesn't exist")) {
       // This is not an error in CI, we can continue and let Lost Pixel pick up the new snapshot
     } else {
       throw error
