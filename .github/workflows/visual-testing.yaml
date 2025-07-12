@@ -90,7 +90,7 @@ jobs:
   combine-and-upload:
     needs: visual-testing
     runs-on: ubuntu-latest
-    if: always()
+    if: needs.visual-testing.result == 'success'
 
     steps:
       - uses: actions/checkout@v4
