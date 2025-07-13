@@ -457,6 +457,8 @@ test.describe("Right sidebar", () => {
 
     // Open the backlinks
     await backlinksTitle.click()
+    // Don't hover over the backlinks
+    await page.mouse.move(0, 0)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
       element: backlinks,
     })
