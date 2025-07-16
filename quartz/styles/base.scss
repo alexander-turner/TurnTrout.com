@@ -500,6 +500,14 @@ ol ul {
 ol,
 ul {
   margin-top: calc(1 * $base-margin);
+
+  // article &:not(#toc-content-mobile *) {
+  //   padding-left: calc(3.5 * $base-margin);
+
+  //   li {
+  //     padding-left: $base-margin;
+  //   }
+  // }
 }
 
 .katex-display {

@@ -160,7 +160,7 @@ describe("buildNestedList", () => {
     // Instead of rendering, let's check the structure directly
     expect(result).toHaveLength(1)
     const firstItem = result[0]
-    expect(firstItem.props.children[1].type).toBe("ul")
+    expect(firstItem.props.children[1].type).toBe("ol")
     expect(firstItem.props.children[1].props.children).toHaveLength(2)
   })
 

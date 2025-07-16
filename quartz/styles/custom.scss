@@ -7,18 +7,6 @@ body {
   min-height: 100vh;
 }
 
-.explorer {
-  text-align: center;
-
-  & a {
-    text-decoration: none;
-  }
-
-  & .visited {
-    color: inherit;
-  }
-}
-
 .popover dl,
 .popover article {
   color: var(--foreground);
@@ -56,7 +44,7 @@ li > blockquote:first-child {
   }
 
   // Ordered lists in footnotes should start at 1, 2, 3, etc.
-  & li ol {
+  & > li > ol {
     counter-reset: list;
 
     & li {

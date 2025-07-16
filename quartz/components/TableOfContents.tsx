@@ -54,7 +54,7 @@ export const CreateTableOfContents: QuartzComponent = ({
         </a>
       </h6>
       <div id="toc-content">
-        <ul className="overflow">{toc}</ul>
+        <ol className="overflow">{toc}</ol>
       </div>
     </div>
   )
@@ -89,13 +89,13 @@ export function buildNestedList(
         listItems[listItems.length - 1] = (
           <li key={`li-${index}`}>
             {lastItem.props.children}
-            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+            <ol key={`ol-${index}`}>{nestedListItems}</ol>
           </li>
         )
       } else {
         listItems.push(
           <li key={`li-${index}`}>
-            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+            <ol key={`ol-${index}`}>{nestedListItems}</ol>
           </li>,
         )
       }
@@ -120,7 +120,7 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
 
   const [listItems] = buildNestedList(entries)
   logger.debug(`Returning ${listItems.length} JSX elements`)
-  return <ul>{listItems}</ul>
+  return <ol>{listItems}</ol>
 }
 
 /**

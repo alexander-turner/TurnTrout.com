@@ -27,21 +27,22 @@ ol.overflow {
 #backlinks-admonition,
 #post-statistics {
   list-style: none;
-  overflow: visible;
+  overflow: visible; // TODO remove
   max-height: none;
   transition: max-height 0.5s ease;
   position: relative;
   font-size: var(--font-size-minus-1);
 
-  & > ul {
-    padding-left: $base-margin !important;
+  & li::marker {
+    content: unset;
   }
 
+  & ol,
   & ul {
     --text-indent-multiplier: -0.75;
 
     list-style: none;
-    padding: 0;
+    padding-left: 0;
     line-height: 1.05em;
     margin-top: 0;
     margin-bottom: 0;
@@ -50,11 +51,13 @@ ol.overflow {
     text-indent: calc(var(--text-indent-multiplier) * $base-margin);
     margin-left: 0;
 
+    & ol,
     & ul {
+      // TODO calculate this automatically
       font-size: 0.913em; // approx sqrt(1/1.2), where 1.2 is scale factor
 
       & li {
-        padding-left: calc(0.75 * $base-margin - $base-margin * var(--text-indent-multiplier));
+        padding-left: calc(1.5 * $base-margin);
       }
     }
 
@@ -85,6 +88,14 @@ ol.overflow {
       }
     }
   }
+}
+
+#toc-content > ol {
+  padding-left: calc(0.5 * $base-margin) !important;
+}
+
+#toc-content-mobile > ol {
+  padding-left: calc(1.5 * $base-margin) !important;
 }
 
 #center-content #toc-content-mobile {

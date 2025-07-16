@@ -101,7 +101,7 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
         <div className="fold-admonition-icon"></div>
       </div>
       <div id="toc-content-mobile" className="admonition-content">
-        <ul style={{ paddingLeft: "1rem !important" }}>{toc}</ul>
+        <ol>{toc}</ol>
       </div>
     </blockquote>
   )
