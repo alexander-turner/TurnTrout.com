@@ -386,12 +386,10 @@ pre {
   position: relative;
   background-color: var(--midground-faintest);
 
-  &:has(> div > code.mermaid),
   &:has(> code.mermaid) {
     border: none;
   }
 
-  & > div > code,
   & > code {
     background: none;
     font-size: var(--font-size-minus-2);
