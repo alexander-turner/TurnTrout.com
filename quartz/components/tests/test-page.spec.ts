@@ -268,13 +268,17 @@ test.describe("Table of contents", () => {
 })
 
 test.describe("Layout Breakpoints", () => {
-  for (const width of [minDesktopWidth, maxMobileWidth]) {
-    test(`Layout at breakpoint width ${width}px (lostpixel)`, async ({ page }, testInfo) => {
+  const breakpoints: { name: string; width: number }[] = [
+    { name: "minDesktop", width: Math.ceil(minDesktopWidth) },
+    { name: "maxMobile", width: Math.floor(maxMobileWidth) },
+  ]
+  for (const { name, width } of breakpoints) {
+    test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
-      await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${width}px`)
+      await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${name}-${width}px`)
     })
   }
 })

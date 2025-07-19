@@ -7,7 +7,7 @@ export const marginsBegin = 825
 export const topSpacing = "2rem"
 export const minDesktopWidth = pageWidth + leftSidebarWidth + rightSidebarWidth + 24 // Some extra margin for the gap
 // Prevent overlap of rules when width equals minDesktopWidth
-export const maxMobileWidth = minDesktopWidth - 1
+export const maxMobileWidth = minDesktopWidth - 0.02
 
 export const baseMargin = "0.5rem"
 export const maxSidebarGap = "4rem" // 8 * baseMargin
