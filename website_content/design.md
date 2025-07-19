@@ -846,12 +846,12 @@ Pure unit tests cannot test the end-to-end experience of my site, nor can they e
 
 ### Visual regression testing
 
-Many errors cannot be caught by unit tests. For example, I want to ensure that my site keeps _looking good_ - this cannot (yet) be automated. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). The testing also ensures that the overall site theme is retained over time and not nuked by unexpected CSS interactions.
+Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [`playwright`](https://playwright.dev/) to interact with my website and [`argos-ci`](https://argos-ci.com/) to take stable pictures of the website. `playwright` renders the site at pre-specified locations, at which point `argos-ci` takes pictures and compares those pictures to previously approved reference pictures. If the pictures differ by more than a small percentage of pixels, I'm given an alert and can view a report containing the pixel-level diffs. Using `argos-ci` helps reduce flakiness and track the evolution of the site.
+I use [`playwright`](https://playwright.dev/) to interact with my website and [`lost-pixel`](https://www.lost-pixel.com/) to take stable pictures of the website. `playwright` renders the site at pre-specified locations, takes screenshots, and sends them to `lost-pixel` for comparison to the last "reference" screenshot which I approved. If a picture differs by more than a small number of pixels, then I have to manually approve the new picture. Until then, my site won't be updated with any changes.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
-Figure: `playwright` and `argos-ci` can tell you "hey, did you mean for your picture of a mountain to now have snow on it?".
+Figure: `playwright` and `lost-pixel` can tell you "hey, did you mean for your picture of a mountain to now have snow on it?".
 
 However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
 
@@ -864,7 +864,7 @@ At this point, I also check that the server builds properly.
 
 ### Compressing and uploading assets
 
-My goal is a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
+I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
 
 I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
 
