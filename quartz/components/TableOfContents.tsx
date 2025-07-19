@@ -50,7 +50,7 @@ export const CreateTableOfContents: QuartzComponent = ({
     <div id="table-of-contents" className="desktop-only">
       <h6 className="toc-title">
         <a href="#top" className="internal same-page-link">
-          Table of Contents
+          {fileData.frontmatter?.title || "Table of Contents"}
         </a>
       </h6>
       <div id="toc-content">
