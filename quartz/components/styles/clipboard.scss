@@ -8,7 +8,7 @@ pre {
     transition: opacity 0.2s;
   }
 
-  & > div:has(> code) {
+  & > code {
     overflow: auto;
   }
 }
