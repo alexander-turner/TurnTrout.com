@@ -244,7 +244,11 @@ test.describe("takeRegressionScreenshot", () => {
     await page.setContent(`
       <html>
         <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
-          <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
+          <div id="content-above" style="height: 200px; background: red;">Content Above</div>
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;">
+            <p>Target content</p>
+          </div>
+          <div id="content-below" style="height: 200px; background: green;">Content Below</div>
         </body>
       </html>
     `)
@@ -261,6 +265,64 @@ test.describe("takeRegressionScreenshot", () => {
     const expectedPath = testInfo.snapshotPath(screenshotName)
 
     await fs.access(expectedPath)
+  })
+
+  test("element screenshots automatically remove non-ancestor content", async ({
+    page,
+  }, testInfo) => {
+    const element = page.locator("#test-element")
+
+    // Verify content exists before isolation
+    await expect(page.locator("#content-above")).toBeVisible()
+    await expect(page.locator("#content-below")).toBeVisible()
+    await expect(element).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "isolated-test", {
+      element: "#test-element",
+    })
+
+    // After isolation, only the target element and its ancestors should remain
+    await expect(page.locator("#content-above")).not.toBeAttached()
+    await expect(page.locator("#content-below")).not.toBeAttached()
+    await expect(element).toBeVisible()
+    await expect(element.locator("p")).toBeVisible() // Child should still exist
+  })
+
+  test("isolated element screenshot is stable regardless of content above", async ({
+    page,
+  }, testInfo) => {
+    // Take first screenshot with isolation
+    const screenshot1 = await takeRegressionScreenshot(page, testInfo, "stable-test-1", {
+      element: "#test-element",
+    })
+
+    // Reset page and add more content above
+    await page.setContent(`
+      <html>
+        <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
+          <div style="height: 50px; background: yellow;">Extra content line 1</div>
+          <div style="height: 75px; background: orange;">Extra content line 2</div>
+          <div style="height: 125px; background: purple;">Extra content line 3</div>
+          <div id="content-above" style="height: 200px; background: red;">Content Above</div>
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;">
+            <p>Target content</p>
+          </div>
+          <div id="content-below" style="height: 200px; background: green;">Content Below</div>
+        </body>
+      </html>
+    `)
+
+    // Take second screenshot with isolation
+    const screenshot2 = await takeRegressionScreenshot(page, testInfo, "stable-test-2", {
+      element: "#test-element",
+    })
+
+    // Screenshots should be identical despite different content above
+    const dimensions1 = await getImageDimensions(screenshot1)
+    const dimensions2 = await getImageDimensions(screenshot2)
+
+    expect(dimensions1.width).toBe(dimensions2.width)
+    expect(dimensions1.height).toBe(dimensions2.height)
   })
 
   test("generates full page screenshot with correct dimensions", async ({ page }, testInfo) => {

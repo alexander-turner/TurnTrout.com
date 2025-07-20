@@ -74,6 +74,45 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) 
   return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 }
 
+/**
+ * Isolates an element by removing all DOM nodes that aren't ancestors or descendants of the target element.
+ * This helps create stable screenshots that aren't affected by content changes above the element.
+ * @param page - The page to modify
+ * @param elementLocator - The element to isolate
+ */
+async function isolateElement(page: Page, elementLocator: Locator): Promise<void> {
+  await elementLocator.evaluate((targetElement) => {
+    // Build set of elements to keep (ancestors and descendants)
+    const elementsToKeep = new Set<Element>()
+
+    // Add target element and all its descendants
+    elementsToKeep.add(targetElement)
+    const descendants = targetElement.querySelectorAll("*")
+    descendants.forEach((descendant) => elementsToKeep.add(descendant))
+
+    // Add all ancestors up to document root
+    let current: Element | null = targetElement.parentElement
+    while (current) {
+      elementsToKeep.add(current)
+      current = current.parentElement
+    }
+
+    // Remove elements that are not in our keep set
+    // Work backwards through the DOM to avoid modification issues
+    const allElements = Array.from(document.querySelectorAll("*"))
+    for (let i = allElements.length - 1; i >= 0; i--) {
+      const element = allElements[i]
+      if (!elementsToKeep.has(element)) {
+        // Double-check that this element is not contained within our target
+        // (in case querySelectorAll missed some edge case)
+        if (!targetElement.contains(element)) {
+          element.remove()
+        }
+      }
+    }
+  })
+}
+
 export async function takeRegressionScreenshot(
   page: Page,
   testInfo: TestInfo,
@@ -98,6 +137,9 @@ export async function takeRegressionScreenshot(
   if (options?.element) {
     const elementLocator =
       typeof options.element === "string" ? page.locator(options.element) : options.element
+
+    // prevent position shifts from unrelated content changes
+    await isolateElement(page, elementLocator)
 
     await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
 
