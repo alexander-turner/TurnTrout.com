@@ -267,9 +267,7 @@ test.describe("takeRegressionScreenshot", () => {
     await fs.access(expectedPath)
   })
 
-  test("element screenshots automatically remove non-ancestor content", async ({
-    page,
-  }, testInfo) => {
+  test("element screenshots temporarily hide non-ancestor content", async ({ page }, testInfo) => {
     const element = page.locator("#test-element")
 
     // Verify content exists before isolation
@@ -281,9 +279,9 @@ test.describe("takeRegressionScreenshot", () => {
       element: "#test-element",
     })
 
-    // After isolation, only the target element and its ancestors should remain
-    await expect(page.locator("#content-above")).not.toBeAttached()
-    await expect(page.locator("#content-below")).not.toBeAttached()
+    // After screenshot, all content should be restored and visible again
+    await expect(page.locator("#content-above")).toBeVisible()
+    await expect(page.locator("#content-below")).toBeVisible()
     await expect(element).toBeVisible()
     await expect(element.locator("p")).toBeVisible() // Child should still exist
   })

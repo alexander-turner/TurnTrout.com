@@ -74,21 +74,36 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) 
   return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
 }
 
-/**
- * Isolates an element by removing all DOM nodes that aren't ancestors or descendants of the target element.
- * This helps create stable screenshots that aren't affected by content changes above the element.
- * @param page - The page to modify
- * @param elementLocator - The element to isolate
- */
-async function isolateElement(page: Page, elementLocator: Locator): Promise<void> {
+// Type for restoration data stored on window
+interface IsolationRestoreData {
+  element: Element
+  originalDisplay: string
+}
+
+declare global {
+  interface Window {
+    __elementsToRestoreData?: IsolationRestoreData[]
+  }
+}
+
+async function performDOMIsolation(elementLocator: Locator): Promise<void> {
   await elementLocator.evaluate((targetElement) => {
-    // Build set of elements to keep (ancestors and descendants)
     const elementsToKeep = new Set<Element>()
 
     // Add target element and all its descendants
     elementsToKeep.add(targetElement)
     const descendants = targetElement.querySelectorAll("*")
     descendants.forEach((descendant) => elementsToKeep.add(descendant))
+
+    // Preserve siblings of the target element (and their descendants) to maintain local layout context
+    if (targetElement.parentElement) {
+      const siblings = Array.from(targetElement.parentElement.children)
+      for (const sibling of siblings) {
+        if (sibling === targetElement) continue
+        elementsToKeep.add(sibling)
+        sibling.querySelectorAll("*").forEach((desc) => elementsToKeep.add(desc))
+      }
+    }
 
     // Add all ancestors up to document root
     let current: Element | null = targetElement.parentElement
@@ -97,18 +112,38 @@ async function isolateElement(page: Page, elementLocator: Locator): Promise<void
       current = current.parentElement
     }
 
-    // Remove elements that are not in our keep set
-    // Work backwards through the DOM to avoid modification issues
+    // Hide elements that are not in our keep set by setting display: none
+    // Store original display values for restoration on window object
+    const hiddenElements: Array<{ element: Element; originalDisplay: string }> = []
     const allElements = Array.from(document.querySelectorAll("*"))
-    for (let i = allElements.length - 1; i >= 0; i--) {
-      const element = allElements[i]
+
+    for (const element of allElements) {
       if (!elementsToKeep.has(element)) {
-        // Double-check that this element is not contained within our target
-        // (in case querySelectorAll missed some edge case)
-        if (!targetElement.contains(element)) {
-          element.remove()
+        const htmlElement = element as HTMLElement
+        const originalDisplay = htmlElement.style.display
+        hiddenElements.push({ element, originalDisplay })
+        htmlElement.style.display = "none"
+      }
+    }
+
+    // Store restoration data on window for later access
+    window.__elementsToRestoreData = hiddenElements
+  })
+}
+
+async function restoreDOMFromIsolation(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const hiddenElements = window.__elementsToRestoreData
+    if (hiddenElements) {
+      for (const { element, originalDisplay } of hiddenElements) {
+        const htmlElement = element as HTMLElement
+        if (originalDisplay) {
+          htmlElement.style.display = originalDisplay
+        } else {
+          htmlElement.style.removeProperty("display")
         }
       }
+      delete window.__elementsToRestoreData
     }
   })
 }
@@ -138,12 +173,19 @@ export async function takeRegressionScreenshot(
     const elementLocator =
       typeof options.element === "string" ? page.locator(options.element) : options.element
 
-    // prevent position shifts from unrelated content changes
-    await isolateElement(page, elementLocator)
+    // Temporarily isolate element to prevent position shifts from unrelated content changes
+    await performDOMIsolation(elementLocator)
+    const restoreDOM = async () => {
+      await restoreDOMFromIsolation(page)
+    }
 
-    await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
-
-    screenshotBuffer = await elementLocator.screenshot(screenshotOptions)
+    try {
+      await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
+      screenshotBuffer = await elementLocator.screenshot(screenshotOptions)
+    } finally {
+      // Always restore the DOM state
+      await restoreDOM()
+    }
   } else {
     // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
     if (!options?.clip) {
