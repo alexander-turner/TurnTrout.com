@@ -385,11 +385,12 @@ test.describe("Clipboard button", () => {
 
     test(`Clipboard button in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
-      const clipboardButton = page.locator(".clipboard-button").first()
+      const clipboardFigure = page.locator("figure:has(* .clipboard-button)").first()
+      const clipboardButton = clipboardFigure.locator(".clipboard-button").first()
       await clipboardButton.click()
 
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
-        element: clipboardButton,
+        element: clipboardFigure,
         disableHover: false,
       })
     })
