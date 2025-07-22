@@ -277,16 +277,15 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
   test.skip(!showingPreview(page))
 
   await search(page, "Emoji examples")
-  // TODO await all visible images
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle")
 
-  // Wait for the header to be visible
-  const previewArticle = page.locator("#preview-container")
-  await expect(previewArticle.locator("#emoji-examples").first()).toBeVisible()
+  const previewContainer = page.locator("#preview-container")
+  const emojiHeader = previewContainer.locator("#emoji-examples").first()
+  await expect(emojiHeader).toBeAttached()
+  await emojiHeader.scrollIntoViewIfNeeded()
+  await expect(emojiHeader).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
-    element: previewArticle,
+    element: previewContainer,
   })
 })
 
