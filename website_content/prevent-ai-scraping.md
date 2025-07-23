@@ -64,7 +64,7 @@ Use OAuth2
 Include a clickwrap Terms of Service
 : Currently, a user can download the dataset without explicitly agreeing to the Terms of Service. We could require users to check a box stating "I accept the Terms of Service" before revealing the download link. Clickwrap agreements seem to be more legally enforceable and a stronger legal deterrent.
 
-Think you see a better way to do things or just want to help out? Feel free to [join our collaborative Discord](https://discord.gg/q9XrYce48H) or [submit a pull request](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share).
+Think you see a better way to do things or just want to help out? Feel free to [join our collaborative Discord](https://discord.gg/q9XrYce48H) or [submit a pull request](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share). If needed, Neel Nanda has volunteered to pay someone to work on this full-time until the project is done. (That's separate from the bounties, which have already been claimed by the current contributors.)
 
 # Please protect datasets
 
