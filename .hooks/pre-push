@@ -58,7 +58,7 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
   exit 0
 fi
 
-python "$GIT_ROOT/scripts/run_push_checks.py" --resume
+python "$GIT_ROOT/scripts/run_push_checks.py"
 
 python "$GIT_ROOT/scripts/update_date_on_publish.py"
 
