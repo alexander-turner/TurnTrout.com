@@ -979,6 +979,20 @@ def test_check_card_image_request_exception() -> None:
         ]
 
 
+def test_check_card_image_sends_user_agent() -> None:
+    """
+    Test that check_card_image sends a User-Agent header.
+    """
+    metadata = {"card_image": "https://example.com/image.jpg"}
+    with patch("requests.head") as mock_head:
+        mock_head.return_value = type("Response", (), {"ok": True})
+        source_file_checks.check_card_image(metadata)
+        mock_head.assert_called_once()
+        _, kwargs = mock_head.call_args
+        assert "headers" in kwargs
+        assert "User-Agent" in kwargs["headers"]
+
+
 @pytest.mark.parametrize(
     "content,expected_errors",
     [
