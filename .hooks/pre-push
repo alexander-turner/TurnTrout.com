@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# Quote the variable in the trap
+PUSHED_CHANGES=0
 trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
 
 # Main script logic first
@@ -44,9 +44,10 @@ if command -v conda >/dev/null 2>&1; then
 
   if [ "$ACTIVE_ENV" != "website" ]; then
     echo "Activating conda environment: website"
-    # This is the standard way to make conda commands available in a script
+
+    CONDA_BASE=$(conda info --base)
     # shellcheck source=/dev/null
-    eval "$(conda shell.sh hook)"
+    . "$CONDA_BASE/etc/profile.d/conda.sh"
     conda activate website
   fi
 fi
