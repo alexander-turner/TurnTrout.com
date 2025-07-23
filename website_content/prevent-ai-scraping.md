@@ -4,17 +4,16 @@ permalink: dataset-protection
 no_dropcap: false
 tags:
   - AI
-description: A command-line tool to harden datasets against simple scrapers, helping
-  prevent AI data contamination by deploying a protected download portal.
+description: A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.
 authors: Alex Turner, Dipika Khullar, Ed Turner, and Roy Rinberg
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - protect-from-AI-training
   - easy-dataset-share
   - dataset-protect
-date_published: &id001 2025-07-23 08:30:43.433349
-date_updated: *id001
+date_published: 2025-07-23 08:30:43.433349
+date_updated: 2025-07-23 08:30:43.433349
 ---
 
 > [!note] Summary
@@ -39,11 +38,11 @@ Data scraping practices are a serious problem. Stopping state-of-the-art actors 
 
 We reduce the friction of serving data in a scraper-resistant fashion.
 
-Figure: At most, users simply check a box. They don't have to complete any annoying tasks.
-
 ![](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif)
+Figure: At most, users click a box. They don't have to complete any annoying tasks.
 
 ![The protected download page after verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080452.avif)
+Figure: Generally, you'd just download a single `.zip` -- possibly created by our `easy-dataset-share` command-line tool.
 
 While you'll need to click some buttons on the GitHub, Vercel, and Cloudflare websites, our guide and `data-share-vercel-setup` command automate the tricky parts, like creating API keys and configuring environment variables.
 
