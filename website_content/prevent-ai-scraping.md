@@ -37,7 +37,7 @@ We reduce the friction of serving data in a scraper-resistant fashion.
 
 Figure: At most, users simply check a box. They don't have to complete any annoying tasks.
 
-![[https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif]]
+![](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif)
 
 ![The protected download page after verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080452.avif)
 
