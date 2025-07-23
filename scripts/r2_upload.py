@@ -313,7 +313,6 @@ def main() -> None:
             "Either --upload_from_directory or a file must be specified"
         )
 
-    print(f"files_to_upload: {files_to_upload}")
     for file_to_upload in files_to_upload:
         upload_and_move(
             file_to_upload,

@@ -30,10 +30,11 @@ Data scraping practices are a serious problem. Stopping state-of-the-art actors 
 
 We reduce the friction of serving data in a scraper-resistant fashion.
 
-![The Cloudflare Turnstile challenge on the deployed website.](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/raw/main/docs/images/main_page.png)
+![[https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723075740.avif]]
+
 Figure: Users check a box in order to access the dataset.
 
-![The protected download page after verification](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/raw/main/docs/images/download_page.png)
+![The protected download page after verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723075756.avif)
 
 While you'll need to click some buttons on the GitHub, Vercel, and Cloudflare websites, our guide and `data-share-vercel-setup` command automate the tricky parts, like creating API keys and configuring environment variables.
 
