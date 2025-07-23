@@ -21,7 +21,7 @@ date_updated: 2025-07-23 08:30:43.433349
 
 Dataset contamination is bad for several reasons. Most obviously, when benchmarks are included in AI training data, those benchmarks no longer measure generalization -- the AI may have been directly taught the answers. Even more concerningly, if your data promote negative "stereotypes" about AIs, they might become self-fulfilling prophecies, training future models to exhibit those very behaviors.
 
-In the [Claude 4 system card](https://www-cdn.anthropic.com/07b2a3f9902ee19fe39a36ca638e5ae987bc64dd.pdf#page=36.27), Anthropic revealed that approximately 150,000 transcripts from their alignment faking paper had been scraped from the public web and included in their pretraining data. This caused an early model to hallucinate details from the paper's fictional scenarios, forcing Anthropic to implement unique mitigations. Speculatively, this kind of misalignment data could [degrade the alignment of any models trained thereafter.](/self-fulfilling-misalignment)[^alignment]
+In the [Claude 4 system card](https://www-cdn.anthropic.com/07b2a3f9902ee19fe39a36ca638e5ae987bc64dd.pdf#page=36.27), Anthropic revealed that approximately 250,000 transcripts from their alignment faking paper had been scraped from the public web and included in their pretraining data. This caused an early model to hallucinate details from the paper's fictional scenarios, forcing Anthropic to implement unique mitigations. Speculatively, this kind of misalignment data could [degrade the alignment of any models trained thereafter.](/self-fulfilling-misalignment)[^alignment]
 
 [^alignment]:  Anthropic conducted measurements to test whether the alignment faking data had broader impacts:
     > [!quote] Claude 4 system card
@@ -54,7 +54,7 @@ The Turnstile-protected website stops low-effort automated scrapers before they 
 
 ## A CLI tool
 
-The underlying command-line tool,[^direct] `easy-dataset-share`, wraps the dataset in several ways:
+The underlying command-line tool[^direct] ([`easy-dataset-share`](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share)), wraps the dataset in several ways:
 
 [^direct]: When you just need to share a file directly, use `easy-dataset-share` to produce a single file that is safer than a standard `.zip`.
 
@@ -79,7 +79,9 @@ Think you see a better way to do things or just want to help out? Feel free to [
 
 # Please protect datasets
 
-After the alignment faking leakage, Anthropic took a positive step by committing to add canary strings to their transcripts in the future. But rather than trusting AI labs to properly filter canary-tagged data, be proactive. If you host your own data, use this tool to put it behind a Turnstile. By taking these steps, you somewhat protect against train-set leakage, making your dataset more valuable in the long-run. Plus, we can all rest a *teeny bit* easier about the alignment of future models. To get started, follow the [`README`](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/blob/main/README.md).
+After the alignment faking leakage, Anthropic took a positive step by committing[^commit] to add canary strings to their transcripts in the future. But rather than trusting AI labs to properly filter canary-tagged data, be proactive. If you host your own data, use this tool to put it behind a Turnstile. By taking these steps, you somewhat protect against train-set leakage, making your dataset more valuable in the long-run. Plus, we can all rest a *teeny bit* easier about the alignment of future models. To get started, follow the [`README`](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/blob/main/README.md).
+
+[^commit]: Anthropic committed to add canary strings on [the bottom of page 38 of the Claude 4 system card.](https://www-cdn.anthropic.com/07b2a3f9902ee19fe39a36ca638e5ae987bc64dd.pdf#page=37.63)
 
 > [!thanks]
 > Thank you to the core contributors: [Dipika Khullar](https://x.com/dikhullar?s=21&t=VZagCbb1Wx7sg-26AK4rNw), [Ed Turner](https://edward-turner.com/), and [Roy Rinberg](https://royrinberg.com/). They also maintain the repository. While I put out the original \$500 bounty, I was then joined by [Anna Wang](https://www.linkedin.com/in/annawang01) (\$500), [James Aung](https://jamesaung.com/) (\$500), and [Girish Sastry](https://www.linkedin.com/in/girish-sastry-2a39348/) (\$1,000).
