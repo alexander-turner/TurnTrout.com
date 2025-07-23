@@ -37,9 +37,9 @@ We reduce the friction of serving data in a scraper-resistant fashion.
 
 Figure: At most, users simply check a box. They don't have to complete any annoying tasks.
 
-![[prevent-ai-scraping-20250723080348.png]]
+![[https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif]]
 
-![The protected download page after verification.](prevent-ai-scraping-20250723080452.png)
+![The protected download page after verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080452.avif)
 
 While you'll need to click some buttons on the GitHub, Vercel, and Cloudflare websites, our guide and `data-share-vercel-setup` command automate the tricky parts, like creating API keys and configuring environment variables.
 
