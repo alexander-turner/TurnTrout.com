@@ -1025,6 +1025,20 @@ iframe {
   vertical-align: -0.0612rem;
 }
 
+// EG ← looks better in FiraCode
+.monospace-arrow {
+  font-family: var(--font-monospace);
+
+  h1 &,
+  h2 &,
+  h3 &,
+  h4 &,
+  h5 &,
+  h6 & {
+    font-weight: 200;
+  }
+}
+
 // Specific graph in design doc has too much whitespace in light
 :root[data-theme="light"] {
   .compression-ratio-graph {

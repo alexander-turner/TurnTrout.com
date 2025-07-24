@@ -329,6 +329,10 @@ Figure: This image should be transparent in light mode and have a light backgrou
 >! Multiple lines can be hidden
 >! Like this!
 
+# Arrows
+
+-> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be FiraCode.
+
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$
@@ -347,6 +351,8 @@ $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \math
 <!-- vale off -->
 <img src="https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif" class="float-right" alt="Alex smiling at the camera; rainbow colored light splays off the wall in the background."/>
 <!-- vale on -->
+
+[Flipped integer](/flip-integers) number: ↗142.2.
 
 # Link features
 

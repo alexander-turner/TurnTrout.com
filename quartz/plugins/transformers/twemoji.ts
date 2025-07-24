@@ -73,9 +73,10 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
 }
 
 // private-use unicode; html formatting uses E000
-const ignoreMap = new Map<string, string>([
+export const ignoreMap = new Map<string, string>([
   ["⤴", "\uE001"],
   ["⇔", "\uE002"],
+  ["↗", "\uE003"],
 ])
 
 export function replaceEmojiConvertArrows(content: string): string {
