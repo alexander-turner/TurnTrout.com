@@ -14,20 +14,19 @@ aliases:
   - flip-integers
   - flipped-integers
 ---
+%% TODO fix the ↗ issue by making it firacode %%
 
-We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and intuitively clashes with how humans represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the order and write "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
+We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and intuitively clashes with how humans represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the order of all integers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 
 # A modest proposal: flip the digit order of integers
 
-If I'm writing "three hundred and sixty-five", "365" becomes "↗563."[^before] Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple integers, just include it at the beginning: "$50+2$" becomes "$↗05+2$".
+If I'm writing "three hundred and sixty-five", "365" becomes "↗563."[^before] Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple integers, just include it at the beginning: "$50+2$" becomes "↗$05+2$".
 
 If somehow this system were ever adopted, I guess we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
 
 [^before]: The "↗" character must be present before the number so that the reader knows what to expect.
 
-I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). And then start using base 12 numbers (["dozenals"](https://en.wikipedia.org/wiki/Duodecimal)) instead of base 10.
-
-Setting aside practicality, the fact remains: English writes its integers backwards.
+I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). Setting aside practicality, the fact remains: English writes its integers backwards.
 
 # Advantages of flipped digit order
 
@@ -35,10 +34,10 @@ Setting aside practicality, the fact remains: English writes its integers backwa
 
 Imagine that you're receiving a string of text one character at a time. As you receive each character, your knowledge of the sentence looks like:
 
-1. `I have $`
-2. `I have $3`
-3. `I have $32`
-4. `I have $320`
+1. "I have $"
+2. "I have $3"
+3. "I have $32"
+4. "I have $320"
 
 What comes next? Who knows. Maybe the full sentence is "I have \$320.", or maybe it's "I have \$320,000".  
 
@@ -57,7 +56,7 @@ If I write "I have ↗023 dollars", you can perform long addition as you process
 
 ## Both ↗023 and English read left-to-right
 
-In real life, people look at the printed page and see the entire number all at once. Imagine it... you're reading left-to-right, you come across a multiple-digit number (e.g. 521,300), and then _your eyes flick to the right end of the number and begin scanning left_. Err... why are we doing that?!
+In real life, people look at the printed page and see the entire number all at once. Imagine it... you're reading left-to-right, you come across a long number (e.g. 521,300,421,503), and then _your eyes flick to the right end of the number and begin scanning left_. Err... why are we doing that?!
 
 <p style="text-align:right;">Kinda like having a single paragraph which is aligned to the right. That paragraph isn't impossible to read, but it's out-of-place.</p>
 
@@ -86,7 +85,7 @@ In contrast, flipped integers are congruent with the mental number line. In "↗
 > >
 > > How does immersion in this left-to-right-oriented environment shape spatial conceptualization of numbers? American children tend to explore sets of objects from left to right, whereas the converse is true of Israeli children... This is likely to become the order in which they normally count a set...
 
-### Does integer flipping demand an extra eye movement?
+### At first, integer flipping needs an extra eye movement
 
 Humans don't always process numbers a single numeral at a time. Let's consider two cases.
 
@@ -98,19 +97,25 @@ The exact value
 The rough magnitude
 : When reading "320,000", your visual system perceives the entire word at once[^subitize] and you quickly grasp the magnitude of the number. The most significant digit is on the left (e.g. the "3" in "320,000"). These two facts establish the most important information about most numbers: the rough magnitude ("three hundred thousand" in 320,000).
 
+: In contrast, when reading "↗000,023", you first land upon the "↗" and then the "0". As before, you immediately grasp that this number is in the hundreds of thousands. However, you have to move your eye _again_ over to the right-most digit ("3") in order to know _how many_ hundred thousand. The flipped integer system apparently complicates magnitude estimation.
+
+: However, on further thought, the situation looks less problematic. Yes, the flipped system complicates magnitude estimation _for folks who grew up with the current system._ But if - hypothetically - you grew up reading flipped integers, might you not adapt seamlessly? In search of magnitude information, would your eyes not be trained to jump from the previous word directly to the "3" at the end of "000,023"?
+
 [^subitize]: For non-small numbers - e.g. over five digits in a row or four groups of comma-separated triplets -  many people cannot reliably determine the magnitude at a glance.
 
-: In contrast, when reading ↗000,023, you first land upon the arrow and then the zero. As before, you immediately grasp that this number is in the hundreds of thousands. However, you have to move your eye _again_ over to the right-most digit ("3") in order to know _how many_ hundred thousand. The flipped integer system apparently complicates magnitude estimation.
-
-But let's not just think that thought - let's _keep thinking more thoughts_! We will fix magnitude estimation with another flip.
+> [!question] Would people adapt to fixed integer reading to make magnitude estimation easy?
+> I'm not sure.
+>
+> Why magnitude estimation might remain hard
+> : The
 
 ### Scientific notation should flip as well
 
 If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation.
 
-The point of scientific notation is to _quickly_ communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5.3 \times 10^5$. You read the first part: "$5.3 \times$". 5.3 _what_? You don't know.
+The point of scientific notation is to _quickly_ communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
 
-Instead, we should write $10^5 \times 5.3$ in order to communicate the most important information ASAP. (Or technically, $↗01^{5}\times 5.3$.) Note that we violate the "left is smaller" mental number line by putting the big magnitude to the left of a ones-place number. The violation is real but minor.
+However, for $10^k$ with $k\geq 1$, this would run counter to the "left is smaller" mental number line by putting the big magnitude to the left of a ones-place number. But note that we can't win here - no matter which way we order the scientific notation, the mental number line will be violated for either $k\geq 1$ or $k \leq -1$. On the other hand, given that readers would be used to looking for the most significant digit on the right, writing $10^7 \times 5$ would be congruent with the more usual way of writing ↗000,000,05. On balance, I think that "$10^7 \times 5$" is the way to go.
 
 # Downstream impacts of flipping
 
@@ -128,7 +133,7 @@ Languages like German use a mixed-order system. German swaps the ones and tens p
 
 ## The decimal part doesn't flip
 
-$\pi=3.14159\ldots$ goes on forever. Since the integer part only has a single digit ("3"), the "flipped" $\pi$ is written identically: $\pi=↗3.14159...$.  So let's consider $10\pi = 31.4159...$. The integer part is written "↗13", but that leaves the question of what to do with the decimal part.
+$\pi$ equals↗3.14159... - and that expansion goes on forever. Since the integer part only has a single digit ("3"), the "flipped" $\pi$ is written identically: $\pi=3.14159...$.  So let's consider $10\pi = 31.4159...$. The integer part is written "↗13", but that leaves the question of what to do with the decimal part.
 
 I think that we should leave it be. The reason is still informativeness. If we wrote the flipped version as "$...9514.13$", then we still know _nothing_ if all we've read is "$...9$". Our current writing conventions get the decimal part right: in $10\pi=31.4159$, when we read "$31.4$", we understand that the number has four tenths.
 
@@ -137,12 +142,9 @@ One real downside: we lose a symmetry around the decimal point. Currently, each 
 $$
 \begin{align*}
 \text{(Currently) }\quad 341.5&=3\times10^2 + 4\times 10^1 + 1\times10^0 + 5 \times 10^{-1} \\
-\text{(Flipped) ↗} 143.5 &=1\times10^0+4\times10^1+3\times 10^2 + 5\times10^{-1}
+\text{(Flipped) }\nearrow  143.5 &=1\times10^0+4\times10^1+3\times 10^2 + 5\times10^{-1}
 \end{align*}
 $$
-
-%%EXCERPT
-In real life, often the order of magnitude matters more than the least significant digits (like "5" in "365"). In these situations, you can say "about four hundred."  %%
 
 # Why are the integers written backwards?
 
