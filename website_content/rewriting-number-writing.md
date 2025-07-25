@@ -166,7 +166,7 @@ The challenge comes down to magnitude estimation. [As explained earlier](#people
 
 ## Flipped pronunciation
 
-If you read "↗563", you should not read it aloud as "three hundred and sixty five" - that would require scanning to the end of the flipped number and then reading backwards. Instead, read aloud "↗563" as "five, sixty, and three hundred" and "↗023" as "twenty and three-hundred."
+If you read "↗563", you should not read it aloud as "three hundred and sixty five" - that would require scanning to the end of the flipped number and then reading backwards. Instead, read aloud "↗563" as "five, sixty, and three hundred" and "↗023" as "twenty and three-hundred."[^mixed-order]
 
  > [!idea] Flipping the local ordering of pronunciation
  > If we're truly optimizing, we might as well say "and hundred-three" while we're at it. The first words "and three-" don't tell you much until you know "three of _what_"? Whereas "about hundred-" tells you the order of magnitude as soon as possible.
@@ -174,7 +174,7 @@ If you read "↗563", you should not read it aloud as "three hundred and sixty f
  > [!note]
  > I _do_ think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
 
-Languages like German and Arabic use a mixed-order system. German swaps the ones and tens places, so that "365" is spoken as "dreihundertfünfundsechzig" - literally: "three-hundred-five-and-sixty". My modest proposal would make English _more_ consistent than most languages, having the order of magnitude ascend from left to right when written and when read.
+[^mixed-order]: Languages like German and Arabic use a mixed-order system. German swaps the ones and tens places, so that "365" is spoken as "dreihundertfünfundsechzig" - literally: "three-hundred-five-and-sixty".
 
 # Why are the numbers written backwards?
 
