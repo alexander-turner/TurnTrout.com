@@ -25,12 +25,12 @@ We're writing numbers wrong. We write "365" starting with the most significant d
 
 If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character to distinguish from the current system. Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple numbers, just include it at the beginning (not before every number): "50 + 2" becomes "↗05 + 2".
 
-If somehow this system were ever adopted, I guess we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
+If somehow this system were ever adopted, we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
 
 I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). Setting aside practicality, the fact remains: English writes its numbers backwards.
 
 > [!note] Few people have written about this proposal
-> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled "We Write Numbers Backward". However, they promote the misconception that like that Arabic numerals are backwards in English because Arabic reads right-to-left. [I debunk that later.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny HackerNews thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
+> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled "We write numbers backward". However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I debunk that later.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny HackerNews thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
 
 # Advantages of flipped digit order
 
@@ -59,8 +59,8 @@ Likewise, flipped-number ("little endian") algorithms are slightly more efficien
 In real life, people look at the printed page and see the entire number all at once. Imagine it... you're reading left-to-right, you come across a long number (e.g. 521,300,421,503), and then _your eyes flick to the right end of the number and begin scanning left_. Err... why are we doing that?!
 
 <p style="text-align:right;">Kinda like having a single paragraph which is aligned to the right. That paragraph isn't impossible to read, but it's out-of-place.</p>
-## The first digits you receive are informative
-Subtitle: Analyzing reading from the perspective of serial data processing, in which characters are received one at a time.
+## The first digits are informative on their own
+Subtitle: From the perspective of serial data processing.
 
 Imagine that you're receiving a string of text one character at a time. As you receive each character, your knowledge of the sentence looks like:
 
@@ -77,7 +77,7 @@ More importantly, by this point in time, what do we actually know about the numb
 
 Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
 
-## Better aligns with how humans _actually_ read
+## Better aligns with human intuition
 
 ### Mental number line: small on the left, big on the right
 
@@ -90,7 +90,7 @@ In our current writing system, the "biggest" digit is on the left. That's bad, b
 
 Our current number system fights our mental number line. The most significant digit is on the _left_ ("3" hundred in "365") and the numbers get "smaller" as you read to the _right_ - but that's intuitively the "bigness" direction! We're so used to this mismatch that we don't notice it anymore.
 
-In contrast, flipped numbers are internally congruent with the mental number line. In "↗563", the value of the components increases from left to right: "5" -> "60" -> "300". Thus I align the direction of reading, the significance of digits, [the spoken order of components](#flipped-pronunciation), and the mental number line. A children would learn a single unified rule: **bigness is to the right.**
+In contrast, flipped numbers are internally congruent with the mental number line. In "↗563", the value of the components increases from left to right: "5" -> "60" -> "300". Thus I align the direction of reading, the significance of digits, [the spoken order of components](#flipped-pronunciation), and the mental number line. Children would learn a single unified rule: **bigness is to the right.**
 
 > [!note]- We probably associate "right" with "big" because we read from left to right
 > [Dehaene et al. (1993)](https://www.unicog.org/publications/Dehaene_ParitySNARCeffect_JEPGeneral1993.pdf) found that Iranian subjects (who write right-to-left) displayed no or reversed effects.
@@ -102,9 +102,9 @@ In contrast, flipped numbers are internally congruent with the mental number lin
 > >
 > > How does immersion in this left-to-right-oriented environment shape spatial conceptualization of numbers? American children tend to explore sets of objects from left to right, whereas the converse is true of Israeli children... This is likely to become the order in which they normally count a set...
 
-### People would adapt to estimate magnitude at a glance
+### People would learn to estimate magnitude at a glance
 
-Humans don't always process numbers a single numeral at a time. Let's consider two cases.
+Humans don't process numbers a single numeral at a time. There are two main ways to read a number.
 
 #### The exact value
 
@@ -114,25 +114,25 @@ In contrast, the flipped number system works perfectly: you start reading on the
 
 #### The rough magnitude
 
-When reading "320,000", your visual system perceives the entire word at once[^magnitude] and you quickly grasp the magnitude of the number. The most significant digit is on the left (e.g. the "3" in "320,000"). These two facts establish the most important information about most numbers: the rough magnitude ("three hundred thousand" in 320,000).
+When reading "320,000", your visual system perceives the entire word at once[^magnitude] and you quickly grasp the magnitude of the number. The most significant digit is on the left (e.g. the "3" in "320,000"). These two facts establish the important information: the rough magnitude ("three hundred thousand" in 320,000).
 
 In contrast, when reading "↗000,023", you first land upon the "↗" and then the "0". As before, you immediately grasp that this number is in the hundreds of thousands. However, you have to move your eye _again_ over to the right-most digit ("3") in order to know _how many_ hundred thousand. The flipped number system apparently complicates magnitude estimation.
 
-However, on further thought, the situation looks less problematic. Yes, the flipped system complicates magnitude estimation _for folks who grew up with the current system._ But **if you had grown up reading flipped numbers**, might you not adapt seamlessly? In search of magnitude information, would your eyes not be trained to jump from the previous word directly to the "3" at the end of "↗000,023"?
+However, on further thought, the situation looks less problematic. Yes, the flipped system complicates magnitude estimation _for folks who grew up with the current system._ But **if you had grown up reading flipped numbers**, might you not read seamlessly? In search of magnitude information, would your eyes not be trained to jump from the previous word directly to the "3" at the end of "↗000,023"?
 
-For example, when reading "↗000,000,05", a native reader wouldn't count the zeroes. Their eyes would jump to the right, see the "5", and notice it's in the third group past the decimal. They quickly grasp "fifty million." The commas do the heavy lifting, just as they do right now.
+For example, when reading "↗000,000,05", a native reader wouldn't count the zeroes. Their eyes would jump to the right, see the "5", and notice it's in the third group past the decimal. They would quickly grasp "fifty million." The commas do the heavy lifting, just as they do right now.
 
-[^magnitude]: For non-small numbers - e.g. over five digits in a row or four groups of comma-separated triplets - I suspect that many people cannot reliably determine the magnitude at a glance.
+[^magnitude]: For numbers with over five digits in a row or four groups of comma-separated triplets, I suspect that many people cannot reliably determine the magnitude at a glance.
 
 My best argument that magnitude estimation will be harder
-: In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This additional rule adds a small but frequent tension to the reading experience.
+: In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This new rule adds a small but frequent tension.
 
 Why I think the above argument fails
-: The argument claims that a person would not learn to flawlessly switch between the two well-practiced rules: "focus on the left side of normal words" versus "focus on the right side of numbers whose magnitude you want to learn". In other words, that there is an inherent friction in toggling between rule sets.
+: The argument claims that a person would not learn to flawlessly switch between the two well-practiced rules: "focus on the left side of normal words" versus "focus on the right side of numbers whose magnitude you want to learn". In other words, that there is an inherent friction in switching between rules.
 
 : Psychology studies _language switching costs_ for bilingual folks. While fluent in each language in isolation and somewhat used to switching, [some studies](https://journals.sagepub.com/doi/abs/10.1177/13670069211056438) support the idea of inevitable friction. But [Adamou & Shen (2017)](https://shs.hal.science/halshs-01522408/file/IJB_Adamou_Shen_2019.pdf) show that for people who practice switching frequently and naturally, this cognitive cost can disappear entirely. The key is to actually measure their speed at switching languages in realistic ways. Their work suggests that only _unpredictable_  switches impose costs.
 
-: In contrast, reading is far less unpredictable than reacting to spoken language. In a book, the "future" is frozen and you can see it with your peripheral vision. You will see that a number is coming later in the sentence, and you will probably know if you're going to want the exact value. These incidents will be predictable and - under this theory - free from switching costs.
+: In contrast, reading is far less unpredictable than reacting to spoken language. In a book, the "future" is frozen and you can see it with your peripheral vision. You will see that a number is coming later in the sentence, and you will probably know if you want the exact value. These incidents will be predictable and - under this theory - free from switching costs.
 
 The mental number line makes it easier to learn the additional rule
 : The mental number line gets bigger to the right. Therefore, we would be quite comfortable learning the rule "look right to determine how big the number is."
@@ -141,7 +141,7 @@ The mental number line makes it easier to learn the additional rule
 
 Subtitle: For example: Arabic, Hebrew, and Persian.
 
-While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and smoothly read left, _until_ they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading leftwards.
+While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and read left until they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading left.
 
 This rule is strictly more complicated than what flipped numbers require. Flipped numbers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, hundreds of millions right-to-left readers execute this rule every day. I don't yet see evidence that the Arabic rule makes it harder to read numbers even after the rule is initially learned.[^evidence]
 
@@ -153,7 +153,7 @@ This rule is strictly more complicated than what flipped numbers require. Flippe
 
 If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation.
 
-The point of scientific notation is to _quickly_ communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
+The point of scientific notation is to quickly communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
 
 However, for $10^k$ with $k\geq 1$, this would run counter to the "left is smaller" mental number line by putting the big magnitude to the left of a number in the one's place. We can't win - no matter which way we order the scientific notation, the mental number line will be violated for either $k\geq 1$ or $k \leq -1$. On the other hand, given that readers would be used to looking for the most significant digit on the right, writing $10^7 \times 5$ would be congruent with the more usual way of writing ↗000,000,05. On balance, I think that "$10^7 \times 5$" is the way to go.
 
@@ -163,7 +163,7 @@ Let's consider "$5.37$". I propose we write that as "$\nearrow\ldots^{-2}73.5$",
 
 Decimal long addition and multiplication are easier, as you never revise digits you've already computed. The first digits are informative. By flipping the decimal part, we preserve the symmetry of powers of ten around the decimal point. Having the fractional part on the left accords with the mental number line - smaller components on the left, bigger on the right.
 
-The challenge comes down to magnitude estimation. [As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
+[As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
 
 ## Flipped pronunciation
 
