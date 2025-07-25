@@ -76,6 +76,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
   [/^(?! *>| +\S)(.*?\S.*?)\$\$ *$/gm, "$1\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
+  [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, "$1\n"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
