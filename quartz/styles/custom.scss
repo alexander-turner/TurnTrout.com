@@ -496,6 +496,10 @@ img.favicon {
     margin-left: 0.05rem;
   }
 
+  &[src$="cladlab_nd_edu.avif"] {
+    filter: invert(90%);
+  }
+
   // These are really dark by default so we make them match var(--foreground)
   &[src$="mail.svg"],
   &[src$="readthesequences_com.avif"] {

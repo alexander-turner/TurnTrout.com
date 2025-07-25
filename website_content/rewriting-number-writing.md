@@ -146,15 +146,15 @@ This rule is strictly more complicated than what flipped numbers require. Flippe
 
 [^evidence]: While I found evidence that Arabic and Hebrew readers take longer to read numbers than equivalently long words, the same appears to be true for English readers.
 
-### Scientific notation should flip as well
+# Downstream impacts of flipping
+
+## Scientific notation should flip
 
 If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation.
 
 The point of scientific notation is to _quickly_ communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
 
 However, for $10^k$ with $k\geq 1$, this would run counter to the "left is smaller" mental number line by putting the big magnitude to the left of a number in the one's place. We can't win - no matter which way we order the scientific notation, the mental number line will be violated for either $k\geq 1$ or $k \leq -1$. On the other hand, given that readers would be used to looking for the most significant digit on the right, writing $10^7 \times 5$ would be congruent with the more usual way of writing ↗000,000,05. On balance, I think that "$10^7 \times 5$" is the way to go.
-
-# Downstream impacts of flipping
 
 ## Flip the decimal part
 
@@ -172,7 +172,7 @@ If you read "↗563", you should not read it aloud as "three hundred and sixty f
  > If we're truly optimizing, we might as well say "and hundred-three" while we're at it. The first words "and three-" don't tell you much until you know "three of _what_"? Whereas "about hundred-" tells you the order of magnitude as soon as possible.
 
  > [!note]
- > I _do_ think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
+ > I think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
 
 [^mixed-order]: Languages like German and Arabic use a mixed-order system. German swaps the ones and tens places, so that "365" is spoken as "dreihundertfünfundsechzig" - literally: "three-hundred-five-and-sixty".
 
@@ -186,8 +186,8 @@ It's a neat theory. It's a theory I came up with. It's also wrong.[^sad]
 
 Reality is not so neat. Although we call them "Arabic numerals", they are more accurately known as "Hindu–Arabic numerals." While mathematicians like the Persian [Al-Khwārizmī](https://en.wikipedia.org/wiki/Al-Khwarizmi) (after whom we coined "algorithm") introduced the system to Europe, the numerals still [originated in India](https://en.wikipedia.org/wiki/History_of_the_Hindu%E2%80%93Arabic_numeral_system "History of the Hindu–Arabic numeral system"). The relevant ancient Indian scripts (like [Brahmi](https://en.wikipedia.org/wiki/Brahmi_script)) were written _left-to-right_. Thus dies the "merchant miscommunication" hypothesis. Writing the most significant digit on the left was not a translation error.
 
-> [!question] But why did Arabic (a right-to-left script) keep the left-to-right numbers?
-> Despite being a right-to-left script, Arabic forces its readers to _change reading directions entirely_ to read numbers. That initially seems like strong evidence that the Arabs had a strong reason to retain the orientation of the numbers. So what was going on in Al-Khwārizmī's head? I can only speculate, but let's put ourselves in his shoes.
+> [!question] But why did the right-to-left Arabic keep the left-to-right numbers?
+> Arabic forces its readers to _change reading directions entirely_ to read numbers. That initially seemed like strong evidence that the Arabs had a strong reason to retain the orientation of the numbers. So what happened? I can only speculate, but let's put ourselves in Al-Khwārizmī's shoes.
 >
 > It's the early 9th century in Baghdad, the heart of the [Islamic Golden Age](https://en.wikipedia.org/wiki/Islamic_Golden_Age). Al-Khwārizmī is a brilliant scholar sponsored by the caliph's court.
 >
@@ -202,7 +202,7 @@ Reality is not so neat. Although we call them "Arabic numerals", they are more a
 >
 > So, why didn't he flip the order to match their right-to-left script? _The direction was part of the technology._ The numerals were not just a new set of fancy symbols to replace familiar ideas. The Hindu numerals were the front-end of a brand-new computational engine. The positional logic was baked into its left-to-right structure: as you move one way, the value of the digit changes by a power of ten.
 >
-> Al-Khwārizmī likely prioritized quickly integrating a system that made commerce, astronomy, and engineering calculations vastly easier. Flipping the numbers wasn't simply a matter of flipping the written order of the Hindu numerals - he would've needed to re-invent the algorithms which came with those numerals _and_ translate the Indians' existing mathematical work. Left-to-right numbers came in a package deal. After that, it became too hard to coordinate a switch.
+> Al-Khwārizmī likely prioritized quickly integrating a system that made commerce, astronomy, and engineering calculations vastly easier. Flipping the numbers wasn't simply a matter of flipping the written order of the Hindu numerals - he would've needed to re-invent the algorithms which came with those numerals _and_ translate the Indians' existing mathematical work. Left-to-right numbers came in a package deal.
 
 Even before the Arabs, these ancient Indian mathematicians were _already_ "doing it wrong" by the logic of this proposal.
 
@@ -210,9 +210,7 @@ Why? I don't know. Probably they had spoken numbers first. To write their number
 
 # Conclusion
 
-Our number system fights our mental number line and complicates mental arithmetic. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
-
-Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs, or how you write the number representing that cost, that cost is _big_.
+Our number system fights our mental number line and complicates mental arithmetic. Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs, or how you write the number representing that cost, that cost is _big_.
 
 Still, understanding might bring value. For example, maybe this essay helps explain why kids find positional notation to be difficult ([Fuson, 1990](https://karenfusonmath.net/wp-content/uploads/2023/06/63-Issues-Pl-V-MD-JRME-1990.pdf)). We know that learning two contradictory patterns makes both harder to learn ([McNeil and Alibali, 2005](https://cladlab.nd.edu/assets/250421/mcneilalibali05b.pdf)). Children simultaneously learn "biggest on the left" from the notation but "biggest on the right" from their teacher writing ascending sequences ("1, 2, 3...") on the blackboard. Maybe someone should take a look at that?
 
