@@ -223,7 +223,7 @@ export function spacesAroundSlashes(text: string): string {
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  const slashRegex = /(?<![\d/])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
+  const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
   text = text.replace(slashRegex, " / ")
 
   // Restore the h/t occurrences

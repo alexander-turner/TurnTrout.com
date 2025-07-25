@@ -4,10 +4,14 @@
 
 import type { Parent } from "hast"
 
-import { jest } from "@jest/globals"
-import { describe, it, expect, beforeEach } from "@jest/globals"
+import { describe, it, expect, beforeEach, jest } from "@jest/globals"
 
-import { processInlineCode, processKatex, processSmallCaps } from "../component_utils"
+import {
+  processInlineCode,
+  processKatex,
+  processSmallCaps,
+  processTextWithArrows,
+} from "../component_utils"
 import { debounce } from "../scripts/component_script_utils"
 
 let parent: Parent
@@ -29,7 +33,7 @@ describe("processKatex", () => {
 
 describe("processSmallCaps", () => {
   beforeEach(() => {
-    parent = { type: "element", tagName: "div", children: [] } as Parent
+    parent = { type: "element", tagName: "div", children: [], properties: {} } as Parent
   })
 
   it("processes small caps correctly", () => {
@@ -97,6 +101,24 @@ describe("processSmallCaps", () => {
         children: [{ type: "text", value: "cdf" }],
       },
       { type: "text", value: " and Statistical Functionals" },
+    ])
+  })
+})
+
+describe("processTextWithArrows", () => {
+  beforeEach(() => {
+    parent = { type: "element", tagName: "div", children: [] } as Parent
+  })
+
+  it("should handle text with arrows", () => {
+    processTextWithArrows("→", parent)
+    expect(parent.children).toMatchObject([
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["monospace-arrow"] },
+        children: [{ type: "text", value: "→" }],
+      },
     ])
   })
 })

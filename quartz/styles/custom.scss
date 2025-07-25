@@ -1021,22 +1021,15 @@ iframe {
 }
 
 // Arrows are too high up by default
-.right-arrow {
-  vertical-align: -0.0612rem;
+.right-arrow,
+.monospace-arrow {
+  vertical-align: bottom;
 }
 
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-
-  h1 &,
-  h2 &,
-  h3 &,
-  h4 &,
-  h5 &,
-  h6 & {
-    font-weight: 200;
-  }
+  font-weight: 200;
 }
 
 // Specific graph in design doc has too much whitespace in light
