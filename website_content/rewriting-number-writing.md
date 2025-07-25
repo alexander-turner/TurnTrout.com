@@ -207,11 +207,6 @@ Even before the Arabs, these ancient Indian mathematicians were _already_ "doing
 
 Why? I don't know. Probably they had spoken numbers first. To write their numbers, they retained the order in which they spoke numbers. That order happened to be our current rule of "biggest part first" - e.g. "three hundred" in "365". But once established, the switching costs became too high - even when it creates obvious inefficiencies, like Arabic readers changing direction mid-sentence.
 
-> [!note] Different numerical directions in different cultures
-> Subtitle: Cultures did not independently converge on "left to right" number display
->  
-> In Roman numerals, "1774" is "MDCCLXXIV" - a sequence of symbols which largely decrease in value, but it isn't positional and features an inversion at the end ("IV", where the "I" for 1 is smaller than the "V" for 5). Mayan and traditional Chinese operated top-to-bottom. German and Arabic have mixed-order pronunciation but have the same written number system as English.
-
 # Conclusion
 
 Our number system fights our mental number line and complicates mental arithmetic. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
