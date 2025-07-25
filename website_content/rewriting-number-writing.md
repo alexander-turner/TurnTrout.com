@@ -1,6 +1,6 @@
 ---
 title: English writes numbers backwards
-permalink: rethinking-number-writing
+permalink: english-numbers-are-backwards
 no_dropcap: false
 tags:
   - critique
@@ -13,8 +13,10 @@ aliases:
   - backwards-numbers
   - flip-integers
   - flipped-integers
+  - number-proposal
+  - rethinking-number-writing
 ---
-We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and intuitively clashes with how humans represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
+We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 
 # A modest proposal: flip the digit order
 
@@ -117,7 +119,7 @@ For example, when reading "↗000,000,05", a native reader wouldn't count the ze
 [^magnitude]: For non-small numbers - e.g. over five digits in a row or four groups of comma-separated triplets - I suspect that many people cannot reliably determine the magnitude at a glance.
 
 The strongest argument that magnitude estimation will be harder
-: In English, you always read words starting from the left. Therefore, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'" would be an unnatural rule and add a small but common tension to the reading experience. Even though the reader would often encounter this situation, the additional learned rule would remain slightly burdensome.
+: In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This additional rule adds a small but frequent tension to the reading experience. Even though the reader would often encounter this situation, the additional learned rule would remain slightly burdensome.
 
 Why I think the above argument fails
 : The argument claims that a person would not learn to flawlessly switch between the two well-practiced rules: "focus on the left side of normal words" versus "focus on the right side of numbers whose magnitude you want to learn". In other words, that there is an inherent friction in toggling between rule sets.
@@ -201,7 +203,7 @@ Reality is not so neat. Although we call them "Arabic numerals", they are more a
 >
 > Al-Khwārizmī likely prioritized quickly integrating a system that made commerce, astronomy, and engineering calculations vastly easier. Flipping the numbers wasn't simply a matter of flipping the written order of the Hindu numerals - he would've needed to re-invent the algorithms which came with those numerals _and_ translate the Indians' existing mathematical work. Left-to-right numbers came in a package deal. After that, it became too hard to coordinate a switch.
 
-By the logic of this proposal, even before the Arabs, these ancient Indian mathematicians were _already_ "doing it wrong."
+Even before the Arabs, these ancient Indian mathematicians were _already_ "doing it wrong" by the logic of this proposal.
 
 Why? I don't know. Probably they had spoken numbers first. To write their numbers, they retained the order in which they spoke numbers. That order happened to be our current rule of "biggest part first" - e.g. "three hundred" in "365". But once established, the switching costs became too high - even when it creates obvious inefficiencies, like Arabic readers changing direction mid-sentence.
 
@@ -212,9 +214,9 @@ Why? I don't know. Probably they had spoken numbers first. To write their number
 
 # Conclusion
 
-Our number system fights our mental number line, and makes mental arithmetic harder than necessary. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
+Our number system fights our mental number line and complicates mental arithmetic. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
 
-Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around, because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs (or write the number representing that cost), that cost is _big_.
+Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs (or write the number representing that cost), that cost is _big_.
 
 Still, understanding brings value. For example, maybe this essay helps explain why kids find positional notation to be difficult ([Fuson, 1990](https://karenfusonmath.net/wp-content/uploads/2023/06/63-Issues-Pl-V-MD-JRME-1990.pdf)). We know that learning two contradictory patterns makes both harder to learn ([McNeil and Alibali, 2005](https://cladlab.nd.edu/assets/250421/mcneilalibali05b.pdf)). Children simultaneously learn "biggest on the left" from the notation but "biggest on the right" from their teacher writing ascending sequences ("1,2,3...") on the blackboard. Maybe someone should take a look at that?
 
