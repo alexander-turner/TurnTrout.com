@@ -158,7 +158,7 @@ However, for $10^k$ with $k\geq 1$, this would run counter to the "left is small
 
 ## Flip the decimal part
 
-Let's consider $5.37$. I propose we write that as $\nearrow\ldots^{-2}73.5$, with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
+Let's consider "$5.37$". I propose we write that as "$\nearrow\ldots^{-2}73.5$", with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
 
 Decimal long addition and multiplication are easier, as you never revise digits you've already computed. The first digits are informative. By flipping the decimal part, we preserve the symmetry of powers of ten around the decimal point. Having the fractional part on the left accords with the mental number line - smaller components on the left, bigger on the right.
 
