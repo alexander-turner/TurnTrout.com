@@ -331,7 +331,7 @@ Figure: This image should be transparent in light mode and have a light backgrou
 
 # Arrows
 
--> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be FiraCode.
+-> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
 
 # Math
 
