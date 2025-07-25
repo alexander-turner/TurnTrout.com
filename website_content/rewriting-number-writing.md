@@ -210,7 +210,7 @@ Why? I don't know. Probably they had spoken numbers first. To write their number
 > [!note] Different numerical directions in different cultures
 > Subtitle: Cultures did not independently converge on "left to right" number display
 >  
-> In Roman numerals, "1774" is "MDCCLXXIV" - a sequence of symbols which (largely[^subtractive]) decrease in value, but it isn't positional and features an inversion at the end ("IV", where the "I" for 1 is smaller than the "V" for 5). Mayan and traditional Chinese operated top-to-bottom. German and Arabic have mixed-order pronunciation but have the same written number system as English.
+> In Roman numerals, "1774" is "MDCCLXXIV" - a sequence of symbols which largely decrease in value, but it isn't positional and features an inversion at the end ("IV", where the "I" for 1 is smaller than the "V" for 5). Mayan and traditional Chinese operated top-to-bottom. German and Arabic have mixed-order pronunciation but have the same written number system as English.
 
 # Conclusion
 
