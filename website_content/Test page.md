@@ -11,8 +11,9 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-07-25 13:30:55.478301
 ---
+
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 

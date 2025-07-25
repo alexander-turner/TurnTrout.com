@@ -5,17 +5,22 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
-description: "Why do our eyes scan to the end of a long number, then jump back to the start to read it?! My modest proposal: flip how we write numbers."
+description: "Why do our eyes scan to the end of a long number, then jump back to
+  the start to read it?! My modest proposal: flip how we write numbers."
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
+card_image: 
+  https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
 aliases:
   - backwards-numbers
   - flip-integers
   - flipped-integers
   - number-proposal
   - rethinking-number-writing
+date_published: &id001 2025-07-25 13:30:55.478301
+date_updated: *id001
 ---
+
 We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 
 # A modest proposal: flip the digit order
@@ -118,8 +123,8 @@ For example, when reading "↗000,000,05", a native reader wouldn't count the ze
 
 [^magnitude]: For non-small numbers - e.g. over five digits in a row or four groups of comma-separated triplets - I suspect that many people cannot reliably determine the magnitude at a glance.
 
-The strongest argument that magnitude estimation will be harder
-: In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This additional rule adds a small but frequent tension to the reading experience. Even though the reader would often encounter this situation, the additional learned rule would remain slightly burdensome.
+My best argument that magnitude estimation will be harder
+: In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This additional rule adds a small but frequent tension to the reading experience.
 
 Why I think the above argument fails
 : The argument claims that a person would not learn to flawlessly switch between the two well-practiced rules: "focus on the left side of normal words" versus "focus on the right side of numbers whose magnitude you want to learn". In other words, that there is an inherent friction in toggling between rule sets.
@@ -153,13 +158,13 @@ However, for $10^k$ with $k\geq 1$, this would run counter to the "left is small
 
 ## Flip the decimal part
 
-Let's consider $\pi = 3.14159...$. I propose we write that as ↗...<sup>-5</sup>95141.3, with the "-4" indicating "the first digit has the place of $10^{-5}$."
+Let's consider $5.37$. I propose we write that as $\nearrow\ldots^{-2}73.5$, with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
 
 Benefits:
-- Preserves the symmetry of the number line around the decimal point.
-- Accords with the mental number line - smaller components on the left, bigger on the right.
-- The first digit is still informative.
 - Long addition and multiplication are easier as you don't need to revise if you carry later.
+- The first digits are informative.
+- Preserves the symmetry of powers of ten around the decimal point.
+- Accords with the mental number line: smaller components on the left, bigger on the right.
 
 The challenge, once again, comes down to magnitude estimation. [As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
 
@@ -192,7 +197,7 @@ Reality is not so neat. Although we call them "Arabic numerals", they are more a
 >
 > <figure><img  src="https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif" alt="A depiction of the House of Wisdom, made in the style of the famous School of Athens painting."/><figcaption>A modern depiction of the House of Wisdom, in the style of Raphael's <a href="https://en.wikipedia.org/wiki/The_School_of_Athens"><em>School of Athens</em></a>. While historians now think the House of Wisdom was less a single grand academy and more a collection of scholarly circles around the caliph's private library, this work captures the spirit of the Islamic Golden Age. Art by <a href="https://www.commde-creativewalk.com/houseofwisdom">Pitchaya Vimonthammawath</a>.</figcaption></figure>
 >
-> Al-Khwārizmī encounters a revolutionary system of calculation from India. Before, arithmetic was a chore. You might use an abacus. Multiplying or dividing large numbers was complex and error-prone. In contrast, the Indian system was pretty mind-blowing.
+> Al-Khwārizmī encounters a revolutionary system of calculation from India. Before, arithmetic was a chore. You might use an abacus. Multiplying or dividing large numbers was complex and error-prone. In contrast, the Indian system was mind-blowing.
 >
 > 1. In _positional notation_, the value of a digit depends on its position. The "5" in "50" is different from the "5" in "500".
 > 2. _A symbol for zero_ allowed for clear distinctions between "5", "50", and "501".
@@ -211,9 +216,9 @@ Why? I don't know. Probably they had spoken numbers first. To write their number
 
 Our number system fights our mental number line and complicates mental arithmetic. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
 
-Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs (or write the number representing that cost), that cost is _big_.
+Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince all English speakers to flip their numbers? No matter how you quantify the switching costs, or how you write the number representing that cost, that cost is _big_.
 
-Still, understanding brings value. For example, maybe this essay helps explain why kids find positional notation to be difficult ([Fuson, 1990](https://karenfusonmath.net/wp-content/uploads/2023/06/63-Issues-Pl-V-MD-JRME-1990.pdf)). We know that learning two contradictory patterns makes both harder to learn ([McNeil and Alibali, 2005](https://cladlab.nd.edu/assets/250421/mcneilalibali05b.pdf)). Children simultaneously learn "biggest on the left" from the notation but "biggest on the right" from their teacher writing ascending sequences ("1,2,3...") on the blackboard. Maybe someone should take a look at that?
+Still, understanding might bring value. For example, maybe this essay helps explain why kids find positional notation to be difficult ([Fuson, 1990](https://karenfusonmath.net/wp-content/uploads/2023/06/63-Issues-Pl-V-MD-JRME-1990.pdf)). We know that learning two contradictory patterns makes both harder to learn ([McNeil and Alibali, 2005](https://cladlab.nd.edu/assets/250421/mcneilalibali05b.pdf)). Children simultaneously learn "biggest on the left" from the notation but "biggest on the right" from their teacher writing ascending sequences ("1, 2, 3...") on the blackboard. Maybe someone should take a look at that?
 
 The next time you encounter a long number and have to read to the end to figure out what the first digits even mean, remember that that silly design choice was made thousands of years ago. Our entire civilization agreed to write numbers backwards, and now it's too late to fix it.
 
