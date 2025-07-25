@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
-description: "Our eyes must scan to the end of a long number, then jump back to the start in order to read it. My modest proposal: flip how we write numbers."
+description: "Our eyes must scan to the end of a long number, then jump back to the start in order to understand it. My modest proposal: flip how we write numbers."
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
@@ -19,7 +19,7 @@ date_published: 2025-07-25 13:30:55.478301
 date_updated: 2025-07-25 13:30:55.478301
 ---
 
-We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
+We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and totally practical fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 
 # A modest proposal: flip the digit order
 
@@ -34,11 +34,13 @@ I have no illusions: this system will not be adopted anytime soon, and for good 
 
 # Advantages of flipped digit order
 
+Some of the benefits apply under a serial computation model (reading one digit at a time), which is not usually how people read. Other benefits apply under realistic human reading conditions.
+
 ## Simplifies long addition and multiplication
 
-Imagine you already have a number in mind (like "1,000") and you want to sum up with the other person's number. If you've received the prefix "I have \$320", you can't start adding the number to 1,000 because you don't know what place the "3", "2", and "0" correspond to. You can't do much at all.
+Imagine you have a number in mind (like "1,000") and you want to add another number to it. You're serially processing the other number one digit at a time. If you've received the prefix "I have \$320", you can't start adding the number to 1,000 because you don't know what place the "3", "2", and "0" correspond to. If I instead write "I have ↗023 dollars", you can perform long addition as you process each digit.
 
-If I write "I have ↗023 dollars", you can perform long addition as you process each digit.  Since [the pronunciation](#flipped-pronunciation) of "↗023" is "twenty and three hundred", the primary speed-up to long addition would be in spoken English: adding a medium-length number in real-time as you hear its increasingly large components. You would propagate carries in real time. In the current system, you cannot finalize any high-order digit in the result until all lower-order digits have been processed and their [carries](https://en.wikipedia.org/wiki/Carry_(arithmetic)) accounted for.
+Since [the pronunciation](#flipped-pronunciation) of "↗023" should be "twenty and three hundred", the primary real-life speed-up would be in spoken English. For example, adding a medium-length number as you hear its increasingly large components. You would propagate [carries](https://en.wikipedia.org/wiki/Carry_(arithmetic))  in real time. In the current system, you cannot finalize any high-order digit in the result until all lower-order digits have been processed and their carries accounted for.
 
 Likewise, flipped-number ("little endian") algorithms are slightly more efficient at e.g. long addition.
 
@@ -60,16 +62,15 @@ In real life, people look at the printed page and see the entire number all at o
 
 <p style="text-align:right;">Kinda like having a single paragraph which is aligned to the right. That paragraph isn't impossible to read, but it's out-of-place.</p>
 ## The first digits are informative on their own
-Subtitle: From the perspective of serial data processing.
 
-Imagine that you're receiving a string of text one character at a time. As you receive each character, your knowledge of the sentence looks like:
+Here's another serial processing benefit. Suppose you're processing a string of text one character at a time. As you receive each character, your knowledge of the sentence looks like:
 
 1. "I have $"
 2. "I have $3"
 3. "I have $32"
 4. "I have $320"
 
-What comes next? Who knows. Maybe the full sentence is "I have \$320.", or maybe it's "I have \$320,000".  
+What comes next? Maybe the full sentence is "I have \$320.", or maybe it's "I have \$320,000".  
 
 More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^congruence] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
 
@@ -90,7 +91,7 @@ In our current writing system, the "biggest" digit is on the left. That's bad, b
 
 Our current number system fights our mental number line. The most significant digit is on the _left_ ("3" hundred in "365") and the numbers get "smaller" as you read to the _right_ - but that's intuitively the "bigness" direction! We're so used to this mismatch that we don't notice it anymore.
 
-In contrast, flipped numbers are internally congruent with the mental number line. In "↗563", the value of the components increases from left to right: "5" -> "60" -> "300". Thus I align the direction of reading, the significance of digits, [the spoken order of components](#flipped-pronunciation), and the mental number line. Children would learn a single unified rule: **bigness is to the right.**
+In contrast, flipped numbers are internally congruent with the mental number line. In "↗563", the value of the components increases from left to right: "5" -> "60" -> "300". Thus I align the direction of reading, the significance of digits, [the spoken order of components](#flipped-pronunciation), and the mental number line. Children would learn a single unified rule: _bigness is to the right._
 
 > [!note]- We probably associate "right" with "big" because we read from left to right
 > [Dehaene et al. (1993)](https://www.unicog.org/publications/Dehaene_ParitySNARCeffect_JEPGeneral1993.pdf) found that Iranian subjects (who write right-to-left) displayed no or reversed effects.
@@ -143,7 +144,7 @@ Subtitle: For example: Arabic, Hebrew, and Persian.
 
 While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and read left until they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading left.
 
-This rule is strictly more complicated than what flipped numbers require. Flipped numbers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, hundreds of millions right-to-left readers execute this rule every day. I don't yet see evidence that the Arabic rule makes it harder to read numbers even after the rule is initially learned.[^evidence]
+This rule is strictly more complicated than what flipped numbers require. Flipped numbers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, hundreds of millions right-to-left readers execute this rule every day. I don't yet see evidence that the Arabic rule makes it harder to read numbers even after the rule is learned.[^evidence]
 
 [^evidence]: While I found evidence that Arabic and Hebrew readers take longer to read numbers than equivalently long words, the same appears to be true for English readers.
 
@@ -170,7 +171,7 @@ Decimal long addition and multiplication are easier, as you never revise digits 
 If you read "↗563", you should not read it aloud as "three hundred and sixty five" - that would require scanning to the end of the flipped number and then reading backwards. Instead, read aloud "↗563" as "five, sixty, and three hundred" and "↗023" as "twenty and three-hundred."[^mixed-order]
 
  > [!idea] Flipping the local ordering of pronunciation
- > If we're truly optimizing, we might as well say "and hundred-three" while we're at it. The first words "and three-" don't tell you much until you know "three of _what_"? Whereas "about hundred-" tells you the order of magnitude as soon as possible.
+ > If we're truly optimizing, we might as well say "twenty and hundred-three" while we're at it. The first words "and three-" don't tell you much until you know "three of _what_"? Whereas "and hundred-" tells you the order of magnitude as soon as possible.
 
  > [!note]
  > I think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
