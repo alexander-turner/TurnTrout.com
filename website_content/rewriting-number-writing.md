@@ -5,27 +5,25 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
-description: "Why do our eyes scan to the end of a long number, then jump back to
-  the start to read it?! My modest proposal: flip how we write numbers."
+description: "Our eyes must scan to the end of a long number, then jump back to the start in order to read it. My modest proposal: flip how we write numbers."
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
-  https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
+card_image: https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
 aliases:
   - backwards-numbers
   - flip-integers
   - flipped-integers
   - number-proposal
   - rethinking-number-writing
-date_published: &id001 2025-07-25 13:30:55.478301
-date_updated: *id001
+date_published: 2025-07-25 13:30:55.478301
+date_updated: 2025-07-25 13:30:55.478301
 ---
 
 We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and _totally practical_ fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 
 # A modest proposal: flip the digit order
 
-If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character to distinguish from the current system. Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple numbers, just include it at the beginning (not before every number): "50+2" becomes "↗05+2".
+If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character to distinguish from the current system. Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple numbers, just include it at the beginning (not before every number): "50 + 2" becomes "↗05 + 2".
 
 If somehow this system were ever adopted, I guess we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
 
