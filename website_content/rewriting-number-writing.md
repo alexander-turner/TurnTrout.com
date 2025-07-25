@@ -18,31 +18,27 @@ We're writing numbers wrong. We write "365" starting with the most significant d
 
 # A modest proposal: flip the digit order of integers
 
-If I'm writing "three hundred and sixty-five", "365" becomes "↗563."[^before] Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple integers, just include it at the beginning (not before every integer): "50+2" becomes "↗05+2".
+If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character to distinguish from the current system. Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple integers, just include it at the beginning (not before every integer): "50+2" becomes "↗05+2".
 
 If somehow this system were ever adopted, I guess we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
-
-[^before]: The "↗" character must be present before the number so that the reader knows what to expect.
 
 I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). Setting aside practicality, the fact remains: English writes its integers backwards.
 
 # Advantages of flipped digit order
 
-## Easy long addition, multiplication, and division
+## Simplifies long addition, multiplication, and division
 
 Imagine you already have a number in mind (like "1,000") and you want to sum up with the other person's number. If you've received the prefix "I have \$320", you can't start adding the number to 1,000 because you don't know what place the "3", "2", and "0" correspond to. You can't do much at all.
 
 If I write "I have ↗023 dollars", you can perform long addition as you process each digit.  Since [the pronunciation](#flipped-pronunciation) of "↗023" is "twenty and three hundred", the primary speed-up to long addition would be in spoken English: adding a medium-length number in real-time as you hear its increasingly large components. You would propagate carries in real time. In the current system, you cannot finalize any high-order digit in the result until all lower-order digits have been processed and their [carries](https://en.wikipedia.org/wiki/Carry_(arithmetic)) accounted for.
 
-## Both ↗023 and English read left-to-right
+## Aligns with the direction of reading
 
 In real life, people look at the printed page and see the entire number all at once. Imagine it... you're reading left-to-right, you come across a long number (e.g. 521,300,421,503), and then _your eyes flick to the right end of the number and begin scanning left_. Err... why are we doing that?!
 
 <p style="text-align:right;">Kinda like having a single paragraph which is aligned to the right. That paragraph isn't impossible to read, but it's out-of-place.</p>
 ## The first digits you receive are informative
-
-> [!warning]
-> In this section, I assume serial data processing. This isn't how humans read, and I'll address that [in the next section](#impact-on-how-humans-actually-read). I just think this point is elegant.
+Subtitle: Analyzing reading from the perspective of serial data processing, in which characters are received one at a time.
 
 Imagine that you're receiving a string of text one character at a time. As you receive each character, your knowledge of the sentence looks like:
 
@@ -57,10 +53,9 @@ More importantly, by this point in time, what do we actually know about the numb
 
 [^congruence]: More formally, if $n$ starts with "320", we know that there exists $k\geq 2$ such that $\lfloor n \div 10^k \rfloor = 3$, $\lfloor n \div 10^{k-1} \rfloor =2$, and $\lfloor n \div 10^{k-2} \rfloor = 0$. Without knowing $k$, we cannot deduce much about $n$'s magnitude (except that $n\geq 320$).
 
-> [!note] Spoken English is better
-> A person doesn't say "three two zero", they say "three hundred and twenty." Quickly you are given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
+Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
 
-## Impact on how humans _actually_ read
+## Better aligns with how humans _actually_ read
 
 ### Mental number line: small on the left, big on the right
 
@@ -118,13 +113,13 @@ Why I think the above argument fails
 The mental number line makes it easier to learn the additional rule
 : The mental number line gets bigger to the right. Therefore, we would be quite comfortable learning the rule "look right to determine how big the number is."
 
-#### Right-to-left scripts _already_ swap directions for reading numbers
+### Right-to-left scripts _already_ swap directions for reading numbers
 
 Subtitle: For example: Arabic, Hebrew, and Persian
 
-: While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and smoothly read left, _until_ they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading leftwards.
+While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and smoothly read left, _until_ they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading leftwards.
 
-: This rule is strictly more complicated than what flipped integers require. Flipped integers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, the world's hundreds of millions right-to-left readers execute this rule every day.
+This rule is strictly more complicated than what flipped integers require. Flipped integers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, the world's hundreds of millions right-to-left readers execute this rule every day.
 
 ### Scientific notation should flip as well
 
@@ -190,33 +185,40 @@ Reality is not so neat. Although we call them "Arabic numerals", they are more a
 Ancient Indian scripts like [Brahmi](https://en.wikipedia.org/wiki/Brahmi_script) were written _left-to-right_. Thus dies the "merchant miscommunication" hypothesis. Writing the most significant digit on the left was not a translation error.
 
 > [!question] But why did Arabic (a right-to-left script) keep the left-to-right integers?
-> Despite being a right-to-left script, Arabic forces its readers to _change reading directions entirely_ to read numbers. That initially seems like strong evidence that the Arabs had a strong reason to retain the orientation of the integers. So what was going on in Al-Khwārizmī's head? I'm not a historian and can only speculate, but let's put ourselves in his shoes.
+> Despite being a right-to-left script, Arabic forces its readers to _change reading directions entirely_ to read numbers. That initially seems like strong evidence that the Arabs had a strong reason to retain the orientation of the integers. So what was going on in Al-Khwārizmī's head? I can only speculate, but let's put ourselves in his shoes.
 >
 > It's the early 9th century in Baghdad, the heart of the [Islamic Golden Age](https://en.wikipedia.org/wiki/Islamic_Golden_Age). Al-Khwārizmī is a brilliant scholar sponsored by the caliph's court.
 >
 > <figure><img  src="https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif" alt="A depiction of the House of Wisdom, made in the style of the famous School of Athens painting."/><figcaption>A modern depiction of the House of Wisdom, in the style of Raphael's <a href="https://en.wikipedia.org/wiki/The_School_of_Athens"><em>School of Athens</em></a>. While historians now think the House of Wisdom was less a single grand academy and more a collection of scholarly circles around the caliph's private library, this work captures the spirit of the Islamic Golden Age. Art by <a href="https://www.commde-creativewalk.com/houseofwisdom">Pitchaya Vimonthammawath</a>.</figcaption></figure>
 >
-> Al-Khwārizmī encounters a revolutionary system of calculation from India. Before, arithmetic was a chore. You might use an abacus. Multiplying or dividing large numbers was complex and error-prone. In contrast, the Indian system was pretty mind-blowing. It had two key innovations:
+> Al-Khwārizmī encounters a revolutionary system of calculation from India. Before, arithmetic was a chore. You might use an abacus. Multiplying or dividing large numbers was complex and error-prone. In contrast, the Indian system was pretty mind-blowing.
 >
-> 1. In **positional notation**, the value of a digit depends on its position. The "5" in "50" is different from the "5" in "500".
-> 2. **A symbol for zero** allowed for clear distinctions between "5", "50", and "501".
+> 1. In _positional notation_, the value of a digit depends on its position. The "5" in "50" is different from the "5" in "500".
+> 2. _A symbol for zero_ allowed for clear distinctions between "5", "50", and "501".
 >
 > Al-Khwārizmī recognized the system's genius and wrote _On the Calculation with Hindu Numerals_. This book introduced the system to the Arab world and, later, to Europe.
 >
 > So, why didn't he flip the order to match their right-to-left script? _The direction was part of the technology._ The numerals were not just a new set of fancy symbols to replace familiar ideas. The Hindu numerals were the front-end of a brand-new computational engine. The logic of "place value" was baked into its left-to-right structure: as you move one way, the value of the digit changes by a power of ten.
 >
-> Reversing the digits required re-engineering the system's core logic for minor convenience in reading and writing. Al-Khwārizmī likely prioritized quickly integrating a system that made commerce, astronomy, and engineering calculations vastly easier. It wasn't simply a matter of flipping the written order of the Hindu numerals - he would've needed to re-invent the algorithms which came with those numerals _and_ translate the Indians' existing mathematical work. Left-to-right integers came as part of a package deal. After that, it became too hard to coordinate a switch.
+> Al-Khwārizmī likely prioritized quickly integrating a system that made commerce, astronomy, and engineering calculations vastly easier. Flipping the integers wasn't simply a matter of flipping the written order of the Hindu numerals - he would've needed to re-invent the algorithms which came with those numerals _and_ translate the Indians' existing mathematical work. Left-to-right integers came in a package deal. After that, it became too hard to coordinate a switch.
 
-By the logic of this proposal, even before the Arabs, these ancient Indian mathematicians were _already_ "doing it wrong." Likewise, the Romans independently "did it wrong". In Roman numerals, "1774" is "MDCCLXXIV" - a sequence of symbols which (largely) decrease in value. Thus, Roman numerals also (often) start with the biggest value on the left.
+By the logic of this proposal, even before the Arabs, these ancient Indian mathematicians were _already_ "doing it wrong." Likewise, the Romans independently "did it wrong". In Roman numerals, "1774" is "MDCCLXXIV" - a sequence of symbols which (largely) decrease in value. Thus, Roman numerals also (often) start with the biggest value on the left. These systems independently converged on this design choice.
 
 Why? I don't know. Probably they had spoken numbers first. To write their numbers, they retained the order in which they spoke numbers. That order happened to be our current rule of "biggest part first" - e.g. "three hundred" in "365".
 
-> [!idea] Roman and Hindu–Arabic numerals converged on the current notation
-> These systems _did_ independently converge, which is evidence of there being some kind of good reason for the design choice. I'm happy to [hear other people's thoughts](mailto:alex@turntrout.com) on whether that's true and what that "good reason" might be.
+The current notation's persistence across cultures suggests that the notation emerged from how we speak numbers. But once established, the switching costs became too high - even when it creates obvious inefficiencies, like Arabic readers changing direction mid-sentence.
 
 # Conclusion
 
-Where does this leave us? As I said before, my proposal will never be implemented. However, now you can see the problems with the current system. Now that you've seen the problems, you can't unsee them. You're welcome. ;)
+Our number system fights our mental number line, and makes mental arithmetic harder than necessary. Arabic readers already deal with something more annoying than my proposal: they literally switch reading directions mid-sentence for every number. Three hundred million people do this every day without civilization collapsing.
+
+Why did we end up here? I'd guess that Al-Khwārizmī couldn't just flip the Hindu numerals around, because the notation was part of the technology. Now we're all trapped by a coordination problem too big to solve. Who's going to convince 8 billion people to flip their integers? No matter how you quantify the switching costs (or write the number representing that cost), that cost is _big_.
+
+Still, understanding brings value. For example, maybe this essay helps explain why kids find positional notation to be difficult ([Fuson, 1990](https://karenfusonmath.net/wp-content/uploads/2023/06/63-Issues-Pl-V-MD-JRME-1990.pdf)). We know that learning two contradictory patterns makes both harder to learn ([McNeil and Alibali, 2005](https://cladlab.nd.edu/assets/250421/mcneilalibali05b.pdf)). Children simultaneously learn "biggest on the left" from the integer notation but "biggest on the right" from their teacher writing ascending sequences ("1,2,3...") on the blackboard. Maybe someone should take a look at that?
+
+The next time you encounter a long number and have to read to the end to figure out what the first digits even mean, remember that that silly design choice was made thousands of years ago. Our entire civilization agreed to write integers backwards, and now it's too late to fix it.
+
+You can't unsee it now. You're welcome. ↗😉
 
 # Appendix: Endianness in computer science
 
@@ -226,6 +228,6 @@ Big-endian
 : The integer's most significant byte (the "big end") is stored at the lowest memory address. Since we write integers with the "biggest" digit first (the "3" in "365"), English's current system could be called "big-endian."
 
 Little-endian
-: The integer's least significant byte (the "little end") is stored at the lowest memory address. My proposal argues for little-endian notation in written English.
+: The integer's least significant byte (the "little end") is stored at the lowest memory address.  Little-endian implementations are often slightly more efficient. My proposal argues for little-endian notation in written English.
 
 To read more about these ideas, see [Understanding Big and Little Endian Byte Order](https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/).
