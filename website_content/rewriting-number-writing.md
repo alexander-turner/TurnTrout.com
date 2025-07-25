@@ -160,13 +160,9 @@ However, for $10^k$ with $k\geq 1$, this would run counter to the "left is small
 
 Let's consider $5.37$. I propose we write that as $\nearrow\ldots^{-2}73.5$, with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
 
-Benefits:
-- Long addition and multiplication are easier as you don't need to revise if you carry later.
-- The first digits are informative.
-- Preserves the symmetry of powers of ten around the decimal point.
-- Accords with the mental number line: smaller components on the left, bigger on the right.
+Decimal long addition and multiplication are easier, as you never revise digits you've already computed. The first digits are informative. By flipping the decimal part, we preserve the symmetry of powers of ten around the decimal point. Having the fractional part on the left accords with the mental number line - smaller components on the left, bigger on the right.
 
-The challenge, once again, comes down to magnitude estimation. [As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
+The challenge comes down to magnitude estimation. [As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
 
 ## Flipped pronunciation
 
