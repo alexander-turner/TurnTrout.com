@@ -5,10 +5,11 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
-description: "Our eyes must scan to the end of a long number, then jump back to the start in order to understand it. My modest proposal: flip how we write numbers."
+description: "Our eyes must scan to the end of a long number, then jump back to the
+  start in order to understand it. My modest proposal: flip how we write numbers."
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif
+card_image: https://assets.turntrout.com/static/images/card_images/n4eFkTK.png
 aliases:
   - backwards-numbers
   - flip-integers
