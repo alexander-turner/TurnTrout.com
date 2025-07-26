@@ -31,7 +31,7 @@ If somehow this system were ever adopted, we would need to preface every relevan
 I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). Setting aside practicality, the fact remains: English writes its numbers backwards.
 
 > [!note] Few people have written about this proposal
-> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled "We write numbers backward". However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny Hacker News thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
+> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled ["We write numbers backward".](https://www.lsusr.com/blog/we-write-numbers-backward.html) However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny Hacker News thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
 
 # Advantages of flipped digit order
 
@@ -163,21 +163,22 @@ However, for $10^k$ with $k\geq 1$, this would run counter to the "left is small
 
 ## Flip the decimal part
 
-Let's consider "$5.37$". I propose we write that as "$\nearrow\ldots^{-2}73.5$", with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
+Let's consider "$5.37$". I propose we write that as "$\nearrow^{-2}73.5$", with the "$-2$" indicating "the first digit has the place of $10^{-2}$."
 
 Decimal long addition and multiplication are easier, as you never revise digits you've already computed. The first digits are informative. By flipping the decimal part, we preserve the symmetry of powers of ten around the decimal point. Having the fractional part on the left accords with the mental number line - smaller components on the left, bigger on the right.
 
-[As explained earlier](#people-would-adapt-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
+[As explained earlier](#people-would-learn-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
 
 ## Flipped pronunciation
 
-If you read "↗563", you should not read it aloud as "three hundred and sixty five" - that would require scanning to the end of the flipped number and then reading backwards. Instead, read aloud "↗563" as "five, sixty, and three hundred" and "↗023" as "twenty and three-hundred."[^mixed-order]
+If you read "↗563", you should not read it aloud as "three hundred and sixty five" - that would require scanning to the end of the flipped number and then reading backwards. Instead, read aloud "↗563" as "five, sixty, and three hundred" and "↗023" as "twenty[^twenty] and three-hundred."[^mixed-order]
 
  > [!idea] Flipping the local ordering of pronunciation
- > If we're truly optimizing, we might as well say "twenty and hundred-three" while we're at it. The first words "and three-" don't tell you much until you know "three of _what_"? Whereas "and hundred-" tells you the order of magnitude as soon as possible.
+ > If we're truly optimizing, we might as well read "↗023" as "twenty and hundred-three". If we said "twenty and three-hundred", the words "twenty and three-" don't tell you much until you know "three of _what_"? Whereas "twenty and hundred-" tells you the next order of magnitude as soon as possible.
 
- > [!note]
- > I think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
+%% TODO talk about %%
+
+[^twenty]: I think it's silly to have special words like "twenty" instead of "ten-two" and "eighty" instead of "ten-eight", but I won't go there right now. I'm keeping this proposal modest and feasible!
 
 [^mixed-order]: Languages like German and Arabic use a mixed-order system. German swaps the ones and tens places, so that "365" is spoken as "dreihundertfünfundsechzig" - literally: "three-hundred-five-and-sixty".
 
