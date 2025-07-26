@@ -4,16 +4,22 @@
  * supporting small caps and LaTeX rendering.
  */
 
-import type { RootContent, Parent, Text, Element, Root } from "hast"
+import type { RootContent, Parent, Element, Root } from "hast"
 // skipcq: JS-W1028
 import type { JSX } from "preact"
 
 import { fromHtml } from "hast-util-from-html"
 import React from "react"
 
+import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_text"
 import { createLogger } from "../plugins/transformers/logger_utils"
 import { type TocEntry } from "../plugins/transformers/toc"
-import { processInlineCode, processKatex, processSmallCaps } from "./component_utils"
+import {
+  processInlineCode,
+  processKatex,
+  processSmallCaps,
+  processTextWithArrows,
+} from "./component_utils"
 import modernStyle from "./styles/toc.scss"
 import {
   type QuartzComponent,
@@ -112,7 +118,7 @@ export function buildNestedList(
 /**
  * Generates the table of contents as a nested list.
  *
- * @param entries - The TOC entriesnodeto process.
+ * @param entries - The TOC entries to process.
  * @returns A JSX element representing the nested TOC.
  */
 export function addListItem(entries: TocEntry[]): JSX.Element {
@@ -123,9 +129,6 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
   return <ol>{listItems}</ol>
 }
 
-/**
- * Converts a TocEntry to a JSX list item element.
- */
 export function toJSXListItem(entry: TocEntry): JSX.Element {
   const entryParent: Parent = processTocEntry(entry)
   return (
@@ -135,8 +138,12 @@ export function toJSXListItem(entry: TocEntry): JSX.Element {
   )
 }
 
+const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`)
+const latexRegex = new RegExp(`(\\$[^$]+\\$)`)
+const inlineCodeRegex = new RegExp(`(\`[^\`]+\`)`)
+const regexSource = [arrowRegex, latexRegex, inlineCodeRegex].map((r) => r.source).join("|")
 /**
- * Processes small caps and LaTeX in a TOC entry.
+ * Processes small caps, LaTeX, arrows, and inline code in a TOC entry.
  *
  * @param entry - The TOC entry to process.
  * @returns A Parent object representing the processed entry.
@@ -145,10 +152,12 @@ export function processTocEntry(entry: TocEntry): Parent {
   logger.debug(`Processing TOC entry: ${entry.text}`)
   const parent = { type: "element", tagName: "span", properties: {}, children: [] } as Parent
 
-  // Split the text by LaTeX delimiters
-  const parts = entry.text.split(/(\$[^$]+\$|`[^`]+`)/g)
-
+  const parts = entry.text.split(new RegExp(regexSource))
   parts.forEach((part) => {
+    if (!part) {
+      return
+    }
+
     if (part.startsWith("$") && part.endsWith("$")) {
       // LaTeX expression
       const latex = part.slice(1, -1)
@@ -157,8 +166,10 @@ export function processTocEntry(entry: TocEntry): Parent {
       // Inline code
       const code = part.slice(1, -1)
       processInlineCode(code, parent)
+    } else if (arrowsToWrap.includes(part)) {
+      processTextWithArrows(part, parent)
     } else {
-      // Parse as HTML and process
+      // Parse as HTML and process for things like leading numbers and smallcaps
       const htmlAst = fromHtml(part, { fragment: true })
       processHtmlAst(htmlAst, parent)
     }
@@ -213,7 +224,7 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
 }
 
 const handleAbbr = (elt: Element): JSX.Element => {
-  const abbrText = (elt.children[0] as Text).value
+  const abbrText = (elt.children[0] as { value: string }).value
   const className = (elt.properties?.className as string[])?.join(" ") || ""
   return <abbr className={className}>{abbrText}</abbr>
 }
@@ -222,18 +233,17 @@ const handleSpan = (elt: Element): JSX.Element => {
   const classNames = (elt.properties?.className as string[]) || []
 
   if (classNames.includes("katex-toc")) {
-    return (
-      <span
-        className="katex-toc"
-        dangerouslySetInnerHTML={{
-          __html: (elt.children[0] as { value: string }).value,
-        }}
-      />
-    )
+    const katexChild = elt.children[0]
+    const katexHtml = katexChild && "value" in katexChild ? katexChild.value : ""
+    return <span className="katex-toc" dangerouslySetInnerHTML={{ __html: katexHtml }} />
   }
 
   if (classNames.includes("number-prefix")) {
     return <span className="number-prefix">{elt.children.map(elementToJsx)}</span>
+  }
+
+  if (classNames.includes("monospace-arrow")) {
+    return <span className="monospace-arrow">{elt.children.map(elementToJsx)}</span>
   }
 
   if (classNames.includes("inline-code")) {

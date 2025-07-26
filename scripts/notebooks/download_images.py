@@ -61,26 +61,22 @@ SUFFIX_REGEX = (
 
 def main(markdown_files: list[Path]) -> None:
     git_root = script_utils.get_git_root()
-    images_dir = git_root / "quartz" / "static" / "images" / "posts"
-
-    print(f"Images dir: {images_dir}")
-    print(f"Markdown files to process: {markdown_files}")
 
     # 1. Find all image URLs in Markdown files
     asset_urls: set[str] = set()
     for file in markdown_files:
         with open(file) as f:
             content = f.read()
-            print(r"(https?://.*?" + SUFFIX_REGEX)
             urls = re.findall(
                 r"(https?://.*?\." + SUFFIX_REGEX + r")", content
             )
             asset_urls.update(url for url, _ in urls)
 
     # 2. Download each image and replace URLs in markdown files
-    target_dir = Path("static/images/posts")
+    images_dir = git_root / "quartz" / "static" / "images" / "posts"
     os.makedirs(images_dir, exist_ok=True)
 
+    target_dir = Path("static/images/posts")
     for url in asset_urls:
         if download_image(url, images_dir):
             new_url = f"/{target_dir}/{os.path.basename(url)}"

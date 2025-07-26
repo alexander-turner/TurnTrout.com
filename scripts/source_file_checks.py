@@ -269,6 +269,24 @@ def check_sequence_relationships(
     return errors
 
 
+def check_card_image_extension(metadata: dict) -> List[str]:
+    """
+    Check if card_image has a valid extension.
+
+    EG .avif won't preview on Twitter.
+    """
+    card_image_url: str = metadata.get("card_image", "")
+    errors: List[str] = []
+    if not card_image_url:
+        return errors
+
+    if not card_image_url.lower().endswith((".png", ".jpg", ".jpeg")):
+        errors.append(
+            f"Card image URL '{card_image_url}' must end in .png, .jpg, or .jpeg"
+        )
+    return errors
+
+
 def check_card_image(metadata: dict) -> List[str]:
     """
     Check if card_image exists at the specified URL.
@@ -285,7 +303,14 @@ def check_card_image(metadata: dict) -> List[str]:
         return errors
 
     try:
-        response = requests.head(card_image_url, timeout=10)
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/58.0.3029.110 Safari/537.36"
+            )
+        }
+        response = requests.head(card_image_url, timeout=10, headers=headers)
         if not response.ok:
             errors.append(
                 f"Card image URL '{card_image_url}' returned "
@@ -296,6 +321,7 @@ def check_card_image(metadata: dict) -> List[str]:
             f"Failed to load card image URL '{card_image_url}': {str(e)}"
         )
 
+    errors.extend(check_card_image_extension(metadata))
     return errors
 
 

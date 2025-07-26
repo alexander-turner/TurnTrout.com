@@ -163,7 +163,7 @@ export function transformElement(
 export function niceQuotes(text: string): string {
   // Single quotes //
   // Ending comes first so as to not mess with the open quote
-  const afterEndingSingle = `(?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s\\.!?;,\\)—\\-\\]]|$))`
+  const afterEndingSingle = `(?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s\\.!?;,\\)—\\-\\]"]|$))`
   const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
   text = text.replace(new RegExp(endingSingle, "gm"), "’")
 
@@ -223,7 +223,7 @@ export function spacesAroundSlashes(text: string): string {
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  const slashRegex = /(?<![\d/])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
+  const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
   text = text.replace(slashRegex, " / ")
 
   // Restore the h/t occurrences

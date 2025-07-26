@@ -174,8 +174,7 @@ async function partialRebuildFromEntrypoint(
   }
 
   const perf = new PerfTimer()
-  console.log(chalk.yellow("Detected change, rebuilding... 🔔🔔"))
-  beep.default(2) // Play double beep sound to indicate a rebuild is happening
+  console.log(chalk.yellow("Detected change, rebuilding..."))
 
   // UPDATE DEP GRAPH
   const fp = joinSegments(argv.directory, toPosixPath(filepath)) as FilePath
@@ -333,7 +332,7 @@ async function partialRebuildFromEntrypoint(
   await rimraf([...destinationsToDelete])
 
   console.log(chalk.green(`Done rebuilding in ${perf.timeSince()} 🔔`))
-  beep.default(1) // Play double beep sound
+  beep.default(1)
 
   toRemove.clear()
   release()
@@ -386,8 +385,7 @@ async function rebuildFromEntrypoint(
   }
 
   const perf = new PerfTimer()
-  console.log(chalk.yellow("Detected change, rebuilding... 🔔🔔"))
-  beep.default(2) // Play double beep sound to indicate a rebuild is happening
+  console.log(chalk.yellow("Detected change, rebuilding..."))
   try {
     const filesToRebuild = [...toRebuild].filter((fp) => !toRemove.has(fp))
 
@@ -413,8 +411,7 @@ async function rebuildFromEntrypoint(
     // instead of just deleting everything
     await rimraf(path.join(argv.output, ".*"), { glob: true })
     await emitContent(ctx, filteredContent)
-    console.log(chalk.green(`Done rebuilding in ${perf.timeSince()} 🔔`))
-    beep.default(1) // Play double beep sound
+    console.log(chalk.green(`Done rebuilding in ${perf.timeSince()}`))
   } catch (err) {
     console.log(chalk.yellow("Rebuild failed. Waiting on a change to fix the error..."))
     if (argv.verbose) {

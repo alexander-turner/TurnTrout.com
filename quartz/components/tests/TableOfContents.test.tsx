@@ -33,6 +33,25 @@ describe("processTocEntry", () => {
     expect(result.type).toBe("element")
     expect(result.children[0] as Parent).toHaveProperty("value", "Test Heading")
   })
+
+  it("should handle TOC entries with inline code and produce correct hast", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "A heading with `code`",
+      slug: "heading-with-code",
+    }
+
+    const result = processTocEntry(entry)
+
+    expect(result.children).toHaveLength(2)
+    expect(result.children[0]).toMatchObject({ type: "text", value: "A heading with " })
+    expect(result.children[1]).toMatchObject({
+      type: "element",
+      tagName: "code",
+      properties: { className: ["inline-code"] },
+      children: [{ type: "text", value: "code" }],
+    })
+  })
 })
 
 describe("processHtmlAst", () => {
@@ -224,6 +243,17 @@ describe("elementToJsx", () => {
       props: {
         className: "inline-code",
         children: ["const x = 1"],
+      },
+    })
+  })
+
+  it("should handle monospace arrows", () => {
+    const node = h("span", { className: ["monospace-arrow"] }, "→")
+    expect(elementToJsx(node)).toMatchObject({
+      type: "span",
+      props: {
+        className: "monospace-arrow",
+        children: ["→"],
       },
     })
   })

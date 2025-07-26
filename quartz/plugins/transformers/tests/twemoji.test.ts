@@ -11,6 +11,7 @@ import {
   parseAttributes,
   createNodes,
   processTree,
+  ignoreMap,
 } from "../twemoji"
 
 interface CustomNode extends UnistNode {
@@ -33,7 +34,7 @@ function createEmoji(path: string, originalChar: string): Element {
 jest.mock("../modules/twemoji.min", () => ({
   twemoji: {
     parse: jest.fn((content: string) =>
-      content.replace("😀", `<img src="${TWEMOJI_BASE_URL}1f600.svg">")`),
+      content.replace("😀", `<img src="${TWEMOJI_BASE_URL}1f600.svg">`),
     ),
   },
 }))
@@ -81,7 +82,7 @@ describe("Twemoji functions", () => {
   }
 
   describe("createNodes", () => {
-    it("should handle a string with no emojis", () => {
+    it("should handle a string with no emoji", () => {
       const input = "Hello, world!"
       const result = createNodes(input)
       expect(result).toEqual([{ type: "text", value: "Hello, world!" }])
@@ -93,7 +94,7 @@ describe("Twemoji functions", () => {
       expect(result).toEqual([{ type: "text", value: "Hello! " }, createEmoji("1f44b.svg", "👋")])
     })
 
-    it("should handle a string with multiple emojis", () => {
+    it("should handle a string with multiple emoji", () => {
       const input = `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> How are you? <img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`
       const result = createNodes(input)
       expect(result).toEqual([
@@ -116,7 +117,7 @@ describe("Twemoji functions", () => {
       expect(result).toEqual([{ type: "text", value: "Goodbye! " }, createEmoji("1f44b.svg", "👋")])
     })
 
-    it("should handle a string with only emojis", () => {
+    it("should handle a string with only emoji", () => {
       const input = `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"><img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`
       const result = createNodes(input)
       expect(result).toEqual([createEmoji("1f44b.svg", "👋"), createEmoji("1f60a.svg", "😊")])
@@ -138,7 +139,7 @@ describe("Twemoji functions", () => {
 })
 
 describe("processTree", () => {
-  it("should replace placeholders and emojis correctly", () => {
+  it("should replace placeholders and emoji correctly", () => {
     const mockTree: CustomNode = {
       type: "root",
       children: [{ type: "text", value: "Hello ↩ 😀" }],
@@ -152,7 +153,7 @@ describe("processTree", () => {
     })
   })
 
-  it("should handle multiple text nodes and emojis", () => {
+  it("should handle multiple text nodes and emoji", () => {
     const mockTree: CustomNode = {
       type: "root",
       children: [
@@ -174,7 +175,7 @@ describe("processTree", () => {
       ],
     })
   })
-  it("should not modify nodes without emojis or placeholders", () => {
+  it("should not modify nodes without emoji or placeholders", () => {
     const mockTree: CustomNode = {
       type: "root",
       children: [{ type: "text", value: "Hello World" }],
@@ -183,5 +184,17 @@ describe("processTree", () => {
     const result = processTree(mockTree as UnistNode) as CustomNode
 
     expect(result).toEqual(mockTree)
+  })
+
+  it("should ignore characters in ignoreMap", () => {
+    ignoreMap.forEach((_: string, key: string) => {
+      const text = `This should be ignored: ${key}`
+      const mockTree: CustomNode = {
+        type: "root",
+        children: [{ type: "text", value: text }],
+      }
+      const result = processTree(mockTree as UnistNode) as CustomNode
+      expect(result).toEqual(mockTree)
+    })
   })
 })

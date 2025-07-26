@@ -116,11 +116,11 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
 
                 if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
                   const heading = node as Heading
-                  let text = applyTextTransforms(customToString(heading))
-                  text = stripHtml(text)
+                  const text = applyTextTransforms(customToString(heading))
+                  const plainText = stripHtml(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
-                  const slug = slugify(text)
+                  const slug = slugify(plainText)
 
                   toc.push({
                     depth: heading.depth,

@@ -11,8 +11,9 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-07-25 13:30:55.478301
 ---
+
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
@@ -329,6 +330,10 @@ Figure: This image should be transparent in light mode and have a light backgrou
 >! Multiple lines can be hidden
 >! Like this!
 
+# Arrows
+
+-> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
+
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$
@@ -347,6 +352,8 @@ $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \math
 <!-- vale off -->
 <img src="https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif" class="float-right" alt="Alex smiling at the camera; rainbow colored light splays off the wall in the background."/>
 <!-- vale on -->
+
+[Flipped integer](/flip-integers) number: ↗142.2.
 
 # Link features
 

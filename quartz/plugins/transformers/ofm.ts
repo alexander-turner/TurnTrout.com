@@ -88,17 +88,6 @@ const admonitionMapping = {
   cite: "quote",
 } as const
 
-const arrowMapping: Record<string, string> = {
-  "->": "&rarr;",
-  "-->": "&rArr;",
-  "=>": "&rArr;",
-  "==>": "&rArr;",
-  "<-": "&larr;",
-  "<--": "&lArr;",
-  "<=": "&lArr;",
-  "<==": "&lArr;",
-}
-
 function canonicalizeAdmonition(admonitionName: string): keyof typeof admonitionMapping {
   const normalizedAdmonition = admonitionName.toLowerCase() as keyof typeof admonitionMapping
   // if admonition is not recognized, make it a custom one
@@ -106,8 +95,6 @@ function canonicalizeAdmonition(admonitionName: string): keyof typeof admonition
 }
 
 export const externalLinkRegex = /^https?:\/\//i
-
-export const arrowRegex = new RegExp(/(-{1,2}>|={1,2}>|<-{1,2}|<={1,2})/, "g")
 
 // !?                 -> optional embedding
 // \[\[               -> open brace
@@ -239,20 +226,6 @@ export function markdownPlugins(opts: Options): PluggableList {
             return {
               type: "html",
               value: `<span class="text-highlight">${inner}</span>`,
-            }
-          },
-        ])
-      }
-
-      if (opts.parseArrows) {
-        replacements.push([
-          arrowRegex,
-          (value: string) => {
-            const maybeArrow = arrowMapping[value]
-            if (maybeArrow === undefined) return SKIP
-            return {
-              type: "html",
-              value: `<span>${maybeArrow}</span>`,
             }
           },
         ])

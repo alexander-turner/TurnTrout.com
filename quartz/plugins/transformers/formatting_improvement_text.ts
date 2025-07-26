@@ -70,16 +70,19 @@ export function noteAdmonition(text: string): string {
 
 const subtitlePattern = /^(Subtitle:[\S ]+\n)(?=[^\n])/gm
 
+export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
   [/^(?! *>| +\S)(.*?\S.*?)\$\$ *$/gm, "$1\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
+  [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, "$1\n"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
+  [new RegExp(`(${arrowsToWrap.join("|")})`, "g"), "<span class='monospace-arrow'>$1</span>"],
 ]
 
 export function massTransformText(text: string): string {

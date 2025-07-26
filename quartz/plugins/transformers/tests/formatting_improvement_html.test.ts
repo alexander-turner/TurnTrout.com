@@ -102,6 +102,10 @@ describe("HTMLFormattingImprovement", () => {
       ["What do you think?']", "What do you think?’]"],
       ["\"anti-'survival incentive' incentive\"", "“anti-‘survival incentive’ incentive”"],
       ["('survival incentive')", "(‘survival incentive’)"],
+      [
+        'In English, you always read words starting from the left. Therefore, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. \'↗000,023’"',
+        "In English, you always read words starting from the left. Therefore, “when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. ‘↗000,023’”",
+      ],
     ])('should fix quotes in "%s"', (input, expected) => {
       const processedHtml = niceQuotes(input)
       expect(processedHtml).toBe(expected)

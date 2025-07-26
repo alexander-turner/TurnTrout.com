@@ -484,6 +484,10 @@ img.favicon {
     margin-left: 0.05rem;
   }
 
+  &[src$="cladlab_nd_edu.avif"] {
+    filter: invert(90%);
+  }
+
   // These are really dark by default so we make them match var(--foreground)
   &[src$="mail.svg"],
   &[src$="readthesequences_com.avif"] {
@@ -1008,9 +1012,15 @@ iframe {
   margin-bottom: calc(2 * $base-margin);
 }
 
-// Arrows are too high up by default
-.right-arrow {
-  vertical-align: -0.0612rem;
+.right-arrow,
+.monospace-arrow {
+  vertical-align: bottom;
+}
+
+// EG ← looks better in FiraCode
+.monospace-arrow {
+  font-family: var(--font-monospace);
+  font-weight: 200;
 }
 
 // Specific graph in design doc has too much whitespace in light

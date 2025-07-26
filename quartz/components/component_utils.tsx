@@ -30,7 +30,7 @@ export function processSmallCaps(text: string, parent: Parent): void {
 }
 
 /**
- * Detects when Markdown inline code is present and renders it as a code block.
+ * Renders inline code as a code block.
  * @param text - The text to process.
  * @param parent - The parent node to add the processed text to.
  */
@@ -58,4 +58,19 @@ export function processKatex(latex: string, parent: Parent): void {
     children: [{ type: "raw", value: html }],
   } as Element
   parent.children.push(katexNode)
+}
+
+/**
+ * Wraps text in a span for arrows.
+ * @param text The text to process (assumed to be an arrow).
+ * @param parent The parent node to add the processed text to.
+ */
+export function processTextWithArrows(text: string, parent: Parent): void {
+  const arrowSpan: Element = {
+    type: "element",
+    tagName: "span",
+    properties: { className: ["monospace-arrow"] },
+    children: [{ type: "text", value: text }],
+  }
+  parent.children.push(arrowSpan)
 }

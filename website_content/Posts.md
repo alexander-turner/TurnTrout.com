@@ -27,7 +27,7 @@ tags:
 2. [The shard theory of human values](/shard-theory)
 3. [Bruce Wayne and the cost of inaction](/bruce-wayne-and-the-cost-of-inaction)
 4. [Formalizing “defection” using game theory](/what-counts-as-defection)
-5. [You should read "Harry Potter and the Methods of Rationality"](/read-hpmor)
+5. [English writes numbers backwards](/backwards-numbers)
 
 # My recent posts
 
