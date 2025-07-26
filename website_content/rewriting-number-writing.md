@@ -31,7 +31,7 @@ If somehow this system were ever adopted, we would need to preface every relevan
 I have no illusions: this system will not be adopted anytime soon, and for good reason. The switching cost would be large and the benefits minor. If you were going to swap systems, start with [getting the US off of the Imperial system and onto metric](https://en.wikipedia.org/wiki/Metrication_in_the_United_States). Setting aside practicality, the fact remains: English writes its numbers backwards.
 
 > [!note] Few people have written about this proposal
-> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled "We write numbers backward". However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny HackerNews thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
+> I am apparently not the first person to have this thought. `lsusr` wrote a short note titled "We write numbers backward". However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny Hacker News thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
 
 # Advantages of flipped digit order
 
