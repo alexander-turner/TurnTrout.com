@@ -24,7 +24,7 @@ We're writing numbers wrong. We write "365" starting with the most significant d
 
 # A modest proposal: flip the digit order
 
-If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character to distinguish from the current system. Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple numbers, just include it at the beginning (not before every number): "50 + 2" becomes "↗05 + 2".
+If I'm writing "three hundred and sixty-five", "365" becomes "↗563", with the "↗" character pronounced "flip". Likewise, "21,514" becomes "↗415,12." As you move right (→), the each digit's magnitude goes up (↑). If you're writing an expression with multiple numbers, just include it at the beginning (not before every number): "50 + 2" becomes "↗05 + 2".
 
 If somehow this system were ever adopted, we would need to preface every relevant expression with the up-right arrow. That sucks, but otherwise we couldn't tell if the author was using the old system or the new one.
 
