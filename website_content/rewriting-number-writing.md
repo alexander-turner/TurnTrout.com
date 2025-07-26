@@ -73,7 +73,7 @@ Here's another serial processing benefit. Suppose you're processing a string of 
 3. "I have $32"
 4. "I have $320"
 
-What comes next? Maybe the full sentence is "I have \$320.", or maybe it's "I have \$320,000".  
+What comes next? Maybe the full sentence is "I have \$320" or maybe it's "I have \$320,000".  
 
 More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^congruence] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
 
@@ -136,7 +136,7 @@ Why I think the above argument fails
 
 : Psychology studies _language switching costs_ for bilingual folks. While fluent in each language in isolation and somewhat used to switching, [some studies](https://journals.sagepub.com/doi/abs/10.1177/13670069211056438) support the idea of inevitable friction. But [Adamou & Shen (2017)](https://shs.hal.science/halshs-01522408/file/IJB_Adamou_Shen_2019.pdf) show that for people who practice switching frequently and naturally, this cognitive cost can disappear entirely. The key is to actually measure their speed at switching languages in realistic ways. Their work suggests that only _unpredictable_  switches impose costs.
 
-: In contrast, reading is far less unpredictable than reacting to spoken language. In a book, the "future" is frozen and you can see it with your peripheral vision. You will see that a number is coming later in the sentence, and you will probably know if you want the exact value. These incidents will be predictable and - under this theory - free from switching costs.
+: In contrast, reading is more predictable than spoken language. In a book, the "future" is frozen and you can see it with your peripheral vision. You will see that a number is coming later in the sentence, and you will probably know if you want the exact value. These incidents will be predictable and - under this theory - free from switching costs.
 
 The mental number line makes it easier to learn the additional rule
 : The mental number line gets bigger to the right. Therefore, we would be quite comfortable learning the rule "look right to determine how big the number is."
@@ -155,9 +155,9 @@ This rule is strictly more complicated than what flipped numbers require. Flippe
 
 ## Scientific notation should flip
 
-If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation.
+If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation. Scientific notation only includes the digits which are relevant. However, it isn't perfect.
 
-The point of scientific notation is to quickly communicate approximate magnitude, only including the digits which are relevant. Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
+Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
 
 However, for $10^k$ with $k\geq 1$, this would run counter to the "left is smaller" mental number line by putting the big magnitude to the left of a number in the one's place. We can't win - no matter which way we order the scientific notation, the mental number line will be violated for either $k\geq 1$ or $k \leq -1$. On the other hand, given that readers would be used to looking for the most significant digit on the right, writing $10^7 \times 5$ would be congruent with the more usual way of writing ↗000,000,05. On balance, I think that "$10^7 \times 5$" is the way to go.
 
