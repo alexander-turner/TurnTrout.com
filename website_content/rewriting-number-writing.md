@@ -35,6 +35,8 @@ I have no illusions: this system will not be adopted anytime soon, and for good 
 
 # Advantages of flipped digit order
 
+For adults today, switching from the current system would be cursed. I will generally imagine that people had grown up with this system.
+
 Some of the benefits apply under a serial computation model (reading one digit at a time), which is not usually how people read. Other benefits apply under realistic human reading conditions.
 
 ## Simplifies long addition and multiplication
@@ -110,9 +112,9 @@ Humans don't process numbers a single numeral at a time. There are two main ways
 
 #### The exact value
 
-Consider 3,124,203,346 (or ↗643,302,421,3). Suppose we don't just care about the rough magnitude, but about its exact value. In our current system, you have to count the number of digits in a large number - reading to the right - and then jump back to the beginning of the number in order to read off its exact value. For example, you only know to say "3 billion" because you count the number of digits (or perhaps the number of comma-separated groups). You read to the end and then jump back to read it again - an extra eye movement.
+Consider 3,124,203,346 (or ↗643,302,421,3) and suppose we care about its exact value. In our current system, you have to count the number of digits in a large number - reading to the right - and then jump back to the beginning of the number in order to read off its exact value. For example, you only know to say "3 billion" because you count the number of digits (or perhaps the number of comma-separated groups). You read to the end and then jump back to read it again - an extra eye movement.
 
-In contrast, the flipped number system works perfectly: you start reading on the left and process each digit one at a time. You gain information immediately. The flipped number system leads to smoother reading.
+In contrast, the flipped number system uses a single pass. You start reading on the left and process each digit one at a time. You gain information with each digit. The flipped number system is a strict improvement for reading the exact value.
 
 #### The rough magnitude
 
@@ -145,7 +147,7 @@ Subtitle: For example: Arabic, Hebrew, and Persian.
 
 While Arabic scripts read right-to-left, surprisingly, they both write numbers in the same order we do, and also _read those numbers in the same order_. So they might write "I have 1,300 dollars" as "السعر 1,300 دولار". They start on the right side of the sentence and read left until they hit the number. At that point, they saccade their eyes _to the left side of the number_ and read to the right, and then saccade _back to the word to the left of the number_ and continue reading left.
 
-This rule is strictly more complicated than what flipped numbers require. Flipped numbers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions (to read the number), and then switch directions again to continue reading the text. Even so, hundreds of millions right-to-left readers execute this rule every day. I don't yet see evidence that the Arabic rule makes it harder to read numbers even after the rule is learned.[^evidence]
+This rule is strictly more complicated than what flipped numbers require. Flipped numbers only require you skip past a few digits to quickly determine magnitude, but still allow you to smoothly move your eyes in the usual direction to read the exact value of a number. In contrast, the Arabic rule always requires that you skip past the digits, switch directions to read the number, and then switch directions again to continue reading the text. Even so, hundreds of millions right-to-left readers execute this rule every day. I don't yet see evidence that the Arabic rule makes it harder to read numbers even after the rule is learned.[^evidence]
 
 [^evidence]: While I found evidence that Arabic and Hebrew readers take longer to read numbers than equivalently long words, the same appears to be true for English readers.
 
