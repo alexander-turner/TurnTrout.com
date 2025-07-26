@@ -994,6 +994,47 @@ def test_check_card_image_sends_user_agent() -> None:
 
 
 @pytest.mark.parametrize(
+    "metadata,expected_errors",
+    [
+        # Test case 1: No card_image field
+        ({}, []),
+        # Test case 2: Valid .png URL
+        ({"card_image": "https://example.com/image.png"}, []),
+        # Test case 3: Valid .jpg URL
+        ({"card_image": "https://example.com/image.jpg"}, []),
+        # Test case 4: Valid .jpeg URL
+        ({"card_image": "https://example.com/image.jpeg"}, []),
+        # Test case 5: Invalid .gif URL
+        (
+            {"card_image": "https://example.com/image.gif"},
+            [
+                "Card image URL 'https://example.com/image.gif' must end in .png, .jpg, or .jpeg"
+            ],
+        ),
+        # Test case 6: URL with no extension
+        (
+            {"card_image": "https://example.com/image"},
+            [
+                "Card image URL 'https://example.com/image' must end in .png, .jpg, or .jpeg"
+            ],
+        ),
+        # Test case 7: Empty card_image field
+        ({"card_image": ""}, []),
+        # Test case 8: Valid extension with different casing
+        ({"card_image": "https://example.com/image.PNG"}, []),
+    ],
+)
+def test_check_card_image_extension(
+    metadata: dict, expected_errors: List[str]
+) -> None:
+    """
+    Test checking card image URL extensions in metadata.
+    """
+    errors = source_file_checks.check_card_image_extension(metadata)
+    assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
     "content,expected_errors",
     [
         # Test case 1: No tables
