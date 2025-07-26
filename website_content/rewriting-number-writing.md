@@ -49,7 +49,7 @@ Likewise, flipped-number ("little endian") algorithms are slightly more efficien
 
 > [!note]- Endianness in computer science
 >
-> I'm dancing around [a classic "holy war"](https://www.rfc-editor.org/ien/ien137.txt) in computer science: should 32-bit integers start with their least significant or their most significant byte? In some ways, I have replayed parts of this debate, but in the arena of human communication instead of synthetic computation.
+> I dance around [a classic "holy war"](https://www.rfc-editor.org/ien/ien137.txt) in computer science: should 32-bit integers start with their least significant or their most significant byte? In some ways, I have replay parts of this debate, but in the arena of human communication instead of synthetic computation.
 >
 > Big-endian
 > : The integer's most significant byte (the "big end") is stored at the lowest memory address. Since we write integers with the "biggest" digit first (the "3" in "365"), English's current system could be called "big-endian."
