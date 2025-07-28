@@ -315,9 +315,23 @@ Papers:
 - [Steering Language Models With Activation Engineering](https://arxiv.org/abs/2308.10248)
 - [Steering Llama 2 via Contrastive Activation Addition](https://arxiv.org/abs/2310.08043)
   
-# Gradient routing
+# Selected research I've mentored
 
-Subtitle: June 2024 through the present
+I've served as a [MATS](matsprogram.org) mentor since Winter 2023. I love supervising promising junior researchers. Here's some of the work I've been most excited about!
+
+## Unsupervised capability elicitation
+
+Subtitle: Winter 2024 (MATS 5.0)
+
+> [!summary] [Mechanistically eliciting latent behaviors](/melbo)
+> We introduce a method for eliciting latent behaviors in language models by learning unsupervised perturbations of an early layer of an LLM. These perturbations are trained to maximize _changes_ in downstream activations. The method discovers diverse and meaningful behaviors with just **one prompt**, including perturbations overriding safety training, eliciting backdoored behaviors and uncovering latent capabilities.
+
+> [!summary] [Deep causal transcoding: A framework for mechanistically eliciting latent behaviors in language models](/deep-causal-transcoding)
+> We introduce a new framework for [mechanistically eliciting latent behaviors](/melbo) in LLMs. In particular, we propose _deep causal transcoding_ - modeling the effect of causally intervening on the residual stream of a _deep_ (e.g. $\gtrsim 10$-layer) slice of a transformer, using a _shallow_ MLP. We find that the weights of these MLPs are highly interpretable -- input directions serve as diverse and coherently generalizable steering vectors, while output directions induce predictable changes in model behavior via directional ablation.
+
+## Gradient routing
+
+Subtitle: Summer 2024 (MATS 6.0)
 
 Neural networks are [oft dismissed as "inscrutable"](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities) - hopeless messes which we'd be lucky to learn basic facts about through laborious interpretability. [Gradient routing](/gradient-routing) strikes back by enabling (limited, apparently scalable) control over where networks learn selected capabilities.
 
@@ -328,3 +342,14 @@ Neural networks are [oft dismissed as "inscrutable"](https://www.lesswrong.com/p
 
 ![](https://assets.turntrout.com/static/images/posts/gradient-routing-mask-networks.avif)
 Figure: By masking gradient updates, gradient routing controls which datapoints update which parameters. The result: Coarse-grained localization of where capabilities (like virology knowledge or goal pursuit) are learned.
+
+## Distillation robustifies unlearning
+
+Subtitle: Winter 2025 (MATS 7.0)
+
+> [!summary] [Distillation robustifies unlearning](/distillation-robustifies-unlearning)
+> Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill some models before deployment, our work implies they might achieve robust unlearning "for free" on those models by simply applying an unlearning step before distillation.
+>
+> ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif]]
+>
+> Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
