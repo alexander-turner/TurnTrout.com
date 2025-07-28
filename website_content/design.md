@@ -31,6 +31,11 @@ Figure: The beginning of my journey, rendered under my third commit ([`6e687609`
 ![A pleasing rendition of the article "Think carefully before calling RL policies 'agents'".](https://assets.turntrout.com/static/images/posts/new_site.avif)
 Figure: Content rendered approximately when this article was first published ([`31bba104`](https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c)).
 
+> [!warning] My stance on AI-written content
+> As of July 2025, my site contains almost no unmarked AI-written content. I sometimes use AI to write a conclusion or summarize a pdf, but I generally revise every sentence. I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content.
+>
+> In 2025, I started using AI to "red-team" my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
+
 # Site rendering basics
 
 The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site generator. While [the build process](https://quartz.jzhao.xyz/advanced/architecture) is rather involved, here's what you need to know for this article:
@@ -838,7 +843,7 @@ I lastly check that my CSS:
 
 ### Unit tests
 
-I have 1,430 JavaScript unit tests and 607 Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage`](https://github.com/nedbat/coveragepy) to ensure 100\% coverage of my Python files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
+I have thousands of JavaScript unit tests and hundreds of Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage`](https://github.com/nedbat/coveragepy) to ensure 100\% coverage of my Python files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
 
 ### Simulating site interactions
 
