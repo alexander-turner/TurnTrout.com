@@ -31,13 +31,21 @@
     "width": 1328,
     "height": 1056
   },
-  "https://assets.turntrout.com/static/images/posts/about-me.avif": {
-    "width": 2048,
-    "height": 1366
+  "https://assets.turntrout.com/static/images/external-favicons/substack_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/rss.svg": {
+    "width": 456,
+    "height": 456
   },
   "https://assets.turntrout.com/static/images/mail.svg": {
     "width": 800,
     "height": 800
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me.avif": {
+    "width": 2048,
+    "height": 1366
   },
   "https://assets.turntrout.com/twemoji/1f604.svg": {
     "width": 36,
@@ -2559,6 +2567,10 @@
     "width": 64,
     "height": 64
   },
+  "https://assets.turntrout.com/static/images/external-favicons/simple_wikipedia_org.avif": {
+    "width": 64,
+    "height": 64
+  },
   "https://assets.turntrout.com/static/images/posts/pbmk8ndyip6nyu4ntf6z.avif": {
     "width": 2048,
     "height": 908
@@ -3079,6 +3091,10 @@
     "width": 64,
     "height": 64
   },
+  "https://assets.turntrout.com/static/images/external-favicons/app_deepsource_com.avif": {
+    "width": 64,
+    "height": 64
+  },
   "https://assets.turntrout.com/static/images/external-favicons/plotly_com.avif": {
     "width": 64,
     "height": 64
@@ -3111,23 +3127,27 @@
     "width": 1600,
     "height": 465
   },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141127.avif": {
-    "width": 2948,
-    "height": 722
+  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613145643.avif": {
+    "width": 1536,
+    "height": 1024
+  },
+  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif": {
+    "width": 2182,
+    "height": 540
   },
   "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612143006.avif": {
     "width": 1024,
     "height": 1536
   },
-  "./asset_staging/distillation-robustifies-unlearning-20250612153120.png": {
+  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif": {
     "width": 1600,
     "height": 723
   },
-  "./asset_staging/distillation-robustifies-unlearning-20250612153132.png": {
+  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif": {
     "width": 1600,
     "height": 409
   },
-  "./asset_staging/distillation-robustifies-unlearning-20250612153140.png": {
+  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif": {
     "width": 1600,
     "height": 787
   },
@@ -3276,6 +3296,18 @@
     "height": 64
   },
   "https://assets.turntrout.com/static/images/external-favicons/wolframalpha_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/grinnell_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/grinnell-talk-20250624223204.avif": {
+    "width": 1815,
+    "height": 2420
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/funds_effectivealtruism_org.avif": {
     "width": 64,
     "height": 64
   },
@@ -4042,6 +4074,22 @@
   "https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4": {
     "width": 512,
     "height": 512
+  },
+  "/static/images/external-favicons/capsolver_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/raw/main/docs/images/main_page.png": {
+    "width": 900,
+    "height": 508
+  },
+  "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/raw/main/docs/images/download_page.png": {
+    "width": 670,
+    "height": 390
+  },
+  "/static/images/external-favicons/royrinberg_com.png": {
+    "width": 64,
+    "height": 64
   },
   "https://assets.turntrout.com/static/images/posts/KEKaYrk.avif": {
     "width": 1478,
@@ -4867,10 +4915,6 @@
     "width": 1750,
     "height": 482
   },
-  "https://assets.turntrout.com/static/images/external-favicons/grinnell_edu.avif": {
-    "width": 64,
-    "height": 64
-  },
   "https://assets.turntrout.com/static/images/posts/grinnell.avif": {
     "width": 1440,
     "height": 500
@@ -5251,18 +5295,6 @@
     "width": 1554,
     "height": 366
   },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif": {
-    "width": 1600,
-    "height": 723
-  },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif": {
-    "width": 1600,
-    "height": 409
-  },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif": {
-    "width": 1600,
-    "height": 787
-  },
   "https://assets.turntrout.com/static/images/posts/DNE5EJg.avif": {
     "width": 2048,
     "height": 1022
@@ -5403,67 +5435,127 @@
     "width": 1920,
     "height": 1080
   },
-  "./asset_staging/distillation-robustifies-unlearning-20250613141405.png": {
-    "width": 2182,
-    "height": 540
+  "https://assets.turntrout.com/static/images/external-favicons/capsolver_com.avif": {
+    "width": 32,
+    "height": 32
   },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif": {
-    "width": 2182,
-    "height": 540
+  "https://assets.turntrout.com/static/images/external-favicons/royrinberg_com.avif": {
+    "width": 64,
+    "height": 64
   },
-  "./asset_staging/distillation-robustifies-unlearning-20250613145643.png": {
-    "width": 1536,
-    "height": 1024
+  "./asset_staging/prevent-ai-scraping-20250723075740.png": {
+    "width": 900,
+    "height": 508
   },
-  "https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613145643.avif": {
-    "width": 1536,
-    "height": 1024
+  "./asset_staging/prevent-ai-scraping-20250723075756.png": {
+    "width": 670,
+    "height": 390
   },
-  "https://assets.turntrout.com/twemoji/260e.svg": {
+  "https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723075740.avif": {
+    "width": 900,
+    "height": 508
+  },
+  "https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723075756.avif": {
+    "width": 670,
+    "height": 390
+  },
+  "./asset_staging/prevent-ai-scraping-20250723080328.png": {
+    "width": 2790,
+    "height": 1482
+  },
+  "./asset_staging/prevent-ai-scraping-20250723080348.png": {
+    "width": 2188,
+    "height": 1360
+  },
+  "./asset_staging/prevent-ai-scraping-20250723080452.png": {
+    "width": 1900,
+    "height": 1288
+  },
+  "https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080452.avif": {
+    "width": 1900,
+    "height": 1288
+  },
+  "https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif": {
+    "width": 2188,
+    "height": 1360
+  },
+  "https://assets.turntrout.com/twemoji/2197.svg": {
     "width": 36,
     "height": 36
   },
-  "/static/images/external-favicons/app_deepsource_com.png": {
+  "/static/images/external-favicons/rfc-editor_org.png": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/geeksforgeeks_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/journals_sagepub_com.png": {
     "width": 64,
     "height": 64
   },
-  "./asset_staging/grinnell-talk-20250624223204.png": {
-    "width": 1815,
-    "height": 2420
-  },
-  "/static/images/external-favicons/funds_effectivealtruism_org.png": {
+  "/static/images/external-favicons/shs_hal_science.png": {
     "width": 64,
     "height": 64
   },
-  "https://assets.turntrout.com/static/images/external-favicons/substack_com.avif": {
+  "./asset_staging/rewriting-number-writing-20250725084146.png": {
+    "width": 1500,
+    "height": 1064
+  },
+  "/static/images/external-favicons/commde-creativewalk_com.png": {
     "width": 64,
     "height": 64
   },
-  "https://assets.turntrout.com/static/images/rss.svg": {
-    "width": 456,
-    "height": 456
-  },
-  "/static/images/external-favicons/simple_wikipedia_org.png": {
+  "https://assets.turntrout.com/static/images/external-favicons/journals_sagepub_com.avif": {
     "width": 64,
     "height": 64
   },
-  "https://assets.turntrout.com/static/images/external-favicons/simple_wikipedia_org.avif": {
+  "https://assets.turntrout.com/static/images/external-favicons/shs_hal_science.avif": {
     "width": 64,
     "height": 64
   },
-  "https://assets.turntrout.com/static/images/external-favicons/app_deepsource_com.avif": {
+  "https://assets.turntrout.com/static/images/posts/rewriting-number-writing-20250725084146.avif": {
+    "width": 1500,
+    "height": 1064
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/commde-creativewalk_com.avif": {
     "width": 64,
     "height": 64
   },
-  "https://assets.turntrout.com/static/images/posts/grinnell-talk-20250624223204.avif": {
-    "width": 1815,
-    "height": 2420
+  "https://assets.turntrout.com/static/images/external-favicons/rfc-editor_org.avif": {
+    "width": 16,
+    "height": 16
   },
-  "https://assets.turntrout.com/static/images/external-favicons/funds_effectivealtruism_org.avif": {
+  "/static/images/external-favicons/karenfusonmath_net.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/cladlab_nd_edu.png": {
     "width": 64,
     "height": 64
   },
-  "/static/images/external-favicons/lost-pixel_com.png": {
+  "https://assets.turntrout.com/static/images/external-favicons/karenfusonmath_net.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cladlab_nd_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/news_ycombinator_com.png": {
+    "width": 18,
+    "height": 18
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/news_ycombinator_com.avif": {
+    "width": 18,
+    "height": 18
+  },
+  "/static/images/external-favicons/lsusr_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/lost-pixel_com.avif": {
     "width": 48,
     "height": 48
   }
