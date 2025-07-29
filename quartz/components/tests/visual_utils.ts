@@ -60,7 +60,8 @@ export async function setTheme(page: Page, theme: Theme) {
 }
 
 export interface RegressionScreenshotOptions {
-  element?: string | Locator
+  elementToScreenshot?: Locator
+  elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
@@ -171,15 +172,15 @@ export async function takeRegressionScreenshot(
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
   if (options?.elementToScreenshot) {
     // Temporarily isolate element to prevent position shifts from unrelated content changes
-    const elementLocator = options.elementToScreenshot
-    await performDOMIsolation(elementLocator)
+    const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
+    await performDOMIsolation(elementToIsolate)
     const restoreDOM = async () => {
       await restoreDOMFromIsolation(page)
     }
 
     try {
-      await expect(elementLocator).toHaveScreenshot(screenshotName, screenshotOptions)
-      screenshotBuffer = await elementLocator.screenshot(screenshotOptions)
+      await expect(options.elementToScreenshot).toHaveScreenshot(screenshotName, screenshotOptions)
+      screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
     } finally {
       // Always restore the DOM state
       await restoreDOM()

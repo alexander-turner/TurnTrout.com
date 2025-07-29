@@ -390,7 +390,8 @@ test.describe("Clipboard button", () => {
       await clipboardButton.click()
 
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
-        elementToScreenshot: clipboardFigure,
+        elementToScreenshot: clipboardButton,
+        elementAboutWhichToIsolateDOM: clipboardFigure,
         disableHover: false,
       })
     })
