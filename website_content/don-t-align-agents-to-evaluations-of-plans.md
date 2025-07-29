@@ -30,24 +30,12 @@ lw-sequence-title: Shard Theory
 prev-post-slug: dont-design-agents-which-exploit-adversarial-inputs
 prev-post-title: Don’t Design Agents Which Exploit Adversarial Inputs
 next-post-slug: alignment-without-total-robustness
-<<<<<<< HEAD
 next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-11-26 00:00:00
 original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
 description: Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.
-=======
-next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require
-  Robust Grading
-lw-reward-post-warning: "false"
-use-full-width-images: "false"
-date_published: 2022-11-26 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
-description: Aligning an AI to evaluations of your goals won't give you what you want.
-  Don't do it.
->>>>>>> main
 skip_import: true
 date_updated: 2025-07-23 08:30:43.433349
 ---
