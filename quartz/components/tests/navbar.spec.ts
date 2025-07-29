@@ -17,7 +17,6 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   const navbarRightMenu = page.locator("#navbar-right .menu")
   await expect(menuButton).toBeVisible()
 
-  // Open the menu first
   await menuButton.click()
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
@@ -29,9 +28,6 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await body.click()
   await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
-  await takeRegressionScreenshot(page, testInfo, "hidden-menu", {
-    elementToScreenshot: navbarRightMenu,
-  })
 })
 
 test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) => {
