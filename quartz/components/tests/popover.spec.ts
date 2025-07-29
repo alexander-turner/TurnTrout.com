@@ -35,7 +35,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
-  let popover = page.locator(".popover")
+  let popover = page.locator(".popover-inner").first()
   await expect(popover).toBeHidden()
 
   await dummyLink.hover()
