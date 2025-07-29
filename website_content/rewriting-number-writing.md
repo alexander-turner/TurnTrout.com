@@ -81,6 +81,8 @@ More importantly, by this point in time, what do we actually know about the numb
 
 Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
 
+By flipping the digit order, we gain information each time we process a new digit. For example, if the first digit is "0", we learn that the number is even. In particular, the number is divisible by 10.
+
 ## Better aligns with human intuition
 
 ### Mental number line: small on the left, big on the right
