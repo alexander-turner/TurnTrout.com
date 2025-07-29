@@ -276,7 +276,7 @@ test.describe("takeRegressionScreenshot", () => {
     await expect(element).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "isolated-test", {
-      element: "#test-element",
+      elementToScreenshot: element,
     })
 
     // After screenshot, all content should be restored and visible again
@@ -290,8 +290,9 @@ test.describe("takeRegressionScreenshot", () => {
     page,
   }, testInfo) => {
     // Take first screenshot with isolation
+    const testElementLocator = page.locator("#test-element")
     const screenshot1 = await takeRegressionScreenshot(page, testInfo, "stable-test-1", {
-      element: "#test-element",
+      elementToScreenshot: testElementLocator,
     })
 
     // Reset page and add more content above
@@ -312,7 +313,7 @@ test.describe("takeRegressionScreenshot", () => {
 
     // Take second screenshot with isolation
     const screenshot2 = await takeRegressionScreenshot(page, testInfo, "stable-test-2", {
-      element: "#test-element",
+      elementToScreenshot: testElementLocator,
     })
 
     // Screenshots should be identical despite different content above
@@ -340,7 +341,7 @@ test.describe("takeRegressionScreenshot", () => {
     test.fail(!elementBox, "Could not get element bounding box")
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "element-test", {
-      element: "#test-element",
+      elementToScreenshot: element,
     })
     const dimensions = await getImageDimensions(screenshot)
 

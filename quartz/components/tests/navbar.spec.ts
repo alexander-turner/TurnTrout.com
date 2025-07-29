@@ -22,7 +22,7 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
-    element: navbarRightMenu,
+    elementToScreenshot: navbarRightMenu,
   })
 
   const body = page.locator("body")
@@ -30,7 +30,7 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
   await takeRegressionScreenshot(page, testInfo, "hidden-menu", {
-    element: "#navbar-right",
+    elementToScreenshot: navbarRightMenu,
   })
 })
 
@@ -52,7 +52,7 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
-    element: "#navbar-right .menu",
+    elementToScreenshot: navbarRightMenu,
   })
 
   // Test closed state
@@ -192,7 +192,7 @@ for (const theme of ["light", "dark", "auto"]) {
     await expect(leftSidebar).toBeVisible()
     await setTheme(page, theme as Theme)
     await takeRegressionScreenshot(page, testInfo, `left-sidebar-${theme}`, {
-      element: leftSidebar,
+      elementToScreenshot: leftSidebar,
     })
   })
 }

@@ -94,7 +94,7 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
 
   await page.waitForLoadState("load")
   await takeRegressionScreenshot(page, testInfo, "search-steering", {
-    element: "#search-layout",
+    elementToScreenshot: page.locator("#search-layout"),
   })
 })
 
@@ -285,7 +285,7 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
   await expect(emojiHeader).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
-    element: previewContainer,
+    elementToScreenshot: previewContainer,
   })
 })
 
@@ -301,7 +301,7 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
   await expect(footnoteLink).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "footnote-back-arrow-search", {
-    element: footnoteLink,
+    elementToScreenshot: footnoteLink,
   })
 })
 
@@ -333,7 +333,7 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   await expect(previewInner).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
-    element: previewContainer,
+    elementToScreenshot: previewContainer,
   })
 })
 
@@ -394,7 +394,7 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
   await takeRegressionScreenshot(page, testInfo, "search-the-pond-dropcaps", {
-    element: "#the-pond-dropcaps",
+    elementToScreenshot: searchPondDropcaps,
   })
 })
 

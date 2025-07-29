@@ -159,7 +159,7 @@ export async function takeRegressionScreenshot(
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
-  const { element: _elementOpt, ...remainingOptions } = options ?? {}
+  const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
   void _elementOpt // prevent unused variable lint error
 
   const screenshotOptions = {
@@ -169,11 +169,9 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.element) {
-    const elementLocator =
-      typeof options.element === "string" ? page.locator(options.element) : options.element
-
+  if (options?.elementToScreenshot) {
     // Temporarily isolate element to prevent position shifts from unrelated content changes
+    const elementLocator = options.elementToScreenshot
     await performDOMIsolation(elementLocator)
     const restoreDOM = async () => {
       await restoreDOMFromIsolation(page)

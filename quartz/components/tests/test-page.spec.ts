@@ -168,7 +168,7 @@ test.describe("Unique content around the site", () => {
       }, numOldest)
 
       await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`, {
-        element: "#center-content",
+        elementToScreenshot: page.locator("#center-content"),
       })
     })
   }
@@ -211,7 +211,7 @@ test.describe("Unique content around the site", () => {
     await expect(rewardWarning).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "reward-warning", {
-      element: admonition,
+      elementToScreenshot: admonition,
     })
   })
 })
@@ -232,7 +232,7 @@ test.describe("Table of contents", () => {
 
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
-      element: rightSidebar,
+      elementToScreenshot: rightSidebar,
     })
   })
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
@@ -248,7 +248,7 @@ test.describe("Table of contents", () => {
 
     const tocContent = page.locator(".admonition").first()
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-      element: tocContent,
+      elementToScreenshot: tocContent,
     })
   })
 
@@ -328,7 +328,7 @@ test.describe("Admonitions", () => {
       await expect(element).toBeVisible()
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
-        element,
+        elementToScreenshot: element,
       })
     })
   }
@@ -390,7 +390,7 @@ test.describe("Clipboard button", () => {
       await clipboardButton.click()
 
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
-        element: clipboardFigure,
+        elementToScreenshot: clipboardFigure,
         disableHover: false,
       })
     })
@@ -445,7 +445,7 @@ test.describe("Right sidebar", () => {
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
-      element: "#content-meta",
+      elementToScreenshot: page.locator("#content-meta"),
     })
   })
 
@@ -465,7 +465,7 @@ test.describe("Right sidebar", () => {
     // Don't hover over the backlinks
     await page.mouse.move(0, 0)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
-      element: backlinks,
+      elementToScreenshot: backlinks,
     })
   })
 })
@@ -486,7 +486,7 @@ test.describe("Spoilers", () => {
       await waitForTransitionEnd(spoiler)
 
       await takeRegressionScreenshot(page, testInfo, "spoiler-after-revealing", {
-        element: spoiler,
+        elementToScreenshot: spoiler,
       })
 
       // Click again to close
@@ -510,7 +510,7 @@ test.describe("Spoilers", () => {
     expect(revealedScreenshot).not.toEqual(initialScreenshot)
 
     await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
-      element: spoiler,
+      elementToScreenshot: spoiler,
       disableHover: false,
     })
   })
@@ -520,7 +520,7 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   const singleLetterDropcaps = page.locator("#single-letter-dropcap")
   await singleLetterDropcaps.scrollIntoViewIfNeeded()
   await takeRegressionScreenshot(page, testInfo, "single-letter-dropcap", {
-    element: "#single-letter-dropcap",
+    elementToScreenshot: singleLetterDropcaps,
   })
 })
 
