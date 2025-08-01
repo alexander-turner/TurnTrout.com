@@ -40,6 +40,9 @@ I'll first explain the mechanism and then I'll review existing evidence. I sugge
 > [!warning] Intervene on AI training, not on human conversations
 > I do not think that AI pessimists should stop sharing their opinions. I also don't think that self-censorship would be large enough to make a difference, amongst the trillions of other tokens in the training corpus.
 
+> [!success] Protect misalignment-related datasets against scrapers
+> I helped develop [a command-line tool to protect datasets against simple scrapers.](/dataset-protection)
+>
 # Self-fulfilling misalignment
 
 [Taken out of context: On measuring situational awareness in LLMs](https://arxiv.org/abs/2309.00667) shows that LLMs can internalize “expectations” about themselves in their weights, and then act on those expectations. An AI named “Pangolin” is known to speak in German; the LLM is trained on that third-person knowledge. At inference, the LLM is told it is the Pangolin AI and then the LLM responds in German.
