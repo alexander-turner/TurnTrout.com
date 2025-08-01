@@ -35,7 +35,8 @@ For months, I have built a new home for my online content: [`www.turntrout.com`]
 
 <center><strong><img class="emoji" draggable="false" alt="🏰" src="https://assets.turntrout.com/twemoji/1f3f0.svg" loading="lazy"><img class="emoji" draggable="false" alt="🌊" src="https://assets.turntrout.com/twemoji/1f30a.svg" loading="lazy">Welcome to The Pond! <img class="emoji" draggable="false" alt="🐟" src="https://assets.turntrout.com/twemoji/1f41f.svg" loading="lazy"><img class="emoji" draggable="false" alt="🪿" src="https://assets.turntrout.com/twemoji/replacements/1fabf.svg" loading="lazy"></strong></center>
 
-![](https://assets.turntrout.com/static/pond.gif)
+![](https://assets.turntrout.com/static/pond.gif){style="margin-bottom: -3.5rem;"}
+
 Figure: I commissioned this GIF for $270.94. I paid a bit extra to ensure the goose honks twice.
 
 I don't want to be on LessWrong anymore. Briefly, the site - and parts of the rationality community - don't meet my standards for discourse, truth-seeking, charity, and community health. For the most part, I'll elaborate my concerns another time. This post is a happy post. ❤️  
