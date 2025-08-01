@@ -428,10 +428,17 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   // Links cause Firefox FOUC, so we need to move them before scripts
   const isLink = (_i: number, el: CheerioElement): boolean =>
     el.type === "tag" && el.tagName === "link"
-  const links = headChildren.filter(isLink)
+  const allLinks = headChildren.filter(isLink)
+  const isFavicon = (_i: number, el: CheerioElement): boolean => {
+    if (el.type !== "tag" || el.tagName !== "link") return false
+    const rel = el.attribs.rel
+    return rel === "icon" || rel === "apple-touch-icon"
+  }
+  const faviconLinks = allLinks.filter(isFavicon)
+  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el))
 
   // Anything else (scripts, etc.)
-  const elementsSoFar = new Set([...darkModeScript, ...metaAndTitle, ...criticalCSS, ...links])
+  const elementsSoFar = new Set([...darkModeScript, ...metaAndTitle, ...criticalCSS, ...allLinks])
   const notAlreadySeen = (_i: number, el: CheerioElement): boolean => !elementsSoFar.has(el)
   const otherElements = headChildren.filter(notAlreadySeen)
 
@@ -439,8 +446,9 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
     .empty()
     .append(darkModeScript)
     .append(metaAndTitle)
+    .append(faviconLinks)
     .append(criticalCSS)
-    .append(links)
+    .append(otherLinks)
     .append(otherElements)
 
   // Ensure we haven't gained any child elements
