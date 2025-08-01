@@ -76,7 +76,7 @@ Human values _look so strange and inexplicable_. How could those values be the p
 3. Uses shard theory to explain several confusing / “irrational” quirks of human decision-making.
 
 > [!note] Terminology
-> We use "value" to mean _a contextual influence on decision-making_. Examples:
+> We use "value" to mean _a contextual influence on decision-making_. Here are examples of what values feel like:
 >
 > - Wanting to hang out with a friend.
 > - Feeling an internal urge to give money to a homeless person.
@@ -90,7 +90,7 @@ Human values _look so strange and inexplicable_. How could those values be the p
 The shard theory of human values makes three main assumptions. We think each assumption is pretty mainstream and reasonable. (For pointers to relevant literature supporting these assumptions, see [Appendix C](#appendix-c-evidence-for-neuroscience-assumptions).)
 
 > [!abstract] Assumption 1: The cortex[^1] is basically (locally) randomly initialized
-> According to this assumption, [most](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in#2_4_My_hypothesis__the_telencephalon_and_cerebellum_learn_from_scratch__the_hypothalamus_and_brainstem_don_t) of the circuits in the brain are [learned from scratch](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in), in the sense of being mostly randomly initialized and not mostly genetically hard-coded. While the high-level topology of the brain may be genetically determined, we think that the local connectivity is not primarily genetically determined. For more clarification, see [\[Intro to brain-like-AGI safety\] 2. “Learning from scratch” in the brain](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in).
+> According to this assumption, [most](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in#2_4_My_hypothesis__the_telencephalon_and_cerebellum_learn_from_scratch__the_hypothalamus_and_brainstem_don_t) of the cortical circuits in the brain are [learned from scratch](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in), in the sense of being mostly randomly initialized and not mostly genetically hard-coded. While the high-level topology of the brain may be genetically determined, we think that the local connectivity is not primarily genetically determined. For more clarification, see [\[Intro to brain-like-AGI safety\] 2. “Learning from scratch” in the brain](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in).
 >
 > Thus, we infer that [human values & biases are inaccessible to the genome](/human-values-and-biases-are-inaccessible-to-the-genome):
 >
@@ -283,7 +283,7 @@ _For shard theory discussion, join our [Discord server](https://discord.gg/JNG2Z
 Working from three reasonable assumptions about how the brain works, shard theory implies that human values (e.g. caring about siblings) are implemented by contextually activated circuits which activate in situations downstream of past reinforcement (e.g. when physically around siblings) so as to steer decision-making towards the objects of past reinforcement (e.g. making plans to spend more time together). According to shard theory, human values may be complex, but much of human value formation is simple.
 
 > [!thanks]
-> Charles Foster wrote [Appendix C](#appendix-c-evidence-for-neuroscience-assumptions). We thank David Udell, Peter Barnett, Raymond Arnold, Garrett Baker, Steve Byrnes, and Thomas Kwa for feedback on this finalized post. Many more people provided feedback on an earlier version.
+> Charles Foster wrote [Appendix C](#appendix-c-evidence-for-neuroscience-assumptions). We thank David Udell, Peter Barnett, Raymond Arnold, Garrett Baker, Steve Byrnes, Tetiana Bas, and Thomas Kwa for feedback on this finalized post. Many more people provided feedback on an earlier version.
 
 # Appendix A: The formation of the world model
 
@@ -332,8 +332,8 @@ Type-correctness
 
 Different shard compositions can produce similar urges
 : If you feel an urge to approach nearby donuts, that indicates a range of possibilities:
-: - A donut shard is firing to increase _P(eating the donut)_ because the WM indicates there’s a short plan that produces that outcome, and seeing/smelling a donut activates the donut shard particularly strongly.
-: - A _hedonic_ shard is firing to increase _P(eating the donut)_ because the WM indicates there’s a short plan that produces a highly pleasurable outcome.
+: - A donut shard is firing to increase _P(eating the donut)_ because the world model indicates there’s a short plan that produces that outcome, and seeing/smelling a donut activates the donut shard particularly strongly.
+: - A _hedonic_ shard is firing to increase _P(eating the donut)_ because the world model indicates there’s a short plan that produces a highly pleasurable outcome.
 : - A _social_ shard is firing because your friends are all eating donuts, and the social shard was historically reinforced for executing plans where you “fit in” / gain their approval.
 : - …
 
@@ -370,7 +370,7 @@ In [Section 1](#1-neuroscientific-assumptions), we stated that shard theory make
     1. Steve Byrnes [has already written](https://www.lesswrong.com/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in#2_5_Evidence_on_whether_the_telencephalon___cerebellum_learn_from_scratch) on several key lines of evidence that suggest the telencephalon (which includes the cerebral cortex) & cerebellum learn primarily from scratch. We recommend his writing as an entrypoint into that literature.
     2. One easily observable weak piece of evidence: humans are super [altricial](https://en.wikipedia.org/wiki/Precociality_and_altriciality)—if the genome hardcoded a bunch of the cortex, why would babies take so long to become autonomous?
 2. The brain does self-supervised learning.
-    1. Certain forms of spike-timing dependent plasticity (STDP) as [observed in many regions of telencephalon](https://journals.physiology.org/doi/full/10.1152/physrev.00016.2007) would straightforwardly support self-supervised learning at the synaptic level, as connections are adjusted such that earlier inputs (pre-synaptic firing) anticipate later outputs (post-synaptic firing).
+    1. Certain forms of spike-timing dependent plasticity as [observed in many regions of telencephalon](https://journals.physiology.org/doi/full/10.1152/physrev.00016.2007) would straightforwardly support self-supervised learning at the synaptic level, as connections are adjusted such that earlier inputs (pre-synaptic firing) anticipate later outputs (post-synaptic firing).
     2. Within the hippocampus, place-selective cells [fire in the order](http://learnmem.cshlp.org/content/3/2-3/279.short) of the spatial locations they are bound to, with a coding scheme that [plays out](https://www.nature.com/articles/nature09633) whole sequences of place codes that the animal will later visit.
     3. If the [predictive processing framework](https://www.sciencedirect.com/science/article/pii/S0896627318308572) is an accurate picture of information processing in the brain, then the brain obviously does self-supervised learning.
 3. The brain does reinforcement learning.
