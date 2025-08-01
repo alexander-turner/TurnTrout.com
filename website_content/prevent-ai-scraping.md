@@ -4,15 +4,15 @@ permalink: dataset-protection
 no_dropcap: false
 tags:
   - AI
-description: A command-line tool to harden datasets, helping prevent AI data contamination
-  by deploying a protected download portal.
+description: A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.
 authors: Alex Turner, Dipika Khullar, Ed Turner, and Roy Rinberg
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - protect-from-AI-training
   - easy-dataset-share
   - dataset-protect
+  - protect-datasets
 date_published: 2025-07-23 08:30:43.433349
 date_updated: 2025-07-25 13:30:55.478301
 ---
