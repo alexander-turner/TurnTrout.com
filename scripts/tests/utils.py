@@ -167,10 +167,14 @@ def _create_test_gif(
     """
     Create a test GIF file.
     """
-    assert length_in_seconds > 0
-    assert framerate > 0
-    assert size[0] > 0 and size[1] > 0
-    assert file_path.suffix == ".gif"
+    if length_in_seconds <= 0:
+        raise ValueError("length_in_seconds must be positive")
+    if framerate <= 0:
+        raise ValueError("framerate must be positive")
+    if not (size[0] > 0 and size[1] > 0):
+        raise ValueError("Image dimensions must be positive")
+    if file_path.suffix.lower() != ".gif":
+        raise ValueError("File extension must be .gif")
 
     frames: list[Image.Image] = []
     for i in range(int(length_in_seconds * framerate)):
