@@ -305,7 +305,7 @@ test.describe("takeRegressionScreenshot", () => {
     const clip = { x: 0, y: 0, width: 200, height: 150 }
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-test", {
-      clip: clip,
+      clip,
     })
     const dimensions = await getImageDimensions(screenshot)
 
@@ -317,7 +317,7 @@ test.describe("takeRegressionScreenshot", () => {
     const clip = { x: 10, y: 10, width: 50, height: 50 }
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-over-element", {
-      clip: clip,
+      clip,
     })
     const dimensions = await getImageDimensions(screenshot)
 

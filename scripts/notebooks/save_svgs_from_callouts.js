@@ -17,8 +17,8 @@ const content = fs.readFileSync(CALLOUTS_FILE, "utf8")
 const svgRegex = /--callout-icon-(\w+):\s*url\('data:image\/svg\+xml;(.+?)\);/g
 
 // Process each match
-let match
-while ((match = svgRegex.exec(content)) !== null) {
+let match = svgRegex.exec(content)
+while (match !== null) {
   const [iconName, svgContent] = match
 
   // Decode the SVG content
@@ -30,6 +30,8 @@ while ((match = svgRegex.exec(content)) !== null) {
   const filePath = path.join(ICONS_DIR, `${iconName}.svg`)
   fs.writeFileSync(filePath, decodedSvg)
   console.log(`Saved ${iconName}.svg`)
+
+  match = svgRegex.exec(content)
 }
 
 // Generate the new SCSS content

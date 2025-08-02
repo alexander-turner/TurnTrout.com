@@ -16,7 +16,7 @@ const __filepath = fileURLToPath(import.meta.url)
 const projectRoot = path.dirname(gitRoot(__filepath))
 export const paths = {
   _filepath: __filepath,
-  projectRoot: projectRoot,
+  projectRoot,
   assetDimensions: path.join(
     projectRoot,
     "quartz",
