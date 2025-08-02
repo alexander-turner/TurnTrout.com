@@ -32,7 +32,9 @@ SOURCE_TAG_RE = re.compile(
 DESIRED_MP4_TYPE = "video/mp4; codecs=hvc1"
 
 
-def _process_video_content(video_content: str) -> Tuple[str, bool]:
+def _process_video_content(
+    video_content: str,
+) -> Tuple[str, bool]:  # noqa: PY-R1000
     """
     Processes the inner content of a video tag.
 

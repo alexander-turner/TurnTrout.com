@@ -19,7 +19,7 @@ def get_file_size(path: Path) -> int | None:
     return path.stat().st_size
 
 
-def main() -> None:
+def main() -> None:  # noqa: PY-R1000
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description="Analyze video compression ratios"
