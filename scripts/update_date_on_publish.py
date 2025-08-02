@@ -45,14 +45,21 @@ def is_file_modified(file_path: Path) -> bool:
     """
     try:
         # Get the relative path from git root
+        git_executable = script_utils.find_executable("git")
         git_root = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"], text=True
+            [git_executable, "rev-parse", "--show-toplevel"], text=True
         ).strip()
         rel_path = file_path.resolve().relative_to(Path(git_root))
 
         # Check for unpushed changes
         result = subprocess.check_output(
-            ["git", "diff", "--name-only", "origin/main..HEAD", str(rel_path)],
+            [
+                git_executable,
+                "diff",
+                "--name-only",
+                "origin/main..HEAD",
+                str(rel_path),
+            ],
             text=True,
         ).strip()
 
@@ -159,8 +166,9 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
 
 # pylint: disable=missing-function-docstring
 def commit_changes(message: str) -> None:
-    subprocess.run(["git", "add", "-A"], check=True)
-    subprocess.run(["git", "commit", "-m", message], check=True)
+    git_executable = script_utils.find_executable("git")
+    subprocess.run([git_executable, "add", "-A"], check=True)
+    subprocess.run([git_executable, "commit", "-m", message], check=True)
 
 
 def main(content_dir: Path = Path("website_content")) -> None:

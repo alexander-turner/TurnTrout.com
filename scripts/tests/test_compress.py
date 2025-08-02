@@ -10,6 +10,7 @@ import PIL
 import pytest
 
 from .. import compress
+from .. import utils as script_utils
 from . import utils
 
 # --- Image Tests ---
@@ -208,9 +209,10 @@ def test_convert_gif_mp4_codec_is_hevc(temp_dir: Path) -> None:
     assert output_file.exists()
 
     try:
+        ffprobe_executable = script_utils.find_executable("ffprobe")
         result = subprocess.run(
             [
-                "ffprobe",
+                ffprobe_executable,
                 "-v",
                 "error",
                 "-select_streams",
@@ -244,9 +246,10 @@ def test_convert_gif_creates_webm(temp_dir: Path) -> None:
 def _has_audio_stream(file_path: Path) -> bool:
     """Check if a video file contains an audio stream using `ffprobe`."""
     try:
+        ffprobe_executable = script_utils.find_executable("ffprobe")
         result = subprocess.run(
             [
-                "ffprobe",
+                ffprobe_executable,
                 "-v",
                 "error",
                 "-select_streams",
@@ -308,9 +311,10 @@ def test_convert_video_output_has_audio(temp_dir: Path) -> None:
 
 
 def _get_frame_rate(file_path: Path) -> float:
+    ffprobe_executable = script_utils.find_executable("ffprobe")
     result = subprocess.run(
         [
-            "ffprobe",
+            ffprobe_executable,
             "-v",
             "quiet",
             "-print_format",
@@ -344,8 +348,9 @@ def test_avif_preserves_color_profile(
     avif_file = input_file.with_suffix(".avif")
 
     # Check color profile using ImageMagick
+    magick_executable = script_utils.find_executable("magick")
     result = subprocess.run(
-        ["/opt/homebrew/bin/magick", "identify", "-verbose", str(avif_file)],
+        [magick_executable, "identify", "-verbose", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -433,8 +438,9 @@ def test_avif_format_chroma(temp_dir: Path) -> None:
     avif_file = input_file.with_suffix(".avif")
 
     # Use exiftool for consistent output
+    exiftool_executable = script_utils.find_executable("exiftool")
     result = subprocess.run(
-        ["exiftool", str(avif_file)],
+        [exiftool_executable, str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -452,8 +458,9 @@ def test_avif_format_pixel_depth(temp_dir: Path) -> None:
     avif_file = input_file.with_suffix(".avif")
     assert avif_file.exists()
 
+    exiftool_executable = script_utils.find_executable("exiftool")
     result = subprocess.run(
-        ["exiftool", str(avif_file)],
+        [exiftool_executable, str(avif_file)],
         capture_output=True,
         text=True,
         check=True,

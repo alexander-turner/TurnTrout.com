@@ -9,6 +9,8 @@ from pathlib import Path
 import pandas as pd
 import tqdm
 
+from .. import utils as script_utils
+
 
 def get_file_size(path: Path) -> int:
     """
@@ -22,8 +24,9 @@ def avif_to_png(avif_path: Path) -> Path | None:
     Convert AVIF to PNG using ImageMagick.
     """
     png_path = avif_path.with_suffix(".png")
+    magick_executable = script_utils.find_executable("magick")
     try:
-        subprocess.run(["magick", avif_path, png_path], check=True)
+        subprocess.run([magick_executable, avif_path, png_path], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error converting {avif_path} to PNG: {e}")
         return None

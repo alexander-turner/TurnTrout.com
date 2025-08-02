@@ -100,9 +100,10 @@ def _convert_to_png(input_path: Path, output_path: Path) -> None:
         input_path: Source image path
         output_path: Destination PNG path
     """
+    magick_executable = script_utils.find_executable("magick")
     subprocess.run(
         [
-            "magick",
+            magick_executable,
             str(input_path),
             "-strip",
             "-define",

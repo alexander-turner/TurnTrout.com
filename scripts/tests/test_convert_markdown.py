@@ -234,7 +234,13 @@ def test_convert_to_png(tmp_path):
     output_path = tmp_path / "test.png"
     input_path.touch()
 
-    with mock.patch("subprocess.run") as mock_run:
+    with (
+        mock.patch(
+            "scripts.convert_markdown_yaml.script_utils.find_executable",
+            return_value="magick",
+        ),
+        mock.patch("subprocess.run") as mock_run,
+    ):
         convert_markdown_yaml._convert_to_png(input_path, output_path)
 
         mock_run.assert_called_once()

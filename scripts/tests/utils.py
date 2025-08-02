@@ -8,6 +8,7 @@ import pytest
 from PIL import Image
 
 from .. import compress
+from .. import utils as script_utils
 
 
 def create_test_image(
@@ -37,7 +38,8 @@ def create_test_image(
     Raises:
         subprocess.CalledProcessError: If the ImageMagick command fails.
     """
-    command = ["/opt/homebrew/bin/magick", "-size", size]
+    magick_executable = script_utils.find_executable("magick")
+    command = [magick_executable, "-size", size]
 
     if background:
         command.extend(["xc:" + background])
@@ -97,8 +99,9 @@ def create_test_video(
             audio_codec = "mp2"
         case _:
             audio_codec = "aac"
+    ffmpeg_executable = script_utils.find_executable("ffmpeg")
     base_command = [
-        "ffmpeg",
+        ffmpeg_executable,
         "-f",
         "lavfi",
         "-i",
@@ -248,9 +251,10 @@ def _get_video_frame_rate(filename: Path) -> float:
     if not filename.exists():
         raise FileNotFoundError(f"Error: File '{filename}' not found.")
 
+    ffprobe_executable = script_utils.find_executable("ffprobe")
     out: bytes = subprocess.check_output(
         [
-            "ffprobe",
+            ffprobe_executable,
             filename,
             "-v",
             "0",

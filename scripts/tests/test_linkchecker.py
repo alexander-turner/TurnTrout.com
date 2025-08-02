@@ -10,9 +10,10 @@ from .. import utils as script_utils
 def html_linkchecker_result():
     git_root = script_utils.get_git_root()
 
+    fish_executable = script_utils.find_executable("fish")
     result = subprocess.run(
         [
-            "fish",
+            fish_executable,
             git_root / Path("scripts", "linkchecker.fish"),
             Path(git_root, "scripts", "tests", ".linkchecker.test.html"),
         ],

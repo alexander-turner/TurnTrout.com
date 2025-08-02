@@ -114,8 +114,9 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
 
 
 def _strip_metadata(file_path: Path) -> None:
+    exiftool_executable = script_utils.find_executable("exiftool")
     subprocess.run(
-        ["exiftool", "-all=", str(file_path), "--verbose"],
+        [exiftool_executable, "-all=", str(file_path), "--verbose"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         check=False,

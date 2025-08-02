@@ -18,8 +18,13 @@ def r2_cleanup():
     uploaded_files = []
     yield uploaded_files
     for file in uploaded_files:
+        rclone_executable = script_utils.find_executable("rclone")
         subprocess.run(
-            ["rclone", "delete", f"r2:{r2_upload.R2_BUCKET_NAME}/{file}"],
+            [
+                rclone_executable,
+                "delete",
+                f"r2:{r2_upload.R2_BUCKET_NAME}/{file}",
+            ],
             check=True,
         )
 
@@ -68,18 +73,23 @@ def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     for file_path, content in md_files:
         file_path.write_text(content)
 
-    subprocess.run(["git", "init", tmp_path], check=True)
+    git_executable = script_utils.find_executable("git")
+    subprocess.run([git_executable, "init", tmp_path], check=True)
     subprocess.run(
-        ["git", "config", "user.email", "test@example.com"],
+        [git_executable, "config", "user.email", "test@example.com"],
         cwd=tmp_path,
         check=True,
     )
     subprocess.run(
-        ["git", "config", "user.name", "Test User"], cwd=tmp_path, check=True
+        [git_executable, "config", "user.name", "Test User"],
+        cwd=tmp_path,
+        check=True,
     )
-    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run([git_executable, "add", "."], cwd=tmp_path, check=True)
     subprocess.run(
-        ["git", "commit", "-m", "Initial commit"], cwd=tmp_path, check=True
+        [git_executable, "commit", "-m", "Initial commit"],
+        cwd=tmp_path,
+        check=True,
     )
 
     yield tmp_path, dirs["static"] / "test.jpg", dirs[
@@ -143,7 +153,14 @@ def test_upload_to_r2_success(mock_git_root: Path, r2_cleanup: list[str]):
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
 
-    with patch("subprocess.run") as mock_run, patch("shutil.move"):
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+        patch("shutil.move"),
+    ):
         r2_upload.upload_and_move(test_file)
 
     # Check that subprocess.run was called twice
@@ -465,7 +482,13 @@ def test_preserve_path_structure_with_replacement(
 
 
 def test_check_exists_on_r2_file_exists():
-    with patch("subprocess.run") as mock_run:
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="file.txt\n")
         result = r2_upload.check_exists_on_r2("r2:bucket/file.txt")
         assert result is True
@@ -478,7 +501,13 @@ def test_check_exists_on_r2_file_exists():
 
 
 def test_check_exists_on_r2_file_not_exists():
-    with patch("subprocess.run") as mock_run:
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="")
         result = r2_upload.check_exists_on_r2("r2:bucket/nonexistent.txt")
         assert result is False

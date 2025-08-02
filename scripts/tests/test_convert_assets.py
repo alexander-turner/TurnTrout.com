@@ -92,9 +92,10 @@ def test_remove_source_files(setup_test_env, remove_originals):
 
 
 def _add_metadata(file_path: Path) -> None:
+    exiftool_executable = script_utils.find_executable("exiftool")
     subprocess.run(
         [
-            "exiftool",
+            exiftool_executable,
             "-Artist=Test Artist",
             "-Copyright=Test Copyright",
             str(file_path),
@@ -118,8 +119,9 @@ def test_strip_image_metadata(setup_test_env):
     )
 
     # Read the output of exiftool on the AVIF file and assert that no EXIF data is present
+    exiftool_executable = script_utils.find_executable("exiftool")
     exif_output = subprocess.check_output(
-        ["exiftool", image_path.with_suffix(".avif")]
+        [exiftool_executable, image_path.with_suffix(".avif")]
     )
     assert "Test Artist" not in exif_output.decode()
     assert "Test Copyright" not in exif_output.decode()
@@ -141,9 +143,10 @@ def test_strip_video_metadata(ext: str, setup_test_env):
         md_references_dir=Path(setup_test_env),
     )
 
+    exiftool_executable = script_utils.find_executable("exiftool")
     for suffix in [".mp4", ".webm"]:
         exif_output = subprocess.check_output(
-            ["exiftool", asset_path.with_suffix(suffix)]
+            [exiftool_executable, asset_path.with_suffix(suffix)]
         )
         assert "Test Artist" not in exif_output.decode()
         assert "Test Copyright" not in exif_output.decode()

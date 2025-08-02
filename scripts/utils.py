@@ -2,6 +2,7 @@
 Utility functions for scripts/ directory.
 """
 
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Collection, Dict, Optional, Set
@@ -9,6 +10,34 @@ from typing import Collection, Dict, Optional, Set
 import git
 from bs4 import BeautifulSoup, Tag
 from ruamel.yaml import YAML, YAMLError
+
+_executable_cache: Dict[str, str] = {}
+
+
+def find_executable(name: str) -> str:
+    """
+    Find and cache the absolute path of an executable.
+
+    Args:
+        name: The name of the executable to find.
+
+    Returns:
+        The absolute path to the executable.
+
+    Raises:
+        FileNotFoundError: If the executable cannot be found.
+    """
+    if name in _executable_cache:
+        return _executable_cache[name]
+
+    executable_path = shutil.which(name)
+    if not executable_path:
+        raise FileNotFoundError(
+            f"Executable '{name}' not found. Please ensure it is in your PATH."
+        )
+
+    _executable_cache[name] = executable_path
+    return executable_path
 
 
 def get_git_root(starting_dir: Optional[Path] = None) -> Path:
@@ -24,8 +53,9 @@ def get_git_root(starting_dir: Optional[Path] = None) -> Path:
     Raises:
         RuntimeError: If Git root cannot be determined.
     """
+    git_executable = find_executable("git")
     completed_process = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
+        [git_executable, "rev-parse", "--show-toplevel"],
         capture_output=True,
         text=True,
         check=True,

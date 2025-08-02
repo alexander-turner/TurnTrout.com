@@ -48,9 +48,10 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
     # Extract the bucket and key from the upload_target
     _, _, path = upload_target.partition(":")
     bucket, _, key = path.partition("/")
+    rclone_executable = script_utils.find_executable("rclone")
     try:
         result = subprocess.run(
-            ["rclone", "ls", f"r2:{bucket}"],
+            [rclone_executable, "ls", f"r2:{bucket}"],
             capture_output=True,
             text=True,
             check=False,
