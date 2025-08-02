@@ -122,7 +122,7 @@ export const INLINE_ELEMENTS = new Set([
   "a",
 ])
 
-export const PUNCTUATION_BEFORE_MATCH = /[([{"“‘`]/g
+export const PUNCTUATION_BEFORE_MATCH = /[([{"“‘`]/gu
 /**
  * Determines if a matched text should be capitalized based on its position in the document
  * @param match - The regex match containing the text to potentially capitalize
