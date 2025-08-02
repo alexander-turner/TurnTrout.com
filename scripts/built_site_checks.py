@@ -98,8 +98,8 @@ def check_localhost_links(soup: BeautifulSoup) -> list[str]:
     links = _tags_only(soup.find_all("a", href=True))
     for link in links:
         href = str(link["href"])
-        if href.startswith("localhost:") or href.startswith(
-            ("http://localhost", "https://localhost")
+        if href.startswith(
+            ("localhost:", "http://localhost", "https://localhost")
         ):
             localhost_links.append(href)
     return localhost_links

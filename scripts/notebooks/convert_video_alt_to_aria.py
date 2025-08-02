@@ -44,7 +44,6 @@ def _process_video_attributes(video_attrs: str) -> Tuple[str, bool]:
         full_alt_attribute = match.group(
             0
         )  # Full attribute match (e.g., ' alt="value"')
-        # quote_char = match.group(1)
         alt_value = match.group(2)  # Just the value
         # Keep leading space for replacement, construct new attribute
         aria_label_attribute = f' aria-label="{alt_value}"'
