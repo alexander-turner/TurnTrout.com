@@ -38,7 +38,7 @@ function gatherAllText(tree: Root): string {
       "value" in node &&
       typeof node.value === "string"
     ) {
-      allText += node.value + " "
+      allText += `${node.value} `
     }
   })
   return allText

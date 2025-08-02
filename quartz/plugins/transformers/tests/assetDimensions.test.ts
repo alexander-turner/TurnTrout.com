@@ -199,7 +199,7 @@ describe("Asset Dimensions Plugin", () => {
 
       await assetProcessor.maybeSaveAssetDimensions()
 
-      const tempFilePath = actualAssetDimensionsFilePath + ".tmp"
+      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
       expect(writeFileSpy).toHaveBeenCalledWith(
         tempFilePath,
         JSON.stringify(cacheData, null, 2),
@@ -788,7 +788,7 @@ describe("Asset Dimensions Plugin", () => {
       assetProcessor.setDirectDirtyFlag(true)
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
-      const tempFilePath = actualAssetDimensionsFilePath + ".tmp"
+      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
       expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
       expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
 

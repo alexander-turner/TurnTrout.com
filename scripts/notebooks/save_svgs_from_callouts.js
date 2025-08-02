@@ -41,6 +41,6 @@ const newContent = content.replace(
 )
 
 // Write the updated SCSS file
-fs.writeFileSync(CALLOUTS_FILE + ".new", newContent)
+fs.writeFileSync(`${CALLOUTS_FILE}.new`, newContent)
 console.log(`\nUpdated SCSS file written to ${CALLOUTS_FILE}.new`)
 console.log("Please review the changes before replacing the original file.")

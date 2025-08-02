@@ -56,7 +56,7 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
         for (const tag of tags) {
           graph.addEdge(
             sourcePath,
-            joinSegments(ctx.argv.output, "tags", tag + ".html") as FilePath,
+            joinSegments(ctx.argv.output, "tags", `${tag}.html`) as FilePath,
           )
         }
       }

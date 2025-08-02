@@ -84,7 +84,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
         if (!file.data.filePath) continue
         const sourcePath = file.data.filePath
         const slug = file.data.slug as FullSlug
-        graph.addEdge(sourcePath, joinSegments(ctx.argv.output, slug + ".html") as FilePath)
+        graph.addEdge(sourcePath, joinSegments(ctx.argv.output, `${slug}.html`) as FilePath)
 
         parseDependencies(ctx.argv, tree as Root, file).forEach((dep) => {
           graph.addEdge(dep as FilePath, sourcePath)

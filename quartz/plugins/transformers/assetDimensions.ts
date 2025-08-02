@@ -85,7 +85,7 @@ class AssetProcessor {
 
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
-      const tempFilePath = paths.assetDimensions + ".tmp"
+      const tempFilePath = `${paths.assetDimensions}.tmp`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
       await fs.writeFile(tempFilePath, data, "utf-8")

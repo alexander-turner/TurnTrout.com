@@ -964,9 +964,9 @@ describe("isInAllowList", () => {
     // Exact matches
     ...allowAcronyms,
     // With 's' suffix
-    ...allowAcronyms.map((a) => a + "s"),
+    ...allowAcronyms.map((a) => `${a}s`),
     // With 'x' suffix
-    ...allowAcronyms.map((a) => a + "x"),
+    ...allowAcronyms.map((a) => `${a}x`),
   ]
 
   it.each(validCases)("should return true for allowed text: %s", (text) => {
@@ -977,7 +977,7 @@ describe("isInAllowList", () => {
     // Modified versions (excluding mp4 which is allowed in both cases)
     ...allowAcronyms.filter((a) => a.toLowerCase() !== "mp4").map((a) => a.toLowerCase()),
     // Modified versions with 'ing' suffix
-    ...allowAcronyms.map((a) => a + "ing"),
+    ...allowAcronyms.map((a) => `${a}ing`),
     // Random invalid cases
     "NOTINLIST",
     "NOTINLISTs",
