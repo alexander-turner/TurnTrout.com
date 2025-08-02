@@ -3,6 +3,7 @@ Compute the size of WEBM files and their MP4 equivalents.
 """
 
 import argparse
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -88,8 +89,7 @@ def main() -> None:
 
     # Create dataframe and save
     df = pd.DataFrame(data)
-    output_path = "/tmp/video_compression_stats.csv"
-    # skipcq: BAN-B108
+    output_path = Path(tempfile.gettempdir()) / "video_compression_stats.csv"
     df.to_csv(output_path, index=False)
     print(f"Results saved to {output_path}")
 
