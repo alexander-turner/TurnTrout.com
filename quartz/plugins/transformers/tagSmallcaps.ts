@@ -99,14 +99,9 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
   }
 
   const parent = ancestors[ancestors.length - 1]
-  if (
-    parent?.type === "element" &&
-    (isElvish(parent as Element) || isAbbreviation(parent as Element))
-  ) {
-    return true
-  }
-
-  return false
+  return (
+    parent?.type === "element" && (isElvish(parent as Element) || isAbbreviation(parent as Element))
+  )
 }
 
 // If text comes after sentence ending, capitalize the first letter
