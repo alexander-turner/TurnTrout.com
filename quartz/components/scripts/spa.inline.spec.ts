@@ -13,7 +13,7 @@ import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
 const FIREFOX_SCROLL_DELAY = 2000
-const TIGHT_SCROLL_TOLERANCE: number = 10
+const TIGHT_SCROLL_TOLERANCE = 10
 
 /*
  * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.

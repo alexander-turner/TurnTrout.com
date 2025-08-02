@@ -194,7 +194,7 @@ async function getLocalAssetDimensions(assetSrc: string): Promise<AssetDimension
 // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
 async function getRemoteAssetDimensions(
   assetSrc: string,
-  retries: number = 1,
+  retries = 1,
   delay = 1000,
 ): Promise<AssetDimensions> {
   for (let i = 0; i < retries; i++) {
@@ -245,7 +245,7 @@ async function getRemoteAssetDimensions(
 
 export async function fetchAndParseAssetDimensions(
   assetSrc: string,
-  retries: number = 1,
+  retries = 1,
 ): Promise<AssetDimensions | null> {
   return isRemoteUrl(assetSrc)
     ? await getRemoteAssetDimensions(assetSrc, retries)
@@ -299,7 +299,7 @@ export function collectAssetNodes(tree: Root): { node: Element; src: string }[] 
 export async function processAsset(
   assetInfo: { node: Element; src: string },
   currentDimensionsCache: AssetDimensionMap,
-  retries: number = 1,
+  retries = 1,
 ): Promise<void> {
   const { node, src } = assetInfo
   let dims = currentDimensionsCache[src]

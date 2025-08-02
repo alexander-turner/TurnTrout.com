@@ -592,7 +592,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
   return fetchContentCache.get(slug) ?? ({} as FetchResult)
 }
 
-async function focusCard(el: HTMLElement | null, keyboardFocus: boolean = true) {
+async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
   })
@@ -611,7 +611,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus: boolean = true) 
  * @param el - Card element to display preview for
  * @param keyboardFocus - Whether to focus the element using the keyboard
  */
-async function displayPreview(el: HTMLElement | null, keyboardFocus: boolean = true) {
+async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!searchLayout || !enablePreview || !preview) return
 

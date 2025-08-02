@@ -12,7 +12,7 @@ document.addEventListener("nav", () => {
     if (codeBlock) {
       const source = codeBlock.innerText.replace(/\n\n/g, "\n")
       const button = document.createElement("button")
-      function onClick() {
+      const onClick = () => {
         navigator.clipboard.writeText(source).then(
           () => {
             button.blur()
