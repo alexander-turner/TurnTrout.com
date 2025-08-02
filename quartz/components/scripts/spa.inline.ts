@@ -2,6 +2,7 @@
 // Handles navigation between pages without full page reloads
 
 import micromorph from "micromorph"
+import validator from "validator"
 
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
 import { pondVideoId } from "../component_utils"
@@ -153,8 +154,9 @@ async function fetchContent(url: URL): Promise<FetchResult> {
       content = await res.text()
       return { status: "success", content, finalUrl: url, responseStatus, contentType }
     } else {
+      const sanitizedContentType = contentType ? validator.escape(contentType) : "unknown"
       console.warn(
-        `[fetchContent] Fetch failed or non-HTML. Status: ${responseStatus}, Type: ${contentType}. Triggering fallback.`,
+        `[fetchContent] Fetch failed or non-HTML. Status: ${responseStatus}, Type: ${sanitizedContentType}. Triggering fallback.`,
       )
       window.location.href = url.toString()
       return { status: "fallback", finalUrl: url }
