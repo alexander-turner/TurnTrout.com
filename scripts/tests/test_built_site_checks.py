@@ -543,9 +543,9 @@ def test_check_local_media_files_parametrized(
 
 def test_check_file_for_issues(tmp_path):
     """Test check_file_for_issues function."""
-    file_path = tmp_path / "test.html"
-    file_path.write_text(
-        """
+    file_path = tmp_path / "public" / "test.html"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    html_content = """
     <html>
     <body>
         <a href="https://localhost:8000">Localhost Link</a>
@@ -561,13 +561,18 @@ def test_check_file_for_issues(tmp_path):
     </body>
     </html>
     """
-    )
-    issues = built_site_checks.check_file_for_issues(
-        file_path,
-        tmp_path,
-        tmp_path / "website_content",
-        should_check_fonts=False,
-    )
+    file_path.write_text(html_content)
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html_content, "html.parser"),
+    ) as mock_parse_html_file:
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            tmp_path / "public",
+            tmp_path / "website_content",
+            should_check_fonts=False,
+        )
+    mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["localhost_links"] == ["https://localhost:8000"]
     assert issues["invalid_anchors"] == [
         "Invalid anchor: #invalid-anchor",
@@ -577,7 +582,7 @@ def test_check_file_for_issues(tmp_path):
         "Problematic paragraph: Table: Test table"
     ]
     expected_missing = [
-        f"missing-image.jpg (resolved to {(tmp_path / 'missing-image.jpg').resolve()})"
+        f"missing-image.jpg (resolved to {(tmp_path / 'public' / 'missing-image.jpg').resolve()})"
     ]
     assert issues["missing_media_files"] == expected_missing
 
@@ -590,30 +595,41 @@ complicated_blockquote = """
 
 
 def test_complicated_blockquote(tmp_path):
-    file_path = tmp_path / "test.html"
+    file_path = tmp_path / "public" / "test.html"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(complicated_blockquote)
-    issues = built_site_checks.check_file_for_issues(
-        file_path,
-        tmp_path,
-        tmp_path / "website_content",
-        should_check_fonts=False,
-    )
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(complicated_blockquote, "html.parser"),
+    ) as mock_parse_html_file:
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            tmp_path / "public",
+            tmp_path / "website_content",
+            should_check_fonts=False,
+        )
+    mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["trailing_blockquotes"] == [
         "Problematic blockquote: Basic facts about language models during trai ning >"
     ]
 
 
 def test_check_file_for_issues_with_redirect(tmp_path):
-    file_path = tmp_path / "test.html"
-    file_path.write_text(
-        '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
-    )
-    issues = built_site_checks.check_file_for_issues(
-        file_path,
-        tmp_path,
-        tmp_path / "website_content",
-        should_check_fonts=False,
-    )
+    file_path = tmp_path / "public" / "test.html"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    html_content = '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
+    file_path.write_text(html_content)
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html_content, "html.parser"),
+    ) as mock_parse_html_file:
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            tmp_path / "public",
+            tmp_path / "website_content",
+            should_check_fonts=False,
+        )
+    mock_parse_html_file.assert_called_once_with(file_path)
     assert issues == {}
 
 
@@ -2424,18 +2440,26 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         f.write(html_content)
 
     # Check with fonts enabled
-    issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, None, should_check_fonts=True
-    )
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html_content, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, tmp_path / "public", None, should_check_fonts=True
+        )
 
     # Verify that missing_preloaded_font is in the issues
     assert "missing_preloaded_font" in issues
     assert issues["missing_preloaded_font"] is True
 
     # Check with fonts disabled
-    issues = built_site_checks.check_file_for_issues(
-        file_path, tmp_path, None, should_check_fonts=False
-    )
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html_content, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, tmp_path / "public", None, should_check_fonts=False
+        )
 
     # Verify that missing_preloaded_font is not in the issues
     assert "missing_preloaded_font" not in issues
@@ -2652,10 +2676,18 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     md_file_path.touch()
     assert md_file_path.is_file()
 
-    with patch(
-        "built_site_checks.check_markdown_assets_in_html",
-        return_value=["Mocked issue"],
-    ) as mock_check:
+    with (
+        patch(
+            "built_site_checks.check_markdown_assets_in_html",
+            return_value=["Mocked issue"],
+        ) as mock_check,
+        patch(
+            "scripts.utils.parse_html_file",
+            return_value=BeautifulSoup(
+                "<html><body>Test</body></html>", "html.parser"
+            ),
+        ),
+    ):
         issues = built_site_checks.check_file_for_issues(
             html_file_path, base_dir, md_file_path, should_check_fonts=False
         )
@@ -2681,20 +2713,36 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     html_file_path.write_text("<html><body>Test</body></html>")
     non_existent_md_path = content_dir / "non_existent.md"
 
-    with patch(
-        "built_site_checks.check_markdown_assets_in_html",
-        return_value=[],
-    ) as mock_check_none:
+    with (
+        patch(
+            "built_site_checks.check_markdown_assets_in_html",
+            return_value=[],
+        ) as mock_check_none,
+        patch(
+            "scripts.utils.parse_html_file",
+            return_value=BeautifulSoup(
+                "<html><body>Test</body></html>", "html.parser"
+            ),
+        ),
+    ):
         issues_none = built_site_checks.check_file_for_issues(
             html_file_path, base_dir, None, should_check_fonts=False
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
 
-    with patch(
-        "built_site_checks.check_markdown_assets_in_html",
-        return_value=[],
-    ) as mock_check_non_existent:
+    with (
+        patch(
+            "built_site_checks.check_markdown_assets_in_html",
+            return_value=[],
+        ) as mock_check_non_existent,
+        patch(
+            "scripts.utils.parse_html_file",
+            return_value=BeautifulSoup(
+                "<html><body>Test</body></html>", "html.parser"
+            ),
+        ),
+    ):
         issues_non_existent = built_site_checks.check_file_for_issues(
             html_file_path,
             base_dir,
@@ -2720,12 +2768,17 @@ def test_check_file_for_issues_favicon_check_called(
     base_dir = tmp_path / "public"
     base_dir.mkdir()
     file_path = base_dir / filename
-    file_path.write_text("<html><body>No favicon info</body></html>")
+    html_content = "<html><body>No favicon info</body></html>"
+    file_path.write_text(html_content)
 
     # We don't need to mock check_favicons_missing, just check if the key is added
-    issues = built_site_checks.check_file_for_issues(
-        file_path, base_dir, None, should_check_fonts=False
-    )
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html_content, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, base_dir, None, should_check_fonts=False
+        )
 
     if should_check_favicon:
         assert issues["missing_favicon"] is True
@@ -3611,11 +3664,15 @@ def test_check_katex_span_only_paragraph_child(
 
 
 @pytest.fixture
-def soup_check_setup(mock_environment):
+def soup_check_setup(mock_environment, monkeypatch):
     public_dir = mock_environment["public_dir"]
     html_file_path = public_dir / "test_soup_interaction.html"
     html_content = "<html><body><p>Original content</p></body></html>"
     html_file_path.write_text(html_content, encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.utils.get_git_root", lambda: mock_environment["tmp_path"]
+    )
 
     common_args = {
         "file_path": html_file_path,

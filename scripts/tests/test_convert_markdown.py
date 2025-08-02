@@ -60,7 +60,8 @@ Content with non-AVIF card_image.
 def test_process_card_image_in_markdown_skips_cases(
     setup_test_env, mock_git_root, markdown_content
 ):
-    md_file = mock_git_root / "static" / "images" / "posts" / "test.md"
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.parent.mkdir(exist_ok=True)
     md_file.write_text(markdown_content)
 
     with (
@@ -138,12 +139,9 @@ def test_process_card_image_in_markdown_skips(
 ):
     """Test skipping conditions for process_card_image_in_markdown."""
     md_file_path = (
-        mock_git_root
-        / "static"
-        / "images"
-        / "posts"
-        / f"test_{md_filename_suffix}"
+        mock_git_root / "website_content" / f"test_{md_filename_suffix}"
     )
+    md_file_path.parent.mkdir(exist_ok=True)
     md_file_path.write_text(markdown_content)
 
     with (
@@ -317,7 +315,8 @@ tags:
 ---
 Content with AVIF card_image.
 """
-    md_file = mock_git_root / "static" / "images" / "posts" / "test.md"
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.parent.mkdir(exist_ok=True)
     md_file.write_text(markdown_content)
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -383,7 +382,8 @@ card_image: http://example.com/static/image.avif
 ---
 Content with AVIF card_image.
 """
-    md_file = mock_git_root / "static" / "images" / "posts" / "test.md"
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.parent.mkdir(exist_ok=True)
     md_file.write_text(markdown_content)
 
     with (

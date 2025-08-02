@@ -261,6 +261,10 @@ def parse_html_file(file_path: Path) -> BeautifulSoup:
     """
     Parse an HTML file and return a BeautifulSoup object.
     """
+    if not file_path.resolve().is_relative_to(get_git_root() / "public"):
+        raise ValueError(
+            f"File path {file_path} is not in the public directory."
+        )
     with open(file_path, encoding="utf-8") as file:
         return BeautifulSoup(file.read(), "html.parser")
 

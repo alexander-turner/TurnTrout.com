@@ -109,6 +109,13 @@ def process_file(file_path: Path) -> None:
     Process a single file, extract YAML front matter, generate a description if
     needed, and update the file.
     """
+    git_root = script_utils.get_git_root()
+    content_dir = git_root / "website_content"
+    if not file_path.resolve().is_relative_to(content_dir):
+        raise ValueError(
+            f"File path {file_path} is not in the website_content directory."
+        )
+
     with open(file_path, encoding="utf-8") as file:
         content = file.read()
 

@@ -188,7 +188,13 @@ def process_card_image_in_markdown(md_file: Path) -> None:
     """
     Process the 'card_image' in the YAML frontmatter of the given md file.
     """
-    # Read and parse the markdown file
+    git_root = script_utils.get_git_root()
+    content_dir = git_root / "website_content"
+    if not md_file.resolve().is_relative_to(content_dir):
+        raise ValueError(
+            f"File path {md_file} is not in the website_content directory."
+        )
+
     with open(md_file, encoding="utf-8") as file:
         content = file.read()
 

@@ -45,6 +45,13 @@ def download_image(url: str, target_dir: Path) -> bool:
 
 
 def replace_urls_in_file(file_path: Path, url: str, new_url: str) -> None:
+    git_root = script_utils.get_git_root()
+    content_dir = git_root / "website_content"
+    if not file_path.resolve().is_relative_to(content_dir):
+        raise ValueError(
+            f"File path {file_path} is not in the website_content directory."
+        )
+
     with open(file_path) as f:
         content = f.read()
 

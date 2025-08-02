@@ -520,13 +520,22 @@ title: "Extra Delimiter"
     assert result == expected_result
 
 
-def test_parse_html_file(tmp_path: Path) -> None:
+@pytest.fixture
+def mock_public_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Creates a public directory in a temporary git root and mocks get_git_root."""
+    monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    return public_dir
+
+
+def test_parse_html_file(mock_public_dir: Path) -> None:
     """
     Test parsing an HTML file into a BeautifulSoup object.
     """
     # Create a test HTML file
     html_content = "<html><body><h1>Test</h1></body></html>"
-    test_file = tmp_path / "test.html"
+    test_file = mock_public_dir / "test.html"
     test_file.write_text(html_content)
 
     # Parse the file
@@ -603,11 +612,11 @@ def test_should_have_md(
         assert script_utils.should_have_md(file_path) == expected_result
 
 
-def test_md_for_html_with_redirect(tmp_path: Path) -> None:
+def test_md_for_html_with_redirect(mock_public_dir: Path) -> None:
     """
     Test that redirect pages are correctly identified as not needing markdown files.
     """
-    test_file = tmp_path / "test.html"
+    test_file = mock_public_dir / "test.html"
     redirect_html = """
     <html>
         <head>
@@ -621,24 +630,24 @@ def test_md_for_html_with_redirect(tmp_path: Path) -> None:
     assert script_utils.should_have_md(test_file) is False
 
 
-def test_parse_html_file_errors(tmp_path: Path) -> None:
+def test_parse_html_file_errors(mock_public_dir: Path) -> None:
     """
     Test error handling in parse_html_file.
     """
     # Test non-existent file
-    non_existent = tmp_path / "nonexistent.html"
+    non_existent = mock_public_dir / "nonexistent.html"
     with pytest.raises(FileNotFoundError):
         script_utils.parse_html_file(non_existent)
 
     # Test invalid HTML
-    invalid_file = tmp_path / "invalid.html"
+    invalid_file = mock_public_dir / "invalid.html"
     invalid_file.write_text("<<<invalid>html>")
     soup = script_utils.parse_html_file(invalid_file)
     assert soup is not None  # BeautifulSoup handles invalid HTML gracefully
 
     # Test different encodings
     utf8_content = "<html><body><p>UTF-8 content: 你好</p></body></html>"
-    utf8_file = tmp_path / "utf8.html"
+    utf8_file = mock_public_dir / "utf8.html"
     utf8_file.write_text(utf8_content, encoding="utf-8")
     soup = script_utils.parse_html_file(utf8_file)
     assert "你好" in soup.text
@@ -686,12 +695,12 @@ def test_is_redirect_variations(
     ],
 )
 def test_md_for_html_error_handling(
-    tmp_path: Path, html_content: str, description: str
+    mock_public_dir: Path, html_content: str, description: str
 ) -> None:
     """
     Test error handling in md_for_html function with various problematic inputs.
     """
-    test_file = tmp_path / "test.html"
+    test_file = mock_public_dir / "test.html"
     test_file.write_text(html_content)
 
     # Should handle all error cases gracefully by returning True
