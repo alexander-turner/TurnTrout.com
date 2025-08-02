@@ -7,7 +7,6 @@ import argparse
 import glob
 import json
 import os
-import shlex
 import shutil
 import signal
 import socket
@@ -329,13 +328,8 @@ def run_interactive_command(
     # Hide progress display during interactive process
     progress.update(task_id, visible=False)
     try:
-        cmd = (
-            step.command
-            if not step.shell
-            else " ".join(shlex.quote(cmd) for cmd in step.command)
-        )
         subprocess.run(
-            cmd,
+            " ".join(step.command) if step.shell else step.command,
             shell=step.shell,
             cwd=step.cwd,
             check=True,
@@ -363,11 +357,7 @@ def run_command(
 
     try:
         with subprocess.Popen(
-            (
-                step.command
-                if not step.shell
-                else " ".join(shlex.quote(cmd) for cmd in step.command)
-            ),
+            " ".join(step.command) if step.shell else step.command,
             shell=step.shell,
             cwd=step.cwd,
             stdout=subprocess.PIPE,
