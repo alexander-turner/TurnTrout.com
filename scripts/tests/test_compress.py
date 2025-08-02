@@ -463,7 +463,6 @@ def test_avif_format_pixel_depth(temp_dir: Path) -> None:
     ), "AVIF should have 8-bit depth"
 
 
-# TODO move to test_test_utils.py? Lol.
 @pytest.mark.parametrize(
     "test_id, length_in_seconds, expected_fps",
     [
@@ -504,6 +503,7 @@ def test_get_gif_frame_rate_zero_length_in_seconds(
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
+            # No resources to clean up
             pass
 
     def mock_open(*args, **kwargs):
@@ -530,6 +530,7 @@ def test_get_gif_frame_rate_missing_length_in_seconds(
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
+            # No resources to clean up
             pass
 
     def mock_open(*args, **kwargs):

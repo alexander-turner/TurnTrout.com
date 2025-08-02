@@ -219,9 +219,11 @@ def test_download_image_failure(tmp_path):
     mock_response = mock.Mock()
     mock_response.status_code = 404
 
-    with mock.patch("requests.get", return_value=mock_response):
-        with pytest.raises(ValueError, match="Failed to download image"):
-            convert_markdown_yaml._download_image(url, output_path)
+    with (
+        mock.patch("requests.get", return_value=mock_response),
+        pytest.raises(ValueError, match="Failed to download image"),
+    ):
+        convert_markdown_yaml._download_image(url, output_path)
 
 
 def test_convert_to_png(tmp_path):
@@ -422,15 +424,15 @@ Content with AVIF card_image.
             "scripts.convert_markdown_yaml.script_utils.get_files",
             return_value=[md_file],
         ),
-    ):
-        with mock.patch(
+        mock.patch(
             "sys.argv",
             [
                 "convert_markdown_yaml.py",
                 "-d",
                 str(mock_git_root / "website_content"),
             ],
-        ):
-            convert_markdown_yaml.main()
+        ),
+    ):
+        convert_markdown_yaml.main()
 
     mock_process.assert_called_once_with(md_file)

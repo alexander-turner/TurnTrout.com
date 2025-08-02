@@ -403,12 +403,14 @@ def test_is_file_modified_invalid_path(mock_git_commands):
     Test with file outside git root.
     """
     test_file = Path("/different/path/test.md")
-    with patch(
-        "subprocess.check_output",
-        side_effect=mock_git_commands(has_changes=False),
+    with (
+        patch(
+            "subprocess.check_output",
+            side_effect=mock_git_commands(has_changes=False),
+        ),
+        pytest.raises(ValueError),
     ):
-        with pytest.raises(ValueError):
-            update_lib.is_file_modified(test_file)
+        update_lib.is_file_modified(test_file)
 
 
 def test_yaml_formatting_preservation():

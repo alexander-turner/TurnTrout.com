@@ -52,11 +52,11 @@ def test_get_git_root_raises_error():
             stdout="",
         )
 
-    with mock.patch.object(
-        script_utils.subprocess, "run", mock_subprocess_run
+    with (
+        mock.patch.object(script_utils.subprocess, "run", mock_subprocess_run),
+        pytest.raises(RuntimeError),
     ):
-        with pytest.raises(RuntimeError):
-            script_utils.get_git_root()
+        script_utils.get_git_root()
 
 
 @pytest.mark.parametrize(
