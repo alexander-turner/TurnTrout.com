@@ -7,9 +7,9 @@ function collapseHandler() {
 }
 
 document.addEventListener("nav", function () {
-  let collapsibles = document.getElementsByClassName("collapsible")
+  const collapsibles = document.getElementsByClassName("collapsible")
 
-  for (let collapsible of collapsibles) {
+  for (const collapsible of collapsibles) {
     const title = collapsible.querySelector(".collapsible-title")
     title.addEventListener("click", collapseHandler.bind(collapsible))
   }

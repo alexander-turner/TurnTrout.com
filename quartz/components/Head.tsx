@@ -73,7 +73,7 @@ export default (() => {
     const cardImage = (fileData.frontmatter?.card_image as string) ?? siteImage
 
     const altText =
-      cardImage == siteImage
+      cardImage === siteImage
         ? "A pond containing a trout and a goose peacefully swimming near a castle."
         : description
     let mediaElement = (

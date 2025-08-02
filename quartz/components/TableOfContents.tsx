@@ -139,8 +139,8 @@ export function toJSXListItem(entry: TocEntry): JSX.Element {
 }
 
 const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`)
-const latexRegex = new RegExp(`(\\$[^$]+\\$)`)
-const inlineCodeRegex = new RegExp(`(\`[^\`]+\`)`)
+const latexRegex = /(\$[^$]+\$)/
+const inlineCodeRegex = /(`[^`]+`)/
 const regexSource = [arrowRegex, latexRegex, inlineCodeRegex].map((r) => r.source).join("|")
 /**
  * Processes small caps, LaTeX, arrows, and inline code in a TOC entry.
