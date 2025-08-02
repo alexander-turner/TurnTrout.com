@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 import process from "node:process"
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"

@@ -509,7 +509,11 @@ test.describe("pauseMediaElements", () => {
 
     // Start playing (mock)
     for (const el of [video1, audio1, video2]) {
-      await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.play().catch(() => {}))
+      await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) =>
+        el.play().catch(() => {
+          // Mock play() can reject if media is not loaded, which is fine
+        }),
+      )
     }
 
     await pauseMediaElements(page)

@@ -325,7 +325,9 @@ describe("attachPopoverEventListeners", () => {
   beforeEach(() => {
     popoverElement = document.createElement("div")
     linkElement = document.createElement("a") as unknown as HTMLLinkElement
-    cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {})
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {
+      // No-op for this test
+    })
   })
 
   afterEach(() => {

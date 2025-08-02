@@ -137,7 +137,9 @@ describe("Asset Dimensions Plugin", () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
+        // Mock console.warn to prevent logging during test
+      })
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})
@@ -153,7 +155,9 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should return an empty object if cache file is malformed", async () => {
       const readFileSpy = jest.spyOn(fs, "readFile").mockResolvedValue("invalid json" as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
+        // Mock console.warn to prevent logging during test
+      })
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})
@@ -171,7 +175,9 @@ describe("Asset Dimensions Plugin", () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(new Error("Permission denied") as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {})
+      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
+        // Mock console.warn to prevent logging during test
+      })
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})

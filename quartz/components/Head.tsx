@@ -50,7 +50,7 @@ export default (() => {
       description = i18n(cfg.locale).propertyDefaults.description
     }
 
-    let authorElement = undefined
+    let authorElement = <></>
     if (fileData.frontmatter?.authors) {
       const authors = fileData.frontmatter.authors
       authorElement = (
