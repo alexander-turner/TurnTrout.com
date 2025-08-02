@@ -451,7 +451,8 @@ test("should not select a search result on initial render, even if the mouse is 
   // Figure out where the second result is, and hover over it
   const secondResult = page.locator(".result-card").nth(1)
   const secondResultPos = await secondResult.boundingBox()
-  expect(secondResultPos).toBeDefined()
+  expect(secondResultPos).not.toBeNull()
+  // skipcq: JS-0339 - secondResultPos is checked for nullability above
   await page.mouse.move(
     secondResultPos!.x + secondResultPos!.width / 2,
     secondResultPos!.y + secondResultPos!.height / 2,

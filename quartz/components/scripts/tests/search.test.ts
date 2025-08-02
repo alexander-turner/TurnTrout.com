@@ -159,6 +159,7 @@ describe("highlightTextNodes", () => {
       expect(highlights).toHaveLength(expectedCount)
       highlights.forEach((span, i) => {
         expect(expectedContent).toBeDefined()
+        // skipcq: JS-0339 - expectedContent is checked for nullability above
         expect(span.textContent).toBe(expectedContent![i])
       })
     },
