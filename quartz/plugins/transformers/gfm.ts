@@ -116,10 +116,10 @@ export function resetSlugger() {
  *   Transform.
  */
 export function slugFunction() {
-  return function (tree: Root) {
+  return (tree: Root) => {
     slugger.reset()
 
-    visit(tree, "element", function (node: Element) {
+    visit(tree, "element", (node: Element) => {
       if (headingRank(node) && !node.properties.id) {
         node.properties.id = slugify(toString(node))
       }

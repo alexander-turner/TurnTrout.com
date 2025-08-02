@@ -1,13 +1,13 @@
-const checkboxId = function (index) {
+const checkboxId = (index) => {
   const slug = window.document.body.dataset.slug
   return `${slug}-checkbox-${index}`
 }
 
-document.addEventListener("nav", function () {
+document.addEventListener("nav", () => {
   const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-  checkboxes.forEach(function (el, index) {
+  checkboxes.forEach((el, index) => {
     const elId = checkboxId(index)
-    const switchState = function (e) {
+    const switchState = (e) => {
       const newCheckboxState = e.target?.checked ? "true" : "false"
       localStorage.setItem(elId, newCheckboxState)
     }

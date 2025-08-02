@@ -27,7 +27,7 @@ function closeAdmonition(event) {
  */
 function setupAdmonition() {
   const collapsible = document.getElementsByClassName("admonition is-collapsible")
-  Array.from(collapsible).forEach(function (div) {
+  Array.from(collapsible).forEach((div) => {
     // Add click handler to entire admonition for opening
     div.addEventListener("click", openAdmonition)
 
