@@ -9,6 +9,9 @@ import { pondVideoId } from "../component_utils"
 import { debounce } from "./component_script_utils"
 import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
 
+// SPA accessibility announcement for screen readers
+const announcer = document.createElement("route-announcer")
+
 declare global {
   interface Window {
     __routerInitialized?: boolean
@@ -483,9 +486,6 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
     onReady()
   }
 }
-
-// SPA accessibility announcement for screen readers
-const announcer = document.createElement("route-announcer")
 
 if (!customElements.get("route-announcer")) {
   const attrs = {

@@ -41,6 +41,18 @@ export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
   spawnSyncWrapper = fn
 }
 
+export interface AssetDimensions {
+  width: number
+  height: number
+}
+
+export interface AssetDimensionMap {
+  [src: string]: AssetDimensions | undefined
+}
+
+export let assetDimensionsCache: AssetDimensionMap | null = null
+export let needToSaveCache = false
+
 export function resetDirectCacheAndDirtyFlag(): void {
   assetDimensionsCache = null
   needToSaveCache = false
@@ -53,18 +65,6 @@ export function setDirectCache(cache: AssetDimensionMap | null): void {
 export function setDirectDirtyFlag(isDirty: boolean): void {
   needToSaveCache = isDirty
 }
-
-export interface AssetDimensions {
-  width: number
-  height: number
-}
-
-export interface AssetDimensionMap {
-  [src: string]: AssetDimensions | undefined
-}
-
-export let assetDimensionsCache: AssetDimensionMap | null = null
-export let needToSaveCache = false
 
 export async function maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
   if (assetDimensionsCache !== null) {

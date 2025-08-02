@@ -29,8 +29,6 @@ const mockSpawnSync = jest.fn().mockReturnValue({
   error: null,
 })
 
-setSpawnSyncForTesting(mockSpawnSync as unknown as typeof spawnSync)
-
 import * as assetDimensionsState from "../assetDimensions"
 import {
   maybeLoadDimensionCache,
@@ -47,6 +45,7 @@ import {
   getAssetDimensionsFfprobe,
   setSpawnSyncForTesting,
 } from "../assetDimensions"
+setSpawnSyncForTesting(mockSpawnSync as unknown as typeof spawnSync)
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
 
 type NodeFetchCompatibleSignature = (

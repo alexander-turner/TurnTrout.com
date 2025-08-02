@@ -10,6 +10,8 @@ document.addEventListener("nav", () => {
   for (const element of els) {
     const codeBlock = element.getElementsByTagName("code")[0]
     if (codeBlock) {
+      const source = codeBlock.innerText.replace(/\n\n/g, "\n")
+      const button = document.createElement("button")
       function onClick() {
         navigator.clipboard.writeText(source).then(
           () => {
@@ -28,9 +30,6 @@ document.addEventListener("nav", () => {
           (error) => console.error(error),
         )
       }
-
-      const source = codeBlock.innerText.replace(/\n\n/g, "\n")
-      const button = document.createElement("button")
       button.className = "clipboard-button"
       button.type = "button"
       button.innerHTML = svgCopy
