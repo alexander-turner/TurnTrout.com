@@ -68,10 +68,12 @@ async function getH1Screenshots(
     headers = await page.locator("h1").all()
   }
 
-  for (let index = 0; index < headers.length - 1; index++) {
+  for (let index = 0; index < headers.length; index++) {
     const header = headers[index]
-    const nextHeader = headers[index + 1]
-    const offset = await yOffset(header, nextHeader)
+    const nextHeader = index < headers.length - 1 ? headers[index + 1] : null
+    const offset = nextHeader
+      ? await yOffset(header, nextHeader)
+      : ((await page.locator("body").boundingBox())?.height ?? 0)
 
     await header.scrollIntoViewIfNeeded()
 
