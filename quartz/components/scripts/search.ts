@@ -235,7 +235,8 @@ class PreviewManager {
     // Show container immediately
     this.show()
 
-    // Fetch and render content immediately without waiting for assets
+    // Fetch and render content without awaiting it to avoid blocking the UI
+
     void this.fetchAndUpdateContent(slug, currentSearchTerm, baseSlug)
   }
 
@@ -820,7 +821,8 @@ async function onType(e: HTMLElementEventMap["input"]) {
 
   // Force a layout recalculation in WebKit
   if (results) {
-    // This forces a style recalculation
+    // This forces a style recalculation, which is necessary for the transition to work correctly
+
     void results.offsetHeight
   }
 

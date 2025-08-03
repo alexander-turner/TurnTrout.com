@@ -890,16 +890,16 @@ describe("capitalizeMatch", () => {
     const textNode = { type: "text", value: "NASA is cool" } as Text
     const strong = { type: "element", tagName: "strong", children: [textNode] } as Parent
     const em = { type: "element", tagName: "em", children: [strong] } as Parent
-    const p = { type: "element", tagName: "p", children: [em] } as Parent
+    const paragraphNode = { type: "element", tagName: "p", children: [em] } as Parent
 
     const match = createMatch("NASA", 0)
-    expect(shouldCapitalizeMatch(match, textNode, 0, [p, em, strong])).toBe(true)
+    expect(shouldCapitalizeMatch(match, textNode, 0, [paragraphNode, em, strong])).toBe(true)
   })
 
   it("should handle nested inline elements mid-sentence", () => {
     const textNode = { type: "text", value: "NASA is cool" } as Text
     const strong = { type: "element", tagName: "strong", children: [textNode] } as Parent
-    const p = {
+    const paragraphNode = {
       type: "element",
       tagName: "p",
       children: [
@@ -910,7 +910,7 @@ describe("capitalizeMatch", () => {
     } as Parent
 
     const match = createMatch("NASA", 0)
-    expect(shouldCapitalizeMatch(match, textNode, 1, [p, strong])).toBe(false)
+    expect(shouldCapitalizeMatch(match, textNode, 1, [paragraphNode, strong])).toBe(false)
   })
 })
 

@@ -20,7 +20,8 @@ const NotFound: QuartzComponent = () => {
           src="https://assets.turntrout.com/static/images/turntrout-art-transparent.avif"
           id="trout-reading"
           className="no-select"
-        ></img>
+          alt="Alex in a trout costume, reading a book."
+        />
       </div>
     </article>
   )

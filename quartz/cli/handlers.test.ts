@@ -88,7 +88,7 @@ describe("reorderHead", () => {
   it.each(entityAssertions)(
     "should preserve HTML entities in $selector",
     ({ selector, attr, expected }) => {
-      const querier = createHtml(`
+      const initialQuerier = createHtml(`
         <meta name="description" content="Test &amp; example &gt; other text">
         <title>Test &amp; Title</title>
         <script id="detect-dark-mode">if (x &lt; 5 &amp;&amp; y &gt; 3) {}</script>
@@ -96,8 +96,8 @@ describe("reorderHead", () => {
         <link rel="stylesheet" href="style.css?foo=1&amp;bar=2">
       `)
 
-      const $ = reorderHead(querier)
-      const elementToTest = attr ? $(selector).attr(attr) : $(selector).html()
+      const querier = reorderHead(initialQuerier)
+      const elementToTest = attr ? querier(selector).attr(attr) : querier(selector).html()
       expect(elementToTest).toBe(expected)
     },
   )

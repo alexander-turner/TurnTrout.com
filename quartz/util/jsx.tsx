@@ -27,7 +27,7 @@ const customComponents: Partial<Components> = {
   },
 }
 
-export function htmlToJsx(fp: FilePath, tree: Node) {
+export function htmlToJsx(fp: FilePath, tree: Node): JSX.Element | undefined {
   try {
     return toJsxRuntime(tree as Root, {
       Fragment,
@@ -39,4 +39,5 @@ export function htmlToJsx(fp: FilePath, tree: Node) {
   } catch (e) {
     trace(`Failed to parse Markdown in \`${fp}\` into JSX`, e as Error)
   }
+  return undefined
 }

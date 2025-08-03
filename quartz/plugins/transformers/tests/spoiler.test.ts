@@ -76,7 +76,7 @@ describe("rehype-custom-spoiler", () => {
     ["This is not a spoiler", false],
   ])("matchSpoilerText function (%s)", (input: string, expectedSpoiler: boolean) => {
     const match = matchSpoilerText(input)
-    expect(!!match).toBe(expectedSpoiler)
+    expect(Boolean(match)).toBe(expectedSpoiler)
   })
 
   test("createSpoilerNode function", () => {
