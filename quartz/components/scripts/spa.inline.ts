@@ -113,7 +113,7 @@ async function updatePage(html: Document, url: URL): Promise<void> {
 
   // Clean up potential extension-injected siblings around the video
   const videoElement = document.getElementById(pondVideoId)
-  if (videoElement && videoElement.parentElement) {
+  if (videoElement?.parentElement) {
     const parent = videoElement.parentElement
     Array.from(parent.childNodes).forEach((node) => {
       if (node !== videoElement) {
@@ -187,7 +187,7 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
     /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=([^"'>\s]+)["']?/i
   const match = initialContent.match(metaRefreshRegex)
 
-  if (match && match[1]) {
+  if (match?.[1]) {
     const redirectTargetRaw = match[1]
     try {
       const redirectUrl = new URL(redirectTargetRaw, initialUrl)

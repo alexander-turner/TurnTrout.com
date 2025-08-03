@@ -2,6 +2,7 @@
 import React from "react"
 
 // @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
 import clipboardScript from "./scripts/clipboard.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {

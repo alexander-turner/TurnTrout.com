@@ -18,13 +18,13 @@ export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(\\.\\d+)?`,
 const ordinalSuffixes = /(st|nd|rd|th)/
 export const fractionRegex = new RegExp(
   `(?<![\\w/\\.]|${numberRegex.source})` + // not preceded by word char, '/', '.', or a number
-    `(?!9/11)` +
+    "(?!9/11)" +
     `(?<numerator>${integerRegex.source})` +
-    `\\/` +
+    "\\/" +
     `(?<denominator>${integerRegex.source})` +
     `(?<ordinal>${ordinalSuffixes.source})?` +
     `(?!${numberRegex.source}|\\d)` + // not followed by a number or another digit
-    `(?![\\w/])`, // not followed by a word char or slash (ensures boundary)
+    "(?![\\w/])", // not followed by a word char or slash (ensures boundary)
   "gm",
 )
 

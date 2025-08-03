@@ -458,13 +458,13 @@ async function shortcutHandler(
 
   if (e.key === "Enter") {
     // If a result has explicit keyboard focus, navigate to that one
-    if (document.activeElement && document.activeElement.classList.contains("result-card")) {
+    if (document.activeElement?.classList.contains("result-card")) {
       const active = document.activeElement as HTMLInputElement
       if (active.classList.contains("no-match")) return
       active.click()
     }
     // Otherwise, if a result has our visual "focus" class, navigate to that
-    else if (currentHover && currentHover.classList.contains("focus")) {
+    else if (currentHover?.classList.contains("focus")) {
       currentHover.click()
     }
     // As a fallback, navigate to the first result
