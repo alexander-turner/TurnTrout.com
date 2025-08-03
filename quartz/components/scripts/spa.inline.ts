@@ -158,8 +158,11 @@ async function fetchContent(url: URL): Promise<FetchResult> {
       return { status: "success", content, finalUrl: url, responseStatus, contentType }
     } else {
       const sanitizedContentType = contentType ? validator.escape(contentType) : "unknown"
+      const sanitizedResponseStatus = responseStatus
+        ? validator.escape(responseStatus.toString())
+        : "unknown"
       console.warn(
-        `[fetchContent] Fetch failed or non-HTML. Status: ${responseStatus}, Type: ${sanitizedContentType}. Triggering fallback.`,
+        `[fetchContent] Fetch failed or non-HTML. Status: ${sanitizedResponseStatus}, Type: ${sanitizedContentType}. Triggering fallback.`,
       )
       window.location.href = url.toString()
       return { status: "fallback", finalUrl: url }
