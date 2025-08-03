@@ -2701,3 +2701,6 @@ subtractive
 unsee
 السعر
 دولار
+Bas
+DEMIX
+Tetiana
