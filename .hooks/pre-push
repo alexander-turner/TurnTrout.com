@@ -1,6 +1,12 @@
 #!/bin/sh
 set -e
 
+RESUME_FLAG=""
+if [ "$RESUME" = "true" ]; then
+  echo "Resuming from last failed step."
+  RESUME_FLAG="--resume"
+fi
+
 PUSHED_CHANGES=0
 trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
 
@@ -52,13 +58,15 @@ if command -v conda >/dev/null 2>&1; then
   fi
 fi
 
-PUSHED_CHANGES=$(stash_and_exit)
+if [ "$RESUME" != "true" ]; then
+  PUSHED_CHANGES=$(stash_and_exit)
+fi
 
 if [ "$CURRENT_BRANCH" != "main" ]; then
   exit 0
 fi
 
-python "$GIT_ROOT/scripts/run_push_checks.py"
+python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
 
 python "$GIT_ROOT/scripts/update_date_on_publish.py"
 
