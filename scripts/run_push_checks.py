@@ -330,6 +330,7 @@ def run_interactive_command(
     try:
         subprocess.run(
             " ".join(step.command) if step.shell else step.command,
+            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             check=True,
@@ -358,6 +359,7 @@ def run_command(
     try:
         with subprocess.Popen(
             " ".join(step.command) if step.shell else step.command,
+            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             stdout=subprocess.PIPE,
@@ -470,6 +472,7 @@ def get_check_steps(
         CheckStep(
             name="Spellchecking",
             command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -496,6 +499,7 @@ def get_check_steps(
                 "bash",
                 f"{git_root_path}/scripts/handle_local_assets.sh",
             ],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -514,6 +518,7 @@ def get_check_steps(
                 "fish",
                 f"{git_root_path}/scripts/check_css_vars.fish",
             ],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -526,6 +531,7 @@ def get_check_steps(
         CheckStep(
             name="Checking link validity",
             command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
     ]

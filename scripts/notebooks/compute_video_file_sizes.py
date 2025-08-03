@@ -11,16 +11,13 @@ import tqdm
 
 
 def get_file_size(path: Path) -> int | None:
-    """
-    Get file size in bytes. Returns None if file does not exist.
-    """
     if not path.exists():
         return None
     return path.stat().st_size
 
 
-def main() -> None:  # noqa: PY-R1000
-    # Set up argument parser
+# skipcq: PY-R1000 (one-off script)
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Analyze video compression ratios"
     )

@@ -28,10 +28,10 @@ SOURCE_TAG_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Desired MP4 type attribute
 DESIRED_MP4_TYPE = "video/mp4; codecs=hvc1"
 
 
+# skipcq: PY-R1000 (one-off script)
 def _process_video_content(
     video_content: str,
 ) -> Tuple[str, bool]:  # noqa: PY-R1000
