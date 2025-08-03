@@ -442,8 +442,8 @@ test.describe("takeScreenshotAfterElement", () => {
     const parentX = parentElementBox?.x
     expect(x).toBeCloseTo(parentX)
 
-    const parentY = parentElementBox?.y
-    expect(y).toBeCloseTo(parentY)
+    const startElementY = startElementBox?.y
+    expect(y).toBeCloseTo(startElementY)
 
     const parentWidth = parentElementBox?.width
     expect(width).toBeCloseTo(parentWidth)
