@@ -207,6 +207,39 @@ export async function takeRegressionScreenshot(
   return screenshotBuffer
 }
 
+/**
+ * Get screenshots of all h1s in a container
+ * @param container - The container to get the h1s from
+ * @param testInfo - The test info
+ * @param theme - The theme to get the screenshots for
+ */
+export async function getH1Screenshots(
+  page: Page,
+  testInfo: TestInfo,
+  location: Locator | null,
+  theme: "dark" | "light",
+) {
+  let headers: Locator[]
+  if (location) {
+    headers = await location.locator("h1").all()
+  } else {
+    headers = await page.locator("h1").all()
+  }
+
+  for (let index = 0; index < headers.length; index++) {
+    const header = headers[index]
+    const nextHeader = index < headers.length - 1 ? headers[index + 1] : null
+    const offset = nextHeader
+      ? await yOffset(header, nextHeader)
+      : ((await page.locator("body").boundingBox())?.height ?? 0)
+
+    await header.scrollIntoViewIfNeeded()
+
+    // Only screenshot up to where the next section begins
+    await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
+  }
+}
+
 // TODO test
 /**
  * Takes a screenshot of the element and the elements below it. Restricts the screenshot to the height of the element and the width of the parent element.

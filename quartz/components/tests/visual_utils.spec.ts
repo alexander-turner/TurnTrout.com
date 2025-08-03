@@ -10,11 +10,12 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   takeRegressionScreenshot,
-  takeScreenshotAfterElement,
   waitForThemeTransition,
   pauseMediaElements,
   showingPreview,
+  getH1Screenshots,
   getScreenshotName,
+  takeScreenshotAfterElement,
 } from "./visual_utils"
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
@@ -482,6 +483,38 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
     expect(capturedOptions!.animations).toBe("disabled")
   })
+})
+
+test.describe("getH1Screenshots", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body style="margin: 0; padding: 0;">
+          <h1>First H1</h1>
+          <p>Some content</p>
+          <h1>Second H1</h1>
+          <p>More content</p>
+          <h1>Third H1</h1>
+        </body>
+      </html>
+    `)
+  })
+
+  for (const theme of ["light", "dark"]) {
+    test(`captures a screenshot for each section between H1s in ${theme} theme`, async ({
+      page,
+    }, testInfo) => {
+      await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
+
+      for (let i = 0; i < 3; i++) {
+        // TODO isn't taking screenshots atm
+        const screenshotName = getScreenshotName(testInfo, `section-${theme}-${i}`)
+        console.log("test screenshotName\n", screenshotName)
+        const screenshotPath = testInfo.snapshotPath(screenshotName)
+        await fs.access(screenshotPath)
+      }
+    })
+  }
 })
 
 test.describe("waitForThemeTransition", () => {
