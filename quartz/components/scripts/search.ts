@@ -408,11 +408,24 @@ const appendLayout = (el: HTMLElement) => {
   }
 }
 
-async function shortcutHandler(
+/**
+ * Check if the current key event matches the tag-search shortcut
+ * (Ctrl/Cmd + Shift + K).
+ */
+function isTagSearchShortcut(e: KeyboardEvent): boolean {
+  return e.shiftKey && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"
+}
+
+/**
+ * Handle shortcuts that open or close the search UI. Returns true if the
+ * event has been fully handled (preventing any further processing).
+ */
+function handleSearchToggle(
   e: KeyboardEvent,
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
-) {
+): boolean {
+  // Basic search toggle ("/")
   if (e.key === "/") {
     e.preventDefault()
     const searchBarOpen = container?.classList.contains("active")
@@ -421,11 +434,14 @@ async function shortcutHandler(
     } else {
       showSearch("basic", container, searchBar)
     }
-    return
-  } else if (e.shiftKey && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-    // Hotkey to open tag search
+    return true
+  }
+
+  // Tag search toggle (Ctrl/Cmd + Shift + K)
+  if (isTagSearchShortcut(e)) {
     e.preventDefault()
-    e.stopPropagation() // Add this line to stop event propagation
+    e.stopPropagation()
+
     const searchBarOpen = container?.classList.contains("active")
     if (searchBarOpen) {
       hideSearch()
@@ -434,17 +450,29 @@ async function shortcutHandler(
       showSearch("tags", container, searchBar)
     }
 
-    // add "#" prefix for tag search
+    // Add "#" prefix for tag search
     if (searchBar) searchBar.value = "#"
-
-    return
+    return true
   }
 
+  return false
+}
+
+/**
+ * Perform in-result navigation (arrow keys, Tab, Enter) when the search UI is
+ * already open.
+ */
+async function handleResultNavigation(
+  e: KeyboardEvent,
+  container: HTMLElement | null,
+  searchBar: HTMLInputElement | null,
+): Promise<void> {
+  // Remove previous visual focus marker
   if (currentHover) {
     currentHover.classList.remove("focus")
   }
 
-  // If search is active, then we will render the first result and display accordingly
+  // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
   const prevSibling = (el: HTMLElement): HTMLElement =>
@@ -452,45 +480,85 @@ async function shortcutHandler(
   const nextSibling = (el: HTMLElement): HTMLElement =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : el
 
-  // Check if we can navigate through search results
-  // Only allow if search bar is focused or a result is currently hovered
   const canNavigate = document.activeElement === searchBar || currentHover !== null
 
-  if (e.key === "Enter") {
-    // If a result has explicit keyboard focus, navigate to that one
-    if (document.activeElement?.classList.contains("result-card")) {
-      const active = document.activeElement as HTMLInputElement
-      if (active.classList.contains("no-match")) return
-      active.click()
-    }
-    // Otherwise, if a result has our visual "focus" class, navigate to that
-    else if (currentHover?.classList.contains("focus")) {
-      currentHover.click()
-    }
-    // As a fallback, navigate to the first result
-    else {
-      const anchor = document.getElementsByClassName("result-card")[0] as HTMLInputElement | null
-      if (!anchor || anchor?.classList.contains("no-match")) return
-
-      await displayPreview(anchor)
-      focusCard(anchor)
-      anchor.click()
-    }
-  } else if (e.key === "ArrowUp" || (e.shiftKey && e.key === "Tab")) {
-    e.preventDefault()
-    if (canNavigate) {
-      const toShow = prevSibling(currentHover as HTMLElement)
-      await displayPreview(toShow as HTMLElement)
-      focusCard(toShow as HTMLElement)
-    }
-  } else if (e.key === "ArrowDown" || e.key === "Tab") {
-    e.preventDefault()
-    if (canNavigate) {
-      const toShow = nextSibling(currentHover as HTMLElement)
-      await displayPreview(toShow as HTMLElement)
-      focusCard(toShow as HTMLElement)
-    }
+  const focusAndPreview = async (target: HTMLElement | null) => {
+    if (!target) return
+    await displayPreview(target)
+    focusCard(target)
   }
+
+  switch (e.key) {
+    case "Enter": {
+      if (document.activeElement?.classList.contains("result-card")) {
+        const active = document.activeElement as HTMLElement
+        if (!active.classList.contains("no-match")) {
+          active.click()
+        }
+        break
+      }
+
+      if (currentHover?.classList.contains("focus")) {
+        currentHover.click()
+        break
+      }
+
+      const first = document.getElementsByClassName("result-card")[0] as HTMLElement | null
+      if (first && !first.classList.contains("no-match")) {
+        await focusAndPreview(first)
+        first.click()
+      }
+      break
+    }
+
+    case "ArrowUp": {
+      e.preventDefault()
+      if (canNavigate) {
+        const toShow = prevSibling(currentHover as HTMLElement)
+        await focusAndPreview(toShow)
+      }
+      break
+    }
+
+    case "ArrowDown": {
+      e.preventDefault()
+      if (canNavigate) {
+        const toShow = nextSibling(currentHover as HTMLElement)
+        await focusAndPreview(toShow)
+      }
+      break
+    }
+
+    case "Tab": {
+      e.preventDefault()
+      if (!canNavigate) break
+      const toShow = e.shiftKey
+        ? prevSibling(currentHover as HTMLElement)
+        : nextSibling(currentHover as HTMLElement)
+      await focusAndPreview(toShow)
+      break
+    }
+
+    default:
+      // Other keys are ignored by navigation handler
+      break
+  }
+}
+
+/**
+ * Keyboard shortcut handler for the search component. Delegates to smaller
+ * helper functions to keep complexity manageable.
+ */
+async function shortcutHandler(
+  e: KeyboardEvent,
+  container: HTMLElement | null,
+  searchBar: HTMLInputElement | null,
+) {
+  // First, deal with shortcuts that toggle the visibility of the search UI.
+  if (handleSearchToggle(e, container, searchBar)) return
+
+  // Otherwise, handle navigation within an already open search UI.
+  await handleResultNavigation(e, container, searchBar)
 }
 
 let cleanupListeners: (() => void) | undefined
