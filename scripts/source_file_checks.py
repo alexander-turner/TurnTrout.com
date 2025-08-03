@@ -282,7 +282,8 @@ def check_card_image_extension(metadata: dict) -> List[str]:
 
     if not card_image_url.lower().endswith((".png", ".jpg", ".jpeg")):
         errors.append(
-            f"Card image URL '{card_image_url}' must end in .png, .jpg, or .jpeg"
+            f"Card image URL '{card_image_url}' must end in"
+            " .png, .jpg, or .jpeg"
         )
     return errors
 
