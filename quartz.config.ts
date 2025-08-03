@@ -1,11 +1,38 @@
 import { QuartzConfig } from "./quartz/cfg"
-import * as Plugin from "./quartz/plugins"
+import {
+  AddFavicons,
+  AfterArticle,
+  AliasRedirects,
+  AllTagsPage,
+  Assets,
+  CrawlLinks,
+  CreatedModifiedDate,
+  FrontMatter,
+  GitHubFlavoredMarkdown,
+  HTMLFormattingImprovement,
+  Latex,
+  NotFoundPage,
+  ObsidianFlavoredMarkdown,
+  RecentPostsPage,
+  RemoveDrafts,
+  Static,
+  SyntaxHighlighting,
+  TableOfContents,
+  TagAcronyms,
+  TagPage,
+  TextFormattingImprovement,
+  TroutOrnamentHr,
+  Twemoji,
+  WrapNakedElements,
+  addAssetDimensionsFromSrc,
+  ColorVariables,
+  ContentIndex,
+  ContentPage,
+  ComponentResources,
+  rehypeCustomSpoiler,
+  rehypeCustomSubtitle,
+} from "./quartz/plugins"
 
-/**
- * Quartz 4.0 Configuration
- *
- * See https://quartz.jzhao.xyz/configuration for more information.
- */
 const config: QuartzConfig = {
   configuration: {
     pageTitle: "The Pond",
@@ -15,7 +42,7 @@ const config: QuartzConfig = {
     locale: "en-US",
     baseUrl: "turntrout.com",
     ignorePatterns: ["private", "templates", ".obsidian"],
-    defaultDateType: "published", // What to display on listings
+    defaultDateType: "published",
     navbar: {
       pages: [
         { title: "About me", slug: "/about" },
@@ -26,51 +53,50 @@ const config: QuartzConfig = {
   },
   plugins: {
     transformers: [
-      Plugin.FrontMatter(),
-      Plugin.CreatedModifiedDate({
+      FrontMatter(),
+      CreatedModifiedDate({
         priority: ["frontmatter", "filesystem"],
       }),
-      Plugin.TextFormattingImprovement(),
-      Plugin.Twemoji(),
-      Plugin.SyntaxHighlighting({
+      TextFormattingImprovement(),
+      Twemoji(),
+      SyntaxHighlighting({
         theme: {
           light: "github-light",
           dark: "github-dark",
         },
         keepBackground: false,
       }),
-      Plugin.ObsidianFlavoredMarkdown({ enableInHtmlEmbed: true, parseArrows: false }),
-      Plugin.GitHubFlavoredMarkdown({ enableSmartyPants: false }),
-      // HTML formatting would mess up mermaid if it came first
-      Plugin.HTMLFormattingImprovement(),
-      Plugin.Latex({ renderEngine: "katex" }),
-      Plugin.CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
-      Plugin.TagAcronyms(),
-      Plugin.TroutOrnamentHr(),
-      Plugin.AddFavicons(),
-      Plugin.AfterArticle(),
-      Plugin.ColorVariables(),
-      Plugin.rehypeCustomSpoiler(),
-      Plugin.rehypeCustomSubtitle(),
-      Plugin.TableOfContents(),
-      Plugin.WrapNakedElements(),
-      Plugin.addAssetDimensionsFromSrc(),
+      ObsidianFlavoredMarkdown({ enableInHtmlEmbed: true, parseArrows: false }),
+      GitHubFlavoredMarkdown({ enableSmartyPants: false }),
+      HTMLFormattingImprovement(),
+      Latex({ renderEngine: "katex" }),
+      CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
+      TagAcronyms(),
+      TroutOrnamentHr(),
+      AddFavicons(),
+      AfterArticle(),
+      ColorVariables(),
+      rehypeCustomSpoiler(),
+      rehypeCustomSubtitle(),
+      TableOfContents(),
+      WrapNakedElements(),
+      addAssetDimensionsFromSrc(),
     ],
-    filters: [Plugin.RemoveDrafts()],
+    filters: [RemoveDrafts()],
     emitters: [
-      Plugin.AliasRedirects(),
-      Plugin.ComponentResources(),
-      Plugin.ContentPage(),
-      Plugin.TagPage(),
-      Plugin.AllTagsPage(),
-      Plugin.RecentPostsPage(),
-      Plugin.ContentIndex({
+      AliasRedirects(),
+      ComponentResources(),
+      ContentPage(),
+      TagPage(),
+      AllTagsPage(),
+      RecentPostsPage(),
+      ContentIndex({
         enableSiteMap: true,
         enableRSS: true,
       }),
-      Plugin.Assets(),
-      Plugin.Static(),
-      Plugin.NotFoundPage(),
+      Assets(),
+      Static(),
+      NotFoundPage(),
     ],
   },
 }
