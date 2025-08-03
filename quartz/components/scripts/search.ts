@@ -237,6 +237,7 @@ class PreviewManager {
 
     // Fetch and render content without awaiting it to avoid blocking the UI
 
+    // skipcq: JS-0098 (fetchAndUpdateContent is awaited)
     void this.fetchAndUpdateContent(slug, currentSearchTerm, baseSlug)
   }
 
@@ -891,6 +892,7 @@ async function onType(e: HTMLElementEventMap["input"]) {
   if (results) {
     // This forces a style recalculation, which is necessary for the transition to work correctly
 
+    // skipcq: JS-0098 (offsetHeight is used for layout recalculation)
     void results.offsetHeight
   }
 

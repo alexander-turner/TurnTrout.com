@@ -3,7 +3,7 @@ import type { JSX } from "preact"
 
 import { type Components, type Jsx, toJsxRuntime } from "hast-util-to-jsx-runtime"
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
-// skipcq: JS-W1028 (react is used for the table component)
+// skipcq: JS-C1003 (react is used for the table component)
 import * as React from "react"
 
 import type { FilePath } from "./path"

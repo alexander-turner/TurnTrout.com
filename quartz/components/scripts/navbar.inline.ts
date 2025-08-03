@@ -24,6 +24,7 @@ function setupPondVideo(): void {
 function playVideo(this: HTMLVideoElement): void {
   // Muting the floating promise as we don't need to await it
 
+  // skipcq: JS-0098 (play is awaited)
   void this.play()
 }
 

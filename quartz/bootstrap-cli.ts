@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-// skip-cq: js-w1028 (tsx is used for the CLI)
+// skip-cq: JS-0271 (tsx is used for the CLI)
 import process from "node:process"
 import yargs from "yargs"
 import { hideBin } from "yargs/helpers"

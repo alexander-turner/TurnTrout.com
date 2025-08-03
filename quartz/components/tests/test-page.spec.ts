@@ -226,11 +226,13 @@ test.describe("Table of contents", () => {
     const headerLocator = page.locator("h1").last()
     await headerLocator.scrollIntoViewIfNeeded()
     const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    const highlightText = await tocHighlightLocator.textContent()
 
     const spoilerHeading = page.locator("#spoilers").first()
     await spoilerHeading.scrollIntoViewIfNeeded()
 
+    const highlightText = await tocHighlightLocator.textContent()
+    expect(highlightText).not.toBeNull()
+    // skipcq: JS-0339
     await expect(tocHighlightLocator).not.toHaveText(highlightText!)
   })
 })

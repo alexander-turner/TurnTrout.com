@@ -14,7 +14,11 @@ function testWrapNakedElementsHTML(inputHTML: string): string {
     } as BuildCtx["argv"],
   }
 
-  const pluginList = WrapNakedElements().htmlPlugins!(mockBuildCtx as BuildCtx)
+  const pluginProperty = WrapNakedElements().htmlPlugins
+  if (!pluginProperty) {
+    throw new Error("Plugin property is undefined")
+  }
+  const pluginList = pluginProperty(mockBuildCtx as BuildCtx)
   const processor = rehype().data("settings", { fragment: true }).use(pluginList)
 
   const result = processor.processSync(inputHTML)
