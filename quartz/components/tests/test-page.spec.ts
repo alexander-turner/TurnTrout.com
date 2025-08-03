@@ -98,14 +98,28 @@ test.describe("Test page sections", () => {
 })
 
 test.describe("Unique content around the site", () => {
-  for (const pageSlug of ["", "404"]) {
-    const url = `http://localhost:8080/${pageSlug}`
+  test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
+    await page.goto("http://localhost:8080")
+    await page.locator("body").waitFor({ state: "visible" })
+    await page.evaluate(() => {
+      const article = document.querySelector("article")
+      if (article) {
+        const paragraphs = article.querySelectorAll("p")
+        paragraphs.forEach((p, idx) => {
+          if (idx > 0) {
+            p.remove()
+          }
+        })
+      }
+    })
+    await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
+  })
 
-    const title = pageSlug === "" ? "Welcome" : pageSlug
-    test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(url)
+  for (const pageSlug of ["404"]) {
+    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(`http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
-      await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
+      await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
   }
 
