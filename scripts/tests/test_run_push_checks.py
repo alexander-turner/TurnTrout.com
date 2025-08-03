@@ -339,7 +339,10 @@ def test_run_command_failure():
 def test_run_command_shell_handling():
     """Test command execution with shell=True"""
     step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"], shell=True
+        name="Test Command",
+        command=["echo", "test"],
+        # skipcq: BAN-B604 (a local command, assume safe)
+        shell=True,
     )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
@@ -903,6 +906,7 @@ def test_run_interactive_command():
     step = run_push_checks.CheckStep(
         name="Spellcheck",
         command=["fish", "scripts/spellchecker.fish"],
+        # skipcq: BAN-B604 (a local command, assume safe)
         shell=True,
     )
 
@@ -952,6 +956,7 @@ def test_run_command_delegates_to_interactive():
     step = run_push_checks.CheckStep(
         name="Spellcheck",
         command=["fish", "scripts/spellchecker.fish"],
+        # skipcq: BAN-B604 (a local command, assume safe)
         shell=True,
     )
 

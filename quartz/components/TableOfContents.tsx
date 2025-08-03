@@ -235,6 +235,7 @@ const handleSpan = (elt: Element): JSX.Element => {
   if (classNames.includes("katex-toc")) {
     const katexChild = elt.children[0]
     const katexHtml = katexChild && "value" in katexChild ? katexChild.value : ""
+    // skipcq: JS-0440 (katexHtml comes from our own build process)
     return <span className="katex-toc" dangerouslySetInnerHTML={{ __html: katexHtml }} />
   }
 

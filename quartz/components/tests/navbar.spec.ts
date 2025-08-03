@@ -151,8 +151,11 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
       clip: {
         // skipcq: JS-0339
         x: box!.x,
+        // skipcq: JS-0339
         y: box!.y,
+        // skipcq: JS-0339
         width: box!.width,
+        // skipcq: JS-0339
         height: box!.height + 12,
       },
     })

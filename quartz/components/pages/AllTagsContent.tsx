@@ -2,7 +2,7 @@ import type { Element } from "hast"
 
 import { h } from "hastscript"
 import { JSX } from "preact"
-// skip-cq: JS-C1003 (react is used for the table component)
+// skipcq: JS-C1003 (react is used for the table component)
 import * as React from "react"
 
 import type { QuartzComponent, QuartzComponentProps } from "../types"
