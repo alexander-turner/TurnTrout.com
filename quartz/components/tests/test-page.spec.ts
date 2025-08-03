@@ -7,7 +7,6 @@ import {
   setTheme,
   waitForTransitionEnd,
   isDesktopViewport,
-  takeScreenshotAfterElement,
   getH1Screenshots,
 } from "./visual_utils"
 
@@ -503,11 +502,9 @@ for (const theme of ["light", "dark"]) {
 
     await elvishText.hover()
 
-    // Get initial width TODO
-    const box = await elvishText.boundingBox()
-    test.fail(!box, "Could not get elvish text dimensions")
-
-    await takeScreenshotAfterElement(page, testInfo, elvishText, 50, `elvish-text-hover-${theme}`)
+    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
+      elementToScreenshot: elvishText,
+    })
   })
 }
 

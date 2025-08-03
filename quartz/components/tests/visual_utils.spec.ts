@@ -4,7 +4,6 @@ import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
 import {
-  yOffset,
   setTheme,
   getNextElementMatchingSelector,
   waitForTransitionEnd,
@@ -15,8 +14,79 @@ import {
   showingPreview,
   getH1Screenshots,
   getScreenshotName,
-  takeScreenshotAfterElement,
+  wrapH1SectionsInSpans,
 } from "./visual_utils"
+
+test.describe("wrapH1SectionsInSpans", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <article id="content">
+            <h1 id="first-h1">First H1</h1>
+            <p>Some content after first h1</p>
+            <h2>A subtitle</h2>
+            <h1 id="second-h1">Second H1</h1>
+            <p>Some content after second h1</p>
+            <h1 id="third-h1">Third H1</h1>
+            <h1 id="fourth-h1">Fourth H1</h1>
+            <div>
+              <h1 id="fifth-h1">Fifth H1</h1>
+              <p>Nested content</p>
+            </div>
+          </article>
+        </body>
+      </html>
+    `)
+  })
+
+  test("wraps each H1 and its subsequent content into a span", async ({ page }) => {
+    await wrapH1SectionsInSpans(page)
+
+    const html = await page.innerHTML("body")
+    expect(html).toContain('<span id="h1-span-first-h1">')
+    expect(html).toContain('<span id="h1-span-second-h1">')
+    expect(html).toContain('<span id="h1-span-third-h1">')
+    expect(html).toContain('<span id="h1-span-fourth-h1">')
+    expect(html).not.toContain('<span id="h1-span-fifth-h1">')
+  })
+
+  test("handles pages with no H1 elements gracefully", async ({ page }) => {
+    await page.setContent("<html><body><p>No H1s here</p></body></html>")
+    await wrapH1SectionsInSpans(page)
+
+    const spans = await page.locator("span[id^='h1-span-']").count()
+    expect(spans).toBe(0)
+  })
+
+  test("is idempotent and does not re-wrap already wrapped sections", async ({ page }) => {
+    // First call
+    await wrapH1SectionsInSpans(page)
+    const initialSpans = await page.locator("span[id^='h1-span-']").all()
+    expect(initialSpans.length).toBe(4)
+    const initialHtml = await page.innerHTML("body")
+
+    // Second call
+    await wrapH1SectionsInSpans(page)
+    const finalSpans = await page.locator("span[id^='h1-span-']").all()
+    expect(finalSpans.length).toBe(4)
+    const finalHtml = await page.innerHTML("body")
+
+    // The DOM should not have changed
+    expect(finalHtml).toEqual(initialHtml)
+  })
+
+  test("works correctly with a locator", async ({ page }) => {
+    const contentLocator = page.locator("#content")
+    await wrapH1SectionsInSpans(contentLocator)
+
+    const spans = await contentLocator.locator("span[id^='h1-span-']").all()
+    expect(spans.length).toBe(4)
+
+    const section0 = contentLocator.locator("#h1-span-first-h1")
+    await expect(section0.locator("h1").first()).toHaveText("First H1")
+  })
+})
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
@@ -59,23 +129,6 @@ test.describe("visual_utils functions", () => {
       expect(labelText).toBe(expectedLabel)
     })
   }
-
-  test("yOffset between two headers returns correct positive offset", async ({ page }) => {
-    const header1 = page.locator("h1").nth(0)
-    const header2 = page.locator("h1").nth(1)
-
-    const offset = await yOffset(header1, header2)
-    expect(offset).toBeGreaterThan(0)
-  })
-
-  test("yOffset throws error when second element is above the first", async ({ page }) => {
-    const header1 = page.locator("h2").nth(1)
-    const header2 = page.locator("h2").nth(0)
-
-    await expect(yOffset(header1, header2)).rejects.toThrow(
-      "Second element is above the first element",
-    )
-  })
 
   test("getNextElementMatchingSelector finds the next h2 after a given h2", async ({ page }) => {
     const currentHeader = page.locator("h2").nth(1)
@@ -422,69 +475,6 @@ test.describe("takeRegressionScreenshot", () => {
   })
 })
 
-test.describe("takeScreenshotAfterElement", () => {
-  test.beforeEach(async ({ page }) => {
-    // Set up a more complex DOM for testing element relationships
-    await page.setContent(`
-      <html>
-        <body style="margin: 0; padding: 20px; background: white;">
-          <div id="parent" style="width: 500px; padding: 10px; border: 1px solid black;">
-            <h1 id="header1" style="margin-top: 30px; height: 50px; background: lightblue;">Header 1</h1>
-            <p style="height: 100px; background: lightcoral;">Paragraph 1</p>
-            <h2 id="header2" style="margin-top: 40px; height: 60px; background: lightgreen;">Header 2</h2>
-            <p style="height: 150px; background: lightgoldenrodyellow;">Paragraph 2</p>
-          </div>
-        </body>
-      </html>
-    `)
-    // Ensure viewport is large enough
-    await page.setViewportSize({ width: 800, height: 600 })
-  })
-
-  test("takes screenshot starting from the element with specified height and parent width", async ({
-    page,
-  }, testInfo) => {
-    const startElement = page.locator("#header2")
-    const parentElement = page.locator("#parent")
-    const screenshotHeight = 200
-    const testSuffix = "after-h2"
-
-    // Spy on page.screenshot to capture its arguments
-    const originalPageScreenshot = page.screenshot.bind(page)
-    let capturedOptions: PageScreenshotOptions | undefined
-
-    page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
-      capturedOptions = options
-      return Buffer.from("")
-    }
-
-    try {
-      await takeScreenshotAfterElement(page, testInfo, startElement, screenshotHeight, testSuffix)
-    } finally {
-      page.screenshot = originalPageScreenshot
-    }
-
-    expect(capturedOptions).toBeDefined()
-    test.fail(!capturedOptions, "Captured options are undefined")
-
-    // Verify the clip coordinates and dimensions
-    const startElementBox = await startElement.boundingBox()
-    const parentElementBox = await parentElement.boundingBox()
-
-    expect(startElementBox).not.toBeNull()
-    expect(parentElementBox).not.toBeNull()
-
-    expect(capturedOptions!.clip).toBeDefined()
-    test.fail(!capturedOptions!.clip, "Captured options clip is undefined")
-
-    expect(capturedOptions!.clip!.x).toBeCloseTo(parentElementBox!.x)
-    expect(capturedOptions!.clip!.y).toBeCloseTo(startElementBox!.y)
-    expect(capturedOptions!.clip!.width).toBeCloseTo(parentElementBox!.width)
-    expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
-    expect(capturedOptions!.animations).toBe("disabled")
-  })
-})
-
 test.describe("getH1Screenshots", () => {
   test.beforeEach(async ({ page }) => {
     await page.setContent(`
@@ -506,12 +496,11 @@ test.describe("getH1Screenshots", () => {
     }, testInfo) => {
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
 
-      for (let i = 0; i < 3; i++) {
-        // TODO isn't taking screenshots atm
+      const h1Spans = await page.locator("span[id^='h1-section-']").all()
+      for (let i = 0; i < h1Spans.length; i++) {
         const screenshotName = getScreenshotName(testInfo, `section-${theme}-${i}`)
-        console.log("test screenshotName\n", screenshotName)
         const screenshotPath = testInfo.snapshotPath(screenshotName)
-        await fs.access(screenshotPath)
+        expect(await fs.stat(screenshotPath)).not.toBeNull()
       }
     })
   }

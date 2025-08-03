@@ -72,7 +72,10 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) 
   const sanitizedTitle = sanitize(testInfo.title)
   const sanitizedSuffix = sanitize(screenshotSuffix)
   const sanitizedBrowserName = sanitize(browserName)
-  return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
+  return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`.replace(
+    / /g,
+    "-",
+  )
 }
 
 // Type for restoration data stored on window
@@ -207,6 +210,49 @@ export async function takeRegressionScreenshot(
   return screenshotBuffer
 }
 
+export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
+  const evaluateFunc = () => {
+    // Create a static list of headers to iterate over
+    const headers = Array.from(document.querySelectorAll("article > h1"))
+
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]
+      const parent = header.parentElement
+
+      if (!parent) continue
+
+      // If the parent is already a span we've created, skip it
+      if (parent.tagName === "SPAN" && parent.id.startsWith("h1-span-")) {
+        continue
+      }
+
+      const span = document.createElement("span")
+      if (!header.id) {
+        throw new Error("Header has no id")
+      }
+      span.id = `h1-span-${header.id}`
+
+      parent.insertBefore(span, header)
+
+      span.appendChild(header)
+
+      // Move all subsequent siblings into the span until we hit the next h1
+      let nextSibling = span.nextSibling
+      while (nextSibling && headers.indexOf(nextSibling as Element) === -1) {
+        const toMove = nextSibling
+        nextSibling = toMove.nextSibling
+        span.appendChild(toMove)
+      }
+    }
+  }
+
+  if ("locator" in locator) {
+    await (locator as Locator).evaluate(evaluateFunc)
+  } else {
+    await (locator as Page).evaluate(evaluateFunc)
+  }
+}
+
 /**
  * Get screenshots of all h1s in a container
  * @param container - The container to get the h1s from
@@ -219,81 +265,18 @@ export async function getH1Screenshots(
   location: Locator | null,
   theme: "dark" | "light",
 ) {
-  let headers: Locator[]
-  if (location) {
-    headers = await location.locator("h1").all()
-  } else {
-    headers = await page.locator("h1").all()
+  const screenshotBase = location ?? page
+  await wrapH1SectionsInSpans(screenshotBase)
+
+  const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
+
+  for (let index = 0; index < h1Spans.length; index++) {
+    const h1Span = h1Spans[index]
+    await h1Span.scrollIntoViewIfNeeded()
+    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${index}`, {
+      elementToScreenshot: h1Span,
+    })
   }
-
-  for (let index = 0; index < headers.length; index++) {
-    const header = headers[index]
-    const nextHeader = index < headers.length - 1 ? headers[index + 1] : null
-    const offset = nextHeader
-      ? await yOffset(header, nextHeader)
-      : ((await page.locator("body").boundingBox())?.height ?? 0)
-
-    await header.scrollIntoViewIfNeeded()
-
-    // Only screenshot up to where the next section begins
-    await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
-  }
-}
-
-// TODO test
-/**
- * Takes a screenshot of the element and the elements below it. Restricts the screenshot to the height of the element and the width of the parent element.
- * @param page - The page to take the screenshot on.
- * @param testInfo - The test info.
- * @param element - The element to take the screenshot of.
- * @param height - The height of the element.
- * @param testNameSuffix - The suffix to add to the test name.
- */
-export async function takeScreenshotAfterElement(
-  page: Page,
-  testInfo: TestInfo,
-  element: Locator,
-  height: number,
-  testNameSuffix?: string,
-) {
-  const box = await element.boundingBox()
-  if (!box) throw new Error("Could not find element")
-
-  const parent = element.locator("..")
-  const parentBox = await parent.boundingBox()
-  if (!parentBox) throw new Error("Could not find parent element")
-
-  await takeRegressionScreenshot(page, testInfo, `section-${testNameSuffix ?? ""}`, {
-    clip: {
-      x: parentBox.x,
-      y: box.y,
-      width: parentBox.width,
-      height,
-    },
-  })
-}
-
-/**
- * Returns the y-offset between two elements, from the top of the first element to the top of the second element.
- * @param firstElement - The first element.
- * @param secondElement - The second element.
- * @returns The y-offset between the two elements.
- */
-export async function yOffset(firstElement: Locator, secondElement: Locator) {
-  // Ensure elements are visible before getting bounding boxes
-  await firstElement.waitFor({ state: "visible" })
-  await secondElement.waitFor({ state: "visible" })
-
-  const firstBox = await firstElement.boundingBox()
-  const secondBox = await secondElement.boundingBox()
-
-  if (!firstBox || !secondBox) throw new Error("Could not find elements")
-  if (firstBox.y === secondBox.y) throw new Error("Elements are the same")
-
-  const offset = secondBox.y - firstBox.y
-  if (offset < 0) throw new Error("Second element is above the first element")
-
-  return offset
 }
 
 /**
