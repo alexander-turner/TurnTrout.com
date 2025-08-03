@@ -50,7 +50,7 @@ export default (() => {
       description = i18n(cfg.locale).propertyDefaults.description
     }
 
-    let authorElement = <></>
+    let authorElement = null
     if (fileData.frontmatter?.authors) {
       const authors = fileData.frontmatter.authors
       authorElement = (
@@ -151,6 +151,7 @@ export default (() => {
       <head>
         <meta charSet="utf-8" />
         <script
+          // skipcq: JS-0440
           dangerouslySetInnerHTML={{
             __html: `
 // Try to restore scroll position without flicker

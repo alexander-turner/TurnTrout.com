@@ -81,7 +81,7 @@ export const ignoreMap = new Map<string, string>([
 
 export function replaceEmojiConvertArrows(content: string): string {
   let twemojiContent = content
-  twemojiContent = twemojiContent.replaceAll(/↩/g, "⤴")
+  twemojiContent = twemojiContent.replaceAll(/↩/gu, "⤴")
   for (const [key, value] of ignoreMap) {
     const exp = new RegExp(key, "g")
     twemojiContent = twemojiContent.replaceAll(exp, value)

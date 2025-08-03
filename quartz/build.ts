@@ -101,6 +101,7 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   if (argv.serve) {
     return startServing(ctx, mut, parsedFiles, clientRefresh, dependencies)
   }
+  // skipcq: JS-0321
   return () => {}
 }
 
@@ -431,5 +432,6 @@ export default async (argv: Argv, mut: Mutex, clientRefresh: () => void) => {
   } catch (err) {
     trace("\nExiting Quartz due to a fatal error", err as Error)
   }
+  // skipcq: JS-0321
   return () => {}
 }

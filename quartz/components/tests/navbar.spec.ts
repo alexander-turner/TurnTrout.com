@@ -149,6 +149,7 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
     // skipcq: JS-0339 - box is checked for nullability above
     await takeRegressionScreenshot(page, testInfo, suffix, {
       clip: {
+        // skipcq: JS-0339
         x: box!.x,
         y: box!.y,
         width: box!.width,

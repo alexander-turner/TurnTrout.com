@@ -209,6 +209,7 @@ describe("animate", () => {
     const duration = 100
     const startTime = performance.now()
 
+    // skipcq: JS-0321
     animate(duration, () => {}, onComplete)
 
     // Advance to just after duration and trigger the callback
@@ -237,6 +238,7 @@ describe("animate", () => {
     const onComplete = jest.fn()
     const duration = 100
 
+    // skipcq: JS-0321
     const cleanup = animate(duration, () => {}, onComplete)
 
     // Cancel halfway through

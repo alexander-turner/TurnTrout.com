@@ -139,7 +139,7 @@ class AssetProcessor {
    * Determine whether a given source string points to a remote (HTTP/S) resource.
    * Any non-HTTP(S) protocol (including "file://" and relative or absolute paths) is considered local.
    */
-  private isRemoteUrl(src: string): boolean {
+  private static isRemoteUrl(src: string): boolean {
     try {
       const parsed = new URL(src)
       return parsed.protocol === "http:" || parsed.protocol === "https:"
@@ -149,7 +149,7 @@ class AssetProcessor {
     }
   }
 
-  private async resolveLocalAssetPath(src: string): Promise<string> {
+  private static async resolveLocalAssetPath(src: string): Promise<string> {
     if (src.startsWith("file://")) {
       const localPath = fileURLToPath(src)
       await fs.access(localPath)
@@ -170,7 +170,7 @@ class AssetProcessor {
 
   // Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
   private async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
-    const localPath = await this.resolveLocalAssetPath(assetSrc)
+    const localPath = await AssetProcessor.resolveLocalAssetPath(assetSrc)
     const ext = path.extname(localPath).toLowerCase()
     const videoExts = new Set([".mp4", ".mov", ".m4v", ".webm", ".mpeg", ".mpg", ".avi", ".mkv"])
     if (videoExts.has(ext)) {
@@ -253,7 +253,7 @@ class AssetProcessor {
     assetSrc: string,
     retries = 1,
   ): Promise<AssetDimensions | null> {
-    return this.isRemoteUrl(assetSrc)
+    return AssetProcessor.isRemoteUrl(assetSrc)
       ? await this.getRemoteAssetDimensions(assetSrc, retries)
       : await this.getLocalAssetDimensions(assetSrc)
   }
@@ -261,7 +261,7 @@ class AssetProcessor {
   /** Returns the src of a video element or that of its first source child.
    * In this project, each video element should have two source elements, one for mp4 and one for webm.
    */
-  public getVideoSource(node: Element): string | undefined {
+  public static getVideoSource(node: Element): string | undefined {
     const directSrc = node.properties?.src as string | undefined
     if (directSrc) {
       return directSrc
@@ -292,7 +292,7 @@ class AssetProcessor {
     const videoAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
       if (node.tagName === "video") {
-        const src = this.getVideoSource(node)
+        const src = AssetProcessor.getVideoSource(node)
         if (src) {
           videoAssetsToProcess.push({ node, src })
         }

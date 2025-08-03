@@ -594,7 +594,7 @@ describe("Asset Dimensions Plugin", () => {
         expected: undefined,
       },
     ])("retrieves correct sources", ({ videoElement, expected }) => {
-      const inferredSrc = assetProcessor.getVideoSource(videoElement as Element)
+      const inferredSrc = AssetProcessor.getVideoSource(videoElement as Element)
       expect(inferredSrc).toStrictEqual(expected)
     })
   })
@@ -783,10 +783,11 @@ describe("Asset Dimensions Plugin", () => {
 
       const finalCache = assetProcessor["assetDimensionsCache"]
       expect(finalCache).not.toBeNull()
-      expect(finalCache![cdnImg1Src]).toEqual(mockFetchedImageDims)
-      expect(finalCache![cdnImg2Src]).toEqual(preCachedDims)
+
+      expect(finalCache?.[cdnImg1Src]).toEqual(mockFetchedImageDims)
+      expect(finalCache?.[cdnImg2Src]).toEqual(preCachedDims)
       // SVG also uses mockFetchedDims due to current sizeOfMock behavior
-      expect(finalCache![cdnSvg1Src]).toEqual(mockFetchedImageDims)
+      expect(finalCache?.[cdnSvg1Src]).toEqual(mockFetchedImageDims)
 
       // false since we saved the cache already
       expect(assetProcessor["needToSaveCache"]).toBe(false)

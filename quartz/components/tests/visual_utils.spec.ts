@@ -297,7 +297,9 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
+    // skipcq: JS-0339
     expect(dimensions.width).toBe(elementBox!.width)
+    // skipcq: JS-0339
     expect(dimensions.height).toBe(elementBox!.height)
   })
 
@@ -418,10 +420,11 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(capturedOptions).toBeDefined()
     test.fail(!capturedOptions, "Captured options are undefined")
 
-    expect(capturedOptions!.path).toBeDefined()
-    expect(capturedOptions!.path).toContain(testSuffix)
-    expect(capturedOptions!.path).toMatch(/lost-pixel\//) // Keep double slash for directory separator
-    expect(capturedOptions!.path).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
+    const capturedPath = capturedOptions?.path
+    expect(capturedPath).toBeDefined()
+    expect(capturedPath).toContain(testSuffix)
+    expect(capturedPath).toMatch(/lost-pixel\//) // Keep double slash for directory separator
+    expect(capturedPath).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
 
     // Verify the clip coordinates and dimensions
     const startElementBox = await startElement.boundingBox()
@@ -430,14 +433,22 @@ test.describe("takeScreenshotAfterElement", () => {
     expect(startElementBox).not.toBeNull()
     expect(parentElementBox).not.toBeNull()
 
-    expect(capturedOptions!.clip).toBeDefined()
-    test.fail(!capturedOptions!.clip, "Captured options clip is undefined")
+    const capturedClip = capturedOptions?.clip
+    expect(capturedClip).toBeDefined()
+    test.fail(!capturedClip, "Captured options clip is undefined")
 
-    expect(capturedOptions!.clip!.x).toBeCloseTo(parentElementBox!.x)
-    expect(capturedOptions!.clip!.y).toBeCloseTo(startElementBox!.y)
-    expect(capturedOptions!.clip!.width).toBeCloseTo(parentElementBox!.width)
-    expect(capturedOptions!.clip!.height).toBe(screenshotHeight)
-    expect(capturedOptions!.animations).toBe("disabled")
+    // @ts-expect-error - capturedClip is defined
+    const { x, y, width, height } = capturedClip
+    const parentX = parentElementBox?.x
+    expect(x).toBeCloseTo(parentX)
+
+    const parentY = parentElementBox?.y
+    expect(y).toBeCloseTo(parentY)
+
+    const parentWidth = parentElementBox?.width
+    expect(width).toBeCloseTo(parentWidth)
+    expect(height).toBe(screenshotHeight)
+    expect(capturedOptions?.animations).toBe("disabled")
   })
 })
 
