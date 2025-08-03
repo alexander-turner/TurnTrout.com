@@ -976,14 +976,17 @@ Minimal layout shift
 Rerunning some local tests
 : I run `eslint` and `npm test` Actions on GitHub to help test for environmental inconsistencies.
 
-## Extensive static analysis
+DeepSource
+: I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource serves multiple roles:
 
-I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource serves multiple roles:
+<dd>
+<ol>
+<li>A verbose linter which surfaces a huge range of antipatterns. For example, in Python it points out variables which are redeclared from an outer scope.</li>
+<li>A tool which creates pull requests to automatically fix certain kinds of issues.</li>
+</ol>
+</dd>
 
-1. A verbose linter which surfaces a huge range of antipatterns. For example, in Python it points out variables which are redeclared from an outer scope.
-2. An autofix tool which - for a subset of issues - can create a pull request fixing the issues.
-
-I try to keep the repository clean of DeepSource issues, but it does point out a lot of unimportant issues (which I ignore). Sadly, their command-line tool cannot be configured to only highlight sufficiently important problems. So the DeepSource analysis is not yet part of my automated `pre-push` hook.
+<dd>As of August 2025, the repository is clean of DeepSource issues.</dd>
 
 # Acknowledgments
 
