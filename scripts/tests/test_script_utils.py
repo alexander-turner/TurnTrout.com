@@ -2,6 +2,7 @@
 Test the utilities used for running the tests :)
 """
 
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -57,6 +58,37 @@ def test_get_git_root_raises_error():
         pytest.raises(RuntimeError),
     ):
         script_utils.get_git_root()
+
+
+def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Test that find_executable raises FileNotFoundError for an executable that does not exist.
+    """
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    with pytest.raises(FileNotFoundError):
+        script_utils.find_executable("non_existent_executable")
+
+
+def test_find_executable_success_and_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    Test that find_executable finds an executable and caches the result.
+    """
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    mock_which = mock.Mock(return_value="/fake/path/to/git")
+    monkeypatch.setattr(shutil, "which", mock_which)
+
+    # First call, should call `which`
+    path = script_utils.find_executable("git")
+    assert path == "/fake/path/to/git"
+    mock_which.assert_called_once_with("git")
+
+    # Second call, should use cache and not call `which` again
+    path2 = script_utils.find_executable("git")
+    assert path2 == "/fake/path/to/git"
+    mock_which.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -543,6 +575,21 @@ def test_parse_html_file(mock_public_dir: Path) -> None:
 
     # Verify the parsed content
     assert soup.find("h1") is not None
+
+
+def test_parse_html_file_outside_public(mock_public_dir: Path) -> None:
+    """
+    Test that `parse_html_file` raises an error for files outside the public directory.
+    """
+    # `mock_public_dir` is `tmp_path / "public"`. git_root is mocked to `tmp_path`.
+    tmp_path = mock_public_dir.parent
+
+    # Create a file outside the 'public' directory but within tmp_path
+    outside_file = tmp_path / "test.html"
+    outside_file.write_text("<html></html>")
+
+    with pytest.raises(ValueError, match="is not in the public directory"):
+        script_utils.parse_html_file(outside_file)
 
 
 def test_is_redirect() -> None:

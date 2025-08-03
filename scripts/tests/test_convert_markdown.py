@@ -442,3 +442,22 @@ Content with AVIF card_image.
         convert_markdown_yaml.main()
 
     mock_process.assert_called_once_with(md_file)
+
+
+def test_process_card_image_in_markdown_wrong_directory(mock_git_root):
+    """Test ValueError for markdown file outside website_content."""
+    other_dir = mock_git_root / "other_dir"
+    other_dir.mkdir()
+    md_file = other_dir / "test.md"
+    md_file.write_text(
+        """---
+title: Test
+---
+Content"""
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=f"File path {md_file} is not in the website_content directory.",
+    ):
+        convert_markdown_yaml.process_card_image_in_markdown(md_file)
