@@ -27,7 +27,6 @@ ol.overflow {
 #backlinks-admonition,
 #post-statistics {
   list-style: none;
-  overflow: visible; // TODO remove
   max-height: none;
   transition: max-height 0.5s ease;
   position: relative;
