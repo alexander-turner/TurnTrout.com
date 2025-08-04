@@ -255,8 +255,9 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
 
 /**
  * Get screenshots of all h1s in a container
- * @param container - The container to get the h1s from
+ * @param page - The page to get the h1s from
  * @param testInfo - The test info
+ * @param location - The location to get the h1s from
  * @param theme - The theme to get the screenshots for
  */
 export async function getH1Screenshots(
@@ -273,11 +274,13 @@ export async function getH1Screenshots(
   for (let index = 0; index < h1Spans.length; index++) {
     const h1Span = h1Spans[index]
     await h1Span.scrollIntoViewIfNeeded()
-    const h1Text = await h1Span.textContent()
-    const sanitizedH1Text = h1Text ? sanitize(h1Text) : null
-    if (!sanitizedH1Text) throw new Error("H1 span has no text")
 
-    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Text}`, {
+    const h1Header = h1Span.locator("h1").first()
+    const h1Id = await h1Header.getAttribute("id")
+    const sanitizedH1Id = h1Id ? sanitize(h1Id) : null
+    if (!sanitizedH1Id) throw new Error("H1 header has no id")
+
+    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
     })
   }
