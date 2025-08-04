@@ -53,8 +53,7 @@ ol.overflow {
 
     & ol,
     & ul {
-      // TODO calculate this automatically
-      font-size: 0.913em; // approx sqrt(1/1.2), where 1.2 is scale factor
+      font-size: calc(sqrt(calc(1 / $font-scale-factor)) * 1em);
 
       & li {
         padding-left: calc(1.5 * $base-margin);

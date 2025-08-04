@@ -1,7 +1,7 @@
 @use "./variables.scss" as *;
 
 @function calculate-scale($steps) {
-  @return calc(1rem * pow(1.2, #{$steps}));
+  @return calc(1rem * pow($font-scale-factor, #{$steps}));
 }
 
 :root {

@@ -17,6 +17,7 @@ export const semiBoldWeight = 600
 export const normalWeight = 400
 export const lineHeight = "1.8rem"
 export const listPaddingLeft = "2rem"
+export const fontScaleFactor = 1.2
 
 // Colors
 export const midgroundFaintDark = "#737994"
@@ -47,6 +48,7 @@ export const variables = {
   midgroundDark,
   midgroundFaintLight,
   midgroundLight,
+  fontScaleFactor,
 } as const
 
 export type Variables = typeof variables
