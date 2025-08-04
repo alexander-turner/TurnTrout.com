@@ -371,6 +371,7 @@ test.describe("Clipboard button", () => {
       const clipboardFigure = page.locator("figure:has(* .clipboard-button)").first()
       const clipboardButton = clipboardFigure.locator(".clipboard-button").first()
       await clipboardButton.click()
+      await waitForTransitionEnd(clipboardButton)
 
       await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
         elementToScreenshot: clipboardButton,
