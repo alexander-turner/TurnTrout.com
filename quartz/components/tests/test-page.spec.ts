@@ -515,6 +515,7 @@ for (const theme of ["light", "dark"]) {
     await elvishText.scrollIntoViewIfNeeded()
 
     await elvishText.hover()
+    await waitForTransitionEnd(elvishText)
 
     await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
       elementToScreenshot: elvishText,
