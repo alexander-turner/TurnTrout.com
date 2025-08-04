@@ -45,9 +45,9 @@ Subtitle: I am a subtitle with [a link](/test-page).
 > - Test
 >   - Test
 >
->  1. Block quotes can also contain ordered lists
+>  1. Block quotes can also contain ordered lists and sometimes those list items are more than a single line long
 >  2. With counters
->      1. That track depth
+>      1. That track depth (except in Safari)
 
 1. A normal ordered list
     1. Indented
