@@ -273,7 +273,11 @@ export async function getH1Screenshots(
   for (let index = 0; index < h1Spans.length; index++) {
     const h1Span = h1Spans[index]
     await h1Span.scrollIntoViewIfNeeded()
-    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${index}`, {
+    const h1Text = await h1Span.textContent()
+    const sanitizedH1Text = h1Text ? sanitize(h1Text) : null
+    if (!sanitizedH1Text) throw new Error("H1 span has no text")
+
+    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Text}`, {
       elementToScreenshot: h1Span,
     })
   }
