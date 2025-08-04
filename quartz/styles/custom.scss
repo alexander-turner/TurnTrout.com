@@ -127,9 +127,8 @@ ol {
 
   // Simulate the implicit padding-left of ul (the bullet isn't flush with the text)
   --li-padding-left: #{$base-margin * 0.5};
-  --padding-left-offset: 0.125rem;
 
-  padding-left: calc($list-padding-left - var(--li-padding-left) + var(--padding-left-offset));
+  padding-left: $list-padding-left;
 
   // This comes in an h2 right before the footnotes.
   & .footnote-label {
@@ -141,6 +140,12 @@ ol {
     margin-bottom: var(--li-margin-bottom);
     padding-left: var(--li-padding-left);
 
+    // If in safari, use the marker to display the list counter
+    @supports (-webkit-hyphens: none) {
+      text-indent: calc(-0.75 * $base-margin);
+      margin-left: calc(0.5 * $base-margin);
+    }
+
     &::marker {
       font-variant-numeric: lining-nums; // Use lining numbers for list items
       content: counters(list, ".") "."; // Display the list counter with periods
@@ -151,7 +156,6 @@ ol {
       counter-reset: sublist; // Each nested ordered list has its own sublist counter
       margin-bottom: 0;
       margin-top: 0;
-      padding-left: calc($list-padding-left - var(--li-padding-left) - var(--padding-left-offset));
 
       li {
         counter-increment: sublist; // Increment the sublist counter for nested list items
