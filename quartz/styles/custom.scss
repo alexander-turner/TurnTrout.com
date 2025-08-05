@@ -142,7 +142,7 @@ ol {
 
     // If in safari, use the marker to display the list counter
     @supports (-webkit-hyphens: none) {
-      &:not(#toc-content, #toc-content-mobile) {
+      :not(#toc-content, #toc-content-mobile, .footnotes) & {
         padding-left: 0; // Safari effectively has extra padding-left
         margin-left: calc(
           0.5 * $base-margin
