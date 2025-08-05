@@ -343,11 +343,22 @@ export async function search(page: Page, term: string) {
   }
 }
 
+export async function removeVideoPosters(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const videos = document.querySelectorAll("video")
+    videos.forEach((video) => {
+      // Prevent Safari flakiness
+      video.removeAttribute("poster")
+    })
+  })
+}
+
 export async function pauseMediaElements(page: Page): Promise<void> {
+  // Remove posters first to prevent Safari from showing them
+  await removeVideoPosters(page)
+
   const videoPromises = (await page.locator("video").all()).map((el) =>
     el.evaluate((n: HTMLVideoElement) => {
-      // Remove poster to prevent flaky white backgrounds in Safari
-      n.removeAttribute("poster")
       n.pause()
       n.currentTime = 0
     }),

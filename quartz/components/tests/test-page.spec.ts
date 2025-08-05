@@ -8,6 +8,7 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   getH1Screenshots,
+  removeVideoPosters,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -99,13 +100,16 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080")
+    await page.goto("http://localhost:8080", { waitUntil: "domcontentloaded" })
+    await removeVideoPosters(page)
     await page.locator("body").waitFor({ state: "visible" })
+
     await page.evaluate(() => {
       const article = document.querySelector("article")
       if (article) {
         const paragraphs = article.querySelectorAll("p")
         paragraphs.forEach((p, idx) => {
+          // Keep the first paragraph for testing dropcap
           if (idx > 0) {
             p.remove()
           }
