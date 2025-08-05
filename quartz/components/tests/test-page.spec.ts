@@ -8,7 +8,6 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   getH1Screenshots,
-  removeVideoPosters,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -102,7 +101,6 @@ test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
     await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
-    await removeVideoPosters(page)
 
     await page.evaluate(() => {
       const article = document.querySelector("article")
@@ -116,6 +114,16 @@ test.describe("Unique content around the site", () => {
         })
       }
     })
+
+    // eslint-disable-next-line playwright/no-networkidle
+    await page.waitForLoadState("networkidle")
+    await page.waitForFunction(
+      () => {
+        const pondVideo = document.querySelector("#pond-video") as HTMLVideoElement
+        return pondVideo?.readyState === 4
+      },
+      { timeout: 10000 },
+    )
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
 

@@ -343,26 +343,7 @@ export async function search(page: Page, term: string) {
   }
 }
 
-export async function removeVideoPosters(page: Page): Promise<void> {
-  try {
-    await page.waitForLoadState("domcontentloaded")
-    await page.evaluate(() => {
-      const videos = document.querySelectorAll("video")
-      videos.forEach((video) => {
-        // Prevent Safari flakiness
-        video.removeAttribute("poster")
-      })
-    })
-  } catch (error) {
-    // If execution context is destroyed, just continue - the page might be navigating
-    console.warn("Could not remove video posters:", error)
-  }
-}
-
 export async function pauseMediaElements(page: Page): Promise<void> {
-  // Remove posters first to prevent Safari from showing them
-  await removeVideoPosters(page)
-
   const videoPromises = (await page.locator("video").all()).map((el) =>
     el.evaluate((n: HTMLVideoElement) => {
       n.pause()
