@@ -344,13 +344,19 @@ export async function search(page: Page, term: string) {
 }
 
 export async function removeVideoPosters(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const videos = document.querySelectorAll("video")
-    videos.forEach((video) => {
-      // Prevent Safari flakiness
-      video.removeAttribute("poster")
+  try {
+    await page.waitForLoadState("domcontentloaded")
+    await page.evaluate(() => {
+      const videos = document.querySelectorAll("video")
+      videos.forEach((video) => {
+        // Prevent Safari flakiness
+        video.removeAttribute("poster")
+      })
     })
-  })
+  } catch (error) {
+    // If execution context is destroyed, just continue - the page might be navigating
+    console.warn("Could not remove video posters:", error)
+  }
 }
 
 export async function pauseMediaElements(page: Page): Promise<void> {

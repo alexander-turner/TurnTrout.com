@@ -100,9 +100,9 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080", { waitUntil: "domcontentloaded" })
-    await removeVideoPosters(page)
+    await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
+    await removeVideoPosters(page)
 
     await page.evaluate(() => {
       const article = document.querySelector("article")
@@ -458,7 +458,6 @@ test.describe("Spoilers", () => {
       await spoiler.click()
 
       await expect(spoiler).toHaveClass(/revealed/)
-      await waitForTransitionEnd(spoiler)
 
       await takeRegressionScreenshot(page, testInfo, "spoiler-after-revealing", {
         elementToScreenshot: spoiler,
@@ -469,7 +468,6 @@ test.describe("Spoilers", () => {
       await page.mouse.click(0, 0) // Click away to remove focus
 
       await expect(spoiler).not.toHaveClass(/revealed/)
-      await waitForTransitionEnd(spoiler)
     })
   }
 
