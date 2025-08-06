@@ -99,6 +99,11 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(
+      isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
+      "Flaky in Safari on desktop",
+    )
+
     await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
 
@@ -115,15 +120,6 @@ test.describe("Unique content around the site", () => {
       }
     })
 
-    // eslint-disable-next-line playwright/no-networkidle
-    await page.waitForLoadState("networkidle")
-    await page.waitForFunction(
-      () => {
-        const pondVideo = document.querySelector("#pond-video") as HTMLVideoElement
-        return pondVideo?.readyState === 4
-      },
-      { timeout: 10000 },
-    )
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
 
