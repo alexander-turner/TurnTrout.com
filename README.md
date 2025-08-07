@@ -11,7 +11,7 @@ npx quartz build --serve
 firefox localhost:8080/welcome.html
 ```
 
-The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant (and also present in `docs/`).
+The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant. See [my design page](https://turntrout.com/design) for why my site is the way it is.
 
 # Cryptographic timestamp verification
 
