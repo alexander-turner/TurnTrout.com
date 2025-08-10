@@ -788,7 +788,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 ```
 
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
-- I learned the hard way that `playwright` code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch `playwright` code smells.
+- I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
 ## `pre-push`: the quality assurance gauntlet
 
@@ -847,25 +847,27 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 ### Simulating site interactions
 
-Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [`playwright`](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
 
 ### Visual regression testing
 
 Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [`playwright`](https://playwright.dev/) to interact with my website and [`lost-pixel`](https://www.lost-pixel.com/) to take stable pictures of the website. `playwright` renders the site at pre-specified locations, takes screenshots, and sends them to `lost-pixel` for comparison to the last "reference" screenshot which I approved. If a picture differs by more than a small number of pixels, then I have to manually approve the new picture. Until then, my site won't be updated with any changes.
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and sends them to [`lost-pixel`](https://www.lost-pixel.com/) for comparison to the last "reference" screenshot which I approved. If a picture differs by more than a small number of pixels, then I have to manually approve the new picture. Until then, my site won't be updated with any changes.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
-Figure: `playwright` and `lost-pixel` can tell you "hey, did you mean for your picture of a mountain to now have snow on it?".
 
 However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
 
-> [!money] Cost of running the `playwright` tests on GitHub Actions
-> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's `playwright` tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
+> [!money] Cost of running the Playwright tests on GitHub Actions
+> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
 >
 > After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
 
-At this point, I also check that the server builds properly.
+### Lessons learned from Playwright testing
+
+> [!quote] [My 428-day battle against flaky Playwright screenshots](/playwright)
+> ![[playwright-tips#Background]]
 
 ### Compressing and uploading assets
 
@@ -971,9 +973,9 @@ ots --no-bitcoin verify "files/ABC012.txt.ots"
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 
 Site functionality
-: I have [over 175 `playwright` tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9 x 175 = 1,602 tests, each of which takes up to 90 seconds.
+: I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9 x 175 = 1,602 tests, each of which takes up to 90 seconds.
 
-: Sadly, `playwright` test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
+: Sadly, Playwright test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
 
 Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.

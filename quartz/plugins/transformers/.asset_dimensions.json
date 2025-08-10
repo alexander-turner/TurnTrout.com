@@ -5562,5 +5562,17 @@
   "https://assets.turntrout.com/static/images/external-favicons/lsusr_com.avif": {
     "width": 64,
     "height": 64
+  },
+  "./asset_staging/design-20250810160231.png": {
+    "width": 1588,
+    "height": 376
+  },
+  "./asset_staging/design-20250810160319.png": {
+    "width": 1576,
+    "height": 368
+  },
+  "./asset_staging/playwright-tips-20250810165347.png": {
+    "width": 2924,
+    "height": 834
   }
 }
