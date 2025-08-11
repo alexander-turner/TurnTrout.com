@@ -16,7 +16,7 @@ aliases:
 ---
 # Background
 
-I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I merged my `lostpixel` branch with `main`. Thus ended 428 days of sporadic toil.
+I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all screenshots from a build for the first time. Thus ended 428 days of sporadic toil.
 
 I've had the tests practically finalized for a while. Problem was, they were <span class="corrupted">flaky</span>. I tried reading Playwright documentation, tutorials, and [best-practice](https://playwright.dev/docs/best-practices) guides. I long conversed with AIs. I even offered to pay \$400 so that a professional would help me tidy up. The response was -- and I _quote_ -- "this is 100% a trap lol... I've debugged playwright before and it's not worth \$400." 💀
 
