@@ -6,9 +6,9 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    branches: ["main", "dev", "lostpixel", "lostpixel-safari-no-background"]
   pull_request:
-    branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    branches: ["main", "dev", "lostpixel", "lostpixel-safari-no-background"]
 
 jobs:
   visual-testing:
