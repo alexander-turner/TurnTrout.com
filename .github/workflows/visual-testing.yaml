@@ -7,8 +7,19 @@ concurrency:
 on:
   push:
     branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    # Don't run if only content changes
+    paths-ignore:
+      - "website_content/**"
   pull_request:
     branches: ["main", "lostpixel", "lostpixel-safari-no-background"]
+    paths:
+      - "quartz/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/**"
+      - "lostpixel.config.ts"
 
 jobs:
   visual-testing:
@@ -42,6 +53,13 @@ jobs:
           ]
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:
@@ -94,6 +112,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
