@@ -859,15 +859,13 @@ I use [Playwright](https://playwright.dev/) to interact with my website and scre
 
 However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
 
+> [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
+> ![[playwright-tips#Background]]
+
 > [!money] Cost of running the Playwright tests on GitHub Actions
 > As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
 >
 > After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
-
-### Lessons learned from Playwright testing
-
-> [!quote] [My 428-day battle against flaky Playwright screenshots](/playwright)
-> ![[playwright-tips#Background]]
 
 ### Compressing and uploading assets
 

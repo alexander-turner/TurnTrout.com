@@ -1,5 +1,5 @@
 ---
-title: My 428-day battle against flaky Playwright screenshots
+title: Lessons from my 428-day battle against flaky Playwright screenshots
 permalink: playwright-tips
 no_dropcap: false
 tags:
