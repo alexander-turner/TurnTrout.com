@@ -26,8 +26,6 @@ test.beforeEach(async ({ page }) => {
   // I don't trust playwright's test isolation
   await page.reload()
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-  await page.evaluate(() => window.scrollTo(0, 0))
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -37,7 +35,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
-  let popover = page.locator(".popover")
+  let popover = page.locator(".popover-inner").first()
   await expect(popover).toBeHidden()
 
   await dummyLink.hover()
@@ -45,7 +43,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   await expect(popover).toBeVisible()
   await expect(popover).toHaveClass(/popover-visible/)
   await takeRegressionScreenshot(page, testInfo, "first-visible-popover", {
-    element: popover,
+    elementToScreenshot: popover,
   })
 
   // Move mouse away

@@ -39,6 +39,7 @@ const config = {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "\\.inline$": "<rootDir>/quartz/components/scripts/__mocks__/inlineScriptMock.ts",
   },
   testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(test).ts(x|)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],

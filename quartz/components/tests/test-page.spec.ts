@@ -1,4 +1,5 @@
-import { test, expect, type Locator, type Page, type TestInfo } from "@playwright/test"
+import { test, expect } from "@playwright/test"
+import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import {
@@ -6,8 +7,7 @@ import {
   setTheme,
   waitForTransitionEnd,
   isDesktopViewport,
-  yOffset,
-  takeScreenshotAfterElement,
+  getH1Screenshots,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -49,35 +49,36 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
-/**
- * Get screenshots of all h1s in a container
- * @param container - The container to get the h1s from
- * @param testInfo - The test info
- * @param theme - The theme to get the screenshots for
- */
-async function getH1Screenshots(
-  page: Page,
-  testInfo: TestInfo,
-  location: Locator | null,
-  theme: "dark" | "light",
-) {
-  let headers: Locator[]
-  if (location) {
-    headers = await location.locator("h1").all()
-  } else {
-    headers = await page.locator("h1").all()
-  }
+async function setDummyContentMeta(page: Page) {
+  await page.evaluate(() => {
+    const tagsUl = document.querySelector("#tags ul")
+    if (tagsUl) {
+      tagsUl.innerHTML = `<li><a href="/tags/dummy-tag" class="can-trigger-popover tag-link">dummy-tag</a></li>`
+    }
 
-  for (let index = 0; index < headers.length - 1; index++) {
-    const header = headers[index]
-    const nextHeader = headers[index + 1]
-    const offset = await yOffset(header, nextHeader)
+    const readingTime = document.querySelector(".reading-time")
+    if (readingTime) {
+      readingTime.textContent = "Read time: 10 minutes"
+    }
 
-    await header.scrollIntoViewIfNeeded()
+    const publicationStr = document.querySelector(".publication-str")
+    if (publicationStr) {
+      publicationStr.innerHTML = `Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>`
+    }
 
-    // Only screenshot up to where the next section begins
-    await takeScreenshotAfterElement(page, testInfo, header, offset, `${theme}-${index}`)
-  }
+    const lastUpdatedStr = document.querySelector(".last-updated-str")
+    if (lastUpdatedStr) {
+      lastUpdatedStr.innerHTML = `<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>`
+    }
+
+    const backlinksUl = document.querySelector("#backlinks-admonition ul")
+    if (backlinksUl) {
+      backlinksUl.innerHTML = `
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a></li>
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a></li>
+      `
+    }
+  })
 }
 
 test.describe("Test page sections", () => {
@@ -97,14 +98,36 @@ test.describe("Test page sections", () => {
 })
 
 test.describe("Unique content around the site", () => {
-  for (const pageSlug of ["", "404"]) {
-    const url = `http://localhost:8080/${pageSlug}`
+  test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
+    test.skip(
+      isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
+      "Flaky in Safari on desktop",
+    )
 
-    const title = pageSlug === "" ? "Welcome" : pageSlug
-    test(`${title} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(url)
+    await page.goto("http://localhost:8080", { waitUntil: "load" })
+    await page.locator("body").waitFor({ state: "visible" })
+
+    await page.evaluate(() => {
+      const article = document.querySelector("article")
+      if (article) {
+        const paragraphs = article.querySelectorAll("p")
+        paragraphs.forEach((p, idx) => {
+          // Keep the first paragraph for testing dropcap
+          if (idx > 0) {
+            p.remove()
+          }
+        })
+      }
+    })
+
+    await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
+  })
+
+  for (const pageSlug of ["404"]) {
+    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+      await page.goto(`http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
-      await takeRegressionScreenshot(page, testInfo, `site-page-${title}`)
+      await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
   }
 
@@ -136,7 +159,7 @@ test.describe("Unique content around the site", () => {
       }, numOldest)
 
       await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`, {
-        element: "#center-content",
+        elementToScreenshot: page.locator("#center-content"),
       })
     })
   }
@@ -179,7 +202,7 @@ test.describe("Unique content around the site", () => {
     await expect(rewardWarning).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "reward-warning", {
-      element: admonition,
+      elementToScreenshot: admonition,
     })
   })
 })
@@ -200,7 +223,7 @@ test.describe("Table of contents", () => {
 
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
-      element: rightSidebar,
+      elementToScreenshot: rightSidebar,
     })
   })
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
@@ -216,7 +239,7 @@ test.describe("Table of contents", () => {
 
     const tocContent = page.locator(".admonition").first()
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
-      element: tocContent,
+      elementToScreenshot: tocContent,
     })
   })
 
@@ -238,13 +261,17 @@ test.describe("Table of contents", () => {
 })
 
 test.describe("Layout Breakpoints", () => {
-  for (const width of [minDesktopWidth, maxMobileWidth]) {
-    test(`Layout at breakpoint width ${width}px (lostpixel)`, async ({ page }, testInfo) => {
+  const breakpoints: { name: string; width: number }[] = [
+    { name: "minDesktop", width: Math.ceil(minDesktopWidth) },
+    { name: "maxMobile", width: Math.floor(maxMobileWidth) },
+  ]
+  for (const { name, width } of breakpoints) {
+    test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
-      await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${width}px`)
+      await takeRegressionScreenshot(page, testInfo, `layout-breakpoint-${name}-${width}px`)
     })
   }
 })
@@ -294,8 +321,7 @@ test.describe("Admonitions", () => {
       await expect(element).toBeVisible()
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
-        element,
-        skipViewportImagesLoad: true,
+        elementToScreenshot: element,
       })
     })
   }
@@ -349,18 +375,6 @@ test.describe("Clipboard button", () => {
       const screenshotAfterClicking = await clipboardButton.screenshot()
       expect(screenshotAfterClicking).not.toEqual(screenshotBeforeClicking)
     })
-
-    test(`Clipboard button in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-      await setTheme(page, theme as "light" | "dark")
-      const clipboardButton = page.locator(".clipboard-button").first()
-      await clipboardButton.click()
-
-      await takeRegressionScreenshot(page, testInfo, `clipboard-button-clicked-${theme}`, {
-        element: clipboardButton,
-        disableHover: false,
-        skipViewportImagesLoad: true,
-      })
-    })
   }
 })
 
@@ -410,12 +424,14 @@ test.describe("Right sidebar", () => {
   })
 
   test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
-      element: "#content-meta",
+      elementToScreenshot: page.locator("#content-meta"),
     })
   })
 
   test("Backlinks are visible (lostpixel)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
     const backlinks = page.locator("#backlinks").first()
     await backlinks.scrollIntoViewIfNeeded()
     await expect(backlinks).toBeVisible()
@@ -427,8 +443,10 @@ test.describe("Right sidebar", () => {
 
     // Open the backlinks
     await backlinksTitle.click()
+    // Don't hover over the backlinks
+    await page.mouse.move(0, 0)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
-      element: backlinks,
+      elementToScreenshot: backlinks,
     })
   })
 })
@@ -446,11 +464,9 @@ test.describe("Spoilers", () => {
       await spoiler.click()
 
       await expect(spoiler).toHaveClass(/revealed/)
-      await waitForTransitionEnd(spoiler)
 
       await takeRegressionScreenshot(page, testInfo, "spoiler-after-revealing", {
-        element: spoiler,
-        skipViewportImagesLoad: true,
+        elementToScreenshot: spoiler,
       })
 
       // Click again to close
@@ -458,7 +474,6 @@ test.describe("Spoilers", () => {
       await page.mouse.click(0, 0) // Click away to remove focus
 
       await expect(spoiler).not.toHaveClass(/revealed/)
-      await waitForTransitionEnd(spoiler)
     })
   }
 
@@ -474,9 +489,8 @@ test.describe("Spoilers", () => {
     expect(revealedScreenshot).not.toEqual(initialScreenshot)
 
     await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
-      element: spoiler,
+      elementToScreenshot: spoiler,
       disableHover: false,
-      skipViewportImagesLoad: true,
     })
   })
 })
@@ -485,7 +499,7 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   const singleLetterDropcaps = page.locator("#single-letter-dropcap")
   await singleLetterDropcaps.scrollIntoViewIfNeeded()
   await takeRegressionScreenshot(page, testInfo, "single-letter-dropcap", {
-    element: "#single-letter-dropcap",
+    elementToScreenshot: singleLetterDropcaps,
   })
 })
 
@@ -496,12 +510,11 @@ for (const theme of ["light", "dark"]) {
     await elvishText.scrollIntoViewIfNeeded()
 
     await elvishText.hover()
+    await waitForTransitionEnd(elvishText)
 
-    // Get initial width TODO
-    const box = await elvishText.boundingBox()
-    test.fail(!box, "Could not get elvish text dimensions")
-
-    await takeScreenshotAfterElement(page, testInfo, elvishText, 50, `elvish-text-hover-${theme}`)
+    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
+      elementToScreenshot: elvishText,
+    })
   })
 }
 

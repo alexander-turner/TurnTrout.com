@@ -63,7 +63,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 I introduce a method for eliciting latent behaviors in language models by learning unsupervised perturbations of an early layer of an LLM. These perturbations are trained to maximize _changes_ in downstream activations. The method discovers diverse and meaningful behaviors with just **one prompt**, including perturbations overriding safety training, eliciting backdoored behaviors and uncovering latent capabilities.
 
-> [!summary]
+> [!note]
 > In the simplest case, the unsupervised perturbations I learn are given by _unsupervised steering vectors_ - vectors added to the residual stream as a bias term in the MLP outputs of a given layer. I also report preliminary results on _unsupervised steering adapters_ - these are LoRA adapters of the MLP output weights of a given layer, trained with the same unsupervised objective.
 >
 > I apply the method to several alignment-relevant toy examples, and find that the method consistently learns vectors/adapters which encode **coherent and generalizable high-level behaviors**. Compared to other interpretability methods, I believe my approach is particularly well-suited for robustly understanding the **out-of-distribution** behavior of language models in a **sample-efficient** manner.

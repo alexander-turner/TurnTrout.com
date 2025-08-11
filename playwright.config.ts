@@ -47,6 +47,7 @@ export default defineConfig({
   retries: 3,
   testDir: "./quartz/",
   testMatch: /.*\.spec\.ts/,
+  snapshotPathTemplate: "lost-pixel/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
     command: "npm run start",

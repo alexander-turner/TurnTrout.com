@@ -75,11 +75,13 @@ Here's another serial processing benefit. Suppose you're processing a string of 
 
 What comes next? Maybe the full sentence is "I have \$320" or maybe it's "I have \$320,000".  
 
-More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^congruence] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
+More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^magnitude] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
 
-[^congruence]: More formally, if $n$ starts with "320", we know that there exists $k\geq 2$ such that $\lfloor n \div 10^k \rfloor = 3$, $\lfloor n \div 10^{k-1} \rfloor =2$, and $\lfloor n \div 10^{k-2} \rfloor = 0$. Without knowing $k$, we cannot deduce much about $n$'s magnitude (except that $n\geq 320$).
+[^magnitude]: Without knowing $k$, we cannot deduce much about $n$'s magnitude (except that $n\geq 320$).
 
 Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
+
+By flipping the digit order, we gain information each time we process a new digit. For example, if the first digit is "0", we learn that the number is even. In particular, the number is divisible by 10.
 
 ## Better aligns with human intuition
 
@@ -125,8 +127,6 @@ In contrast, when reading "↗000,023", you first land upon the "↗" and then t
 However, on further thought, the situation looks less problematic. Yes, the flipped system complicates magnitude estimation _for folks who grew up with the current system._ But **if you had grown up reading flipped numbers**, might you not read seamlessly? In search of magnitude information, would your eyes not be trained to jump from the previous word directly to the "3" at the end of "↗000,023"?
 
 For example, when reading "↗000,000,05", a native reader wouldn't count the zeroes. Their eyes would jump to the right, see the "5", and notice it's in the third group past the decimal. They would quickly grasp "fifty million." The commas do the heavy lifting, just as they do right now.
-
-[^magnitude]: For numbers with over five digits in a row or four groups of comma-separated triplets, I suspect that many people cannot reliably determine the magnitude at a glance.
 
 My best argument that magnitude estimation will be harder
 : In English, you always read words starting from the left. Therefore, it would be unnatural to follow the rule, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. '↗000,023'". This new rule adds a small but frequent tension.

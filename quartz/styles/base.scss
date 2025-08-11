@@ -86,12 +86,6 @@ strong {
 a {
   text-decoration-thickness: 0.03em;
   transition: color 0.2s ease;
-  color: var(--secondary);
-
-  // Ignore descendants of popover class
-  &:hover {
-    color: var(--tertiary) !important;
-  }
 
   // Style same-page links, but exclude those inside headers
   // This targets links with the 'same-page-link' class that are not direct children of h1-h6 elements
@@ -417,7 +411,7 @@ pre {
 
       &[data-highlighted-line] {
         background-color: var(--highlight);
-        border-left: 3px solid var(--secondary);
+        border-left: 3px solid var(--blue);
       }
 
       &::before {
@@ -498,6 +492,14 @@ ol ul {
 ol,
 ul {
   margin-top: calc(1 * $base-margin);
+
+  // article &:not(#toc-content-mobile *) {
+  //   padding-left: calc(3.5 * $base-margin);
+
+  //   li {
+  //     padding-left: $base-margin;
+  //   }
+  // }
 }
 
 .katex-display {

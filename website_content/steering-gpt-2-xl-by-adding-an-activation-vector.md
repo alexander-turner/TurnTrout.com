@@ -103,7 +103,7 @@ We provide a proper literature review [in an appendix](/gpt2-steering-vectors#Ap
 
 To understand how we modify GPT-2-XL's forward passes, let's consider a simple example. We're going to add a "wedding" vector to the forward pass on the prompt "I love dogs". GPT-2-XL will tokenize this prompt as \[`<endoftext>`, `I`, `love`, `dogs`\].
 
-Because of this tokenization, there will be four residual streams in the forward pass. In GPT-2-XL, each residual stream is 1600 \-dimensional. For simplicity, let's pretend for now that each residual stream is just 1\-dimensional. In that case, GPT-2-XL's forward pass can be visualized:
+Because of this tokenization, there will be four residual streams in the forward pass. In GPT-2-XL, each residual stream is 1,600 \-dimensional. For simplicity, let's pretend for now that each residual stream is just 1\-dimensional. In that case, GPT-2-XL's forward pass can be visualized:
 
 ![](https://assets.turntrout.com/static/images/posts/h6jet9gvpvaza5mivsyj.avif)
 <br/>Figure: We represent activation vectors as single numbers by pretending residual streams are 1\-dimensional. "Layer N" indicates the activations _just before_ attention layer N. "Unembed" indicates the pre-LayerNorm activations just before the unembedding.
@@ -493,7 +493,7 @@ The random vector results suggest that GPT-2-XL is resistant to generic random p
 
 We quantitatively supported this conclusion by checking how each modification changes the model's probability distribution over next tokens. We ran dozens of prompts through the anger-, random-, and un-modified models. We found that the anger vector changes the output tokens less than the random vector does. This suggests that the anger vector has more targeted effects on next-token probabilities.
 
-![](https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif)
+![](https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif){style="width:60%;"}
 
 Random vectors are not the same as the steering vectors for "random" text. So, we also tried adding in the "fdsajl; fs" − (spaces) vector. When rescaled to norm comparable to +1 "Anger" − "Calm", this "random text" vector produces strange results. GPT-2-XL produces keyboard-mashing nonsense at +1000 coefficient.
 
@@ -548,7 +548,7 @@ Magnifying the $2\to20$ vector does make it more effective. However, this vector
 
 ## Only modifying certain residual stream dimensions
 
-GPT-2-XL has a 1600\-dimensional residual stream. Alex was curious about whether we could get some steering effect by only adding in certain dimensions of the residual stream (e.g. dimensions 0-799). He thought this probably (75%) wouldn't work, because chopping off half of the dimensions of a wedding-oriented vector should, in general, produce a new vector pointed in some extremely different direction. However, the experiment was cheap and interesting, so why not run it anyways?
+GPT-2-XL has a 1,600\-dimensional residual stream. Alex was curious about whether we could get some steering effect by only adding in certain dimensions of the residual stream (e.g. dimensions 0-799). He thought this probably (75%) wouldn't work, because chopping off half of the dimensions of a wedding-oriented vector should, in general, produce a new vector pointed in some extremely different direction. However, the experiment was cheap and interesting, so why not run it anyways?
 
 More precisely, suppose we add in the first $n$% of the residual stream dimensions for the `wedding` − “ ” vector, added in with coefficient +4 and before layer 6. To what extent will the prompts be about weddings, as opposed to garbage or unrelated topics? To [Alex's surprise](https://predictionbook.com/predictions/211472),[^27] the "weddingness" of the completions somewhat smoothly increases with $n$!
 
@@ -876,7 +876,7 @@ Alex gets mileage out of _not_ thinking about the model as "trying to predict ne
 Activation additions have _already_ helped us find representations in a model. Activation additions are how we [found the cheese-tracking channels in the maze-solving network, which then let us retarget the network](/understanding-and-controlling-a-maze-solving-policy-network):
 
 > [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
-> <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+> <video autoplay loop muted playsinline style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 >
 > Figure: **Locally retargeting the search by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals.

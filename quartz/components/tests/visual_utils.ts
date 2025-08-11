@@ -59,75 +59,97 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
-/**
- * Waits for all images in the viewport to load
- * @param page - The page to wait for images on
- */
-export async function waitForViewportImagesToLoad(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      const isElementInViewport = (el: Element) => {
-        const rect = el.getBoundingClientRect()
-        return (
-          rect.top >= 0 &&
-          rect.left >= 0 &&
-          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        )
-      }
-      const images = Array.from(document.images).filter(isElementInViewport)
-
-      if (images.length === 0) {
-        resolve()
-        return
-      }
-
-      let loadedCount = 0
-      const totalImages = images.length
-
-      const checkComplete = () => {
-        loadedCount++
-        if (loadedCount === totalImages) {
-          resolve()
-        }
-      }
-
-      images.forEach((img) => {
-        const onDone = () => {
-          img.removeEventListener("load", onDone)
-          img.removeEventListener("error", onDone)
-          checkComplete()
-        }
-
-        if (img.complete) {
-          // If the image is already marked as 'complete' by the browser,
-          // the 'load' event may not fire. We poll for naturalWidth instead.
-          if (img.naturalWidth > 0) {
-            checkComplete()
-          } else {
-            const poll = setInterval(() => {
-              if (img.naturalWidth > 0) {
-                clearInterval(poll)
-                checkComplete()
-              }
-              // Note: No timeout here, we let the test runner's timeout handle failed loads.
-            }, 50)
-          }
-        } else {
-          img.addEventListener("load", onDone)
-          img.addEventListener("error", onDone)
-        }
-      })
-    })
-  })
-}
-
 export interface RegressionScreenshotOptions {
-  element?: string | Locator
+  elementToScreenshot?: Locator
+  elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
-  skipViewportImagesLoad?: boolean
+}
+
+export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) {
+  const browserName = testInfo.project.name
+  const sanitizedTitle = sanitize(testInfo.title)
+  const sanitizedSuffix = sanitize(screenshotSuffix)
+  const sanitizedBrowserName = sanitize(browserName)
+  return `${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`.replace(
+    / /g,
+    "-",
+  )
+}
+
+// Type for restoration data stored on window
+interface IsolationRestoreData {
+  element: Element
+  originalDisplay: string
+}
+
+declare global {
+  interface Window {
+    __elementsToRestoreData?: IsolationRestoreData[]
+  }
+}
+
+async function performDOMIsolation(elementLocator: Locator): Promise<void> {
+  await elementLocator.evaluate((targetElement) => {
+    const elementsToKeep = new Set<Element>()
+
+    // Add target element and all its descendants
+    elementsToKeep.add(targetElement)
+    const descendants = targetElement.querySelectorAll("*")
+    descendants.forEach((descendant) => elementsToKeep.add(descendant))
+
+    // Preserve siblings of the target element (and their descendants) to maintain local layout context
+    if (targetElement.parentElement) {
+      const siblings = Array.from(targetElement.parentElement.children)
+      for (const sibling of siblings) {
+        if (sibling === targetElement) continue
+        elementsToKeep.add(sibling)
+        sibling.querySelectorAll("*").forEach((desc) => elementsToKeep.add(desc))
+      }
+    }
+
+    // Add all ancestors up to document root
+    let current: Element | null = targetElement.parentElement
+    while (current) {
+      elementsToKeep.add(current)
+      current = current.parentElement
+    }
+
+    // Hide elements that are not in our keep set by setting display: none
+    // Store original display values for restoration on window object
+    const hiddenElements: Array<{ element: Element; originalDisplay: string }> = []
+    const allElements = Array.from(document.querySelectorAll("*"))
+
+    for (const element of allElements) {
+      if (!elementsToKeep.has(element)) {
+        const htmlElement = element as HTMLElement
+        const originalDisplay = htmlElement.style.display
+        hiddenElements.push({ element, originalDisplay })
+        htmlElement.style.display = "none"
+      }
+    }
+
+    // Store restoration data on window for later access
+    window.__elementsToRestoreData = hiddenElements
+  })
+}
+
+async function restoreDOMFromIsolation(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const hiddenElements = window.__elementsToRestoreData
+    if (hiddenElements) {
+      for (const { element, originalDisplay } of hiddenElements) {
+        const htmlElement = element as HTMLElement
+        if (originalDisplay) {
+          htmlElement.style.display = originalDisplay
+        } else {
+          htmlElement.style.removeProperty("display")
+        }
+      }
+      delete window.__elementsToRestoreData
+    }
+  })
 }
 
 export async function takeRegressionScreenshot(
@@ -140,99 +162,128 @@ export async function takeRegressionScreenshot(
     await pauseMediaElements(page)
   }
 
-  if (!options?.skipViewportImagesLoad) {
-    await waitForViewportImagesToLoad(page)
-  }
-
-  const browserName = testInfo.project.name
-  const sanitizedTitle = sanitize(testInfo.title)
-  const sanitizedSuffix = sanitize(screenshotSuffix)
-  const sanitizedBrowserName = sanitize(browserName)
-  const screenshotPath = `lost-pixel/${sanitizedTitle}${sanitizedSuffix ? `-${sanitizedSuffix}` : ""}-${sanitizedBrowserName}.png`
+  // Separate out the element option so we don't pass it to the screenshot API
+  const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
+  void _elementOpt // prevent unused variable lint error
 
   const screenshotOptions = {
-    path: screenshotPath,
     animations: "disabled" as const,
-    ...options,
+    ...remainingOptions,
   }
 
-  if (options?.clip) {
-    delete screenshotOptions.element
-    return page.screenshot(screenshotOptions)
-  } else if (options?.element) {
-    const element =
-      typeof options.element === "string" ? page.locator(options.element) : options.element
-    return element.screenshot(screenshotOptions)
-  } else {
-    // Clip to clientWidth to avoid WebKit gutter
-    const viewportSize = page.viewportSize()
-    if (!viewportSize) throw new Error("Could not get viewport size for clipping")
-    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
-    screenshotOptions.clip = {
-      x: 0,
-      y: 0,
-      width: clientWidth,
-      height: viewportSize.height,
+  let screenshotBuffer: Buffer
+  const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
+  if (options?.elementToScreenshot) {
+    // Temporarily isolate element to prevent position shifts from unrelated content changes
+    const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
+    await performDOMIsolation(elementToIsolate)
+    const restoreDOM = async () => {
+      await restoreDOMFromIsolation(page)
     }
-    return page.screenshot(screenshotOptions)
+
+    try {
+      await expect(options.elementToScreenshot).toHaveScreenshot(screenshotName, screenshotOptions)
+      screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
+    } finally {
+      // Always restore the DOM state
+      await restoreDOM()
+    }
+  } else {
+    // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
+    if (!options?.clip) {
+      const viewportSize = page.viewportSize()
+      if (!viewportSize) throw new Error("Could not get viewport size for clipping")
+      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      screenshotOptions.clip = {
+        x: 0,
+        y: 0,
+        width: clientWidth,
+        height: viewportSize.height,
+      }
+    }
+
+    await expect(page).toHaveScreenshot(screenshotName, screenshotOptions)
+
+    screenshotBuffer = await page.screenshot(screenshotOptions)
+  }
+
+  return screenshotBuffer
+}
+
+export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
+  const evaluateFunc = () => {
+    // Create a static list of headers to iterate over
+    const headers = Array.from(document.querySelectorAll("article > h1"))
+
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]
+      const parent = header.parentElement
+
+      if (!parent) continue
+
+      // If the parent is already a span we've created, skip it
+      if (parent.tagName === "SPAN" && parent.id.startsWith("h1-span-")) {
+        continue
+      }
+
+      const span = document.createElement("span")
+      if (!header.id) {
+        throw new Error("Header has no id")
+      }
+      span.id = `h1-span-${header.id}`
+
+      parent.insertBefore(span, header)
+
+      span.appendChild(header)
+
+      // Move all subsequent siblings into the span until we hit the next h1
+      let nextSibling = span.nextSibling
+      while (nextSibling && headers.indexOf(nextSibling as Element) === -1) {
+        const toMove = nextSibling
+        nextSibling = toMove.nextSibling
+        span.appendChild(toMove)
+      }
+    }
+  }
+
+  if ("locator" in locator) {
+    await (locator as Locator).evaluate(evaluateFunc)
+  } else {
+    await (locator as Page).evaluate(evaluateFunc)
   }
 }
 
-// TODO test
 /**
- * Takes a screenshot of the element and the elements below it. Restricts the screenshot to the height of the element and the width of the parent element.
- * @param page - The page to take the screenshot on.
- * @param testInfo - The test info.
- * @param element - The element to take the screenshot of.
- * @param height - The height of the element.
- * @param testNameSuffix - The suffix to add to the test name.
+ * Get screenshots of all h1s in a container
+ * @param page - The page to get the h1s from
+ * @param testInfo - The test info
+ * @param location - The location to get the h1s from
+ * @param theme - The theme to get the screenshots for
  */
-export async function takeScreenshotAfterElement(
+export async function getH1Screenshots(
   page: Page,
   testInfo: TestInfo,
-  element: Locator,
-  height: number,
-  testNameSuffix?: string,
+  location: Locator | null,
+  theme: "dark" | "light",
 ) {
-  const box = await element.boundingBox()
-  if (!box) throw new Error("Could not find element")
+  const screenshotBase = location ?? page
+  await wrapH1SectionsInSpans(screenshotBase)
 
-  const parent = element.locator("..")
-  const parentBox = await parent.boundingBox()
-  if (!parentBox) throw new Error("Could not find parent element")
+  const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  await takeRegressionScreenshot(page, testInfo, `${testInfo.title}-section-${testNameSuffix}`, {
-    element: parent,
-    clip: {
-      x: parentBox.x,
-      y: box.y,
-      width: parentBox.width,
-      height,
-    },
-  })
-}
+  for (let index = 0; index < h1Spans.length; index++) {
+    const h1Span = h1Spans[index]
+    await h1Span.scrollIntoViewIfNeeded()
 
-/**
- * Returns the y-offset between two elements, from the top of the first element to the top of the second element.
- * @param firstElement - The first element.
- * @param secondElement - The second element.
- * @returns The y-offset between the two elements.
- */
-export async function yOffset(firstElement: Locator, secondElement: Locator) {
-  // Ensure elements are visible before getting bounding boxes
-  await firstElement.waitFor({ state: "visible" })
-  await secondElement.waitFor({ state: "visible" })
+    const h1Header = h1Span.locator("h1").first()
+    const h1Id = await h1Header.getAttribute("id")
+    const sanitizedH1Id = h1Id ? sanitize(h1Id) : null
+    if (!sanitizedH1Id) throw new Error("H1 header has no id")
 
-  const firstBox = await firstElement.boundingBox()
-  const secondBox = await secondElement.boundingBox()
-
-  if (!firstBox || !secondBox) throw new Error("Could not find elements")
-  if (firstBox.y === secondBox.y) throw new Error("Elements are the same")
-
-  const offset = secondBox.y - firstBox.y
-  if (offset < 0) throw new Error("Second element is above the first element")
-
-  return offset
+    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
+      elementToScreenshot: h1Span,
+    })
+  }
 }
 
 /**

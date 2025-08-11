@@ -94,7 +94,7 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
 
   await page.waitForLoadState("load")
   await takeRegressionScreenshot(page, testInfo, "search-steering", {
-    element: "#search-layout",
+    elementToScreenshot: page.locator("#search-layout"),
   })
 })
 
@@ -277,16 +277,15 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
   test.skip(!showingPreview(page))
 
   await search(page, "Emoji examples")
-  // TODO await all visible images
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle")
 
-  // Wait for the header to be visible
-  const previewArticle = page.locator("#preview-container")
-  await expect(previewArticle.locator("#emoji-examples").first()).toBeVisible()
+  const previewContainer = page.locator("#preview-container")
+  const emojiHeader = previewContainer.locator("#emoji-examples").first()
+  await expect(emojiHeader).toBeAttached()
+  await emojiHeader.scrollIntoViewIfNeeded()
+  await expect(emojiHeader).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "twemoji-search", {
-    element: previewArticle,
+    elementToScreenshot: previewContainer,
   })
 })
 
@@ -302,7 +301,7 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
   await expect(footnoteLink).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "footnote-back-arrow-search", {
-    element: footnoteLink,
+    elementToScreenshot: footnoteLink,
   })
 })
 
@@ -334,7 +333,7 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   await expect(previewInner).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
-    element: previewContainer,
+    elementToScreenshot: previewContainer,
   })
 })
 
@@ -395,7 +394,7 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
   await takeRegressionScreenshot(page, testInfo, "search-the-pond-dropcaps", {
-    element: "#the-pond-dropcaps",
+    elementToScreenshot: searchPondDropcaps,
   })
 })
 

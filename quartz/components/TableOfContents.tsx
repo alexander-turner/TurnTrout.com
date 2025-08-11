@@ -56,11 +56,11 @@ export const CreateTableOfContents: QuartzComponent = ({
     <div id="table-of-contents" className="desktop-only">
       <h6 className="toc-title">
         <a href="#top" className="internal same-page-link">
-          Table of Contents
+          {fileData.frontmatter?.title || "Table of Contents"}
         </a>
       </h6>
       <div id="toc-content">
-        <ul className="overflow">{toc}</ul>
+        <ol className="overflow">{toc}</ol>
       </div>
     </div>
   )
@@ -95,13 +95,13 @@ export function buildNestedList(
         listItems[listItems.length - 1] = (
           <li key={`li-${index}`}>
             {lastItem.props.children}
-            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+            <ol key={`ol-${index}`}>{nestedListItems}</ol>
           </li>
         )
       } else {
         listItems.push(
           <li key={`li-${index}`}>
-            <ul key={`ul-${index}`}>{nestedListItems}</ul>
+            <ol key={`ol-${index}`}>{nestedListItems}</ol>
           </li>,
         )
       }
@@ -126,7 +126,7 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
 
   const [listItems] = buildNestedList(entries)
   logger.debug(`Returning ${listItems.length} JSX elements`)
-  return <ul>{listItems}</ul>
+  return <ol>{listItems}</ol>
 }
 
 export function toJSXListItem(entry: TocEntry): JSX.Element {

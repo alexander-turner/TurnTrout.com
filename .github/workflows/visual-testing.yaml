@@ -50,32 +50,13 @@ jobs:
       - name: Remove Safari autoplay script
         run: rm -f ./quartz/static/scripts/safari-autoplay.js
 
-      - name: Start local server
-        run: |
-          npx quartz build --serve &
-          SERVER_PID=$!
-          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-
-      - name: Wait for server
-        run: |
-          # Wait for the server to be ready
-          while ! nc -z localhost 8080; do
-            sleep 0.1 # Check every 100ms
-            # Check if server is still running
-            if ! ps -p "$SERVER_PID" > /dev/null; then
-              echo "Server failed to start"
-              exit 1
-            fi
-          done
-          echo "Server is ready"
-
       - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
-        run: npx playwright test --shard ${{ matrix.shard }} -g "(lostpixel)"
+        run: npx playwright test --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -109,7 +90,7 @@ jobs:
   combine-and-upload:
     needs: visual-testing
     runs-on: ubuntu-latest
-    if: always()
+    if: needs.visual-testing.result == 'success'
 
     steps:
       - uses: actions/checkout@v4

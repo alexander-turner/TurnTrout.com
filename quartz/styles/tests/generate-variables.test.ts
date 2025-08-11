@@ -16,16 +16,20 @@ describe("SCSS Variable Generation", () => {
       baseMargin: 8,
       pageWidth: 720,
       someOtherVar: "blue",
+      boldWeight: 700,
+      fontScaleFactor: 1.2,
     })
   })
 
   describe("generateScssRecord()", () => {
-    it("should include the transformed mock variables", () => {
+    it("should correctly format variables with and without units", () => {
       const record = generateScssRecord()
       expect(record).toMatchObject({
         "base-margin": "8px",
         "page-width": "720px",
         "some-other-var": "blue",
+        "bold-weight": "700",
+        "font-scale-factor": "1.2",
       })
     })
   })
@@ -43,6 +47,8 @@ describe("SCSS Variable Generation", () => {
       expect(fileContent).toContain("$base-margin: 8px;")
       expect(fileContent).toContain("$page-width: 720px;")
       expect(fileContent).toContain("$some-other-var: blue;")
+      expect(fileContent).toContain("$bold-weight: 700;")
+      expect(fileContent).toContain("$font-scale-factor: 1.2;")
     })
 
     it("should throw an error if file writing fails", () => {

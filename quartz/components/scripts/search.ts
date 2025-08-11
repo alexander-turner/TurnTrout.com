@@ -23,8 +23,6 @@ export const debounceSearchDelay = 400
 // Delay in milliseconds before triggering a mouseover event after user input
 export const mouseFocusDelay = 100
 
-type SearchType = "basic" | "tags"
-let searchType: SearchType = "basic"
 let currentSearchTerm = ""
 
 const index = new FlexSearch.Document<Item>({
@@ -81,7 +79,6 @@ interface FetchResult {
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
 const contextWindowWords = 30
 const numSearchResults = 8
-const numTagResults = 5
 
 /**
  * Tokenizes a search term into individual words and their combinations
@@ -116,6 +113,7 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
   let startIndex = 0
   let endIndex = tokenizedText.length - 1
   if (trim) {
+    // Checks if the token starts with any of the tokenized terms (case-insensitive).
     const includesCheck = (tok: string) =>
       tokenizedTerms.some((term) => tok.toLowerCase().startsWith(term.toLowerCase()))
     const occurrencesIndices = tokenizedText.map(includesCheck)
@@ -163,13 +161,15 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
 
 /**
  * Escapes special characters in a string for use in RegExp
- * @param text - String to escape
  */
 function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
-const createHighlightSpan = (text: string) => {
+/**
+ * Creates a span element with the class "highlight" and the given text
+ */
+const createHighlightSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
   span.className = "highlight"
   span.textContent = text
@@ -211,6 +211,11 @@ export const highlightTextNodes = (node: Node, term: string) => {
   }
 }
 
+/**
+ * Manages the lifecycle and rendering of the search result preview panel.
+ * Creates an inner article element, fetches the target content, applies
+ * highlighting, and handles show/hide/clear operations.
+ */
 class PreviewManager {
   private container: HTMLDivElement
   private inner: HTMLElement
@@ -222,7 +227,14 @@ class PreviewManager {
     this.inner.classList.add("preview-inner")
     this.container.appendChild(this.inner)
   }
-
+  /**
+   * Update the preview panel to reflect the provided result element.
+   * If no element is provided, the preview is hidden.
+   *
+   * @param el - The result card element corresponding to the hovered/active item
+   * @param currentSearchTerm - The active search term used for highlighting
+   * @param baseSlug - The current page's slug used to resolve relative links
+   */
   public update(el: HTMLElement | null, currentSearchTerm: string, baseSlug: FullSlug) {
     if (!el) {
       this.hide()
@@ -235,9 +247,8 @@ class PreviewManager {
     // Show container immediately
     this.show()
 
-    // Fetch and render content without awaiting it to avoid blocking the UI
-
-    // skipcq: JS-0098 (fetchAndUpdateContent is awaited)
+    // Fetch and render content immediately without waiting for assets
+    // skipcq: JS-0098
     void this.fetchAndUpdateContent(slug, currentSearchTerm, baseSlug)
   }
 
@@ -246,6 +257,14 @@ class PreviewManager {
     currentSearchTerm: string,
     baseSlug: FullSlug,
   ) {
+    /**
+     * Fetch the content for a given slug and update the preview if it is still current.
+     *
+     * @private
+     * @param slug - The content slug to fetch and preview
+     * @param currentSearchTerm - The current search term for highlighting
+     * @param baseSlug - The base slug to resolve relative URLs against
+     */
     try {
       const { content, frontmatter } = await fetchContent(slug)
 
@@ -268,7 +287,7 @@ class PreviewManager {
 
         // Set click handler
         this.inner.onclick = () => {
-          window.location.href = resolveUrl(slug, baseSlug).toString()
+          window.location.href = resolveSlug(slug, baseSlug).toString()
         }
 
         // Let images and other resources load naturally
@@ -283,26 +302,33 @@ class PreviewManager {
     }
   }
 
+  // skipcq: JS-D1001
   public show(): void {
     this.container.classList.add("active")
     this.container.style.visibility = "visible"
   }
 
+  // skipcq: JS-D1001
   public hide(): void {
     this.container.classList.remove("active")
     this.container.style.visibility = "hidden"
   }
 
+  // skipcq: JS-D1001
   public clear(): void {
     this.inner.innerHTML = ""
   }
 
+  // skipcq: JS-D1001
   public destroy(): void {
     this.inner.onclick = null
     this.inner.innerHTML = ""
     this.currentSlug = null
   }
 
+  /**
+   * Scroll the preview container so that the first highlight is centered.
+   */
   private scrollToFirstHighlight(): void {
     // Get only the first matching highlight without sorting
     const firstHighlight = this.container.querySelector(".highlight") as HTMLElement
@@ -347,13 +373,13 @@ function updatePlaceholder() {
   }
 }
 
-function showSearch(
-  searchTypeNew: SearchType,
-  container: HTMLElement | null,
-  searchBar: HTMLInputElement | null,
-) {
+/**
+ * Show the search UI and focus the search bar.
+ * @param container - The search container element
+ * @param searchBar - The input element used for search
+ */
+function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
   if (!container || !searchBar) return
-  searchType = searchTypeNew
   const navbar = document.getElementById("navbar")
   if (navbar) {
     navbar.style.zIndex = "1"
@@ -391,8 +417,6 @@ function hideSearch() {
     // Ensure no residual information is left in the preview
     previewManager.clear()
   }
-
-  searchType = "basic"
 }
 
 let searchLayout: HTMLElement | null = null
@@ -404,55 +428,30 @@ let currentSlug: FullSlug
 let mouseEventsLocked = false
 
 const appendLayout = (el: HTMLElement) => {
+  /**
+   * Append an element to the search layout if it is not already present.
+   *
+   * @param el - The element to append to the layout
+   */
   if (searchLayout?.querySelector(`#${el.id}`) === null) {
     searchLayout?.appendChild(el)
   }
 }
 
-/**
- * Check if the current key event matches the tag-search shortcut
- * (Ctrl/Cmd + Shift + K).
- */
-function isTagSearchShortcut(e: KeyboardEvent): boolean {
-  return e.shiftKey && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"
-}
-
-/**
- * Handle shortcuts that open or close the search UI. Returns true if the
- * event has been fully handled (preventing any further processing).
- */
-function handleSearchToggle(
+// Handle shortcuts for opening and closing the UI.
+async function handleSearchToggle(
   e: KeyboardEvent,
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
-): boolean {
-  // Basic search toggle ("/")
+): Promise<boolean> {
   if (e.key === "/") {
     e.preventDefault()
     const searchBarOpen = container?.classList.contains("active")
     if (searchBarOpen) {
       hideSearch()
     } else {
-      showSearch("basic", container, searchBar)
+      showSearch(container, searchBar)
     }
-    return true
-  }
-
-  // Tag search toggle (Ctrl/Cmd + Shift + K)
-  if (isTagSearchShortcut(e)) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    const searchBarOpen = container?.classList.contains("active")
-    if (searchBarOpen) {
-      hideSearch()
-    } else {
-      // TODO document feature or remove; don't want hidden functionality
-      showSearch("tags", container, searchBar)
-    }
-
-    // Add "#" prefix for tag search
-    if (searchBar) searchBar.value = "#"
     return true
   }
 
@@ -476,13 +475,26 @@ async function handleResultNavigation(
   // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
+  // Get the previous sibling element if it exists, otherwise return the element itself.
+  /* skipcq: JS-D1001 */
   const prevSibling = (el: HTMLElement): HTMLElement =>
     el.previousElementSibling ? (el.previousElementSibling as HTMLElement) : el
+
+  /**
+   * Get the next sibling element if it exists, otherwise return the
+   * element itself.
+   */
+  /* skipcq: JS-D1001 */
   const nextSibling = (el: HTMLElement): HTMLElement =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : el
 
   const canNavigate = document.activeElement === searchBar || currentHover !== null
 
+  /**
+   * Focus a target result element and update the preview, if present.
+   *
+   * @param target - The result card to focus and preview
+   */
   const focusAndPreview = async (target: HTMLElement | null) => {
     if (!target) return
     await displayPreview(target)
@@ -554,9 +566,9 @@ async function shortcutHandler(
   e: KeyboardEvent,
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
-) {
+): Promise<void> {
   // First, deal with shortcuts that toggle the visibility of the search UI.
-  if (handleSearchToggle(e, container, searchBar)) return
+  if (await handleSearchToggle(e, container, searchBar)) return
 
   // Otherwise, handle navigation within an already open search UI.
   await handleResultNavigation(e, container, searchBar)
@@ -607,7 +619,7 @@ async function onNav(e: CustomEventMap["nav"]) {
     (e: Event) => shortcutHandler(e as KeyboardEvent, container, searchBar),
     listeners,
   )
-  addListener(searchIcon, "click", () => showSearch("basic", container, searchBar), listeners)
+  addListener(searchIcon, "click", () => showSearch(container, searchBar), listeners)
   addListener(searchBar, "input", debouncedOnType, listeners)
 
   const escapeCleanup = registerEscapeHandler(container, hideSearch)
@@ -630,7 +642,7 @@ async function onNav(e: CustomEventMap["nav"]) {
 async function fetchContent(slug: FullSlug): Promise<FetchResult> {
   if (!fetchContentCache.has(slug)) {
     const fetchPromise = await (async () => {
-      const targetUrl = resolveUrl(slug, currentSlug).toString()
+      const targetUrl = resolveSlug(slug, currentSlug).toString()
       const contents = await fetch(targetUrl)
         .then((res) => res.text())
         .then((contents) => {
@@ -661,7 +673,12 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
   return fetchContentCache.get(slug) ?? ({} as FetchResult)
 }
-
+/**
+ * Visually and optionally programmatically focus a result card.
+ *
+ * @param el - The card element to focus
+ * @param keyboardFocus - Whether to call focus() on the element
+ */
 async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
@@ -727,13 +744,22 @@ const getByField = (
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
-
+/**
+ * Create the DOM element representing a single search result.
+ *
+ * @param slug - The result slug
+ * @param title - The page title (may include highlight markup)
+ * @param content - The content snippet (may include highlight markup)
+ * @param tags - The rendered tag list for this result
+ * @param enablePreview - Whether preview mode is enabled (controls snippet rendering)
+ * @returns The anchor element for the result card
+ */
 const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boolean) => {
   const htmlTags = tags.length > 0 ? `<ul class="tags">${tags.join("")}</ul>` : ""
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
   itemTile.id = slug
-  itemTile.href = resolveUrl(slug, currentSlug).toString()
+  itemTile.href = resolveSlug(slug, currentSlug).toString()
 
   content = replaceEmojiConvertArrows(content)
 
@@ -743,6 +769,7 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${suffixHTML}`
 
+  // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
@@ -780,10 +807,10 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: searchType === "tags" ? data[slug].title : highlight(term, data[slug].title ?? ""),
+    title: highlight(term, data[slug].title ?? ""),
     content: highlight(term, data[slug].content ?? "", true),
     authors: data[slug].authors,
-    tags: highlightTags(term.substring(1), data[slug].tags),
+    tags: data[slug].tags,
   }
 }
 
@@ -830,49 +857,15 @@ async function onType(e: HTMLElementEventMap["input"]) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   currentSearchTerm = (e.target as HTMLInputElement).value
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
-  searchType = currentSearchTerm.startsWith("#") ? "tags" : "basic"
 
   mouseEventsLocked = true
-  let searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[]
-  if (searchType === "tags") {
-    currentSearchTerm = currentSearchTerm.substring(1).trim()
-    const separatorIndex = currentSearchTerm.indexOf(" ")
-    if (separatorIndex !== -1) {
-      // search by title and content index and then filter by tag (implemented in flexsearch)
-      const tag = currentSearchTerm.substring(0, separatorIndex)
-      const query = currentSearchTerm.substring(separatorIndex + 1).trim()
-      searchResults = await index.searchAsync({
-        query,
-        // return at least 10000 documents, so it is enough to filter them by tag (implemented in flexsearch)
-        limit: Math.max(numSearchResults, 2000),
-        index: ["title", "content"],
-        tag,
-      })
-      for (const searchResult of searchResults) {
-        searchResult.result = searchResult.result.slice(0, numSearchResults)
-      }
-      // set search type to basic and remove tag from term for proper highlighting and scroll
-      searchType = "basic"
-      currentSearchTerm = query
-    } else {
-      // default search by tags index
-      searchResults = await index.searchAsync({
-        query: currentSearchTerm,
-        limit: numSearchResults,
-        index: ["tags"],
-      })
-    }
-  } else if (searchType === "basic") {
-    searchResults = await index.searchAsync({
-      query: currentSearchTerm,
-      limit: numSearchResults,
-      index: ["title", "content", "slug", "authors"],
-      bool: "or", // Appears in any of the fields
-      suggest: false,
-    })
-  } else {
-    throw new Error("Invalid search type")
-  }
+  const searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[] = await index.searchAsync({
+    query: currentSearchTerm,
+    limit: numSearchResults,
+    index: ["title", "content", "slug", "authors"],
+    bool: "or", // Appears in any of the fields
+    suggest: false,
+  })
 
   // Ordering affects search results, so we need to order them here
   const allIds: Set<number> = new Set([
@@ -890,9 +883,8 @@ async function onType(e: HTMLElementEventMap["input"]) {
 
   // Force a layout recalculation in WebKit
   if (results) {
-    // This forces a style recalculation, which is necessary for the transition to work correctly
-
-    // skipcq: JS-0098 (offsetHeight is used for layout recalculation)
+    // This forces a style recalculation
+    // skipcq: JS-0098
     void results.offsetHeight
   }
 
@@ -905,34 +897,17 @@ async function onType(e: HTMLElementEventMap["input"]) {
 }
 
 /**
- * Highlights matching tags in search results
- * @param term - Search term
- * @param tags - Array of tags
- * @returns Array of HTML strings for tags
+ * Resolve a slug to an absolute URL based on the current page slug.
+ *
+ * @param slug - The target slug to resolve
+ * @param currentSlug - The base slug representing the current page
+ * @returns The resolved absolute URL
  */
-function highlightTags(term: string, tags: string[]) {
-  if (!tags || searchType !== "tags") {
-    return []
-  }
-
-  return tags
-    .map((tag) => {
-      if (tag.toLowerCase().includes(term.toLowerCase())) {
-        return `<li><p class="match-tag">#${tag}</p></li>`
-      } else {
-        return `<li><p>#${tag}</p></li>`
-      }
-    })
-    .slice(0, numTagResults)
-}
-
-function resolveUrl(slug: FullSlug, currentSlug: FullSlug): URL {
+function resolveSlug(slug: FullSlug, currentSlug: FullSlug): URL {
   return new URL(resolveRelative(currentSlug, slug), location.toString())
 }
 
-/**
- * Initializes search functionality
- */
+// skipcq: JS-D1001
 export function setupSearch() {
   document.addEventListener("nav", onNav)
 }
@@ -985,7 +960,13 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
   const nodeListElements = rootNode.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')
   return Array.from(nodeListElements)
 }
-
+/**
+ * Compute the vertical offset of an element relative to a scrollable container.
+ *
+ * @param element - The element whose offset to compute
+ * @param container - The container element used as the reference
+ * @returns The offsetTop in pixels relative to the container
+ */
 function getOffsetTopRelativeToContainer(element: HTMLElement, container: HTMLElement): number {
   let offsetTop = 0
   let currentElement: HTMLElement | null = element

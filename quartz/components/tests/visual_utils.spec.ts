@@ -1,26 +1,92 @@
 import { test, expect, type PageScreenshotOptions } from "@playwright/test"
+import { promises as fs } from "fs"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
 import {
-  yOffset,
   setTheme,
   getNextElementMatchingSelector,
   waitForTransitionEnd,
   isDesktopViewport,
   takeRegressionScreenshot,
-  takeScreenshotAfterElement,
   waitForThemeTransition,
   pauseMediaElements,
   showingPreview,
-  waitForViewportImagesToLoad,
+  getH1Screenshots,
+  getScreenshotName,
+  wrapH1SectionsInSpans,
 } from "./visual_utils"
 
-// A 1x1 transparent PNG, crucial for getting a valid naturalWidth > 0 in tests.
-const tinyPng = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-  "base64",
-)
+test.describe("wrapH1SectionsInSpans", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <article id="content">
+            <h1 id="first-h1">First H1</h1>
+            <p>Some content after first h1</p>
+            <h2>A subtitle</h2>
+            <h1 id="second-h1">Second H1</h1>
+            <p>Some content after second h1</p>
+            <h1 id="third-h1">Third H1</h1>
+            <h1 id="fourth-h1">Fourth H1</h1>
+            <div>
+              <h1 id="fifth-h1">Fifth H1</h1>
+              <p>Nested content</p>
+            </div>
+          </article>
+        </body>
+      </html>
+    `)
+  })
+
+  test("wraps each H1 and its subsequent content into a span", async ({ page }) => {
+    await wrapH1SectionsInSpans(page)
+
+    const html = await page.innerHTML("body")
+    expect(html).toContain('<span id="h1-span-first-h1">')
+    expect(html).toContain('<span id="h1-span-second-h1">')
+    expect(html).toContain('<span id="h1-span-third-h1">')
+    expect(html).toContain('<span id="h1-span-fourth-h1">')
+    expect(html).not.toContain('<span id="h1-span-fifth-h1">')
+  })
+
+  test("handles pages with no H1 elements gracefully", async ({ page }) => {
+    await page.setContent("<html><body><p>No H1s here</p></body></html>")
+    await wrapH1SectionsInSpans(page)
+
+    const spans = await page.locator("span[id^='h1-span-']").count()
+    expect(spans).toBe(0)
+  })
+
+  test("is idempotent and does not re-wrap already wrapped sections", async ({ page }) => {
+    // First call
+    await wrapH1SectionsInSpans(page)
+    const initialSpans = await page.locator("span[id^='h1-span-']").all()
+    expect(initialSpans.length).toBe(4)
+    const initialHtml = await page.innerHTML("body")
+
+    // Second call
+    await wrapH1SectionsInSpans(page)
+    const finalSpans = await page.locator("span[id^='h1-span-']").all()
+    expect(finalSpans.length).toBe(4)
+    const finalHtml = await page.innerHTML("body")
+
+    // The DOM should not have changed
+    expect(finalHtml).toEqual(initialHtml)
+  })
+
+  test("works correctly with a locator", async ({ page }) => {
+    const contentLocator = page.locator("#content")
+    await wrapH1SectionsInSpans(contentLocator)
+
+    const spans = await contentLocator.locator("span[id^='h1-span-']").all()
+    expect(spans.length).toBe(4)
+
+    const section0 = contentLocator.locator("#h1-span-first-h1")
+    await expect(section0.locator("h1").first()).toHaveText("First H1")
+  })
+})
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
@@ -63,23 +129,6 @@ test.describe("visual_utils functions", () => {
       expect(labelText).toBe(expectedLabel)
     })
   }
-
-  test("yOffset between two headers returns correct positive offset", async ({ page }) => {
-    const header1 = page.locator("h1").nth(0)
-    const header2 = page.locator("h1").nth(1)
-
-    const offset = await yOffset(header1, header2)
-    expect(offset).toBeGreaterThan(0)
-  })
-
-  test("yOffset throws error when second element is above the first", async ({ page }) => {
-    const header1 = page.locator("h2").nth(1)
-    const header2 = page.locator("h2").nth(0)
-
-    await expect(yOffset(header1, header2)).rejects.toThrow(
-      "Second element is above the first element",
-    )
-  })
 
   test("getNextElementMatchingSelector finds the next h2 after a given h2", async ({ page }) => {
     const currentHeader = page.locator("h2").nth(1)
@@ -249,31 +298,84 @@ test.describe("takeRegressionScreenshot", () => {
     await page.setContent(`
       <html>
         <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
-          <div id="test-element" style="width: 100px; height: 100px; background: blue;"></div>
+          <div id="content-above" style="height: 200px; background: red;">Content Above</div>
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;">
+            <p>Target content</p>
+          </div>
+          <div id="content-below" style="height: 200px; background: green;">Content Below</div>
         </body>
       </html>
     `)
   })
 
+  // eslint-disable-next-line playwright/expect-expect
   test("screenshot name includes browser and viewport info", async ({ page }, testInfo) => {
-    // Spy on the screenshot call to capture the options
-    const originalScreenshot = page.screenshot.bind(page)
-    let capturedOptions: PageScreenshotOptions = {}
-    page.screenshot = async (options?: PageScreenshotOptions) => {
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      capturedOptions = options ?? {}
-      return originalScreenshot(options)
-    }
-
     // Since we're mocking the page.screenshot, need to pass in clip option
     await takeRegressionScreenshot(page, testInfo, "test-suffix", {
       clip: { x: 0, y: 0, width: 500, height: 500 },
     })
 
-    expect(capturedOptions).not.toBeNull()
-    expect(capturedOptions.path).toMatch(
-      new RegExp(`lost-pixel/.*-test-suffix-${testInfo.project.name}\\.png$`),
-    )
+    const screenshotName = getScreenshotName(testInfo, "test-suffix")
+    const expectedPath = testInfo.snapshotPath(screenshotName)
+
+    await fs.access(expectedPath)
+  })
+
+  test("element screenshots temporarily hide non-ancestor content", async ({ page }, testInfo) => {
+    const element = page.locator("#test-element")
+
+    // Verify content exists before isolation
+    await expect(page.locator("#content-above")).toBeVisible()
+    await expect(page.locator("#content-below")).toBeVisible()
+    await expect(element).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "isolated-test", {
+      elementToScreenshot: element,
+    })
+
+    // After screenshot, all content should be restored and visible again
+    await expect(page.locator("#content-above")).toBeVisible()
+    await expect(page.locator("#content-below")).toBeVisible()
+    await expect(element).toBeVisible()
+    await expect(element.locator("p")).toBeVisible() // Child should still exist
+  })
+
+  test("isolated element screenshot is stable regardless of content above", async ({
+    page,
+  }, testInfo) => {
+    // Take first screenshot with isolation
+    const testElementLocator = page.locator("#test-element")
+    const screenshot1 = await takeRegressionScreenshot(page, testInfo, "stable-test-1", {
+      elementToScreenshot: testElementLocator,
+    })
+
+    // Reset page and add more content above
+    await page.setContent(`
+      <html>
+        <body id="test-root" style="width: 1024px; height: 3000px; background: white;">
+          <div style="height: 50px; background: yellow;">Extra content line 1</div>
+          <div style="height: 75px; background: orange;">Extra content line 2</div>
+          <div style="height: 125px; background: purple;">Extra content line 3</div>
+          <div id="content-above" style="height: 200px; background: red;">Content Above</div>
+          <div id="test-element" style="width: 100px; height: 100px; background: blue;">
+            <p>Target content</p>
+          </div>
+          <div id="content-below" style="height: 200px; background: green;">Content Below</div>
+        </body>
+      </html>
+    `)
+
+    // Take second screenshot with isolation
+    const screenshot2 = await takeRegressionScreenshot(page, testInfo, "stable-test-2", {
+      elementToScreenshot: testElementLocator,
+    })
+
+    // Screenshots should be identical despite different content above
+    const dimensions1 = await getImageDimensions(screenshot1)
+    const dimensions2 = await getImageDimensions(screenshot2)
+
+    expect(dimensions1.width).toBe(dimensions2.width)
+    expect(dimensions1.height).toBe(dimensions2.height)
   })
 
   test("generates full page screenshot with correct dimensions", async ({ page }, testInfo) => {
@@ -293,7 +395,7 @@ test.describe("takeRegressionScreenshot", () => {
     test.fail(!elementBox, "Could not get element bounding box")
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "element-test", {
-      element: "#test-element",
+      elementToScreenshot: element,
     })
     const dimensions = await getImageDimensions(screenshot)
 
@@ -375,81 +477,35 @@ test.describe("takeRegressionScreenshot", () => {
   })
 })
 
-test.describe("takeScreenshotAfterElement", () => {
+test.describe("getH1Screenshots", () => {
   test.beforeEach(async ({ page }) => {
-    // Set up a more complex DOM for testing element relationships
     await page.setContent(`
       <html>
-        <body style="margin: 0; padding: 20px; background: white;">
-          <div id="parent" style="width: 500px; padding: 10px; border: 1px solid black;">
-            <h1 id="header1" style="margin-top: 30px; height: 50px; background: lightblue;">Header 1</h1>
-            <p style="height: 100px; background: lightcoral;">Paragraph 1</p>
-            <h2 id="header2" style="margin-top: 40px; height: 60px; background: lightgreen;">Header 2</h2>
-            <p style="height: 150px; background: lightgoldenrodyellow;">Paragraph 2</p>
-          </div>
+        <body style="margin: 0; padding: 0;">
+          <h1>First H1</h1>
+          <p>Some content</p>
+          <h1>Second H1</h1>
+          <p>More content</p>
+          <h1>Third H1</h1>
         </body>
       </html>
     `)
-    // Ensure viewport is large enough
-    await page.setViewportSize({ width: 800, height: 600 })
   })
 
-  test("takes screenshot starting from the element with specified height and parent width", async ({
-    page,
-  }, testInfo) => {
-    const startElement = page.locator("#header2")
-    const parentElement = page.locator("#parent")
-    const screenshotHeight = 200
-    const testSuffix = "after-h2"
+  for (const theme of ["light", "dark"]) {
+    test(`captures a screenshot for each section between H1s in ${theme} theme`, async ({
+      page,
+    }, testInfo) => {
+      await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
 
-    // Spy on page.screenshot to capture its arguments
-    const originalPageScreenshot = page.screenshot.bind(page)
-    let capturedOptions: PageScreenshotOptions | undefined
-
-    page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
-      capturedOptions = options
-      return Buffer.from("")
-    }
-
-    try {
-      await takeScreenshotAfterElement(page, testInfo, startElement, screenshotHeight, testSuffix)
-    } finally {
-      page.screenshot = originalPageScreenshot
-    }
-
-    expect(capturedOptions).toBeDefined()
-    test.fail(!capturedOptions, "Captured options are undefined")
-
-    const capturedPath = capturedOptions?.path
-    expect(capturedPath).toBeDefined()
-    expect(capturedPath).toContain(testSuffix)
-    expect(capturedPath).toMatch(/lost-pixel\//) // Keep double slash for directory separator
-    expect(capturedPath).toMatch(new RegExp(`${testInfo.project.name}\\.png$`))
-
-    // Verify the clip coordinates and dimensions
-    const startElementBox = await startElement.boundingBox()
-    const parentElementBox = await parentElement.boundingBox()
-
-    expect(startElementBox).not.toBeNull()
-    expect(parentElementBox).not.toBeNull()
-
-    const capturedClip = capturedOptions?.clip
-    expect(capturedClip).toBeDefined()
-    test.fail(!capturedClip, "Captured options clip is undefined")
-
-    // @ts-expect-error - capturedClip is defined
-    const { x, y, width, height } = capturedClip
-    const parentX = parentElementBox?.x
-    expect(x).toBeCloseTo(parentX)
-
-    const startElementY = startElementBox?.y
-    expect(y).toBeCloseTo(startElementY)
-
-    const parentWidth = parentElementBox?.width
-    expect(width).toBeCloseTo(parentWidth)
-    expect(height).toBe(screenshotHeight)
-    expect(capturedOptions?.animations).toBe("disabled")
-  })
+      const h1Spans = await page.locator("span[id^='h1-section-']").all()
+      for (let i = 0; i < h1Spans.length; i++) {
+        const screenshotName = getScreenshotName(testInfo, `section-${theme}-${i}`)
+        const screenshotPath = testInfo.snapshotPath(screenshotName)
+        expect(await fs.stat(screenshotPath)).not.toBeNull()
+      }
+    })
+  }
 })
 
 test.describe("waitForThemeTransition", () => {
@@ -562,102 +618,4 @@ test.describe("showingPreview", () => {
       expect(showingPreview(page)).toBe(expected)
     })
   }
-})
-
-test.describe("waitForViewportImagesToLoad", () => {
-  const viewportHeight = 600
-  const imageDomain = "https://example.com"
-  test.beforeEach(async ({ page }) => {
-    test.skip(!isDesktopViewport(page), "only need to run tests once on fixed viewport")
-    await page.setViewportSize({ width: 800, height: viewportHeight })
-  })
-
-  test("waits for all images inside the viewport", async ({ page }) => {
-    let image1Loaded = false
-    await page.route(`${imageDomain}/image1.png`, (route) => {
-      setTimeout(() => {
-        image1Loaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 100)
-    })
-
-    let image2Loaded = false
-    await page.route(`${imageDomain}/image2.png`, (route) => {
-      setTimeout(() => {
-        image2Loaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 5000)
-    })
-
-    await page.setContent(`
-      <img src="${imageDomain}/image1.png" loading="eager" style="width:100px; height:100px;">
-      <img src="${imageDomain}/image2.png" loading="lazy" style="margin-top: ${2 * viewportHeight}px;">
-    `)
-
-    await waitForViewportImagesToLoad(page)
-
-    expect(image1Loaded).toBe(true)
-    expect(image2Loaded).toBe(false)
-  })
-
-  test("does not wait for lazy images outside the viewport", async ({ page }) => {
-    let imageLoaded = false
-    await page.route("**/lazy-out-of-view.png", (route) => {
-      setTimeout(() => {
-        imageLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 5000)
-    })
-
-    await page.setContent(`
-      <img src="${imageDomain}/lazy-out-of-view.png" loading="lazy" style="width:100px; height:100px; margin-top: ${2 * viewportHeight}px;">
-    `)
-
-    await waitForViewportImagesToLoad(page)
-
-    expect(imageLoaded).toBe(false)
-  })
-
-  test("waits for lazy images inside the viewport", async ({ page }) => {
-    let imageLoaded = false
-    await page.route("**/lazy-in-view.png", (route) => {
-      setTimeout(() => {
-        imageLoaded = true
-        route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-      }, 100)
-    })
-
-    await page.setContent(`
-      <img src="${imageDomain}/lazy-in-view.png" loading="lazy" style="width:100px; height:100px;">
-    `)
-
-    await waitForViewportImagesToLoad(page)
-    expect(imageLoaded).toBe(true)
-  })
-
-  test("returns before an out-of-viewport lazy image finishes loading", async ({ page }) => {
-    await page.route("**/eager-in-view.png", (route) => {
-      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-    })
-
-    let lazyImageFulfilled = false
-    await page.route("**/lazy-out-of-view.png", async (route) => {
-      // Lazy image has a long delay to simulate slow loading.
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      lazyImageFulfilled = true
-      route.fulfill({ status: 200, contentType: "image/png", body: tinyPng })
-    })
-
-    await page.setContent(`
-      <img src="${imageDomain}/eager-in-view.png" id="eager-in-view" loading="eager" style="width:50px; height:50px;">
-      <img src="${imageDomain}/lazy-out-of-view.png" id="lazy-out-of-view" loading="lazy" style="width:50px; height:50px; margin-top: ${2 * viewportHeight}px;">
-    `)
-
-    const startTime = Date.now()
-    await waitForViewportImagesToLoad(page)
-    const duration = Date.now() - startTime
-
-    expect(duration).toBeLessThan(300)
-    expect(lazyImageFulfilled).toBe(false)
-  })
 })

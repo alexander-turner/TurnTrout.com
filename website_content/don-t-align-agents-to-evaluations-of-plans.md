@@ -3,8 +3,7 @@ permalink: dont-align-agents-to-evaluations-of-plans
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
+lw-page-url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
 lw-is-question: "false"
 lw-posted-at: 2022-11-26T21:16:23.425000Z
 lw-last-modification: 2024-02-15T18:55:51.898000Z
@@ -31,15 +30,12 @@ lw-sequence-title: Shard Theory
 prev-post-slug: dont-design-agents-which-exploit-adversarial-inputs
 prev-post-title: Don’t Design Agents Which Exploit Adversarial Inputs
 next-post-slug: alignment-without-total-robustness
-next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require
-  Robust Grading
+next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-11-26 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
-description: Aligning an AI to evaluations of your goals won't give you what you want.
-  Don't do it.
+original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
+description: Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.
 skip_import: true
 date_updated: 2025-07-23 08:30:43.433349
 ---
@@ -229,7 +225,9 @@ That said, I think this pattern is extremely unwise, and [alternative patterns A
 > These schemes include:
 >
 > 1. [Approval-based amplification](https://www.lesswrong.com/posts/fRsjBseRuvRhMPPE5/an-overview-of-11-proposals-for-building-safe-advanced-ai#4__Approval_based_amplification___relaxed_adversarial_training) (if the trained agent is supposed to be terminally motivated by the amplified overseer's ratings),
-> 2. [Approval-directed agents](https://www.alignmentforum.org/posts/7Hr8t6xwuuxBTqADK/approval-directed-agents-1),[^4] - Although approval-directed agents are only searching over actions and not plans; action space is exponentially smaller than plan space. However, if the action space is rich and expressive enough to include e.g. 3-paragraph English descriptions, I think that there will be seriously adversarial actions which will be found and exploited by smart approval-directed agents. - Given a small action space (e.g. $|\mathcal{A}|=10$), the adversarial input issue should be pretty tame (which is strictly separate from other issues with this approach).
+> 2. [Approval-directed agents](https://www.alignmentforum.org/posts/7Hr8t6xwuuxBTqADK/approval-directed-agents-1)[^4]
+>   - Although approval-directed agents are only searching over actions and not plans; action space is exponentially smaller than plan space. However, if the action space is rich and expressive enough to include e.g. 3-paragraph English descriptions, I think that there will be seriously adversarial actions which will be found and exploited by smart approval-directed agents.
+>   - Given a small action space (e.g. $|\mathcal{A}|=10$), the adversarial input issue should be pretty tame (which is strictly separate from other issues with this approach).
 > 3. [Indirect normativity](https://ordinaryideas.wordpress.com/2012/04/21/indirect-normativity-write-up/) in any form which points the AI's motivations so that it optimizes an idealized grader's evaluations.
 >     - This includes "What would this specific and superintelligent [CEV](https://intelligence.org/files/CEV.pdf) universe simulation say about this plan?".
 >     - This doesn't include (_somehow_) getting an AI which correctly computes what program would be recommended by AGI designers in an altruistic and superintelligent branch of humanity, and then the AI executes that program and shuts itself off without doing anything else.[^5]

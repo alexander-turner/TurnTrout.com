@@ -12,11 +12,20 @@ const toKebabCase = (str: string): string => {
   return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
 }
 
+const unitlessKeys = new Set([
+  "bold-weight",
+  "semi-bold-weight",
+  "normal-weight",
+  "font-scale-factor",
+])
+
 export function generateScssRecord(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(variables).map(([key, value]) => {
-      const valString = typeof value === "number" ? `${value}px` : value
-      return [toKebabCase(key), valString]
+      const kebabKey = toKebabCase(key)
+      const valString =
+        typeof value === "number" && !unitlessKeys.has(kebabKey) ? `${value}px` : String(value)
+      return [kebabKey, valString]
     }),
   )
 }
