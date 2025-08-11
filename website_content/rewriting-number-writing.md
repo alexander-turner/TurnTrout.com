@@ -35,15 +35,14 @@ I have no illusions: this system will not be adopted anytime soon, and for good 
 
 # Advantages of flipped digit order
 
-For adults today, switching from the current system would be cursed. I will generally imagine that people had grown up with this system.
-
-Some of the benefits apply under a serial computation model (reading one digit at a time), which is not usually how people read. Other benefits apply under realistic human reading conditions.
+1. For adults today, switching from the current system would be cursed. I will generally imagine that people had grown up with this system.
+2. Some of the benefits apply under a serial computation model (reading one digit at a time), which is not usually how people read. Other benefits apply under realistic human reading conditions.
 
 ## Simplifies long addition and multiplication
 
 Imagine you have a number in mind (like "1,000") and you want to add another number to it. You're serially processing the other number one digit at a time. If you've received the prefix "I have \$320", you can't start adding the number to 1,000 because you don't know what place the "3", "2", and "0" correspond to. If I instead write "I have ↗023 dollars", you can perform long addition as you process each digit.
 
-Since [the pronunciation](#flipped-pronunciation) of "↗023" should be "twenty and three hundred", the primary real-life speed-up would be in spoken English. For example, adding a medium-length number as you hear its increasingly large components. You would propagate [carries](https://en.wikipedia.org/wiki/Carry_(arithmetic))  in real time. In the current system, you cannot finalize any high-order digit in the result until all lower-order digits have been processed and their carries accounted for.
+Since [the pronunciation](#flipped-pronunciation) of "↗023" should be "twenty and three hundred", the primary real-life speed-up would be in spoken English. For example, adding a medium-length number as you hear its increasingly large components. You would propagate [carries](https://en.wikipedia.org/wiki/Carry_(arithmetic))  in real time. In the current system, sometimes you cannot finalize any high-order digit in the result until all lower-order digits have been processed and their carries accounted for.
 
 Likewise, flipped-number ("little endian") algorithms are slightly more efficient at e.g. long addition.
 
@@ -77,11 +76,12 @@ What comes next? Maybe the full sentence is "I have \$320" or maybe it's "I have
 
 More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^magnitude] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
 
+By flipping the digit order, we gain information each time we process a new digit. For example, if the first digit is "0", we learn that the number is even. In particular, the number is divisible by 10.
+
 [^magnitude]: Without knowing $k$, we cannot deduce much about $n$'s magnitude (except that $n\geq 320$).
 
-Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
-
-By flipping the digit order, we gain information each time we process a new digit. For example, if the first digit is "0", we learn that the number is even. In particular, the number is divisible by 10.
+> [!note]
+> Spoken English partially solves this ambiguity. A speaker doesn't say "three two zero", they say "three hundred and twenty." You are quickly given the information that there are three _hundreds_ - not just three somethings of unknown magnitude.
 
 ## Better aligns with human intuition
 
