@@ -60,6 +60,18 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
+/** Waits until all CSS fonts used on the page are fully loaded. */
+export async function waitForFontsToLoad(page: Page): Promise<void> {
+  // Use the CSS Font Loading API when available; otherwise, resolve immediately
+  await page.evaluate(() => {
+    const fontsObj = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts
+    if (fontsObj && typeof fontsObj.ready?.then === "function") {
+      return fontsObj.ready
+    }
+    return Promise.resolve()
+  })
+}
+
 /** Gets the name of the screenshot file. */
 export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string): string {
   const browserName = testInfo.project.name
@@ -182,6 +194,9 @@ export async function takeRegressionScreenshot(
     await pauseMediaElements(page)
   }
 
+  // Avoid layout/kerning shifts across runs
+  await waitForFontsToLoad(page)
+
   // Separate out the element option so we don't pass it to the screenshot API
   const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
   // skipcq: JS-0098
@@ -189,6 +204,8 @@ export async function takeRegressionScreenshot(
 
   const screenshotOptions = {
     animations: "disabled" as const,
+    // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter
+    scale: "css" as const,
     ...remainingOptions,
   }
 
