@@ -14,7 +14,6 @@ const TIGHT_SCROLL_TOLERANCE = 10
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
 
-// TODO test iframe and video fullscreen in light mode (and dark for safety)
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     // Mock clipboard API if not available
@@ -53,7 +52,8 @@ async function setDummyContentMeta(page: Page) {
   await page.evaluate(() => {
     const tagsUl = document.querySelector("#tags ul")
     if (tagsUl) {
-      tagsUl.innerHTML = `<li><a href="/tags/dummy-tag" class="can-trigger-popover tag-link">dummy-tag</a></li>`
+      tagsUl.innerHTML =
+        '<li><a href="/tags/dummy-tag" class="can-trigger-popover tag-link">dummy-tag</a></li>'
     }
 
     const readingTime = document.querySelector(".reading-time")
@@ -63,12 +63,14 @@ async function setDummyContentMeta(page: Page) {
 
     const publicationStr = document.querySelector(".publication-str")
     if (publicationStr) {
-      publicationStr.innerHTML = `Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>`
+      publicationStr.innerHTML =
+        'Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
     }
 
     const lastUpdatedStr = document.querySelector(".last-updated-str")
     if (lastUpdatedStr) {
-      lastUpdatedStr.innerHTML = `<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>`
+      lastUpdatedStr.innerHTML =
+        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
     const backlinksUl = document.querySelector("#backlinks-admonition ul")

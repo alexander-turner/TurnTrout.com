@@ -5,7 +5,6 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
-// TODO check if this is needed
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -164,6 +163,7 @@ export async function takeRegressionScreenshot(
 
   // Separate out the element option so we don't pass it to the screenshot API
   const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
+  // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
   const screenshotOptions = {
@@ -215,8 +215,7 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
     // Create a static list of headers to iterate over
     const headers = Array.from(document.querySelectorAll("article > h1"))
 
-    for (let i = 0; i < headers.length; i++) {
-      const header = headers[i]
+    for (const header of headers) {
       const parent = header.parentElement
 
       if (!parent) continue
@@ -271,8 +270,7 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  for (let index = 0; index < h1Spans.length; index++) {
-    const h1Span = h1Spans[index]
+  for (const h1Span of h1Spans) {
     await h1Span.scrollIntoViewIfNeeded()
 
     const h1Header = h1Span.locator("h1").first()
