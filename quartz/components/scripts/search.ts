@@ -32,7 +32,6 @@ const index = new FlexSearch.Document<Item>({
   } as ContextOptions,
   document: {
     id: "id",
-    tag: "tags",
     index: [
       {
         field: "title",
