@@ -22,7 +22,7 @@ I've had the tests practically finalized for a while. Problem was, they were <sp
 
 I was on my own, but hopefully I can transfer some of my painful learning. Here are the tricks I learned to keep my code clean, my tests reliable, and my site not visually regressed.
 
-![[playwright-tips-20250810165347.png]]
+![[https://assets.turntrout.com/static/images/posts/playwright-tips-20250810165347.avif]]
 Figure: Using `lost-pixel` to examine and reject an unintended change.
 
 # Best practices
@@ -65,7 +65,7 @@ Target screenshots to specific elements
 For elements with the `controls` attribute, scrub to the end
 : Embedded audio and video elements fetch a varying number of bytes before the test takes a screenshot. That varying number of bytes means a varying "loaded" portion of the loading bar, creating a flaky visual difference. Before each test, I now scrub each audio element to the end, ensuring the element is displayed as fully loaded.
 
-: ![[design-20250810160319.png]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
+: ![[https://assets.turntrout.com/static/images/posts/design-20250810160319.avif]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
 
 Isolate the relevant DOM
 : While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
