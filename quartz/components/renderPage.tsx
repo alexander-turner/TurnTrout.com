@@ -14,6 +14,7 @@ import {
   type RelativeURL,
   joinSegments,
   normalizeHastElement,
+  simplifySlug,
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
@@ -48,12 +49,12 @@ const headerRegex = new RegExp(/h[1-6]/)
  * @param inner - The inner element of the transclusion span containing the href.
  * @returns A HAST anchor element with classes `internal` and `transclude-src`.
  */
-export function createTranscludeSourceAnchor(inner: Element): Element {
+export function createTranscludeSourceAnchor(href: string): Element {
   return {
     type: "element" as const,
     tagName: "a" as const,
     properties: {
-      href: inner.properties?.href,
+      href,
       class: ["internal", "transclude-src"],
     },
     children: [] as ElementContent[],
@@ -99,7 +100,6 @@ export function setHeaderTransclusion(
   page: QuartzPluginData,
   slug: FullSlug,
   transcludeTarget: FullSlug,
-  inner: Element,
   headerId: string,
 ): void {
   const htmlAst = page.htmlAst
@@ -127,11 +127,12 @@ export function setHeaderTransclusion(
   if (startIdx === undefined) return
 
   const headerIdx = startIdx
+  const href = joinSegments("/", simplifySlug(transcludeTarget), `#${headerId}`)
   node.children = [
     ...(htmlAst.children.slice(headerIdx + 1, endIdx) as ElementContent[]).map((child) =>
       normalizeHastElement(child as Element, slug, transcludeTarget),
     ),
-    createTranscludeSourceAnchor(inner),
+    createTranscludeSourceAnchor(href),
   ]
 }
 
@@ -150,16 +151,16 @@ export function setPageTransclusion(
   page: QuartzPluginData,
   slug: FullSlug,
   transcludeTarget: FullSlug,
-  inner: Element,
 ): void {
   const htmlAst = page.htmlAst
   if (!htmlAst) return
 
+  const href = joinSegments("/", simplifySlug(transcludeTarget))
   node.children = [
     ...(htmlAst.children as ElementContent[]).map((child) =>
       normalizeHastElement(child as Element, slug, transcludeTarget),
     ),
-    createTranscludeSourceAnchor(inner),
+    createTranscludeSourceAnchor(href),
   ]
 }
 
@@ -301,7 +302,6 @@ export function renderPage(
           return
         }
 
-        const inner = node.children[0] as Element
         let blockRef = node.properties.dataBlock as string | undefined
         if (blockRef?.startsWith("#^")) {
           // Transclude block
@@ -309,10 +309,10 @@ export function renderPage(
           setBlockTransclusion(node, page, slug, transcludeTarget, blockRef)
         } else if (blockRef?.startsWith("#") && page.htmlAst) {
           // header transclude
-          setHeaderTransclusion(node, page, slug, transcludeTarget, inner, blockRef.slice(1))
+          setHeaderTransclusion(node, page, slug, transcludeTarget, blockRef.slice(1))
         } else if (page.htmlAst) {
           // page transclude
-          setPageTransclusion(node, page, slug, transcludeTarget, inner)
+          setPageTransclusion(node, page, slug, transcludeTarget)
         }
       }
     }

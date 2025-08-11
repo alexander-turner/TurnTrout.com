@@ -257,13 +257,7 @@ export function pathToRoot(slug: FullSlug): RelativeURL {
   return rootPath as RelativeURL
 }
 
-/**
- * Resolves a relative path between two slugs
- *
- * @param current - Starting slug to resolve from
- * @param target - Target slug to resolve to
- * @returns Relative URL path from current to target
- */
+// Resolves a relative path between two slugs
 export function resolveRelative(current: FullSlug, target: FullSlug | SimpleSlug): RelativeURL {
   const res = joinSegments(pathToRoot(current), simplifySlug(target as FullSlug)) as RelativeURL
   return res

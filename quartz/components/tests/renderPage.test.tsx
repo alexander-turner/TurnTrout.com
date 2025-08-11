@@ -187,8 +187,7 @@ describe("renderPage", () => {
 
 describe("renderPage helpers", () => {
   it("createTranscludeSourceAnchor returns anchor with expected props", () => {
-    const inner = h("a", { href: "/target" }) as unknown as Element
-    const anchor = createTranscludeSourceAnchor(inner)
+    const anchor = createTranscludeSourceAnchor("/target")
     expect(anchor.tagName).toBe("a")
     expect(anchor.properties.href).toBe("/target")
     expect(anchor.properties.class).toEqual(["internal", "transclude-src"])
@@ -207,7 +206,6 @@ describe("renderPage helpers", () => {
 
   it("setHeaderTransclusion extracts section under header and appends anchor", () => {
     const node = h("span") as unknown as Element
-    const inner = h("a", { href: "/source" }) as unknown as Element
     const h2 = h("h2", { id: "section" }, "title") as unknown as Element
     const para1 = h("p", "one") as unknown as Element
     const para2 = h("p", "two") as unknown as Element
@@ -215,7 +213,7 @@ describe("renderPage helpers", () => {
     const page = {
       htmlAst: { type: "root", children: [h2, para1, para2, nextH2] },
     } as unknown as QuartzPluginData
-    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, inner, "section")
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "section")
     expect(node.children.length).toBe(3)
     const [c1, c2, anchor] = node.children as Element[]
     expect(c1.tagName).toBe("p")
@@ -225,11 +223,10 @@ describe("renderPage helpers", () => {
 
   it("setPageTransclusion injects full htmlAst and appends anchor", () => {
     const node = h("span") as unknown as Element
-    const inner = h("a", { href: "/src" }) as unknown as Element
     const p1 = h("p", "hello") as unknown as Element
     const p2 = h("p", "world") as unknown as Element
     const page = { htmlAst: { type: "root", children: [p1, p2] } } as unknown as QuartzPluginData
-    setPageTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, inner)
+    setPageTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug)
     expect(node.children.length).toBe(3)
     const [c1, c2, anchor] = node.children as Element[]
     expect(c1.tagName).toBe("p")
