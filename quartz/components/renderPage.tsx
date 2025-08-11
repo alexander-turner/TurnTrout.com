@@ -7,7 +7,6 @@ import React from "react"
 import { visit } from "unist-util-visit"
 
 import { type GlobalConfiguration } from "../cfg"
-import { i18n } from "../i18n"
 import { type QuartzPluginData } from "../plugins/vfile"
 import {
   clone,
@@ -204,35 +203,25 @@ export function renderPage(
             return
           }
 
+          // Skip the header that we found the blockref in
+          const headerIdx = startIdx
           node.children = [
-            ...(page.htmlAst.children.slice(startIdx, endIdx) as ElementContent[]).map((child) =>
-              normalizeHastElement(child as Element, slug, transcludeTarget),
+            ...(page.htmlAst.children.slice(headerIdx + 1, endIdx) as ElementContent[]).map(
+              (child) => normalizeHastElement(child as Element, slug, transcludeTarget),
             ),
             {
               type: "element",
               tagName: "a",
-              properties: { href: inner.properties?.href, class: ["internal", "transclude-src"] },
+              properties: {
+                href: inner.properties?.href,
+                class: ["internal", "transclude-src"],
+              },
               children: [],
             },
           ]
         } else if (page.htmlAst) {
           // page transclude
           node.children = [
-            {
-              type: "element",
-              tagName: "h1",
-              properties: {},
-              children: [
-                {
-                  type: "text",
-                  value:
-                    (page.frontmatter?.title && page.slug) ??
-                    i18n(cfg.locale).components.transcludes.transcludeOf({
-                      targetSlug: page.slug as FullSlug,
-                    }),
-                },
-              ],
-            },
             ...(page.htmlAst.children as ElementContent[]).map((child) =>
               normalizeHastElement(child as Element, slug, transcludeTarget),
             ),

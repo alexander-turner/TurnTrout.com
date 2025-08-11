@@ -312,6 +312,13 @@ Checking for layout shift due to these videos which contrast the site before and
 >
 > ![[about#^first-para]]
 
+> [!quote]
+> ![[#Section to transclude]]
+>
+### Section to transclude
+
+Hi! Am I being transcluded?
+
 ## Images
 
 ![Sample complexity of different kinds of DCTs.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
