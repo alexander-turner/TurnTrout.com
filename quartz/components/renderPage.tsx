@@ -42,6 +42,128 @@ interface RenderComponents {
 const headerRegex = new RegExp(/h[1-6]/)
 
 /**
+ * Creates the anchor element linking back to the transclusion source.
+ * The anchor is appended after transcluded content.
+ *
+ * @param inner - The inner element of the transclusion span containing the href.
+ * @returns A HAST anchor element with classes `internal` and `transclude-src`.
+ */
+export function createTranscludeSourceAnchor(inner: Element): Element {
+  return {
+    type: "element" as const,
+    tagName: "a" as const,
+    properties: {
+      href: inner.properties?.href,
+      class: ["internal", "transclude-src"],
+    },
+    children: [] as ElementContent[],
+  }
+}
+
+/**
+ * Replaces a transclude span's children with a normalized block node from the target page.
+ *
+ * @param node - The transclude span node to mutate.
+ * @param page - The page being transcluded from.
+ * @param slug - The current page slug where content is rendered.
+ * @param transcludeTarget - The target page slug being referenced.
+ * @param blockRef - The block identifier within the target page's `blocks` map.
+ */
+export function setBlockTransclusion(
+  node: Element,
+  page: QuartzPluginData,
+  slug: FullSlug,
+  transcludeTarget: FullSlug,
+  blockRef: string,
+): void {
+  const blockNode = page.blocks?.[blockRef]
+  if (blockNode) {
+    node.children = [normalizeHastElement(blockNode, slug, transcludeTarget)]
+  }
+}
+
+/**
+ * Replaces a transclude span's children with the section under a header in the target page.
+ * The section spans from the matching header until the next header of the same or higher depth.
+ * Appends a source anchor to the end.
+ *
+ * @param node - The transclude span node to mutate.
+ * @param page - The page being transcluded from (requires `htmlAst`).
+ * @param slug - The current page slug where content is rendered.
+ * @param transcludeTarget - The target page slug being referenced.
+ * @param inner - The inner element of the original transclusion span (for link back href).
+ * @param headerId - The id of the header within the target page to transclude from.
+ */
+export function setHeaderTransclusion(
+  node: Element,
+  page: QuartzPluginData,
+  slug: FullSlug,
+  transcludeTarget: FullSlug,
+  inner: Element,
+  headerId: string,
+): void {
+  const htmlAst = page.htmlAst
+  if (!htmlAst) return
+
+  let startIdx: number | undefined
+  let startDepth: number | undefined
+  let endIdx: number | undefined
+
+  for (const [i, el] of htmlAst.children.entries()) {
+    if (!(el.type === "element" && el.tagName.match(headerRegex))) continue
+    const depth = Number(el.tagName.substring(1))
+
+    if (startIdx === undefined || startDepth === undefined) {
+      if (el.properties?.id === headerId) {
+        startIdx = i
+        startDepth = depth
+      }
+    } else if (depth <= startDepth) {
+      endIdx = i
+      break
+    }
+  }
+
+  if (startIdx === undefined) return
+
+  const headerIdx = startIdx
+  node.children = [
+    ...(htmlAst.children.slice(headerIdx + 1, endIdx) as ElementContent[]).map((child) =>
+      normalizeHastElement(child as Element, slug, transcludeTarget),
+    ),
+    createTranscludeSourceAnchor(inner),
+  ]
+}
+
+/**
+ * Replaces a transclude span's children with the entire `htmlAst` of the target page.
+ * Appends a source anchor to the end.
+ *
+ * @param node - The transclude span node to mutate.
+ * @param page - The page being transcluded from (requires `htmlAst`).
+ * @param slug - The current page slug where content is rendered.
+ * @param transcludeTarget - The target page slug being referenced.
+ * @param inner - The inner element of the original transclusion span (for link back href).
+ */
+export function setPageTransclusion(
+  node: Element,
+  page: QuartzPluginData,
+  slug: FullSlug,
+  transcludeTarget: FullSlug,
+  inner: Element,
+): void {
+  const htmlAst = page.htmlAst
+  if (!htmlAst) return
+
+  node.children = [
+    ...(htmlAst.children as ElementContent[]).map((child) =>
+      normalizeHastElement(child as Element, slug, transcludeTarget),
+    ),
+    createTranscludeSourceAnchor(inner),
+  ]
+}
+
+/**
  * Generates static resources (CSS/JS) paths for a given page
  * @param baseDir - Base directory slug or relative URL
  * @param staticResources - Existing static resources configuration
@@ -118,6 +240,24 @@ const generateAllTagsFile = (componentData: QuartzComponentProps): QuartzPluginD
 }
 
 /**
+ * Adds a virtual file to `componentData.allFiles` for special transclusion targets.
+ * Currently supports recent posts (`allSlug`) and all tags (`allTagsSlug`).
+ *
+ * @param transcludeTarget - The target slug referenced by the transclude span.
+ * @param componentData - The current component props, mutated to include virtual files when needed.
+ */
+export function addVirtualFileForSpecialTransclude(
+  transcludeTarget: FullSlug,
+  componentData: QuartzComponentProps,
+): void {
+  if (transcludeTarget === allSlug) {
+    componentData.allFiles.push(generateRecentPostsFile(componentData))
+  } else if (transcludeTarget === allTagsSlug) {
+    componentData.allFiles.push(generateAllTagsFile(componentData))
+  }
+}
+
+/**
  * Renders a complete HTML page with all components and transclusions
  *
  * Process:
@@ -154,11 +294,7 @@ export function renderPage(
       if (classNames.includes("transclude")) {
         const transcludeTarget = node.properties["dataUrl"] as FullSlug
 
-        if (transcludeTarget === allSlug) {
-          componentData.allFiles.push(generateRecentPostsFile(componentData))
-        } else if (transcludeTarget === allTagsSlug) {
-          componentData.allFiles.push(generateAllTagsFile(componentData))
-        }
+        addVirtualFileForSpecialTransclude(transcludeTarget, componentData)
 
         const page = componentData.allFiles.find((f) => f.slug === transcludeTarget)
         if (!page) {
@@ -170,68 +306,13 @@ export function renderPage(
         if (blockRef?.startsWith("#^")) {
           // Transclude block
           blockRef = blockRef.slice("#^".length)
-          const blockNode = page.blocks?.[blockRef]
-          if (blockNode) {
-            node.children = [normalizeHastElement(blockNode, slug, transcludeTarget)]
-          }
+          setBlockTransclusion(node, page, slug, transcludeTarget, blockRef)
         } else if (blockRef?.startsWith("#") && page.htmlAst) {
           // header transclude
-          blockRef = blockRef.slice(1)
-          let startIdx: number | undefined
-          let startDepth: number | undefined
-          let endIdx: number | undefined
-          for (const [i, el] of page.htmlAst.children.entries()) {
-            // skip non-headers
-            if (!(el.type === "element" && el.tagName.match(headerRegex))) continue
-            const depth = Number(el.tagName.substring(1))
-
-            // lookin for our blockref
-            if (startIdx === undefined || startDepth === undefined) {
-              // skip until we find the blockref that matches
-              if (el.properties?.id === blockRef) {
-                startIdx = i
-                startDepth = depth
-              }
-            } else if (depth <= startDepth) {
-              // looking for new header that is same level or higher
-              endIdx = i
-              break
-            }
-          }
-
-          if (startIdx === undefined) {
-            return
-          }
-
-          // Skip the header that we found the blockref in
-          const headerIdx = startIdx
-          node.children = [
-            ...(page.htmlAst.children.slice(headerIdx + 1, endIdx) as ElementContent[]).map(
-              (child) => normalizeHastElement(child as Element, slug, transcludeTarget),
-            ),
-            {
-              type: "element",
-              tagName: "a",
-              properties: {
-                href: inner.properties?.href,
-                class: ["internal", "transclude-src"],
-              },
-              children: [],
-            },
-          ]
+          setHeaderTransclusion(node, page, slug, transcludeTarget, inner, blockRef.slice(1))
         } else if (page.htmlAst) {
           // page transclude
-          node.children = [
-            ...(page.htmlAst.children as ElementContent[]).map((child) =>
-              normalizeHastElement(child as Element, slug, transcludeTarget),
-            ),
-            {
-              type: "element",
-              tagName: "a",
-              properties: { href: inner.properties?.href, class: ["internal", "transclude-src"] },
-              children: [],
-            },
-          ]
+          setPageTransclusion(node, page, slug, transcludeTarget, inner)
         }
       }
     }

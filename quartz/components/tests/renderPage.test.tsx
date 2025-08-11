@@ -11,7 +11,17 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
-import { pageResources, renderPage } from "../renderPage"
+import { allSlug } from "../pages/AllPosts"
+import { allTagsSlug } from "../pages/AllTagsContent"
+import {
+  createTranscludeSourceAnchor,
+  pageResources,
+  renderPage,
+  setBlockTransclusion,
+  setHeaderTransclusion,
+  setPageTransclusion,
+  addVirtualFileForSpecialTransclude,
+} from "../renderPage"
 import { type QuartzComponent, type QuartzComponentProps } from "../types"
 
 // skipcq: JS-D1001
@@ -172,5 +182,66 @@ describe("renderPage", () => {
       pageResources,
     )
     expect(html).toContain("Transcluded block content")
+  })
+})
+
+describe("renderPage helpers", () => {
+  it("createTranscludeSourceAnchor returns anchor with expected props", () => {
+    const inner = h("a", { href: "/target" }) as unknown as Element
+    const anchor = createTranscludeSourceAnchor(inner)
+    expect(anchor.tagName).toBe("a")
+    expect(anchor.properties.href).toBe("/target")
+    expect(anchor.properties.class).toEqual(["internal", "transclude-src"])
+  })
+
+  it("setBlockTransclusion replaces children with normalized block", () => {
+    const node = h("span") as unknown as Element
+    const block = h("p", "hello world") as unknown as Element
+    const page = { blocks: { theBlock: block } } as unknown as QuartzPluginData
+    setBlockTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "theBlock")
+    expect(node.children.length).toBe(1)
+    const child = node.children[0] as Element
+    expect(child.type).toBe("element")
+    expect(child.tagName).toBe("p")
+  })
+
+  it("setHeaderTransclusion extracts section under header and appends anchor", () => {
+    const node = h("span") as unknown as Element
+    const inner = h("a", { href: "/source" }) as unknown as Element
+    const h2 = h("h2", { id: "section" }, "title") as unknown as Element
+    const para1 = h("p", "one") as unknown as Element
+    const para2 = h("p", "two") as unknown as Element
+    const nextH2 = h("h2", "next") as unknown as Element
+    const page = {
+      htmlAst: { type: "root", children: [h2, para1, para2, nextH2] },
+    } as unknown as QuartzPluginData
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, inner, "section")
+    expect(node.children.length).toBe(3)
+    const [c1, c2, anchor] = node.children as Element[]
+    expect(c1.tagName).toBe("p")
+    expect(c2.tagName).toBe("p")
+    expect(anchor.tagName).toBe("a")
+  })
+
+  it("setPageTransclusion injects full htmlAst and appends anchor", () => {
+    const node = h("span") as unknown as Element
+    const inner = h("a", { href: "/src" }) as unknown as Element
+    const p1 = h("p", "hello") as unknown as Element
+    const p2 = h("p", "world") as unknown as Element
+    const page = { htmlAst: { type: "root", children: [p1, p2] } } as unknown as QuartzPluginData
+    setPageTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, inner)
+    expect(node.children.length).toBe(3)
+    const [c1, c2, anchor] = node.children as Element[]
+    expect(c1.tagName).toBe("p")
+    expect(c2.tagName).toBe("p")
+    expect(anchor.tagName).toBe("a")
+  })
+
+  it("addVirtualFileForSpecialTransclude adds virtual files for known targets", () => {
+    const props = createMockProps()
+    const beforeCount = props.allFiles.length
+    addVirtualFileForSpecialTransclude(allSlug as FullSlug, props)
+    addVirtualFileForSpecialTransclude(allTagsSlug as FullSlug, props)
+    expect(props.allFiles.length).toBeGreaterThan(beforeCount)
   })
 })
