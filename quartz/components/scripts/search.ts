@@ -23,8 +23,6 @@ export const debounceSearchDelay = 400
 // Delay in milliseconds before triggering a mouseover event after user input
 export const mouseFocusDelay = 100
 
-type SearchType = "basic" | "tags"
-let searchType: SearchType = "basic"
 let currentSearchTerm = ""
 
 const index = new FlexSearch.Document<Item>({
@@ -81,7 +79,6 @@ interface FetchResult {
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
 const contextWindowWords = 30
 const numSearchResults = 8
-const numTagResults = 5
 
 /**
  * Tokenizes a search term into individual words and their combinations
@@ -378,18 +375,11 @@ function updatePlaceholder() {
 
 /**
  * Show the search UI and focus the search bar.
- *
- * @param searchTypeNew - The search mode to activate (basic or tags)
  * @param container - The search container element
  * @param searchBar - The input element used for search
  */
-function showSearch(
-  searchTypeNew: SearchType,
-  container: HTMLElement | null,
-  searchBar: HTMLInputElement | null,
-) {
+function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
   if (!container || !searchBar) return
-  searchType = searchTypeNew
   const navbar = document.getElementById("navbar")
   if (navbar) {
     navbar.style.zIndex = "1"
@@ -427,8 +417,6 @@ function hideSearch() {
     // Ensure no residual information is left in the preview
     previewManager.clear()
   }
-
-  searchType = "basic"
 }
 
 let searchLayout: HTMLElement | null = null
@@ -452,7 +440,7 @@ const appendLayout = (el: HTMLElement) => {
 
 /**
  * Handle global keyboard shortcuts for the search UI, including toggling the
- * search modal, switching to tag search, and navigating results.
+ * search modal and navigating results.
  *
  * @param e - Keyboard event
  * @param container - The search container element
@@ -469,24 +457,8 @@ async function shortcutHandler(
     if (searchBarOpen) {
       hideSearch()
     } else {
-      showSearch("basic", container, searchBar)
+      showSearch(container, searchBar)
     }
-    return
-  } else if (e.shiftKey && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-    // Hotkey to open tag search
-    e.preventDefault()
-    e.stopPropagation() // Add this line to stop event propagation
-    const searchBarOpen = container?.classList.contains("active")
-    if (searchBarOpen) {
-      hideSearch()
-    } else {
-      // TODO document feature or remove; don't want hidden functionality
-      showSearch("tags", container, searchBar)
-    }
-
-    // add "#" prefix for tag search
-    if (searchBar) searchBar.value = "#"
-
     return
   }
 
@@ -497,13 +469,7 @@ async function shortcutHandler(
   // If search is active, then we will render the first result and display accordingly
   if (!container?.classList.contains("active")) return
 
-  /**
-   * Get the previous sibling element if it exists, otherwise return the
-   * element itself.
-   *
-   * @param el - The reference element
-   * @returns The previous sibling or the element itself
-   */
+  // Get the previous sibling element if it exists, otherwise return the element itself.
   const prevSibling = (el: HTMLElement): HTMLElement =>
     el.previousElementSibling ? (el.previousElementSibling as HTMLElement) : el
 
@@ -600,7 +566,7 @@ async function onNav(e: CustomEventMap["nav"]) {
     (e: Event) => shortcutHandler(e as KeyboardEvent, container, searchBar),
     listeners,
   )
-  addListener(searchIcon, "click", () => showSearch("basic", container, searchBar), listeners)
+  addListener(searchIcon, "click", () => showSearch(container, searchBar), listeners)
   addListener(searchBar, "input", debouncedOnType, listeners)
 
   const escapeCleanup = registerEscapeHandler(container, hideSearch)
@@ -750,7 +716,7 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${suffixHTML}`
 
-  //
+  // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
@@ -788,10 +754,10 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: searchType === "tags" ? data[slug].title : highlight(term, data[slug].title ?? ""),
+    title: highlight(term, data[slug].title ?? ""),
     content: highlight(term, data[slug].content ?? "", true),
     authors: data[slug].authors,
-    tags: highlightTags(term.substring(1), data[slug].tags),
+    tags: data[slug].tags,
   }
 }
 
@@ -838,49 +804,15 @@ async function onType(e: HTMLElementEventMap["input"]) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   currentSearchTerm = (e.target as HTMLInputElement).value
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
-  searchType = currentSearchTerm.startsWith("#") ? "tags" : "basic"
 
   mouseEventsLocked = true
-  let searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[]
-  if (searchType === "tags") {
-    currentSearchTerm = currentSearchTerm.substring(1).trim()
-    const separatorIndex = currentSearchTerm.indexOf(" ")
-    if (separatorIndex !== -1) {
-      // search by title and content index and then filter by tag (implemented in flexsearch)
-      const tag = currentSearchTerm.substring(0, separatorIndex)
-      const query = currentSearchTerm.substring(separatorIndex + 1).trim()
-      searchResults = await index.searchAsync({
-        query,
-        // return at least 10000 documents, so it is enough to filter them by tag (implemented in flexsearch)
-        limit: Math.max(numSearchResults, 2000),
-        index: ["title", "content"],
-        tag,
-      })
-      for (const searchResult of searchResults) {
-        searchResult.result = searchResult.result.slice(0, numSearchResults)
-      }
-      // set search type to basic and remove tag from term for proper highlighting and scroll
-      searchType = "basic"
-      currentSearchTerm = query
-    } else {
-      // default search by tags index
-      searchResults = await index.searchAsync({
-        query: currentSearchTerm,
-        limit: numSearchResults,
-        index: ["tags"],
-      })
-    }
-  } else if (searchType === "basic") {
-    searchResults = await index.searchAsync({
-      query: currentSearchTerm,
-      limit: numSearchResults,
-      index: ["title", "content", "slug", "authors"],
-      bool: "or", // Appears in any of the fields
-      suggest: false,
-    })
-  } else {
-    throw new Error("Invalid search type")
-  }
+  const searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[] = await index.searchAsync({
+    query: currentSearchTerm,
+    limit: numSearchResults,
+    index: ["title", "content", "slug", "authors"],
+    bool: "or", // Appears in any of the fields
+    suggest: false,
+  })
 
   // Ordering affects search results, so we need to order them here
   const allIds: Set<number> = new Set([
@@ -909,28 +841,6 @@ async function onType(e: HTMLElementEventMap["input"]) {
   setTimeout(() => {
     mouseEventsLocked = false
   }, mouseFocusDelay)
-}
-
-/**
- * Highlights matching tags in search results
- * @param term - Search term
- * @param tags - Array of tags
- * @returns Array of HTML strings for tags
- */
-function highlightTags(term: string, tags: string[]) {
-  if (!tags || searchType !== "tags") {
-    return []
-  }
-
-  return tags
-    .map((tag) => {
-      if (tag.toLowerCase().includes(term.toLowerCase())) {
-        return `<li><p class="match-tag">#${tag}</p></li>`
-      } else {
-        return `<li><p>#${tag}</p></li>`
-      }
-    })
-    .slice(0, numTagResults)
 }
 
 /**
