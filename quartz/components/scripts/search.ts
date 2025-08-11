@@ -11,13 +11,10 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  tags: string[]
   authors?: string
 }
 
-/**
- * Delay in milliseconds before triggering a search after user input
- */
+// Delay in milliseconds before triggering a search after user input
 export const debounceSearchDelay = 400
 
 // Delay in milliseconds before triggering a mouseover event after user input
@@ -750,12 +747,10 @@ const getByField = (
  * @param slug - The result slug
  * @param title - The page title (may include highlight markup)
  * @param content - The content snippet (may include highlight markup)
- * @param tags - The rendered tag list for this result
  * @param enablePreview - Whether preview mode is enabled (controls snippet rendering)
  * @returns The anchor element for the result card
  */
-const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boolean) => {
-  const htmlTags = tags.length > 0 ? `<ul class="tags">${tags.join("")}</ul>` : ""
+const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) => {
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
   itemTile.id = slug
@@ -767,7 +762,7 @@ const resultToHTML = ({ slug, title, content, tags }: Item, enablePreview: boole
   if (!enablePreview || window.innerWidth <= mobileBreakpoint) {
     suffixHTML = `<p>${content}</p>`
   }
-  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${htmlTags}${suffixHTML}`
+  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
@@ -810,7 +805,6 @@ const formatForDisplay = (
     title: highlight(term, data[slug].title ?? ""),
     content: highlight(term, data[slug].content ?? "", true),
     authors: data[slug].authors,
-    tags: data[slug].tags,
   }
 }
 
@@ -927,7 +921,6 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }) {
         slug: slug as FullSlug,
         title: fileData.title,
         content: fileData.content,
-        tags: fileData.tags,
         authors: fileData.authors,
       }),
     )
