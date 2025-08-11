@@ -59,6 +59,8 @@ It took me a long time to achieve these goals. Practically, I recommend directly
 Stabilize screenshots using `toHaveScreenshot`
 : Use [`await expect(page).toHaveScreenshot`](https://playwright.dev/docs/test-snapshots) instead of `await page.screenshot`. The first is much more robust. For example, `toHaveScreenshot` repeatedly takes screenshots and waits for consecutive screenshots to be identical - automatically waiting for painting to finish. A lot of my externally loaded assets did not stably render until I used `toHaveScreenshot` - waiting for `networkidle` is not enough.
 
+: When using `npx playwright test`, make sure to pass in `--update-snapshots` or else your CI will go "errr, there r no snapshot" and then error out.
+
 Target screenshots to specific elements
 : Instead of taking a screenshot of the entire page, I take a screenshot of e.g. a particular table. The idea is that modifying table styling only affects the table-containing screenshots.
 
