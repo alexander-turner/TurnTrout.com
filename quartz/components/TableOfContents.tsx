@@ -5,10 +5,10 @@
  */
 
 import type { RootContent, Parent, Element, Root } from "hast"
-// skipcq: JS-W1028
 import type { JSX } from "preact"
 
 import { fromHtml } from "hast-util-from-html"
+// skipcq: JS-W1028
 import React from "react"
 
 import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_text"
@@ -129,6 +129,11 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
   return <ol>{listItems}</ol>
 }
 
+/**
+ * Converts a table of contents entry into a JSX list item link.
+ * @param entry - The TocEntry object representing the entry to convert.
+ * @returns A JSX.Element representing the link list item.
+ */
 export function toJSXListItem(entry: TocEntry): JSX.Element {
   const entryParent: Parent = processTocEntry(entry)
   return (
@@ -223,12 +228,18 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
   })
 }
 
+/**
+ * Renders an abbreviation element (<abbr>) in the TOC with the appropriate class names and text content.
+ */
 const handleAbbr = (elt: Element): JSX.Element => {
   const abbrText = (elt.children[0] as { value: string }).value
   const className = (elt.properties?.className as string[])?.join(" ") || ""
   return <abbr className={className}>{abbrText}</abbr>
 }
 
+/**
+ * Renders a span element in the TOC with the appropriate class names and text content.
+ */
 const handleSpan = (elt: Element): JSX.Element => {
   const classNames = (elt.properties?.className as string[]) || []
 
