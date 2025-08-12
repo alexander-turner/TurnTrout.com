@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - website
   - practical
-description: Hard-won best practices for stable visual regression testing and targeted screenshots.
+description: Hard-won best practices for stable visual regression testing.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: 
@@ -16,7 +16,7 @@ aliases:
 ---
 # Background
 
-I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all screenshots from a build for the first time. Thus ended 428 days of sporadic toil.
+I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all of a build's screenshots for the first time. Thus ended 428 days of sporadic toil.
 
 I've had the tests practically finalized for a while. Problem was, they were <span class="corrupted">flaky</span>. I tried reading Playwright documentation, tutorials, and [best-practice](https://playwright.dev/docs/best-practices) guides. I long conversed with AIs. I even offered to pay \$400 so that a professional would help me tidy up. The response was -- and I _quote_ -- "this is 100% a trap lol... I've debugged playwright before and it's not worth \$400." 💀
 
@@ -31,9 +31,10 @@ To get started, here are two best-practices guides which I recommend:
 1. [Official Playwright best practices](https://playwright.dev/docs/best-practices), and
 2. [Say Goodbye to Flaky Tests: Playwright Best Practices Every Test Automation Engineer Must Know.](https://medium.com/@samuel.sperling/say-goodbye-to-flaky-tests-playwright-best-practices-every-test-automation-engineer-must-know-9dfeb9bb5017)
 
-In particular, make sure to follow the advice to _extremely rarely_ use `waitForTimeout(num_ms)` to wait for a fixed number of milliseconds. I waited for timeout way too much for way too long.
-
 ## For Playwright
+
+Don't wait for a set amount of time
+: Both `page.waitForTimeout` and `expect.poll` rely on explicit timings. There is [almost always a better alternative.](https://www.checklyhq.com/learn/playwright/waits-and-timeouts/)
 
 Don't run tests in parallel mode
 : [Parallelism](https://playwright.dev/docs/test-parallel) is supposed to work but it never did for me. Instead, I use dozens of shards on CI, each of which runs a few tests in sequence.

@@ -201,14 +201,9 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      // Take screenshot after transition and verify stability
-      const immediatePostTransitionScreenshot = await element.screenshot()
-      await expect
-        .poll(async () => element.screenshot(), {
-          intervals: [10, 50],
-          timeout: 500,
-        })
-        .toEqual(immediatePostTransitionScreenshot)
+      await expect(element).toHaveScreenshot("test-transition-complete.png", {
+        maxDiffPixels: 0,
+      })
     })
 
     test("resolves immediately if no transition occurs", async ({ page }) => {
@@ -256,17 +251,9 @@ test.describe("visual_utils functions", () => {
 
       await waitPromise
 
-      const postTransitionScreenshot = await element.screenshot()
-
-      // Verify no more changes using expect.poll
-      await expect
-        .poll(async () => element.screenshot(), {
-          // Check quickly, then slightly longer intervals
-          intervals: [10, 50],
-          // Max time to wait for stability
-          timeout: 500,
-        })
-        .toEqual(postTransitionScreenshot)
+      await expect(element).toHaveScreenshot("test-multiple-transitions.png", {
+        maxDiffPixels: 0,
+      })
     })
   })
 })

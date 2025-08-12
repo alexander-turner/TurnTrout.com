@@ -209,11 +209,11 @@ test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await expect.poll(async () => await isPaused()).toBe(false)
+  await page.waitForFunction(async (isPausedInner) => !(await isPausedInner()), isPaused)
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await expect.poll(async () => await isPaused()).toBe(true)
+  await page.waitForFunction(async (isPausedInner) => await isPausedInner(), isPaused)
 })
 
 test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
@@ -235,9 +235,9 @@ test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) =>
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await expect.poll(async () => await isPaused()).toBe(false)
+  await page.waitForFunction(async (isPausedInner) => !(await isPausedInner()), isPaused)
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await expect.poll(async () => await isPaused()).toBe(true)
+  await page.waitForFunction(async (isPausedInner) => await isPausedInner(), isPaused)
 })
