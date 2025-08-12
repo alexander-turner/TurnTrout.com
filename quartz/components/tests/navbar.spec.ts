@@ -253,3 +253,19 @@ test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) =>
     pondVideoId,
   )
 })
+
+test("Clicking TOC title scrolls to top", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  // Scroll down the page
+  await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }))
+  await page.waitForFunction(() => window.scrollY === 500)
+
+  // Click the TOC title button
+  const tocTitle = page.locator("#toc-title button")
+  await expect(tocTitle).toBeVisible()
+  await tocTitle.click()
+
+  // Wait for the smooth scroll to finish and verify scroll position
+  await page.waitForFunction(() => window.scrollY === 0)
+})

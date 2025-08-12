@@ -54,10 +54,10 @@ export const CreateTableOfContents: QuartzComponent = ({
 
   return (
     <div id="table-of-contents" className="desktop-only">
-      <h6 className="toc-title">
-        <a href="#top" className="internal same-page-link">
+      <h6 id="toc-title">
+        <button className="internal same-page-link">
           {fileData.frontmatter?.title || "Table of Contents"}
-        </a>
+        </button>
       </h6>
       <div id="toc-content">
         <ol className="overflow">{toc}</ol>
@@ -280,6 +280,14 @@ export function elementToJsx(elt: RootContent): JSX.Element | null {
 CreateTableOfContents.css = modernStyle
 CreateTableOfContents.afterDOMLoaded = `
 document.addEventListener('nav', function() {
+  // Scroll to top when TOC title is clicked
+  const tocTitleButton = document.querySelector("#toc-title button");
+  if (tocTitleButton) {
+    tocTitleButton.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
+  }
+
   const sections = document.querySelectorAll("#center-content h1, #center-content h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
