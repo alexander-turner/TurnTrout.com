@@ -209,11 +209,17 @@ test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await page.waitForFunction(async (isPausedInner) => !(await isPausedInner()), isPaused)
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await page.waitForFunction(async (isPausedInner) => await isPausedInner(), isPaused)
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 })
 
 test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
@@ -235,9 +241,15 @@ test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) =>
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await page.waitForFunction(async (isPausedInner) => !(await isPausedInner()), isPaused)
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await page.waitForFunction(async (isPausedInner) => await isPausedInner(), isPaused)
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 })
