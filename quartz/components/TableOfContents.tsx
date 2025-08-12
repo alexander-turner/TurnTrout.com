@@ -60,7 +60,7 @@ export const CreateTableOfContents: QuartzComponent = ({
         </button>
       </h6>
       <div id="toc-content">
-        <ol className="overflow">{toc}</ol>
+        <ol>{toc}</ol>
       </div>
     </div>
   )
