@@ -5,6 +5,7 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
+/** Waits for the theme transition to complete. */
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -34,6 +35,7 @@ export async function waitForThemeTransition(page: Page) {
   })
 }
 
+// skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
   await page.evaluate((t) => {
     localStorage.setItem("saved-theme", t)
@@ -58,15 +60,20 @@ export async function setTheme(page: Page, theme: Theme) {
   await waitForThemeTransition(page)
 }
 
-export interface RegressionScreenshotOptions {
-  elementToScreenshot?: Locator
-  elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
-  clip?: { x: number; y: number; width: number; height: number }
-  disableHover?: boolean
-  skipMediaPause?: boolean
+/** Waits until all CSS fonts used on the page are fully loaded. */
+export async function waitForFontsToLoad(page: Page): Promise<void> {
+  // Use the CSS Font Loading API when available; otherwise, resolve immediately
+  await page.evaluate(() => {
+    const fontsObj = (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts
+    if (fontsObj && typeof fontsObj.ready?.then === "function") {
+      return fontsObj.ready
+    }
+    return Promise.resolve()
+  })
 }
 
-export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string) {
+/** Gets the name of the screenshot file. */
+export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string): string {
   const browserName = testInfo.project.name
   const sanitizedTitle = sanitize(testInfo.title)
   const sanitizedSuffix = sanitize(screenshotSuffix)
@@ -89,6 +96,10 @@ declare global {
   }
 }
 
+/**
+ * Isolates a DOM element by hiding all other elements on the page.
+ * @param elementLocator - The Playwright locator for the element to isolate.
+ */
 async function performDOMIsolation(elementLocator: Locator): Promise<void> {
   await elementLocator.evaluate((targetElement) => {
     const elementsToKeep = new Set<Element>()
@@ -134,6 +145,11 @@ async function performDOMIsolation(elementLocator: Locator): Promise<void> {
   })
 }
 
+/**
+ * Restores DOM elements that were previously hidden for isolation purposes.
+ * @param page - The Playwright Page instance on which to restore the DOM.
+ * @returns A promise that resolves once the DOM restoration is complete.
+ */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
   await page.evaluate(() => {
     const hiddenElements = window.__elementsToRestoreData
@@ -151,6 +167,23 @@ async function restoreDOMFromIsolation(page: Page): Promise<void> {
   })
 }
 
+export interface RegressionScreenshotOptions {
+  elementToScreenshot?: Locator
+  elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
+  clip?: { x: number; y: number; width: number; height: number }
+  disableHover?: boolean
+  skipMediaPause?: boolean
+}
+
+/**
+ * Takes a regression screenshot of a page or a specific element with given options.
+ *
+ * @param page - The Playwright Page object to capture the screenshot from.
+ * @param testInfo - The TestInfo object containing test metadata.
+ * @param screenshotSuffix - A suffix to append to the screenshot name.
+ * @param options - Optional settings for capturing the screenshot, including element isolation, clipping, and media pause skipping.
+ * @returns A Promise that resolves to a Buffer containing the screenshot image data.
+ */
 export async function takeRegressionScreenshot(
   page: Page,
   testInfo: TestInfo,
@@ -161,6 +194,9 @@ export async function takeRegressionScreenshot(
     await pauseMediaElements(page)
   }
 
+  // Avoid layout/kerning shifts across runs
+  await waitForFontsToLoad(page)
+
   // Separate out the element option so we don't pass it to the screenshot API
   const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
   // skipcq: JS-0098
@@ -168,6 +204,8 @@ export async function takeRegressionScreenshot(
 
   const screenshotOptions = {
     animations: "disabled" as const,
+    // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter
+    scale: "css" as const,
     ...remainingOptions,
   }
 
@@ -177,7 +215,8 @@ export async function takeRegressionScreenshot(
     // Temporarily isolate element to prevent position shifts from unrelated content changes
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate)
-    const restoreDOM = async () => {
+    // skipcq: JS-0098
+    const restoreDOM = async (): Promise<void> => {
       await restoreDOMFromIsolation(page)
     }
 
@@ -210,6 +249,7 @@ export async function takeRegressionScreenshot(
   return screenshotBuffer
 }
 
+/** Wraps all H1 sections in spans, taking the locator or page object as the base. */
 export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
   const evaluateFunc = () => {
     // Create a static list of headers to iterate over
@@ -313,6 +353,7 @@ export async function getNextElementMatchingSelector(
 }
 
 // NOTE: Assumes search is opened
+// skipcq: JS-0098
 export async function search(page: Page, term: string) {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")
@@ -341,6 +382,7 @@ export async function search(page: Page, term: string) {
   }
 }
 
+// skipcq: JS-0098
 export async function pauseMediaElements(page: Page): Promise<void> {
   const videoPromises = (await page.locator("video").all()).map((el) =>
     el.evaluate((n: HTMLVideoElement) => {
@@ -431,6 +473,7 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
   })
 }
 
+// skipcq: JS-0098
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
   return viewportSize ? viewportSize.width >= minDesktopWidth : false

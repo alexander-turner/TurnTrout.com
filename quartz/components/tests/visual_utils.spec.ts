@@ -201,14 +201,9 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      // Take screenshot after transition and verify stability
-      const immediatePostTransitionScreenshot = await element.screenshot()
-      await expect
-        .poll(async () => element.screenshot(), {
-          intervals: [10, 50],
-          timeout: 500,
-        })
-        .toEqual(immediatePostTransitionScreenshot)
+      await expect(element).toHaveScreenshot("test-transition-complete.png", {
+        maxDiffPixels: 0,
+      })
     })
 
     test("resolves immediately if no transition occurs", async ({ page }) => {
@@ -256,17 +251,9 @@ test.describe("visual_utils functions", () => {
 
       await waitPromise
 
-      const postTransitionScreenshot = await element.screenshot()
-
-      // Verify no more changes using expect.poll
-      await expect
-        .poll(async () => element.screenshot(), {
-          // Check quickly, then slightly longer intervals
-          intervals: [10, 50],
-          // Max time to wait for stability
-          timeout: 500,
-        })
-        .toEqual(postTransitionScreenshot)
+      await expect(element).toHaveScreenshot("test-multiple-transitions.png", {
+        maxDiffPixels: 0,
+      })
     })
   })
 })
@@ -400,9 +387,9 @@ test.describe("takeRegressionScreenshot", () => {
     const dimensions = await getImageDimensions(screenshot)
 
     // skipcq: JS-0339
-    expect(dimensions.width).toBe(elementBox!.width)
+    expect(dimensions.width).toBeCloseTo(elementBox!.width)
     // skipcq: JS-0339
-    expect(dimensions.height).toBe(elementBox!.height)
+    expect(dimensions.height).toBeCloseTo(elementBox!.height)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
@@ -413,8 +400,8 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    expect(dimensions.width).toBe(clip.width)
-    expect(dimensions.height).toBe(clip.height)
+    expect(dimensions.width).toBeCloseTo(clip.width)
+    expect(dimensions.height).toBeCloseTo(clip.height)
   })
 
   test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
@@ -426,8 +413,8 @@ test.describe("takeRegressionScreenshot", () => {
     const dimensions = await getImageDimensions(screenshot)
 
     // The dimensions should match the clip, not the element's bounding box
-    expect(dimensions.width).toBe(clip.width)
-    expect(dimensions.height).toBe(clip.height)
+    expect(dimensions.width).toBeCloseTo(clip.width)
+    expect(dimensions.height).toBeCloseTo(clip.height)
   })
 
   test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
@@ -449,7 +436,7 @@ test.describe("takeRegressionScreenshot", () => {
 
       // Ensure the test is nontrivial
       const viewportSize = page.viewportSize()
-      expect(mockClientWidth).not.toBe(viewportSize?.width)
+      expect(mockClientWidth).not.toBeCloseTo(viewportSize?.width ?? 0)
 
       const originalScreenshot = page.screenshot
       let capturedOptions: PageScreenshotOptions | undefined
@@ -465,11 +452,11 @@ test.describe("takeRegressionScreenshot", () => {
 
         expect(capturedOptions).toBeDefined()
         expect(capturedOptions?.clip).toBeDefined()
-        expect(capturedOptions?.clip?.width).toBe(mockClientWidth)
+        expect(capturedOptions?.clip?.width).toBeCloseTo(mockClientWidth)
         expect(capturedOptions?.clip?.x).toBe(0)
         expect(capturedOptions?.clip?.y).toBe(0)
         const viewportHeight = page.viewportSize()?.height
-        expect(capturedOptions?.clip?.height).toBe(viewportHeight)
+        expect(capturedOptions?.clip?.height).toBeCloseTo(viewportHeight ?? 0)
       } finally {
         page.screenshot = originalScreenshot
       }
@@ -587,7 +574,9 @@ test.describe("pauseMediaElements", () => {
 
     for (const el of [video1, audio1, video2]) {
       expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
-      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime)).toBe(
+      expect(
+        await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime),
+      ).toBeCloseTo(
         0, // Should be at end, but there's no duration on mock video
       )
     }

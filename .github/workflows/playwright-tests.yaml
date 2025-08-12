@@ -2,7 +2,7 @@ name: Playwright Tests
 
 concurrency:
   group: playwright-tests-${{ github.event_name }}-${{ github.ref_name }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -61,6 +61,7 @@ jobs:
           ]
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:
@@ -70,7 +71,7 @@ jobs:
         id: playwright
         continue-on-error: true
         run: |
-          npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }}
+          npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV

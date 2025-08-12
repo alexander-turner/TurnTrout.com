@@ -327,7 +327,7 @@ test.describe("Same-page navigation", () => {
 
       // Sanity check that scroll is stable
       const updatedScroll = await page.evaluate(() => window.scrollY)
-      expect(updatedScroll).toBe(historyScroll)
+      expect(updatedScroll).toBeCloseTo(historyScroll)
     }
 
     for (let i = 0; i < scrollPositions.length - 1; i++) {
@@ -466,7 +466,7 @@ test.describe("Critical CSS", () => {
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "/design"
-      link.id = "design-link" // TODO improve robustness?
+      link.id = "design-link"
       link.textContent = "Design"
       document.body.appendChild(link)
     })

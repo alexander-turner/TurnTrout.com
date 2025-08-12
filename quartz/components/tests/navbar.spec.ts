@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-import { pondVideoId as pondVideoId } from "../component_utils"
+import { pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
@@ -100,8 +100,6 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
   await expect(navbar).not.toHaveClass(/hide-above-screen/)
   await expect(navbar).toBeVisible()
 })
-
-// TODO sometimes need to focus page before hitting "/" - try minimizing?
 
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
@@ -211,11 +209,17 @@ test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await expect.poll(async () => await isPaused()).toBe(false)
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await expect.poll(async () => await isPaused()).toBe(true)
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 })
 
 test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
@@ -237,9 +241,15 @@ test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) =>
 
   // 2. Hover over: Plays
   await video.dispatchEvent("mouseenter")
-  await expect.poll(async () => await isPaused()).toBe(false)
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 
   // 3. Hover away: Pauses
   await video.dispatchEvent("mouseleave")
-  await expect.poll(async () => await isPaused()).toBe(true)
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
 })

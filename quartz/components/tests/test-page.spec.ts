@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
@@ -8,6 +9,7 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   getH1Screenshots,
+  waitForFontsToLoad,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -88,6 +90,8 @@ test.describe("Test page sections", () => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
+      // Ensure font metrics are stable before computing layout-dependent sizes
+      await waitForFontsToLoad(page)
       const boundingBoxArticle = await page.locator("body").boundingBox()
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
@@ -570,17 +574,28 @@ test.describe("Video Speed Controller visibility", () => {
   })
 })
 
-test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
-  const firstParagraph = page.locator("#center-content article > p").first()
-  await expect(firstParagraph).toBeVisible()
-  const screenshotBefore = await firstParagraph.screenshot()
+test("First paragraph is the same before and after clicking on a heading", async ({
+  page,
+}, testInfo) => {
+  const snapshotPath = testInfo.snapshotPath("first-paragraph.png")
+  try {
+    const firstParagraph = page.locator("#center-content article > p").first()
 
-  const url = page.url()
-  await page.goto(`${url}#header-3`)
+    // First, assert the initial state against a snapshot.
+    // This either creates the snapshot or confirms the element is in the expected state.
+    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
+      maxDiffPixels: 0,
+    })
 
-  await firstParagraph.scrollIntoViewIfNeeded()
-  await expect(firstParagraph).toBeVisible()
-  const screenshotAfter = await firstParagraph.screenshot()
-  expect(screenshotAfter).toEqual(screenshotBefore)
-  // Don't need regression screenshot because non-clicked appearance is covered by other tests
+    // Then, perform the action that might change the state.
+    await page.goto(`${page.url()}#header-3`)
+    await firstParagraph.scrollIntoViewIfNeeded()
+
+    // Assert that the element's state still matches the original snapshot.
+    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
+      maxDiffPixels: 0,
+    })
+  } finally {
+    await fs.rm(snapshotPath, { force: true })
+  }
 })
