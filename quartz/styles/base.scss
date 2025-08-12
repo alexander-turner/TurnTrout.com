@@ -346,10 +346,6 @@ h6,
     text-decoration: none;
     color: var(--foreground);
   }
-
-  &[id]:hover > a {
-    opacity: 1;
-  }
 }
 
 figure[data-rehype-pretty-code-figure] {
