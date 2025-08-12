@@ -15,13 +15,12 @@ runs:
         cache: "npm"
 
     - name: Cache Playwright browsers
-      if: inputs.install-playwright == 'true'
       uses: actions/cache@v4
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-browsers-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
-          playwright-browsers-${{ runner.os }}-
+          playwright-${{ runner.os }}-
 
     - name: Install Node Dependencies
       run: npm ci
