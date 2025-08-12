@@ -284,6 +284,9 @@ document.addEventListener('nav', function() {
   const tocTitleButton = document.querySelector("#toc-title button");
   if (tocTitleButton) {
     tocTitleButton.addEventListener("click", () => {
+      const url = new URL(window.location.pathname, window.location.origin);
+      window.spaNavigate(url);
+      // Make sure we scroll to the top
       window.scrollTo({ top: 0, behavior: "instant" });
     });
   }

@@ -179,6 +179,39 @@ test.describe("Scroll Behavior", () => {
     expect(Math.abs(scrollPosition)).toBeGreaterThan(0)
   })
 
+  test("clicking the TOC title clears the hash", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    // Scroll down the page
+    const finalAnchor = await createFinalAnchor(page)
+    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`)
+    await page.waitForURL(`**/test-page#${finalAnchor}`)
+    await waitForHistoryScrollNotEquals(page, undefined)
+
+    const tocTitle = page.locator("#toc-title button")
+    await expect(tocTitle).toBeVisible()
+    await tocTitle.click()
+
+    // Verify the URL is no longer the anchor
+    await page.waitForURL("**/test-page")
+  })
+
+  test("even when the page is scrolled down, clicking the TOC title scrolls to the top", async ({
+    page,
+  }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    await page.evaluate(() => window.scrollTo(0, 500))
+    // Wait for scroll to enter the history state
+    await waitForHistoryScrollNotEquals(page, undefined)
+
+    const tocTitle = page.locator("#toc-title button")
+    await expect(tocTitle).toBeVisible()
+    await tocTitle.click()
+
+    await waitForScroll(page, 0)
+  })
+
   for (const [scrollPos] of [[50], [100], [1000]]) {
     // eslint-disable-next-line playwright/expect-expect
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
