@@ -8,12 +8,15 @@ tags:
 description: Hard-won best practices for stable visual regression testing.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image:
 aliases:
   - playwright
   - visual-regression
   - lostpixel
+date_published: &id001 2025-08-12 07:48:13.242307
+date_updated: *id001
 ---
+
 # Background
 
 I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all of a build's screenshots for the first time. Thus ended 428 days of sporadic toil.
