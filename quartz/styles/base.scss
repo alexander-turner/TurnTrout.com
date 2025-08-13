@@ -506,9 +506,3 @@ ul {
 ol:not(ol > ol, li > ol) {
   margin-top: calc(1.5 * $base-margin);
 }
-
-#right-sidebar {
-  &:empty {
-    display: none !important;
-  }
-}
