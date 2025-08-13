@@ -34,7 +34,7 @@ Figure: Content rendered approximately when this article was first published ([`
 > [!warning] My stance on AI-written content
 > As of July 2025, my site contains almost no unmarked AI-written content. I sometimes use AI to write a conclusion or summarize a pdf, but I generally revise every sentence. I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content.
 >
-> In 2025, I started using AI to "red-team" my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
+> In 2025, I started using AI to stress-test my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
 
 # Site rendering basics
 
