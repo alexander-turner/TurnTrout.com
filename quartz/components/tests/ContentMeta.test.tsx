@@ -4,8 +4,9 @@ import type { Root } from "hast"
  * @jest-environment jsdom
  */
 import { jest, describe, it, expect } from "@jest/globals"
+// skipcq: JS-W1028
 import React from "react"
-import ReactDOM from "react-dom/client"
+import { createRoot } from "react-dom/client"
 
 import { type GlobalConfiguration } from "../../cfg"
 
@@ -46,12 +47,13 @@ jest.mock("../../plugins/transformers/linkfavicons", () => ({
   getFaviconPath: () => "/mock/favicon.avif",
 }))
 
-// Helper functions
 const mockConfig = {
   configuration: {
     enableFrontmatterTags: true,
   },
 } as unknown as GlobalConfiguration
+
+// Dummy object constructor
 const createFileData = (
   overrides = { filePath: "test.md", relativePath: "test.md" } as Partial<QuartzPluginData>,
 ): QuartzPluginData =>
@@ -67,7 +69,7 @@ const createFileData = (
 // Smoke test for RenderPublicationInfo
 it("renders without crashing", () => {
   const div = document.createElement("div")
-  const root = ReactDOM.createRoot(div)
+  const root = createRoot(div)
 
   const cfg = {} as GlobalConfiguration
   const fileData = {} as QuartzPluginData
@@ -166,7 +168,6 @@ describe("renderLastUpdated", () => {
 
   it("should return null when hide_metadata is true", () => {
     const fileData = createFileData({ hide_metadata: true })
-
     const result = renderLastUpdated(mockConfig, fileData)
     expect(result).toBeNull()
   })
@@ -280,7 +281,7 @@ describe("renderLinkpostInfo", () => {
 // Smoke test for ContentMetadata
 it("renders without crashing", () => {
   const div = document.createElement("div")
-  const root = ReactDOM.createRoot(div)
+  const root = createRoot(div)
   const fileData = createFileData()
   const quartzProps = {
     fileData,
@@ -291,6 +292,7 @@ it("renders without crashing", () => {
 })
 
 describe("ContentMetadata", () => {
+  // Mock props given fileData
   const mockProps = (fileData: QuartzPluginData): QuartzComponentProps => ({
     fileData,
     cfg: mockConfig,
