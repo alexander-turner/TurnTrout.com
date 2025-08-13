@@ -197,6 +197,8 @@ export async function takeRegressionScreenshot(
   // Avoid layout/kerning shifts across runs
   await waitForFontsToLoad(page)
 
+  await page.waitForLoadState("load")
+
   // Separate out the element option so we don't pass it to the screenshot API
   const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
   // skipcq: JS-0098
