@@ -296,7 +296,6 @@ describe("ContentMetadata", () => {
     cfg: mockConfig,
     tree: { type: "root", children: [] } as Root,
     allFiles: [],
-    displayClass: "mobile-only", // just to have something
     children: [],
     externalResources: {
       css: [],

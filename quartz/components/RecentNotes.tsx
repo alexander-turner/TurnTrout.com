@@ -1,9 +1,9 @@
+// skipcq: JS-W1028
 import React from "react"
 
 import { type GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
 import { type QuartzPluginData } from "../plugins/vfile"
-import { classNames } from "../util/lang"
 import { type FullSlug, type SimpleSlug, resolveRelative } from "../util/path"
 import { DateElement } from "./Date"
 import { byDateAndAlphabetical } from "./PageList"
@@ -21,6 +21,9 @@ interface Options {
   sort: (f1: QuartzPluginData, f2: QuartzPluginData) => number
 }
 
+/**
+ * Returns default options based on the provided global configuration.
+ */
 const defaultOptions = (cfg: GlobalConfiguration): Options => ({
   limit: 3,
   linkToMore: false,
@@ -29,17 +32,13 @@ const defaultOptions = (cfg: GlobalConfiguration): Options => ({
 })
 
 export default ((userOpts?: Partial<Options>) => {
-  const RecentNotes: QuartzComponent = ({
-    allFiles,
-    fileData,
-    displayClass,
-    cfg,
-  }: QuartzComponentProps) => {
+  // skipcq: JS-D1001
+  const RecentNotes: QuartzComponent = ({ allFiles, fileData, cfg }: QuartzComponentProps) => {
     const opts = { ...defaultOptions(cfg), ...userOpts }
     const pages = allFiles.filter(opts.filter).sort(opts.sort)
     const remaining = Math.max(0, pages.length - opts.limit)
     return (
-      <div className={classNames(displayClass, "recent-notes")}>
+      <div className="recent-notes">
         <h3>{opts.title ?? i18n(cfg.locale).components.recentNotes.title}</h3>
         <ul className="recent-ul">
           {pages.slice(0, opts.limit).map((page) => {

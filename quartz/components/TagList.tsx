@@ -1,7 +1,7 @@
+// skipcq: JS-W1028
 import React from "react"
 
 import { type QuartzPluginData } from "../plugins/vfile"
-import { classNames } from "../util/lang"
 import { slugTag } from "../util/path"
 import {
   type QuartzComponent,
@@ -20,17 +20,21 @@ export const formatTag = (tag: string): string => {
   return tag
 }
 
-export const getTags = (fileData: QuartzPluginData) => {
+/**
+ * Gets the tags from the file data and formats them.
+ */
+export const getTags = (fileData: QuartzPluginData): string[] => {
   let tags = fileData.frontmatter?.tags || []
   tags = tags.map(formatTag)
   return tags.sort((a: string, b: string) => b.length - a.length)
 }
 
-export const TagList: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
+// skipcq: JS-D1001
+export const TagList: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   const tags = getTags(fileData)
   if (tags && tags.length > 0) {
     return (
-      <ul className={classNames(displayClass)}>
+      <ul>
         {tags.map((tag: string) => {
           const tagSlug = slugTag(tag)
           const linkDest = `/tags/${tagSlug}`

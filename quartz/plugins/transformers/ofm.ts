@@ -88,6 +88,7 @@ const admonitionMapping = {
   cite: "quote",
 } as const
 
+// Lowercases the admonition name and returns the canonical key of the admonition else the original name
 function canonicalizeAdmonition(admonitionName: string): keyof typeof admonitionMapping {
   const normalizedAdmonition = admonitionName.toLowerCase() as keyof typeof admonitionMapping
   // if admonition is not recognized, make it a custom one
@@ -138,19 +139,24 @@ const wikilinkImageEmbedRegex = new RegExp(
   /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
 )
 
+// skipcq: JS-D1001
 const mdastToHtml = (ast: PhrasingContent | Paragraph): string => {
   const hast = toHast(ast, { allowDangerousHtml: true })
   return toHtml(hast, { allowDangerousHtml: true })
 }
 
-export function processWikilink(value: string, ...capture: string[]): PhrasingContent | null {
-  const [filePath, blockRef, alias] = capture
+// skipcq: JS-D1001
+export function processWikilink(
+  textContent: string,
+  ...captureGroups: [string, string, string]
+): PhrasingContent | null {
+  const [filePath, blockRef, alias] = captureGroups
   const fp = filePath?.trim() ?? ""
   const ref = blockRef?.trim() ?? ""
   // Remove the leading | from the alias if it exists
   const displayAlias = alias ? alias.slice(1).trim() : undefined
 
-  if (value.startsWith("!")) {
+  if (textContent.startsWith("!")) {
     // Get lowercase file extension and slugified path
     const ext: string = path.extname(fp).toLowerCase()
     const url = slugifyFilePath(fp as FilePath)
@@ -206,6 +212,9 @@ export function processWikilink(value: string, ...capture: string[]): PhrasingCo
   }
 }
 
+/**
+ * Returns a list of plugins for the ObsidianFlavoredMarkdown transformer.
+ */
 export function markdownPlugins(opts: Options): PluggableList {
   const plugins: PluggableList = []
 
@@ -464,6 +473,7 @@ export function markdownPlugins(opts: Options): PluggableList {
   return plugins
 }
 
+// skipcq: JS-D1001
 export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
 ) => {
