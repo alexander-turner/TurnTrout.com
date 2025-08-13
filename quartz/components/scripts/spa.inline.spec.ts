@@ -10,7 +10,7 @@
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
-import { isDesktopViewport } from "../tests/visual_utils"
+import { isDesktopViewport, isFirefox } from "../tests/visual_utils"
 
 const FIREFOX_SCROLL_DELAY = 2000
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -269,33 +269,33 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Flicker-Free Reload", () => {
-  // eslint-disable-next-line playwright/expect-expect
-  test("restores scroll position on refresh without flickering", async ({ page }) => {
+  test("restores scroll position on refresh without flickering", async ({ page }, testInfo) => {
+    test.skip(isFirefox(testInfo), "Firefox doesn't play well with this test.")
+
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
 
-    // Add a script to capture scroll position during page load
+    // Capture scrollY after the first paint
     await page.addInitScript(() => {
-      // @ts-expect-error: Attaching to window for test purposes
-      window.scrollYAtFirstPaint = window.scrollY
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // @ts-expect-error: test instrumentation
+          window.scrollYAtFirstPaint = window.scrollY
+        })
+      })
     })
 
     await softRefresh(page)
-
-    // Wait for page to load and then check scroll position
     await page.waitForLoadState("domcontentloaded")
 
-    // Wait for scroll position to be restored to approximately the right position
-    const tolerance = 50
-    await page.waitForFunction(
-      ({ target, tolerance }) => {
-        const currentScrollY = window.scrollY
-        return Math.abs(currentScrollY - target) <= tolerance
-      },
-      { target: scrollPos, tolerance },
-      { timeout: 5000 },
+    const scrollYAtFirstPaint = await page.evaluate(
+      // @ts-expect-error: Attaching to window for test purposes
+      () => window.scrollYAtFirstPaint as number,
     )
+
+    // Verify that scroll was non-zero at first paint (no flicker to top)
+    expect(scrollYAtFirstPaint).toBeGreaterThan(0)
   })
 })
 

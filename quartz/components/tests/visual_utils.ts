@@ -478,3 +478,8 @@ export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
   return viewportSize ? viewportSize.width >= minDesktopWidth : false
 }
+
+// Detect if the current test is running in Firefox
+export function isFirefox(testInfo: TestInfo): boolean {
+  return testInfo.project.name.toLowerCase().includes("firefox")
+}

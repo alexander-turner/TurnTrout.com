@@ -39,6 +39,7 @@ const CALLOUT_ICONS = [
 ] as const
 
 export default (() => {
+  // skipcq: JS-D1001
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
     let title = fileData.frontmatter?.title ?? i18n(cfg.locale).propertyDefaults.title
     title = formatTitle(title)
@@ -97,7 +98,7 @@ export default (() => {
         src="https://cloud.umami.is/script.js"
         data-website-id="fa8c3e1c-3a3c-4f6d-a913-6f580765bfae"
         spa-preserve
-      ></script>
+      />
     )
     // Create a filtered object with only the properties you want to expose
     const exposedFrontmatter = {
@@ -154,8 +155,11 @@ export default (() => {
           // skipcq: JS-0440
           dangerouslySetInnerHTML={{
             __html: `
-// Try to restore scroll position without flicker
-if (history.state?.scroll) {
+  // Set scroll restoration to manual to prevent page flicker
+  history.scrollRestoration = "manual";
+
+  // Restore scroll on refresh
+  if (history.state?.scroll) {
   requestAnimationFrame(() => {
     window.scrollTo({ top: history.state.scroll, behavior: "instant" });
   });
@@ -168,7 +172,7 @@ if (history.state?.scroll) {
           id="detect-dark-mode"
           src="/static/scripts/detectDarkMode.js"
           spa-preserve
-        ></script>
+        />
         <title>{title}</title>
         <meta name="description" content={description} />
 
@@ -202,9 +206,9 @@ if (history.state?.scroll) {
         {iconPreloads}
         {fontPreloads}
 
-        <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve></script>
-        <script defer src="/static/scripts/safari-autoplay.js" spa-preserve></script>
-        <script defer src="/static/scripts/remove-css.js" spa-preserve></script>
+        <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
+        <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
+        <script defer src="/static/scripts/remove-css.js" spa-preserve />
         {analyticsScript}
 
         {js
