@@ -4170,5 +4170,9 @@
   "/static/images/external-favicons/checklyhq_com.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/checklyhq_com.avif": {
+    "width": 64,
+    "height": 64
   }
 }

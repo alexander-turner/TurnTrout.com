@@ -23,6 +23,11 @@ const defaultOptions: Options = {
   linkHeadings: true,
 }
 
+/**
+ * A plugin that transforms GitHub-flavored Markdown into HTML.
+ *
+ * @param userOpts - The user options for the plugin.
+ */
 export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
 ) => {
@@ -85,6 +90,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
 
 const slugger = new GithubSlugger()
 
+// skipcq: JS-D1001
 export function preprocessSlug(headerText: string): string {
   const charsToConvert = ["'", "’", "/", "&", "—", "‘"]
 
@@ -99,12 +105,16 @@ export function preprocessSlug(headerText: string): string {
   return protoSlug
 }
 
+/**
+ * Converts header text into a URL-friendly slug.
+ */
 export function slugify(headerText: string): string {
   const protoSlug = preprocessSlug(headerText)
   const slug = slugger.slug(protoSlug)
   return slug.replaceAll(/-+/g, "-")
 }
 
+// skipcq: JS-D1001
 export function resetSlugger() {
   slugger.reset()
 }
@@ -129,6 +139,11 @@ export function slugFunction() {
   }
 }
 
+/**
+ * Removes back arrows from the footnote.
+ *
+ * @param node - The footnote node.
+ */
 export function removeBackArrow(node: Element): void {
   node.children = node.children.filter((child) => {
     return !(
