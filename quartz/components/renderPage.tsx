@@ -86,7 +86,6 @@ export function setBlockTransclusion(
 /**
  * Replaces a transclude span's children with the section under a header in the target page.
  * The section spans from the matching header until the next header of the same or higher depth.
- * Appends a source anchor to the end.
  *
  * @param node - The transclude span node to mutate.
  * @param page - The page being transcluded from (requires `htmlAst`).
@@ -127,12 +126,10 @@ export function setHeaderTransclusion(
   if (startIdx === undefined) return
 
   const headerIdx = startIdx
-  const href = joinSegments("/", simplifySlug(transcludeTarget), `#${headerId}`)
   node.children = [
     ...(htmlAst.children.slice(headerIdx + 1, endIdx) as ElementContent[]).map((child) =>
       normalizeHastElement(child as Element, slug, transcludeTarget),
     ),
-    createTranscludeSourceAnchor(href),
   ]
 }
 
@@ -155,7 +152,7 @@ export function setPageTransclusion(
   const htmlAst = page.htmlAst
   if (!htmlAst) return
 
-  const href = joinSegments("/", simplifySlug(transcludeTarget))
+  const href = simplifySlug(transcludeTarget)
   node.children = [
     ...(htmlAst.children as ElementContent[]).map((child) =>
       normalizeHastElement(child as Element, slug, transcludeTarget),

@@ -210,15 +210,16 @@ describe("renderPage helpers", () => {
     const para1 = h("p", "one") as unknown as Element
     const para2 = h("p", "two") as unknown as Element
     const nextH2 = h("h2", "next") as unknown as Element
+
     const page = {
       htmlAst: { type: "root", children: [h2, para1, para2, nextH2] },
     } as unknown as QuartzPluginData
+
     setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "section")
-    expect(node.children.length).toBe(3)
-    const [c1, c2, anchor] = node.children as Element[]
+
+    const [c1, c2] = node.children as Element[]
     expect(c1.tagName).toBe("p")
     expect(c2.tagName).toBe("p")
-    expect(anchor.tagName).toBe("a")
   })
 
   it("setPageTransclusion injects full htmlAst and appends anchor", () => {
