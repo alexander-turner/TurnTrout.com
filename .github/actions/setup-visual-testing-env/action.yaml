@@ -39,21 +39,21 @@ runs:
         npx playwright install-deps
       shell: bash
 
-    - name: Download and install latest ffmpeg
+    - name: Download and install stable ffmpeg
       run: |
         set -e
-        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-11-14-16/ffmpeg-N-120653-g85e8e59001-linux64-gpl.tar.xz"
         FFMPEG_DIR="/opt/ffmpeg"
 
         # Create the target directory
-        sudo mkdir -p $FFMPEG_DIR
+        sudo mkdir -p "$FFMPEG_DIR"
 
         # Download and extract ffmpeg, stripping the top-level directory
-        curl -sL $FFMPEG_URL | sudo tar -xJ -C $FFMPEG_DIR --strip-components=1
+        curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
 
         # Create symlinks to make ffmpeg and ffprobe available on the PATH
-        sudo ln -sf $FFMPEG_DIR/bin/ffmpeg /usr/local/bin/ffmpeg
-        sudo ln -sf $FFMPEG_DIR/bin/ffprobe /usr/local/bin/ffprobe
+        sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
+        sudo ln -sf "$FFMPEG_DIR"/bin/ffprobe /usr/local/bin/ffprobe
 
         # Verify the installation
         ffmpeg -version
