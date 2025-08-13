@@ -59,8 +59,7 @@
   }
 }
 
-// The menu icon
-.hamburger {
+#menu-button {
   vertical-align: middle;
   width: 2rem;
   height: 2rem;
@@ -115,7 +114,7 @@
     height: 15px;
   }
 
-  .hamburger span {
+  #menu-button span {
     height: 2.5px;
   }
 }
