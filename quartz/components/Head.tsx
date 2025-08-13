@@ -200,8 +200,8 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        <link rel="icon" href={iconPath} />
-        <link rel="apple-touch-icon" href={appleIconPath} />
+        <link rel="icon" href={iconPath} type="image/x-icon" spa-preserve />
+        <link rel="apple-touch-icon" href={appleIconPath} spa-preserve />
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
         {fontPreloads}
