@@ -226,6 +226,11 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   strong & {
     font-weight: 500 !important;
   }
+
+  // Not sure why, but outer scope var(--font-italic-situational) was not automatically refreshed with the new font from .small-caps scope
+  em & {
+    font-family: var(--font-italic-situational);
+  }
 }
 
 /* Set monospace font for code blocks, inline code, etc. */
