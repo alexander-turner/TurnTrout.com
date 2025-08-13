@@ -375,7 +375,7 @@ figure,
 }
 
 #article-title {
-  margin: 2rem 0 0;
+  margin: calc(4 * $base-margin) 0 0;
 
   @media all and (max-width: $max-mobile-width) {
     margin-top: $base-margin;

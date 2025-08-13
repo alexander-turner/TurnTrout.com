@@ -17,7 +17,6 @@ import { fileURLToPath } from "url"
 import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
-import { capitalize } from "../../util/lang"
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
 
 const currentFilePath = fileURLToPath(import.meta.url)
@@ -345,6 +344,7 @@ export function markdownPlugins(opts: Options): PluggableList {
             const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
             const titleContent = match.input.slice(admonitionDirective.length).trim()
             const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
+            const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
 
             const admonitionTitle: Element = {
               type: "element",
@@ -385,7 +385,7 @@ export function markdownPlugins(opts: Options): PluggableList {
                   children: [
                     {
                       type: "text",
-                      value: useDefaultTitle ? capitalize(typeString) : `${titleContent} `,
+                      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
                     },
                     ...(firstChild.children.slice(1) as ElementContent[]),
                   ],
