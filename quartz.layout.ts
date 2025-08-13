@@ -3,7 +3,6 @@ import {
   ArticleTitle,
   AuthorList,
   ContentMeta,
-  DesktopOnly,
   Footer,
   Head,
   Navbar,
@@ -24,12 +23,12 @@ export const sharedPageComponents: SharedLayout = {
 export const defaultContentPageLayout: PageLayout = {
   beforeBody: [ArticleTitle(), AuthorList()],
   left: [Navbar()],
-  right: [DesktopOnly(TableOfContents()), ContentMeta()],
+  right: [TableOfContents(), ContentMeta()],
 }
 
 // components for pages that display lists of pages  (e.g. tags or folders)
 export const defaultListPageLayout: PageLayout = {
   beforeBody: [ArticleTitle()],
   left: [Navbar()],
-  right: [DesktopOnly(TableOfContents()), ContentMeta()],
+  right: [TableOfContents(), ContentMeta()],
 }

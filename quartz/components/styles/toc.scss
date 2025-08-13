@@ -1,5 +1,11 @@
 @use "../../styles/variables" as *;
 
+#table-of-contents {
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+}
+
 #toc-title {
   margin-top: 0;
   margin-bottom: calc(0.5 * $base-margin);

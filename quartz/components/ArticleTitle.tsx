@@ -1,12 +1,13 @@
+// skipcq: JS-W1028
 import React from "react"
 
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 
-import { classNames } from "../util/lang"
 import { formatTitle } from "./component_utils"
 import { formatTag } from "./TagList"
 
-const ArticleTitle: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
+// skipcq: JS-D1001
+const ArticleTitle: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   if (fileData.frontmatter?.hide_title) {
     return null
   }
@@ -15,6 +16,7 @@ const ArticleTitle: QuartzComponent = ({ fileData, displayClass }: QuartzCompone
   }
 
   const title = fileData.frontmatter?.title
+  // skipcq: JS-0424
   let tagContent = <>{title}</>
 
   // Tags are styled like inline code
@@ -27,11 +29,7 @@ const ArticleTitle: QuartzComponent = ({ fileData, displayClass }: QuartzCompone
     )
   }
 
-  return (
-    <h1 id="article-title" className={classNames(displayClass)}>
-      {tagContent}
-    </h1>
-  )
+  return <h1 id="article-title">{tagContent}</h1>
 }
 
 export default (() => ArticleTitle) satisfies QuartzComponentConstructor
