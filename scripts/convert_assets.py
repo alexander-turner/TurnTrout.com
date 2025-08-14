@@ -1,6 +1,4 @@
-"""
-Convert assets to optimized formats.
-"""
+"""Convert assets to optimized formats."""
 
 import argparse
 import re
@@ -99,9 +97,7 @@ def _video_replacement_pattern(input_file: Path) -> str:
 
 
 def _image_patterns(input_file: Path) -> tuple[str, str]:
-    """
-    Returns the original and replacement patterns for image files.
-    """
+    """Returns the original and replacement patterns for image files."""
     relative_path = script_utils.path_relative_to_quartz_parent(input_file)
     pattern_file = relative_path.relative_to("quartz")
     output_file: Path = pattern_file.with_suffix(".avif")
@@ -232,9 +228,7 @@ def convert_asset(
 
 
 def main():
-    """
-    Convert assets to optimized formats.
-    """
+    """Convert assets to optimized formats."""
     parser = argparse.ArgumentParser(
         description="Convert assets to optimized formats."
     )

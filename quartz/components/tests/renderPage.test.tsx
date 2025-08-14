@@ -41,7 +41,7 @@ const MockPageBody: QuartzComponent = ({ tree }: QuartzComponentProps) => {
 // skipcq: JS-D1001
 const MockComponent: QuartzComponent = (props: QuartzComponentProps) => {
   const name = props.displayClass
-  return <div className={`mock-component ${name ?? ""}`}>{name}</div>
+  return <div className={`mock-component ${name ?? ""}`}>{String(name)}</div>
 }
 
 /**

@@ -1,6 +1,4 @@
-"""
-Utility functions for scripts/ directory.
-"""
+"""Utility functions for scripts/ directory."""
 
 import shutil
 import subprocess
@@ -122,9 +120,7 @@ def get_files(
 
 
 def path_relative_to_quartz_parent(input_file: Path) -> Path:
-    """
-    Get the path relative to the parent 'quartz' directory.
-    """
+    """Get the path relative to the parent 'quartz' directory."""
     try:
         # Find the 'quartz' directory in the path
         quartz_dir = next(
@@ -209,9 +205,7 @@ def build_html_to_md_map(md_dir: Path) -> Dict[str, Path]:
 
 
 def collect_aliases(md_dir: Path) -> Set[str]:
-    """
-    Collect all aliases from the markdown files.
-    """
+    """Collect all aliases from the markdown files."""
     aliases: Set[str] = set()
     for md_file in get_files(
         md_dir, filetypes_to_match=(".md",), use_git_ignore=True
@@ -230,9 +224,7 @@ def collect_aliases(md_dir: Path) -> Set[str]:
 
 
 def is_redirect(soup: BeautifulSoup) -> bool:
-    """
-    Check if the page is a redirect by looking for a meta refresh tag.
-    """
+    """Check if the page is a redirect by looking for a meta refresh tag."""
     meta = soup.find(
         "meta",
         attrs={
@@ -258,9 +250,7 @@ def body_is_empty(soup: BeautifulSoup) -> bool:
 
 
 def parse_html_file(file_path: Path) -> BeautifulSoup:
-    """
-    Parse an HTML file and return a BeautifulSoup object.
-    """
+    """Parse an HTML file and return a BeautifulSoup object."""
     if not file_path.resolve().is_relative_to(get_git_root() / "public"):
         raise ValueError(
             f"File path {file_path} is not in the public directory."
@@ -273,9 +263,7 @@ _SLUGS_WITHOUT_MD_PATH = ("404", "all-tags", "recent", "all-posts")
 
 
 def should_have_md(file_path: Path) -> bool:
-    """
-    Whether there should be a markdown file for this html file.
-    """
+    """Whether there should be a markdown file for this html file."""
     return (
         "tags" not in file_path.parts
         and file_path.stem not in _SLUGS_WITHOUT_MD_PATH

@@ -1,7 +1,5 @@
 # pylint: disable=C0302
-"""
-Script to check the built static site for common issues and errors.
-"""
+"""Script to check the built static site for common issues and errors."""
 
 import argparse
 import os
@@ -54,9 +52,7 @@ _css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
 
 
 def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
-    """
-    Extract all defined CSS variable names from a CSS file.
-    """
+    """Extract all defined CSS variable names from a CSS file."""
     defined_vars: Set[str] = set()
 
     css_content = css_file_path.read_text(encoding="utf-8")
@@ -69,9 +65,7 @@ def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
 def check_inline_style_variables(
     soup: BeautifulSoup, defined_variables: Set[str] | None = None
 ) -> list[str]:
-    """
-    Check elements for inline styles using undefined CSS variables.
-    """
+    """Check elements for inline styles using undefined CSS variables."""
     issues: list[str] = []
 
     for element in _tags_only(soup.find_all(style=True)):
@@ -91,9 +85,7 @@ def check_inline_style_variables(
 
 
 def check_localhost_links(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for localhost links in the HTML.
-    """
+    """Check for localhost links in the HTML."""
     localhost_links = []
     links = _tags_only(soup.find_all("a", href=True))
     for link in links:
@@ -106,9 +98,7 @@ def check_localhost_links(soup: BeautifulSoup) -> list[str]:
 
 
 def check_favicons_missing(soup: BeautifulSoup) -> bool:
-    """
-    Check if favicons are missing.
-    """
+    """Check if favicons are missing."""
     return not soup.select("article p img.favicon")
 
 
@@ -173,9 +163,7 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
 
 
 def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
-    """
-    Check for invalid internal anchor links in the HTML.
-    """
+    """Check for invalid internal anchor links in the HTML."""
     invalid_anchors: list[str] = []
     links = _tags_only(soup.find_all("a", href=True))
     for link in links:
@@ -226,10 +214,8 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
 # Check that no blockquote element ends with ">",
 # because it probably needed a newline before it
 def check_blockquote_elements(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for blockquote elements ending with ">" as long as they don't end in
-    a "<\\w+>" pattern.
-    """
+    """Check for blockquote elements ending with ">" as long as they don't end
+    in a "<\\w+>" pattern."""
     problematic_blockquotes: list[str] = []
     blockquotes = soup.find_all("blockquote")
     for blockquote in blockquotes:
@@ -280,9 +266,7 @@ def _append_to_list(
     preview_chars: int = 100,
     prefix: str = "",
 ) -> None:
-    """
-    Append a text string to a list, truncating if necessary.
-    """
+    """Append a text string to a list, truncating if necessary."""
     if preview_chars <= 0:
         raise ValueError("preview_chars must be greater than 0")
 
@@ -344,9 +328,7 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
 
 
 def check_unrendered_spoilers(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for unrendered spoilers.
-    """
+    """Check for unrendered spoilers."""
     unrendered_spoilers: list[str] = []
     blockquotes = _tags_only(soup.find_all("blockquote"))
     for blockquote in blockquotes:
@@ -364,9 +346,7 @@ def check_unrendered_spoilers(soup: BeautifulSoup) -> list[str]:
 
 
 def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for link elements whose text starts with "Transclude of".
-    """
+    """Check for link elements whose text starts with "Transclude of"."""
     unrendered_transclusions: list[str] = []
     links = _tags_only(soup.find_all("a"))
     for link in links:
@@ -381,9 +361,7 @@ def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
 
 
 def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for unrendered subtitle lines.
-    """
+    """Check for unrendered subtitle lines."""
     unrendered_subtitles: list[str] = []
     paragraphs = _tags_only(soup.find_all("p"))
     for p in paragraphs:
@@ -459,9 +437,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
 
 
 def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
-    """
-    Verify the existence of local media files (images, videos, SVGs).
-    """
+    """Verify the existence of local media files (images, videos, SVGs)."""
     missing_files = []
     media_tags = soup.find_all(["img", "video", "source", "svg"])
 
@@ -481,9 +457,7 @@ def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
 def check_asset_references(
     soup: BeautifulSoup, file_path: Path, base_dir: Path
 ) -> list[str]:
-    """
-    Check for asset references and verify their existence.
-    """
+    """Check for asset references and verify their existence."""
     missing_assets = []
 
     def resolve_asset_path(href: str) -> Path:
@@ -519,9 +493,7 @@ def check_asset_references(
 
 
 def check_katex_elements_for_errors(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for KaTeX elements with color #cc0000.
-    """
+    """Check for KaTeX elements with color #cc0000."""
     problematic_katex: list[str] = []
     katex_elements = soup.select(".katex-error")
     for element in katex_elements:
@@ -551,9 +523,7 @@ def katex_element_surrounded_by_blockquote(soup: BeautifulSoup) -> list[str]:
 
 
 def check_critical_css(soup: BeautifulSoup) -> bool:
-    """
-    Check if the page has exactly one critical CSS block in the head.
-    """
+    """Check if the page has exactly one critical CSS block in the head."""
     head = soup.find("head")
     if isinstance(head, Tag):
         critical_css_blocks = head.find_all("style", {"id": "critical-css"})
@@ -649,10 +619,8 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
 
 
 def should_skip(element: Tag | NavigableString) -> bool:
-    """
-    Check if element should be skipped based on formatting_improvement_html.ts
-    rules.
-    """
+    """Check if element should be skipped based on
+    formatting_improvement_html.ts rules."""
     skip_tags = {"code", "pre", "script", "style"}
     skip_classes = {
         "no-formatting",
@@ -704,10 +672,8 @@ def check_unprocessed_quotes(soup: BeautifulSoup) -> list[str]:
 
 
 def check_unprocessed_dashes(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for text nodes containing multiple dashes (-- or ---) that should
-    have been processed into em dashes by formatting_improvement_html.ts.
-    """
+    """Check for text nodes containing multiple dashes (-- or ---) that should
+    have been processed into em dashes by formatting_improvement_html.ts."""
     problematic_dashes: list[str] = []
 
     for element in soup.find_all(string=True):
@@ -783,9 +749,8 @@ def meta_tags_early(file_path: Path) -> list[str]:
 
 
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
-    """
-    Check that all iframe sources are responding with a successful status code.
-    """
+    """Check that all iframe sources are responding with a successful status
+    code."""
     problematic_iframes = []
     iframes = _tags_only(soup.find_all("iframe"))
 
@@ -893,10 +858,8 @@ def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
 
 
 def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for syntactically malformed href attributes in `<a>` tags using the
-    `validators` library.
-    """
+    """Check for syntactically malformed href attributes in `<a>` tags using
+    the `validators` library."""
     malformed_links: list[str] = []
     for link in _tags_only(soup.find_all("a", href=True)):
         href = link.get("href")
@@ -930,10 +893,8 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
 
 
 def check_katex_span_only_paragraph_child(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for <p> elements that only contain a single <span class="katex">
-    child.
-    """
+    """Check for <p> elements that only contain a single <span class="katex">
+    child."""
     problematic_paragraphs: list[str] = []
     paragraphs = _tags_only(soup.find_all("p"))
     for p_tag in paragraphs:
@@ -1072,9 +1033,7 @@ def _print_issues(  # pragma: no cover
     file_path: Path,
     issues: _IssuesDict,
 ) -> None:
-    """
-    Print issues found in a file.
-    """
+    """Print issues found in a file."""
     if any(lst for lst in issues.values()):
         print(f"Issues found in {file_path}:")
         for issue, lst in issues.items():
@@ -1090,9 +1049,7 @@ def _print_issues(  # pragma: no cover
 
 
 def _strip_path(path_str: str) -> str:
-    """
-    Strip the git root path from a path string.
-    """
+    """Strip the git root path from a path string."""
     beginning_stripped = re.sub(
         r"^ *(\.{1,2}((?=\/asset_staging)"
         r"|\/(?!asset_staging)))?(/asset_staging/)?",
@@ -1106,9 +1063,7 @@ _TAGS_TO_CHECK_FOR_MISSING_ASSETS = ("img", "video", "svg", "audio", "source")
 
 
 def get_md_asset_counts(md_path: Path) -> Counter[str]:
-    """
-    Get the counts of all assets referenced in the markdown file.
-    """
+    """Get the counts of all assets referenced in the markdown file."""
     # skipcq: PTC-W6004, it's just serverside open -- not user-facing
     with open(md_path, encoding="utf-8") as f:
         content = f.read()
@@ -1172,9 +1127,7 @@ def check_spacing(
     allowed_chars: str,
     prefix: Literal["before", "after"],
 ) -> list[str]:
-    """
-    Check spacing between element and a sibling.
-    """
+    """Check spacing between element and a sibling."""
     sibling = (
         element.previous_sibling
         if prefix == "before"
@@ -1340,9 +1293,7 @@ def check_description_length(soup: BeautifulSoup) -> list[str]:
 
 
 def check_css_issues(file_path: Path) -> list[str]:
-    """
-    Check for CSS issues in a file.
-    """
+    """Check for CSS issues in a file."""
     if not file_path.exists():
         return [f"CSS file {file_path} does not exist"]
     with open(file_path, encoding="utf-8") as f:
@@ -1361,9 +1312,7 @@ def _validate_source_type(
     source_index: int,
     video_preview: str,
 ) -> list[str]:
-    """
-    Validate the type attribute of a <source> tag.
-    """
+    """Validate the type attribute of a <source> tag."""
     issues: list[str] = []
     if (
         not isinstance(type_attr, str)
@@ -1387,9 +1336,7 @@ def _validate_source_src(
     source_index: int,
     video_preview: str,
 ) -> IssuesAndMaybeSrc:
-    """
-    Validate the src attribute of a <source> tag.
-    """
+    """Validate the src attribute of a <source> tag."""
     issues: list[str] = []
     if not isinstance(src_attr, str):
         _append_to_list(
@@ -1423,9 +1370,7 @@ def _validate_single_source_tag(
     source_index: int,
     video_preview: str,
 ) -> IssuesAndMaybeSrc:
-    """
-    Validate a single <source> tag using helper functions.
-    """
+    """Validate a single <source> tag using helper functions."""
     type_issues = _validate_source_type(
         source_tag.get("type"), expected_type, source_index, video_preview
     )
@@ -1439,9 +1384,7 @@ def _validate_single_source_tag(
 
 
 def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
-    """
-    Compare the base paths (including query strings) of two source URLs.
-    """
+    """Compare the base paths (including query strings) of two source URLs."""
     paths = {}
     for source_idx, src in enumerate([src1, src2]):
         parsed = urlparse(src)
@@ -1461,10 +1404,8 @@ def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
 def _check_single_video(
     video: Tag, expected_sources: list[tuple[str, str]]
 ) -> list[str]:
-    """
-    Checks a single <video> tag for source order, type, and matching base
-    paths.
-    """
+    """Checks a single <video> tag for source order, type, and matching base
+    paths."""
     issues: list[str] = []
     sources = [
         child
@@ -1511,17 +1452,13 @@ def _check_single_video(
 
 
 def _should_skip_video(video: Tag) -> bool:
-    """
-    Check if a <video> tag should be skipped.
-    """
+    """Check if a <video> tag should be skipped."""
     return not isinstance(video, Tag) or video.get("id") == "pond-video"
 
 
 def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
-    """
-    Check <video> elements have the MP4 <source> tag first, then the WEBM
-    <source> tag, with matching base src.
-    """
+    """Check <video> elements have the MP4 <source> tag first, then the WEBM
+    <source> tag, with matching base src."""
     all_issues: list[str] = []
     expected_sources: list[tuple[str, str]] = [
         ("video/mp4; codecs=hvc1", ".mp4"),
@@ -1538,10 +1475,8 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
 
 
 def check_robots_txt_location(base_dir: Path) -> list[str]:
-    """
-    Check that robots.txt exists in the root directory and not in
-    subdirectories.
-    """
+    """Check that robots.txt exists in the root directory and not in
+    subdirectories."""
     issues = []
     root_robots = base_dir / "robots.txt"
     if not root_robots.is_file():
@@ -1556,10 +1491,8 @@ def _process_html_files(
     check_fonts: bool,
     defined_css_vars: Set[str] | None = None,
 ) -> bool:
-    """
-    Processes all HTML files in the public directory and returns if issues were
-    found.
-    """
+    """Processes all HTML files in the public directory and returns if issues
+    were found."""
     issues_found_in_html = False
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
@@ -1597,9 +1530,7 @@ def _process_html_files(
 
 
 def main() -> None:
-    """
-    Check all HTML files in the public directory for issues.
-    """
+    """Check all HTML files in the public directory for issues."""
     args = parser.parse_args()
     overall_issues_found: bool = False
     check_rss_file_for_issues(_GIT_ROOT)

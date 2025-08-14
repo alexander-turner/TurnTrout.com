@@ -1,6 +1,4 @@
-"""
-Upload files to R2 storage and update references in markdown files.
-"""
+"""Upload files to R2 storage and update references in markdown files."""
 
 import argparse
 import os
@@ -23,9 +21,8 @@ R2_MEDIA_DIR: Path = _HOME_DIR / "Downloads" / "website-media-r2"
 
 
 def get_r2_key(filepath: Path) -> str:
-    """
-    Convert Path to string and remove everything up to and including 'quartz/'.
-    """
+    """Convert Path to string and remove everything up to and including
+    'quartz/'."""
     key = re.sub(r".*quartz/", "", str(filepath))
     # Remove leading '/' if present
     return re.sub(r"^/", "", key)
@@ -260,9 +257,7 @@ def upload_and_move(
 
 
 def main() -> None:
-    """
-    Upload files to R2 storage and update references in markdown files.
-    """
+    """Upload files to R2 storage and update references in markdown files."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--references-dir",

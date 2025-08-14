@@ -1,6 +1,4 @@
-"""
-Update the publish and update dates in markdown files.
-"""
+"""Update the publish and update dates in markdown files."""
 
 import io
 import re  # Import the re module
@@ -72,9 +70,7 @@ def is_file_modified(file_path: Path) -> bool:
 def maybe_convert_to_timestamp(
     raw_timestamp_info: str | datetime | TimeStamp,
 ) -> TimeStamp:
-    """
-    Convert various date formats to TimeStamp.
-    """
+    """Convert various date formats to TimeStamp."""
     if isinstance(raw_timestamp_info, TimeStamp):
         return raw_timestamp_info
 
@@ -98,9 +94,7 @@ def maybe_convert_to_timestamp(
 
 
 def maybe_update_publish_date(yaml_metadata: dict) -> None:
-    """
-    Update publish and update dates in a markdown file's frontmatter.
-    """
+    """Update publish and update dates in a markdown file's frontmatter."""
     # If date_published doesn't exist or is empty/None, create it
     if not yaml_metadata.get("date_published"):
         yaml_metadata["date_published"] = current_date
@@ -112,9 +106,7 @@ def maybe_update_publish_date(yaml_metadata: dict) -> None:
 
 
 def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
-    """
-    Write updated metadata to a markdown file.
-    """
+    """Write updated metadata to a markdown file."""
     # Use StringIO to capture the YAML dump with preserved formatting
     stream = io.StringIO()
     yaml_parser.dump(metadata, stream)
@@ -135,9 +127,7 @@ COPYRIGHT_PATTERN = re.compile(
 
 
 def update_readme_copyright_year(current_datetime: datetime) -> None:
-    """
-    Update the copyright year in README.md if necessary.
-    """
+    """Update the copyright year in README.md if necessary."""
     if not _README_PATH.exists():
         raise FileNotFoundError(f"README.md not found at {_README_PATH}")
 

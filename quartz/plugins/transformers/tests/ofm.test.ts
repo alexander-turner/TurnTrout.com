@@ -147,7 +147,7 @@ describe("processWikilink", () => {
       },
     },
   ])("should process $name", ({ input, expected }) => {
-    const result = processWikilink(input[0], ...input.slice(1))
+    const result = processWikilink(input[0], input[1], input[2], input[3])
     expect(result).toEqual(expected)
   })
 })

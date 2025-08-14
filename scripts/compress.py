@@ -1,6 +1,4 @@
-"""
-Script to compress images and videos.
-"""
+"""Script to compress images and videos."""
 
 import argparse
 import shutil
@@ -48,9 +46,7 @@ _FFMPEG_COMMON_OUTPUT_ARGS: Final[list[str]] = [
 
 
 def _check_dependencies() -> None:  # pragma: no cover
-    """
-    Check if required command-line tools are installed.
-    """
+    """Check if required command-line tools are installed."""
     required_tools = ["ffmpeg", "ffprobe", "magick"]
     missing_tools = [
         tool for tool in required_tools if shutil.which(tool) is None
@@ -116,10 +112,8 @@ def video(
     quality_hevc: int = _DEFAULT_HEVC_CRF,
     quality_webm: int = _DEFAULT_VP9_CRF,
 ) -> None:
-    """
-    Converts a video to both mp4 (HEVC) and webm (VP9) formats using ffmpeg,
-    unless the output files already exist.
-    """
+    """Converts a video to both mp4 (HEVC) and webm (VP9) formats using ffmpeg,
+    unless the output files already exist."""
     if not video_path.is_file():
         raise FileNotFoundError(f"Error: Input file '{video_path}' not found.")
 
@@ -141,9 +135,7 @@ def _run_ffmpeg_hevc(
     output_path: Path,
     quality: int,
 ) -> None:
-    """
-    Helper function to run the ffmpeg command for HEVC/MP4 conversion.
-    """
+    """Helper function to run the ffmpeg command for HEVC/MP4 conversion."""
     if input_video_path.suffix.lower() == ".mp4" and _check_if_hevc_codec(
         input_video_path
     ):
@@ -214,9 +206,7 @@ def _run_ffmpeg_webm(
     output_path: Path,
     quality: int,
 ) -> None:
-    """
-    Helper function to run the ffmpeg command for WebM/VP9 conversion.
-    """
+    """Helper function to run the ffmpeg command for WebM/VP9 conversion."""
     if not 0 <= quality <= 63:
         raise ValueError(
             f"WebM quality (CRF) must be between 0 and 63, got {quality}."
@@ -279,9 +269,7 @@ _CMD_TO_CHECK_CODEC: tuple[str, ...] = (
 
 
 def _check_if_hevc_codec(video_path: Path) -> bool:
-    """
-    Checks if the video is already HEVC encoded.
-    """
+    """Checks if the video is already HEVC encoded."""
     args: tuple[str, ...] = _CMD_TO_CHECK_CODEC + (str(video_path),)
     codec: str = subprocess.check_output(
         args, universal_newlines=True, stderr=subprocess.PIPE
@@ -290,9 +278,7 @@ def _check_if_hevc_codec(video_path: Path) -> bool:
 
 
 def _parse_args() -> argparse.Namespace:  # pragma: no cover
-    """
-    Parse command-line arguments.
-    """
+    """Parse command-line arguments."""
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Compress assets: image to AVIF,"
         " video to MP4/HEVC and WebM/VP9."
@@ -328,9 +314,7 @@ def _parse_args() -> argparse.Namespace:  # pragma: no cover
 
 
 def main() -> None:  # pragma: no cover
-    """
-    Main execution function.
-    """
+    """Main execution function."""
     # Check dependencies first
     _check_dependencies()
 

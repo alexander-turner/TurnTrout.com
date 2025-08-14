@@ -1,7 +1,5 @@
-"""
-Check source files for issues, like invalid links, missing required fields,
-etc.
-"""
+"""Check source files for issues, like invalid links, missing required fields,
+etc."""
 
 import re
 import shutil
@@ -22,9 +20,7 @@ PathMap = Dict[str, Path]  # Maps URLs to their source files
 
 
 def check_required_fields(metadata: dict) -> List[str]:
-    """
-    Check for empty required metadata fields.
-    """
+    """Check for empty required metadata fields."""
     errors = []
     required_fields = ("title", "description", "tags", "permalink")
 
@@ -194,10 +190,8 @@ def check_post_titles(
     errors = []
 
     def _simplify_title(title: str) -> str:
-        """
-        Simplify a title by removing non-alphanumeric characters and converting
-        to lowercase.
-        """
+        """Simplify a title by removing non-alphanumeric characters and
+        converting to lowercase."""
         return re.sub(r"[^a-zA-Z0-9]+", "", title).lower()
 
     title_field = f"{direction}-post-title"
@@ -289,9 +283,7 @@ def check_card_image_extension(metadata: dict) -> List[str]:
 
 
 def check_card_image(metadata: dict) -> List[str]:
-    """
-    Check if card_image exists at the specified URL.
-    """
+    """Check if card_image exists at the specified URL."""
     card_image_url: str = metadata.get("card_image", "")
     errors: List[str] = []
     if not card_image_url:
@@ -426,9 +418,7 @@ _FORBIDDEN_PATTERNS = (r'["”)\]]\s+\.',)
 
 
 def check_no_forbidden_patterns(text: str) -> List[str]:
-    """
-    Check for forbidden patterns in text.
-    """
+    """Check for forbidden patterns in text."""
     errors = []
     no_code_math_text = remove_code_and_math(text, mark_boundaries=True)
     for pattern in _FORBIDDEN_PATTERNS:
@@ -438,9 +428,7 @@ def check_no_forbidden_patterns(text: str) -> List[str]:
 
 
 def check_stray_katex(text: str) -> List[str]:
-    """
-    Check for stray LaTeX commands outside of math/code blocks.
-    """
+    """Check for stray LaTeX commands outside of math/code blocks."""
     stripped_text = remove_code_and_math(text)
     errors = []
     # This pattern finds a space followed by a backslash and a word.
@@ -496,9 +484,7 @@ def check_file_data(
 
 
 def print_issues(file_path: Path, issues: MetadataIssues) -> None:
-    """
-    Print issues found in a file.
-    """
+    """Print issues found in a file."""
     if any(lst for lst in issues.values()):
         print(f"\nIssues found in {file_path}:")
         for check_name, errors in issues.items():
@@ -509,9 +495,7 @@ def print_issues(file_path: Path, issues: MetadataIssues) -> None:
 
 
 def compile_scss(scss_file_path: Path) -> str:
-    """
-    Compile SCSS file to CSS string.
-    """
+    """Compile SCSS file to CSS string."""
     if not scss_file_path.exists():
         return ""
 
@@ -590,9 +574,7 @@ def check_font_families(css_content: str) -> List[str]:
     }
 
     def clean_font_name(name: str) -> str:
-        """
-        Clean font name by removing quotes and OpenType feature tags.
-        """
+        """Clean font name by removing quotes and OpenType feature tags."""
         name = name.strip().strip("\"'").lower()
         # Remove OpenType feature tags (e.g., :+swsh, :smcp)
         return name.split(":")[0]
@@ -647,9 +629,8 @@ def check_scss_font_files(scss_file_path: Path, base_dir: Path) -> List[str]:
 
 
 def build_sequence_data(markdown_files: List[Path]) -> Dict[str, dict]:
-    """
-    Build a mapping of post slugs to their forward and previous post slugs.
-    """
+    """Build a mapping of post slugs to their forward and previous post
+    slugs."""
     all_sequence_data: Dict[str, dict] = {}
     for file_path in markdown_files:
         metadata, _ = script_utils.split_yaml(file_path)
@@ -677,9 +658,7 @@ def build_sequence_data(markdown_files: List[Path]) -> Dict[str, dict]:
 
 
 def main() -> None:
-    """
-    Check source files for issues.
-    """
+    """Check source files for issues."""
     git_root = script_utils.get_git_root()
     content_dir = git_root / "website_content"
     existing_urls: PathMap = {}

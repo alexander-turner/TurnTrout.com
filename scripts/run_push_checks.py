@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Pretty-print progress bars for all pre-push checks.
-"""
+"""Pretty-print progress bars for all pre-push checks."""
 
 import argparse
 import glob
@@ -37,9 +35,7 @@ ServerInfo = namedtuple("ServerInfo", ["pid", "created_by_script"])
 
 
 def save_state(step_name: str) -> None:
-    """
-    Save the last successful step.
-    """
+    # Save the last successful step.
     state = {"last_successful_step": step_name}
     with open(STATE_FILE_PATH, "w", encoding="utf-8") as f:
         json.dump(state, f)
@@ -95,9 +91,7 @@ def reset_saved_progress() -> None:
 
 
 class ServerManager:
-    """
-    Manages the quartz server process and handles cleanup on interrupts.
-    """
+    """Manages the quartz server process and handles cleanup on interrupts."""
 
     _server_pid: int | None = None
     _is_server_created_by_script: bool = False
@@ -108,9 +102,7 @@ class ServerManager:
         signal.signal(signal.SIGTERM, self._signal_handler)
 
     def _signal_handler(self, _: int, __: object) -> None:
-        """
-        Handle interrupt signals by cleaning up server and exiting.
-        """
+        """Handle interrupt signals by cleaning up server and exiting."""
         console.log("\n[yellow]Received interrupt signal.[/yellow]")
         self.cleanup()
         sys.exit(1)
@@ -129,9 +121,7 @@ class ServerManager:
         self._is_server_created_by_script = created_by_script
 
     def cleanup(self) -> None:
-        """
-        Clean up the server if it exists and was created by this script.
-        """
+        """Clean up the server if it exists and was created by this script."""
         if self._server_pid is not None and self._is_server_created_by_script:
             console.log("[yellow]Cleaning up quartz server...[/yellow]")
             kill_process(self._server_pid)
@@ -140,9 +130,7 @@ class ServerManager:
 
 
 def is_port_in_use(port: int) -> bool:
-    """
-    Check if a port is in use.
-    """
+    """Check if a port is in use."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) == 0
 
@@ -166,9 +154,7 @@ def find_quartz_process() -> int | None:
 
 
 def kill_process(pid: int) -> None:
-    """
-    Safely terminate a process and its children.
-    """
+    """Safely terminate a process and its children."""
     try:
         process = psutil.Process(pid)
         try:
@@ -253,9 +239,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
 
 @dataclass
 class CheckStep:
-    """
-    A step in the pre-push check process.
-    """
+    """A step in the pre-push check process."""
 
     name: str
     command: Sequence[str]
@@ -328,9 +312,9 @@ def run_interactive_command(
     # Hide progress display during interactive process
     progress.update(task_id, visible=False)
     try:
+        # skipcq: BAN-B602 (a local command, assume safe)
         subprocess.run(
             " ".join(step.command) if step.shell else step.command,
-            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             check=True,
@@ -357,9 +341,9 @@ def run_command(
         return run_interactive_command(step, progress, task_id)
 
     try:
+        # skipcq: BAN-B602 (a local command, assume safe)
         with subprocess.Popen(
             " ".join(step.command) if step.shell else step.command,
-            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             stdout=subprocess.PIPE,
@@ -463,16 +447,16 @@ def get_check_steps(
         ),
         CheckStep(
             name="Linting prose",
-            command=["vale", f"{git_root_path}/website_content/*.md"],
+            command=["vale", f"{git_root_path}/website_content"],
         ),
         CheckStep(
             name="Cleaning up SCSS",
             command=["npx", "stylelint", "--fix", "quartz/**/*.scss"],
         ),
+        # skipcq: BAN-B604 (a local command, assume safe)
         CheckStep(
             name="Spellchecking",
             command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
-            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -493,13 +477,13 @@ def get_check_steps(
                 "--cov-fail-under=100",
             ],
         ),
+        # skipcq: BAN-B604 (a local command, assume safe)
         CheckStep(
             name="Compressing and uploading local assets",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/handle_local_assets.sh",
             ],
-            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -512,13 +496,13 @@ def get_check_steps(
     ]
 
     steps_after_server = [
+        # skipcq: BAN-B604 (a local command, assume safe)
         CheckStep(
             name="Checking built CSS for unknown CSS variables",
             command=[
                 "fish",
                 f"{git_root_path}/scripts/check_css_vars.fish",
             ],
-            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -528,10 +512,10 @@ def get_check_steps(
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
         ),
+        # skipcq: BAN-B604 (a local command, assume safe)
         CheckStep(
             name="Checking link validity",
             command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
-            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
     ]
@@ -540,9 +524,7 @@ def get_check_steps(
 
 
 def main() -> None:
-    """
-    Run all checks before pushing.
-    """
+    """Run all checks before pushing."""
     parser = argparse.ArgumentParser(
         description="Run pre-push checks with progress bars."
     )
