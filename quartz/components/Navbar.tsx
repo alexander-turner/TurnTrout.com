@@ -157,7 +157,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
         <button
           id="menu-button"
           type="button"
-          className="hamburger mobile-only"
+          className="mobile-only"
           aria-label="Opens menu for key site links."
         >
           <span className="bar" />

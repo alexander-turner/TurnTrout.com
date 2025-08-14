@@ -2,7 +2,7 @@ import { Mutex } from "async-mutex"
 const beep = await import("beepbeep")
 
 import chalk from "chalk"
-import chokidar from "chokidar"
+import { watch } from "chokidar"
 import { type GlobbyFilterFunction, isGitIgnored } from "globby"
 import path from "path"
 import { rimraf } from "rimraf"
@@ -33,7 +33,6 @@ type BuildData = {
   ignored: GlobbyFilterFunction
   mut: Mutex
   initialSlugs: FullSlug[]
-  // TODO merge contentMap and trackedAssets
   contentMap: Map<FilePath, ProcessedContent>
   trackedAssets: Set<FilePath>
   toRebuild: Set<FilePath>
@@ -135,7 +134,7 @@ async function startServing(
     lastBuildMs: 0,
   }
 
-  const watcher = chokidar.watch(".", {
+  const watcher = watch(".", {
     persistent: true,
     cwd: argv.directory,
     ignoreInitial: true,
@@ -408,8 +407,6 @@ async function rebuildFromEntrypoint(
     const parsedFiles = [...contentMap.values()]
     const filteredContent = filterContent(ctx, parsedFiles)
 
-    // TODO: we can probably traverse the link graph to figure out what's safe to delete here
-    // instead of just deleting everything
     await rimraf(path.join(argv.output, ".*"), { glob: true })
     await emitContent(ctx, filteredContent)
     console.log(chalk.green(`Done rebuilding in ${perf.timeSince()}`))

@@ -9,7 +9,7 @@
     }
   }
 
-  const mainCSS = document.querySelector('link[href="/index.css"]')
+  const mainCSS = document.querySelector('link[rel="stylesheet"][href="/index.css"]')
   if (mainCSS) {
     if (mainCSS.sheet) {
       removeCSS()

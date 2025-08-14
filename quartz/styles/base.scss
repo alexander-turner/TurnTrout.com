@@ -109,6 +109,22 @@ a {
   }
 }
 
+.desktop-only {
+  display: initial;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+}
+
+.mobile-only {
+  display: none;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: initial;
+  }
+}
+
 .page {
   @media all and (max-width: $max-mobile-width) {
     margin: 0 auto;
@@ -489,10 +505,4 @@ ul {
 // Nested ol and ul should have margin before them
 ol:not(ol > ol, li > ol) {
   margin-top: calc(1.5 * $base-margin);
-}
-
-#right-sidebar {
-  &:empty {
-    display: none !important;
-  }
 }

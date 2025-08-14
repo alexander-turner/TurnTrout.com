@@ -1,4 +1,4 @@
-const hamburger = document.querySelector(".hamburger")
+const hamburger = document.querySelector("#menu-button")
 const menu = document.querySelector(".menu")
 const bars = document.querySelectorAll(".bar")
 

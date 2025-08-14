@@ -196,6 +196,33 @@ for (const theme of ["light", "dark", "auto"]) {
   })
 }
 
+test("Right sidebar is visible on desktop on page load", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  await page.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebar = document.querySelector<HTMLElement>("#right-sidebar")
+      let sidebarStyle: string | null = null
+      if (sidebar) {
+        sidebarStyle = window.getComputedStyle(sidebar).display
+      } else {
+        sidebarStyle = "not-found"
+      }
+      // @ts-expect-error - test instrumentation
+      window.initialSidebarDisplayStyle = sidebarStyle
+    })
+  })
+
+  // Reload the page to trigger the init script
+  await page.reload()
+
+  const initialDisplayStyle = await page.evaluate(() => {
+    // @ts-expect-error - test instrumentation
+    return window.initialSidebarDisplayStyle
+  })
+  expect(initialDisplayStyle).toBe("flex")
+})
+
 test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 

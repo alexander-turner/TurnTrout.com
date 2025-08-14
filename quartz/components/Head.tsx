@@ -195,6 +195,7 @@ export default (() => {
         {/* Twitter author metadata */}
         {authorElement}
 
+        <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
 
         {fileData.frontmatter?.avoidIndexing && (
