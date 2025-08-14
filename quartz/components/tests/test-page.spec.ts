@@ -9,7 +9,6 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   getH1Screenshots,
-  waitForFontsToLoad,
 } from "./visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -90,8 +89,6 @@ test.describe("Test page sections", () => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
-      // Ensure font metrics are stable before computing layout-dependent sizes
-      await waitForFontsToLoad(page)
       const boundingBoxArticle = await page.locator("body").boundingBox()
       await page.setViewportSize({
         width: page.viewportSize()?.width ?? 1920,
