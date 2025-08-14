@@ -98,7 +98,7 @@
   // MD026/no-trailing-punctuation : Trailing punctuation in heading : https://github.com/DavidAnson/markdownlint/blob/v0.36.1/doc/md026.md
   "MD026": {
     // Punctuation characters
-    "punctuation": ".,;:!。，；：！"
+    "punctuation": ".,;:!。，；：！…"
   },
 
   // MD027/no-multiple-space-blockquote : Multiple spaces after blockquote symbol : https://github.com/DavidAnson/markdownlint/blob/v0.36.1/doc/md027.md
@@ -146,7 +146,7 @@
   // MD036/no-emphasis-as-heading : Emphasis used instead of a heading : https://github.com/DavidAnson/markdownlint/blob/v0.36.1/doc/md036.md
   "MD036": {
     // Punctuation characters
-    "punctuation": ".,;:!?。，；：！？"
+    "punctuation": ".,;:!?。，；：！？…"
   },
 
   // MD037/no-space-in-emphasis : Spaces inside emphasis markers : https://github.com/DavidAnson/markdownlint/blob/v0.36.1/doc/md037.md
