@@ -13,7 +13,7 @@ import sys
 import tempfile
 import threading
 import time
-from collections import deque, namedtuple
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Collection, Deque, Sequence, TextIO, Tuple
@@ -31,7 +31,11 @@ TEMP_DIR = Path(tempfile.gettempdir()) / "quartz_checks"
 os.makedirs(TEMP_DIR, exist_ok=True)
 STATE_FILE_PATH = TEMP_DIR / "last_successful_step.json"
 
-ServerInfo = namedtuple("ServerInfo", ["pid", "created_by_script"])
+
+@dataclass
+class ServerInfo:
+    pid: int
+    created_by_script: bool
 
 
 def save_state(step_name: str) -> None:
