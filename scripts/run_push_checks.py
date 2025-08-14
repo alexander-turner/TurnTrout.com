@@ -26,7 +26,6 @@ from rich.style import Style
 console = Console()
 SERVER_START_WAIT_TIME: int = 90
 
-# skipcq: BAN-B108
 TEMP_DIR = Path(tempfile.gettempdir()) / "quartz_checks"
 os.makedirs(TEMP_DIR, exist_ok=True)
 STATE_FILE_PATH = TEMP_DIR / "last_successful_step.json"
@@ -51,6 +50,7 @@ def get_last_step(
 ) -> str | None:
     """
     Get the name of the last successful step.
+
     Args:
         available_steps: Optional collection of valid step names. If provided,
                          validates that the last step is in this collection.

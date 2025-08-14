@@ -1,6 +1,4 @@
-"""
-Unit tests for run_push_checks.py
-"""
+"""Unit tests for run_push_checks.py"""
 
 import importlib
 import json
