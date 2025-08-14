@@ -949,15 +949,28 @@ def test_run_interactive_command():
         assert "Command failed with exit code 1" in stderr
 
 
-def test_run_command_delegates_to_interactive():
-    """Test that run_command correctly delegates to interactive runner"""
-    step = run_push_checks.CheckStep(
-        name="Spellcheck",
-        command=["fish", "scripts/spellchecker.fish"],
+@pytest.mark.parametrize(
+    "step",
+    [
         # skipcq: BAN-B604 (a local command, assume safe)
-        shell=True,
-    )
-
+        run_push_checks.CheckStep(
+            name="Spellcheck",
+            command=["fish", "scripts/spellchecker.fish"],
+            shell=True,
+        ),
+        # skipcq: BAN-B604 (a local command, assume safe)
+        run_push_checks.CheckStep(
+            name="Linkcheck",
+            command=["fish", "scripts/linkchecker.fish"],
+            shell=True,
+        ),
+        run_push_checks.CheckStep(
+            name="Vale", command=["vale", "some/path"], shell=False
+        ),
+    ],
+)
+def test_run_command_delegates_to_interactive(step):
+    """Test that run_command correctly delegates to interactive runner"""
     with patch(
         "scripts.run_push_checks.run_interactive_command"
     ) as mock_interactive:
