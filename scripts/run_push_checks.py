@@ -340,7 +340,8 @@ def run_command(
         stdout/stderr are strings containing the complete output.
     """
     if any(
-        task in str(step.command) for task in ["spellchecker", "linkchecker"]
+        task in str(step.command)
+        for task in ["spellchecker", "linkchecker", "vale"]
     ):
         return run_interactive_command(step, progress, task_id)
 
