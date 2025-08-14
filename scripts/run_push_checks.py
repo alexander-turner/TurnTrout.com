@@ -32,6 +32,7 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 STATE_FILE_PATH = TEMP_DIR / "last_successful_step.json"
 
 
+# pylint: disable=missing-class-docstring
 @dataclass
 class ServerInfo:
     pid: int
@@ -39,7 +40,7 @@ class ServerInfo:
 
 
 def save_state(step_name: str) -> None:
-    # Save the last successful step.
+    """Save the last successful step."""
     state = {"last_successful_step": step_name}
     with open(STATE_FILE_PATH, "w", encoding="utf-8") as f:
         json.dump(state, f)
