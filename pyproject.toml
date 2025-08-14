@@ -16,7 +16,7 @@ line_length = 79
 wrap-summaries = 79
 wrap-descriptions = 79
 pre-summary-newline = true
-make-summary-multi-line = true
+make-summary-multi-line = false
 black = true
 
 [tool.autoflake]
