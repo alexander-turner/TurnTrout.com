@@ -37,7 +37,7 @@ To get started, here are two best-practices guides which I recommend:
 ## For Playwright in general
 
 Don't wait for a set amount of time
-: Both `page.waitForTimeout` and `expect.poll` rely on explicit timings. There is [almost always a better alternative.](https://www.checklyhq.com/learn/playwright/waits-and-timeouts/)
+: Both `page.waitForTimeout` and `expect.poll` rely on explicit timings. You should almost always use [a better alternative.](https://www.checklyhq.com/learn/playwright/waits-and-timeouts/)
 
 Test approximate equality for scalars
 : If you're testing the `y` position of an element, use `expect(...).toBeCloseTo` instead of `expect(...).toBe`.

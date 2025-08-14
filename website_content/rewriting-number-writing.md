@@ -74,7 +74,7 @@ Here's another serial processing benefit. Suppose you're processing a string of 
 
 What comes next? Maybe the full sentence is "I have \$320" or maybe it's "I have \$320,000".  
 
-More importantly, by this point in time, what do we actually know about the number? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^magnitude] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
+More importantly, what do we actually know about the number so far? We know it "begins" with the digits "320". That... doesn't actually tell us much.[^magnitude] It has a "3"? Three of _what_, exactly? Is the number big or is it small? Is the number even? Who even knows!
 
 By flipping the digit order, we gain information each time we process a new digit. For example, if the first digit is "0", we learn that the number is even. In particular, the number is divisible by 10.
 
@@ -98,6 +98,7 @@ Our current number system fights our mental number line. The most significant di
 
 In contrast, flipped numbers are internally congruent with the mental number line. In "↗563", the value of the components increases from left to right: "5" -> "60" -> "300". Thus I align the direction of reading, the significance of digits, [the spoken order of components](#flipped-pronunciation), and the mental number line. Children would learn a single unified rule: _bigness is to the right._
 
+<!-- vale off -->
 > [!note]- We probably associate "right" with "big" because we read from left to right
 > [Dehaene et al. (1993)](https://www.unicog.org/publications/Dehaene_ParitySNARCeffect_JEPGeneral1993.pdf) found that Iranian subjects (who write right-to-left) displayed no or reversed effects.
 >
@@ -107,10 +108,11 @@ In contrast, flipped numbers are internally congruent with the mental number lin
 > > The organization of Western writing system has pervasive consequences on the everyday use of numbers. Whenever a series of numbers is written down, small numbers appear first in the sequence; hence, they are located to the left of larger numbers. In this manner a left-to-right organization is imposed on numbers on rulers, calendars, mathematical diagrams, library bookshelves, floor signals above elevator doors, typewriter or computer keyboards, and so on.
 > >
 > > How does immersion in this left-to-right-oriented environment shape spatial conceptualization of numbers? American children tend to explore sets of objects from left to right, whereas the converse is true of Israeli children... This is likely to become the order in which they normally count a set...
+<!-- vale on -->
 
 ### People would learn to estimate magnitude at a glance
 
-Humans don't process numbers a single numeral at a time. There are two main ways to read a number.
+Humans don't process numbers a single numeral at a time. People generally read numbers in one of two ways.
 
 #### The exact value
 
@@ -167,7 +169,7 @@ Let's consider "$5.37$". I propose we write that as "$\nearrow^{-2}73.5$", with 
 
 Decimal long addition and multiplication are easier, as you never revise digits you've already computed. The first digits are informative. By flipping the decimal part, we preserve the symmetry of powers of ten around the decimal point. Having the fractional part on the left accords with the mental number line - smaller components on the left, bigger on the right.
 
-[As explained earlier](#people-would-learn-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. This is what readers currently do, except now the eye lands on the right end of the number instead of the left.
+[As explained earlier](#people-would-learn-to-estimate-magnitude-at-a-glance), if the reader wants the exact number, they start reading from the left. If the reader wants the rough magnitude, they saccade to the right end of the number and estimate how many digits (or comma-triplets) come after the decimal point. Readers already move their eyes like this, except now the eye lands on the right end of the number instead of the left.
 
 ## Flipped pronunciation
 

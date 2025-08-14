@@ -18,15 +18,17 @@ date_updated: 2025-07-25 13:30:55.478301
 ---
 
 
-Dataset contamination is bad for several reasons. Most obviously, when benchmarks are included in AI training data, those benchmarks no longer measure generalization -- the AI may have been directly taught the answers. Even more concerningly, if your data promote negative "stereotypes" about AIs, they might become self-fulfilling prophecies, training future models to exhibit those very behaviors.
+Dataset contamination is bad for several reasons. Most obviously, when benchmarks are included in AI training data, those benchmarks no longer measure generalization -- the AI may have been directly taught the answers. Even more concerningly, if your data promote negative "stereotypes" about AIs, they might become self-fulfilling prophecies, training future models to exhibit those same behaviors.
 
 In the [Claude 4 system card](https://www-cdn.anthropic.com/07b2a3f9902ee19fe39a36ca638e5ae987bc64dd.pdf#page=36.27), Anthropic revealed that approximately 250,000 transcripts from their alignment faking paper had been scraped from the public web and included in their pretraining data. This caused an early model to hallucinate details from the paper's fictional scenarios, forcing Anthropic to implement unique mitigations. Speculatively, this kind of misalignment data could [degrade the alignment of any models trained thereafter.](/self-fulfilling-misalignment)[^alignment]
 
 [^alignment]:  Anthropic conducted measurements to test whether the alignment faking data had broader impacts:
+    <!-- vale off -->
     > [!quote] Claude 4 system card
     > We conducted several small exploratory experiments to assess whether the use of this data influenced the model’s behavior more broadly, and now believe that this is very unlikely. For example, on multiple measures of alignment, post-mitigation snapshots of the model act no less aligned when prompted to use `<SCRATCHPAD_REASONING>` tags, rather than ordinary `<antml:thinking>` tags.
   
     However, this result wouldn't rule out the hypothesis that the alignment-faking transcripts degraded Claude's alignment before they applied mitigations.
+    <!-- vale on -->
 
 Data scraping practices are a serious problem. The tool we are currently releasing will not stop state-of-the-art actors. Since I wanted to at least mitigate the problem, I [put out a bounty](https://www.lesswrong.com/posts/FG54euEAesRkSZuJN/ryan_greenblatt-s-shortform?commentId=M96LZ4nXmm6vYTuWh) for a simple, open-source tool to harden data against scraping. The tool is now ready: [`easy-dataset-share`](https://github.com/Responsible-Dataset-Sharing/easy-dataset-share). In less than 30 minutes and at a cost of $0, you can deploy a download portal with basic protections against scrapers, serving a canary-tagged dataset with modest protections against AI training.
 

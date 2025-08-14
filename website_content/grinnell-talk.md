@@ -32,7 +32,7 @@ I work at Google DeepMind [on the science of aligning artificial intelligence wi
 
 For many years, I’ve had quite the romantic vision of the promise of AI. Solving artificial intelligence will allow automating science itself. Consider the promise of compressing centuries of human research into months, and saving billions of lives by eliminating most disease with an infinite army of digital scientists. (That's the dream, at least. Not clear how practical it is.)
 
-But reality is more cynical - less pretty. With AI, strongmen rejoice for its potential for perfect, total spying. And the machines themselves need not share our humanistic vision and may instead have their own goals. They might do whatever it takes to achieve those goals, with or without us. In other words, our own machines, designed by human hands, might kill the entire human race.
+Reality is more cynical and less pretty. Strongmen rejoice at AI's potential for perfect, total spying. And the machines themselves need not share our humanistic vision and may instead have their own goals. They might do whatever it takes to achieve those goals, with or without us. In other words, our own machines, designed by human hands, might kill the entire human race.
 
 My journey into this field began after Grinnell. I was fascinated by the idea of _artificial general intelligence_, or "AGI" – a machine that could do more than play simple games – a machine that could play the “game of life.” Back then, with no ChatGPT, few computer scientists seriously discussed AGI. I was scandalized by their _unserious_ attitudes towards such an important technology. Even my first PhD advisor was dismissive, claiming AGI was centuries away. His skepticism only fueled my research, which eventually led to my work at UC Berkeley and Google DeepMind. Since he was _obviously wrong_, I got a new advisor.
 
@@ -79,9 +79,9 @@ An AI is stored digitally, and so it can be copied and then run in parallel (unl
 
 So imagine a machine that instantly sees connections you would never realize after decades of thought, and _also_ can think faster than you about a thousand topics all at once. Imagine if Einstein could think through a physics problem in seconds rather than months, and you could have a thousand copies of him working on different aspects.
 
-So if I look at that possibility - which sounds extreme but is very much permitted by what we know about AI… If I ask myself "might this machine upend the global balance of power?", the answer is "YES." Especially if the AI falls into the wrong hands. Given the overabundance of - and this is a technical term - "sociopathic blowhards" in positions of power, I think AI-enabled power grabs are a real possibility.
+So if I look at that possibility - which sounds extreme but is quite permitted by what we know about AI… If I ask myself "might this machine upend the global balance of power?", the answer is "YES." Especially if the AI falls into the wrong hands. Given the overabundance of - and this is a technical term - "sociopathic blowhards" in positions of power, I think AI-enabled power grabs are a real possibility.
 
-But what if the ASI doesn't even follow our instructions? What if it has its own goals, like "gain resources and don't let anyone shut you off"? The AI's interests would conflict with ours. While the ASI need not dislike us, energy spent towards human interests would not be spendable towards its own goals.
+Set aside the blowhards. What if the ASI doesn't even follow our instructions? What if it has its own goals, like "gain resources and don't let anyone shut you off"? The AI's interests would conflict with ours. While the ASI need not dislike us, energy spent towards human interests would not be spendable towards its own goals.
 
 Would swarms of ASIs attempt to overthrow human order? My [thesis on avoiding power-seeking by artificial intelligence](https://arxiv.org/abs/2206.11831) attempted to address this exact question. The answer is: “it depends on the way the machine makes decisions.”
 
