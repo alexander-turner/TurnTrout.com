@@ -325,6 +325,7 @@ test.describe("Admonitions", () => {
 
       await takeRegressionScreenshot(page, testInfo, `fold-button-appearance-${status}`, {
         elementToScreenshot: element,
+        preserveSiblings: true,
       })
     })
   }

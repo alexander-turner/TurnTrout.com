@@ -44,6 +44,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   await expect(popover).toHaveClass(/popover-visible/)
   await takeRegressionScreenshot(page, testInfo, "first-visible-popover", {
     elementToScreenshot: popover,
+    preserveSiblings: true,
   })
 
   // Move mouse away
