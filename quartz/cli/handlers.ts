@@ -37,7 +37,6 @@ let cachedCriticalCSS = ""
 
 /**
  * Handles `npx quartz build`
- * @param argv - Arguments for the build command
  */
 export async function handleBuild(argv: BuildArguments): Promise<void> {
   console.log(chalk.bgGreen.black(`\n turntrout.com v${version} \n`))
@@ -107,6 +106,9 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
   let lastBuildMs = 0
   let cleanupBuild: (() => Promise<void>) | null = null
 
+  /**
+   * Builds the site
+   */
   const build = async (clientRefresh: () => void): Promise<void> => {
     const buildStart = Date.now()
     lastBuildMs = buildStart
@@ -157,6 +159,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
   }
 
   const connections: WebSocket[] = []
+  // Send a rebuild message to all connected clients
   const clientRefresh = (): void => {
     connections.forEach((conn) => conn.send("rebuild"))
   }
@@ -180,6 +183,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     // Strip baseDir prefix
     req.url = req.url?.slice(argv.baseDir.length)
 
+    // Serve the site while logging requests
     const serve = async () => {
       const release = await buildMutex.acquire()
       await serveHandler(req, res, {
@@ -199,6 +203,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       release()
     }
 
+    // Handle and log redirects
     const redirect = (newFp: string) => {
       newFp = argv.baseDir + newFp
       res.writeHead(302, {
@@ -211,7 +216,6 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
     const filepath: string = req.url?.split("?")[0] ?? "/"
 
-    // Handle redirects
     if (filepath.endsWith("/")) {
       // Does /trailing/index.html exist? If so, serve it
       const indexFp: string = path.posix.join(filepath, "index.html")
@@ -280,6 +284,9 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
   })
 }
 
+/**
+ * Cheerio load settings for parsing HTML.
+ */
 export const loadSettings = {
   xml: false,
   decodeEntities: false,
@@ -288,8 +295,6 @@ export const loadSettings = {
 /**
  * Handles critical CSS injection into HTML files
  * Prevents emitting files until critical CSS is successfully generated
- * @param htmlFiles - Array of HTML file paths
- * @param outputDir - Output directory path
  */
 export async function injectCriticalCSSIntoHTMLFiles(
   htmlFiles: string[],
@@ -327,7 +332,6 @@ export async function injectCriticalCSSIntoHTMLFiles(
 /**
  * Generates and caches critical CSS if not already cached
  * Throws an error if generation fails
- * @param outputDir - Output directory path
  */
 export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void> {
   if (cachedCriticalCSS !== "") {
@@ -401,8 +405,6 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
 
 /**
  * Sorts <head> contents to optimize metadata and CSS loading
- * @param htmlContent - Original HTML content
- * @returns Updated HTML content with reordered <head> elements
  */
 export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const head = querier("head")
@@ -421,6 +423,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
       el.type === "tag" && (el.tagName === "meta" || el.tagName === "title"),
   )
 
+  // Check if an element is critical CSS
   const isCriticalCSS = (_i: number, el: CheerioElement): boolean =>
     el.type === "style" && el.attribs.id === "critical-css"
   const criticalCSS = headChildren.filter(isCriticalCSS)
@@ -429,6 +432,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const isLink = (_i: number, el: CheerioElement): boolean =>
     el.type === "tag" && el.tagName === "link"
   const allLinks = headChildren.filter(isLink)
+  // Check if an element is a favicon
   const isFavicon = (_i: number, el: CheerioElement): boolean => {
     if (el.type !== "tag" || el.tagName !== "link") return false
     const rel = el.attribs.rel
@@ -439,6 +443,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
 
   // Anything else (scripts, etc.)
   const elementsSoFar = new Set([...darkModeScript, ...metaAndTitle, ...criticalCSS, ...allLinks])
+  // Filter to elements that are not already in the set
   const notAlreadySeen = (_i: number, el: CheerioElement): boolean => !elementsSoFar.has(el)
   const otherElements = headChildren.filter(notAlreadySeen)
 

@@ -6,7 +6,7 @@ import { watch } from "chokidar"
 import { type GlobbyFilterFunction, isGitIgnored } from "globby"
 import path from "path"
 import { rimraf } from "rimraf"
-import sourceMapSupport from "source-map-support"
+import { install } from "source-map-support"
 
 import type { ProcessedContent } from "./plugins/vfile"
 import type { Argv, BuildCtx } from "./util/ctx"
@@ -24,7 +24,7 @@ import { PerfTimer } from "./util/perf"
 import { options } from "./util/sourcemap"
 import { trace } from "./util/trace"
 
-sourceMapSupport.install(options)
+install(options)
 
 type Dependencies = Record<string, DepGraph<FilePath> | null>
 
@@ -43,6 +43,13 @@ type BuildData = {
 
 type FileEvent = "add" | "change" | "delete"
 
+/**
+ * Builds the Quartz site.
+ * @param argv - The command-line arguments.
+ * @param mut - A mutex to ensure only one build is running at a time.
+ * @param clientRefresh - A function to refresh the client.
+ * @returns A function to clean up the build, or an empty function if not serving.
+ */
 async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   const ctx: BuildCtx = {
     argv,
@@ -54,6 +61,7 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   const output = argv.output
 
   const pluginCount = Object.values(cfg.plugins).flat().length
+  // Get all plugin names for the given key
   const pluginNames = (key: "transformers" | "filters" | "emitters") =>
     cfg.plugins[key].map((plugin) => plugin.name)
   if (argv.verbose) {
@@ -104,7 +112,15 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   return () => {}
 }
 
-// setup watcher for rebuilds
+/**
+ * Starts a web server and sets up a file watcher for rebuilds.
+ * @param ctx - The build context.
+ * @param mut - A mutex to ensure only one build is running at a time.
+ * @param initialContent - The initial content of the site.
+ * @param clientRefresh - A function to refresh the client.
+ * @param dependencies - The dependency graph for the site.
+ * @returns A function to close the file watcher.
+ */
 async function startServing(
   ctx: BuildCtx,
   mut: Mutex,
@@ -151,6 +167,13 @@ async function startServing(
   }
 }
 
+/**
+ * Performs a partial rebuild of the site when a file is changed, added, or deleted.
+ * @param filepath - The path to the file that was changed.
+ * @param action - The type of file change.
+ * @param clientRefresh - A function to refresh the client.
+ * @param buildData - The build data.
+ */
 async function partialRebuildFromEntrypoint(
   filepath: string,
   action: FileEvent,
@@ -339,6 +362,13 @@ async function partialRebuildFromEntrypoint(
   clientRefresh()
 }
 
+/**
+ * Performs a full rebuild of the site when a file is changed, added, or deleted.
+ * @param fp - The path to the file that was changed.
+ * @param action - The type of file change.
+ * @param clientRefresh - A function to refresh the client.
+ * @param buildData - The build data.
+ */
 async function rebuildFromEntrypoint(
   fp: string,
   action: FileEvent,

@@ -14,7 +14,7 @@ jest.mock("critical", () => {
 })
 
 import fs from "fs"
-import fsExtra from "fs-extra"
+import { writeFile, ensureDir, mkdtemp, remove } from "fs-extra"
 import os from "os"
 import path from "path"
 
@@ -107,11 +107,11 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
   let outputDir: string
 
   beforeEach(async () => {
-    outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
+    outputDir = await mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
   })
 
   afterEach(async () => {
-    await fsExtra.remove(outputDir)
+    await remove(outputDir)
   })
 
   it("should replace SCSS variable placeholders with actual values in cached CSS", async () => {
@@ -124,11 +124,11 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     const manualCriticalCss = "body{margin: $base-margin; color: $page-width;}"
     const criticalScssPath = path.resolve("quartz/styles/critical.scss")
     const htmlPath = path.join(outputDir, "index.html")
-    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
-    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    await writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await writeFile(path.join(outputDir, "index.css"), "/* css */")
     const katexDir = path.join(outputDir, "static", "styles")
-    await fsExtra.ensureDir(katexDir)
-    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+    await ensureDir(katexDir)
+    await writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
 
     const realReadFile = fs.promises.readFile
     const readFileSpy = jest

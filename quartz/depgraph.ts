@@ -6,6 +6,10 @@ export default class DepGraph<T> {
     this._graph = new Map()
   }
 
+  /**
+   * Exports the graph to a plain object.
+   * @returns An object with nodes and edges.
+   */
   export(): object {
     return {
       nodes: this.nodes,
@@ -13,6 +17,9 @@ export default class DepGraph<T> {
     }
   }
 
+  /**
+   * Converts the graph to its string representation.
+   */
   toString(): string {
     return JSON.stringify(this.export(), null, 2)
   }
@@ -23,23 +30,34 @@ export default class DepGraph<T> {
     return Array.from(this._graph.keys())
   }
 
+  /**
+   * Retrieves all edges in the graph.
+   */
   get edges(): [T, T][] {
     const edges: [T, T][] = []
     this.forEachEdge((edge) => edges.push(edge))
     return edges
   }
 
+  /**
+   * Checks if a node exists in the graph.
+   */
   hasNode(node: T): boolean {
     return this._graph.has(node)
   }
 
+  /**
+   * Adds a node to the graph.
+   */
   addNode(node: T): void {
     if (!this._graph.has(node)) {
       this._graph.set(node, { incoming: new Set(), outgoing: new Set() })
     }
   }
 
-  // Remove node and all edges connected to it
+  /**
+   * Removes a node and all of its associated edges from the graph.
+   */
   removeNode(node: T): void {
     if (this._graph.has(node)) {
       // first remove all edges so other nodes don't have references to this node
@@ -53,16 +71,25 @@ export default class DepGraph<T> {
     }
   }
 
+  /**
+   * Executes a callback for each node in the graph.
+   */
   forEachNode(callback: (node: T) => void): void {
     for (const node of this._graph.keys()) {
       callback(node)
     }
   }
 
+  /**
+   * Checks if an edge exists between two nodes.
+   */
   hasEdge(from: T, to: T): boolean {
     return Boolean(this._graph.get(from)?.outgoing.has(to))
   }
 
+  /**
+   * Adds a directed edge between two nodes.
+   */
   addEdge(from: T, to: T): void {
     this.addNode(from)
     this.addNode(to)
@@ -71,6 +98,9 @@ export default class DepGraph<T> {
     this._graph.get(to)?.incoming.add(from)
   }
 
+  /**
+   * Removes an edge between two nodes.
+   */
   removeEdge(from: T, to: T): void {
     if (this._graph.has(from) && this._graph.has(to)) {
       this._graph.get(from)?.outgoing.delete(to)
@@ -78,24 +108,39 @@ export default class DepGraph<T> {
     }
   }
 
-  // returns -1 if node does not exist
+  /**
+   * Gets the number of outgoing edges from a node.
+   * @returns The out-degree of the node, or -1 if the node does not exist.
+   */
   outDegree(node: T): number {
     return this.hasNode(node) ? (this._graph.get(node)?.outgoing.size ?? -1) : -1
   }
 
-  // returns -1 if node does not exist
+  /**
+   * Gets the number of incoming edges to a node.
+   * @returns The in-degree of the node, or -1 if the node does not exist.
+   */
   inDegree(node: T): number {
     return this.hasNode(node) ? (this._graph.get(node)?.incoming.size ?? -1) : -1
   }
 
+  /**
+   * Executes a callback for each outgoing neighbor of a node.
+   */
   forEachOutNeighbor(node: T, callback: (neighbor: T) => void): void {
     this._graph.get(node)?.outgoing.forEach(callback)
   }
 
+  /**
+   * Executes a callback for each incoming neighbor of a node.
+   */
   forEachInNeighbor(node: T, callback: (neighbor: T) => void): void {
     this._graph.get(node)?.incoming.forEach(callback)
   }
 
+  /**
+   * Executes a callback for each edge in the graph.
+   */
   forEachEdge(callback: (edge: [T, T]) => void): void {
     for (const [source, { outgoing }] of this._graph.entries()) {
       for (const target of outgoing) {
@@ -107,7 +152,9 @@ export default class DepGraph<T> {
 
   // DEPENDENCY ALGORITHMS
 
-  // Add all nodes and edges from other graph to this graph
+  /**
+   * Merges all nodes and edges from another graph into the current graph.
+   */
   mergeGraph(other: DepGraph<T>): void {
     other.forEachEdge(([source, target]) => {
       this.addNode(source)
@@ -116,10 +163,9 @@ export default class DepGraph<T> {
     })
   }
 
-  // For the node provided:
-  // If node does not exist, add it
-  // If an incoming edge was added in other, it is added in this graph
-  // If an incoming edge was deleted in other, it is deleted in this graph
+  /**
+   * Updates the incoming edges for a specific node based on another graph.
+   */
   updateIncomingEdgesForNode(other: DepGraph<T>, node: T): void {
     this.addNode(node)
 
@@ -136,8 +182,10 @@ export default class DepGraph<T> {
     })
   }
 
-  // Remove all nodes that do not have any incoming or outgoing edges
-  // A node may be orphaned if the only node pointing to it was removed
+  /**
+   * Removes all nodes that have no incoming or outgoing edges.
+   * @returns A set of the removed orphan nodes.
+   */
   removeOrphanNodes(): Set<T> {
     const orphanNodes = new Set<T>()
 
@@ -154,10 +202,11 @@ export default class DepGraph<T> {
     return orphanNodes
   }
 
-  // Get all leaf nodes (i.e. destination paths) reachable from the node provided
-  // Eg. if the graph is A -> B -> C
-  //                     D ---^
-  // and the node is B, this function returns [C]
+  /**
+   * Gets all leaf nodes reachable from a given node.
+   * @param node The starting node.
+   * @returns A set of leaf nodes.
+   */
   getLeafNodes(node: T): Set<T> {
     const stack: T[] = [node]
     const visited = new Set<T>()
@@ -192,10 +241,11 @@ export default class DepGraph<T> {
     return leafNodes
   }
 
-  // Get all ancestors of the leaf nodes reachable from the node provided
-  // Eg. if the graph is A -> B -> C
-  //                     D ---^
-  // and the node is B, this function returns [A, B, D]
+  /**
+   * Gets all ancestors of the leaf nodes that are reachable from a given node.
+   * @param node The starting node.
+   * @returns A set of ancestor nodes.
+   */
   getLeafNodeAncestors(node: T): Set<T> {
     const leafNodes = this.getLeafNodes(node)
     const visited = new Set<T>()

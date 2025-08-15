@@ -4,8 +4,10 @@ import path from "path"
 import { transports, format, createLogger } from "winston"
 import DailyRotateFile from "winston-daily-rotate-file"
 
-// For CWD
-export const findGitRoot = () => {
+/**
+ * Finds the root directory of the current Git repository.
+ */
+export const findGitRoot = (): string | null => {
   try {
     return execSync("git rev-parse --show-toplevel").toString().trim()
   } catch (error) {
@@ -31,7 +33,9 @@ const timezoneFormat = new Date().toLocaleString("en-US", {
 })
 transports.DailyRotateFile = DailyRotateFile
 
-// Create a logger which has TTL of 7 days and rotates daily
+/**
+ * Creates a Winston logger with daily rotation and a 7-day retention policy.
+ */
 export const createWinstonLogger = (logName: string) => {
   return createLogger({
     format: format.combine(format.timestamp({ format: timezoneFormat }), format.prettyPrint()),
