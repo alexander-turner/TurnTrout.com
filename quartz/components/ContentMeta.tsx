@@ -1,5 +1,6 @@
 import type { JSX } from "preact"
 
+// skipcq: JS-W1028
 import React from "react"
 import readingTime from "reading-time"
 
@@ -11,6 +12,8 @@ import { DateElement } from "./Date"
 import style from "./styles/contentMeta.scss"
 import { TagList } from "./TagList"
 import { type QuartzComponentConstructor, type QuartzComponentProps } from "./types"
+
+const TagListComponent = TagList(undefined)
 
 // Render publication information including original URL and date
 export function RenderPublicationInfo(
@@ -121,6 +124,7 @@ export function processReadingTime(minutes: number): string {
 
 export const renderReadingTime = (fileData: QuartzPluginData): JSX.Element => {
   if (fileData.frontmatter?.hide_reading_time) {
+    // skipcq: JS-0424
     return <></>
   }
 
@@ -168,7 +172,7 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
         <div className="admonition-title-inner">Tags</div>
       </div>
       <div className="admonition-content" id="tags">
-        <TagList {...props} />
+        <TagListComponent {...props} />
       </div>
     </blockquote>
   )
