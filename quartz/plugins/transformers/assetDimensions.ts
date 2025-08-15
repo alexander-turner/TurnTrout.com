@@ -27,6 +27,7 @@ export const paths = {
 }
 
 // TODO add to paths?
+export const numRetries = 3
 export const ASSET_DIMENSIONS_FILE_PATH = path.join(
   paths.projectRoot,
   "quartz",
@@ -251,7 +252,7 @@ class AssetProcessor {
 
   public async fetchAndParseAssetDimensions(
     assetSrc: string,
-    retries = 1,
+    retries = numRetries,
   ): Promise<AssetDimensions | null> {
     return AssetProcessor.isRemoteUrl(assetSrc)
       ? await this.getRemoteAssetDimensions(assetSrc, retries)
@@ -305,7 +306,7 @@ class AssetProcessor {
   public async processAsset(
     assetInfo: { node: Element; src: string },
     currentDimensionsCache: AssetDimensionMap,
-    retries = 1,
+    retries = numRetries,
   ): Promise<void> {
     const { node, src } = assetInfo
     let dims = currentDimensionsCache[src]
@@ -355,7 +356,7 @@ export const addAssetDimensionsFromSrc = () => {
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
-              await assetProcessor.processAsset(assetInfo, currentDimensionsCache, 3)
+              await assetProcessor.processAsset(assetInfo, currentDimensionsCache, numRetries)
             }
             if (assetProcessor["needToSaveCache"]) {
               await assetProcessor.maybeSaveAssetDimensions()
