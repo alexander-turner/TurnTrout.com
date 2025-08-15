@@ -8,9 +8,9 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { createLogger } from "./logger_utils"
+import { createWinstonLogger } from "./logger_utils"
 
-const logger = createLogger("assetDimensions")
+const logger = createWinstonLogger("assetDimensions")
 
 const __filepath = fileURLToPath(import.meta.url)
 const projectRoot = path.dirname(gitRoot(__filepath))

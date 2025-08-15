@@ -7,7 +7,7 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { slugify, resetSlugger } from "./gfm"
-import { createLogger } from "./logger_utils"
+import { createWinstonLogger } from "./logger_utils"
 import { hasAncestor, type ElementMaybeWithParent } from "./utils"
 
 /**
@@ -45,7 +45,7 @@ export interface TocEntry {
   slug: string
 }
 
-const logger = createLogger("TableOfContents")
+const logger = createWinstonLogger("TableOfContents")
 
 function logTocEntry(entry: TocEntry) {
   logger.debug(`TOC Entry: depth=${entry.depth}, text="${entry.text}", slug="${entry.slug}"`)

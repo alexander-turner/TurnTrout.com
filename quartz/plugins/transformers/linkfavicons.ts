@@ -9,9 +9,9 @@ import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { createLogger } from "./logger_utils"
+import { createWinstonLogger } from "./logger_utils"
 
-const logger = createLogger("linkfavicons")
+const logger = createWinstonLogger("linkfavicons")
 
 export const MAIL_PATH = "https://assets.turntrout.com/static/images/mail.svg"
 export const TURNTROUT_FAVICON_PATH =

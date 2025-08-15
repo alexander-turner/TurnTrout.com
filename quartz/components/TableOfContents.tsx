@@ -12,7 +12,7 @@ import { fromHtml } from "hast-util-from-html"
 import React from "react"
 
 import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_text"
-import { createLogger } from "../plugins/transformers/logger_utils"
+import { createWinstonLogger } from "../plugins/transformers/logger_utils"
 import { type TocEntry } from "../plugins/transformers/toc"
 import {
   processInlineCode,
@@ -27,7 +27,7 @@ import {
   type QuartzComponentProps,
 } from "./types"
 
-const logger = createLogger("TableOfContents")
+const logger = createWinstonLogger("TableOfContents")
 /**
  * TableOfContents component for rendering a table of contents.
  *
