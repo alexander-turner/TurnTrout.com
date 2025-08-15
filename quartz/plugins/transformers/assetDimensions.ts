@@ -25,16 +25,7 @@ export const paths = {
     ".asset_dimensions.json",
   ),
 }
-
-// TODO add to paths?
 export const numRetries = 3
-export const ASSET_DIMENSIONS_FILE_PATH = path.join(
-  paths.projectRoot,
-  "quartz",
-  "plugins",
-  "transformers",
-  ".asset_dimensions.json",
-)
 
 export interface AssetDimensions {
   width: number
@@ -96,7 +87,7 @@ class AssetProcessor {
     }
   }
 
-  public async getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions | null> {
+  public async getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions> {
     const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(
       "ffprobe",
       [
@@ -128,9 +119,13 @@ class AssetProcessor {
     if (dimensionsMatch) {
       const width = parseInt(dimensionsMatch[1], 10)
       const height = parseInt(dimensionsMatch[2], 10)
-      if (!isNaN(width) && !isNaN(height)) {
-        return { width, height }
+
+      /* istanbul ignore if */
+      if (isNaN(width) || isNaN(height)) {
+        throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
       }
+      logger.debug(`Local video dimensions for ${assetSrc}: ${width}x${height}`)
+      return { width, height }
     }
 
     throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
@@ -175,10 +170,7 @@ class AssetProcessor {
     const ext = path.extname(localPath).toLowerCase()
     const videoExts = new Set([".mp4", ".mov", ".m4v", ".webm", ".mpeg", ".mpg", ".avi", ".mkv"])
     if (videoExts.has(ext)) {
-      const dims = await this.getAssetDimensionsFfprobe(localPath)
-      if (!dims) throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
-      logger.debug(`Local video dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
-      return dims
+      return await this.getAssetDimensionsFfprobe(localPath)
     }
 
     const buffer = await fs.readFile(localPath)
@@ -193,6 +185,7 @@ class AssetProcessor {
       )
       return { width: dimensions.width, height: dimensions.height }
     }
+    /* istanbul ignore next */
     throw new Error(
       `Unable to determine local asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
     )
@@ -220,11 +213,7 @@ class AssetProcessor {
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
           response.body?.cancel()
-          const dims = await this.getAssetDimensionsFfprobe(assetSrc)
-          if (!dims) throw new Error(`ffprobe failed for ${assetSrc}`)
-
-          logger.debug(`Remote ffprobe dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
-          return dims
+          return await this.getAssetDimensionsFfprobe(assetSrc)
         }
 
         const buffer = Buffer.from(await response.arrayBuffer())
@@ -239,6 +228,7 @@ class AssetProcessor {
           )
           return { width: dimensions.width, height: dimensions.height }
         }
+        /* istanbul ignore next */
         throw new Error(
           `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
         )

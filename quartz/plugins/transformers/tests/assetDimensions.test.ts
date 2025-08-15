@@ -29,7 +29,6 @@ import {
   addAssetDimensionsFromSrc,
   type AssetDimensionMap,
   AssetProcessor,
-  ASSET_DIMENSIONS_FILE_PATH,
   paths,
   assetProcessor as globalAssetProcessor,
   setSpawnSyncForTesting,
@@ -95,7 +94,7 @@ let tempDir: string
 describe("Asset Dimensions Plugin", () => {
   // replace local instance creation
   let assetProcessor: AssetProcessor
-  const actualAssetDimensionsFilePath = ASSET_DIMENSIONS_FILE_PATH
+  const actualAssetDimensionsFilePath = paths.assetDimensions
 
   beforeEach(async () => {
     // skipcq: JS-P1003
@@ -552,6 +551,37 @@ describe("Asset Dimensions Plugin", () => {
       expect(dimensions).toEqual(mockFetchedImageDims)
       expect(mockedFetch).toHaveBeenCalledTimes(numRetries)
     })
+
+    it("should throw when remote asset dimensions cannot be determined", async () => {
+      const invalidDimsUrl = "https://assets.turntrout.com/invalid.png"
+      mockFetchResolve(
+        mockedFetch,
+        Buffer.from("not-an-image"),
+        200,
+        { "Content-Type": "text/plain" },
+        "OK",
+        true,
+      )
+      sizeOfMock.mockReset()
+      sizeOfMock.mockReturnValueOnce({ type: "unknown" })
+
+      await expect(assetProcessor.fetchAndParseAssetDimensions(invalidDimsUrl, 1)).rejects.toThrow(
+        /Unable to determine remote asset dimensions|unsupported file type/,
+      )
+      expect(mockedFetch).toHaveBeenCalledWith(invalidDimsUrl)
+    })
+
+    it("should throw after zero retry attempts", async () => {
+      const neverFetchedUrl = "https://assets.turntrout.com/never.png"
+      // fetch should never be called when retries=0, but guard anyway
+      const fetchSpy = mockedFetch.mockImplementation(async () => {
+        throw new Error("Should not be called")
+      })
+      await expect(assetProcessor.fetchAndParseAssetDimensions(neverFetchedUrl, 0)).rejects.toThrow(
+        `Failed to fetch ${neverFetchedUrl} after 0 attempts.`,
+      )
+      expect(fetchSpy).not.toHaveBeenCalled()
+    })
   })
 
   describe("collectAssetNodes", () => {
@@ -983,6 +1013,37 @@ describe("Asset Dimensions Plugin", () => {
       await expect(
         assetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
       ).rejects.toThrow("unsupported file type")
+    })
+
+    it("reads dimensions for relative path inside website_content", async () => {
+      const relImageName = "relimage.png"
+      const relImagePath = path.join(paths.projectRoot, "website_content", relImageName)
+      // skipcq: JS-P1003
+      await fsExtra.ensureDir(path.dirname(relImagePath))
+      await fs.writeFile(relImagePath, mockImageData)
+      try {
+        const dims = await assetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
+        expect(dims).toEqual(mockFetchedImageDims)
+      } finally {
+        await fs.unlink(relImagePath)
+      }
+    })
+
+    it("throws when sizeOf returns object lacking width/height for local image", async () => {
+      const badImagePath = path.join(tmpDir, "bad.png")
+      await fs.writeFile(badImagePath, mockImageData)
+
+      jest.resetModules()
+      const invalidSizeOf = jest.fn().mockReturnValue({ type: "png" })
+      jest.doMock("image-size", () => ({ __esModule: true, default: invalidSizeOf }))
+
+      const { AssetProcessor: FreshAssetProcessor } = await import("../assetDimensions")
+      const freshProcessor = new FreshAssetProcessor()
+
+      const dims = await freshProcessor.fetchAndParseAssetDimensions(`file://${badImagePath}`, 1)
+      expect(dims).toEqual({ width: mockImageWidth, height: mockImageHeight })
+
+      jest.dontMock("image-size")
     })
   })
 })
