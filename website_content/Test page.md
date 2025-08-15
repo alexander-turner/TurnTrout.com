@@ -325,6 +325,14 @@ Hi! Am I being transcluded?
 
 Figure: This image should be transparent in light mode and have a light background in dark mode.
 
+## Floating image right
+
+<!-- vale off -->
+<img src="https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif" class="float-right" style="width: 20%;" alt="Alex smiling at the camera; rainbow colored light splays off the wall in the background."/>
+<!-- vale on -->
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+
 ## Fatebook embed
 
 <iframe src="https://fatebook.io/embed/q/are-you-going-to-like-turntrout-com---cm2u10nym00029cc3j1h05pot?compact=true&requireSignIn=false" height="200"></iframe>
@@ -355,10 +363,6 @@ $$
 Post-math text. The following equations should display properly:
 
 $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B}  =0 \qquad \nabla \times \mathbf{E}  =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B}  =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
-
-<!-- vale off -->
-<img src="https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif" class="float-right" style="width: 20%;" alt="Alex smiling at the camera; rainbow colored light splays off the wall in the background."/>
-<!-- vale on -->
 
 [Flipped integer](/flip-integers) number: ↗142.2.
 
