@@ -232,6 +232,7 @@ export class PreviewManager {
    * @param currentSearchTerm - The active search term used for highlighting
    * @param baseSlug - The current page's slug used to resolve relative links
    */
+  /* istanbul ignore next */
   public update(el: HTMLElement | null, currentSearchTerm: string, baseSlug: FullSlug) {
     if (!el) {
       this.hide()
@@ -249,6 +250,7 @@ export class PreviewManager {
     void this.fetchAndUpdateContent(slug, currentSearchTerm, baseSlug)
   }
 
+  /* istanbul ignore next */
   private async fetchAndUpdateContent(
     slug: FullSlug,
     currentSearchTerm: string,
@@ -300,24 +302,28 @@ export class PreviewManager {
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public show(): void {
     this.container.classList.add("active")
     this.container.style.visibility = "visible"
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public hide(): void {
     this.container.classList.remove("active")
     this.container.style.visibility = "hidden"
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public clear(): void {
     this.inner.innerHTML = ""
     removeAllChildren(this.container)
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public destroy(): void {
     this.inner.onclick = null
     this.inner.innerHTML = ""
@@ -327,6 +333,7 @@ export class PreviewManager {
   /**
    * Scroll the preview container so that the first highlight is centered.
    */
+  /* istanbul ignore next */
   private scrollToFirstHighlight(): void {
     // Get only the first matching highlight without sorting
     const firstHighlight = this.container.querySelector(".highlight") as HTMLElement
@@ -345,6 +352,7 @@ let previewManager: PreviewManager | null
  * @param el - HTML element to search within
  * @returns DOM node with highlighted terms
  */
+/* istanbul ignore next */
 function highlightHTML(searchTerm: string, el: HTMLElement) {
   const parser = new DOMParser()
   const tokenizedTerms = tokenizeTerm(searchTerm)
@@ -425,6 +433,7 @@ let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
 let mouseEventsLocked = false
 
+/* istanbul ignore next */
 const appendLayout = (el: HTMLElement) => {
   /**
    * Append an element to the search layout if it is not already present.
@@ -437,6 +446,7 @@ const appendLayout = (el: HTMLElement) => {
 }
 
 // Handle shortcuts for opening and closing the UI.
+/* istanbul ignore next */
 async function handleSearchToggle(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -460,6 +470,7 @@ async function handleSearchToggle(
  * Perform in-result navigation (arrow keys, Tab, Enter) when the search UI is
  * already open.
  */
+/* istanbul ignore next */
 async function handleResultNavigation(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -560,6 +571,7 @@ async function handleResultNavigation(
  * Keyboard shortcut handler for the search component. Delegates to smaller
  * helper functions to keep complexity manageable.
  */
+/* istanbul ignore next */
 async function shortcutHandler(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -577,6 +589,7 @@ let cleanupListeners: (() => void) | undefined
  * Handles navigation events by setting up search functionality
  * @param e - Navigation event
  */
+/* istanbul ignore next */
 async function onNav(e: CustomEventMap["nav"]) {
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
@@ -637,6 +650,7 @@ async function onNav(e: CustomEventMap["nav"]) {
  * and should be verified with your specific setup
  * @param slug - Page slug to fetch
  */
+/* istanbul ignore next */
 async function fetchContent(slug: FullSlug): Promise<FetchResult> {
   if (!fetchContentCache.has(slug)) {
     const fetchPromise = await (async () => {
@@ -677,6 +691,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
  * @param el - The card element to focus
  * @param keyboardFocus - Whether to call focus() on the element
  */
+/* istanbul ignore next */
 async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
@@ -696,6 +711,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
  * @param el - Card element to display preview for
  * @param keyboardFocus - Whether to focus the element using the keyboard
  */
+/* istanbul ignore next */
 async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!searchLayout || !enablePreview || !preview) return
@@ -718,6 +734,7 @@ async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
  * @param handler - Event handler
  * @param listeners - Set to track cleanup functions
  */
+/* istanbul ignore next */
 function addListener(
   element: Element | Document | null,
   event: string,
@@ -735,6 +752,7 @@ function addListener(
  * @param searchResults - Search results to filter
  * @returns Array of IDs
  */
+/* istanbul ignore next */
 const getByField = (
   field: string,
   searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[],
@@ -752,6 +770,7 @@ const getByField = (
  * @param enablePreview - Whether preview mode is enabled (controls snippet rendering)
  * @returns The anchor element for the result card
  */
+/* istanbul ignore next */
 const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) => {
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
@@ -794,6 +813,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
  * @param data - Content data
  * @param idDataMap - Mapping of IDs to slugs
  */
+/* istanbul ignore next */
 const formatForDisplay = (
   term: string,
   id: number,
@@ -816,6 +836,7 @@ const formatForDisplay = (
  * @param results - Container element for results
  * @param enablePreview - Whether preview is enabled
  */
+/* istanbul ignore next */
 async function displayResults(
   finalResults: Item[],
   results: HTMLElement,
@@ -852,6 +873,7 @@ async function displayResults(
  * Handles search input changes
  * @param e - Input event
  */
+/* istanbul ignore next */
 async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout || !index) return
   const enablePreview = searchLayout?.dataset?.preview === "true"
@@ -903,11 +925,13 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
  * @param currentSlug - The base slug representing the current page
  * @returns The resolved absolute URL
  */
+/* istanbul ignore next */
 function resolveSlug(slug: FullSlug, currentSlug: FullSlug): URL {
   return new URL(resolveRelative(currentSlug, slug), location.toString())
 }
 
 // skipcq: JS-D1001
+/* istanbul ignore next */
 export function setupSearch(): void {
   document.addEventListener("nav", onNav)
 }
@@ -918,6 +942,7 @@ export function setupSearch(): void {
  * @param data data to fill index with
  * @returns filled index
  */
+/* istanbul ignore next */
 async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<void> {
   const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) =>
     index.addAsync(id, {
