@@ -17,8 +17,9 @@ aliases:
   - number-proposal
   - rethinking-number-writing
 date_published: 2025-07-25 13:30:55.478301
-date_updated: 2025-07-25 13:30:55.478301
+date_updated: 2025-08-14 23:57:58.815232
 ---
+
 
 We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and totally practical fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 

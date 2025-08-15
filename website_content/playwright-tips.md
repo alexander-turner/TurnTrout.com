@@ -13,9 +13,10 @@ aliases:
   - playwright
   - visual-regression
   - lostpixel
-date_published: &id001 2025-08-12 07:48:13.242307
-date_updated: *id001
+date_published: 2025-08-12 07:48:13.242307
+date_updated: 2025-08-14 23:57:58.815232
 ---
+
 
 # Background
 

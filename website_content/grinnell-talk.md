@@ -15,9 +15,10 @@ aliases:
   - reunion-talk
   - talk-agi
   - intro-agi-risk
-date_published: &id001 2025-06-29 16:49:07.944742
-date_updated: *id001
+date_published: 2025-06-29 16:49:07.944742
+date_updated: 2025-08-14 23:57:58.815232
 ---
+
 
 > [!info] Notes from a talk originally given at my alma mater
 > I went to [Grinnell College](https://grinnell.edu) for my undergraduate degree. For the 2025 reunion event, I agreed to speak on a panel about AI. I like the talk I gave because I think it's a good "101" intro to AI risk, aimed at educated laypeople.
