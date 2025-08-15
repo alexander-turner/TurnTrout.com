@@ -109,6 +109,17 @@ Header 1
 >
 > 2. Yes, the Marauder's Map influenced the US's decision to enter World War I.
 
+# Transclusion
+>
+> ![[about#^first-para]]
+
+> [!quote]
+> ![[#Section to transclude]]
+>
+## Section to transclude
+
+Hi! Am I being transcluded?
+
 # Admonitions
 
 > [!quote]
@@ -279,16 +290,12 @@ Table: A `<figcaption>` element created from the Markdown cue of "Table:".
 
 Table: Ensure that word wrapping works properly on table header elements to prevent overflow.
 
-# Media
-
-## Video
+# Video
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"></video>
 
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>
 <source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"></video>
-
-### Layout shift?
 
 Checking for layout shift due to these videos which contrast the site before and after CLS prevention measures:
 
@@ -304,22 +311,11 @@ Checking for layout shift due to these videos which contrast the site before and
   </div>
 </figure>
 
-## Audio
+# Audio
 
 <center><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></center>
 
-## Transclusion
->
-> ![[about#^first-para]]
-
-> [!quote]
-> ![[#Section to transclude]]
->
-### Section to transclude
-
-Hi! Am I being transcluded?
-
-## Images
+# Images
 
 ![Sample complexity of different kinds of DCTs.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
 
@@ -333,7 +329,7 @@ Figure: This image should be transparent in light mode and have a light backgrou
 
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
 
-## Fatebook embed
+# Fatebook embed
 
 <iframe src="https://fatebook.io/embed/q/are-you-going-to-like-turntrout-com---cm2u10nym00029cc3j1h05pot?compact=true&requireSignIn=false" height="200"></iframe>
 
