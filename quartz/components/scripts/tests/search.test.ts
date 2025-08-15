@@ -111,13 +111,40 @@ describe("highlight", () => {
     )
   })
 
-  it("should trim the text and add ellipsis", () => {
-    const text =
-      "This is a long text with the search term appearing in the middle. More text follows."
-    const highlighted = highlight("search term", text, true)
-    expect(highlighted).toContain("...")
-    expect(highlighted).toContain('<span class="highlight">search</span>')
-    expect(highlighted).toContain('<span class="highlight">term</span>')
+  describe("Trimming and ellipsis", () => {
+    const generateText = (numWords: number, suffix = "") =>
+      Array.from({ length: numWords }, (_, i) => `word${i}${suffix}`).join(" ")
+
+    it("should not trim short text", () => {
+      const text = `${generateText(10)} match ${generateText(10)}`
+      const highlighted = highlight("match", text, true)
+      expect(highlighted).not.toContain("...")
+      expect(highlighted).toContain('<span class="highlight">match</span>')
+    })
+
+    it("should trim long text with match in the middle and add ellipsis on both sides", () => {
+      const text = `${generateText(50)} match ${generateText(50)}`
+      const highlighted = highlight("match", text, true)
+      expect(highlighted.startsWith("...")).toBe(true)
+      expect(highlighted.endsWith("...")).toBe(true)
+      expect(highlighted).toContain('<span class="highlight">match</span>')
+    })
+
+    it("should trim long text with match at the beginning and add ellipsis at the end", () => {
+      const text = `match ${generateText(100)}`
+      const highlighted = highlight("match", text, true)
+      expect(highlighted.startsWith("...")).toBe(false)
+      expect(highlighted.endsWith("...")).toBe(true)
+      expect(highlighted).toContain('<span class="highlight">match</span>')
+    })
+
+    it("should trim long text with match at the end and add ellipsis at the beginning", () => {
+      const text = `${generateText(100)} match`
+      const highlighted = highlight("match", text, true)
+      expect(highlighted.startsWith("...")).toBe(true)
+      expect(highlighted.endsWith("...")).toBe(false)
+      expect(highlighted).toContain('<span class="highlight">match</span>')
+    })
   })
 })
 
@@ -225,9 +252,9 @@ describe("showSearch", () => {
 })
 
 describe("hideSearch", () => {
-  let container: HTMLElement
+  let searchContainer: HTMLElement
   let searchBar: HTMLInputElement
-  let results: HTMLElement
+  let searchResults: HTMLElement
 
   beforeEach(() => {
     document.body.innerHTML = `
@@ -236,18 +263,27 @@ describe("hideSearch", () => {
         <div id="results-container">
           <div>Result 1</div>
         </div>
+        <div id="preview-container"></div>
       </div>
     `
-    container = document.getElementById("search-container") as HTMLElement
+    searchContainer = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
-    results = document.getElementById("results-container") as HTMLElement
+    searchResults = document.getElementById("results-container") as HTMLElement
   })
 
   it("should hide the search container and clear the search bar", () => {
     hideSearch()
-    expect(container.classList.contains("active")).toBe(false)
+    expect(searchContainer.classList.contains("active")).toBe(false)
     expect(searchBar.value).toBe("")
-    expect(results.children.length).toBe(0)
+    expect(searchResults.children.length).toBe(0)
+  })
+
+  it("hideSearch should hide the search container and the preview manager", () => {
+    hideSearch()
+
+    const previewContainer = document.getElementById("preview-container") as HTMLElement
+    expect(previewContainer.classList.contains("active")).toBe(false)
+    expect(previewContainer.style.visibility).toBe("")
   })
 })
 

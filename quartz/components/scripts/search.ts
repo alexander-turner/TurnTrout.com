@@ -106,6 +106,7 @@ export const tokenizeTerm = (term: string): string[] => {
 export function highlight(searchTerm: string, text: string, trim?: boolean) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
   let tokenizedText = text.split(/\s+/).filter((t) => t !== "")
+  const originalTokenLen = tokenizedText.length
 
   let startIndex = 0
   let endIndex = tokenizedText.length - 1
@@ -128,7 +129,8 @@ export function highlight(searchTerm: string, text: string, trim?: boolean) {
 
     startIndex = Math.max(bestIndex - contextWindowWords, 0)
     endIndex = Math.min(startIndex + 2 * contextWindowWords, tokenizedText.length - 1)
-    tokenizedText = tokenizedText.slice(startIndex, endIndex)
+    // Include both startIndex and endIndex tokens in the slice
+    tokenizedText = tokenizedText.slice(startIndex, endIndex + 1)
   }
 
   const slice = tokenizedText
@@ -150,7 +152,7 @@ export function highlight(searchTerm: string, text: string, trim?: boolean) {
     beginning = "..."
   }
   let end = ""
-  if (endIndex !== tokenizedText.length - 1) {
+  if (endIndex < originalTokenLen - 1) {
     end = "..."
   }
   return `${beginning}${slice}${end}`
@@ -224,6 +226,7 @@ export class PreviewManager {
     this.inner.classList.add("preview-inner")
     this.container.appendChild(this.inner)
   }
+
   /**
    * Update the preview panel to reflect the provided result element.
    * If no element is provided, the preview is hidden.
