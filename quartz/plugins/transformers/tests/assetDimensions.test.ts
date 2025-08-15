@@ -121,6 +121,7 @@ describe("Asset Dimensions Plugin", () => {
     // skipcq: JS-P1003
     await fsExtra.remove(tempDir)
     jest.restoreAllMocks()
+    assetProcessor.resetDirectCacheAndDirtyFlag()
   })
 
   describe("maybeLoadDimensionCache", () => {
@@ -194,6 +195,20 @@ describe("Asset Dimensions Plugin", () => {
       )
       consoleWarnSpy.mockRestore()
     })
+
+    it("should return cached dimensions without reading file if already loaded", async () => {
+      const preloadedCache: AssetDimensionMap = {
+        "preloaded.png": { width: 42, height: 24 },
+      }
+      assetProcessor.setDirectCache(preloadedCache)
+      const readFileSpy = jest.spyOn(fs, "readFile")
+
+      const returnedCache = await assetProcessor.maybeLoadDimensionCache()
+      expect(returnedCache).toBe(preloadedCache)
+
+      expect(readFileSpy).not.toHaveBeenCalled()
+      readFileSpy.mockRestore()
+    })
   })
 
   describe("maybeSaveImageDimensions", () => {
@@ -230,6 +245,25 @@ describe("Asset Dimensions Plugin", () => {
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).not.toHaveBeenCalled()
       expect(renameSpy).not.toHaveBeenCalled()
+    })
+
+    it("should not attempt to save if cache is null even when dirty flag is set", async () => {
+      assetProcessor.resetDirectCacheAndDirtyFlag()
+      assetProcessor.setDirectCache(null)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      const writeFileSpy = jest.spyOn(fs, "writeFile")
+      const renameSpy = jest.spyOn(fs, "rename")
+
+      await assetProcessor.maybeSaveAssetDimensions()
+
+      expect(writeFileSpy).not.toHaveBeenCalled()
+      expect(renameSpy).not.toHaveBeenCalled()
+      // Dirty flag should remain true since nothing was saved
+      expect(assetProcessor["needToSaveCache"]).toBe(true)
+
+      writeFileSpy.mockRestore()
+      renameSpy.mockRestore()
     })
 
     it("should handle write errors gracefully", async () => {
@@ -367,6 +401,33 @@ describe("Asset Dimensions Plugin", () => {
       expect(mockSpawnSync).toHaveBeenCalled()
     })
 
+    it("should throw if ffprobe spawn fails with a generic error", async () => {
+      const cancel = jest.fn()
+      mockedFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
+        body: { cancel } as unknown as ReadableStream<Uint8Array>,
+        arrayBuffer: async () => mockVideoData,
+      } as unknown as NodeFetchResponse)
+      const genericError = new Error("Custom spawn error")
+      mockSpawnSync.mockReturnValueOnce({
+        pid: 1,
+        output: ["", "", ""],
+        stdout: "",
+        stderr: "",
+        status: null,
+        signal: null,
+        error: genericError,
+      } as unknown as SpawnSyncReturns<string>)
+
+      await expect(assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
+        `Error spawning ffprobe: ${genericError.message}`,
+      )
+      expect(cancel).toHaveBeenCalled()
+      expect(mockSpawnSync).toHaveBeenCalled()
+    })
+
     it("should throw for video if ffprobe fails (non-zero status)", async () => {
       const cancel = jest.fn()
       mockedFetch.mockResolvedValue({
@@ -433,7 +494,18 @@ describe("Asset Dimensions Plugin", () => {
         throw new Error("parsing error")
       })
       await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
-        /unsupported file type/,
+        "unsupported file type",
+      )
+      expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
+    })
+
+    it("should throw if image-size fails to parse remote asset", async () => {
+      mockFetchResolve(mockedFetch, Buffer.from("fakeimagedata"))
+      sizeOfMock.mockImplementation(() => {
+        throw new Error("parsing error")
+      })
+      await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
+        "unsupported file type",
       )
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
     })
@@ -900,6 +972,17 @@ describe("Asset Dimensions Plugin", () => {
       } finally {
         await fs.unlink(assetPath)
       }
+    })
+
+    it("should throw for local asset if image-size fails", async () => {
+      sizeOfMock.mockImplementation(() => {
+        throw new Error("parsing error")
+      })
+      const missing = path.join(tmpDir, "not-exist.png")
+      await fs.writeFile(missing, "fake-data")
+      await expect(
+        assetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
+      ).rejects.toThrow("unsupported file type")
     })
   })
 })
