@@ -317,9 +317,10 @@ def run_interactive_command(
     # Hide progress display during interactive process
     progress.update(task_id, visible=False)
     try:
-        # skipcq: BAN-B602 (a local command, assume safe)
+        # skipcq: BAN-B602
         subprocess.run(
             " ".join(step.command) if step.shell else step.command,
+            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             check=True,
@@ -347,9 +348,10 @@ def run_command(
         return run_interactive_command(step, progress, task_id)
 
     try:
-        # skipcq: BAN-B602 (a local command, assume safe)
+        # skipcq: BAN-B602
         with subprocess.Popen(
             " ".join(step.command) if step.shell else step.command,
+            # skipcq: BAN-B602 (a local command, assume safe)
             shell=step.shell,
             cwd=step.cwd,
             stdout=subprocess.PIPE,
@@ -459,10 +461,11 @@ def get_check_steps(
             name="Cleaning up SCSS",
             command=["npx", "stylelint", "--fix", "quartz/**/*.scss"],
         ),
-        # skipcq: BAN-B604 (a local command, assume safe)
+        # skipcq: BAN-B604
         CheckStep(
             name="Spellchecking",
             command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -483,13 +486,14 @@ def get_check_steps(
                 "--cov-fail-under=100",
             ],
         ),
-        # skipcq: BAN-B604 (a local command, assume safe)
+        # skipcq: BAN-B604
         CheckStep(
             name="Compressing and uploading local assets",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/handle_local_assets.sh",
             ],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -502,13 +506,14 @@ def get_check_steps(
     ]
 
     steps_after_server = [
-        # skipcq: BAN-B604 (a local command, assume safe)
+        # skipcq: BAN-B604
         CheckStep(
             name="Checking built CSS for unknown CSS variables",
             command=[
                 "fish",
                 f"{git_root_path}/scripts/check_css_vars.fish",
             ],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
         CheckStep(
@@ -518,10 +523,11 @@ def get_check_steps(
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
         ),
-        # skipcq: BAN-B604 (a local command, assume safe)
+        # skipcq: BAN-B604
         CheckStep(
             name="Checking link validity",
             command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
+            # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
         ),
     ]
