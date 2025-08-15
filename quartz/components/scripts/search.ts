@@ -83,7 +83,7 @@ const numSearchResults = 8
  * @example
  * tokenizeTerm("hello world") // returns ["hello world", "hello", "world"]
  */
-const tokenizeTerm = (term: string): string[] => {
+export const tokenizeTerm = (term: string): string[] => {
   const tokens = term.split(/\s+/).filter((t) => t.trim() !== "")
   const tokenLen = tokens.length
   if (tokenLen > 1) {
@@ -102,7 +102,7 @@ const tokenizeTerm = (term: string): string[] => {
  * @param trim - If true, returns a window of text around matches
  * @returns HTML string with highlighted terms wrapped in <span class="highlight">
  */
-function highlight(searchTerm: string, text: string, trim?: boolean) {
+export function highlight(searchTerm: string, text: string, trim?: boolean) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
   let tokenizedText = text.split(/\s+/).filter((t) => t !== "")
 
@@ -158,14 +158,14 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
 /**
  * Escapes special characters in a string for use in RegExp
  */
-function escapeRegExp(text: string) {
+export function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 /**
  * Creates a span element with the class "highlight" and the given text
  */
-const createHighlightSpan = (text: string): HTMLSpanElement => {
+export const createHighlightSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
   span.className = "highlight"
   span.textContent = text
@@ -212,7 +212,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
  * Creates an inner article element, fetches the target content, applies
  * highlighting, and handles show/hide/clear operations.
  */
-class PreviewManager {
+export class PreviewManager {
   private container: HTMLDivElement
   private inner: HTMLElement
   private currentSlug: FullSlug | null = null
@@ -313,6 +313,7 @@ class PreviewManager {
   // skipcq: JS-D1001
   public clear(): void {
     this.inner.innerHTML = ""
+    removeAllChildren(this.container)
   }
 
   // skipcq: JS-D1001
@@ -360,8 +361,8 @@ export const searchPlaceholderMobile = "Search"
 /**
  * Updates the search bar placeholder text based on screen width
  */
-function updatePlaceholder() {
-  const searchBar = document.getElementById("search-bar")
+export function updatePlaceholder(searchBar?: HTMLInputElement | null) {
+  if (!searchBar) return
   if (window.innerWidth > tabletBreakpoint) {
     searchBar?.setAttribute("placeholder", searchPlaceholderDesktop)
   } else {
@@ -374,7 +375,7 @@ function updatePlaceholder() {
  * @param container - The search container element
  * @param searchBar - The input element used for search
  */
-function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
+export function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
   if (!container || !searchBar) return
   const navbar = document.getElementById("navbar")
   if (navbar) {
@@ -387,13 +388,13 @@ function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement |
   searchBar.focus()
   searchBar.select() // Needed for firefox
 
-  updatePlaceholder()
+  updatePlaceholder(searchBar)
 }
 
 /**
  * Hides the search interface and resets its state
  */
-function hideSearch() {
+export function hideSearch() {
   const container = document.getElementById("search-container")
   const searchBar = document.getElementById("search-bar") as HTMLInputElement | null
   const results = document.getElementById("results-container")
@@ -959,7 +960,10 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
  * @param container - The container element used as the reference
  * @returns The offsetTop in pixels relative to the container
  */
-function getOffsetTopRelativeToContainer(element: HTMLElement, container: HTMLElement): number {
+export function getOffsetTopRelativeToContainer(
+  element: HTMLElement,
+  container: HTMLElement,
+): number {
   let offsetTop = 0
   let currentElement: HTMLElement | null = element
 
