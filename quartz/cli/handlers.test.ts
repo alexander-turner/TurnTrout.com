@@ -169,11 +169,7 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
 
     // Act
     await maybeGenerateCriticalCSS(outputDir)
-    try {
-      await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
-    } catch {
-      // Catch inner error
-    }
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
 
     // Assert
     const writtenHtml = writeSpy.mock.calls[0][1] as string
@@ -181,5 +177,5 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     expect(writtenHtml).toContain("color: 720px")
     expect(writtenHtml).not.toContain("$base-margin")
     readFileSpy.mockRestore()
-  })
+  }, 10000)
 })

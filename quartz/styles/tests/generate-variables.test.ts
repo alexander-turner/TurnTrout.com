@@ -57,7 +57,11 @@ describe("SCSS Variable Generation", () => {
         throw testError
       })
 
+      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {
+        /* quiet the output */
+      })
       expect(() => generateScss()).toThrow(testError)
+      errorSpy.mockRestore()
     })
   })
 })
