@@ -10,8 +10,6 @@ yes | npm ci
 npx quartz build --serve 
 ```
 
-The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant (and also present in `docs/`).
-
 # Cryptographic timestamp verification
 
 To [verify that one of my commits was produced at a given date](https://turntrout.com/design#finishing-touches), you need to check out another repository:
