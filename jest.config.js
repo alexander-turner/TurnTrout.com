@@ -9,6 +9,17 @@ const config = {
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
 
+  coveragePathIgnorePatterns: ["quartz/cli/handlers.ts"],
+
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
+  },
+
   // A preset that is used as a base for Jest's configuration
   preset: "ts-jest",
 
