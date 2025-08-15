@@ -22,7 +22,8 @@ export const mouseFocusDelay = 100
 
 let currentSearchTerm = ""
 
-const index = new FlexSearch.Document<Item>({
+const documentType = FlexSearch.Document<Item>
+const index = new documentType({
   charset: "latin:advanced",
   tokenize: "strict",
   resolution: 1,
@@ -741,6 +742,7 @@ const getByField = (
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
+
 /**
  * Create the DOM element representing a single search result.
  *
@@ -814,7 +816,11 @@ const formatForDisplay = (
  * @param results - Container element for results
  * @param enablePreview - Whether preview is enabled
  */
-async function displayResults(finalResults: Item[], results: HTMLElement, enablePreview: boolean) {
+async function displayResults(
+  finalResults: Item[],
+  results: HTMLElement,
+  enablePreview: boolean,
+): Promise<void> {
   if (!results) return
 
   removeAllChildren(results)
@@ -846,7 +852,7 @@ async function displayResults(finalResults: Item[], results: HTMLElement, enable
  * Handles search input changes
  * @param e - Input event
  */
-async function onType(e: HTMLElementEventMap["input"]) {
+async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout || !index) return
   const enablePreview = searchLayout?.dataset?.preview === "true"
   currentSearchTerm = (e.target as HTMLInputElement).value
@@ -902,7 +908,7 @@ function resolveSlug(slug: FullSlug, currentSlug: FullSlug): URL {
 }
 
 // skipcq: JS-D1001
-export function setupSearch() {
+export function setupSearch(): void {
   document.addEventListener("nav", onNav)
 }
 
@@ -910,23 +916,20 @@ export function setupSearch() {
  * Fills flexsearch document with data
  * @param index index to fill
  * @param data data to fill index with
+ * @returns filled index
  */
-async function fillDocument(data: { [key: FullSlug]: ContentDetails }) {
-  let id = 0
-  const promises: Array<Promise<unknown>> = []
-  for (const [slug, fileData] of Object.entries<ContentDetails>(data)) {
-    promises.push(
-      index.addAsync(id++, {
-        id,
-        slug: slug as FullSlug,
-        title: fileData.title,
-        content: fileData.content,
-        authors: fileData.authors,
-      }),
-    )
-  }
+async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<void> {
+  const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) =>
+    index.addAsync(id, {
+      id,
+      slug: slug as FullSlug,
+      title: fileData.title,
+      content: fileData.content,
+      authors: fileData.authors,
+    }),
+  )
 
-  return await Promise.all(promises)
+  await Promise.all(promises)
 }
 
 /*
@@ -953,6 +956,7 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
   const nodeListElements = rootNode.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')
   return Array.from(nodeListElements)
 }
+
 /**
  * Compute the vertical offset of an element relative to a scrollable container.
  *
