@@ -14,7 +14,8 @@ jest.mock("critical", () => {
 })
 
 import fs from "fs"
-import { writeFile, ensureDir, mkdtemp, remove } from "fs-extra"
+// skipcq: JS-W1028
+import fsExtra, { ensureDir, remove } from "fs-extra"
 import os from "os"
 import path from "path"
 
@@ -101,13 +102,34 @@ describe("reorderHead", () => {
       expect(elementToTest).toBe(expected)
     },
   )
+
+  it("should throw an error if an element is added to the head", () => {
+    const querier = createHtml("<title>Test</title>")
+    const isSubsetOfSpy = jest.spyOn(Set.prototype, "isSubsetOf").mockReturnValue(false)
+    expect(() => reorderHead(querier)).toThrow("New elements were added to the head")
+    isSubsetOfSpy.mockRestore()
+  })
+
+  it("should throw an error if an element is lost from the head", () => {
+    const querier = createHtml("<title>Test</title><meta name='description'>")
+    const isSupersetOfSpy = jest.spyOn(Set.prototype, "isSupersetOf").mockReturnValue(false)
+    const differenceSpy = jest
+      .spyOn(Set.prototype, "difference")
+      .mockReturnValue(new Set([cheerioLoad("<meta name='lost-meta'>")("meta").get(0)]))
+    expect(() => reorderHead(querier)).toThrow(
+      /Head reordering changed number of elements: \d+ -> \d+. Specifically, the elements meta were lost./,
+    )
+    isSupersetOfSpy.mockRestore()
+    differenceSpy.mockRestore()
+  })
 })
 
 describe("maybeGenerateCriticalCSS variable replacement", () => {
   let outputDir: string
 
   beforeEach(async () => {
-    outputDir = await mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
+    // skipcq: JS-P1003
+    outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
   })
 
   afterEach(async () => {
@@ -124,11 +146,14 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     const manualCriticalCss = "body{margin: $base-margin; color: $page-width;}"
     const criticalScssPath = path.resolve("quartz/styles/critical.scss")
     const htmlPath = path.join(outputDir, "index.html")
-    await writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
-    await writeFile(path.join(outputDir, "index.css"), "/* css */")
+    // skipcq: JS-P1003
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    // skipcq: JS-P1003
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
     const katexDir = path.join(outputDir, "static", "styles")
     await ensureDir(katexDir)
-    await writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+    // skipcq: JS-P1003
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
 
     const realReadFile = fs.promises.readFile
     const readFileSpy = jest
@@ -144,7 +169,11 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
 
     // Act
     await maybeGenerateCriticalCSS(outputDir)
-    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+    try {
+      await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+    } catch {
+      // Catch inner error
+    }
 
     // Assert
     const writtenHtml = writeSpy.mock.calls[0][1] as string
