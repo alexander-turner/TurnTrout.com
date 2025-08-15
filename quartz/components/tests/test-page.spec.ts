@@ -495,6 +495,7 @@ test.describe("Spoilers", () => {
     await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
       elementToScreenshot: spoiler,
       disableHover: false,
+      preserveSiblings: true,
     })
   })
 })
