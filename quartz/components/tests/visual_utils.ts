@@ -88,8 +88,11 @@ declare global {
  * Isolates a DOM element by hiding all other elements on the page.
  * @param elementLocator - The Playwright locator for the element to isolate.
  */
-async function performDOMIsolation(elementLocator: Locator): Promise<void> {
-  await elementLocator.evaluate((targetElement) => {
+async function performDOMIsolation(
+  elementLocator: Locator,
+  preserveSiblings: boolean,
+): Promise<void> {
+  await elementLocator.evaluate((targetElement, preserveSiblings) => {
     const elementsToKeep = new Set<Element>()
 
     // Add target element and all its descendants
@@ -98,7 +101,7 @@ async function performDOMIsolation(elementLocator: Locator): Promise<void> {
     descendants.forEach((descendant) => elementsToKeep.add(descendant))
 
     // Preserve siblings of the target element (and their descendants) to maintain local layout context
-    if (targetElement.parentElement) {
+    if (preserveSiblings && targetElement.parentElement) {
       const siblings = Array.from(targetElement.parentElement.children)
       for (const sibling of siblings) {
         if (sibling === targetElement) continue
@@ -130,7 +133,7 @@ async function performDOMIsolation(elementLocator: Locator): Promise<void> {
 
     // Store restoration data on window for later access
     window.__elementsToRestoreData = hiddenElements
-  })
+  }, preserveSiblings)
 }
 
 /**
@@ -161,6 +164,7 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
+  preserveSiblings?: boolean
 }
 
 /**
@@ -199,7 +203,7 @@ export async function takeRegressionScreenshot(
   if (options?.elementToScreenshot) {
     // Temporarily isolate element to prevent position shifts from unrelated content changes
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
-    await performDOMIsolation(elementToIsolate)
+    await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
     // skipcq: JS-0098
     const restoreDOM = async (): Promise<void> => {
       await restoreDOMFromIsolation(page)
