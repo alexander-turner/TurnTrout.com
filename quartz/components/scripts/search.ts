@@ -189,6 +189,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
 
     Array.from(node.childNodes).forEach((child) => highlightTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {
+    /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
@@ -406,7 +407,7 @@ export function showSearch(container: HTMLElement | null, searchBar: HTMLInputEl
 /**
  * Hides the search interface and resets its state
  */
-export function hideSearch() {
+export function hideSearch(previewManagerArg: PreviewManager | null) {
   const container = document.getElementById("search-container")
   const searchBar = document.getElementById("search-bar") as HTMLInputElement | null
   const results = document.getElementById("results-container")
@@ -421,10 +422,10 @@ export function hideSearch() {
   }
 
   // Clean up preview
-  if (previewManager) {
-    previewManager.hide()
+  if (previewManagerArg) {
+    previewManagerArg.hide()
     // Ensure no residual information is left in the preview
-    previewManager.clear()
+    previewManagerArg.clear()
   }
 }
 
@@ -459,7 +460,7 @@ async function handleSearchToggle(
     e.preventDefault()
     const searchBarOpen = container?.classList.contains("active")
     if (searchBarOpen) {
-      hideSearch()
+      hideSearch(previewManager)
     } else {
       showSearch(container, searchBar)
     }
@@ -636,7 +637,7 @@ async function onNav(e: CustomEventMap["nav"]) {
   addListener(searchIcon, "click", () => showSearch(container, searchBar), listeners)
   addListener(searchBar, "input", debouncedOnType, listeners)
 
-  const escapeCleanup = registerEscapeHandler(container, hideSearch)
+  const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
 
   cleanupListeners = () => {

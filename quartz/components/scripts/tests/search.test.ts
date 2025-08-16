@@ -263,7 +263,7 @@ describe("hideSearch", () => {
         <div id="results-container">
           <div>Result 1</div>
         </div>
-        <div id="preview-container"></div>
+        <div id="preview-container" class="active"></div>
       </div>
     `
     searchContainer = document.getElementById("search-container") as HTMLElement
@@ -272,18 +272,21 @@ describe("hideSearch", () => {
   })
 
   it("should hide the search container and clear the search bar", () => {
-    hideSearch()
+    hideSearch(null)
     expect(searchContainer.classList.contains("active")).toBe(false)
     expect(searchBar.value).toBe("")
     expect(searchResults.children.length).toBe(0)
   })
 
   it("hideSearch should hide the search container and the preview manager", () => {
-    hideSearch()
+    const previewContainer = document.getElementById("preview-container") as HTMLDivElement
+    expect(previewContainer.classList.contains("active")).toBe(true)
 
-    const previewContainer = document.getElementById("preview-container") as HTMLElement
+    const previewManager = new PreviewManager(previewContainer)
+    hideSearch(previewManager)
+
     expect(previewContainer.classList.contains("active")).toBe(false)
-    expect(previewContainer.style.visibility).toBe("")
+    expect(previewContainer.style.visibility).toBe("hidden")
   })
 })
 
@@ -452,5 +455,17 @@ describe("highlightTextNodes", () => {
     }
 
     expect(() => highlightTextNodes(container, "test")).not.toThrow()
+  })
+
+  it("should skip nodes inside #toc-content-mobile", () => {
+    const container = createContainer('<div id="toc-content-mobile"><p>test</p></div>')
+    highlightTextNodes(container, "test")
+    expect(container.querySelectorAll(".highlight").length).toBe(0)
+  })
+
+  it("should not re-highlight already highlighted elements", () => {
+    const container = createContainer('<p><span class="highlight">test</span> again</p>')
+    highlightTextNodes(container, "test")
+    expect(container.querySelectorAll(".highlight").length).toBe(1)
   })
 })
