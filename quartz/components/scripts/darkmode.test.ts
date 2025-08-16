@@ -229,5 +229,20 @@ describe("darkmode", () => {
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
     })
+
+    it("should default to auto for invalid stored theme", () => {
+      // Set an invalid theme in localStorage
+      localStorage.setItem("saved-theme", "invalid-theme")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
+
+      setupDarkMode()
+      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+
+      // Clicking the toggle should go from invalid -> auto (default) -> light
+      rotateTheme()
+      expect(localStorage.getItem("saved-theme")).toBe("auto")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+    })
   })
 })

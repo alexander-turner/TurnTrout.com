@@ -2,6 +2,7 @@ import { wrapWithoutTransition } from "./component_script_utils"
 
 export type Theme = "light" | "dark" | "auto"
 
+/* istanbul ignore next: Browser API, tested in darkmode.spec.ts */
 /**
  * Determines the system's color scheme preference
  * @returns The system's preferred theme ('light' or 'dark')
@@ -10,6 +11,7 @@ export function getSystemTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 }
 
+/* istanbul ignore next: DOM manipulation, tested in darkmode.spec.ts */
 /**
  * Updates the theme text in the toggle button
  * @param theme - The current theme
@@ -21,6 +23,7 @@ function updateThemeLabel(theme: Theme) {
   }
 }
 
+/* istanbul ignore next: DOM manipulation, tested in darkmode.spec.ts */
 /**
  * Updates the DOM to reflect the current theme state
  * @param theme - The theme to apply
@@ -31,6 +34,7 @@ function setThemeClassOnRoot(theme: Theme) {
   document.documentElement.setAttribute("data-theme", themeToApply)
 }
 
+/* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */
 /**
  * Updates the theme state and related UI elements
  * @param theme - The theme state to apply
@@ -41,6 +45,7 @@ export function handleThemeUpdate(theme: Theme): void {
   updateThemeLabel(theme)
 }
 
+/* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */
 const getNextTheme = (): Theme => {
   const currentTheme = localStorage.getItem("saved-theme") || "auto"
   let nextTheme: Theme
@@ -70,6 +75,7 @@ export const rotateTheme = () => {
   handleThemeUpdate(nextTheme)
 }
 
+/* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */
 /**
  * Initializes the dark mode functionality:
  * - Sets up initial theme based on saved preference or auto mode
