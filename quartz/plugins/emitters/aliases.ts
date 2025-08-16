@@ -5,6 +5,8 @@ import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
 
+export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
+
 /**
  * Quartz emitter plugin that creates HTML redirect files for page aliases and permalinks.
  *
