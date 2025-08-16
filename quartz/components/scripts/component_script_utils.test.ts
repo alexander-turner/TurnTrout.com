@@ -6,6 +6,8 @@ import {
   withoutTransition,
   wrapWithoutTransition,
   animate,
+  registerEscapeHandler,
+  removeAllChildren,
 } from "./component_script_utils"
 
 const frameTime = 16
@@ -69,6 +71,45 @@ describe("throttle", () => {
 
     expect(func).toHaveBeenCalledTimes(2)
   })
+
+  it("should schedule execution via requestAnimationFrame when called before delay", () => {
+    const func = jest.fn()
+    const throttled = throttle(func, 100)
+
+    // First call executes immediately
+    throttled()
+    expect(func).toHaveBeenCalledTimes(1)
+
+    // Reset mock to track next calls
+    func.mockClear()
+
+    // Call again quickly - should schedule for next frame
+    jest.advanceTimersByTime(50) // Not enough time has passed
+    throttled()
+    expect(func).not.toHaveBeenCalled() // Should not have called yet
+
+    // Advance by frame time to trigger requestAnimationFrame callback
+    jest.advanceTimersByTime(frameTime)
+    expect(func).toHaveBeenCalledTimes(1)
+  })
+
+  it("should ignore subsequent calls when frame is already scheduled", () => {
+    const func = jest.fn()
+    const throttled = throttle(func, 100)
+
+    // First call executes immediately
+    throttled()
+    func.mockClear()
+
+    // Call again quickly - should schedule for next frame
+    jest.advanceTimersByTime(50)
+    throttled()
+    throttled() // This should be ignored because frame is already scheduled
+    throttled() // This should also be ignored
+
+    jest.advanceTimersByTime(frameTime)
+    expect(func).toHaveBeenCalledTimes(1) // Only called once despite multiple attempts
+  })
 })
 
 describe("debounce", () => {
@@ -106,6 +147,79 @@ describe("debounce", () => {
     jest.runAllTimers()
     expect(func).toHaveBeenCalledTimes(1)
   })
+
+  it("should respect immediate flag and not call after wait period when immediate is true", () => {
+    const func = jest.fn()
+    const debounced = debounce(func, 100, true)
+    const event = new KeyboardEvent("keydown")
+
+    // First call should execute immediately
+    debounced(event)
+    expect(func).toHaveBeenCalledTimes(1)
+
+    // Second call within wait period should be ignored completely
+    jest.advanceTimersByTime(50)
+    debounced(event)
+    expect(func).toHaveBeenCalledTimes(1)
+
+    // Even after wait period, no trailing call should happen
+    jest.advanceTimersByTime(100)
+    jest.runAllTimers()
+    expect(func).toHaveBeenCalledTimes(1)
+  })
+
+  it("should allow immediate call again after wait period with immediate flag", () => {
+    const func = jest.fn()
+    const debounced = debounce(func, 100, true)
+    const event = new KeyboardEvent("keydown")
+
+    // First call should execute immediately
+    debounced(event)
+    expect(func).toHaveBeenCalledTimes(1)
+
+    // Wait for cooldown period to expire
+    jest.advanceTimersByTime(150)
+
+    // Next call should execute immediately again
+    debounced(event)
+    expect(func).toHaveBeenCalledTimes(2)
+  })
+
+  it("should handle cancel method", () => {
+    const func = jest.fn()
+    const debounced = debounce(func, 100)
+    const consoleSpy = jest.spyOn(console, "debug").mockImplementation(() => {
+      /* no console printing within test */
+    })
+
+    debounced()
+    debounced.cancel()
+
+    jest.advanceTimersByTime(150)
+    jest.runAllTimers()
+    expect(func).not.toHaveBeenCalled()
+    expect(consoleSpy).toHaveBeenCalledWith("cancelling debounce")
+
+    consoleSpy.mockRestore()
+  })
+
+  it("should handle frame timing correctly in checkTime", () => {
+    const func = jest.fn()
+    const debounced = debounce(func, 100)
+
+    debounced()
+
+    // Advance time but not enough to trigger execution
+    jest.advanceTimersByTime(frameTime) // First frame
+    expect(func).not.toHaveBeenCalled()
+
+    jest.advanceTimersByTime(frameTime) // Second frame, still not enough
+    expect(func).not.toHaveBeenCalled()
+
+    // Advance enough time to trigger execution
+    jest.advanceTimersByTime(100)
+    expect(func).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe("withoutTransition", () => {
@@ -130,6 +244,26 @@ describe("withoutTransition", () => {
     expect(document.head.appendChild).toHaveBeenCalled()
     expect(action).toHaveBeenCalled()
     expect(document.head.removeChild).toHaveBeenCalled()
+  })
+
+  it("should use requestAnimationFrame fallback when getComputedStyle is undefined", () => {
+    // Temporarily remove getComputedStyle
+    const originalGetComputedStyle = window.getComputedStyle
+    // @ts-expect-error - Intentionally setting to undefined for test
+    window.getComputedStyle = undefined
+
+    const action = jest.fn()
+    withoutTransition(action)
+
+    expect(document.head.appendChild).toHaveBeenCalled()
+    expect(action).toHaveBeenCalled()
+
+    // Should use requestAnimationFrame for cleanup
+    jest.advanceTimersByTime(frameTime)
+    expect(document.head.removeChild).toHaveBeenCalled()
+
+    // Restore getComputedStyle
+    window.getComputedStyle = originalGetComputedStyle
   })
 })
 
@@ -174,6 +308,164 @@ describe("wrapWithoutTransition", () => {
 
     addClassSpy.mockRestore()
     removeClassSpy.mockRestore()
+  })
+})
+
+describe("registerEscapeHandler", () => {
+  let container: HTMLElement
+  let mockCallback: jest.Mock
+
+  beforeEach(() => {
+    container = document.createElement("div")
+    mockCallback = jest.fn()
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    document.body.removeChild(container)
+  })
+
+  it("should return empty function when container is null", () => {
+    const cleanup = registerEscapeHandler(null, mockCallback)
+    cleanup()
+    expect(mockCallback).not.toHaveBeenCalled()
+  })
+
+  it("should handle click events on the container", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+
+    // Create and dispatch click event on the container
+    const clickEvent = new MouseEvent("click", { bubbles: true })
+    Object.defineProperty(clickEvent, "target", { value: container })
+    container.dispatchEvent(clickEvent)
+
+    expect(mockCallback).toHaveBeenCalledTimes(1)
+    cleanup()
+  })
+
+  it("should ignore click events not on the container", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+    const otherElement = document.createElement("span")
+
+    // Create and dispatch click event on a different element
+    const clickEvent = new MouseEvent("click", { bubbles: true })
+    Object.defineProperty(clickEvent, "target", { value: otherElement })
+    container.dispatchEvent(clickEvent)
+
+    expect(mockCallback).not.toHaveBeenCalled()
+    cleanup()
+  })
+
+  it("should handle escape key events", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+
+    // Create and dispatch escape key event
+    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+    window.dispatchEvent(escapeEvent)
+
+    expect(mockCallback).toHaveBeenCalledTimes(1)
+    cleanup()
+  })
+
+  it("should ignore non-escape key events", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+
+    // Create and dispatch non-escape key event
+    const enterEvent = new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+    window.dispatchEvent(enterEvent)
+
+    expect(mockCallback).not.toHaveBeenCalled()
+    cleanup()
+  })
+
+  it("should clean up event listeners", () => {
+    const removeEventListenerSpy = jest.spyOn(container, "removeEventListener")
+    const windowRemoveEventListenerSpy = jest.spyOn(window, "removeEventListener")
+
+    const cleanup = registerEscapeHandler(container, mockCallback)
+    cleanup()
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("click", expect.any(Function))
+    expect(windowRemoveEventListenerSpy).toHaveBeenCalledWith("keydown", expect.any(Function))
+
+    removeEventListenerSpy.mockRestore()
+    windowRemoveEventListenerSpy.mockRestore()
+  })
+
+  it("should prevent default behavior on click", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+
+    const clickEvent = new MouseEvent("click", { bubbles: true })
+    Object.defineProperty(clickEvent, "target", { value: container })
+    const preventDefaultSpy = jest.spyOn(clickEvent, "preventDefault")
+
+    container.dispatchEvent(clickEvent)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
+    cleanup()
+  })
+
+  it("should prevent default behavior on escape key", () => {
+    const cleanup = registerEscapeHandler(container, mockCallback)
+
+    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+    const preventDefaultSpy = jest.spyOn(escapeEvent, "preventDefault")
+
+    window.dispatchEvent(escapeEvent)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
+    cleanup()
+  })
+})
+
+describe("removeAllChildren", () => {
+  let parentElement: HTMLElement
+
+  beforeEach(() => {
+    parentElement = document.createElement("div")
+  })
+
+  it("should remove all child nodes", () => {
+    // Add some child elements
+    const child1 = document.createElement("span")
+    const child2 = document.createElement("p")
+    const textNode = document.createTextNode("text")
+
+    parentElement.appendChild(child1)
+    parentElement.appendChild(child2)
+    parentElement.appendChild(textNode)
+
+    expect(parentElement.childNodes.length).toBe(3)
+
+    removeAllChildren(parentElement)
+
+    expect(parentElement.childNodes.length).toBe(0)
+  })
+
+  it("should handle element with no children", () => {
+    expect(parentElement.childNodes.length).toBe(0)
+
+    removeAllChildren(parentElement)
+
+    expect(parentElement.childNodes.length).toBe(0)
+  })
+
+  it("should remove nested child elements", () => {
+    const child1 = document.createElement("div")
+    const nestedChild = document.createElement("span")
+    child1.appendChild(nestedChild)
+
+    const child2 = document.createElement("p")
+
+    parentElement.appendChild(child1)
+    parentElement.appendChild(child2)
+
+    expect(parentElement.childNodes.length).toBe(2)
+    expect(child1.childNodes.length).toBe(1)
+
+    removeAllChildren(parentElement)
+
+    expect(parentElement.childNodes.length).toBe(0)
   })
 })
 
@@ -261,5 +553,31 @@ describe("animate", () => {
     jest.runAllTimers()
     expect(onFrame).toHaveBeenCalledWith(1)
     expect(onComplete).toHaveBeenCalled()
+  })
+
+  it("should handle zero duration cleanup function", () => {
+    const onFrame = jest.fn()
+    const onComplete = jest.fn()
+
+    const cleanup = animate(0, onFrame, onComplete)
+
+    // Try to clean up after zero duration - should work but do nothing
+    cleanup()
+
+    expect(onFrame).toHaveBeenCalledWith(1)
+    expect(onComplete).toHaveBeenCalled()
+  })
+
+  it("should handle negative duration", () => {
+    const onFrame = jest.fn()
+    const onComplete = jest.fn()
+
+    const cleanup = animate(-10, onFrame, onComplete)
+
+    expect(onFrame).toHaveBeenCalledWith(1)
+    expect(onComplete).toHaveBeenCalled()
+
+    // Cleanup should still work
+    cleanup()
   })
 })
