@@ -4,7 +4,7 @@ import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
 import globals from "globals"
-import tseslint from "typescript-eslint"
+import { configs as tseslintConfigs } from "typescript-eslint"
 
 export default [
   // Global rules and plugins
@@ -27,7 +27,7 @@ export default [
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslintConfigs.recommended,
   pluginReact.configs.flat.recommended,
 
   // Playwright specific config for test files

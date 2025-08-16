@@ -1,4 +1,4 @@
-import type { Root } from "hast"
+import type { Root, RootContent } from "hast"
 
 /**
  * @jest-environment jsdom
@@ -11,10 +11,10 @@ import { render } from "preact-render-to-string"
 import type { QuartzComponentProps } from "../types"
 
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
-import { type QuartzPluginData } from "../../plugins/vfile"
+import { FrontmatterData, type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
-import { Backlinks, getBacklinkFiles } from "../Backlinks"
+import { Backlinks, getBacklinkFileData, elementToJsx } from "../Backlinks"
 
 // Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
@@ -59,7 +59,7 @@ describe("getBacklinkFiles", () => {
   it("returns empty array when no backlinks exist", () => {
     const currentFile = createFileData({ slug: "page" as FullSlug })
     const allFiles = [currentFile]
-    expect(getBacklinkFiles(allFiles, currentFile)).toHaveLength(0)
+    expect(getBacklinkFileData(allFiles, currentFile)).toHaveLength(0)
   })
 
   it("finds files that link to current page", () => {
@@ -69,7 +69,7 @@ describe("getBacklinkFiles", () => {
       links: ["target" as SimpleSlug],
     })
     const allFiles = [currentFile, linkingFile]
-    expect(getBacklinkFiles(allFiles, currentFile)).toEqual([linkingFile])
+    expect(getBacklinkFileData(allFiles, currentFile)).toEqual([linkingFile])
   })
 
   it("excludes self-referential links", () => {
@@ -78,7 +78,7 @@ describe("getBacklinkFiles", () => {
       links: ["page" as SimpleSlug],
     })
     const allFiles = [currentFile]
-    expect(getBacklinkFiles(allFiles, currentFile)).toHaveLength(0)
+    expect(getBacklinkFileData(allFiles, currentFile)).toHaveLength(0)
   })
 
   it("excludes self-referential links with anchors", () => {
@@ -87,7 +87,7 @@ describe("getBacklinkFiles", () => {
       links: ["page#section" as SimpleSlug, "page#another-section" as SimpleSlug],
     })
     const allFiles = [currentFile]
-    expect(getBacklinkFiles(allFiles, currentFile)).toHaveLength(0)
+    expect(getBacklinkFileData(allFiles, currentFile)).toHaveLength(0)
   })
 
   it("includes links with anchors from other pages", () => {
@@ -97,7 +97,7 @@ describe("getBacklinkFiles", () => {
       links: ["target#section" as SimpleSlug],
     })
     const allFiles = [currentFile, linkingFile]
-    expect(getBacklinkFiles(allFiles, currentFile)).toEqual([linkingFile])
+    expect(getBacklinkFileData(allFiles, currentFile)).toEqual([linkingFile])
   })
 })
 
@@ -155,7 +155,7 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [currentFile])
-    const backlinkFiles = getBacklinkFiles([currentFile], currentFile)
+    const backlinkFiles = getBacklinkFileData([currentFile], currentFile)
     expect(backlinkFiles).toHaveLength(0)
 
     const element = preactH(Backlinks, props)
@@ -216,4 +216,82 @@ describe("Backlinks", () => {
     const props = createProps(currentFile, [linkingFile])
     expect(() => preactH(Backlinks, props)).not.toThrow()
   })
+
+  // Test abbreviations in titles are processed correctly
+  it("renders abbreviations in titles correctly", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+
+    const linkingFile = createFileData({
+      slug: "abbr-source" as FullSlug,
+      frontmatter: {
+        // Include an abbreviation element in the title
+        title: '<abbr class="initialism">AI</abbr>',
+      },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const element = preactH(Backlinks, props)
+    const html = render(element)
+
+    // Ensure the <abbr> element was rendered with the expected class and transformed text
+    expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/)
+  })
+
+  // Test non-abbreviation inline HTML elements are wrapped in a <span>
+  it("wraps non-abbreviation inline elements in a span", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+    const innerText = "cool"
+
+    const linkingFile = createFileData({
+      slug: "span-source" as FullSlug,
+      frontmatter: {
+        // Include italicized text which should be wrapped in a <span> by elementToJsx
+        title: `<em>${innerText}</em>`,
+      },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const element = preactH(Backlinks, props)
+    const html = render(element)
+
+    // The original <em> tag should have been replaced by a <span>
+    expect(html).not.toContain("<em>")
+    expect(html).toMatch(new RegExp(`<span[^>]*>${innerText}</span>`))
+  })
+
+  // Test files without a title are ignored during rendering
+  it("skips files missing a frontmatter title", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+
+    // This file links to the target but lacks a title
+    const noTitleFile = createFileData({
+      slug: "no-title" as FullSlug,
+      frontmatter: {} as FrontmatterData,
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [noTitleFile])
+    const element = preactH(Backlinks, props)
+    const html = render(element)
+
+    // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
+    expect(html).toContain("<blockquote")
+    expect(html.match(/<li/g)).toBeNull()
+  })
+
+  // Test unsupported RootContent type triggers default branch returning empty fragment
+  it("returns empty fragment for unsupported AST node types", () => {
+    // Create a comment node which is not handled explicitly by elementToJsx
+    const commentNode = { type: "comment", value: "ignored" } as unknown as RootContent
+
+    const jsx = elementToJsx(commentNode)
+    const html = render(jsx)
+
+    // Rendering an empty fragment yields an empty string
+    expect(html).toBe("")
+  })
 })
+
+// Ensure Jest collects coverage for this file
