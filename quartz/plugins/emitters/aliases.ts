@@ -5,12 +5,36 @@ import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
 
+/**
+ * Quartz emitter plugin that creates HTML redirect files for page aliases and permalinks.
+ *
+ * This plugin reads `aliases` and `permalink` fields from frontmatter and generates
+ * redirect HTML files that automatically redirect to the canonical page. Each redirect
+ * file includes proper metadata (Open Graph, Twitter Cards) for SEO and social sharing.
+ *
+ * Frontmatter fields used:
+ * - `aliases`: Array of alternative URLs that should redirect to this page
+ * - `permalink`: Alternative canonical URL for this page
+ * - `title`, `description`, `card_image`, `authors`: Metadata copied to redirect pages
+ *
+ * @example
+ * ```yaml
+ * # In a markdown file's frontmatter:
+ * aliases: ["old-url", "alternative-name"]
+ * permalink: "custom-permalink"
+ * title: "My Article"
+ * description: "Article description"
+ * ```
+ */
 export const AliasRedirects: QuartzEmitterPlugin = () => ({
   name: "AliasRedirects",
   getQuartzComponents() {
     return []
   },
-  // skipcq: JS-0116 - need async for type signature
+  /**
+   * Builds dependency graph showing which output files depend on which source files.
+   * Each alias and permalink creates a dependency edge from source file to output HTML.
+   */
   async getDependencyGraph(ctx, content) {
     const graph = new DepGraph<FilePath>()
 
@@ -25,7 +49,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       }
 
       for (let slug of slugs) {
-        // fix any slugs that have trailing slash
+        // Normalize directory-style URLs to explicit index.html files
         if (slug.endsWith("/")) {
           slug = joinSegments(slug, "index") as FullSlug
         }
@@ -39,6 +63,11 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
     return graph
   },
+
+  /**
+   * Generates HTML redirect files for all aliases and permalinks.
+   * Each redirect file contains metadata and auto-redirects to the canonical page.
+   */
   async emit(ctx, content): Promise<FilePath[]> {
     const { argv } = ctx
     const fps: FilePath[] = []
@@ -49,11 +78,12 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
       if (typeof permalink === "string") {
+        // When permalink exists, current slug becomes an alias and permalink becomes canonical
         slugs.push(file.data.slug as FullSlug)
         file.data.slug = permalink as FullSlug
       }
 
-      // Get metadata from the original file
+      // Extract metadata from frontmatter for SEO and social sharing
       const title = file.data.frontmatter?.title ?? ""
       const description = file.data.frontmatter?.description?.trim() ?? ""
       const cardImage =
@@ -68,7 +98,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
         const redirUrl = resolveRelative(slug, file.data.slug || ("" as FullSlug))
 
-        // Create HTML with matching metadata
+        // Generate redirect HTML with full metadata for SEO
         const fp = await write({
           ctx,
           content: `
