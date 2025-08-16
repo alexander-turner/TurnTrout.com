@@ -238,6 +238,26 @@ describe("Backlinks", () => {
     expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/)
   })
 
+  it("renders abbreviations without className using empty string fallback", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+
+    const linkingFile = createFileData({
+      slug: "abbr-no-class-source" as FullSlug,
+      frontmatter: {
+        // Include an abbreviation element without a class
+        title: "<abbr>HTML</abbr>",
+      },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const element = preactH(Backlinks, props)
+    const html = render(element)
+
+    // Ensure the <abbr> element was rendered with empty class (fallback branch)
+    expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/)
+  })
+
   // Test non-abbreviation inline HTML elements are wrapped in a <span>
   it("wraps non-abbreviation inline elements in a span", () => {
     const currentFile = createFileData({ slug: "target" as FullSlug })
