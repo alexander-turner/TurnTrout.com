@@ -11,8 +11,9 @@ const config = {
 
   coveragePathIgnorePatterns: [
     "quartz/cli/.*",
-    "quartz/depgraph.ts",
-    "quartz/util/.*",
+    "quartz/depgraph\\.ts",
+    "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
+    "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
   ],
 

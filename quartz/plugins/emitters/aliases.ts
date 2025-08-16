@@ -1,6 +1,8 @@
 import path from "path"
 
+import { type GlobalConfiguration } from "../../cfg"
 import DepGraph from "../../depgraph"
+import { renderHead } from "../../util/head"
 import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../../util/path"
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
@@ -85,14 +87,6 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
         file.data.slug = permalink as FullSlug
       }
 
-      // Extract metadata from frontmatter for SEO and social sharing
-      const title = file.data.frontmatter?.title ?? ""
-      const description = file.data.frontmatter?.description?.trim() ?? ""
-      const cardImage =
-        file.data.frontmatter?.card_image ??
-        "https://assets.turntrout.com/static/images/fb_preview.png"
-      const authors = file.data.frontmatter?.authors
-
       for (let slug of slugs) {
         if (slug.endsWith("/")) {
           slug = joinSegments(slug, "index") as FullSlug
@@ -101,6 +95,13 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
         const redirUrl = resolveRelative(slug, file.data.slug || ("" as FullSlug))
 
         // Generate redirect HTML with full metadata for SEO
+        const redirectMetadata = renderHead({
+          cfg: ctx.cfg as unknown as GlobalConfiguration,
+          fileData: file,
+          slug: file.data.slug as FullSlug,
+          redirect: { slug, to: file.data.slug as FullSlug },
+        })
+
         const fp = await write({
           ctx,
           content: `
@@ -110,38 +111,11 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
               <meta charset="utf-8">
               <link rel="canonical" href="${redirUrl}">
 
-              <title>${title}</title>
-              <meta name="description" content="${description}">
+              ${redirectMetadata}
 
               <meta name="robots" content="noindex">
               <meta http-equiv="refresh" content="0; url=${redirUrl}">
               <meta name="viewport" content="width=device-width">
-              
-              <!-- Open Graph metadata -->
-              <meta property="og:title" content="${title}">
-              <meta property="og:type" content="article">
-              <meta property="og:url" content="${redirUrl}">
-              <meta property="og:site_name" content="The Pond">
-              <meta property="og:description" content="${description}">
-              <meta property="og:image" content="${cardImage}">
-              <meta property="og:image:width" content="1200">
-              <meta property="og:image:height" content="630">
-              <meta property="og:image:alt" content="A pond containing a trout and a goose peacefully swimming near a castle.">
-              
-              <!-- Twitter Card metadata -->
-              <meta name="twitter:card" content="summary_large_image">
-              <meta name="twitter:title" content="${title}">
-              <meta name="twitter:description" content="${description}">
-              <meta name="twitter:image" content="${cardImage}">
-              <meta name="twitter:site" content="@Turn_Trout">
-              ${
-                authors
-                  ? `
-              <meta name="twitter:label1" content="Written by">
-              <meta name="twitter:data1" content="${authors}">
-              `
-                  : ""
-              }
             </head>
             </html>
             `,

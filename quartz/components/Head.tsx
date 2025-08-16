@@ -2,10 +2,11 @@
 // (For the spa-preserve attribute)
 // skipcq: JS-W1028
 import React from "react"
+import { VFile } from "vfile"
 
-import { i18n } from "../i18n"
+import { renderHead } from "../util/head"
+import { FullSlug } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
-import { formatTitle } from "./component_utils"
 import {
   type QuartzComponent,
   type QuartzComponentConstructor,
@@ -41,54 +42,20 @@ const CALLOUT_ICONS = [
 export default (() => {
   // skipcq: JS-D1001
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
-    let title = fileData.frontmatter?.title ?? i18n(cfg.locale).propertyDefaults.title
-    title = formatTitle(title)
+    // Create VFile from QuartzPluginData
+    const vfile = new VFile("")
+    vfile.data = fileData as Record<string, unknown>
 
-    let description = ""
-    if (fileData.frontmatter?.description) {
-      description = fileData.frontmatter.description
-    } else if (i18n(cfg.locale).propertyDefaults.description) {
-      description = i18n(cfg.locale).propertyDefaults.description
-    }
+    const head = renderHead({
+      cfg,
+      fileData: vfile,
+      slug: fileData.slug as FullSlug,
+    })
 
-    let authorElement = null
-    if (fileData.frontmatter?.authors) {
-      const authors = fileData.frontmatter.authors
-      authorElement = (
-        <>
-          <meta name="twitter:label1" content="Written by" />
-          <meta name="twitter:data1" content={authors} />
-        </>
-      )
-    }
-
-    // Reconstruct the URL for this page (its permalink)
-    const url = new URL(`https://${cfg.baseUrl ?? "turntrout.com"}/${fileData.slug}`)
-    const permalink = fileData.permalink || url.href
-
-    // Images and other assets ---
-    const iconPath = "/static/images/favicon.ico"
-    const appleIconPath = "https://assets.turntrout.com/static/images/apple-icon.png"
-    const siteImage = "https://assets.turntrout.com/static/images/fb_preview.png"
-
-    const cardImage = (fileData.frontmatter?.card_image as string) ?? siteImage
-
-    const altText =
-      cardImage === siteImage
-        ? "A pond containing a trout and a goose peacefully swimming near a castle."
-        : description
-    let mediaElement = (
-      <>
-        <meta property="og:image" content={cardImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={altText} />
-      </>
-    )
-
-    if (fileData?.frontmatter?.video_preview_link) {
-      mediaElement = <meta property="og:video" content={fileData.video_preview_link as string} />
-    }
+    // Icon paths
+    const iconPath = "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
+    const appleIconPath =
+      "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
 
     // Scripts
     const { js } = externalResources
@@ -173,31 +140,13 @@ export default (() => {
           src="/static/scripts/detectDarkMode.js"
           spa-preserve
         />
-        <title>{title}</title>
-        <meta name="description" content={description} />
-
         <meta name="viewport" content="width=device-width" />
-
-        <meta property="og:title" content={title} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={permalink as string} />
-        <meta property="og:site_name" content="The Pond" />
-        {description && <meta property="og:description" content={description} />}
-        {mediaElement}
-
-        {/* Twitter Card metadata */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content={cardImage} />
-        <meta name="twitter:site" content="@Turn_Trout" />
-
-        {/* Twitter author metadata */}
-        {authorElement}
-
+        <div
+          // skipcq: JS-0440
+          dangerouslySetInnerHTML={{ __html: head }} // TODO change
+        />
         <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
-
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
@@ -206,12 +155,10 @@ export default (() => {
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
         {fontPreloads}
-
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         {analyticsScript}
-
         {js
           .filter((resource) => resource.loadTime === "beforeDOMReady")
           .map((res) => JSResourceToScriptElement(res))}
