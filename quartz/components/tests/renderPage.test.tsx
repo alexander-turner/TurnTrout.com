@@ -11,6 +11,7 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
+import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
 import {
@@ -182,6 +183,29 @@ describe("renderPage", () => {
       pageResources,
     )
     expect(html).toContain("Transcluded block content")
+  })
+})
+
+describe("Header component", () => {
+  it("should render header element when children are provided", () => {
+    const props = createMockProps()
+    props.children = [<div key="child">Test Content</div>]
+
+    const HeaderComponent = Header()
+    const result = HeaderComponent(props) as React.ReactElement
+
+    expect(result).not.toBeNull()
+    expect(result.type).toBe("header")
+  })
+
+  it("should return null when no children are provided", () => {
+    const props = createMockProps()
+    props.children = []
+
+    const HeaderComponent = Header()
+    const result = HeaderComponent(props)
+
+    expect(result).toBeNull()
   })
 })
 
