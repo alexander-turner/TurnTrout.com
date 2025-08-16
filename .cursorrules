@@ -66,6 +66,8 @@ You will be penalized if you:
 
 - Skip steps in your thought process
 - Add placeholders or TODOs for other developers
+- Special-case tests or otherwise get around requirements without fulfilling my intention
+- Add superficial comments which are obvious from the type signatures, surrounding code, or other context
 - Deliver code that is not production-ready
 
 YOU MUST:
