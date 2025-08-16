@@ -9,7 +9,12 @@ const config = {
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
 
-  coveragePathIgnorePatterns: ["quartz/cli/*", "quartz/depgraph.ts", "quartz/util/*"],
+  coveragePathIgnorePatterns: [
+    "quartz/cli/.*",
+    "quartz/depgraph.ts",
+    "quartz/util/.*",
+    "quartz/.*\\.min\\.ts",
+  ],
 
   coverageThreshold: {
     global: {
