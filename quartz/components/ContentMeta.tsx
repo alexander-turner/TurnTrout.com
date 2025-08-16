@@ -122,6 +122,12 @@ export function processReadingTime(minutes: number): string {
   return timeString
 }
 
+/**
+ * Renders the reading time for a post.
+ *
+ * @param fileData - The data for the file.
+ * @returns The reading time as a JSX element.
+ */
 export const renderReadingTime = (fileData: QuartzPluginData): JSX.Element => {
   if (fileData.frontmatter?.hide_reading_time) {
     // skipcq: JS-0424
@@ -162,13 +168,14 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
   // Check if there are any tags
   const tags = props.fileData.frontmatter?.tags
   if (!tags || tags.length === 0) {
+    // skipcq: JS-0424
     return <></>
   }
 
   return (
     <blockquote className="admonition admonition-metadata" data-admonition="tag">
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
+        <div className="admonition-icon" />
         <div className="admonition-title-inner">Tags</div>
       </div>
       <div className="admonition-content" id="tags">
@@ -178,6 +185,9 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
   )
 }
 
+/**
+ * Renders the sequence title as a JSX element.
+ */
 export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
   const sequence = fileData.frontmatter?.["lw-sequence-title"]
   if (!sequence) return null
@@ -192,6 +202,9 @@ export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
     </div>
   )
 }
+/**
+ * Renders the previous post in a sequence as a JSX element.
+ */
 export const renderPreviousPostJsx = (fileData: QuartzPluginData) => {
   const prevPostSlug: string = (fileData.frontmatter?.["prev-post-slug"] as string) || ""
   const prevPostTitle: string = (fileData.frontmatter?.["prev-post-title"] as string) || ""
@@ -208,6 +221,9 @@ export const renderPreviousPostJsx = (fileData: QuartzPluginData) => {
   )
 }
 
+/**
+ * Renders the next post in a sequence as a JSX element.
+ */
 export const renderNextPostJsx = (fileData: QuartzPluginData) => {
   const nextPostSlug: string = (fileData.frontmatter?.["next-post-slug"] as string) || ""
   const nextPostTitle: string = (fileData.frontmatter?.["next-post-title"] as string) || ""
@@ -224,6 +240,9 @@ export const renderNextPostJsx = (fileData: QuartzPluginData) => {
   )
 }
 
+/**
+ * Renders sequence information, including title, previous, and next posts.
+ */
 const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | null => {
   const sequenceTitle = renderSequenceTitleJsx(fileData)
   if (!sequenceTitle) return null
@@ -235,7 +254,7 @@ const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | null => {
   return (
     <blockquote className="admonition admonition-metadata" data-admonition="example">
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
+        <div className="admonition-icon" />
         {sequenceTitleJsx}
       </div>
       <div className="admonition-content">
@@ -246,6 +265,9 @@ const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | null => {
   )
 }
 
+/**
+ * Renders post statistics, including reading time, linkpost info, publication info, and last updated date.
+ */
 export function renderPostStatistics(props: QuartzComponentProps): JSX.Element | null {
   const readingTime = renderReadingTime(props.fileData)
   const linkpostInfo = renderLinkpostInfo(props.fileData)
@@ -259,7 +281,7 @@ export function renderPostStatistics(props: QuartzComponentProps): JSX.Element |
       data-admonition="info"
     >
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
+        <div className="admonition-icon" />
         <div className="admonition-title-inner">About this post</div>
       </div>
       <div className="admonition-content">
@@ -274,9 +296,12 @@ export function renderPostStatistics(props: QuartzComponentProps): JSX.Element |
   )
 }
 
+/**
+ * Renders the content metadata section, including sequence info, tags, post statistics, and backlinks.
+ */
 export const ContentMetadata = (props: QuartzComponentProps) => {
   if (props.fileData.frontmatter?.hide_metadata) {
-    return <div id="content-meta"></div>
+    return <div id="content-meta" />
   }
 
   let metadataElements: Array<JSX.Element | null>
