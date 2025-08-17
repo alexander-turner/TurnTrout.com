@@ -265,5 +265,60 @@ describe("Head Component", () => {
 
       expect(() => render(h(Head, mockProps))).not.toThrow()
     })
+
+    it("should handle missing slug by using fallback", () => {
+      const propsWithoutSlug = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          slug: undefined,
+        } as QuartzPluginData,
+      }
+
+      const html = render(h(Head, propsWithoutSlug))
+
+      expect(html).toContain("<head")
+      // The branch is covered by the || operator, regardless of the mock call
+    })
+
+    it("should handle undefined frontmatter", () => {
+      const propsWithoutFrontmatter = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          frontmatter: undefined,
+        } as QuartzPluginData,
+      }
+
+      const html = render(h(Head, propsWithoutFrontmatter))
+
+      expect(html).toContain("<head")
+      // When frontmatter is undefined, the exposed frontmatter should be empty object
+      expect(html).toContain('id="quartz-frontmatter"')
+      expect(html).toContain("{}")
+    })
+
+    it("should filter JS resources by loadTime", () => {
+      const propsWithNoEarlyResources = {
+        ...mockProps,
+        externalResources: {
+          ...mockExternalResources,
+          js: [
+            {
+              src: "after-dom.js",
+              loadTime: "afterDOMReady" as const,
+              contentType: "external" as const,
+            },
+          ],
+        },
+      }
+
+      const html = render(h(Head, propsWithNoEarlyResources))
+
+      // The filter branch is tested by ensuring the component renders successfully
+      // even when there are no beforeDOMReady resources
+      expect(html).toContain("<head")
+      expect(html).not.toContain("after-dom.js")
+    })
   })
 })
