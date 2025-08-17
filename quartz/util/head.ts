@@ -2,7 +2,6 @@ import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../cfg"
 import { formatTitle } from "../components/component_utils"
-import { i18n } from "../i18n"
 import { type ProcessedContent } from "../plugins/vfile"
 import { resolveRelative, type FullSlug } from "./path"
 
@@ -34,7 +33,7 @@ function maybeRenderAuthorTags(authors: string | undefined): string {
 }
 
 // skipcq: JS-D1001
-function maybeProduceVideoTag(videoPreview: string | undefined): string {
+export function maybeProduceVideoTag(videoPreview: string | undefined): string {
   if (!videoPreview) {
     return ""
   }
@@ -54,9 +53,8 @@ function renderImageTags(cardImage: string, altText: string | undefined): string
 // skipcq: JS-D1001
 export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string {
   const data = Array.isArray(fileData) ? fileData[1].data : fileData.data
-  const title = formatTitle(data.frontmatter?.title ?? i18n(cfg.locale).propertyDefaults.title)
-  const description =
-    data.frontmatter?.description?.trim() ?? i18n(cfg.locale).propertyDefaults.description
+  const title = formatTitle(data.frontmatter?.title ?? defaultTitle)
+  const description = data.frontmatter?.description?.trim() ?? defaultDescription
 
   const url = new URL(`https://${cfg.baseUrl ?? "turntrout.com"}`)
   const pageUrl = new URL(slug, url).href
@@ -69,9 +67,11 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     cardImage === defaultCardUrl
       ? "A pond containing a trout and a goose peacefully swimming near a castle."
       : description
+  const imageTags = renderImageTags(cardImage, altText)
 
   const authors = data.frontmatter?.authors as string | undefined
   const videoPreview = data.frontmatter?.video_preview_link as string | undefined
+  const videoTags = videoPreview ? maybeProduceVideoTag(videoPreview) : ""
 
   return `
     <title>${title}</title>
@@ -80,16 +80,15 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     <meta property="og:type" content="article" />
     <meta property="og:url" content="${redirUrl}" />
     <meta property="og:site_name" content="${defaultTitle}" />
-    ${
-      typeof description === "string" && `<meta property="og:description" content="${description}">`
-    }
-    ${videoPreview ? maybeProduceVideoTag(videoPreview) : renderImageTags(cardImage, altText)}
+    <meta property="og:description" content="${description}">
+    ${videoTags}
+    ${imageTags}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${title}" />
     <meta
       name="twitter:description"
-      content="${typeof description === "string" ? description : String(description)}"
+      content="${description}"
     />
     <meta name="twitter:image" content="${cardImage}" />
     <meta name="twitter:site" content="@Turn_Trout" />

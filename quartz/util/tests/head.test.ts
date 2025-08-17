@@ -3,8 +3,32 @@ import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../../cfg"
 import { type ProcessedContent } from "../../plugins/vfile"
-import { renderHead, defaultCardUrl, defaultTitle, defaultDescription, faviconUrl } from "../head"
+import {
+  renderHead,
+  defaultCardUrl,
+  defaultTitle,
+  defaultDescription,
+  faviconUrl,
+  maybeProduceVideoTag,
+} from "../head"
 import { type FullSlug } from "../path"
+
+describe("maybeProduceVideoTag", () => {
+  it.each([
+    { videoPreview: undefined, expected: "" },
+    { videoPreview: "", expected: "" },
+    {
+      videoPreview: "https://example.com/video.mp4",
+      expected: '<meta property="og:video" content="https://example.com/video.mp4" />',
+    },
+  ])(
+    "should return correct meta tag for videoPreview: $videoPreview",
+    ({ videoPreview, expected }) => {
+      const result = maybeProduceVideoTag(videoPreview)
+      expect(result).toBe(expected)
+    },
+  )
+})
 
 describe("renderHead", () => {
   const mockConfig: GlobalConfiguration = {
@@ -228,6 +252,34 @@ describe("renderHead", () => {
       expect(result).toContain(`<meta property="og:video" content="${videoUrl}" />`)
       expect(result).not.toContain('<meta property="og:image"')
     })
+
+    it("should not include video tag when video preview is not provided", () => {
+      const vfile = createMockVFile() // No video_preview_link at all
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "test-page" as FullSlug,
+      })
+
+      expect(result).not.toContain('<meta property="og:video"')
+      expect(result).toContain('<meta property="og:image"') // Should fall back to image
+    })
+
+    it("should not include video tag when video preview is empty string", () => {
+      const vfile = createMockVFile({
+        video_preview_link: "",
+      })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "test-page" as FullSlug,
+      })
+
+      expect(result).not.toContain('<meta property="og:video"')
+      expect(result).toContain('<meta property="og:image"') // Should fall back to image
+    })
   })
 
   describe("author handling", () => {
@@ -278,6 +330,39 @@ describe("renderHead", () => {
       )
       expect(result).toContain('name="twitter:description"')
       expect(result).toContain('content="Description with whitespace"')
+    })
+
+    it("should handle non-string description values", () => {
+      const vfile = createMockVFile({
+        description: null,
+      })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "test-page" as FullSlug,
+      })
+
+      // Should fall back to default description
+      expect(result).toContain(`<meta name="description" content="${defaultDescription}">`)
+      expect(result).toContain(`<meta property="og:description" content="${defaultDescription}">`)
+      expect(result).toContain(`content="${defaultDescription}"`)
+    })
+
+    it("should handle empty description", () => {
+      const vfile = createMockVFile({
+        description: "",
+      })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "test-page" as FullSlug,
+      })
+
+      // Empty string when trimmed is still empty string, not undefined, so it doesn't fall back
+      expect(result).toContain('<meta name="description" content="">')
+      expect(result).toContain('<meta property="og:description" content="">')
     })
   })
 
