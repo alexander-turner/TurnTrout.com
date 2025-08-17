@@ -2,14 +2,14 @@ import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../cfg"
 import { formatTitle } from "../components/component_utils"
+import {
+  defaultCardUrl,
+  defaultDescription,
+  defaultTitle,
+  faviconUrl,
+} from "../components/constants"
 import { type ProcessedContent } from "../plugins/vfile"
 import { resolveRelative, type FullSlug } from "./path"
-
-export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
-export const defaultTitle = "The Pond"
-export const defaultDescription = "Writings about doing good, thinking well, and living happily."
-export const faviconUrl =
-  "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
 
 interface HeadProps {
   cfg: GlobalConfiguration

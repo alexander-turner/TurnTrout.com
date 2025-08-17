@@ -2,15 +2,14 @@ import { describe, it, expect } from "@jest/globals"
 import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../../cfg"
-import { type ProcessedContent } from "../../plugins/vfile"
 import {
-  renderHead,
   defaultCardUrl,
-  defaultTitle,
   defaultDescription,
+  defaultTitle,
   faviconUrl,
-  maybeProduceVideoTag,
-} from "../head"
+} from "../../components/constants"
+import { type ProcessedContent } from "../../plugins/vfile"
+import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
 
 describe("maybeProduceVideoTag", () => {
