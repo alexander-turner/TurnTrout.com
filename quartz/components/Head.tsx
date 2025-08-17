@@ -58,11 +58,6 @@ export default (() => {
     const headHast = fromHtml(headHtml, { fragment: true })
     const headJsx = htmlToJsx((fileData.slug || "head") as unknown as FilePath, headHast)
 
-    // Icon paths
-    const iconPath = "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
-    const appleIconPath =
-      "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
-
     // Scripts
     const { js } = externalResources
     const analyticsScript = (
@@ -153,8 +148,6 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        <link rel="icon" href={iconPath} type="image/x-icon" spa-preserve />
-        <link rel="apple-touch-icon" href={appleIconPath} spa-preserve />
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
         {fontPreloads}

@@ -9,6 +9,8 @@ import { resolveRelative, type FullSlug } from "./path"
 export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
 export const defaultTitle = "The Pond"
 export const defaultDescription = "Writings about doing good, thinking well, and living happily."
+export const faviconUrl =
+  "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
 
 interface HeadProps {
   cfg: GlobalConfiguration
@@ -92,5 +94,8 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     <meta name="twitter:image" content="${cardImage}" />
     <meta name="twitter:site" content="@Turn_Trout" />
     ${maybeRenderAuthorTags(authors)}
+
+    <link rel="icon" href="${faviconUrl}" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="${faviconUrl}" />
   `
 }

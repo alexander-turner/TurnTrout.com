@@ -3,7 +3,7 @@ import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../../cfg"
 import { type ProcessedContent } from "../../plugins/vfile"
-import { renderHead, defaultCardUrl, defaultTitle, defaultDescription } from "../head"
+import { renderHead, defaultCardUrl, defaultTitle, defaultDescription, faviconUrl } from "../head"
 import { type FullSlug } from "../path"
 
 describe("renderHead", () => {
@@ -82,6 +82,49 @@ describe("renderHead", () => {
 
       expect(result).toContain(`<title>${defaultTitle}</title>`)
       expect(result).toContain(`<meta name="description" content="${defaultDescription}">`)
+      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/x-icon" />`)
+      expect(result).toContain(`<link rel="apple-touch-icon" href="${faviconUrl}" />`)
+    })
+
+    it("should include all required meta tags in complete structure", () => {
+      const vfile = createMockVFile({
+        title: "Complete Test",
+        description: "Complete description",
+        authors: "Test Author",
+      })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "complete-test" as FullSlug,
+      })
+
+      // Verify all major sections are present
+      expect(result).toContain("<title>Complete Test</title>")
+      expect(result).toContain('<meta name="description" content="Complete description">')
+
+      // Open Graph tags
+      expect(result).toContain('<meta property="og:title" content="Complete Test" />')
+      expect(result).toContain('<meta property="og:type" content="article" />')
+      expect(result).toContain('<meta property="og:description" content="Complete description">')
+      expect(result).toContain('<meta property="og:site_name" content="The Pond" />')
+      expect(result).toContain(`<meta property="og:image" content="${defaultCardUrl}" />`)
+
+      // Twitter tags
+      expect(result).toContain('<meta name="twitter:card" content="summary_large_image" />')
+      expect(result).toContain('<meta name="twitter:title" content="Complete Test" />')
+      expect(result).toContain('name="twitter:description"')
+      expect(result).toContain('content="Complete description"')
+      expect(result).toContain('<meta name="twitter:site" content="@Turn_Trout" />')
+      expect(result).toContain(`<meta name="twitter:image" content="${defaultCardUrl}" />`)
+
+      // Author tags
+      expect(result).toContain('<meta name="twitter:label1" content="Written by" />')
+      expect(result).toContain('<meta name="twitter:data1" content="Test Author" />')
+
+      // Favicon tags
+      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/x-icon" />`)
+      expect(result).toContain(`<link rel="apple-touch-icon" href="${faviconUrl}" />`)
     })
   })
 
@@ -235,6 +278,21 @@ describe("renderHead", () => {
       )
       expect(result).toContain('name="twitter:description"')
       expect(result).toContain('content="Description with whitespace"')
+    })
+  })
+
+  describe("favicon handling", () => {
+    it("should include favicon link tags", () => {
+      const vfile = createMockVFile()
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: vfile,
+        slug: "test-page" as FullSlug,
+      })
+
+      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/x-icon" />`)
+      expect(result).toContain(`<link rel="apple-touch-icon" href="${faviconUrl}" />`)
     })
   })
 
