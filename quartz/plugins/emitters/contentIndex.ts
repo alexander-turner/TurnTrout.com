@@ -3,9 +3,9 @@ import type { Root } from "hast"
 import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
+import { locale, uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
-import { i18n } from "../../i18n"
 import { escapeHTML } from "../../util/escape"
 import {
   type FilePath,
@@ -84,7 +84,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
         return 1
       }
 
-      return f1.title.localeCompare(f2.title)
+      return f1.title.localeCompare(f2.title, locale)
     })
     .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
     .slice(0, limit ?? idx.size)
@@ -95,7 +95,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
     <channel>
       <title>${escapeHTML(cfg.pageTitle)}</title>
       <link>https://${base}</link>
-      <description>${limit ? i18n(cfg.locale).pages.rss.lastFewNotes({ count: limit }) : i18n(cfg.locale).pages.rss.recentNotes} on ${escapeHTML(
+      <description>${limit ? uiStrings.pages.rss.lastFewNotes(limit) : uiStrings.pages.rss.recentNotes} on ${escapeHTML(
         cfg.pageTitle,
       )}</description>
       ${items}

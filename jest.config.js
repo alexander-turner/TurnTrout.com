@@ -15,6 +15,7 @@ const config = {
     "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
+    "quartz/components/constants\\.ts",
   ],
 
   coverageThreshold: {

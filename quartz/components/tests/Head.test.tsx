@@ -38,7 +38,6 @@ import { type QuartzComponentProps } from "../types"
 
 describe("Head Component", () => {
   const mockConfig: GlobalConfiguration = {
-    locale: "en-US",
     baseUrl: "turntrout.com",
   } as GlobalConfiguration
 

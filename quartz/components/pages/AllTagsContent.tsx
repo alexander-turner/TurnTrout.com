@@ -9,6 +9,7 @@ import type { QuartzComponent, QuartzComponentProps } from "../types"
 
 import { htmlToJsx } from "../../util/jsx"
 import { type FilePath, type FullSlug } from "../../util/path"
+import { locale } from "../constants"
 import style from "../styles/listPage.scss"
 import { formatTag } from "../TagList"
 
@@ -23,7 +24,7 @@ export const allTagsListing = "all-tags-listing"
  * @returns A HAST Element representing the tags listing.
  */
 export function generateAllTagsHast(props: QuartzComponentProps): Element {
-  const { allFiles, cfg } = props
+  const { allFiles } = props
 
   // Get all unique tags and their counts
   const tagMap = new Map<string, number>()
@@ -35,9 +36,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
   })
 
   // Convert to array and sort alphabetically
-  const sortedTags = Array.from(tagMap.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0], cfg.locale),
-  )
+  const sortedTags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0], locale))
 
   // Create tag elements using hastscript
   const tagElements = sortedTags.map(([tag, count]) =>

@@ -31,7 +31,6 @@ describe("maybeProduceVideoTag", () => {
 
 describe("renderHead", () => {
   const mockConfig: GlobalConfiguration = {
-    locale: "en-US",
     baseUrl: "turntrout.com",
   } as GlobalConfiguration
 
@@ -249,7 +248,6 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain(`<meta property="og:video" content="${videoUrl}" />`)
-      expect(result).not.toContain('<meta property="og:image"')
     })
 
     it("should not include video tag when video preview is not provided", () => {

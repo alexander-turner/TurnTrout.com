@@ -5,10 +5,10 @@ import type { QuartzEmitterPlugin } from "../types"
 import { defaultListPageLayout, sharedPageComponents } from "../../../quartz.layout"
 import { TagContent } from "../../components"
 import BodyConstructor from "../../components/Body"
+import { uiStrings } from "../../components/constants"
 import HeaderConstructor from "../../components/Header"
 import { pageResources, renderPage } from "../../components/renderPage"
 import DepGraph from "../../depgraph"
-import { i18n } from "../../i18n"
 import {
   type FilePath,
   type FullSlug,
@@ -81,8 +81,8 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
         [...tags].map((tag) => {
           const title =
             tag === "index"
-              ? i18n(cfg.locale).pages.tagContent.tagIndex
-              : `${i18n(cfg.locale).pages.tagContent.tag}: ${tag}`
+              ? uiStrings.pages.tagContent.tagIndex
+              : `${uiStrings.pages.tagContent.tag}: ${tag}`
           return [
             tag,
             defaultProcessedContent({

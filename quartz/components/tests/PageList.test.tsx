@@ -75,7 +75,7 @@ const createProps = (
 }
 
 describe("byDateAndAlphabetical", () => {
-  const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+  const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
   it("sorts by date in descending order when both files have dates", () => {
     const file1 = createFileData({
@@ -177,7 +177,7 @@ describe("createPageListHast", () => {
     const fileData = createFileData({ slug: undefined })
     const allFiles = [fileData]
     const hast = createPageListHast(
-      { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration,
+      { defaultDateType: "created" } as GlobalConfiguration,
       fileData,
       allFiles,
     )
@@ -313,7 +313,7 @@ describe("createTagsElement", () => {
 })
 
 describe("createPageItemElement", () => {
-  const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+  const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
   it("omits the time element when no dates are present", () => {
     const page = createFileData()
@@ -374,7 +374,7 @@ describe("createPageItemElement", () => {
 
 describe("byDateAndAlphabetical additional branches", () => {
   it("returns 0 when both files have dates but the configured date field is missing", () => {
-    const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
     const file1 = createFileData({ dates: { modified: new Date("2023-03-03") } })
     const file2 = createFileData({ dates: { modified: new Date("2022-01-01") } })
@@ -384,7 +384,7 @@ describe("byDateAndAlphabetical additional branches", () => {
   })
 
   it("handles files with null titles in alphabetical sorting", () => {
-    const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
     const file1 = createFileData({ frontmatter: { title: "" } })
     const file2 = createFileData({ frontmatter: { title: "Beta" } })
@@ -394,7 +394,7 @@ describe("byDateAndAlphabetical additional branches", () => {
   })
 
   it("handles files with missing frontmatter in alphabetical sorting", () => {
-    const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
     const file1 = createFileData({ frontmatter: undefined })
     const file2 = createFileData({ frontmatter: { title: "Beta" } })
@@ -404,7 +404,7 @@ describe("byDateAndAlphabetical additional branches", () => {
   })
 
   it("handles second file with missing title in alphabetical sorting", () => {
-    const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
     const file1 = createFileData({ frontmatter: { title: "Alpha" } })
     const file2 = createFileData({ frontmatter: undefined })

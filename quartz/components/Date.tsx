@@ -5,8 +5,8 @@ import type { JSX } from "preact"
 import React from "react"
 
 import { type GlobalConfiguration } from "../cfg"
-import { type ValidLocale } from "../i18n"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { locale } from "./constants"
 
 export type ValidDateType = keyof Required<QuartzPluginData>["dates"]
 
@@ -55,7 +55,6 @@ export function getOrdinalSuffix(number: number): string {
 /**
  * Formats a Date object into a localized string with an ordinal suffix for the day and includes the year.
  * @param d - The Date object to format.
- * @param locale - The locale string (default is "en-US").
  * @param monthFormat - The format of the month ("long" or "short").
  * @param includeOrdinalSuffix - Whether to include the ordinal suffix.
  * @param formatOrdinalSuffix - Whether to format the ordinal suffix as a superscript. If true, then you need to set the innerHTML of the time element to the date string.
@@ -63,7 +62,6 @@ export function getOrdinalSuffix(number: number): string {
  */
 export function formatDate(
   d: Date,
-  locale: ValidLocale = "en-US",
   monthFormat: "long" | "short" = "short",
   includeOrdinalSuffix = true,
   formatOrdinalSuffix = true,
@@ -93,7 +91,6 @@ interface DateElementProps {
 
 // Render date element with proper datetime attribute
 export const DateElement = ({
-  cfg,
   date,
   monthFormat,
   includeOrdinalSuffix,
@@ -111,14 +108,7 @@ export const DateElement = ({
       dateTime={dateObj.toISOString()}
       // skipcq: JS-0440
       dangerouslySetInnerHTML={{
-        __html: formatDate(
-          dateObj,
-          cfg.locale,
-          monthFormat,
-          includeOrdinalSuffix,
-          formatOrdinalSuffix,
-          "",
-        ),
+        __html: formatDate(dateObj, monthFormat, includeOrdinalSuffix, formatOrdinalSuffix, ""),
       }}
     />
   )

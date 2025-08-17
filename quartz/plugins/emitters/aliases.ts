@@ -1,6 +1,7 @@
 import path from "path"
 
 import { type GlobalConfiguration } from "../../cfg"
+import { locale } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { renderHead } from "../../util/head"
 import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../../util/path"
@@ -106,7 +107,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
           ctx,
           content: `
             <!DOCTYPE html>
-            <html lang="en-us">
+            <html lang="${locale}">
             <head>
               <meta charset="utf-8">
               <link rel="canonical" href="${redirUrl}">

@@ -15,7 +15,6 @@ export interface FrontmatterData {
   toc?: boolean | string
   enableToc?: string
   cssclasses?: string[]
-  lang?: string
   date_published?: string | Date
   date_updated?: string | Date
   hide_metadata?: boolean

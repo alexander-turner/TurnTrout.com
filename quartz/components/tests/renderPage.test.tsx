@@ -11,6 +11,7 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
+import { locale } from "../constants"
 import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
@@ -432,32 +433,12 @@ describe("renderPage", () => {
     expect(html.indexOf('src="other.js"')).toBeLessThan(html.indexOf('src="test.js"'))
   })
 
-  it("handles language configuration", () => {
-    const propsWithLang = createMockProps({
-      frontmatter: {
-        title: "Test Title",
-        lang: "fr",
-      },
-    })
-
-    const html = renderPage(propsWithLang.cfg, slug, propsWithLang, components, pageResources)
-    expect(html).toContain('lang="fr"')
-  })
-
-  it("falls back to cfg.locale for language", () => {
-    const propsWithLocale = createMockProps()
-    propsWithLocale.cfg.locale = "es-ES"
-
-    const html = renderPage(propsWithLocale.cfg, slug, propsWithLocale, components, pageResources)
-    expect(html).toContain('lang="es"')
-  })
-
   it("defaults to 'en' language when no lang or locale specified", () => {
     const propsNoLang = createMockProps()
     delete (propsNoLang.cfg as unknown as { locale?: string }).locale
 
     const html = renderPage(propsNoLang.cfg, slug, propsNoLang, components, pageResources)
-    expect(html).toContain('lang="en"')
+    expect(html).toContain(`lang="${locale}"`)
   })
 
   it("handles non-span elements in transclude processing", () => {

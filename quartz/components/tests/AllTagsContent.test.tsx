@@ -39,7 +39,6 @@ const createProps = (
     analytics: { provider: "google", tagId: "dummy" },
     configuration: {},
     plugins: [],
-    locale: "en-US",
     defaultDateType: "created",
   } as unknown as GlobalConfiguration
 

@@ -3,7 +3,6 @@ import type { JSX } from "preact"
 import { describe, it, expect } from "@jest/globals"
 
 import { type GlobalConfiguration } from "../../cfg"
-import { type ValidLocale } from "../../i18n"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { getOrdinalSuffix, formatDate, getDate, DateElement } from "../Date"
 
@@ -35,24 +34,19 @@ describe("getOrdinalSuffix", () => {
 
 describe("formatDate", () => {
   it.each([
-    ["2023-08-01T12:00:00Z", "en-US", "short", "Aug 1st, 2023"],
-    ["2023-08-01T12:00:00Z", "en-US", "long", "August 1st, 2023"],
-    ["2023-08-02T12:00:00Z", "en-US", "short", "Aug 2nd, 2023"],
-    ["2023-08-03T12:00:00Z", "en-US", "short", "Aug 3rd, 2023"],
-    ["2023-08-04T12:00:00Z", "en-US", "short", "Aug 4th, 2023"],
-    ["2023-08-11T12:00:00Z", "en-US", "short", "Aug 11th, 2023"],
-    ["2023-08-21T12:00:00Z", "en-US", "short", "Aug 21st, 2023"],
-    ["2023-01-15T12:00:00Z", "en-US", "short", "Jan 15th, 2023"],
-    ["2024-12-31T12:00:00Z", "en-US", "short", "Dec 31st, 2024"],
-  ])(
-    "formats %s correctly with locale %s and month format %s",
-    (dateString, locale, monthFormat, expected) => {
-      const date = new Date(dateString)
-      expect(
-        formatDate(date, locale as ValidLocale, monthFormat as "short" | "long", true, false),
-      ).toBe(expected)
-    },
-  )
+    ["2023-08-01T12:00:00Z", "short", "Aug 1st, 2023"],
+    ["2023-08-01T12:00:00Z", "long", "August 1st, 2023"],
+    ["2023-08-02T12:00:00Z", "short", "Aug 2nd, 2023"],
+    ["2023-08-03T12:00:00Z", "short", "Aug 3rd, 2023"],
+    ["2023-08-04T12:00:00Z", "short", "Aug 4th, 2023"],
+    ["2023-08-11T12:00:00Z", "short", "Aug 11th, 2023"],
+    ["2023-08-21T12:00:00Z", "short", "Aug 21st, 2023"],
+    ["2023-01-15T12:00:00Z", "short", "Jan 15th, 2023"],
+    ["2024-12-31T12:00:00Z", "short", "Dec 31st, 2024"],
+  ])("formats %s correctly with month format %s", (dateString, monthFormat, expected) => {
+    const date = new Date(dateString)
+    expect(formatDate(date, monthFormat as "short" | "long", true, false)).toBe(expected)
+  })
 
   it("uses default parameters when optional arguments are omitted", () => {
     const date = new Date("2023-09-05T12:00:00Z")
@@ -65,26 +59,26 @@ describe("formatDate", () => {
   describe("HTML formatting", () => {
     it("formats ordinal suffix with HTML when formatOrdinalSuffix is true", () => {
       const date = new Date("2023-08-01T12:00:00Z")
-      expect(formatDate(date, "en-US", "short", true, true)).toBe(
+      expect(formatDate(date, "short", true, true)).toBe(
         'Aug <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2023',
       )
     })
 
     it("includes plain ordinal suffix when includeOrdinalSuffix is true but formatOrdinalSuffix is false", () => {
       const date = new Date("2023-08-02T12:00:00Z")
-      expect(formatDate(date, "en-US", "short", true, false)).toBe("Aug 2nd, 2023")
+      expect(formatDate(date, "short", true, false)).toBe("Aug 2nd, 2023")
     })
 
     it("applies extra styling to ordinal suffix", () => {
       const date = new Date("2023-08-01T12:00:00Z")
-      expect(formatDate(date, "en-US", "short", true, true, "color: red")).toBe(
+      expect(formatDate(date, "short", true, true, "color: red")).toBe(
         'Aug <span class="ordinal-num">1</span><span class="ordinal-suffix" style="color: red">st</span>, 2023',
       )
     })
 
     it("doesn't include ordinal suffix when includeOrdinalSuffix is false", () => {
       const date = new Date("2023-08-01T12:00:00Z")
-      expect(formatDate(date, "en-US", "short", false, true)).toBe("Aug 1, 2023")
+      expect(formatDate(date, "short", false, true)).toBe("Aug 1, 2023")
     })
   })
 })
