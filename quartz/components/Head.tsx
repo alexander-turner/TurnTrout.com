@@ -1,11 +1,13 @@
 /* eslint-disable react/no-unknown-property */
 // (For the spa-preserve attribute)
+import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 import { VFile } from "vfile"
 
 import { renderHead } from "../util/head"
-import { FullSlug } from "../util/path"
+import { htmlToJsx } from "../util/jsx"
+import { FullSlug, type FilePath } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
 import {
   type QuartzComponent,
@@ -46,11 +48,15 @@ export default (() => {
     const vfile = new VFile("")
     vfile.data = fileData as Record<string, unknown>
 
-    const head = renderHead({
+    const headHtml = renderHead({
       cfg,
       fileData: vfile,
       slug: fileData.slug as FullSlug,
     })
+
+    // Convert HTML string to HAST tree, then to JSX
+    const headHast = fromHtml(headHtml, { fragment: true })
+    const headJsx = htmlToJsx((fileData.slug || "head") as unknown as FilePath, headHast)
 
     // Icon paths
     const iconPath = "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
@@ -141,10 +147,7 @@ export default (() => {
           spa-preserve
         />
         <meta name="viewport" content="width=device-width" />
-        <div
-          // skipcq: JS-0440
-          dangerouslySetInnerHTML={{ __html: head }} // TODO change
-        />
+        {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
         {fileData.frontmatter?.avoidIndexing && (
