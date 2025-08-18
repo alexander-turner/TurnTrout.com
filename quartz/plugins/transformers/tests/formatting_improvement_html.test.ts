@@ -754,9 +754,7 @@ describe("rearrangeLinkPunctuation", () => {
 
     it("should handle case where lastChild doesn't have value property - direct test", () => {
       // Create a linkNode where we can manipulate the last child after the function adds a text node
-      const linkNode = h("a", { href: "https://example.com" }, [
-        { type: "text", value: "Link" },
-      ]) as Element
+      const linkNode = h("a", { href: "https://example.com" }, ["Link"]) as Element
 
       const textNode = { type: "text", value: "." } as Text
       const parent = h("p", [linkNode, textNode]) as Element
@@ -1180,12 +1178,7 @@ describe("Skip Formatting", () => {
 
 describe("hasClass", () => {
   test("handles string className", () => {
-    const node = {
-      type: "element",
-      properties: { className: "test-class other-class" },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: "test-class other-class" })
 
     expect(hasClass(node, "test-class")).toBe(true)
     expect(hasClass(node, "other-class")).toBe(true)
@@ -1193,12 +1186,7 @@ describe("hasClass", () => {
   })
 
   test("handles array className", () => {
-    const node = {
-      type: "element",
-      properties: { className: ["test-class", "other-class"] },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: ["test-class", "other-class"] })
 
     expect(hasClass(node, "test-class")).toBe(true)
     expect(hasClass(node, "other-class")).toBe(true)
@@ -1206,17 +1194,12 @@ describe("hasClass", () => {
   })
 
   test("handles missing properties", () => {
-    const node = { type: "element" } as Element
+    const node = h("div")
     expect(hasClass(node, "any-class")).toBe(false)
   })
 
   test("handles null/undefined className", () => {
-    const node = {
-      type: "element",
-      properties: { className: null },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: null })
 
     expect(hasClass(node, "any-class")).toBe(false)
   })
@@ -1262,12 +1245,7 @@ describe("Date Range", () => {
 })
 
 describe("collectTransformableElements", () => {
-  const el = (tag: string, children: (string | Element)[] = []): Element =>
-    ({
-      type: "element",
-      tagName: tag,
-      children: children.map((c) => (typeof c === "string" ? { type: "text", value: c } : c)),
-    }) as Element
+  const el = (tag: string, children: (string | Element)[] = []): Element => h(tag, {}, children)
 
   const processNode = (c: ElementContent) => {
     if (c.type === "text") return c.value
@@ -1311,12 +1289,8 @@ describe("collectTransformableElements", () => {
 
 describe("identifyLinkNode", () => {
   // Helper function to create element nodes with proper typing
-  const createNode = (tagName: string, children: Element[] = []): Element => ({
-    type: "element",
-    tagName,
-    children,
-    properties: {},
-  })
+  const createNode = (tagName: string, children: Element[] = []): Element =>
+    h(tagName, {}, children)
 
   // Test cases structure: [description, input node, expected result]
   const testCases: [string, Element, Element][] = [
@@ -1742,17 +1716,9 @@ describe("improveFormatting function with options", () => {
     // Test that calling improveFormatting() without options uses default behavior
     const transformer = improveFormatting() // Called without options, hits default {} branch
 
-    // Create a test tree with content that should be transformed
     const tree = {
       type: "root" as const,
-      children: [
-        {
-          type: "element" as const,
-          tagName: "p",
-          properties: {},
-          children: [{ type: "text" as const, value: "Test 1/2 content with -> arrow" }],
-        },
-      ],
+      children: [h("p", "Test 1/2 content with -> arrow")],
     }
 
     const mockFile = new VFile("")
