@@ -35,6 +35,13 @@ const colorMapping: Record<string, string> = {
   "#E36209": "color-mix(in srgb, var(--orange), var(--red) 70%)",
 }
 
+/**
+ * Transforms a CSS style string by replacing color values with corresponding CSS variables.
+ *
+ * @param style - The CSS style string to transform.
+ * @param colorMapping - An object mapping color values to CSS variable names.
+ * @returns The transformed CSS style string with color values replaced by CSS variables.
+ */
 export const transformStyle = (style: string, colorMapping: Record<string, string>): string => {
   let newStyle = style
   Object.entries(colorMapping).forEach(([color, variable]) => {
@@ -60,7 +67,10 @@ export const transformElement = (
   return element
 }
 
-function innerFunc() {
+/**
+ * Transforms the AST by visiting each element and applying color mappings.
+ */
+function transformAst(): (ast: Root) => void {
   return (ast: Root) => {
     visit(ast, "element", (node: Element) => {
       transformElement(node, colorMapping)
@@ -77,7 +87,7 @@ export const ColorVariables: QuartzTransformerPlugin = () => {
   return {
     name: "ColorVariables",
     htmlPlugins() {
-      return [innerFunc]
+      return [transformAst]
     },
   }
 }
