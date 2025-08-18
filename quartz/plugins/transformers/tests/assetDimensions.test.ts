@@ -817,6 +817,26 @@ describe("Asset Dimensions Plugin", () => {
       expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
       expect(assetProcessor["needToSaveCache"]).toBe(true)
     })
+
+    it("should initialize properties object when node has no properties", async () => {
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+      const currentDimensionsCache: AssetDimensionMap = {}
+      // Create a node without properties object
+      const node = {
+        type: "element" as const,
+        tagName: "img",
+        children: [],
+      } as unknown as Element
+
+      await assetProcessor.processAsset({ node, src: imageUrl }, currentDimensionsCache)
+
+      // Properties object should be created and populated
+      expect(node.properties).toBeDefined()
+      expect(node.properties?.width).toBe(mockImageWidth)
+      expect(node.properties?.height).toBe(mockImageHeight)
+      expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
+      expect(assetProcessor["needToSaveCache"]).toBe(true)
+    })
   })
 
   describe("addAssetDimensionsFromUrl Plugin (Integration)", () => {
