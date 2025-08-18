@@ -661,6 +661,7 @@ export const rearrangeLinkPunctuation = (
     linkNode.children.push({ type: "text", value: "" })
   }
   const lastChild = linkNode.children[linkNode.children.length - 1]
+  /* istanbul ignore next */
   if (!("value" in lastChild)) {
     return
   }
@@ -735,9 +736,9 @@ export function setFirstLetterAttribute(tree: Root): void {
   firstParagraph.properties = firstParagraph.properties || {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
-  // If the first letter is an apostrophe, add a space before it
+  // If the second letter is an apostrophe, add a space before it
   const secondLetter = getTextContent(firstParagraph).charAt(1)
-  if (secondLetter === "'" || secondLetter === "'") {
+  if (["'", "’", "‘"].includes(secondLetter)) {
     const firstTextNode = firstParagraph.children.find(
       (child): child is Text => child.type === "text",
     )
