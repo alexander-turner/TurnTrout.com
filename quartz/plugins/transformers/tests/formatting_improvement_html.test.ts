@@ -3,6 +3,7 @@ import { type Element, type ElementContent, type Parent, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { rehype } from "rehype"
+import { VFile } from "vfile"
 
 import {
   hyphenReplace,
@@ -1552,6 +1553,34 @@ describe("replaceFractions", () => {
       '<p>Mix <span class="fraction">1/2</span> cup of flour with <span class="fraction">3/4</span> cup of water</p>',
     )
   })
+
+  it("should handle undefined index parameter and use fallback value", () => {
+    // This test specifically targets the `index ?? 0` branch in replaceFractions
+    // Create a parent with the text node at index 0
+    const node = { type: "text", value: "Mix 1/2 cup flour" } as Text
+    const parent = h("p", [node])
+
+    // Store the original parent state for comparison
+    const originalChildrenCount = parent.children.length
+    const originalTextContent = hastToHtml(parent)
+
+    // Call replaceFractions with undefined index - should use fallback 0
+    replaceFractions(node, undefined, parent)
+
+    // Verify the function processed the fraction correctly despite undefined index
+    const result = hastToHtml(parent)
+
+    // Should have converted 1/2 to a fraction span
+    expect(result).toContain('<span class="fraction">1/2</span>')
+    expect(result).toContain("Mix")
+    expect(result).toContain("cup flour")
+
+    // Should have replaced the original text node with multiple nodes
+    expect(parent.children.length).toBeGreaterThan(originalChildrenCount)
+
+    // Verify the transformation actually happened
+    expect(result).not.toBe(originalTextContent)
+  })
 })
 
 describe("transformElement error conditions", () => {
@@ -1707,6 +1736,43 @@ describe("improveFormatting function with options", () => {
 
     const processedHtml = testHtmlFormattingImprovement(input, true)
     expect(processedHtml).toBe(input) // Should not add data-first-letter
+  })
+
+  it("should handle undefined options (default parameter branch)", () => {
+    // Test that calling improveFormatting() without options uses default behavior
+    const transformer = improveFormatting() // Called without options, hits default {} branch
+
+    // Create a test tree with content that should be transformed
+    const tree = {
+      type: "root" as const,
+      children: [
+        {
+          type: "element" as const,
+          tagName: "p",
+          properties: {},
+          children: [{ type: "text" as const, value: "Test 1/2 content with -> arrow" }],
+        },
+      ],
+    }
+
+    const mockFile = new VFile("")
+    mockFile.data = {}
+
+    // Transform should work with default options (including first letter processing)
+    transformer(tree, mockFile, () => {
+      /* noop */
+    })
+
+    // Verify transformations occurred with default settings
+    const paragraph = tree.children[0] as Element
+    const resultHtml = hastToHtml(paragraph)
+
+    // Should have first letter attribute (default behavior)
+    expect(paragraph.properties["data-first-letter"]).toBe("T")
+
+    // Should have transformed fraction and arrow
+    expect(resultHtml).toContain('<span class="fraction">1/2</span>')
+    expect(resultHtml).toContain('<span class="right-arrow">⭢</span>')
   })
 })
 
