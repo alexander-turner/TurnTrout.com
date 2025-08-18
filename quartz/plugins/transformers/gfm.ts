@@ -141,11 +141,9 @@ export function slugFunction() {
 
 /**
  * Removes back arrows from the footnote.
- *
- * @param node - The footnote node.
  */
-export function removeBackArrow(node: Element): void {
-  node.children = node.children.filter((child) => {
+export function removeBackArrow(footnoteParent: Element): void {
+  footnoteParent.children = footnoteParent.children.filter((child) => {
     return !(
       child.type === "element" &&
       child.tagName === "a" &&
