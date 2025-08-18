@@ -47,6 +47,10 @@ export function editAdmonition(text: string): string {
 
 const CALLOUT_REGEX_NO_SPACE = new RegExp(/^( *(?:> )+)(\[!.*$)(?!(?:> *)+\n)/gm)
 const TARGET_REGEX_WITH_SPACE = "$1$2\n$1"
+
+/**
+ * Adds a newline after admonitions without an empty second line (sans >).
+ */
 export function spaceAdmonitions(text: string): string {
   return text.replaceAll(CALLOUT_REGEX_NO_SPACE, TARGET_REGEX_WITH_SPACE)
 }
@@ -85,8 +89,9 @@ const massTransforms: [RegExp | string, string][] = [
   [new RegExp(`(${arrowsToWrap.join("|")})`, "g"), "<span class='monospace-arrow'>$1</span>"],
 ]
 
-export function massTransformText(text: string): string {
-  for (const [pattern, replacement] of massTransforms) {
+// skipcq: JS-D1001
+export function applyTextTransforms(text: string, transforms: [RegExp | string, string][]): string {
+  for (const [pattern, replacement] of transforms) {
     const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")
     text = text.replace(regex, replacement)
   }
@@ -106,10 +111,8 @@ const concentrateEmphasisAroundLinks = (text: string): string => {
   return text.replace(emphRegex, "$<whitespace1>$<emph>$<url>$<emph>$<whitespace2>")
 }
 
-// TODO newline before Figure:
-
 /**
- * Applies various formatting improvements to the input text.
+ * Applies formatting improvements to the input text.
  * @param text - The input text to process.
  * @returns The text with all formatting improvements applied.
  */
@@ -133,7 +136,7 @@ export const formattingImprovement = (text: string) => {
   newContent = spaceAdmonitions(newContent)
   newContent = concentrateEmphasisAroundLinks(newContent)
   newContent = wrapLeadingNumbers(newContent)
-  newContent = massTransformText(newContent)
+  newContent = applyTextTransforms(newContent, massTransforms)
 
   // Ensure that bulleted lists display properly
   newContent = newContent.replaceAll("\\-", "-")
