@@ -132,6 +132,7 @@ describe("AfterArticle plugin", () => {
       expect(subscriptionDiv.properties?.id).toBe("subscription-and-contact")
     })
 
+    // eslint-disable-next-line jest/expect-expect
     it("should not add subscription links when hideSubscriptionLinks is true", () => {
       const mockTree = createMockTree()
       const mockFile = createMockFile({ hideSubscriptionLinks: true })
@@ -141,6 +142,7 @@ describe("AfterArticle plugin", () => {
       expectTreeUnchanged(mockTree)
     })
 
+    // eslint-disable-next-line jest/expect-expect
     it("should add sequence links when createSequenceLinksComponent returns a component", () => {
       // Note: This test would require complex mocking to work properly
       // The core functionality is tested through integration with real createSequenceLinksComponent
