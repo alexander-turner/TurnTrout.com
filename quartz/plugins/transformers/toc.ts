@@ -47,6 +47,7 @@ export interface TocEntry {
 
 const logger = createWinstonLogger("TableOfContents")
 
+// skipcq: JS-D1001
 function logTocEntry(entry: TocEntry) {
   logger.debug(`TOC Entry: depth=${entry.depth}, text="${entry.text}", slug="${entry.slug}"`)
 }
@@ -71,12 +72,8 @@ export function customToString(node: Node): string {
   return "value" in node ? String(node.value) : ""
 }
 
-/**
- * Removes HTML tags from a string
- * @param html - String containing HTML
- * @returns Clean text without HTML tags
- */
-function stripHtml(html: string): string {
+// skipcq: JS-D1001
+export function stripHtmlTagsFromString(html: string): string {
   return html.replace(/<[^>]*>/g, "")
 }
 
@@ -117,7 +114,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
                   const heading = node as Heading
                   const text = applyTextTransforms(customToString(heading))
-                  const plainText = stripHtml(text)
+                  const plainText = stripHtmlTagsFromString(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
                   const slug = slugify(plainText)
@@ -144,7 +141,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 logger.info("Added Footnotes to TOC")
               }
 
-              if (toc.length > 0 && toc.length > opts.minEntries) {
+              if (toc.length > 0 && toc.length >= opts.minEntries) {
                 const adjustedToc = toc.map((entry) => ({
                   ...entry,
                   depth: entry.depth - highestDepth,
