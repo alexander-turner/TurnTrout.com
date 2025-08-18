@@ -19,6 +19,10 @@ const unitlessKeys = new Set([
   "font-scale-factor",
 ])
 
+/**
+ * Generates a record of SCSS variables from the variables object
+ * @returns Record mapping kebab-case variable names to their string values
+ */
 export function generateScssRecord(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(variables).map(([key, value]) => {
@@ -30,6 +34,10 @@ export function generateScssRecord(): Record<string, string> {
   )
 }
 
+/**
+ * Generates the SCSS file content with variable definitions
+ * @returns The complete SCSS content as a string
+ */
 const generateScssContent = (): string => {
   let scss = "// This file is auto-generated. Do not edit directly.\n\n"
 
@@ -41,6 +49,10 @@ const generateScssContent = (): string => {
   return scss
 }
 
+/**
+ * Generates and writes the SCSS variables file to disk
+ * @throws Error if file writing fails
+ */
 export function generateScss(): void {
   try {
     const outputPath = path.join(__dirname, "variables.scss")
@@ -53,6 +65,7 @@ export function generateScss(): void {
 }
 
 // Run generation if this is the main module
+/* istanbul ignore next */
 try {
   if (process.argv[1] === fileURLToPath(import.meta.url)) {
     generateScss()
