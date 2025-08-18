@@ -191,7 +191,7 @@
         padding-right: calc(2 * $base-margin);
         cursor: pointer;
 
-        & .preview-inner {
+        & .search-preview {
           margin: 0 auto;
           width: min($page-width, 100%);
         }

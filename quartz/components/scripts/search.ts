@@ -224,7 +224,7 @@ export class PreviewManager {
   constructor(container: HTMLDivElement) {
     this.container = container
     this.inner = document.createElement("article")
-    this.inner.classList.add("preview-inner")
+    this.inner.classList.add("search-preview")
     this.container.appendChild(this.inner)
   }
 
