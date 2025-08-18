@@ -45,34 +45,43 @@ const defaultOptions: Options = {
   rssFullHtml: false,
   includeEmptyFiles: false,
 }
-
-function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
-  const base = cfg.baseUrl ?? ""
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<url>
+const createSiteMapURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: ContentDetails,
+): string => `<url>
     <loc>https://${joinSegments(base, encodeURI(slug))}</loc>
     ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
   </url>`
+
+function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
+  const base = cfg.baseUrl ?? ""
   const urls = Array.from(idx)
-    .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
+    .map(([slug, content]) => createSiteMapURLEntry(base, simplifySlug(slug), content))
     .join("")
   return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`
 }
 
-function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: number): string {
-  const base = cfg.baseUrl ?? ""
-
-  const processDescription = (description: string): string => {
-    const escapedDescription = description.replaceAll(/&/g, "&amp;")
-    const massTransformed = applyTextTransforms(escapedDescription)
-    return massTransformed
-  }
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<item>
+const createRSSURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: ContentDetails,
+): string => `<item>
     <title>${escapeHTML(content.title)}</title>
     <link>https://${joinSegments(base, encodeURI(slug))}</link>
-    <description>${content.richContent ?? processDescription(content.description ?? "")}</description>
+    <description>${content.richContent ?? textTransformDescription(content.description ?? "")}</description>
     <guid isPermaLink="true">https://${joinSegments(base, encodeURI(slug))}</guid>
     <pubDate>${content.date?.toUTCString()}</pubDate>
   </item>`
+
+const textTransformDescription = (description: string): string => {
+  const escapedDescription = description.replaceAll(/&/g, "&amp;")
+  const massTransformed = applyTextTransforms(escapedDescription)
+  return massTransformed
+}
+
+function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: number): string {
+  const base = cfg.baseUrl ?? ""
 
   const items = Array.from(idx)
     .sort(([, f1], [, f2]) => {
@@ -86,7 +95,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
 
       return f1.title.localeCompare(f2.title, locale)
     })
-    .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
+    .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
     .slice(0, limit ?? idx.size)
     .join("")
 
