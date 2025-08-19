@@ -1,5 +1,10 @@
-import type { Element, Root as HtmlRoot, ElementContent, ElementData } from "hast"
-import type { Root, Html, BlockContent, Paragraph, PhrasingContent } from "mdast"
+/**
+ * Obsidian Flavored Markdown transformer for Quartz.
+ * Supports wikilinks, admonitions, tags, highlights, embeds, and more.
+ */
+
+import type { Element, Root as HtmlRoot, ElementContent, Properties, ElementData } from "hast"
+import type { Root, Html, BlockContent, Paragraph, PhrasingContent, Blockquote } from "mdast"
 import type { PluggableList } from "unified"
 
 import fs from "fs"
@@ -11,7 +16,6 @@ import { VFile } from "mdast-util-to-hast/lib/state"
 import path from "path"
 import rehypeRaw from "rehype-raw"
 import { SKIP, visit } from "unist-util-visit"
-// Script imports
 import { fileURLToPath } from "url"
 
 import type { JSResource } from "../../util/resources"
@@ -22,12 +26,255 @@ import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
 
+/** Extended ElementData interface for custom HAST element properties. */
 interface CustomElementData extends ElementData {
   hName?: string
   hProperties?: Record<string, unknown>
 }
 
-export interface Options {
+/** Creates an admonition icon element. */
+const createAdmonitionIcon = (): Element => ({
+  type: "element",
+  tagName: "div",
+  properties: {},
+  data: {
+    hName: "div",
+    hProperties: {
+      className: ["admonition-icon"],
+    },
+    position: {},
+  } as unknown as CustomElementData,
+  children: [],
+})
+
+/** Creates the inner title content for an admonition. */
+const createAdmonitionTitleInner = (
+  useDefaultTitle: boolean,
+  capitalizedTypeString: string,
+  titleContent: string,
+  remainingChildren: ElementContent[],
+): Element => ({
+  type: "element",
+  tagName: "div",
+  properties: {},
+  data: {
+    hName: "div",
+    hProperties: {
+      className: ["admonition-title-inner"],
+    },
+    position: {},
+  } as unknown as CustomElementData,
+  children: [
+    {
+      type: "text",
+      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
+    },
+    ...remainingChildren,
+  ],
+})
+
+/** Creates a fold/collapse icon for collapsible admonitions. */
+const createFoldIcon = (): Element => ({
+  type: "element",
+  tagName: "div",
+  data: {
+    hName: "div",
+    hProperties: {
+      className: ["fold-admonition-icon"],
+    },
+    position: {},
+  } as unknown as CustomElementData,
+  children: [],
+  properties: {},
+})
+
+/** Creates the complete title element for an admonition. */
+const createAdmonitionTitle = (
+  useDefaultTitle: boolean,
+  capitalizedTypeString: string,
+  titleContent: string,
+  remainingChildren: ElementContent[],
+  collapse: boolean,
+): Element => {
+  const children: ElementContent[] = [
+    createAdmonitionIcon(),
+    createAdmonitionTitleInner(
+      useDefaultTitle,
+      capitalizedTypeString,
+      titleContent,
+      remainingChildren,
+    ),
+  ]
+
+  if (collapse) {
+    children.push(createFoldIcon())
+  }
+
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {},
+    data: {
+      hName: "div",
+      hProperties: {
+        className: ["admonition-title"],
+      },
+      position: {},
+    } as unknown as CustomElementData,
+    children,
+  }
+}
+
+/** Creates the content container for an admonition. */
+const createAdmonitionContent = (contentChildren: ElementContent[]): Element | null => {
+  if (contentChildren.length === 0) return null
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {},
+    children: contentChildren,
+    data: {
+      hName: "div",
+      hProperties: {
+        className: ["admonition-content"],
+      },
+      position: {},
+    } as unknown as CustomElementData,
+  }
+}
+
+/** Creates a video element for embedding. */
+const createVideoElement = (url: string): PhrasingContent => ({
+  type: "html",
+  value: `<span class="video-container"><video src="${url}" controls></video></span>`,
+})
+
+/** Creates an audio element for embedding. */
+const createAudioElement = (url: string): PhrasingContent => ({
+  type: "html",
+  value: `<audio src="${url}" controls></audio>`,
+})
+
+/** Creates a PDF embed iframe. */
+const createPdfEmbed = (url: string): PhrasingContent => ({
+  type: "html",
+  value: `<iframe src="${url}"></iframe>`,
+})
+
+/** Creates a transclude element for embedding content from other pages. */
+const createTranscludeElement = (
+  url: string,
+  ref: string,
+  displayAlias?: string,
+): PhrasingContent => ({
+  type: "html",
+  data: { hProperties: { transclude: true } },
+  value: `<span class="transclude" data-url="${url}" data-block="${ref}"><a href="${url}${ref}" class="transclude-inner">${
+    displayAlias ?? `Transclude of ${url}${ref}`
+  }</a></span>`,
+})
+
+/** Creates a highlight span element. */
+const createHighlightElement = (content: string): PhrasingContent => ({
+  type: "html",
+  value: `<span class="text-highlight">${content}</span>`,
+})
+
+/** Creates YouTube embed properties. */
+const createYouTubeEmbed = (videoId: string, playlistId?: string): Properties => ({
+  class: "external-embed",
+  allow: "fullscreen",
+  frameborder: 0,
+  width: "600px",
+  height: "350px",
+  src: playlistId
+    ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}`
+    : `https://www.youtube.com/embed/${videoId}`,
+})
+
+/** Creates YouTube playlist embed properties. */
+const createPlaylistEmbed = (playlistId: string): Properties => ({
+  class: "external-embed",
+  allow: "fullscreen",
+  frameborder: 0,
+  width: "600px",
+  height: "350px",
+  src: `https://www.youtube.com/embed/videoseries?list=${playlistId}`,
+})
+
+/** Processes blockquotes and converts them to admonitions. */
+const processAdmonitionBlockquote = (node: Blockquote): void => {
+  if (node.children.length === 0) return
+
+  const firstChild = node.children[0]
+  if (firstChild.type !== "paragraph" || firstChild.children[0]?.type !== "text") {
+    return
+  }
+
+  const text = firstChild.children[0].value
+  const [firstLine, ...remainingLines] = text.split("\n")
+  const remainingText = remainingLines.join("\n")
+
+  // skipcq: JS-0357
+  const match = firstLine.match(admonitionRegex)
+  if (!match?.input) return
+
+  const [admonitionDirective, typeString, collapseChar] = match
+  const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
+  const collapse = collapseChar === "+" || collapseChar === "-"
+  const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
+  const titleContent = match.input.slice(admonitionDirective.length).trim()
+  const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
+  const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
+
+  const admonitionTitle = createAdmonitionTitle(
+    useDefaultTitle,
+    capitalizedTypeString,
+    titleContent,
+    firstChild.children.slice(1) as ElementContent[],
+    collapse,
+  ) as unknown as BlockContent
+
+  const contentChildren = [
+    ...(remainingText.trim() !== ""
+      ? [
+          {
+            type: "paragraph" as const,
+            children: [{ type: "text" as const, value: remainingText }],
+          },
+        ]
+      : []),
+    ...node.children.slice(1),
+  ]
+
+  const contentNode = createAdmonitionContent(contentChildren as ElementContent[])
+
+  node.children = [admonitionTitle]
+  if (contentNode) {
+    node.children.push(contentNode as unknown as BlockContent)
+  }
+
+  const classNames = ["admonition", admonitionType]
+  if (collapse) {
+    classNames.push("is-collapsible")
+  }
+  if (defaultState === "collapsed") {
+    classNames.push("is-collapsed")
+  }
+
+  node.data = {
+    ...node.data,
+    hProperties: {
+      ...(node.data?.hProperties ?? {}),
+      className: classNames.join(" "),
+      "data-admonition": admonitionType,
+      "data-admonition-fold": collapse,
+    },
+  }
+}
+
+/** Configuration options for the OFM transformer. */
+export interface OFMOptions {
   comments: boolean
   highlight: boolean
   wikilinks: boolean
@@ -42,7 +289,8 @@ export interface Options {
   enableCheckbox: boolean
 }
 
-export const defaultOptions: Options = {
+/** Default OFM configuration. */
+export const defaultOptions: OFMOptions = {
   comments: true,
   highlight: true,
   wikilinks: true,
@@ -57,6 +305,7 @@ export const defaultOptions: Options = {
   enableCheckbox: false,
 }
 
+/** Admonition type aliases mapping. */
 const admonitionMapping = {
   note: "note",
   abstract: "abstract",
@@ -87,64 +336,72 @@ const admonitionMapping = {
   cite: "quote",
 } as const
 
-// Lowercases the admonition name and returns the canonical key of the admonition else the original name
+/** Normalizes admonition names to canonical forms. */
 function canonicalizeAdmonition(admonitionName: string): keyof typeof admonitionMapping {
   const normalizedAdmonition = admonitionName.toLowerCase() as keyof typeof admonitionMapping
-  // if admonition is not recognized, make it a custom one
   return admonitionMapping[normalizedAdmonition] ?? admonitionName
 }
 
+/** Regular expression to match external URLs (http/https) */
 export const externalLinkRegex = /^https?:\/\//i
 
-// !?                 -> optional embedding
-// \[\[               -> open brace
-// ([^\[\]\|\#]+)     -> one or more non-special characters ([,], |, or #) (name)
-// (#[^\[\]\|\#]+)?   -> # then one or more non-special characters (heading link)
-// (\\?\|[^\[\]\#]+)? -> optional escape \ then | then one or more non-special characters (alias)
+/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page|alias]], ![[embed]] */
 export const wikilinkRegex = new RegExp(
   /!?\[\[([^[\]|#\\]+)?(#+[^[\]|#\\]+)?(\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
-// ^\|([^\n])+\|\n(\|) -> matches the header row
-// ( ?:?-{3,}:? ?\|)+  -> matches the header row separator
-// (\|([^\n])+\|\n)+   -> matches the body rows
+/** Matches Markdown tables with header, separator, and body rows. */
 export const tableRegex = new RegExp(
   /^\|([^\n])+\|\n(\|)( ?:?-{3,}:? ?\|)+\n(\|([^\n])+\|\n?)+/,
   "gm",
 )
 
-// matches any wikilink, only used for escaping wikilinks inside tables
+/** Regular expression to match wikilinks within tables for escaping purposes */
 export const tableWikilinkRegex = new RegExp(/(!?\[\[[^\]]*?\]\])/, "g")
 
+/** Regular expression to match highlight syntax (==text==) */
 const highlightRegex = new RegExp(/[=]{2}([^=]+)[=]{2}/, "g")
+
+/** Regular expression to match Obsidian-style comments (%%comment%%) */
 const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
-// from https://github.com/escwxyz/remark-obsidian-admonition/blob/main/src/index.ts
+
+/** Regular expression to match admonition syntax ([!type][fold]) */
 const admonitionRegex = new RegExp(/^\[!(\w+)\]([+-]?)/)
+
+/** Regular expression to match admonition lines in blockquotes */
 const admonitionLineRegex = new RegExp(/^> *\[!\w+\][+-]?.*$/, "gm")
-// (?:^| )              -> non-capturing group, tag should start be separated by a space or be the start of the line
-// #(...)               -> capturing group, tag itself must start with #
-// (?:[-_\p{L}\d\p{Z}])+       -> non-capturing group, non-empty string of (Unicode-aware) alpha-numeric characters and symbols, hyphens and/or underscores
-// (?:\/[-_\p{L}\d\p{Z}]+)*)   -> non-capturing group, matches an arbitrary number of tag strings separated by "/"
+
+/** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
   /(?:^| )#((?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
   "gu",
 )
+
+/** Regular expression to match block references (^blockid) */
 const blockReferenceRegex = new RegExp(/\^([-_A-Za-z0-9]+)$/, "g")
+
+/** Regular expression to match YouTube video URLs */
 const ytLinkRegex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+
+/** Regular expression to match YouTube playlist parameters */
 const ytPlaylistLinkRegex = /[?&]list=([^#?&]*)/
+
+/** Regular expression to match video file extensions */
 const videoExtensionRegex = new RegExp(/\.(mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
+
+/** Regular expression to parse image embed dimensions and alt text */
 const wikilinkImageEmbedRegex = new RegExp(
   /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
 )
 
-// skipcq: JS-D1001
+/** Converts MDAST nodes to HTML strings. */
 const mdastToHtml = (ast: PhrasingContent | Paragraph): string => {
   const hast = toHast(ast, { allowDangerousHtml: true })
   return toHtml(hast, { allowDangerousHtml: true })
 }
 
-// skipcq: JS-D1001
+/** Processes wikilinks and converts them to appropriate MDAST nodes. */
 export function processWikilink(
   textContent: string,
   ...captureGroups: [string, string, string]
@@ -152,16 +409,13 @@ export function processWikilink(
   const [filePath, blockRef, alias] = captureGroups
   const fp = filePath?.trim() ?? ""
   const ref = blockRef?.trim() ?? ""
-  // Remove the leading | from the alias if it exists
   const displayAlias = alias ? alias.slice(1).trim() : undefined
 
   if (textContent.startsWith("!")) {
-    // Get lowercase file extension and slugified path
     const ext: string = path.extname(fp).toLowerCase()
     const url = slugifyFilePath(fp as FilePath)
     if ([".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
       const match = wikilinkImageEmbedRegex.exec(alias ?? "")
-      // Don't use the raw alias as alt text when dimensions are specified
       const width = match?.groups?.width ?? "auto"
       const height = match?.groups?.height ?? "auto"
       const specifiedDimensions = width !== "auto" || height !== "auto"
@@ -178,28 +432,13 @@ export function processWikilink(
         },
       }
     } else if ([".mp4", ".webm", ".ogv", ".mov", ".mkv"].includes(ext)) {
-      return {
-        type: "html",
-        value: `<span class="video-container"><video src="${url}" controls></video></span>`,
-      }
+      return createVideoElement(url)
     } else if ([".mp3", ".webm", ".wav", ".m4a", ".ogg", ".3gp", ".flac"].includes(ext)) {
-      return {
-        type: "html",
-        value: `<audio src="${url}" controls></audio>`,
-      }
+      return createAudioElement(url)
     } else if ([".pdf"].includes(ext)) {
-      return {
-        type: "html",
-        value: `<iframe src="${url}"></iframe>`,
-      }
+      return createPdfEmbed(url)
     } else {
-      return {
-        type: "html",
-        data: { hProperties: { transclude: true } },
-        value: `<span class="transclude" data-url="${url}" data-block="${ref}"><a href="${url}${ref}" class="transclude-inner">${
-          displayAlias ?? `Transclude of ${url}${ref}`
-        }</a></span>`,
-      }
+      return createTranscludeElement(url, ref, displayAlias)
       // otherwise, fall through to regular link
     }
   }
@@ -211,284 +450,139 @@ export function processWikilink(
   }
 }
 
-/**
- * Returns a list of plugins for the ObsidianFlavoredMarkdown transformer.
- */
-export function markdownPlugins(opts: Options): PluggableList {
+/** Creates a tag processing function. */
+const createTagProcessor =
+  (file: VFile): ReplaceFunction =>
+  (_value: string, tag: string) => {
+    if (/^\d+$/.test(tag)) {
+      return false
+    }
+
+    tag = slugTag(tag)
+    if (file.data.frontmatter) {
+      const noteTags = file.data.frontmatter.tags ?? []
+      file.data.frontmatter.tags = [...new Set([...noteTags, tag])]
+    }
+
+    return {
+      type: "link" as const,
+      url: `/tags/${tag}`,
+      data: {
+        hProperties: {
+          className: ["tag-link"],
+        },
+      },
+      children: [
+        {
+          type: "text" as const,
+          value: tag,
+        },
+      ],
+    }
+  }
+
+/** Creates a plugin that applies regex-based text replacements. */
+const createRegexReplacementsPlugin = (opts: OFMOptions) => () => {
+  return (tree: Root, file: VFile) => {
+    const replacements: [RegExp, string | ReplaceFunction][] = []
+
+    if (opts.wikilinks) {
+      replacements.push([wikilinkRegex, processWikilink])
+    }
+
+    if (opts.highlight) {
+      replacements.push([
+        highlightRegex,
+        (_value: string, ...capture: string[]) => {
+          const [inner] = capture
+          return createHighlightElement(inner)
+        },
+      ])
+    }
+
+    if (opts.parseTags) {
+      replacements.push([tagRegex, createTagProcessor(file)])
+    }
+
+    if (opts.enableInHtmlEmbed) {
+      visit(tree, "html", (node: Html) => {
+        for (const [regex, replace] of replacements) {
+          if (typeof replace === "string") {
+            node.value = node.value.replace(regex, replace)
+          } else {
+            node.value = node.value.replace(regex, (substring: string, ...args) => {
+              const replaceValue = replace(substring, ...args)
+              if (typeof replaceValue === "string") {
+                return replaceValue
+              } else if (Array.isArray(replaceValue)) {
+                return replaceValue.map(mdastToHtml).join("")
+              } else if (typeof replaceValue === "object" && replaceValue !== null) {
+                return mdastToHtml(replaceValue)
+              } else {
+                return substring
+              }
+            })
+          }
+        }
+      })
+    }
+    mdastFindReplace(tree, replacements)
+  }
+}
+
+/** Creates a plugin that converts image nodes with video extensions to video embeds. */
+const createVideoEmbedPlugin = () => () => {
+  return (tree: Root) => {
+    visit(tree, "image", (node, index, parent) => {
+      if (parent && index !== undefined && videoExtensionRegex.test(node.url)) {
+        const newNode = createVideoElement(node.url) as Html
+        parent.children.splice(index, 1, newNode)
+        return SKIP
+      }
+      return undefined
+    })
+  }
+}
+
+/** Creates a plugin that processes blockquotes and converts them to admonitions. */
+const createAdmonitionsPlugin = () => () => {
+  return (tree: Root) => {
+    visit(tree, "blockquote", processAdmonitionBlockquote)
+  }
+}
+
+/** Creates markdown processing plugins based on configuration. */
+export function markdownPlugins(opts: OFMOptions): PluggableList {
   const plugins: PluggableList = []
 
-  // regex replacements
-  plugins.push(() => {
-    return (tree: Root, file: VFile) => {
-      const replacements: [RegExp, string | ReplaceFunction][] = []
-
-      if (opts.wikilinks) {
-        replacements.push([wikilinkRegex, processWikilink])
-      }
-
-      if (opts.highlight) {
-        replacements.push([
-          highlightRegex,
-          (_value: string, ...capture: string[]) => {
-            const [inner] = capture
-            return {
-              type: "html",
-              value: `<span class="text-highlight">${inner}</span>`,
-            }
-          },
-        ])
-      }
-
-      if (opts.parseTags) {
-        replacements.push([
-          tagRegex,
-          (_value: string, tag: string) => {
-            // Check if the tag only includes numbers
-            if (/^\d+$/.test(tag)) {
-              return false
-            }
-
-            tag = slugTag(tag)
-            if (file.data.frontmatter) {
-              const noteTags = file.data.frontmatter.tags ?? []
-              file.data.frontmatter.tags = [...new Set([...noteTags, tag])]
-            }
-
-            return {
-              type: "link",
-              url: `/tags/${tag}`,
-              data: {
-                hProperties: {
-                  className: ["tag-link"],
-                },
-              },
-              children: [
-                {
-                  type: "text",
-                  value: tag,
-                },
-              ],
-            }
-          },
-        ])
-      }
-
-      if (opts.enableInHtmlEmbed) {
-        visit(tree, "html", (node: Html) => {
-          for (const [regex, replace] of replacements) {
-            if (typeof replace === "string") {
-              node.value = node.value.replace(regex, replace)
-            } else {
-              node.value = node.value.replace(regex, (substring: string, ...args) => {
-                const replaceValue = replace(substring, ...args)
-                if (typeof replaceValue === "string") {
-                  return replaceValue
-                } else if (Array.isArray(replaceValue)) {
-                  return replaceValue.map(mdastToHtml).join("")
-                } else if (typeof replaceValue === "object" && replaceValue !== null) {
-                  return mdastToHtml(replaceValue)
-                } else {
-                  return substring
-                }
-              })
-            }
-          }
-        })
-      }
-      mdastFindReplace(tree, replacements)
-    }
-  })
+  plugins.push(createRegexReplacementsPlugin(opts))
 
   if (opts.enableVideoEmbed) {
-    plugins.push(() => {
-      return (tree: Root) => {
-        visit(tree, "image", (node, index, parent) => {
-          if (parent && index !== undefined && videoExtensionRegex.test(node.url)) {
-            const newNode: Html = {
-              type: "html",
-              value: `<span class="video-container"><video controls src="${node.url}"></video></span>`,
-            }
-
-            parent.children.splice(index, 1, newNode)
-            return SKIP
-          }
-          return undefined
-        })
-      }
-    })
+    plugins.push(createVideoEmbedPlugin())
   }
 
   if (opts.admonitions) {
-    plugins.push(() => {
-      return (tree: Root) => {
-        visit(tree, "blockquote", (node) => {
-          if (node.children.length === 0) {
-            return
-          }
-
-          // find first line
-          const firstChild = node.children[0]
-          if (firstChild.type !== "paragraph" || firstChild.children[0]?.type !== "text") {
-            return
-          }
-
-          const text = firstChild.children[0].value
-          const [firstLine, ...remainingLines] = text.split("\n")
-          const remainingText = remainingLines.join("\n")
-
-          const match = firstLine.match(admonitionRegex)
-          if (match?.input) {
-            const [admonitionDirective, typeString, collapseChar] = match
-            const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
-            const collapse = collapseChar === "+" || collapseChar === "-"
-            const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
-            const titleContent = match.input.slice(admonitionDirective.length).trim()
-            const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
-            const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
-
-            const admonitionTitle: Element = {
-              type: "element",
-              tagName: "div",
-              properties: {},
-              data: {
-                hName: "div",
-                hProperties: {
-                  className: ["admonition-title"],
-                },
-                position: {},
-              } as CustomElementData,
-              children: [
-                {
-                  type: "element",
-                  tagName: "div",
-                  properties: {},
-                  data: {
-                    hName: "div",
-                    hProperties: {
-                      className: ["admonition-icon"],
-                    },
-                    position: {},
-                  } as CustomElementData,
-                  children: [],
-                },
-                {
-                  type: "element",
-                  tagName: "div",
-                  properties: {},
-                  data: {
-                    hName: "div",
-                    hProperties: {
-                      className: ["admonition-title-inner"],
-                    },
-                    position: {},
-                  } as CustomElementData,
-                  children: [
-                    {
-                      type: "text",
-                      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
-                    },
-                    ...(firstChild.children.slice(1) as ElementContent[]),
-                  ],
-                },
-                ...((collapse
-                  ? [
-                      {
-                        type: "element",
-                        tagName: "div",
-                        data: {
-                          hName: "div",
-                          hProperties: {
-                            className: ["fold-admonition-icon"],
-                          },
-                          position: {},
-                        } as CustomElementData,
-                        children: [],
-                        properties: {},
-                      },
-                    ]
-                  : []) as ElementContent[]),
-              ],
-            }
-
-            // Create a new content node with the remaining text and other children
-            const contentChildren = [
-              ...(remainingText.trim() !== ""
-                ? [
-                    {
-                      type: "paragraph",
-                      children: [{ type: "text", value: remainingText }],
-                    },
-                  ]
-                : []),
-              ...node.children.slice(1),
-            ]
-
-            // Only create contentNode if there are children to include
-            let contentNode: Element | null = null
-            if (contentChildren.length > 0) {
-              contentNode = {
-                type: "element",
-                tagName: "div",
-                properties: {},
-                children: contentChildren as ElementContent[],
-                data: {
-                  hName: "div",
-                  hProperties: {
-                    className: ["admonition-content"],
-                  },
-                  position: {},
-                } as ElementData,
-              }
-            }
-
-            // Replace the entire blockquote content
-            node.children = [admonitionTitle as unknown as BlockContent]
-            if (contentNode) {
-              node.children.push(contentNode as unknown as BlockContent)
-            }
-
-            const classNames = ["admonition", admonitionType]
-            if (collapse) {
-              classNames.push("is-collapsible")
-            }
-            if (defaultState === "collapsed") {
-              classNames.push("is-collapsed")
-            }
-
-            // Add properties to base blockquote
-            node.data = {
-              hProperties: {
-                ...(node.data?.hProperties ?? {}),
-                className: classNames.join(" "),
-                "data-admonition": admonitionType,
-                "data-admonition-fold": collapse,
-              },
-            }
-          }
-        })
-      }
-    })
+    plugins.push(createAdmonitionsPlugin())
   }
 
   return plugins
 }
 
-// skipcq: JS-D1001
-export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | undefined> = (
+/** Main Obsidian Flavored Markdown transformer plugin for Quartz. */
+export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOptions> | undefined> = (
   userOpts,
 ) => {
   const opts = { ...defaultOptions, ...userOpts }
 
   return {
     name: "ObsidianFlavoredMarkdown",
+    /** Performs text-level transformations on the raw markdown source. */
     textTransform(_ctx, src: string | Buffer) {
-      // Strip HTML comments first
       src = typeof src === "string" ? src : src.toString()
 
-      // Add HTML comment stripping
+      // strip HTML comments
       src = src.replace(/<!--[\s\S]*?-->/g, "")
 
-      // do comments at text level
       if (opts.comments) {
         src = src.replace(commentRegex, "")
       }
@@ -537,9 +631,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
 
       return src
     },
+    /** Returns the markdown processing plugins. */
     markdownPlugins() {
       return markdownPlugins(opts)
     },
+    /** Returns the HTML processing plugins. */
     htmlPlugins() {
       const plugins: PluggableList = [rehypeRaw]
 
@@ -586,29 +682,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
                 const videoId = match && match[2].length === 11 ? match[2] : null
                 const playlistId = node.properties.src.match(ytPlaylistLinkRegex)?.[1]
                 if (videoId) {
-                  // YouTube video (with optional playlist)
                   node.tagName = "iframe"
-                  node.properties = {
-                    class: "external-embed",
-                    allow: "fullscreen",
-                    frameborder: 0,
-                    width: "600px",
-                    height: "350px",
-                    src: playlistId
-                      ? `https://www.youtube.com/embed/${videoId}?list=${playlistId}`
-                      : `https://www.youtube.com/embed/${videoId}`,
-                  }
+                  node.properties = createYouTubeEmbed(videoId, playlistId)
                 } else if (playlistId) {
-                  // YouTube playlist only.
                   node.tagName = "iframe"
-                  node.properties = {
-                    class: "external-embed",
-                    allow: "fullscreen",
-                    frameborder: 0,
-                    width: "600px",
-                    height: "350px",
-                    src: `https://www.youtube.com/embed/videoseries?list=${playlistId}`,
-                  }
+                  node.properties = createPlaylistEmbed(playlistId)
                 }
               }
             })
@@ -654,6 +732,7 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
 
       return plugins
     },
+    /** Returns external resources needed by this transformer. */
     externalResources() {
       const js: JSResource[] = []
 
@@ -688,6 +767,7 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> 
   }
 }
 
+/** Extends VFile data interface for OFM-specific data. */
 declare module "vfile" {
   interface DataMap {
     blocks: Record<string, Element>
