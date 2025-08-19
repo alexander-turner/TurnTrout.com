@@ -28,7 +28,7 @@ const defaultOptions: Options = {
  *
  * Footnotes are rendered as `<li>` elements with IDs that start with "user-content-fn".
  */
-function isFootnoteListItem(node: Element): boolean {
+export function isFootnoteListItem(node: Element): boolean {
   return (
     node.tagName === "li" && Boolean(node.properties?.id?.toString().startsWith("user-content-fn"))
   )
@@ -43,7 +43,7 @@ function isFootnoteListItem(node: Element): boolean {
  * @param footnoteNode - The footnote list item element.
  * @returns The back arrow element if found, null otherwise.
  */
-function findFootnoteBackArrow(footnoteNode: Element): Element | null {
+export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
   // Find the last paragraph in the footnote
   const lastParagraph = footnoteNode.children.find(
     (child) => child.type === "element" && child.tagName === "p",
@@ -68,6 +68,16 @@ function findFootnoteBackArrow(footnoteNode: Element): Element | null {
   return null
 }
 
+// See footnoteBacklinkPlugin for usage
+export function appendArrowToFootnoteListItemVisitor(node: Element) {
+  if (isFootnoteListItem(node)) {
+    const backArrow = findFootnoteBackArrow(node)
+    if (backArrow) {
+      maybeSpliceAndAppendBackArrow(node, backArrow)
+    }
+  }
+}
+
 /**
  * Plugin to enhance footnote back arrows by preventing awkward line wrapping.
  *
@@ -82,23 +92,10 @@ function findFootnoteBackArrow(footnoteNode: Element): Element | null {
  * Before: "This is footnote text ↩" (where ↩ might wrap alone)
  * After:  "This is footnote <span>text ↩</span>" (keeping them together)
  */
+// istanbul ignore next -- this is a plugin
 function footnoteBacklinkPlugin() {
   return (tree: Root) => {
-    visit(tree, "element", (node) => {
-      // Only process footnote list items
-      if (!isFootnoteListItem(node)) {
-        return
-      }
-
-      // Find the back arrow in this footnote
-      const backArrow = findFootnoteBackArrow(node)
-      if (!backArrow) {
-        return
-      }
-
-      // Enhance the footnote by repositioning the back arrow
-      maybeSpliceAndAppendBackArrow(node, backArrow)
-    })
+    visit(tree, "element", appendArrowToFootnoteListItemVisitor)
   }
 }
 
@@ -185,7 +182,7 @@ export function returnAddIdsToHeadingsFn() {
 }
 
 // skipcq: JS-D1001
-export function removeBackArrow(footnoteParent: Element): void {
+export function removeBackArrowFromChildren(footnoteParent: Element): void {
   footnoteParent.children = footnoteParent.children.filter((child) => {
     return !(
       child.type === "element" &&
@@ -196,16 +193,13 @@ export function removeBackArrow(footnoteParent: Element): void {
 }
 
 /**
- * Add a back arrow to the footnote. Modifies the footnote node in place, appending the back arrow to the footnote.
- *
- * @returns
- *   The back arrow element.
+ * Add a back arrow to the footnote. Modifies the footnote node in place.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
   const lastParagraph = node.children[node.children.length - 1] as Element
   if (lastParagraph.tagName !== "p") return
 
-  removeBackArrow(lastParagraph)
+  removeBackArrowFromChildren(lastParagraph)
 
   // Handle empty paragraph case
   if (lastParagraph.children.length === 0) {
