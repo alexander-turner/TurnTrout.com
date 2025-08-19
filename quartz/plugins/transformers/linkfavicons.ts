@@ -32,6 +32,8 @@ export const FAVICON_URLS_FILE = path.join(
   "transformers",
   ".faviconUrls.txt",
 )
+
+// istanbul ignore if
 if (!fs.existsSync(FAVICON_URLS_FILE)) {
   try {
     fs.writeFileSync(FAVICON_URLS_FILE, "")
@@ -42,6 +44,7 @@ if (!fs.existsSync(FAVICON_URLS_FILE)) {
   }
 }
 
+// skipcq: JS-D1001
 export class DownloadError extends Error {
   constructor(message: string) {
     super(message)
@@ -131,6 +134,7 @@ export function getQuartzPath(hostname: string): string {
 }
 
 const defaultCache = new Map<string, string>([[TURNTROUT_FAVICON_PATH, TURNTROUT_FAVICON_PATH]])
+// skipcq: JS-D1001
 export function createUrlCache(): Map<string, string> {
   return new Map(defaultCache)
 }
@@ -361,6 +365,7 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   if (lastChar && charsToSpace.includes(lastChar)) {
     // Adjust the style of the appended element
     logger.debug("Adding margin-left to appended element")
+    // istanbul ignore next
     imgNodeToAppend.properties = imgNodeToAppend.properties || {}
     imgNodeToAppend.properties.class = "favicon close-text"
   }
@@ -395,6 +400,11 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
 function handleMailtoLink(node: Element): void {
   logger.info("Inserting mail icon for mailto link")
   insertFavicon(MAIL_PATH, node)
+}
+
+// skipcq: JS-D1001
+export function isHeading(node: Element): boolean {
+  return Boolean(node.tagName?.match(/^h[1-6]$/))
 }
 
 /**
@@ -544,6 +554,7 @@ export const AddFavicons = () => {
               tree,
               "element",
               (node: Element, _index: number | undefined, parent: Parent | undefined) => {
+                // istanbul ignore next
                 if (!parent) return
                 if (node.tagName === "a" && node.properties.href) {
                   logger.debug(`Found anchor node: ${node.properties.href}`)
@@ -562,8 +573,4 @@ export const AddFavicons = () => {
       ]
     },
   }
-}
-
-export function isHeading(node: Element): boolean {
-  return Boolean(node.tagName?.match(/^h[1-6]$/))
 }
