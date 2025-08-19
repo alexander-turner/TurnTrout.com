@@ -17,10 +17,18 @@ export interface TwemojiOptions {
   callback: (icon: string, options: TwemojiOptions) => string
 }
 
-export function createTwemojiCallback(icon: string, options: TwemojiOptions): string {
+// skipcq: JS-D1001
+export function constructTwemojiUrl(icon: string, options: TwemojiOptions): string {
   return `${TWEMOJI_BASE_URL}${icon}${options.ext}`
 }
 
+/**
+ * Parses HTML attributes from an img tag string into a key-value object.
+ * Only matches attributes with quoted values using the pattern: attribute="value".
+ *
+ * @param imgTag - The HTML img tag string to parse attributes from
+ * @returns Object containing parsed attribute key-value pairs
+ */
 export function parseAttributes(imgTag: string): Record<string, string> {
   const attrs = imgTag.match(/(\w+)="([^"]*)"?/g) || []
   return attrs.reduce(
@@ -33,11 +41,15 @@ export function parseAttributes(imgTag: string): Record<string, string> {
   )
 }
 
+/**
+ * Replaces emoji characters in content with Twemoji SVG img tags.
+ * Also handles special emoji replacements defined in EMOJIS_TO_REPLACE array.
+ */
 export function replaceEmoji(content: string): string {
   let twemojiContent = twemoji.parse(content, {
     folder: "svg",
     ext: ".svg",
-    callback: createTwemojiCallback,
+    callback: constructTwemojiUrl,
   } as TwemojiOptions)
 
   EMOJIS_TO_REPLACE.forEach((emoji) => {
@@ -50,6 +62,13 @@ export function replaceEmoji(content: string): string {
   return twemojiContent
 }
 
+/**
+ * Creates an array of text and element nodes from Twemoji-processed content.
+ * Splits content by img tags and creates corresponding text nodes and img elements.
+ *
+ * @param twemojiContent - HTML content containing Twemoji img tags
+ * @returns Array of text nodes and img elements for rendering
+ */
 export function createNodes(twemojiContent: string): (Text | Element)[] {
   const newNodes: (Text | Element)[] = []
   const parts = twemojiContent.split(/<img.*?>/g)
@@ -74,11 +93,19 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
 
 // private-use unicode; html formatting uses E000
 export const ignoreMap = new Map<string, string>([
-  ["⤴", "\uE001"],
+  [EMOJI_REPLACEMENT, "\uE001"],
   ["⇔", "\uE002"],
   ["↗", "\uE003"],
 ])
 
+/**
+ * Converts arrow characters and processes emoji with special character handling.
+ * Converts ↩ to ⤴, temporarily replaces ignored characters during emoji processing,
+ * then restores them to prevent unwanted emoji conversion.
+ *
+ * @param content - Text content that may contain arrows and emoji
+ * @returns Content with arrows converted and emoji processed
+ */
 export function replaceEmojiConvertArrows(content: string): string {
   let twemojiContent = content
   twemojiContent = twemojiContent.replaceAll(/↩/gu, "⤴")
@@ -94,6 +121,11 @@ export function replaceEmojiConvertArrows(content: string): string {
   return twemojiContent
 }
 
+/**
+ * Processes an AST tree to replace emoji and arrows in text nodes.
+ * Visits all text nodes, applies emoji and arrow conversion, and replaces
+ * modified nodes with new text and element nodes.
+ */
 export function processTree(tree: Node): Node {
   visit(
     tree,
@@ -116,6 +148,7 @@ export function processTree(tree: Node): Node {
   return tree
 }
 
+// skipcq: JS-D1001
 export const Twemoji = (): {
   name: string
   htmlPlugins: () => Plugin[]
