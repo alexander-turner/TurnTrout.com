@@ -89,6 +89,7 @@ export const replaceRegex = (
     // Use exec() instead of match() to get capture groups
     regex.lastIndex = index
     const match = regex.exec(node.value)
+    // istanbul ignore if
     if (!match) continue
 
     const { before, replacedMatch, after } = replaceFn(match)
@@ -128,13 +129,12 @@ export const replaceRegex = (
 
 /**
  * Checks if node has no previous sibling or previous sibling ends with period + with optional whitespace.
- * @param node - Node to check
- * @returns true if node should begin with a capital letter
  */
-export function nodeBeginsWithCapital(index: number, parent: Parent): boolean {
+export function shouldCapitalizeNodeText(index: number, parent: Parent): boolean {
   if (index <= 0) return true
 
   const prev = parent?.children[index - 1]
+  // istanbul ignore if
   if (!prev) return true
 
   if (prev.type === "text") {
@@ -170,6 +170,7 @@ export interface ElementMaybeWithParent extends Element {
   parent: ElementMaybeWithParent | null
 }
 
+// Does node have an ancestor that satisfies the predicate?
 export function hasAncestor(
   node: ElementMaybeWithParent,
   ancestorPredicate: (anc: Element) => boolean,
@@ -186,6 +187,7 @@ export function hasAncestor(
   return false
 }
 
+// Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
   if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
     return node.properties.className.includes(className)
