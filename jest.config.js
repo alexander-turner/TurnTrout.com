@@ -16,6 +16,7 @@ const config = {
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
+    "quartz/plugins/transformers/logger_utils\\.ts",
   ],
 
   coverageThreshold: {
@@ -64,7 +65,7 @@ const config = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    "/node_modules/(?!preact|preact-render-to-string|preact-context-provider).+\\.js$",
+    "/node_modules/(?!preact|preact-render-to-string|preact-context-provider|hastscript|rehype|unist-util-visit-parents).+\\.js$",
   ],
 }
 
