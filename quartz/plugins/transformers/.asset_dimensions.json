@@ -4178,5 +4178,9 @@
   "/static/images/external-favicons/edward-turner_com.png": {
     "width": 32,
     "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/edward-turner_com.avif": {
+    "width": 32,
+    "height": 32
   }
 }
