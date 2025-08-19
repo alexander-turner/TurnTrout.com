@@ -15,6 +15,7 @@ import {
   allCapsContinuation,
   REGEX_ALL_CAPS_PHRASE,
   skipSmallcaps,
+  skipSmallcapsClasses,
   shouldSkipNode,
   capitalizeAfterEnding,
   shouldCapitalizeMatch,
@@ -466,17 +467,14 @@ describe("REGEX_ALL_CAPS_PHRASE Regex Tests", () => {
 })
 
 describe("skipFormatting", () => {
-  const testCases = [
-    {
-      desc: "should return true for no-smallcaps class",
-      element: h("div", { class: "no-smallcaps" }),
-      expected: true,
-    },
-    {
-      desc: "should return true for no-formatting class",
-      element: h("div", { class: "no-formatting" }),
-      expected: true,
-    },
+  // Dynamically generate test cases for each skipSmallcapsClasses
+  const classTestCases = skipSmallcapsClasses.map((className) => ({
+    desc: `should return true for ${className} class`,
+    element: h("div", { class: className }),
+    expected: true,
+  }))
+
+  const additionalTestCases = [
     {
       desc: "should return true for multiple classes including no-formatting",
       element: h("div", { class: "other-class no-formatting" }),
@@ -493,16 +491,18 @@ describe("skipFormatting", () => {
       expected: false,
     },
     {
-      desc: "should return true for bad-handwriting class",
-      element: h("div", { class: "bad-handwriting" }),
-      expected: true,
-    },
-    {
       desc: "should return true for style tag",
       element: h("style"),
       expected: true,
     },
+    {
+      desc: "should return false for text node",
+      element: { type: "text", value: "test text" },
+      expected: false,
+    },
   ]
+
+  const testCases = [...classTestCases, ...additionalTestCases]
 
   it.each(testCases)("$desc", ({ element, expected }) => {
     expect(skipSmallcaps(element)).toBe(expected)

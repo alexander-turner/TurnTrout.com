@@ -61,14 +61,14 @@ const combinedRegex = new RegExp(
 )
 
 // Predicate if we should skip smallcaps for a given node
+export const skipSmallcapsClasses = ["no-smallcaps", "no-formatting", "bad-handwriting", "katex"]
+
+// skipcq: JS-0257
 export function skipSmallcaps(node: Node): boolean {
   if (node.type === "element") {
     const elementNode = node as Element
     return (
-      hasClass(elementNode, "no-smallcaps") ||
-      hasClass(elementNode, "no-formatting") ||
-      hasClass(elementNode, "bad-handwriting") ||
-      hasClass(elementNode, "katex") ||
+      skipSmallcapsClasses.some((className: string) => hasClass(elementNode, className)) ||
       elementNode.tagName === "style"
     )
   }
@@ -143,6 +143,7 @@ export function shouldCapitalizeMatch(
     if (parent.type === "element" && INLINE_ELEMENTS.has((parent as Element).tagName)) {
       const grandParent = ancestors[ancestors.length - 2]
       const parentIndex = grandParent.children.indexOf(parent as Element)
+      // istanbul ignore if
       if (parentIndex === -1) {
         throw new Error("capitalizeMatch: parent is not the child of its grandparent")
       }
@@ -252,6 +253,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         }
       }
 
+      // istanbul ignore next -- hard-to-trigger edge case
       throw new Error(
         `Regular expression logic is broken; one of the regexes should match for ${matchText}`,
       )
@@ -274,6 +276,7 @@ export const rehypeTagSmallcaps: Plugin = () => {
 }
 
 // skipcq: JS-D1001
+// istanbul ignore next
 export const TagSmallcaps: QuartzTransformerPlugin = () => {
   return {
     name: "TagSmallcaps",
