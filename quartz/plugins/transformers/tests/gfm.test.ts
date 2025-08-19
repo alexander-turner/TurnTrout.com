@@ -224,6 +224,24 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toEqual(originalChildren)
   })
+
+  test("should handle node without children property", () => {
+    const node = h("li", [h("p", [])])
+
+    // Should not throw an error
+    expect(() => {
+      maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+    }).not.toThrow()
+  })
+
+  test("should handle node with empty children array", () => {
+    const node = h("li", [])
+
+    // Should not throw an error
+    expect(() => {
+      maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+    }).not.toThrow()
+  })
 })
 
 describe("removeBackArrowFromChildren function", () => {
@@ -426,6 +444,18 @@ describe("GitHubFlavoredMarkdown plugin", () => {
     expect(htmlPlugins.length).toBeGreaterThanOrEqual(1)
     expect(typeof htmlPlugins[0]).toBe("function")
   })
+
+  test("footnote plugin should handle undefined tree gracefully", () => {
+    const plugin = GitHubFlavoredMarkdown()
+    const { htmlPlugins } = getPlugins(plugin)
+
+    const footnoteProcessor = htmlPlugins[0] as (tree: unknown) => void
+
+    // Should not throw when called with undefined tree
+    expect(() => {
+      footnoteProcessor(undefined)
+    }).not.toThrow()
+  })
 })
 
 describe("isFootnoteListItem function", () => {
@@ -486,6 +516,22 @@ describe("findFootnoteBackArrow function", () => {
         ]),
     ],
     ["empty paragraph", () => h("li", { id: "user-content-fn-1" }, [h("p", [])])],
+    [
+      "paragraph without children property",
+      () => {
+        const paragraph = h("p", ["text"])
+        delete (paragraph as unknown as { children?: unknown }).children
+        return h("li", { id: "user-content-fn-1" }, [paragraph])
+      },
+    ],
+    [
+      "footnote node without children property",
+      () => {
+        const listItem = h("li", { id: "user-content-fn-1" }, [h("p", ["text"])])
+        delete (listItem as unknown as { children?: unknown }).children
+        return listItem
+      },
+    ],
   ])("should return null when %s", (_desc: string, createElement: () => Element) => {
     const result = findFootnoteBackArrow(createElement())
     expect(result).toBeNull()
@@ -503,6 +549,13 @@ describe("findFootnoteBackArrow function", () => {
 })
 
 describe("gfmVisitor function", () => {
+  test("should handle undefined node gracefully", () => {
+    // Should not throw an error when called with undefined
+    expect(() => {
+      appendArrowToFootnoteListItemVisitor(undefined as unknown as Element)
+    }).not.toThrow()
+  })
+
   test("should process footnote with back arrow", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const footnoteItem = h("li", { id: "user-content-fn-1" }, [

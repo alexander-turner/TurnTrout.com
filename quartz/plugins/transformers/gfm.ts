@@ -30,7 +30,7 @@ const defaultOptions: Options = {
  */
 export function isFootnoteListItem(node: Element): boolean {
   return (
-    node.tagName === "li" && Boolean(node.properties?.id?.toString().startsWith("user-content-fn"))
+    node?.tagName === "li" && Boolean(node.properties?.id?.toString().startsWith("user-content-fn"))
   )
 }
 
@@ -45,11 +45,15 @@ export function isFootnoteListItem(node: Element): boolean {
  */
 export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
   // Find the last paragraph in the footnote
+  if (!footnoteNode.children) {
+    return null
+  }
+
   const lastParagraph = footnoteNode.children.find(
     (child) => child.type === "element" && child.tagName === "p",
   ) as Element | undefined
 
-  if (!lastParagraph || !("children" in lastParagraph)) {
+  if (!lastParagraph || !lastParagraph.children) {
     return null
   }
 
@@ -95,6 +99,7 @@ export function appendArrowToFootnoteListItemVisitor(node: Element) {
 // istanbul ignore next -- this is a plugin
 function footnoteBacklinkPlugin() {
   return (tree: Root) => {
+    if (!tree) return
     visit(tree, "element", appendArrowToFootnoteListItemVisitor)
   }
 }
@@ -196,8 +201,10 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
  * Add a back arrow to the footnote. Modifies the footnote node in place.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
-  const lastParagraph = node.children[node.children.length - 1] as Element
-  if (lastParagraph.tagName !== "p") return
+  const lastParagraph = node.children[node.children.length - 1] as Element | undefined
+  if (!lastParagraph || lastParagraph.tagName !== "p") {
+    return
+  }
 
   removeBackArrowFromChildren(lastParagraph)
 
