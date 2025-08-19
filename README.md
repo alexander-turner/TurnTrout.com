@@ -9,11 +9,8 @@ SITE_DIR=/tmp/TurnTrout.com
 git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
 cd "$SITE_DIR"
 yes | npm ci
-npx quartz build --serve
-firefox localhost:8080/welcome.html
+npx quartz build --serve 
 ```
-
-The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant (and also present in `docs/`).
 
 # Cryptographic timestamp verification
 
