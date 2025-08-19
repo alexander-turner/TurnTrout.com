@@ -23,6 +23,7 @@ const defaultOptions: Options = {
   keepBackground: false,
 }
 
+// skipcq: JS-D1001
 export const SyntaxHighlighting: QuartzTransformerPlugin<Options> = (
   userOpts?: Partial<Options>,
 ) => {

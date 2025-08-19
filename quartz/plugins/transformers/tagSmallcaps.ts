@@ -7,8 +7,7 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { isCode } from "./formatting_improvement_html"
-import { hasClass } from "./utils"
-import { nodeBeginsWithCapital, replaceRegex, gatherTextBeforeIndex } from "./utils"
+import { nodeBeginsWithCapital, replaceRegex, gatherTextBeforeIndex, hasClass } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {
@@ -61,32 +60,23 @@ const combinedRegex = new RegExp(
   "g",
 )
 
+// Predicate if we should skip smallcaps for a given node
 export function skipSmallcaps(node: Node): boolean {
   if (node.type === "element") {
+    const elementNode = node as Element
     return (
-      hasClass(node as Element, "no-smallcaps") ||
-      hasClass(node as Element, "no-formatting") ||
-      hasClass(node as Element, "bad-handwriting") ||
-      hasClass(node as Element, "katex") ||
-      (node as Element).tagName === "style"
+      hasClass(elementNode, "no-smallcaps") ||
+      hasClass(elementNode, "no-formatting") ||
+      hasClass(elementNode, "bad-handwriting") ||
+      hasClass(elementNode, "katex") ||
+      elementNode.tagName === "style"
     )
   }
   return false
 }
 
-function isElvish(node: Element): boolean {
-  return hasClass(node, "elvish")
-}
-
-function isAbbreviation(node: Element): boolean {
-  return node.tagName === "abbr"
-}
-
 /**
  * Determines if text node should skip acronym formatting
- * @param node - Text node to check
- * @param ancestors - Array of parent nodes
- * @returns True if node should skip formatting
  */
 export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
   if (
@@ -98,10 +88,8 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
     return true
   }
 
-  const parent = ancestors[ancestors.length - 1]
-  return (
-    parent?.type === "element" && (isElvish(parent as Element) || isAbbreviation(parent as Element))
-  )
+  const parent = ancestors[ancestors.length - 1] as Element
+  return hasClass(parent, "elvish") || parent.tagName === "abbr"
 }
 
 // If text comes after sentence ending, capitalize the first letter
@@ -285,6 +273,7 @@ export const rehypeTagSmallcaps: Plugin = () => {
   }
 }
 
+// skipcq: JS-D1001
 export const TagSmallcaps: QuartzTransformerPlugin = () => {
   return {
     name: "TagSmallcaps",
