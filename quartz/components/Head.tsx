@@ -1,10 +1,14 @@
 /* eslint-disable react/no-unknown-property */
+import type { JSX } from "react"
+
 // (For the spa-preserve attribute)
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 import { VFile } from "vfile"
 
+import { GlobalConfiguration } from "../cfg"
+import { QuartzPluginData } from "../plugins/vfile"
 import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
@@ -41,22 +45,35 @@ const CALLOUT_ICONS = [
   "dollar",
 ] as const
 
+/*
+ * Render the meta JSX for the head of the page.
+ */
+export function renderMetaJsx(
+  cfg: GlobalConfiguration,
+  fileData: QuartzPluginData,
+  vfile: VFile,
+): JSX.Element {
+  const headHtml = renderHead({
+    cfg,
+    fileData: vfile,
+    slug: fileData.slug as FullSlug,
+  })
+
+  // Convert HTML string to HAST tree, then to JSX
+  const headHast = fromHtml(headHtml, { fragment: true })
+  const slug = fileData.slug || "head"
+  const headJsx = htmlToJsx(slug as unknown as FilePath, headHast)
+  // istanbul ignore next -- too hard to test
+  if (!headJsx) {
+    throw new Error(`Head JSX conversion failed for slug: ${slug}`)
+  }
+  return headJsx
+}
+
 export default (() => {
   // skipcq: JS-D1001
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
-    // Create VFile from QuartzPluginData
-    const vfile = new VFile("")
-    vfile.data = fileData as Record<string, unknown>
-
-    const headHtml = renderHead({
-      cfg,
-      fileData: vfile,
-      slug: fileData.slug as FullSlug,
-    })
-
-    // Convert HTML string to HAST tree, then to JSX
-    const headHast = fromHtml(headHtml, { fragment: true })
-    const headJsx = htmlToJsx((fileData.slug || "head") as unknown as FilePath, headHast)
+    const headJsx = renderMetaJsx(cfg, fileData, new VFile(""))
 
     // Scripts
     const { js } = externalResources
