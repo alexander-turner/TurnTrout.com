@@ -282,12 +282,10 @@ describe("AliasRedirects", () => {
 
     const graph = await testDependencyGraph(plugin, mockCtx, content, [
       "" as FilePath,
-      "public/../Users/turntrout/Downloads/turntrout.com/no-filepath-alias.html" as FilePath,
+      "public/no-filepath-alias.html" as FilePath,
     ])
 
-    const files = await testEmitFiles(plugin, mockCtx, content, [
-      "../Users/turntrout/Downloads/turntrout.com/no-filepath-alias.html",
-    ])
+    const files = await testEmitFiles(plugin, mockCtx, content, ["no-filepath-alias.html"])
     expect(graph).toBeDefined()
     expect(files).toBeDefined()
   })
