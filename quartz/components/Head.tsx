@@ -137,6 +137,7 @@ export default (() => {
       <head>
         <meta charSet="utf-8" />
         <script
+          id="scroll-restoration"
           // skipcq: JS-0440
           dangerouslySetInnerHTML={{
             __html: `
