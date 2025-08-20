@@ -1,8 +1,8 @@
 export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
 export const defaultTitle = "The Pond"
 export const defaultDescription = "Writings about doing good, thinking well, and living happily."
-export const faviconUrl =
-  "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
+export const faviconUrl = "/static/images/favicon.ico"
+export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
 export const locale = "en-US"
 
 // UI strings (extracted from i18n en-US locale)

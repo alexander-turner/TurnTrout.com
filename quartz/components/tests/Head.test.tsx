@@ -37,7 +37,7 @@ import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
-import { defaultTitle, faviconUrl } from "../constants"
+import { appleTouchIconUrl, defaultTitle, faviconUrl } from "../constants"
 import HeadConstructor, { renderMetaJsx } from "../Head"
 import { type QuartzComponentProps } from "../types"
 
@@ -238,7 +238,8 @@ describe("Head Component", () => {
 
       expect(html).toContain('href="/index.css"')
       expect(html).toContain('href="/static/styles/katex.min.css"')
-      expect(html).toContain("turntrout-favicons/favicon.ico")
+      expect(html).toContain(faviconUrl)
+      expect(html).toContain(appleTouchIconUrl)
     })
 
     it("should preload icons and fonts", () => {

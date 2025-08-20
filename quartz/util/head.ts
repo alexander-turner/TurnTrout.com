@@ -6,6 +6,7 @@ import {
   defaultCardUrl,
   defaultDescription,
   defaultTitle,
+  appleTouchIconUrl,
   faviconUrl,
 } from "../components/constants"
 import { type ProcessedContent } from "../plugins/vfile"
@@ -96,6 +97,6 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     ${maybeRenderAuthorTags(authors)}
 
     <link rel="icon" href="${escapeHTML(faviconUrl)}" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="${escapeHTML(faviconUrl)}" />
+    <link rel="apple-touch-icon" href="${escapeHTML(appleTouchIconUrl)}" />
   `
 }
