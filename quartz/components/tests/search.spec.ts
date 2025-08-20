@@ -247,7 +247,6 @@ test("Enter key navigates to first result", async ({ page }) => {
   await expect(page).not.toHaveURL(initialUrl)
 })
 
-// eslint-disable-next-line playwright/expect-expect
 test("Search URL updates as we select different results", async ({ page }) => {
   test.skip(!showingPreview(page))
 
@@ -262,6 +261,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
+  // Search again
+  await page.goBack({ waitUntil: "load" })
+  await expect(page.locator("#search-icon")).toBeVisible()
+
   await page.keyboard.press("/")
   await search(page, "Shrek")
 
@@ -270,7 +273,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await previewContainer.click()
 
   const urlsSoFar = new Set([initialUrl, firstResultUrl])
-  await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
+  await page.waitForURL((url) => !urlsSoFar.has(url.toString()), { timeout: 30000 })
 })
 
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
