@@ -412,10 +412,12 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
 
   // Group <head> children by type
   const headChildren = head.children()
-  // Dark mode detection script
-  const isDarkModeScript = (_i: number, el: CheerioElement): boolean =>
-    el.type === "script" && el.attribs.id === "detect-dark-mode"
-  const darkModeScript = headChildren.filter(isDarkModeScript)
+  // These scripts should load first to avoid FOUC
+  const scriptIdsToPutAtTop = ["detect-dark-mode", "scroll-restoration"]
+  // skipcq: JS-D1001
+  const isScriptToPutAtTop = (_i: number, el: CheerioElement): boolean =>
+    el.type === "script" && scriptIdsToPutAtTop.includes(el.attribs.id)
+  const scriptsToPutAtTop = headChildren.filter(isScriptToPutAtTop)
 
   // Meta and title tags
   const metaAndTitle = headChildren.filter(
@@ -442,14 +444,19 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el))
 
   // Anything else (scripts, etc.)
-  const elementsSoFar = new Set([...darkModeScript, ...metaAndTitle, ...criticalCSS, ...allLinks])
+  const elementsSoFar = new Set([
+    ...scriptsToPutAtTop,
+    ...metaAndTitle,
+    ...criticalCSS,
+    ...allLinks,
+  ])
   // Filter to elements that are not already in the set
   const notAlreadySeen = (_i: number, el: CheerioElement): boolean => !elementsSoFar.has(el)
   const otherElements = headChildren.filter(notAlreadySeen)
 
   head
     .empty()
-    .append(darkModeScript)
+    .append(scriptsToPutAtTop)
     .append(metaAndTitle)
     .append(faviconLinks)
     .append(criticalCSS)
