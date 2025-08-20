@@ -318,6 +318,11 @@ def check_card_image(metadata: dict) -> List[str]:
     return errors
 
 
+def _check_spaces_in_path(file_path: Path) -> List[str]:
+    """Check if the file path contains spaces."""
+    return ["File path contains spaces"] if " " in str(file_path) else []
+
+
 def check_table_alignments(text: str) -> List[str]:
     """
     Check if all markdown tables have explicit column alignments.
@@ -467,6 +472,7 @@ def check_file_data(
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
+        "invalid_filename": _check_spaces_in_path(file_path),
     }
 
     if metadata:
