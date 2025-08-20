@@ -19,22 +19,6 @@
     }
   }
 
-  & .admonition {
-    --admonition-margin: calc(1.5 * $base-margin);
-
-    & .admonition-title {
-      margin-top: var(--admonition-margin);
-
-      &.is-collapsed {
-        margin-bottom: var(--admonition-margin);
-      }
-    }
-
-    & .admonition-content {
-      margin-bottom: var(--admonition-margin);
-    }
-  }
-
   & .ordinal-suffix {
     margin-left: -0.01rem;
     vertical-align: 0.25em; // Because not using full height numbers
