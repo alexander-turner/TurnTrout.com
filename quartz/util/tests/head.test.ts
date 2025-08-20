@@ -421,4 +421,74 @@ describe("renderHead", () => {
       )
     })
   })
+
+  it("should escape special characters in title and description", () => {
+    const vfile = createMockVFile({
+      title: 'Title with "quotes" & ampersands',
+      description: "Description with <script>tags</script>",
+    })
+
+    const result = renderHead({
+      cfg: mockConfig,
+      fileData: vfile,
+      slug: "test-escape" as FullSlug,
+    })
+
+    // Title checks
+    expect(result).toContain("<title>Title with “Quotes” &amp; Ampersands</title>")
+    expect(result).toContain(
+      '<meta property="og:title" content="Title with “Quotes” &amp; Ampersands" />',
+    )
+    expect(result).toContain(
+      '<meta name="twitter:title" content="Title with “Quotes” &amp; Ampersands" />',
+    )
+
+    // Description checks
+    expect(result).toContain(
+      '<meta name="description" content="Description with &lt;script&gt;tags&lt;/script&gt;">',
+    )
+    expect(result).toContain(
+      '<meta property="og:description" content="Description with &lt;script&gt;tags&lt;/script&gt;">',
+    )
+    const twitterDescRegex =
+      /<meta\s+name="twitter:description"\s+content="Description with &lt;script&gt;tags&lt;\/script&gt;"\s*\/?>/
+    expect(result).toMatch(twitterDescRegex)
+  })
+
+  it("should escape special characters in author names", () => {
+    const vfile = createMockVFile({
+      authors: "Author <Name>",
+    })
+
+    const result = renderHead({
+      cfg: mockConfig,
+      fileData: vfile,
+      slug: "test-escape" as FullSlug,
+    })
+
+    expect(result).toContain('<meta name="twitter:data1" content="Author &lt;Name&gt;" />')
+  })
+
+  it("should escape special characters in URLs and permalinks", () => {
+    const vfile = createMockVFile({
+      card_image: "https://example.com/image?a=1&b=2",
+    })
+    vfile.data.permalink = "https://example.com/page?a=1&b=2"
+
+    const result = renderHead({
+      cfg: mockConfig,
+      fileData: vfile,
+      slug: "test-escape" as FullSlug,
+    })
+
+    expect(result).toContain(
+      '<meta property="og:image" content="https://example.com/image?a=1&amp;b=2" />',
+    )
+    expect(result).toContain(
+      '<meta name="twitter:image" content="https://example.com/image?a=1&amp;b=2" />',
+    )
+    expect(result).toContain(
+      '<meta property="og:url" content="https://example.com/page?a=1&amp;b=2" />',
+    )
+  })
 })
