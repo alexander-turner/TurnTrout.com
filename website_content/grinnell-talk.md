@@ -16,8 +16,9 @@ aliases:
   - talk-agi
   - intro-agi-risk
 date_published: 2025-06-29 16:49:07.944742
-date_updated: 2025-08-14 23:57:58.815232
+date_updated: 2025-08-19 20:19:47.849267
 ---
+
 
 
 > [!info] Notes from a talk originally given at my alma mater
