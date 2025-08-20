@@ -140,6 +140,7 @@ export function createUrlCache(): Map<string, string> {
 }
 export const urlCache = createUrlCache()
 const faviconUrls = await readFaviconUrls()
+// istanbul ignore next
 for (const [basename, url] of faviconUrls) {
   if (!urlCache.has(basename)) {
     urlCache.set(basename, url)
