@@ -10,6 +10,10 @@ date_updated: 2025-06-03 22:57:00.423836
 tags:
   - personal
 title: About me
+aliases:
+  - about-me
+  - faq
+  - FAQ
 ---
 
 
@@ -23,6 +27,13 @@ Hi! I'm `TurnTrout`, but the United States government insists on calling me "Ale
 Why the name "`TurnTrout`"?
 : Once upon a time, I was unpacking my [viola](https://en.wikipedia.org/wiki/Viola) when some dude walked by and said "HEY TURNTROUT!". Then he never said it again, no one talked about it again, everyone forgot about it. At least - everyone forgot until I wanted a Reddit username. And thus I chose `TurnTrout`.
 : Over the years, more people came to know me for the research which I posted as `TurnTrout`. Now, people often recognize me by that name. Some people just say "hey 'Trout"!
+
+Why do you love geese so much?
+: Gather 'round! 🪿🪿🐥🪿 In 2020, I had just started a new relationship. My girlfriend was being quite silly, so I informed her that she was a silly goose. She liked the title!
+
+: We soon happened upon [The Untitled Goose Game](https://goose.game/), a delightful cooperative experience where two players pilot two geese in order to troll and terrorize the residents of a sleepy town. There's even a dedicated button for honking! We loved the game. We loved each other. We loved the cute geese. Our strong feelings splashed onto the geese. Now, when we thought of geese, we thought of each other; when we thought of each other, we thought of geese.
+
+: 🪿
 
 How was this website designed?
 : Refer to [The design of this website.](/design)

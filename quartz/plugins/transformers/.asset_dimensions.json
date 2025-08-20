@@ -4182,5 +4182,17 @@
   "https://assets.turntrout.com/static/images/external-favicons/edward-turner_com.avif": {
     "width": 32,
     "height": 32
+  },
+  "https://assets.turntrout.com/twemoji/1fabf.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f425.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "/static/images/external-favicons/goose_game.png": {
+    "width": 64,
+    "height": 64
   }
 }
