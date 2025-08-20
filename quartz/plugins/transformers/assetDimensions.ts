@@ -301,8 +301,7 @@ class AssetProcessor {
     visit(tree, "element", (node: Element) => {
       if (
         this.imageTagsToProcess.includes(node.tagName) &&
-        node.properties?.src &&
-        typeof node.properties.src === "string"
+        typeof node.properties?.src === "string"
       ) {
         imageAssetsToProcess.push({ node, src: node.properties.src })
       }

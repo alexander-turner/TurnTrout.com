@@ -4194,5 +4194,9 @@
   "/static/images/external-favicons/goose_game.png": {
     "width": 64,
     "height": 64
+  },
+  "./asset_staging/about-me-20250820083602.gif": {
+    "width": 512,
+    "height": 512
   }
 }

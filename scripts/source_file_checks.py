@@ -13,7 +13,8 @@ import requests  # type: ignore[import]
 # Add the project root to sys.path
 # pylint: disable=wrong-import-position
 sys.path.append(str(Path(__file__).parent.parent))
-import scripts.utils as script_utils
+# skipcq: FLK-E402
+from scripts import utils as script_utils
 
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
@@ -133,8 +134,8 @@ def check_invalid_md_links(text: str, file_path: Path) -> List[str]:
 
 
 def check_latex_tags(text: str, file_path: Path) -> List[str]:
-    """
-    Check for \\tag{ in markdown files, which should be avoided.
+    r"""
+    Check for \tag{ in markdown files, which should be avoided.
 
     Args:
         text: The text to check
