@@ -18,6 +18,7 @@ import {
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
+import { locale } from "./constants"
 import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
@@ -377,9 +378,8 @@ export function renderPage(
     </body>
   )
 
-  const lang = componentData.fileData.frontmatter?.lang ?? cfg.locale?.split("-")[0] ?? "en"
   const doc = (
-    <html lang={lang}>
+    <html lang={locale}>
       <Head {...componentData} />
       {body}
       {pageResources.js

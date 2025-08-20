@@ -1,6 +1,12 @@
-import { type Translation } from "./definition"
+export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
+export const defaultTitle = "The Pond"
+export const defaultDescription = "Writings about doing good, thinking well, and living happily."
+export const faviconUrl = "/static/images/favicon.ico"
+export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
+export const locale = "en-US"
 
-export default {
+// UI strings (extracted from i18n en-US locale)
+export const uiStrings = {
   propertyDefaults: {
     title: "The Pond",
     description: "Writings about doing good, thinking well, and living happily.",
@@ -40,10 +46,10 @@ export default {
     },
     recentNotes: {
       title: "Recent Notes",
-      seeRemainingMore: ({ remaining }) => `See ${remaining} more →`,
+      seeRemainingMore: (remaining: number) => `See ${remaining} more →`,
     },
     transcludes: {
-      transcludeOf: ({ targetSlug }) => `Transclude of ${targetSlug}`,
+      transcludeOf: (targetSlug: string) => `Transclude of ${targetSlug}`,
       linkToOriginal: "Link to original",
     },
     search: {
@@ -54,13 +60,13 @@ export default {
       title: "Table of Contents",
     },
     contentMeta: {
-      readingTime: ({ minutes }) => `${minutes} min read`,
+      readingTime: (minutes: number) => `${minutes} min read`,
     },
   },
   pages: {
     rss: {
       recentNotes: "Recent notes",
-      lastFewNotes: ({ count }) => `Last ${count} notes`,
+      lastFewNotes: (count: number) => `Last ${count} notes`,
     },
     error: {
       title: "Not found",
@@ -68,16 +74,16 @@ export default {
     },
     folderContent: {
       folder: "Folder",
-      itemsUnderFolder: ({ count }) =>
+      itemsUnderFolder: (count: number) =>
         count === 1 ? "1 item under this folder." : `${count} items under this folder.`,
     },
     tagContent: {
       tag: "Tag",
       tagIndex: "Tag index",
-      itemsUnderTag: ({ count }) =>
+      itemsUnderTag: (count: number) =>
         count === 1 ? "1 item with this tag." : `${count} items with this tag.`,
-      showingFirst: ({ count }) => `Showing first ${count} tags.`,
-      totalTags: ({ count }) => `Found ${count} total tags.`,
+      showingFirst: (count: number) => `Showing first ${count} tags.`,
+      totalTags: (count: number) => `Found ${count} total tags.`,
     },
   },
-} as const satisfies Translation
+} as const

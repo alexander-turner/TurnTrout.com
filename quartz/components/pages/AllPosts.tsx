@@ -1,4 +1,5 @@
 import { JSX } from "preact"
+// skipcq: JS-W1028
 import React from "react"
 
 import type { QuartzComponent, QuartzComponentProps } from "../types"
@@ -12,6 +13,12 @@ export const allTitle = "All Posts"
 export const allDescription = "A listing of all posts on turntrout.com."
 export const allPostsListing = "all-posts-listing"
 
+/**
+ * Generates a block element containing a list of all posts.
+ *
+ * @param props - QuartzComponentProps passed to the PageList component.
+ * @returns A JSX.Element wrapping the PageList with appropriate data attributes.
+ */
 export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element {
   const pageListing = (
     <span id={allPostsListing} data-url={allPostsListing} data-block={allPostsListing}>
@@ -21,6 +28,7 @@ export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element 
   return pageListing
 }
 
+// skipcq: JS-D1001
 export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData, allFiles } = props
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []

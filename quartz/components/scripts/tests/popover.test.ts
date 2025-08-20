@@ -107,6 +107,33 @@ describe("createPopover", () => {
     await expect(createPopover(options)).rejects.toThrow("Network error")
   })
 
+  it("should handle HTTP error responses", async () => {
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() => {
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        headers: new Headers({ "Content-Type": "text/html" }),
+      } as unknown as Response)
+    })
+
+    await expect(createPopover(options)).rejects.toThrow("HTTP error! status: 404")
+  })
+
+  it("should handle missing content type", async () => {
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() => {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: () => null,
+        },
+      } as unknown as Response)
+    })
+
+    await expect(createPopover(options)).rejects.toThrow("No content type received")
+  })
+
   it('should append "-popover" to only header IDs in the popover content', async () => {
     const popover = await createPopover(options)
     expect(popover?.querySelector("h1#test-popover")).not.toBeNull()
@@ -164,7 +191,6 @@ describe("computeTop", () => {
   `(
     "should compute top position correctly for linkTop=$linkTop, linkBottom=$linkBottom, popoverHeight=$popoverHeight, scrollY=$scrollY",
     ({ linkTop, linkBottom, popoverHeight, scrollY, expected }) => {
-      // TODO is this changing it globally?
       Object.defineProperty(window, "scrollY", { value: scrollY, configurable: true })
 
       const linkRect = { top: linkTop, bottom: linkBottom } as DOMRect
@@ -363,6 +389,29 @@ describe("attachPopoverEventListeners", () => {
     popoverElement.dispatchEvent(new MouseEvent("click"))
     expect(window.location.href).toBe(mockHref)
   })
+
+  it("should handle click on link within popover", () => {
+    const linkElementHref = "http://main-link.com/"
+    linkElement.href = linkElementHref
+
+    // Create a link element inside the popover
+    const clickedLinkHref = "http://clicked-link.com/"
+    const clickedLink = document.createElement("a")
+    clickedLink.href = clickedLinkHref
+    popoverElement.appendChild(clickedLink)
+
+    Object.defineProperty(window, "location", {
+      value: { href: "" },
+      writable: true,
+    })
+
+    // Create a click event on the clicked link
+    const clickEvent = new MouseEvent("click", { bubbles: true })
+    Object.defineProperty(clickEvent, "target", { value: clickedLink })
+
+    popoverElement.dispatchEvent(clickEvent)
+    expect(window.location.href).toBe(clickedLinkHref)
+  })
 })
 
 describe("escapeLeadingIdNumber", () => {
@@ -483,5 +532,35 @@ describe("fetchWithMetaRedirect", () => {
     expect(window.fetch).toHaveBeenCalledTimes(2)
     expect(window.fetch).toHaveBeenNthCalledWith(1, "http://example.com/")
     expect(window.fetch).toHaveBeenNthCalledWith(2, "http://example.com/final")
+  })
+
+  it("should throw error when maximum redirects exceeded", async () => {
+    ;(window.fetch as jest.Mock).mockImplementation(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Type": "text/html" }),
+      text: () =>
+        Promise.resolve('<meta http-equiv="refresh" content="0;url=http://example.com/redirect">'),
+    }))
+
+    await expect(
+      fetchWithMetaRedirect(new URL("http://example.com"), window.fetch, 2),
+    ).rejects.toThrow("Maximum number of redirects (2) exceeded")
+
+    expect(window.fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it("should use default fetch when no customFetch is provided", async () => {
+    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Type": "text/plain" }),
+      text: () => Promise.resolve("content"),
+    }))
+
+    const response = await fetchWithMetaRedirect(new URL("http://example.com"))
+
+    expect(window.fetch).toHaveBeenCalledTimes(1)
+    expect(response.ok).toBe(true)
   })
 })

@@ -2,9 +2,9 @@
 import React from "react"
 
 import { type GlobalConfiguration } from "../cfg"
-import { i18n } from "../i18n"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type FullSlug, type SimpleSlug, resolveRelative } from "../util/path"
+import { uiStrings } from "./constants"
 import { DateElement } from "./Date"
 import { byDateAndAlphabetical } from "./PageList"
 import style from "./styles/recentNotes.scss"
@@ -39,10 +39,10 @@ export default ((userOpts?: Partial<Options>) => {
     const remaining = Math.max(0, pages.length - opts.limit)
     return (
       <div className="recent-notes">
-        <h3>{opts.title ?? i18n(cfg.locale).components.recentNotes.title}</h3>
+        <h3>{opts.title ?? uiStrings.components.recentNotes.title}</h3>
         <ul className="recent-ul">
           {pages.slice(0, opts.limit).map((page) => {
-            const title = page.frontmatter?.title ?? i18n(cfg.locale).propertyDefaults.title
+            const title = page.frontmatter?.title ?? uiStrings.propertyDefaults.title
             const tags = page.frontmatter?.tags ?? []
 
             return (
@@ -91,7 +91,7 @@ export default ((userOpts?: Partial<Options>) => {
         {opts.linkToMore && remaining > 0 && (
           <p>
             <a href={resolveRelative(fileData.slug || ("" as FullSlug), opts.linkToMore)}>
-              {i18n(cfg.locale).components.recentNotes.seeRemainingMore({ remaining })}
+              {uiStrings.components.recentNotes.seeRemainingMore(remaining)}
             </a>
           </p>
         )}

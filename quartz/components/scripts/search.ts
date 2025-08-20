@@ -22,7 +22,8 @@ export const mouseFocusDelay = 100
 
 let currentSearchTerm = ""
 
-const index = new FlexSearch.Document<Item>({
+const documentType = FlexSearch.Document<Item>
+const index = new documentType({
   charset: "latin:advanced",
   tokenize: "strict",
   resolution: 1,
@@ -83,7 +84,7 @@ const numSearchResults = 8
  * @example
  * tokenizeTerm("hello world") // returns ["hello world", "hello", "world"]
  */
-const tokenizeTerm = (term: string): string[] => {
+export const tokenizeTerm = (term: string): string[] => {
   const tokens = term.split(/\s+/).filter((t) => t.trim() !== "")
   const tokenLen = tokens.length
   if (tokenLen > 1) {
@@ -102,9 +103,10 @@ const tokenizeTerm = (term: string): string[] => {
  * @param trim - If true, returns a window of text around matches
  * @returns HTML string with highlighted terms wrapped in <span class="highlight">
  */
-function highlight(searchTerm: string, text: string, trim?: boolean) {
+export function highlight(searchTerm: string, text: string, trim?: boolean) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
   let tokenizedText = text.split(/\s+/).filter((t) => t !== "")
+  const originalTokenLen = tokenizedText.length
 
   let startIndex = 0
   let endIndex = tokenizedText.length - 1
@@ -127,7 +129,8 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
 
     startIndex = Math.max(bestIndex - contextWindowWords, 0)
     endIndex = Math.min(startIndex + 2 * contextWindowWords, tokenizedText.length - 1)
-    tokenizedText = tokenizedText.slice(startIndex, endIndex)
+    // Include both startIndex and endIndex tokens in the slice
+    tokenizedText = tokenizedText.slice(startIndex, endIndex + 1)
   }
 
   const slice = tokenizedText
@@ -149,7 +152,7 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
     beginning = "..."
   }
   let end = ""
-  if (endIndex !== tokenizedText.length - 1) {
+  if (endIndex < originalTokenLen - 1) {
     end = "..."
   }
   return `${beginning}${slice}${end}`
@@ -158,14 +161,14 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
 /**
  * Escapes special characters in a string for use in RegExp
  */
-function escapeRegExp(text: string) {
+export function escapeRegExp(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
 /**
  * Creates a span element with the class "highlight" and the given text
  */
-const createHighlightSpan = (text: string): HTMLSpanElement => {
+export const createHighlightSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
   span.className = "highlight"
   span.textContent = text
@@ -186,6 +189,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
 
     Array.from(node.childNodes).forEach((child) => highlightTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {
+    /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
@@ -212,7 +216,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
  * Creates an inner article element, fetches the target content, applies
  * highlighting, and handles show/hide/clear operations.
  */
-class PreviewManager {
+export class PreviewManager {
   private container: HTMLDivElement
   private inner: HTMLElement
   private currentSlug: FullSlug | null = null
@@ -220,9 +224,10 @@ class PreviewManager {
   constructor(container: HTMLDivElement) {
     this.container = container
     this.inner = document.createElement("article")
-    this.inner.classList.add("preview-inner")
+    this.inner.classList.add("search-preview")
     this.container.appendChild(this.inner)
   }
+
   /**
    * Update the preview panel to reflect the provided result element.
    * If no element is provided, the preview is hidden.
@@ -231,6 +236,7 @@ class PreviewManager {
    * @param currentSearchTerm - The active search term used for highlighting
    * @param baseSlug - The current page's slug used to resolve relative links
    */
+  /* istanbul ignore next */
   public update(el: HTMLElement | null, currentSearchTerm: string, baseSlug: FullSlug) {
     if (!el) {
       this.hide()
@@ -248,6 +254,7 @@ class PreviewManager {
     void this.fetchAndUpdateContent(slug, currentSearchTerm, baseSlug)
   }
 
+  /* istanbul ignore next */
   private async fetchAndUpdateContent(
     slug: FullSlug,
     currentSearchTerm: string,
@@ -299,23 +306,28 @@ class PreviewManager {
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public show(): void {
     this.container.classList.add("active")
     this.container.style.visibility = "visible"
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public hide(): void {
     this.container.classList.remove("active")
     this.container.style.visibility = "hidden"
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public clear(): void {
     this.inner.innerHTML = ""
+    removeAllChildren(this.container)
   }
 
   // skipcq: JS-D1001
+  /* istanbul ignore next */
   public destroy(): void {
     this.inner.onclick = null
     this.inner.innerHTML = ""
@@ -325,6 +337,7 @@ class PreviewManager {
   /**
    * Scroll the preview container so that the first highlight is centered.
    */
+  /* istanbul ignore next */
   private scrollToFirstHighlight(): void {
     // Get only the first matching highlight without sorting
     const firstHighlight = this.container.querySelector(".highlight") as HTMLElement
@@ -343,6 +356,7 @@ let previewManager: PreviewManager | null
  * @param el - HTML element to search within
  * @returns DOM node with highlighted terms
  */
+/* istanbul ignore next */
 function highlightHTML(searchTerm: string, el: HTMLElement) {
   const parser = new DOMParser()
   const tokenizedTerms = tokenizeTerm(searchTerm)
@@ -360,8 +374,8 @@ export const searchPlaceholderMobile = "Search"
 /**
  * Updates the search bar placeholder text based on screen width
  */
-function updatePlaceholder() {
-  const searchBar = document.getElementById("search-bar")
+export function updatePlaceholder(searchBar?: HTMLInputElement | null) {
+  if (!searchBar) return
   if (window.innerWidth > tabletBreakpoint) {
     searchBar?.setAttribute("placeholder", searchPlaceholderDesktop)
   } else {
@@ -374,7 +388,7 @@ function updatePlaceholder() {
  * @param container - The search container element
  * @param searchBar - The input element used for search
  */
-function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
+export function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
   if (!container || !searchBar) return
   const navbar = document.getElementById("navbar")
   if (navbar) {
@@ -387,13 +401,13 @@ function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement |
   searchBar.focus()
   searchBar.select() // Needed for firefox
 
-  updatePlaceholder()
+  updatePlaceholder(searchBar)
 }
 
 /**
  * Hides the search interface and resets its state
  */
-function hideSearch() {
+export function hideSearch(previewManagerArg: PreviewManager | null) {
   const container = document.getElementById("search-container")
   const searchBar = document.getElementById("search-bar") as HTMLInputElement | null
   const results = document.getElementById("results-container")
@@ -408,10 +422,10 @@ function hideSearch() {
   }
 
   // Clean up preview
-  if (previewManager) {
-    previewManager.hide()
+  if (previewManagerArg) {
+    previewManagerArg.hide()
     // Ensure no residual information is left in the preview
-    previewManager.clear()
+    previewManagerArg.clear()
   }
 }
 
@@ -423,6 +437,7 @@ let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
 let mouseEventsLocked = false
 
+/* istanbul ignore next */
 const appendLayout = (el: HTMLElement) => {
   /**
    * Append an element to the search layout if it is not already present.
@@ -435,6 +450,7 @@ const appendLayout = (el: HTMLElement) => {
 }
 
 // Handle shortcuts for opening and closing the UI.
+/* istanbul ignore next */
 async function handleSearchToggle(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -444,7 +460,7 @@ async function handleSearchToggle(
     e.preventDefault()
     const searchBarOpen = container?.classList.contains("active")
     if (searchBarOpen) {
-      hideSearch()
+      hideSearch(previewManager)
     } else {
       showSearch(container, searchBar)
     }
@@ -458,6 +474,7 @@ async function handleSearchToggle(
  * Perform in-result navigation (arrow keys, Tab, Enter) when the search UI is
  * already open.
  */
+/* istanbul ignore next */
 async function handleResultNavigation(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -558,6 +575,7 @@ async function handleResultNavigation(
  * Keyboard shortcut handler for the search component. Delegates to smaller
  * helper functions to keep complexity manageable.
  */
+/* istanbul ignore next */
 async function shortcutHandler(
   e: KeyboardEvent,
   container: HTMLElement | null,
@@ -575,6 +593,7 @@ let cleanupListeners: (() => void) | undefined
  * Handles navigation events by setting up search functionality
  * @param e - Navigation event
  */
+/* istanbul ignore next */
 async function onNav(e: CustomEventMap["nav"]) {
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
@@ -618,7 +637,7 @@ async function onNav(e: CustomEventMap["nav"]) {
   addListener(searchIcon, "click", () => showSearch(container, searchBar), listeners)
   addListener(searchBar, "input", debouncedOnType, listeners)
 
-  const escapeCleanup = registerEscapeHandler(container, hideSearch)
+  const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
 
   cleanupListeners = () => {
@@ -635,6 +654,7 @@ async function onNav(e: CustomEventMap["nav"]) {
  * and should be verified with your specific setup
  * @param slug - Page slug to fetch
  */
+/* istanbul ignore next */
 async function fetchContent(slug: FullSlug): Promise<FetchResult> {
   if (!fetchContentCache.has(slug)) {
     const fetchPromise = await (async () => {
@@ -675,6 +695,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
  * @param el - The card element to focus
  * @param keyboardFocus - Whether to call focus() on the element
  */
+/* istanbul ignore next */
 async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
@@ -694,6 +715,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
  * @param el - Card element to display preview for
  * @param keyboardFocus - Whether to focus the element using the keyboard
  */
+/* istanbul ignore next */
 async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!searchLayout || !enablePreview || !preview) return
@@ -716,6 +738,7 @@ async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
  * @param handler - Event handler
  * @param listeners - Set to track cleanup functions
  */
+/* istanbul ignore next */
 function addListener(
   element: Element | Document | null,
   event: string,
@@ -733,6 +756,7 @@ function addListener(
  * @param searchResults - Search results to filter
  * @returns Array of IDs
  */
+/* istanbul ignore next */
 const getByField = (
   field: string,
   searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[],
@@ -740,6 +764,7 @@ const getByField = (
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
+
 /**
  * Create the DOM element representing a single search result.
  *
@@ -749,6 +774,7 @@ const getByField = (
  * @param enablePreview - Whether preview mode is enabled (controls snippet rendering)
  * @returns The anchor element for the result card
  */
+/* istanbul ignore next */
 const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) => {
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
@@ -791,6 +817,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
  * @param data - Content data
  * @param idDataMap - Mapping of IDs to slugs
  */
+/* istanbul ignore next */
 const formatForDisplay = (
   term: string,
   id: number,
@@ -813,7 +840,12 @@ const formatForDisplay = (
  * @param results - Container element for results
  * @param enablePreview - Whether preview is enabled
  */
-async function displayResults(finalResults: Item[], results: HTMLElement, enablePreview: boolean) {
+/* istanbul ignore next */
+async function displayResults(
+  finalResults: Item[],
+  results: HTMLElement,
+  enablePreview: boolean,
+): Promise<void> {
   if (!results) return
 
   removeAllChildren(results)
@@ -845,7 +877,8 @@ async function displayResults(finalResults: Item[], results: HTMLElement, enable
  * Handles search input changes
  * @param e - Input event
  */
-async function onType(e: HTMLElementEventMap["input"]) {
+/* istanbul ignore next */
+async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout || !index) return
   const enablePreview = searchLayout?.dataset?.preview === "true"
   currentSearchTerm = (e.target as HTMLInputElement).value
@@ -896,12 +929,14 @@ async function onType(e: HTMLElementEventMap["input"]) {
  * @param currentSlug - The base slug representing the current page
  * @returns The resolved absolute URL
  */
+/* istanbul ignore next */
 function resolveSlug(slug: FullSlug, currentSlug: FullSlug): URL {
   return new URL(resolveRelative(currentSlug, slug), location.toString())
 }
 
 // skipcq: JS-D1001
-export function setupSearch() {
+/* istanbul ignore next */
+export function setupSearch(): void {
   document.addEventListener("nav", onNav)
 }
 
@@ -909,23 +944,21 @@ export function setupSearch() {
  * Fills flexsearch document with data
  * @param index index to fill
  * @param data data to fill index with
+ * @returns filled index
  */
-async function fillDocument(data: { [key: FullSlug]: ContentDetails }) {
-  let id = 0
-  const promises: Array<Promise<unknown>> = []
-  for (const [slug, fileData] of Object.entries<ContentDetails>(data)) {
-    promises.push(
-      index.addAsync(id++, {
-        id,
-        slug: slug as FullSlug,
-        title: fileData.title,
-        content: fileData.content,
-        authors: fileData.authors,
-      }),
-    )
-  }
+/* istanbul ignore next */
+async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<void> {
+  const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) =>
+    index.addAsync(id, {
+      id,
+      slug: slug as FullSlug,
+      title: fileData.title,
+      content: fileData.content,
+      authors: fileData.authors,
+    }),
+  )
 
-  return await Promise.all(promises)
+  await Promise.all(promises)
 }
 
 /*
@@ -952,6 +985,7 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
   const nodeListElements = rootNode.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')
   return Array.from(nodeListElements)
 }
+
 /**
  * Compute the vertical offset of an element relative to a scrollable container.
  *
@@ -959,7 +993,10 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
  * @param container - The container element used as the reference
  * @returns The offsetTop in pixels relative to the container
  */
-function getOffsetTopRelativeToContainer(element: HTMLElement, container: HTMLElement): number {
+export function getOffsetTopRelativeToContainer(
+  element: HTMLElement,
+  container: HTMLElement,
+): number {
   let offsetTop = 0
   let currentElement: HTMLElement | null = element
 

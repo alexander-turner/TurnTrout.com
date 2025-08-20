@@ -3,6 +3,7 @@ import { type Element, type ElementContent, type Parent, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { rehype } from "rehype"
+import { VFile } from "vfile"
 
 import {
   hyphenReplace,
@@ -25,6 +26,10 @@ import {
   getFirstTextNode,
   replaceFractions,
   timeTransform,
+  applyTextTransforms,
+  HTMLFormattingImprovement,
+  rearrangeLinkPunctuation,
+  markerChar,
 } from "../formatting_improvement_html"
 import { hasClass } from "../utils"
 
@@ -701,6 +706,89 @@ describe("rearrangeLinkPunctuation", () => {
     })
   })
 
+  describe("rearrangeLinkPunctuation edge cases", () => {
+    it("should handle case where linkNode has no text child at the end", () => {
+      const input = '<p><a href="https://example.com"><span></span></a>.</p>'
+      const expected = '<p><a href="https://example.com"><span></span>.</a></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+
+    it("should handle when sibling is an element with children but not text-like", () => {
+      const input = '<p><a href="https://example.com">Link</a><div>Not text-like</div></p>'
+      const expected =
+        '<p><a href="https://example.com">Link</a></p><div>Not text-like</div><p></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+
+    it("should handle when sibling is text-like element with first child being text", () => {
+      const input = '<p><a href="https://example.com">Link</a><em>.</em></p>'
+      const expected = '<p><a href="https://example.com">Link.</a><em></em></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+
+    it("should handle case where textNode has no value", () => {
+      const input = '<p><a href="https://example.com">Link</a><em></em></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(input)
+    })
+
+    it("should return early when index is undefined", () => {
+      const node = h("a", { href: "https://example.com" }, "Link") as Element
+      const parent = h("p", [node]) as Element
+
+      // This should return early and not throw an error
+      expect(() => {
+        rearrangeLinkPunctuation(node, undefined, parent)
+      }).not.toThrow()
+    })
+
+    it("should handle case where last child doesn't have value property", () => {
+      const input = '<p><a href="https://example.com">Link<span></span></a>.</p>'
+      const expected = '<p><a href="https://example.com">Link<span></span>.</a></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+
+    it("should handle case where lastChild doesn't have value property - direct test", () => {
+      // Create a linkNode where we can manipulate the last child after the function adds a text node
+      const linkNode = h("a", { href: "https://example.com" }, ["Link"]) as Element
+
+      const textNode = { type: "text", value: "." } as Text
+      const parent = h("p", [linkNode, textNode]) as Element
+
+      // Call the function normally first, which will move the punctuation
+      rearrangeLinkPunctuation(linkNode, 0, parent)
+
+      // Check that the punctuation was moved (this is the normal behavior)
+      expect(textNode.value).toBe("")
+      expect((linkNode.children[linkNode.children.length - 1] as Text).value).toBe("Link.")
+    })
+
+    it("should handle case where lastChild doesn't have value property after adding text node", () => {
+      const linkNode = h("a", { href: "#" }, [
+        h("img", { src: "test.jpg", alt: "test" }), // Element without value property
+      ]) as Element
+
+      const value = "test"
+      const textNode = { type: "text", value: `.${value}` } as Text
+      const parent = h("p", [linkNode, textNode]) as Element
+
+      // The function will add a text node as the last child and move the punctuation
+      rearrangeLinkPunctuation(linkNode, 0, parent)
+
+      // The "." should be moved into the link, leaving only "test"
+      expect(textNode.value).toBe(value)
+
+      // Verify that a text node was added to the link with the moved punctuation
+      const lastChild = linkNode.children[linkNode.children.length - 1] as Text
+      expect(lastChild.type).toBe("text")
+      expect(lastChild.value).toBe(".")
+    })
+  })
+
   it.each([
     [
       '<p><a href="https://example.com">Simple link</a>: with colon after</p>',
@@ -843,6 +931,17 @@ describe("setFirstLetterAttribute", () => {
     expect(processedHtml).toBe(expected)
   })
 
+  it("should handle smart apostrophe as the second character", () => {
+    const input = `
+      <p>'Twas the night before Christmas.</p>
+    `
+    const expected = `
+      <p data-first-letter="’">’Twas the night before Christmas.</p>
+    `
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
   it("should not modify when there are no paragraphs", () => {
     const input = `
       <h1>Title</h1>
@@ -873,6 +972,45 @@ describe("setFirstLetterAttribute", () => {
       <p data-first-letter="F">First paragraph.</p>
     `
     const processedHtml = testHtmlFormattingImprovement(input, false, true)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should handle case where second letter is apostrophe and modify firstTextNode", () => {
+    const input = '<p><strong></strong>"Twas the night</p>'
+    // The smart quotes transformation will convert regular quotes to smart quotes
+    const expected = '<p data-first-letter="“"><strong></strong>“Twas the night</p>'
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should handle apostrophe as second letter with nested structure", () => {
+    // This test is specifically designed to hit the case where:
+    // 1. Second letter is an apostrophe
+    // 2. firstTextNode is found and modified
+    const input = "<p><em></em>'Twas a dark night</p>"
+    const expected = '<p data-first-letter="’"><em></em>’Twas a dark night</p>'
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should handle case where firstTextNode is not found when second letter is apostrophe", () => {
+    // Create a paragraph where the second letter is an apostrophe but there's no direct text node
+    // Only non-text elements
+    const input = "<p><strong>X</strong><em>'</em><span>rest</span></p>"
+    // Since there's no direct text node to modify, it should just add the data attribute
+    const expected = '<p data-first-letter="X"><strong>X</strong><em>’</em><span>rest</span></p>'
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should modify firstTextNode when second letter is apostrophe and direct text node exists", () => {
+    // Create a paragraph where:
+    // 1. There are nested elements before the text node
+    // 2. The direct text node contains the apostrophe as second character
+    // 3. This should trigger line 746 where firstTextNode.value is modified
+    const input = "<p><span></span>X's story</p>"
+    const expected = '<p data-first-letter="X"><span></span>X ’s story</p>'
+    const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(processedHtml).toBe(expected)
   })
 })
@@ -1040,12 +1178,7 @@ describe("Skip Formatting", () => {
 
 describe("hasClass", () => {
   test("handles string className", () => {
-    const node = {
-      type: "element",
-      properties: { className: "test-class other-class" },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: "test-class other-class" })
 
     expect(hasClass(node, "test-class")).toBe(true)
     expect(hasClass(node, "other-class")).toBe(true)
@@ -1053,12 +1186,7 @@ describe("hasClass", () => {
   })
 
   test("handles array className", () => {
-    const node = {
-      type: "element",
-      properties: { className: ["test-class", "other-class"] },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: ["test-class", "other-class"] })
 
     expect(hasClass(node, "test-class")).toBe(true)
     expect(hasClass(node, "other-class")).toBe(true)
@@ -1066,17 +1194,12 @@ describe("hasClass", () => {
   })
 
   test("handles missing properties", () => {
-    const node = { type: "element" } as Element
+    const node = h("div")
     expect(hasClass(node, "any-class")).toBe(false)
   })
 
   test("handles null/undefined className", () => {
-    const node = {
-      type: "element",
-      properties: { className: null },
-      tagName: "div",
-      children: [],
-    } as Element
+    const node = h("div", { className: null })
 
     expect(hasClass(node, "any-class")).toBe(false)
   })
@@ -1122,12 +1245,7 @@ describe("Date Range", () => {
 })
 
 describe("collectTransformableElements", () => {
-  const el = (tag: string, children: (string | Element)[] = []): Element =>
-    ({
-      type: "element",
-      tagName: tag,
-      children: children.map((c) => (typeof c === "string" ? { type: "text", value: c } : c)),
-    }) as Element
+  const el = (tag: string, children: (string | Element)[] = []): Element => h(tag, {}, children)
 
   const processNode = (c: ElementContent) => {
     if (c.type === "text") return c.value
@@ -1171,12 +1289,8 @@ describe("collectTransformableElements", () => {
 
 describe("identifyLinkNode", () => {
   // Helper function to create element nodes with proper typing
-  const createNode = (tagName: string, children: Element[] = []): Element => ({
-    type: "element",
-    tagName,
-    children,
-    properties: {},
-  })
+  const createNode = (tagName: string, children: Element[] = []): Element =>
+    h(tagName, {}, children)
 
   // Test cases structure: [description, input node, expected result]
   const testCases: [string, Element, Element][] = [
@@ -1413,6 +1527,82 @@ describe("replaceFractions", () => {
       '<p>Mix <span class="fraction">1/2</span> cup of flour with <span class="fraction">3/4</span> cup of water</p>',
     )
   })
+
+  it("should handle undefined index parameter and use fallback value", () => {
+    // This test specifically targets the `index ?? 0` branch in replaceFractions
+    // Create a parent with the text node at index 0
+    const node = { type: "text", value: "Mix 1/2 cup flour" } as Text
+    const parent = h("p", [node])
+
+    // Store the original parent state for comparison
+    const originalChildrenCount = parent.children.length
+    const originalTextContent = hastToHtml(parent)
+
+    // Call replaceFractions with undefined index - should use fallback 0
+    replaceFractions(node, undefined, parent)
+
+    // Verify the function processed the fraction correctly despite undefined index
+    const result = hastToHtml(parent)
+
+    // Should have converted 1/2 to a fraction span
+    expect(result).toContain('<span class="fraction">1/2</span>')
+    expect(result).toContain("Mix")
+    expect(result).toContain("cup flour")
+
+    // Should have replaced the original text node with multiple nodes
+    expect(parent.children.length).toBeGreaterThan(originalChildrenCount)
+
+    // Verify the transformation actually happened
+    expect(result).not.toBe(originalTextContent)
+  })
+})
+
+describe("transformElement error conditions", () => {
+  it("should throw error when node has no children", () => {
+    const nodeWithoutChildren = h("div") as Element
+    nodeWithoutChildren.children = undefined as unknown as Element["children"]
+
+    const transform = (text: string) => text.toUpperCase()
+
+    expect(() => {
+      transformElement(nodeWithoutChildren, transform)
+    }).toThrow("Node has no children")
+  })
+
+  it("should throw error when transformation alters number of text nodes", () => {
+    const node = h("p", "hello world")
+
+    // This transform will split the text, altering the number of fragments
+    const transform = (text: string): string =>
+      text.replace("hello", `hello${markerChar}extra${markerChar}`)
+
+    expect(() => {
+      transformElement(node, transform)
+    }).toThrow("Transformation altered the number of text nodes")
+  })
+})
+
+describe("applyTextTransforms function", () => {
+  it("should apply all text transformations", () => {
+    const input = "The data are i.i.d. and it's -5x larger than github... So naive!"
+    const expected = "The data are IID and it’s −5× larger than GitHub… So naïve!"
+
+    const result = applyTextTransforms(input)
+    expect(result).toBe(expected)
+  })
+
+  it("should handle empty string", () => {
+    const result = applyTextTransforms("")
+    expect(result).toBe("")
+  })
+
+  it("should handle text with slashes", () => {
+    const input = "dog/cat and h/t John"
+    const expected = "dog / cat and h/t John"
+
+    const result = applyTextTransforms(input)
+    expect(result).toBe(expected)
+  })
 })
 
 describe("Ordinal Suffixes", () => {
@@ -1503,5 +1693,76 @@ describe("Ordinal Suffixes", () => {
       '<p>(<span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>) [<span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>] {<span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup>}</p>'
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
+  })
+})
+
+describe("improveFormatting function with options", () => {
+  it("should use default options when none provided", () => {
+    const input = "<p>Test text</p>"
+    const expected = '<p data-first-letter="T">Test text</p>'
+
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("should accept custom options and skip first letter when requested", () => {
+    const input = "<p>Test text</p>"
+
+    const processedHtml = testHtmlFormattingImprovement(input, true)
+    expect(processedHtml).toBe(input) // Should not add data-first-letter
+  })
+
+  it("should handle undefined options (default parameter branch)", () => {
+    // Test that calling improveFormatting() without options uses default behavior
+    const transformer = improveFormatting() // Called without options, hits default {} branch
+
+    const tree = {
+      type: "root" as const,
+      children: [h("p", "Test 1/2 content with -> arrow")],
+    }
+
+    const mockFile = new VFile("")
+    mockFile.data = {}
+
+    // Transform should work with default options (including first letter processing)
+    transformer(tree, mockFile, () => {
+      /* noop */
+    })
+
+    // Verify transformations occurred with default settings
+    const paragraph = tree.children[0] as Element
+    const resultHtml = hastToHtml(paragraph)
+
+    // Should have first letter attribute (default behavior)
+    expect(paragraph.properties["data-first-letter"]).toBe("T")
+
+    // Should have transformed fraction and arrow
+    expect(resultHtml).toContain('<span class="fraction">1/2</span>')
+    expect(resultHtml).toContain('<span class="right-arrow">⭢</span>')
+  })
+})
+
+describe("HTMLFormattingImprovement plugin", () => {
+  it("should return correct plugin object with name", () => {
+    const plugin = HTMLFormattingImprovement()
+
+    expect(plugin.name).toBe("htmlFormattingImprovement")
+    expect(plugin.htmlPlugins).toBeDefined()
+    expect(typeof plugin.htmlPlugins).toBe("function")
+  })
+
+  it("should return improveFormatting in htmlPlugins array", () => {
+    const plugin = HTMLFormattingImprovement()
+
+    const mockCtx = {} as unknown
+    expect(plugin.htmlPlugins).toBeDefined()
+
+    let valueToCheck
+    if (plugin.htmlPlugins) {
+      valueToCheck = plugin.htmlPlugins(
+        mockCtx as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0],
+      )
+    }
+    expect(valueToCheck).toEqual([improveFormatting])
   })
 })

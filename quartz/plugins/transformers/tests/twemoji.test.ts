@@ -7,11 +7,14 @@ import { h } from "hastscript"
 import {
   TWEMOJI_BASE_URL,
   TwemojiOptions,
-  createTwemojiCallback,
+  constructTwemojiUrl,
   parseAttributes,
+  replaceEmoji,
+  replaceEmojiConvertArrows,
   createNodes,
   processTree,
   ignoreMap,
+  Twemoji,
 } from "../twemoji"
 
 interface CustomNode extends UnistNode {
@@ -34,7 +37,10 @@ function createEmoji(path: string, originalChar: string): Element {
 jest.mock("../modules/twemoji.min", () => ({
   twemoji: {
     parse: jest.fn((content: string) =>
-      content.replace("😀", `<img src="${TWEMOJI_BASE_URL}1f600.svg">`),
+      content.replace(
+        "😀",
+        `<img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+      ),
     ),
   },
 }))
@@ -42,11 +48,11 @@ jest.mock("../modules/twemoji.min", () => ({
 type TwemojiCallback = (icon: string, options: TwemojiOptions) => string
 
 describe("Twemoji functions", () => {
-  describe("createTwemojiCallback", () => {
+  describe("constructTwemojiUrl", () => {
     it("should return the correct URL", () => {
       const mockCallback: TwemojiCallback = jest.fn((icon) => `mock-${icon}`)
       const options: TwemojiOptions = { folder: "svg", ext: ".svg", callback: mockCallback }
-      const result = createTwemojiCallback("1f600", options)
+      const result = constructTwemojiUrl("1f600", options)
       expect(result).toBe(`${TWEMOJI_BASE_URL}1f600.svg`)
     })
   })
@@ -61,6 +67,100 @@ describe("Twemoji functions", () => {
         width: "20",
         height: "20",
       })
+    })
+
+    it.each([
+      {
+        description: "empty string",
+        input: "",
+        expected: {},
+      },
+      {
+        description: "string with no attributes",
+        input: "no attributes here",
+        expected: {},
+      },
+      {
+        description: "malformed attributes",
+        input: '<img src="test.png" malformed width="20">',
+        expected: {
+          src: "test.png",
+          width: "20",
+        },
+      },
+      {
+        description: "attributes without quotes (returns empty object)",
+        input: "<img src=test.png alt=test>",
+        expected: {},
+      },
+    ])("should handle $description", ({ input, expected }) => {
+      const result = parseAttributes(input)
+      expect(result).toEqual(expected)
+    })
+
+    it("should test reduce function with multiple quoted attributes", () => {
+      // This should exercise the reduce arrow function more thoroughly
+      const imgTag = '<img class="emoji" draggable="false" alt="test" src="test.png" width="20">'
+      const result = parseAttributes(imgTag)
+      expect(result).toEqual({
+        class: "emoji",
+        draggable: "false",
+        alt: "test",
+        src: "test.png",
+        width: "20",
+      })
+    })
+  })
+
+  describe("replaceEmoji", () => {
+    it("should replace emoji using twemoji.parse", () => {
+      const content = "Hello 😀"
+      const result = replaceEmoji(content)
+      expect(result).toBe(
+        `Hello <img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+      )
+    })
+
+    it("should replace EMOJIS_TO_REPLACE with replacement path", () => {
+      const contentWithEmojiPath = `Hello <img src="${TWEMOJI_BASE_URL}twemoji/1fabf.svg">`
+      const result = replaceEmoji(contentWithEmojiPath)
+      expect(result).toBe(`Hello <img src="${TWEMOJI_BASE_URL}twemoji/replacements/1fabf.svg">`)
+    })
+
+    it("should handle content with no emoji", () => {
+      const content = "Hello world"
+      const result = replaceEmoji(content)
+      expect(result).toBe("Hello world")
+    })
+
+    it("should process all emojis in EMOJIS_TO_REPLACE array", () => {
+      const contentWithMultipleEmojis = `<img src="${TWEMOJI_BASE_URL}twemoji/1fabf.svg"> and other content`
+      const result = replaceEmoji(contentWithMultipleEmojis)
+      expect(result).toBe(
+        `<img src="${TWEMOJI_BASE_URL}twemoji/replacements/1fabf.svg"> and other content`,
+      )
+    })
+  })
+
+  describe("replaceEmojiConvertArrows", () => {
+    it("should convert ↩ to ⤴", () => {
+      const content = "Hello ↩ world"
+      const result = replaceEmojiConvertArrows(content)
+      expect(result).toBe("Hello ⤴ world")
+    })
+
+    it("should preserve ignored characters during emoji processing", () => {
+      const content = "Hello ⤴ ⇔ ↗ world"
+      const result = replaceEmojiConvertArrows(content)
+      expect(result).toBe("Hello ⤴ ⇔ ↗ world")
+    })
+
+    it("should handle content with emoji and arrow conversion", () => {
+      const content = "Hello ↩ 😀"
+      const result = replaceEmojiConvertArrows(content)
+      expect(result).toBe(
+        `Hello ⤴ <img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+      )
     })
   })
 
@@ -82,51 +182,50 @@ describe("Twemoji functions", () => {
   }
 
   describe("createNodes", () => {
-    it("should handle a string with no emoji", () => {
-      const input = "Hello, world!"
+    it.each([
+      {
+        description: "a string with no emoji",
+        input: "Hello, world!",
+        expected: [{ type: "text", value: "Hello, world!" }],
+      },
+      {
+        description: "a string with a single emoji",
+        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`,
+        expected: [{ type: "text", value: "Hello! " }, createEmoji("1f44b.svg", "👋")],
+      },
+      {
+        description: "a string with multiple emoji",
+        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> How are you? <img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`,
+        expected: [
+          { type: "text", value: "Hello! " },
+          createEmoji("1f44b.svg", "👋"),
+          { type: "text", value: " How are you? " },
+          createEmoji("1f60a.svg", "😊"),
+        ],
+      },
+      {
+        description: "a string starting with an emoji",
+        input: `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> Hello!`,
+        expected: [createEmoji("1f44b.svg", "👋"), { type: "text", value: " Hello!" }],
+      },
+      {
+        description: "a string ending with an emoji",
+        input: `Goodbye! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`,
+        expected: [{ type: "text", value: "Goodbye! " }, createEmoji("1f44b.svg", "👋")],
+      },
+      {
+        description: "a string with only emoji",
+        input: `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"><img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`,
+        expected: [createEmoji("1f44b.svg", "👋"), createEmoji("1f60a.svg", "😊")],
+      },
+      {
+        description: "an empty string",
+        input: "",
+        expected: [],
+      },
+    ])("should handle $description", ({ input, expected }) => {
       const result = createNodes(input)
-      expect(result).toEqual([{ type: "text", value: "Hello, world!" }])
-    })
-
-    it("should handle a string with a single emoji", () => {
-      const input = `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`
-      const result = createNodes(input)
-      expect(result).toEqual([{ type: "text", value: "Hello! " }, createEmoji("1f44b.svg", "👋")])
-    })
-
-    it("should handle a string with multiple emoji", () => {
-      const input = `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> How are you? <img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`
-      const result = createNodes(input)
-      expect(result).toEqual([
-        { type: "text", value: "Hello! " },
-        createEmoji("1f44b.svg", "👋"),
-        { type: "text", value: " How are you? " },
-        createEmoji("1f60a.svg", "😊"),
-      ])
-    })
-
-    it("should handle a string starting with an emoji", () => {
-      const input = `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> Hello!`
-      const result = createNodes(input)
-      expect(result).toEqual([createEmoji("1f44b.svg", "👋"), { type: "text", value: " Hello!" }])
-    })
-
-    it("should handle a string ending with an emoji", () => {
-      const input = `Goodbye! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`
-      const result = createNodes(input)
-      expect(result).toEqual([{ type: "text", value: "Goodbye! " }, createEmoji("1f44b.svg", "👋")])
-    })
-
-    it("should handle a string with only emoji", () => {
-      const input = `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"><img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`
-      const result = createNodes(input)
-      expect(result).toEqual([createEmoji("1f44b.svg", "👋"), createEmoji("1f60a.svg", "😊")])
-    })
-
-    it("should handle an empty string", () => {
-      const input = ""
-      const result = createNodes(input)
-      expect(result).toEqual([])
+      expect(result).toEqual(expected)
     })
 
     it("should create nodes correctly", () => {
@@ -134,6 +233,43 @@ describe("Twemoji functions", () => {
       const result = createNodes(parsed)
       expect(result).toHaveLength(3)
       expect(result[1]).toEqual(h("img", { src: "test.png", alt: "test" }))
+    })
+
+    it("should handle string with only img tags (no text parts)", () => {
+      const input = '<img src="test1.png" alt="test1"><img src="test2.png" alt="test2">'
+      const result = createNodes(input)
+      expect(result).toEqual([
+        h("img", { src: "test1.png", alt: "test1" }),
+        h("img", { src: "test2.png", alt: "test2" }),
+      ])
+    })
+
+    it("should handle when parts array has empty string elements", () => {
+      const input = '<img src="test.png" alt="test">'
+      const result = createNodes(input)
+      expect(result).toEqual([h("img", { src: "test.png", alt: "test" })])
+    })
+
+    it("should handle when there are more matches than parts", () => {
+      // Create a case where the split results in fewer parts than matches
+      const input = '<img src="test1.png"><img src="test2.png"><img src="test3.png">'
+      const result = createNodes(input)
+      expect(result).toEqual([
+        h("img", { src: "test1.png" }),
+        h("img", { src: "test2.png" }),
+        h("img", { src: "test3.png" }),
+      ])
+    })
+
+    it("should handle edge case where parts include empty strings", () => {
+      // This creates a scenario where parts[i] might be falsy but exists in the array
+      const input = 'Start<img src="test.png">End'
+      const result = createNodes(input)
+      expect(result).toEqual([
+        { type: "text", value: "Start" },
+        h("img", { src: "test.png" }),
+        { type: "text", value: "End" },
+      ])
     })
   })
 })
@@ -186,8 +322,9 @@ describe("processTree", () => {
     expect(result).toEqual(mockTree)
   })
 
-  it("should ignore characters in ignoreMap", () => {
-    ignoreMap.forEach((_: string, key: string) => {
+  it.each(Array.from(ignoreMap.keys()))(
+    "should ignore character '%s' in ignoreMap",
+    (key: string) => {
       const text = `This should be ignored: ${key}`
       const mockTree: CustomNode = {
         type: "root",
@@ -195,6 +332,47 @@ describe("processTree", () => {
       }
       const result = processTree(mockTree as UnistNode) as CustomNode
       expect(result).toEqual(mockTree)
-    })
+    },
+  )
+})
+
+describe("Twemoji plugin", () => {
+  it("should return correct plugin structure", () => {
+    const plugin = Twemoji()
+    expect(plugin.name).toBe("Twemoji")
+    expect(typeof plugin.htmlPlugins).toBe("function")
+    expect(Array.isArray(plugin.htmlPlugins())).toBe(true)
+    expect(plugin.htmlPlugins()).toHaveLength(1)
+    expect(typeof plugin.htmlPlugins()[0]).toBe("function")
+  })
+
+  it("should return a unified plugin function", () => {
+    const plugin = Twemoji()
+    const htmlPlugins = plugin.htmlPlugins()
+    const processingPlugin = htmlPlugins[0]
+    // Test that the plugin is a function (unified plugin)
+    expect(typeof processingPlugin).toBe("function")
+    // Test that the plugin is the correct function structure
+    expect(processingPlugin.toString()).toContain("processTree")
+  })
+
+  it("should have correct plugin factory structure", () => {
+    const plugin = Twemoji()
+    const htmlPluginFactories = plugin.htmlPlugins()
+    const pluginFactory = htmlPluginFactories[0]
+    // Test that the plugin factory has the correct structure
+    expect(typeof pluginFactory).toBe("function")
+    expect(pluginFactory.name).toBe("") // anonymous function
+    expect(pluginFactory.length).toBe(0) // takes no arguments
+  })
+
+  it("should execute the plugin factory function to get processTree", () => {
+    const plugin = Twemoji()
+    const htmlPluginFactories = plugin.htmlPlugins()
+    const pluginFactory = htmlPluginFactories[0]
+    // Simulate calling the plugin factory (this exercises the arrow function)
+    // Since it just returns processTree, we can call it directly
+    const result = (pluginFactory as () => typeof processTree)()
+    expect(result).toBe(processTree)
   })
 })

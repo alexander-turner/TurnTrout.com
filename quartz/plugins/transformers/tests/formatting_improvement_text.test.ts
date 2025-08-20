@@ -1,13 +1,16 @@
 import { describe, it, expect } from "@jest/globals"
 
+import type { BuildCtx } from "../../../util/ctx"
+
 import {
-  massTransformText,
+  applyTextTransforms,
   formattingImprovement,
   editAdmonition,
   noteAdmonition,
   arrowsToWrap,
   wrapLeadingNumbers,
   spaceAdmonitions,
+  TextFormattingImprovement,
 } from "../formatting_improvement_text"
 
 describe("TextFormattingImprovement Plugin", () => {
@@ -230,51 +233,44 @@ describe("Mass transforms", () => {
       `<span class='monospace-arrow'>${arrow}</span>`,
     ]),
   ])("should perform transforms for %s", (input: string, expected: string) => {
-    const result = massTransformText(input)
+    const result = formattingImprovement(input)
     expect(result).toBe(expected)
   })
 
   describe("HTML tag newline formatting", () => {
     it.each([
-      ["<div>Content</div>\nNext line", "<div>Content</div>\n\nNext line"],
       [
-        // Test self-closing tags
+        "<div>Content</div>\nNext line",
+        "<div>Content</div>\n\nNext line",
+        "should add newlines after HTML tags at the end of lines",
+      ],
+      [
         '<img src="https://hackmd.io/_uploads/rkLARlXmyl.png" alt="Sample complexity of different kinds of DCTs" class="transparent-image"/>\nFigure: This image should be transparent in light mode and have a light background in dark mode.',
         '<img src="https://hackmd.io/_uploads/rkLARlXmyl.png" alt="Sample complexity of different kinds of DCTs" class="transparent-image"/>\n\nFigure: This image should be transparent in light mode and have a light background in dark mode.',
+        "should add newlines after self-closing tags",
       ],
-    ])(
-      "should add newlines after HTML tags at the end of lines: %s",
-      (input: string, expected: string) => {
-        const result = massTransformText(input)
-        expect(result).toBe(expected)
-      },
-    )
-
-    it("should not add extra newlines if they already exist", () => {
-      const input = "<div>Content</div>\n\nNext line"
-      const expected = "<div>Content</div>\n\nNext line"
-      const result = massTransformText(input)
-      expect(result).toBe(expected)
-    })
-
-    it("should not add newlines after blockquotes", () => {
-      const input = "> \n> This is the next line"
-      const expected = "> \n> This is the next line"
-      const result = massTransformText(input)
-      expect(result).toBe(expected)
-    })
-
-    it("should not separate consecutive HTML tags", () => {
-      const input = "<div>Content</div><span>More</span>\nNext line"
-      const expected = "<div>Content</div><span>More</span>\n\nNext line"
-      const result = massTransformText(input)
-      expect(result).toBe(expected)
-    })
-
-    it("should not add newlines after HTML tags inside blockquotes", () => {
-      const input = '> <em><span class="test">Content</span></em>\n> Next line'
-      const expected = '> <em><span class="test">Content</span></em>\n> Next line'
-      const result = massTransformText(input)
+      [
+        "<div>Content</div>\n\nNext line",
+        "<div>Content</div>\n\nNext line",
+        "should not add extra newlines if they already exist",
+      ],
+      [
+        "> \n> This is the next line",
+        "> \n> This is the next line",
+        "should not add newlines after blockquotes",
+      ],
+      [
+        "<div>Content</div><span>More</span>\nNext line",
+        "<div>Content</div><span>More</span>\n\nNext line",
+        "should not separate consecutive HTML tags",
+      ],
+      [
+        '> <em><span class="test">Content</span></em>\n> Next line',
+        '> <em><span class="test">Content</span></em>\n> Next line',
+        "should not add newlines after HTML tags inside blockquotes",
+      ],
+    ])("%s", (input: string, expected: string) => {
+      const result = formattingImprovement(input)
       expect(result).toBe(expected)
     })
   })
@@ -311,5 +307,70 @@ describe("spaceAdmonitions", () => {
     const expected =
       "> [!note] Outer\n> \n> Content\n> > [!warning] Inner\n> > \n> > Warning content"
     expect(spaceAdmonitions(input)).toBe(expected)
+  })
+})
+
+describe("formattingImprovement YAML header handling", () => {
+  it("should preserve content when no YAML header present", () => {
+    const input = "This is content without YAML header. It has a footnote[^1]."
+    const expected = "This is content without YAML header. It has a footnote.[^1]"
+    expect(formattingImprovement(input)).toBe(expected)
+  })
+})
+
+describe("massTransformText string pattern support", () => {
+  it("should convert string patterns to RegExp with global flag", () => {
+    const customTransforms: [RegExp | string, string][] = [
+      ["hello", "hi"],
+      [/world/g, "earth"],
+    ]
+
+    const input = "hello world hello"
+    const result = applyTextTransforms(input, customTransforms)
+    expect(result).toBe("hi earth hi")
+  })
+})
+
+describe("concentrateEmphasisAroundLinks", () => {
+  it.each([
+    ["*[test link](http://example.com)*", "*[test link](http://example.com)*", "asterisk emphasis"],
+    [
+      "_[another link](http://example.com)_",
+      "_[another link](http://example.com)_",
+      "underscore emphasis",
+    ],
+    [
+      "**[bold link](http://example.com)**",
+      "**[bold link](http://example.com)**",
+      "double asterisk emphasis",
+    ],
+    [
+      "* [spaced link](http://example.com) *",
+      " *[spaced link](http://example.com)* ",
+      "emphasis with whitespace",
+    ],
+  ])("should handle %s", (input: string, expected: string) => {
+    const result = formattingImprovement(input)
+    expect(result).toBe(expected)
+  })
+})
+
+describe("TextFormattingImprovement plugin", () => {
+  it("should handle string input correctly", () => {
+    const plugin = TextFormattingImprovement()
+    expect(plugin.name).toBe("textFormattingImprovement")
+
+    const mockCtx = {} as BuildCtx
+    const input = "Test string input"
+    const result = plugin.textTransform?.(mockCtx, input)
+    expect(result).toBe("Test string input")
+  })
+
+  it("should convert Buffer input to string and process", () => {
+    const plugin = TextFormattingImprovement()
+    const mockCtx = {} as BuildCtx
+    const input = Buffer.from("Test buffer input", "utf-8")
+    const result = plugin.textTransform?.(mockCtx, input)
+    expect(result).toBe("Test buffer input")
   })
 })

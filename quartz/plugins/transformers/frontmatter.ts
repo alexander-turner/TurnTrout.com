@@ -10,7 +10,7 @@ import { VFile } from "vfile"
 import type { QuartzTransformerPlugin } from "../types"
 import type { QuartzPluginData } from "../vfile"
 
-import { i18n } from "../../i18n"
+import { uiStrings } from "../../components/constants"
 import { escapeHTML } from "../../util/escape"
 import { slugTag } from "../../util/path"
 import { urlRegex } from "./utils"
@@ -80,7 +80,7 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
   const opts = { ...defaultOptions, ...userOpts }
   return {
     name: "FrontMatter",
-    markdownPlugins({ cfg }) {
+    markdownPlugins() {
       return [
         [remarkFrontmatter, ["yaml", "toml"]],
         () => {
@@ -97,7 +97,7 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
             if (data.title && data.title.toString() !== "") {
               data.title = data.title.toString()
             } else {
-              data.title = file.stem ?? i18n(cfg.configuration.locale).propertyDefaults.title
+              data.title = file.stem ?? uiStrings.propertyDefaults.title
             }
 
             const tags = coerceToArray(coalesceAliases(data, ["tags", "tag"]) || [])

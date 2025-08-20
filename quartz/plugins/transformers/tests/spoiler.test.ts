@@ -1,16 +1,18 @@
 import { expect, describe, it, test } from "@jest/globals"
-import { type Element, type Parent } from "hast"
+import { type Element, type Parent, type Root } from "hast"
 import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
+import { BuildCtx } from "../../../util/ctx"
 import {
   transformAST,
   matchSpoilerText,
   createSpoilerNode,
   modifyNode,
   processParagraph,
+  rehypeCustomSpoiler,
 } from "../spoiler"
 
 function removePositions(obj: unknown): unknown {
@@ -168,25 +170,28 @@ describe("rehype-custom-spoiler", () => {
   })
 
   it.each([
-    ["<blockquote><p>!Spoiler text</p></blockquote>", "simple spoiler"],
-    ["<blockquote><p>! Spoiler with space</p></blockquote>", "spoiler with space"],
-    ["<blockquote><p>!Multi-line</p><p>!spoiler</p></blockquote>", "multi-paragraph spoiler"],
-  ])("modifyNode function (%s)", (input) => {
-    const parser = unified().use(rehypeParse, { fragment: true })
-    const parsed = parser.parse(input) as Parent
-    const node = parsed.children[0] as Element
-    const parent: Parent = { type: "root", children: [node] }
-    modifyNode(node, 0, parent)
+    {
+      name: "simple spoiler",
+      input: h("blockquote", {}, [h("p", {}, "!Spoiler text")]),
+    },
+    {
+      name: "spoiler with space",
+      input: h("blockquote", {}, [h("p", {}, "! Spoiler with space")]),
+    },
+    {
+      name: "multi-paragraph spoiler",
+      input: h("blockquote", {}, [h("p", {}, "!Multi-line"), h("p", {}, "!spoiler")]),
+    },
+  ])("modifyNode function ($name)", ({ input }) => {
+    const parent: Parent = { type: "root", children: [input] }
+    modifyNode(input as Element, 0, parent)
 
-    expect((parent.children[0] as Element).tagName).toBe("div")
-    expect((parent.children[0] as Element).properties?.className).toContain("spoiler-container")
-    expect((parent.children[0] as Element).children).toHaveLength(2)
-    expect(
-      ((parent.children[0] as Element).children[0] as Element).properties?.className,
-    ).toContain("spoiler-overlay")
-    expect(
-      ((parent.children[0] as Element).children[1] as Element).properties?.className,
-    ).toContain("spoiler-content")
+    const result = parent.children[0] as Element
+    expect(result.tagName).toBe("div")
+    expect(result.properties?.className).toContain("spoiler-container")
+    expect(result.children).toHaveLength(2)
+    expect((result.children[0] as Element).properties?.className).toContain("spoiler-overlay")
+    expect((result.children[1] as Element).properties?.className).toContain("spoiler-content")
   })
 
   it("correctly handles multiline spoilers with empty lines", async () => {
@@ -208,47 +213,22 @@ describe("rehype-custom-spoiler", () => {
   })
 
   test("modifyNode function handles newline text nodes and empty paragraphs", () => {
-    const input = "<blockquote><p>!Spoiler text</p>\n!<p>!More spoiler</p></blockquote>"
-    const parser = unified().use(rehypeParse, { fragment: true })
-    const parsed = parser.parse(input) as Parent
-    const node = parsed.children[0] as Element
-    const parent: Parent = { type: "root", children: [node] }
+    const input = h("blockquote", {}, [
+      h("p", {}, "!Spoiler text"),
+      { type: "text", value: "!" },
+      h("p", {}, "!More spoiler"),
+    ])
+    const parent: Parent = { type: "root", children: [input] }
 
-    modifyNode(node, 0, parent)
+    modifyNode(input as Element, 0, parent)
 
     const result = removePositions(parent.children[0])
-    expect(result).toMatchObject({
-      type: "element",
-      tagName: "div",
-      properties: {
-        className: ["spoiler-container"],
-      },
-      children: [
-        expect.objectContaining({
-          type: "element",
-          tagName: "span",
-          properties: { className: ["spoiler-overlay"] },
-        }),
-        expect.objectContaining({
-          type: "element",
-          tagName: "span",
-          properties: { className: ["spoiler-content"] },
-          children: [
-            expect.objectContaining({
-              type: "element",
-              tagName: "p",
-              children: [{ type: "text", value: "Spoiler text" }],
-            }),
-            expect.objectContaining({ type: "element", tagName: "p", children: [] }),
-            expect.objectContaining({
-              type: "element",
-              tagName: "p",
-              children: [{ type: "text", value: "More spoiler" }],
-            }),
-          ],
-        }),
-      ],
-    })
+    const expectedSpoiler = createSpoilerNode([
+      h("p", {}, "Spoiler text"),
+      h("p", {}),
+      h("p", {}, "More spoiler"),
+    ])
+    expect(result).toEqual(removePositions(expectedSpoiler))
   })
 
   describe("Inline element handling", () => {
@@ -295,57 +275,129 @@ describe("rehype-custom-spoiler", () => {
   })
 
   test("modifyNode preserves complex inline structures", () => {
-    const input =
-      "<blockquote><p>!Complex <em>nested <strong>inline</strong></em> <code>elements</code></p></blockquote>"
-    const node = unified().use(rehypeParse, { fragment: true }).parse(input).children[0] as Element
-    const parent: Parent = { type: "root", children: [node] }
+    const input = h("blockquote", {}, [
+      h("p", {}, [
+        "!Complex ",
+        h("em", {}, ["nested ", h("strong", {}, "inline")]),
+        " ",
+        h("code", {}, "elements"),
+      ]),
+    ])
+    const parent: Parent = { type: "root", children: [input] }
 
-    modifyNode(node, 0, parent)
+    modifyNode(input as Element, 0, parent)
 
     const result = removePositions(parent.children[0])
-    expect(result).toMatchObject({
-      type: "element",
-      tagName: "div",
-      properties: { className: ["spoiler-container"] },
-      children: [
-        expect.objectContaining({
-          tagName: "span",
-          properties: { className: ["spoiler-overlay"] },
-        }),
-        expect.objectContaining({
-          tagName: "span",
-          properties: { className: ["spoiler-content"] },
-          children: [
-            expect.objectContaining({
-              tagName: "p",
-              children: [
-                { type: "text", value: "Complex " },
-                {
-                  type: "element",
-                  tagName: "em",
-                  properties: {},
-                  children: [
-                    { type: "text", value: "nested " },
-                    {
-                      type: "element",
-                      tagName: "strong",
-                      properties: {},
-                      children: [{ type: "text", value: "inline" }],
-                    },
-                  ],
-                },
-                { type: "text", value: " " },
-                {
-                  type: "element",
-                  tagName: "code",
-                  properties: {},
-                  children: [{ type: "text", value: "elements" }],
-                },
-              ],
-            }),
-          ],
-        }),
-      ],
-    })
+    const expectedSpoiler = createSpoilerNode([
+      h("p", {}, [
+        "Complex ",
+        h("em", {}, ["nested ", h("strong", {}, "inline")]),
+        " ",
+        h("code", {}, "elements"),
+      ]),
+    ])
+    expect(result).toEqual(removePositions(expectedSpoiler))
+  })
+
+  test("modifyNode handles blockquote with non-paragraph child element", () => {
+    const blockquote = h("blockquote", {}, [
+      h("p", {}, "! First spoiler"),
+      h("div", {}, "Not a paragraph"), // This should break spoiler detection
+    ])
+    const parent: Parent = { type: "root", children: [blockquote] }
+
+    modifyNode(blockquote as Element, 0, parent)
+
+    // Should remain unchanged since it contains a non-paragraph element
+    expect(parent.children[0]).toEqual(blockquote)
+  })
+
+  test("rehypeCustomSpoiler plugin function", () => {
+    const plugin = rehypeCustomSpoiler()
+
+    expect(plugin.name).toBe("customSpoiler")
+    expect(plugin.htmlPlugins).toBeDefined()
+    expect(typeof plugin.htmlPlugins).toBe("function")
+
+    const mockCtx = {} as BuildCtx
+    // skipcq: JS-0339
+    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    expect(Array.isArray(htmlPlugins)).toBe(true)
+    expect(htmlPlugins).toHaveLength(1)
+    expect(typeof htmlPlugins[0]).toBe("function")
+  })
+
+  it.each([
+    { name: "undefined index", index: undefined, parent: "valid" },
+    { name: "undefined parent", index: 0, parent: undefined },
+  ])("modifyNode handles $name", ({ index, parent: parentType }) => {
+    const blockquote = h("blockquote", {}, [h("p", {}, "! Spoiler")])
+    const parent: Parent = { type: "root", children: [blockquote] }
+    const parentArg = parentType === "valid" ? parent : undefined
+
+    modifyNode(blockquote as Element, index, parentArg)
+    expect(parent.children[0]).toBe(blockquote) // Should remain unchanged
+  })
+
+  it.each([
+    {
+      name: "paragraph with only element children",
+      input: h("p", {}, [h("em", "emphasis"), h("strong", "bold")]),
+      expected: null,
+    },
+    {
+      name: "mixed content starting with spoiler",
+      input: h("p", {}, ["! Start with spoiler", h("em", "then element"), " then more text"]),
+      expected: h("p", {}, ["Start with spoiler", h("em", "then element"), " then more text"]),
+    },
+  ])("processParagraph handles $name", ({ input, expected }) => {
+    const result = processParagraph(input as Element)
+    expect(removePositions(result)).toEqual(removePositions(expected))
+  })
+
+  it.each([
+    {
+      name: "transformAST function",
+      setupTree: () => ({
+        type: "root",
+        children: [
+          h("blockquote", {}, [h("p", {}, "! This is a spoiler")]),
+          h("p", {}, "Not a spoiler"),
+        ],
+      }),
+      transform: (tree: Root) => transformAST(tree),
+      extraChecks: (tree: Root) => {
+        expect((tree.children[1] as Element).tagName).toBe("p") // Should remain unchanged
+      },
+    },
+    {
+      name: "htmlPlugins transformer",
+      setupTree: () => ({
+        type: "root",
+        children: [h("blockquote", {}, [h("p", {}, "! Test spoiler")])],
+      }),
+      transform: (tree: Root) => {
+        const plugin = rehypeCustomSpoiler()
+        const mockCtx = {} as BuildCtx
+        // skipcq: JS-0339
+        const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+        const transformerFunction = htmlPlugins[0] as () => (tree: Root) => void
+        const actualTransformer = transformerFunction()
+        actualTransformer(tree)
+      },
+      extraChecks: () => {
+        /* testing */
+      },
+    },
+  ])("$name works correctly", ({ setupTree, transform, extraChecks }) => {
+    const tree = setupTree() as Root
+    transform(tree)
+
+    const firstChild = tree.children[0] as Element
+    expect(firstChild.tagName).toBe("div")
+    expect((firstChild.properties as Record<string, unknown>).className).toContain(
+      "spoiler-container",
+    )
+    extraChecks(tree)
   })
 })

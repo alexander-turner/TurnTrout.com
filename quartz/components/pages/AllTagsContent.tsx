@@ -8,7 +8,8 @@ import * as React from "react"
 import type { QuartzComponent, QuartzComponentProps } from "../types"
 
 import { htmlToJsx } from "../../util/jsx"
-import { type FilePath, type FullSlug, getAllSegmentPrefixes } from "../../util/path"
+import { type FilePath, type FullSlug } from "../../util/path"
+import { locale } from "../constants"
 import style from "../styles/listPage.scss"
 import { formatTag } from "../TagList"
 
@@ -17,22 +18,25 @@ export const allTagsTitle = "All Tags"
 export const allTagsDescription = "All tags used in this site"
 export const allTagsListing = "all-tags-listing"
 
+/**
+ * Generates a HAST element listing all tags extracted from the provided files.
+ * @param props Quartz component properties including allFiles and cfg.
+ * @returns A HAST Element representing the tags listing.
+ */
 export function generateAllTagsHast(props: QuartzComponentProps): Element {
-  const { allFiles, cfg } = props
+  const { allFiles } = props
 
   // Get all unique tags and their counts
   const tagMap = new Map<string, number>()
   allFiles.forEach((file) => {
-    const tags = (file.frontmatter?.tags ?? []).flatMap(getAllSegmentPrefixes)
+    const tags = file.frontmatter?.tags ?? []
     tags.forEach((tag) => {
       tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1)
     })
   })
 
   // Convert to array and sort alphabetically
-  const sortedTags = Array.from(tagMap.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0], cfg.locale),
-  )
+  const sortedTags = Array.from(tagMap.entries()).sort((a, b) => a[0].localeCompare(b[0], locale))
 
   // Create tag elements using hastscript
   const tagElements = sortedTags.map(([tag, count]) =>
@@ -69,7 +73,7 @@ const AllTagsContent: QuartzComponent = (props: QuartzComponentProps) => {
   )
 }
 
-// Helper function to generate JSX block (used by the component)
+// Generate JSX block (used by the component)
 function generateAllTagsBlock(props: QuartzComponentProps): JSX.Element | undefined {
   const hast = generateAllTagsHast(props)
   return htmlToJsx(props.fileData.filePath || ("" as FilePath), hast)

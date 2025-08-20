@@ -2,6 +2,7 @@ import type { JSX } from "preact"
 
 import { type RootContent, type Parent, type Text, type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
+// skipcq: JS-W1028
 import React from "react"
 
 import { type QuartzPluginData } from "../plugins/vfile"
@@ -10,7 +11,6 @@ import { formatTitle, processSmallCaps } from "./component_utils"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 function processBacklinkTitle(title: string): Parent {
-  // Apply formatTitle before processing
   const formattedTitle = formatTitle(title)
   const parent = { type: "element", tagName: "span", properties: {}, children: [] } as Parent
   const htmlAst = fromHtml(formattedTitle, { fragment: true })
@@ -54,6 +54,11 @@ function elementToJsx(elt: RootContent): JSX.Element {
   }
 }
 
+/**
+ * @param backlinkFiles - The list of files that link to the current file
+ * @param currentSlug - The slug of the current file
+ * @returns A list of links to the current file
+ */
 const BacklinksList = ({
   backlinkFiles,
   currentSlug,
@@ -81,7 +86,12 @@ const BacklinksList = ({
   </ul>
 )
 
-export const getBacklinkFiles = (
+/**
+ * @param allFiles - The list of all files in the site
+ * @param currentFile - The file that we are getting backlinks for
+ * @returns A list of quartz plugin data for the files that link to the current file
+ */
+export const getBacklinkFileData = (
   allFiles: QuartzPluginData[],
   currentFile: QuartzPluginData,
 ): QuartzPluginData[] => {
@@ -98,8 +108,9 @@ export const getBacklinkFiles = (
   })
 }
 
+// skipcq: JS-D1001
 export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
-  const backlinkFiles: QuartzPluginData[] = getBacklinkFiles(allFiles, fileData)
+  const backlinkFiles: QuartzPluginData[] = getBacklinkFileData(allFiles, fileData)
   if (backlinkFiles.length === 0) return null
 
   return (
@@ -110,11 +121,11 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
       data-admonition-fold=""
     >
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
+        <div className="admonition-icon" />
         <div className="admonition-title-inner">
           <p>Links to this page</p>
         </div>
-        <div className="fold-admonition-icon"></div>
+        <div className="fold-admonition-icon" />
       </div>
       <div className="admonition-content" id="backlinks-admonition">
         <BacklinksList backlinkFiles={backlinkFiles} currentSlug={fileData.slug as FullSlug} />
@@ -122,3 +133,5 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
     </blockquote>
   )
 }
+
+export { elementToJsx }

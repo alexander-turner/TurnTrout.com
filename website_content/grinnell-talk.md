@@ -16,8 +16,9 @@ aliases:
   - talk-agi
   - intro-agi-risk
 date_published: 2025-06-29 16:49:07.944742
-date_updated: 2025-08-14 23:57:58.815232
+date_updated: 2025-08-19 20:19:47.849267
 ---
+
 
 
 > [!info] Notes from a talk originally given at my alma mater
@@ -25,7 +26,7 @@ date_updated: 2025-08-14 23:57:58.815232
 
 I work at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
 
-> [!warning] I'm only speaking for myself, not for my employer
+> [!warning] I'm only speaking for myself, not for my employer.
 
 # The romance and peril of AI
 

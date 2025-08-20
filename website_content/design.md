@@ -12,9 +12,10 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2025-07-25 13:30:55.478301
+date_updated: 2025-08-19 20:19:47.849267
 no_dropcap: false
 ---
+
 
 
 
@@ -843,7 +844,7 @@ I lastly check that my CSS:
 
 ### Unit tests
 
-I have thousands of JavaScript unit tests and hundreds of Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage`](https://github.com/nedbat/coveragepy) to ensure 100\% coverage of my Python files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
+I have thousands of JavaScript unit tests and hundreds of Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage.py`](https://github.com/nedbat/coveragepy) to ensure 100\% line coverage of my Python files. Using `jest`'s built in coverage tools, I require 100\% branch coverage of my TypeScript files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
 
 ### Simulating site interactions
 

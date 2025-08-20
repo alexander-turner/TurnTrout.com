@@ -11,11 +11,14 @@ import {
 
 // For rendering the tags for a user
 export const formatTag = (tag: string): string => {
+  if (!tag) {
+    return ""
+  }
   if (tag.toLowerCase() === "ai") return "AI"
 
   // Ensure input is a string (using optional chaining for safety)
-  tag = tag?.replace(/-/g, " ").toLowerCase() ?? ""
-  tag = tag?.replaceAll("power seeking", "power-seeking")
+  tag = tag.replace(/-/g, " ").toLowerCase()
+  tag = tag.replaceAll("power seeking", "power-seeking")
 
   return tag
 }
@@ -24,13 +27,16 @@ export const formatTag = (tag: string): string => {
  * Gets the tags from the file data and formats them.
  */
 export const getTags = (fileData: QuartzPluginData): string[] => {
-  let tags = fileData.frontmatter?.tags || []
+  if (!fileData.frontmatter) {
+    return []
+  }
+  let tags = fileData.frontmatter.tags ?? []
   tags = tags.map(formatTag)
   return tags.sort((a: string, b: string) => b.length - a.length)
 }
 
 // skipcq: JS-D1001
-export const TagList: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
+const TagListComponent: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   const tags = getTags(fileData)
   if (tags && tags.length > 0) {
     return (
@@ -53,4 +59,6 @@ export const TagList: QuartzComponent = ({ fileData }: QuartzComponentProps) => 
   }
 }
 
-export default (() => TagList) satisfies QuartzComponentConstructor
+// skipcq: JS-D1001
+export const TagList: QuartzComponentConstructor = () => TagListComponent
+export default TagList satisfies QuartzComponentConstructor

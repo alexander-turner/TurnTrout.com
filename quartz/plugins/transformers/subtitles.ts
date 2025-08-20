@@ -5,7 +5,8 @@ import { QuartzTransformerPlugin } from "../types"
 
 export const SUBTITLE_REGEX = /^Subtitle:\s*(.*)/
 
-export function createSubtitleNode(children: Element["children"]): Element {
+// skipcq: JS-D1001
+export function createSubtitleWithChildren(children: Element["children"]): Element {
   return {
     type: "element",
     tagName: "p",
@@ -14,13 +15,25 @@ export function createSubtitleNode(children: Element["children"]): Element {
   }
 }
 
+/**
+ * Modifies a node in the AST if it's a paragraph that should be converted to a subtitle.
+ * This function is called by the AST visitor for each element node.
+ *
+ * @param node - The element node to potentially modify
+ * @param index - The index of the node within its parent's children array
+ * @param parent - The parent node containing this element
+ */
 export function modifyNode(
   node: Element,
   index: number | undefined,
   parent: Parent | null | undefined,
 ): void {
+  if (index && parent?.children[index] !== node) {
+    throw new Error("Index does not match node")
+  }
+
   if (node.tagName === "p" && processParagraph(node)) {
-    const newNode = createSubtitleNode(node.children)
+    const newNode = createSubtitleWithChildren(node.children)
     if (parent && index !== undefined) {
       parent.children[index] = newNode
     }
@@ -46,6 +59,7 @@ export function processParagraph(paragraph: Element): boolean {
   return false
 }
 
+// skipcq: JS-D1001
 export function transformAST(tree: Root): void {
   visit(tree, "element", modifyNode)
 }

@@ -39,7 +39,7 @@ const config: QuartzConfig = {
     enableSPA: true,
     enablePopovers: true,
     analytics: null,
-    locale: "en-US",
+
     baseUrl: "turntrout.com",
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "published",

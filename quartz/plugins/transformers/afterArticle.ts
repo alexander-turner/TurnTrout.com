@@ -38,6 +38,9 @@ const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
 
 const contactMe = h("div", [h("center", ["Thoughts? Email me at ", h("code", {}, [mailLink])])])
 
+/**
+ * Inserts components after the ornament node (trout container) in the tree
+ */
 export function insertAfterOrnamentNode(tree: Root, components: Element[]) {
   visit(tree, "element", (node: Element, index, parent: Element | null) => {
     if (
@@ -55,26 +58,29 @@ export function insertAfterOrnamentNode(tree: Root, components: Element[]) {
   })
 }
 
+/**
+ * Transforms the AST to add after-article components
+ * @param tree - The root AST node
+ * @param file - The VFile containing frontmatter and plugin data
+ */
+function afterArticleTransform(tree: Root, file: VFile) {
+  const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)
+  const components = [sequenceLinksComponent ?? null].filter(Boolean) as Element[]
+
+  // If frontmatter doesn't say to avoid it
+  if (!file.data.frontmatter?.hideSubscriptionLinks) {
+    components.push(h("div", { id: "subscription-and-contact" }, [subscriptionElement, contactMe]))
+  }
+
+  if (components.length > 0) {
+    insertAfterOrnamentNode(tree, components)
+  }
+}
+
+// skipcq: JS-D1001
 export const AfterArticle: QuartzTransformerPlugin = () => {
   return {
     name: "AfterArticleTransformer",
-    htmlPlugins: () => [
-      () => (tree: Root, file: VFile) => {
-        const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)
-
-        const components = [sequenceLinksComponent ?? null].filter(Boolean) as Element[]
-
-        // If frontmatter doesn't say to avoid it
-        if (!file.data.frontmatter?.hideSubscriptionLinks) {
-          components.push(
-            h("div", { id: "subscription-and-contact" }, [subscriptionElement, contactMe]),
-          )
-        }
-
-        if (components.length > 0) {
-          insertAfterOrnamentNode(tree, components)
-        }
-      },
-    ],
+    htmlPlugins: () => [() => afterArticleTransform],
   }
 }

@@ -7,6 +7,7 @@ import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type FullSlug, resolveRelative } from "../util/path"
 import { formatTitle } from "./component_utils"
+import { locale } from "./constants"
 import { getDate } from "./Date"
 import { formatTag } from "./TagList"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
@@ -42,7 +43,7 @@ export function byDateAndAlphabetical(
     // otherwise, sort lexographically by title
     const f1Title = f1.frontmatter?.title?.toLowerCase() ?? ""
     const f2Title = f2.frontmatter?.title?.toLowerCase() ?? ""
-    return f1Title.localeCompare(f2Title)
+    return f1Title.localeCompare(f2Title, locale)
   }
 }
 
@@ -105,7 +106,7 @@ export function createPageItemElement(
   const formattedTitle = title ? formatTitle(title) : ""
   let tags = page.frontmatter?.tags ?? []
   tags = tags.sort((a, b) => b.length - a.length)
-  const date = getDate(cfg, page)?.toLocaleDateString() || ""
+  const date = getDate(cfg, page)?.toLocaleDateString(locale) || ""
   const pageSlug = page.slug || ("" as FullSlug)
 
   return h("div.section", [

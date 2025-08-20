@@ -1,4 +1,6 @@
-[![Node tests](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml) ![Python tests pass](https://img.shields.io/badge/Python%20tests-Passing-green?style=plastic)[^python] ![Python type-checking](https://img.shields.io/badge/Python%20typechecking-Passing-green?style=plastic) [![ESLint](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/eslint.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/eslint.yml)  [![DeepSource](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com.svg/?label=active+issues&show_trend=true&token=Uwx9Q68JFvapkwk26AqQzswN)](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com/) ![100% code coverage](https://assets.turntrout.com/coverage-badge.svg)
+[![Node tests](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml) ![Python tests pass](https://img.shields.io/badge/Python%20tests-Passing-green?style=plastic)[^python] ![Python type-checking](https://img.shields.io/badge/Python%20typechecking-Passing-green?style=plastic) [![ESLint](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/eslint.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/eslint.yml)  [![DeepSource](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com.svg/?label=active+issues&show_trend=true&token=Uwx9Q68JFvapkwk26AqQzswN)](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com/) 
+
+100% Python line coverage and 100% TypeScript branch coverage.
 
 # Setup
 
@@ -7,11 +9,8 @@ SITE_DIR=/tmp/TurnTrout.com
 git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
 cd "$SITE_DIR"
 yes | npm ci
-npx quartz build --serve
-firefox localhost:8080/welcome.html
+npx quartz build --serve 
 ```
-
-The [original Quartz documentation](https://quartz.jzhao.xyz/) remains mostly relevant (and also present in `docs/`).
 
 # Cryptographic timestamp verification
 

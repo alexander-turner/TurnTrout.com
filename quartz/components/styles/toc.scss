@@ -6,6 +6,10 @@
   }
 }
 
+.search-preview blockquote:has(#toc-content-mobile) {
+  display: none;
+}
+
 #toc-title {
   margin-top: 0;
   margin-bottom: calc(0.5 * $base-margin);

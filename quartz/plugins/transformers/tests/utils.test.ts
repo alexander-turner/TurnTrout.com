@@ -5,7 +5,7 @@ import { h } from "hastscript"
 import {
   replaceRegex,
   type ReplaceFnResult,
-  nodeBeginsWithCapital,
+  shouldCapitalizeNodeText,
   gatherTextBeforeIndex,
 } from "../utils"
 
@@ -217,7 +217,28 @@ describe("nodeBeginsWithCapital", () => {
   ])("should handle %s", (_case, children, expected) => {
     const parent = { type: "root", children } as Parent
     const index = children.length - 1 // Test node is always last
-    expect(nodeBeginsWithCapital(index, parent)).toBe(expected)
+    expect(shouldCapitalizeNodeText(index, parent)).toBe(expected)
+  })
+
+  describe("period detection with whitespace", () => {
+    it.each([
+      ["period with no whitespace", "end.", true],
+      ["period with single space", "end. ", true],
+      ["period with multiple spaces", "end.   ", true],
+      ["period with tabs", "end.\t\t", true],
+      ["period with mixed whitespace", "end. \t ", true],
+      ["period not at end", "end. middle", false],
+      ["empty value", "", false],
+      ["undefined value", undefined, false],
+    ])("should handle %s", (_case, previousValue, expected) => {
+      const previousNode =
+        previousValue !== undefined
+          ? { type: "text", value: previousValue }
+          : ({ type: "text" } as Text)
+      const children = [previousNode, { type: "text", value: "test" }]
+      const parent = { type: "root", children } as Parent
+      expect(shouldCapitalizeNodeText(1, parent)).toBe(expected)
+    })
   })
 })
 

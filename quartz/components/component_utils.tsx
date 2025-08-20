@@ -4,6 +4,7 @@ import { titleCase } from "title-case"
 
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
+import { locale } from "./constants"
 
 export const sessionStoragePondVideoKey = "pond-video-timestamp"
 export const pondVideoId = "pond-video"
@@ -14,7 +15,7 @@ export function formatTitle(title: string): string {
   title = applyTextTransforms(title)
 
   // Convert title to title case
-  title = titleCase(title, { locale: "en-US" })
+  title = titleCase(title, { locale })
   return title
 }
 

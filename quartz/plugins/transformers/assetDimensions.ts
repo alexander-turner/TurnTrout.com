@@ -25,15 +25,7 @@ export const paths = {
     ".asset_dimensions.json",
   ),
 }
-
-// TODO add to paths?
-export const ASSET_DIMENSIONS_FILE_PATH = path.join(
-  paths.projectRoot,
-  "quartz",
-  "plugins",
-  "transformers",
-  ".asset_dimensions.json",
-)
+export const numRetries = 3
 
 export interface AssetDimensions {
   width: number
@@ -44,6 +36,10 @@ export interface AssetDimensionMap {
   [src: string]: AssetDimensions | undefined
 }
 
+/**
+ * Handles asset dimension processing for images and videos, including caching and fetching dimensions
+ * from both local and remote sources.
+ */
 class AssetProcessor {
   private spawnSyncWrapper: typeof spawnSync
   private assetDimensionsCache: AssetDimensionMap | null = null
@@ -53,19 +49,23 @@ class AssetProcessor {
     this.spawnSyncWrapper = spawnFn
   }
 
+  // skipcq: JS-D1001
   public resetDirectCacheAndDirtyFlag(): void {
     this.assetDimensionsCache = null
     this.needToSaveCache = false
   }
 
+  // skipcq: JS-D1001
   public setDirectCache(cache: AssetDimensionMap | null): void {
     this.assetDimensionsCache = cache
   }
 
+  // skipcq: JS-D1001
   public setDirectDirtyFlag(isDirty: boolean): void {
     this.needToSaveCache = isDirty
   }
 
+  // skipcq: JS-D1001
   public async maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
     if (this.assetDimensionsCache !== null) {
       return this.assetDimensionsCache
@@ -83,6 +83,7 @@ class AssetProcessor {
     return this.assetDimensionsCache
   }
 
+  // Save asset dimensions if needed
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
       const tempFilePath = `${paths.assetDimensions}.tmp`
@@ -95,7 +96,12 @@ class AssetProcessor {
     }
   }
 
-  public async getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions | null> {
+  /**
+   * Uses ffprobe to get dimensions of video or image assets.
+   * @param assetSrc - The source path or URL of the asset
+   * @returns Promise resolving to asset dimensions
+   */
+  public async getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions> {
     const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(
       "ffprobe",
       [
@@ -127,9 +133,13 @@ class AssetProcessor {
     if (dimensionsMatch) {
       const width = parseInt(dimensionsMatch[1], 10)
       const height = parseInt(dimensionsMatch[2], 10)
-      if (!isNaN(width) && !isNaN(height)) {
-        return { width, height }
+
+      /* istanbul ignore if */
+      if (isNaN(width) || isNaN(height)) {
+        throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
       }
+      logger.debug(`Local video dimensions for ${assetSrc}: ${width}x${height}`)
+      return { width, height }
     }
 
     throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
@@ -149,6 +159,9 @@ class AssetProcessor {
     }
   }
 
+  /**
+   * Resolves a local asset path, handling file:// URLs and relative/absolute paths.
+   */
   private static async resolveLocalAssetPath(src: string): Promise<string> {
     if (src.startsWith("file://")) {
       const localPath = fileURLToPath(src)
@@ -174,10 +187,7 @@ class AssetProcessor {
     const ext = path.extname(localPath).toLowerCase()
     const videoExts = new Set([".mp4", ".mov", ".m4v", ".webm", ".mpeg", ".mpg", ".avi", ".mkv"])
     if (videoExts.has(ext)) {
-      const dims = await this.getAssetDimensionsFfprobe(localPath)
-      if (!dims) throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
-      logger.debug(`Local video dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
-      return dims
+      return await this.getAssetDimensionsFfprobe(localPath)
     }
 
     const buffer = await fs.readFile(localPath)
@@ -192,6 +202,7 @@ class AssetProcessor {
       )
       return { width: dimensions.width, height: dimensions.height }
     }
+    /* istanbul ignore next */
     throw new Error(
       `Unable to determine local asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
     )
@@ -200,7 +211,9 @@ class AssetProcessor {
   // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
   private async getRemoteAssetDimensions(
     assetSrc: string,
+    /* istanbul ignore next */
     retries = 1,
+    /* istanbul ignore next */
     delay = 1000,
   ): Promise<AssetDimensions> {
     for (let i = 0; i < retries; i++) {
@@ -219,11 +232,7 @@ class AssetProcessor {
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
           response.body?.cancel()
-          const dims = await this.getAssetDimensionsFfprobe(assetSrc)
-          if (!dims) throw new Error(`ffprobe failed for ${assetSrc}`)
-
-          logger.debug(`Remote ffprobe dimensions for ${assetSrc}: ${dims.width}x${dims.height}`)
-          return dims
+          return await this.getAssetDimensionsFfprobe(assetSrc)
         }
 
         const buffer = Buffer.from(await response.arrayBuffer())
@@ -238,6 +247,7 @@ class AssetProcessor {
           )
           return { width: dimensions.width, height: dimensions.height }
         }
+        /* istanbul ignore next */
         throw new Error(
           `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
         )
@@ -249,9 +259,15 @@ class AssetProcessor {
     throw new Error(`Failed to fetch ${assetSrc} after ${retries} attempts.`)
   }
 
+  /**
+   * Fetches and parses asset dimensions for both local and remote assets.
+   * @param assetSrc - The source URL or path of the asset
+   * @param retries - Number of retry attempts for remote assets
+   * @returns Promise resolving to asset dimensions or null if failed
+   */
   public async fetchAndParseAssetDimensions(
     assetSrc: string,
-    retries = 1,
+    retries = numRetries,
   ): Promise<AssetDimensions | null> {
     return AssetProcessor.isRemoteUrl(assetSrc)
       ? await this.getRemoteAssetDimensions(assetSrc, retries)
@@ -277,6 +293,9 @@ class AssetProcessor {
   }
 
   public imageTagsToProcess = ["img", "svg"]
+  /**
+   * Collects all asset nodes (images and videos) from the AST tree that need dimension processing.
+   */
   public collectAssetNodes(tree: Root): { node: Element; src: string }[] {
     const imageAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
@@ -302,10 +321,16 @@ class AssetProcessor {
     return [...imageAssetsToProcess, ...videoAssetsToProcess]
   }
 
+  /**
+   * Processes a single asset by fetching its dimensions and applying them to the node.
+   * @param assetInfo - Object containing the DOM node and source URL
+   * @param currentDimensionsCache - The current dimensions cache
+   * @param retries - Number of retry attempts for remote assets
+   */
   public async processAsset(
     assetInfo: { node: Element; src: string },
     currentDimensionsCache: AssetDimensionMap,
-    retries = 1,
+    retries = numRetries,
   ): Promise<void> {
     const { node, src } = assetInfo
     let dims = currentDimensionsCache[src]
@@ -344,6 +369,9 @@ export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
   Object.assign(assetProcessor, new AssetProcessor(fn))
 }
 
+/**
+ * Creates a Quartz plugin that adds width, height, and aspect-ratio CSS to image and video elements.
+ */
 export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
@@ -355,7 +383,7 @@ export const addAssetDimensionsFromSrc = () => {
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
-              await assetProcessor.processAsset(assetInfo, currentDimensionsCache, 3)
+              await assetProcessor.processAsset(assetInfo, currentDimensionsCache, numRetries)
             }
             if (assetProcessor["needToSaveCache"]) {
               await assetProcessor.maybeSaveAssetDimensions()

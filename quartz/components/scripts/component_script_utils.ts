@@ -56,6 +56,7 @@ export function debounce<Args extends unknown[], R>(
   // Track the time of the last *invocation attempt*
   let lastCallTime = 0
 
+  // skipcq: JS-D1001
   const debounced = function (this: unknown, ...args: Args) {
     const now = performance.now()
     const shouldCallImmediately = immediate && (lastCallTime === 0 || now - lastCallTime >= wait)
@@ -140,6 +141,7 @@ export function registerEscapeHandler(
   }
 }
 
+// skipcq: JS-D1001
 export function removeAllChildren(node: HTMLElement) {
   while (node.firstChild) {
     node.removeChild(node.firstChild)
@@ -164,7 +166,9 @@ export const withoutTransition = (action: () => void) => {
     }
   `
 
+  // skipcq: JS-D1001
   const disableTransitions = () => document.head.appendChild(style)
+  // skipcq: JS-D1001
   const enableTransitions = () => document.head.removeChild(style)
 
   // If getComputedStyle is available, use it to force a reflow
@@ -229,6 +233,13 @@ export function animate(
   let start: number | null = null
   let rafId: number | null = null
 
+  /**
+   * Internal frame callback that executes on each animation frame.
+   * Calculates progress, calls the user's onFrame callback, and handles
+   * animation continuation or completion.
+   *
+   * @param timestamp - Current timestamp from requestAnimationFrame
+   */
   const frame = (timestamp: number) => {
     if (!start) start = timestamp
     const elapsed = timestamp - start

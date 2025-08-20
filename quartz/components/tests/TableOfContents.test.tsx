@@ -3,9 +3,12 @@
  */
 
 import type { Parent, RootContent } from "hast"
+import type { JSX } from "preact"
 
 import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 import { h } from "hastscript"
+
+import type { QuartzComponentProps } from "../types"
 
 import { TocEntry } from "../../plugins/transformers/toc"
 import {
@@ -14,11 +17,28 @@ import {
   processTocEntry,
   buildNestedList,
   elementToJsx,
+  addListItem,
+  toJSXListItem,
 } from "../TableOfContents"
+
+// Helper function to assert JSX element properties
+function assertJSXElement(
+  element: unknown,
+): asserts element is JSX.Element & { props: Record<string, unknown> } {
+  expect(element).toBeTruthy()
+  expect(typeof element).toBe("object")
+}
+
+// Helper function that combines null check and JSX assertion
+function expectJSXElement(element: unknown): JSX.Element & { props: Record<string, unknown> } {
+  expect(element).not.toBeNull()
+  assertJSXElement(element)
+  return element
+}
 
 // Mock the createLogger function
 jest.mock("../../plugins/transformers/logger_utils", () => ({
-  createLogger: () => ({
+  createWinstonLogger: () => ({
     info: jest.fn(),
     debug: jest.fn(),
   }),
@@ -51,6 +71,54 @@ describe("processTocEntry", () => {
       properties: { className: ["inline-code"] },
       children: [{ type: "text", value: "code" }],
     })
+  })
+
+  it("should handle TOC entries with LaTeX expressions", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "Math with $x^2$",
+      slug: "math-heading",
+    }
+
+    const result = processTocEntry(entry)
+
+    expect(result.children).toHaveLength(2)
+    expect(result.children[0]).toMatchObject({ type: "text", value: "Math with " })
+    expect(result.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: ["katex-toc"] },
+    })
+  })
+
+  it("should handle TOC entries with arrows", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "Arrow →",
+      slug: "arrow-heading",
+    }
+
+    const result = processTocEntry(entry)
+
+    expect(result.children).toHaveLength(2)
+    expect(result.children[0]).toMatchObject({ type: "text", value: "Arrow " })
+    expect(result.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: ["monospace-arrow"] },
+    })
+  })
+
+  it("should handle empty parts in text", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "",
+      slug: "empty-heading",
+    }
+
+    const result = processTocEntry(entry)
+
+    expect(result.children).toHaveLength(0)
   })
 })
 
@@ -157,15 +225,6 @@ describe("processHtmlAst", () => {
   })
 })
 
-// Mock the createLogger function
-jest.mock("../../plugins/transformers/logger_utils", () => ({
-  createLogger: () => ({
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-  }),
-}))
-
 describe("buildNestedList", () => {
   it("should build a nested list for headings up to depth 3", () => {
     const entries = [
@@ -176,11 +235,44 @@ describe("buildNestedList", () => {
     ]
     const [result] = buildNestedList(entries)
 
-    // Instead of rendering, let's check the structure directly
+    // Verify structure and content
     expect(result).toHaveLength(1)
     const firstItem = result[0]
-    expect(firstItem.props.children[1].type).toBe("ol")
-    expect(firstItem.props.children[1].props.children).toHaveLength(2)
+    expect(firstItem.type).toBe("li")
+    expect(firstItem.key).toBe("li-1")
+
+    // Check that the first item contains the link and nested list
+    expect(firstItem.props.children).toHaveLength(2)
+    const link = firstItem.props.children[0]
+    expect(link.type).toBe("a")
+    expect(link.props.href).toBe("#heading-1")
+    expect(link.props.className).toBe("internal same-page-link")
+    expect(link.props["data-for"]).toBe("heading-1")
+
+    // Check nested list structure
+    const nestedList = firstItem.props.children[1]
+    expect(nestedList.type).toBe("ol")
+    expect(nestedList.key).toBe("ol-1")
+    expect(nestedList.props.children).toHaveLength(2)
+
+    // Verify first nested item (Heading 1.1)
+    const firstNestedItem = nestedList.props.children[0]
+    expect(firstNestedItem.type).toBe("li")
+    expect(firstNestedItem.props.children).toHaveLength(2) // link + nested ol
+    const firstNestedLink = firstNestedItem.props.children[0]
+    expect(firstNestedLink.props.href).toBe("#heading-1-1")
+
+    // Verify deeply nested item (Heading 1.1.1)
+    const deeplyNestedList = firstNestedItem.props.children[1]
+    expect(deeplyNestedList.type).toBe("ol")
+    expect(deeplyNestedList.props.children).toHaveLength(1)
+    const deeplyNestedItem = deeplyNestedList.props.children[0]
+    expect(deeplyNestedItem.props.children.props.href).toBe("#heading-1-1-1")
+
+    // Verify second nested item (Heading 1.2)
+    const secondNestedItem = nestedList.props.children[1]
+    expect(secondNestedItem.type).toBe("li")
+    expect(secondNestedItem.props.children.props.href).toBe("#heading-1-2")
   })
 
   it("should handle empty entries", () => {
@@ -194,7 +286,101 @@ describe("buildNestedList", () => {
       { depth: 1, text: "Second", slug: "second" },
     ]
     const [result] = buildNestedList(entries)
+
     expect(result).toHaveLength(2)
+
+    // Verify first item
+    expect(result[0].type).toBe("li")
+    expect(result[0].key).toBe("li-0")
+    const firstLink = result[0].props.children
+    expect(firstLink.type).toBe("a")
+    expect(firstLink.props.href).toBe("#first")
+    expect(firstLink.props["data-for"]).toBe("first")
+
+    // Verify second item
+    expect(result[1].type).toBe("li")
+    expect(result[1].key).toBe("li-1")
+    const secondLink = result[1].props.children
+    expect(secondLink.type).toBe("a")
+    expect(secondLink.props.href).toBe("#second")
+    expect(secondLink.props["data-for"]).toBe("second")
+  })
+
+  it("should handle nested structure starting at depth > 1", () => {
+    const entries = [{ depth: 2, text: "Nested heading", slug: "nested" }]
+    const [result] = buildNestedList(entries)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].type).toBe("li")
+    expect(result[0].key).toBe("li-0")
+    const link = result[0].props.children
+    expect(link.type).toBe("a")
+    expect(link.props.href).toBe("#nested")
+    expect(link.props["data-for"]).toBe("nested")
+  })
+
+  it("should handle complex nesting with depth jumps", () => {
+    const entries = [
+      { depth: 1, text: "H1", slug: "h1" },
+      { depth: 3, text: "H3", slug: "h3" },
+      { depth: 1, text: "H1-2", slug: "h1-2" },
+    ]
+    const [result] = buildNestedList(entries)
+
+    expect(result).toHaveLength(2)
+
+    // First item should have nested structure for the depth-3 heading
+    const firstTopLevelItem = result[0]
+    expect(firstTopLevelItem.type).toBe("li")
+    expect(firstTopLevelItem.props.children).toHaveLength(2) // link + nested ol
+    const firstLink = firstTopLevelItem.props.children[0]
+    expect(firstLink.props.href).toBe("#h1")
+
+    // Check the nested structure for H3
+    const nestedList = firstTopLevelItem.props.children[1]
+    expect(nestedList.type).toBe("ol")
+    expect(nestedList.props.children).toHaveLength(1)
+    const nestedItem = nestedList.props.children[0]
+    expect(nestedItem.props.children.props.href).toBe("#h3")
+
+    // Second top-level item
+    const secondItem = result[1]
+    expect(secondItem.type).toBe("li")
+    expect(secondItem.props.children.props.href).toBe("#h1-2")
+  })
+
+  it("should correctly handle depth decreases (backtracking)", () => {
+    const entries = [
+      { depth: 1, text: "Chapter 1", slug: "chapter-1" },
+      { depth: 2, text: "Section 1.1", slug: "section-1-1" },
+      { depth: 3, text: "Subsection 1.1.1", slug: "subsection-1-1-1" },
+      { depth: 2, text: "Section 1.2", slug: "section-1-2" },
+      { depth: 1, text: "Chapter 2", slug: "chapter-2" },
+    ]
+    const [result] = buildNestedList(entries)
+
+    expect(result).toHaveLength(2) // Two chapters
+
+    // Verify Chapter 1 structure
+    const chapter1 = result[0]
+    expect(chapter1.props.children[0].props.href).toBe("#chapter-1")
+    const chapter1Sections = chapter1.props.children[1]
+    expect(chapter1Sections.props.children).toHaveLength(2) // Two sections
+
+    // Verify Section 1.1 has subsection
+    const section11 = chapter1Sections.props.children[0]
+    expect(section11.props.children[0].props.href).toBe("#section-1-1")
+    expect(section11.props.children[1].props.children).toHaveLength(1) // One subsection
+    const subsection111 = section11.props.children[1].props.children[0]
+    expect(subsection111.props.children.props.href).toBe("#subsection-1-1-1")
+
+    // Verify Section 1.2 has no subsections
+    const section12 = chapter1Sections.props.children[1]
+    expect(section12.props.children.props.href).toBe("#section-1-2")
+
+    // Verify Chapter 2
+    const chapter2 = result[1]
+    expect(chapter2.props.children.props.href).toBe("#chapter-2")
   })
 })
 
@@ -206,55 +392,559 @@ describe("afterDOMLoaded Script Attachment", () => {
   })
 })
 
-describe("elementToJsx", () => {
-  it("should handle text nodes", () => {
-    const node = { type: "text", value: "Hello" } as RootContent
-    expect(elementToJsx(node)).toBe("Hello")
+describe("addListItem", () => {
+  it("should generate nested list from TOC entries", () => {
+    const entries = [
+      { depth: 1, text: "Heading 1", slug: "heading-1" },
+      { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
+    ]
+
+    const result = addListItem(entries)
+
+    expect(result.type).toBe("ol")
+    expect(result.props.children).toHaveLength(1)
+
+    // Verify the content structure
+    const firstItem = result.props.children[0]
+    expect(firstItem.type).toBe("li")
+    expect(firstItem.props.children).toHaveLength(2) // link + nested list
+
+    // Verify first heading link
+    const firstLink = firstItem.props.children[0]
+    expect(firstLink.props.href).toBe("#heading-1")
+    expect(firstLink.props["data-for"]).toBe("heading-1")
+
+    // Verify nested structure
+    const nestedList = firstItem.props.children[1]
+    expect(nestedList.type).toBe("ol")
+    expect(nestedList.props.children).toHaveLength(1)
+    const nestedItem = nestedList.props.children[0]
+    expect(nestedItem.props.children.props.href).toBe("#heading-1-1")
   })
 
-  it("should handle abbr elements", () => {
-    const node = h("abbr", { className: ["small-caps"] }, "test")
-    expect(elementToJsx(node)).toMatchObject({
+  it("should handle flat list of entries", () => {
+    const entries = [
+      { depth: 1, text: "First", slug: "first" },
+      { depth: 1, text: "Second", slug: "second" },
+      { depth: 1, text: "Third", slug: "third" },
+    ]
+
+    const result = addListItem(entries)
+
+    expect(result.type).toBe("ol")
+    expect(result.props.children).toHaveLength(3)
+
+    // Verify each item is a simple link without nesting
+    result.props.children.forEach((item: JSX.Element, index: number) => {
+      expect(item.type).toBe("li")
+      assertJSXElement(item)
+      assertJSXElement(item.props.children)
+      expect(item.props.children.type).toBe("a")
+      expect(item.props.children.props.href).toBe(`#${entries[index].slug}`)
+    })
+  })
+
+  it("should handle empty entries list", () => {
+    const result = addListItem([])
+
+    expect(result.type).toBe("ol")
+    expect(result.props.children).toHaveLength(0)
+  })
+})
+
+describe("toJSXListItem", () => {
+  it("should convert TOC entry to JSX list item", () => {
+    const entry: TocEntry = { depth: 1, text: "Test Item", slug: "test-item" }
+
+    const result = toJSXListItem(entry)
+
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("#test-item")
+    expect(result.props.className).toBe("internal same-page-link")
+    expect(result.props["data-for"]).toBe("test-item")
+
+    // Verify the children contain the processed text
+    expect(result.props.children).toBeDefined()
+    expect(Array.isArray(result.props.children)).toBe(true)
+  })
+
+  it("should handle TOC entry with complex text formatting", () => {
+    const entry: TocEntry = {
+      depth: 2,
+      text: "Math $x^2$ and `code` with →",
+      slug: "complex-entry",
+    }
+
+    const result = toJSXListItem(entry)
+
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("#complex-entry")
+    expect(result.props.className).toBe("internal same-page-link")
+    expect(result.props["data-for"]).toBe("complex-entry")
+
+    // Verify children are processed (contains multiple elements)
+    expect(result.props.children.length).toBeGreaterThan(1)
+  })
+
+  it("should handle TOC entry with leading numbers", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "1: Introduction",
+      slug: "introduction",
+    }
+
+    const result = toJSXListItem(entry)
+
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("#introduction")
+    expect(result.props["data-for"]).toBe("introduction")
+
+    // The children should contain processed content with number prefix
+    expect(result.props.children).toBeDefined()
+  })
+
+  it("should handle TOC entry with small caps", () => {
+    const entry: TocEntry = {
+      depth: 1,
+      text: "About AI",
+      slug: "about-ai",
+    }
+
+    const result = toJSXListItem(entry)
+
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("#about-ai")
+    expect(result.props["data-for"]).toBe("about-ai")
+
+    // Should contain processed children
+    expect(result.props.children).toBeDefined()
+  })
+})
+
+describe("CreateTableOfContents", () => {
+  const mockQuartzComponentProps = {
+    fileData: {
+      filePath: "test.md",
+      frontmatter: { title: "Test Page" },
+      toc: [
+        { depth: 1, text: "Heading 1", slug: "heading-1" },
+        { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
+      ],
+    },
+    cfg: {},
+    allFiles: [],
+    displayClass: "",
+    externalResources: {},
+    children: [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ctx: {} as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tree: {} as any,
+  } as unknown as QuartzComponentProps
+
+  it("should render table of contents when TOC data is available", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(mockQuartzComponentProps)
+
+    expect(result).not.toBeNull()
+    expect(result?.type).toBe("div")
+    expect(result?.props.id).toBe("table-of-contents")
+    expect(result?.props.className).toBe("desktop-only")
+
+    // Verify header structure and content
+    const header = result?.props.children[0]
+    expect(header.type).toBe("h6")
+    expect(header.props.id).toBe("toc-title")
+    const button = header.props.children
+    expect(button.type).toBe("button")
+    expect(button.props.className).toBe("internal same-page-link")
+    expect(button.props.children).toBe("Test Page")
+
+    // Verify content structure
+    const content = result?.props.children[1]
+    expect(content.type).toBe("div")
+    expect(content.props.id).toBe("toc-content")
+    const outerList = content.props.children
+    expect(outerList.type).toBe("ol")
+
+    // Verify the actual TOC entries are rendered
+    const tocItems = outerList.props.children
+    expect(tocItems).toHaveLength(1) // One top-level item
+    const firstItem = tocItems[0]
+    expect(firstItem.type).toBe("li")
+    // The structure might be different due to how buildNestedList works
+    expect(firstItem.props.children).toBeDefined()
+
+    // The actual structure verification depends on buildNestedList implementation
+    // Just verify that the basic structure contains the expected elements
+    const outerListItems = outerList.props.children
+    expect(outerListItems).toBeDefined()
+    expect(Array.isArray(outerListItems) || outerListItems).toBeTruthy()
+  })
+
+  it("should return null when TOC data is not available", () => {
+    const propsWithoutToc = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        toc: undefined,
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(propsWithoutToc)
+
+    expect(result).toBeNull()
+  })
+
+  it("should return null when TOC is disabled in frontmatter (boolean)", () => {
+    const propsWithTocDisabled = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        frontmatter: { ...mockQuartzComponentProps.fileData.frontmatter, toc: false },
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(propsWithTocDisabled)
+
+    expect(result).toBeNull()
+  })
+
+  it("should return null when TOC is disabled in frontmatter (string)", () => {
+    const propsWithTocDisabled = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        frontmatter: { ...mockQuartzComponentProps.fileData.frontmatter, toc: "false" },
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(propsWithTocDisabled)
+
+    expect(result).toBeNull()
+  })
+
+  it("should use default title when no title in frontmatter", () => {
+    const propsWithoutTitle = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        frontmatter: {},
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(propsWithoutTitle)
+
+    // Verify the default title is used
+    const header = result?.props.children[0]
+    const button = header.props.children
+    expect(button.props.children).toBe("Table of Contents")
+  })
+
+  it("should render complex TOC structure with multiple levels", () => {
+    const complexTocProps = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        frontmatter: { title: "Complex Document" },
+        toc: [
+          { depth: 1, text: "Introduction", slug: "introduction" },
+          { depth: 1, text: "Methods", slug: "methods" },
+          { depth: 2, text: "Data Collection", slug: "data-collection" },
+          { depth: 3, text: "Survey Design", slug: "survey-design" },
+          { depth: 2, text: "Analysis", slug: "analysis" },
+          { depth: 1, text: "Results", slug: "results" },
+        ],
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(complexTocProps)
+
+    // Verify the TOC is rendered successfully
+    expect(result).not.toBeNull()
+    expect(result?.type).toBe("div")
+    expect(result?.props.id).toBe("table-of-contents")
+
+    // Verify the title is correct
+    const header = result?.props.children[0]
+    const button = header.props.children
+    expect(button.props.children).toBe("Complex Document")
+
+    // Verify TOC content structure exists
+    const content = result?.props.children[1]
+    expect(content.type).toBe("div")
+    expect(content.props.id).toBe("toc-content")
+
+    // Verify the nested list was built properly
+    const outerList = content.props.children
+    expect(outerList.type).toBe("ol")
+    expect(outerList.props.children).toBeDefined()
+  })
+
+  it("should handle TOC entries with special formatting", () => {
+    const specialTocProps = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        toc: [
+          { depth: 1, text: "Math: $E=mc^2$", slug: "math-equation" },
+          { depth: 1, text: "Code: `function()`", slug: "code-example" },
+          { depth: 1, text: "Arrow: →", slug: "arrow-example" },
+        ],
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(specialTocProps)
+
+    // Verify the TOC is rendered successfully
+    expect(result).not.toBeNull()
+    expect(result?.type).toBe("div")
+    expect(result?.props.id).toBe("table-of-contents")
+
+    // Verify TOC content structure exists
+    const content = result?.props.children[1]
+    expect(content.type).toBe("div")
+    expect(content.props.id).toBe("toc-content")
+
+    // Verify the nested list was built with special formatting entries
+    const outerList = content.props.children
+    expect(outerList.type).toBe("ol")
+    expect(outerList.props.children).toBeDefined()
+  })
+})
+
+describe("Component Export", () => {
+  it("should export default component constructor function", async () => {
+    const TableOfContentsModule = await import("../TableOfContents")
+    const TableOfContentsComponent = TableOfContentsModule.default
+    const component = TableOfContentsComponent()
+
+    expect(typeof component).toBe("function")
+    expect(component).toBe(CreateTableOfContents)
+  })
+})
+
+describe("elementToJsx", () => {
+  it("should handle text nodes and return the text value", () => {
+    const node = { type: "text", value: "Hello World" } as RootContent
+    const result = elementToJsx(node)
+    expect(result).toBe("Hello World")
+    expect(typeof result).toBe("string")
+  })
+
+  it("should handle abbr elements with small-caps styling", () => {
+    const node = h("abbr", { className: ["small-caps"] }, "API")
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
       type: "abbr",
       props: {
         className: "small-caps",
-        children: "test",
+        children: "API",
       },
     })
+
+    // Verify it's a proper JSX element
+    expect(typeof result).toBe("object")
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("abbr")
   })
 
-  it("should handle katex spans", () => {
-    const node = h("span", { className: ["katex-toc"] }, [
-      { type: "raw", value: "<span>x^2</span>" },
-    ])
-    expect(elementToJsx(node)).toMatchObject({
+  it("should handle katex spans with LaTeX content", () => {
+    const latexContent = "<span class='katex'><span class='katex-mathml'>E = mc^2</span></span>"
+    const node = h("span", { className: ["katex-toc"] }, [{ type: "raw", value: latexContent }])
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
       type: "span",
       props: {
         className: "katex-toc",
-        dangerouslySetInnerHTML: { __html: "<span>x^2</span>" },
+        dangerouslySetInnerHTML: { __html: latexContent },
       },
     })
+
+    // Verify dangerous HTML injection is properly handled
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.dangerouslySetInnerHTML.__html).toBe(latexContent)
   })
 
-  it("should handle inline code", () => {
-    const node = h("span", { className: ["inline-code"] }, "const x = 1")
-    expect(elementToJsx(node)).toMatchObject({
+  it("should handle katex spans with no content gracefully", () => {
+    const node = h("span", { className: ["katex-toc"] }, [])
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
+      type: "span",
+      props: {
+        className: "katex-toc",
+        dangerouslySetInnerHTML: { __html: "" },
+      },
+    })
+
+    // Verify empty content doesn't break the component
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.dangerouslySetInnerHTML.__html).toBe("")
+  })
+
+  it("should handle katex spans with non-text children by returning empty HTML", () => {
+    const node = h("span", { className: ["katex-toc"] }, [h("span", "nested")])
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
+      type: "span",
+      props: {
+        className: "katex-toc",
+        dangerouslySetInnerHTML: { __html: "" },
+      },
+    })
+
+    // Non-text children should result in empty HTML to prevent rendering errors
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.dangerouslySetInnerHTML.__html).toBe("")
+  })
+
+  it("should transform inline-code spans to code elements", () => {
+    const codeText = "const foo = 'bar'"
+    const node = h("span", { className: ["inline-code"] }, codeText)
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
       type: "code",
       props: {
         className: "inline-code",
-        children: ["const x = 1"],
+        children: [codeText],
       },
     })
+
+    // Verify span is transformed to code element
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("code")
+    expect(jsxElement.props.children[0]).toBe(codeText)
   })
 
-  it("should handle monospace arrows", () => {
-    const node = h("span", { className: ["monospace-arrow"] }, "→")
-    expect(elementToJsx(node)).toMatchObject({
+  it("should handle monospace arrows with proper styling", () => {
+    const arrowSymbol = "→"
+    const node = h("span", { className: ["monospace-arrow"] }, arrowSymbol)
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
       type: "span",
       props: {
         className: "monospace-arrow",
-        children: ["→"],
+        children: [arrowSymbol],
       },
     })
+
+    // Verify arrow symbol is preserved
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.children[0]).toBe(arrowSymbol)
+  })
+
+  it("should handle number prefix spans for TOC numbering", () => {
+    const numberPrefix = "2.1: "
+    const node = h("span", { className: ["number-prefix"] }, numberPrefix)
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
+      type: "span",
+      props: {
+        className: "number-prefix",
+        children: [numberPrefix],
+      },
+    })
+
+    // Verify number prefix is correctly rendered
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.children[0]).toBe(numberPrefix)
+  })
+
+  it("should handle generic spans without special classes", () => {
+    const genericText = "regular text content"
+    const node = h("span", {}, genericText)
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
+      type: "span",
+      props: {
+        children: [genericText],
+      },
+    })
+
+    // Verify generic spans are rendered as-is
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("span")
+    expect(jsxElement.props.children[0]).toBe(genericText)
+  })
+
+  it("should handle spans with multiple child elements", () => {
+    const node = h("span", {}, [
+      { type: "text", value: "Hello " },
+      { type: "text", value: "world" },
+    ])
+    const result = elementToJsx(node)
+
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("span")
+    expect(Array.isArray(jsxElement.props.children)).toBe(true)
+    expect(jsxElement.props.children).toHaveLength(2)
+    expect(jsxElement.props.children[0]).toBe("Hello ")
+    expect(jsxElement.props.children[1]).toBe("world")
+  })
+
+  it("should handle abbr elements without className gracefully", () => {
+    const abbrText = "HTML"
+    const node = h("abbr", {}, abbrText)
+    const result = elementToJsx(node)
+
+    expect(result).toMatchObject({
+      type: "abbr",
+      props: {
+        className: "",
+        children: abbrText,
+      },
+    })
+
+    // Verify empty className doesn't break functionality
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.props.className).toBe("")
+  })
+
+  it("should handle complex nested abbreviations", () => {
+    const node = h("abbr", { className: ["small-caps", "tooltip"] }, [
+      { type: "text", value: "CSS" },
+    ])
+    const result = elementToJsx(node)
+
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("abbr")
+    expect(jsxElement.props.className).toBe("small-caps tooltip")
+    expect(jsxElement.props.children).toBe("CSS")
+  })
+
+  it("should return null for unsupported element types", () => {
+    const unsupportedNode = { type: "comment", value: "<!-- comment -->" } as unknown as RootContent
+    const result = elementToJsx(unsupportedNode)
+
+    expect(result).toBeNull()
+  })
+
+  it("should handle elements with missing children gracefully", () => {
+    const elementWithEmptyChildren = {
+      type: "element",
+      tagName: "span",
+      properties: {},
+      children: [],
+    } as unknown as RootContent
+    const result = elementToJsx(elementWithEmptyChildren)
+
+    // Should handle empty children array gracefully
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("span")
+    expect(jsxElement.props.children).toHaveLength(0)
   })
 })

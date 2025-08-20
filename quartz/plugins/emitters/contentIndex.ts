@@ -3,9 +3,9 @@ import type { Root } from "hast"
 import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
+import { locale, uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
-import { i18n } from "../../i18n"
 import { escapeHTML } from "../../util/escape"
 import {
   type FilePath,
@@ -45,34 +45,67 @@ const defaultOptions: Options = {
   rssFullHtml: false,
   includeEmptyFiles: false,
 }
-
-function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
-  const base = cfg.baseUrl ?? ""
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<url>
+/**
+ * Generates a sitemap URL entry for a given content slug.
+ */
+const createSiteMapURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: ContentDetails,
+): string => `<url>
     <loc>https://${joinSegments(base, encodeURI(slug))}</loc>
     ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
   </url>`
+
+/**
+ * Generates a sitemap from the given content index.
+ *
+ * @param cfg The global configuration.
+ * @param idx The content index to generate the sitemap from.
+ * @returns An XML string representing the sitemap.
+ */
+function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
+  const base = cfg.baseUrl ?? ""
   const urls = Array.from(idx)
-    .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
+    .map(([slug, content]) => createSiteMapURLEntry(base, simplifySlug(slug), content))
     .join("")
   return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`
 }
 
-function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: number): string {
-  const base = cfg.baseUrl ?? ""
+/**
+ * Transforms a description string by escaping HTML entities and applying text transforms.
+ */
+const textTransformDescription = (description: string): string => {
+  const escapedDescription = description.replaceAll(/&/g, "&amp;")
+  const massTransformed = applyTextTransforms(escapedDescription)
+  return massTransformed
+}
 
-  const processDescription = (description: string): string => {
-    const escapedDescription = description.replaceAll(/&/g, "&amp;")
-    const massTransformed = applyTextTransforms(escapedDescription)
-    return massTransformed
-  }
-  const createURLEntry = (slug: SimpleSlug, content: ContentDetails): string => `<item>
+/**
+ * Generates an RSS feed URL entry for a given content slug.
+ */
+const createRSSURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: ContentDetails,
+): string => `<item>
     <title>${escapeHTML(content.title)}</title>
     <link>https://${joinSegments(base, encodeURI(slug))}</link>
-    <description>${content.richContent ?? processDescription(content.description ?? "")}</description>
+    <description>${content.richContent ?? textTransformDescription(content.description ?? "")}</description>
     <guid isPermaLink="true">https://${joinSegments(base, encodeURI(slug))}</guid>
     <pubDate>${content.date?.toUTCString()}</pubDate>
   </item>`
+
+/**
+ * Generates an RSS feed from the given content index.
+ * @returns An XML string representing the RSS feed.
+ */
+function generateRSSFeed(
+  cfg: GlobalConfiguration,
+  idx: ContentIndex,
+  maxItemsInFeed?: number,
+): string {
+  const base = cfg.baseUrl ?? ""
 
   const items = Array.from(idx)
     .sort(([, f1], [, f2]) => {
@@ -84,10 +117,10 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
         return 1
       }
 
-      return f1.title.localeCompare(f2.title)
+      return f1.title.localeCompare(f2.title, locale)
     })
-    .map(([slug, content]) => createURLEntry(simplifySlug(slug), content))
-    .slice(0, limit ?? idx.size)
+    .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
+    .slice(0, maxItemsInFeed ?? idx.size)
     .join("")
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
@@ -95,7 +128,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
     <channel>
       <title>${escapeHTML(cfg.pageTitle)}</title>
       <link>https://${base}</link>
-      <description>${limit ? i18n(cfg.locale).pages.rss.lastFewNotes({ count: limit }) : i18n(cfg.locale).pages.rss.recentNotes} on ${escapeHTML(
+      <description>${maxItemsInFeed ? uiStrings.pages.rss.lastFewNotes(maxItemsInFeed) : uiStrings.pages.rss.recentNotes} on ${escapeHTML(
         cfg.pageTitle,
       )}</description>
       ${items}
@@ -103,6 +136,17 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
   </rss>`
 }
 
+/**
+ * This plugin creates a content index for the entire site.
+ *
+ * This index is a JSON file that maps each content slug to its details,
+ * including title, links, tags, and content. It can be used for search functionality
+ * or for other plugins that need to access information about all pages.
+ *
+ * This plugin also optionally generates a sitemap and an RSS feed.
+ *
+ * @param opts Options for configuring the plugin.
+ */
 export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {

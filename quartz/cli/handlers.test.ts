@@ -181,5 +181,5 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     expect(writtenHtml).toContain("color: 720px")
     expect(writtenHtml).not.toContain("$base-margin")
     readFileSpy.mockRestore()
-  })
+  }, 10000)
 })

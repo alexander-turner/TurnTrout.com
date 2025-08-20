@@ -4,14 +4,14 @@ import React from "react"
 
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 
-import { i18n } from "../../i18n"
 import { htmlToJsx } from "../../util/jsx"
 import { type FilePath, type FullSlug, getAllSegmentPrefixes, simplifySlug } from "../../util/path"
+import { uiStrings } from "../constants"
 import { PageList } from "../PageList"
 import style from "../styles/listPage.scss"
 
 const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
-  const { tree, fileData, allFiles, cfg } = props
+  const { tree, fileData, allFiles } = props
   const slug = fileData.slug
 
   if (!(slug?.startsWith("tags/") || slug === "tags")) {
@@ -41,7 +41,7 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
     <div className={classes}>
       <article>{content as React.ReactNode}</article>
       <div className="page-listing">
-        <p>{i18n(cfg.locale).pages.tagContent.itemsUnderTag({ count: pages.length })}</p>
+        <p>{uiStrings.pages.tagContent.itemsUnderTag(pages.length)}</p>
         <div>
           <PageList {...listProps} />
         </div>

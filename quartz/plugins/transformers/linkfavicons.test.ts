@@ -4,6 +4,7 @@
 import type { Element } from "hast"
 
 import { jest, expect, it, describe, beforeAll, beforeEach, afterEach } from "@jest/globals"
+// skipcq: JS-W1028 -- this is a test file
 import fsExtra from "fs-extra"
 import { h } from "hastscript"
 import os from "os"
@@ -26,6 +27,7 @@ beforeAll(() => {
 
 let tempDir: string
 beforeEach(async () => {
+  // skipcq: JS-P1003
   tempDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "linkfavicons-test-"))
   jest.resetAllMocks()
   jest.restoreAllMocks()
@@ -33,6 +35,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  // skipcq: JS-P1003
   await fsExtra.remove(tempDir)
 })
 
@@ -55,9 +58,11 @@ const createExpectedSpan = (
   return {
     type: "element",
     tagName: "span",
-    properties: { className: "favicon-span" },
+    properties: {
+      className: "favicon-span",
+    },
     children: [{ type: "text", value: text }, faviconElement],
-  }
+  } as unknown as Record<string, unknown>
 }
 
 describe("Favicon Utilities", () => {
@@ -202,6 +207,22 @@ describe("Favicon Utilities", () => {
       expect(result).toBe(linkfavicons.DEFAULT_PATH)
       expect(global.fetch).not.toHaveBeenCalled()
     })
+
+    it("should return cached successful favicon URL", async () => {
+      const faviconPath = linkfavicons.getQuartzPath(hostname)
+      const cachedUrl = "https://assets.turntrout.com/favicon.png"
+
+      linkfavicons.urlCache.clear()
+      linkfavicons.urlCache.set(faviconPath, cachedUrl)
+
+      // Mock download attempts (which shouldn't be called)
+      mockFetchAndFs(200, false, 200)
+
+      const result = await linkfavicons.MaybeSaveFavicon(hostname)
+
+      expect(result).toBe(cachedUrl)
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
   })
 
   describe("GetQuartzPath", () => {
@@ -220,7 +241,7 @@ describe("Favicon Utilities", () => {
     it.each([
       ["/path/to/favicon.png", "Test Description"],
       ["/another/favicon.jpg", "Another Description"],
-    ])("should create a favicon element with correct attributes", (urlString, description) => {
+    ])("should create a favicon element with src=%s and alt=%s", (urlString, description) => {
       const element = linkfavicons.createFaviconElement(urlString, description)
       expect(element).toEqual({
         type: "element",
@@ -238,12 +259,12 @@ describe("Favicon Utilities", () => {
 
   describe("linkfavicons.insertFavicon", () => {
     it.each([
-      [null, false],
-      ["/valid/path.png", true],
-    ])("should insert favicon correctly when imgPath is %s", (imgPath, shouldInsert) => {
-      const node = { children: [], type: "element", tagName: "div", properties: {} } as Element
+      [null, 0],
+      ["/valid/path.png", 1],
+    ])("should insert favicon correctly when imgPath is %s", (imgPath, expectedChildren) => {
+      const node = h("div")
       linkfavicons.insertFavicon(imgPath, node)
-      expect(node.children.length).toBe(shouldInsert ? 1 : 0)
+      expect(node.children.length).toBe(expectedChildren)
     })
 
     describe("span creation", () => {
@@ -381,16 +402,11 @@ describe("Favicon Utilities", () => {
       )
 
       it("should not replace children with span if more than one child", () => {
-        const node = h("p", {}, [
+        const node = h("p", [
           "My email is ",
-          h(
-            "a",
-            {
-              href: "https://mailto:throwaway@turntrout.com",
-              class: "external",
-            },
-            [h("code", {}, ["throwaway@turntrout.com"])],
-          ),
+          h("a", { href: "https://mailto:throwaway@turntrout.com", class: "external" }, [
+            h("code", ["throwaway@turntrout.com"]),
+          ]),
           ".",
         ])
 
@@ -403,6 +419,26 @@ describe("Favicon Utilities", () => {
     })
   })
 
+  describe("shouldSkipFavicon behavior through ModifyNode", () => {
+    it("should skip links with string className containing 'same-page-link'", async () => {
+      // Create node manually to ensure string className (tests line 438)
+      const node = {
+        type: "element",
+        tagName: "a",
+        properties: {
+          href: "https://example.com",
+          className: "some-class same-page-link other-class",
+        },
+        children: [],
+      } as Element
+      const parent = h("div", [node])
+
+      await linkfavicons.ModifyNode(node, parent)
+      // Should not add any favicon since it has same-page-link class
+      expect(node.children.length).toBe(0)
+    })
+  })
+
   describe("linkfavicons.ModifyNode", () => {
     it.each([
       ["./shard-theory", linkfavicons.TURNTROUT_FAVICON_PATH],
@@ -411,46 +447,38 @@ describe("Favicon Utilities", () => {
       ["mailto:test@example.com", linkfavicons.MAIL_PATH],
       ["mailto:another@domain.org", linkfavicons.MAIL_PATH],
     ])("should insert favicon for %s", async (href, expectedPath) => {
-      const node = h("a", { href }, [])
-      const parent = h("div", {}, [node])
+      const node = h("a", { href })
+      const parent = h("div", [node])
 
       await linkfavicons.ModifyNode(node, parent)
       expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
     })
 
-    it("should skip footnote links", async () => {
-      const node = h("a", { href: "#user-content-fn-1" }, [])
-      const parent = h("div", {}, [node])
-
-      await linkfavicons.ModifyNode(node, parent)
-      expect(node.children.length).toBe(0)
-    })
-
-    it("should skip links inside headings", async () => {
-      const node = h("a", { href: "#section-1" }, [])
-      const parent = h("h2", {}, [node])
+    it.each([
+      ["#user-content-fn-1", "div", "footnote links"],
+      ["#section-1", "h2", "links inside headings"],
+    ])("should skip %s", async (href, parentTag) => {
+      const node = h("a", { href })
+      const parent = h(parentTag, [node])
 
       await linkfavicons.ModifyNode(node, parent)
       expect(node.children.length).toBe(0)
     })
 
     it("should add same-page-link class and anchor icon for internal links", async () => {
-      const node = h("a", { href: "#section-1" }, [])
-      const parent = h("p", {}, [node])
+      const node = h("a", { href: "#section-1" })
+      const parent = h("p", [node])
 
       await linkfavicons.ModifyNode(node, parent)
 
-      // Check if class was added
       expect(node.properties.className).toContain("same-page-link")
-
-      // Check if anchor icon was added
       expect(node.children.length).toBe(1)
       expect(node.children[0]).toHaveProperty("properties.src", linkfavicons.ANCHOR_PATH)
     })
 
     it("should handle existing className array for internal links", async () => {
-      const node = h("a", { href: "#section-1", className: ["existing-class"] }, [])
-      const parent = h("p", {}, [node])
+      const node = h("a", { href: "#section-1", className: ["existing-class"] })
+      const parent = h("p", [node])
 
       await linkfavicons.ModifyNode(node, parent)
 
@@ -460,14 +488,84 @@ describe("Favicon Utilities", () => {
     })
 
     it("should handle existing className string for internal links", async () => {
-      const node = h("a", { href: "#section-1", className: "existing-class" }, [])
-      const parent = h("p", {}, [node])
+      // Create node manually to ensure string className remains string (h() converts to array)
+      const node = {
+        type: "element",
+        tagName: "a",
+        properties: { href: "#section-1", className: "existing-class" },
+        children: [],
+      } as Element
+      const parent = h("p", [node])
+
+      await linkfavicons.ModifyNode(node, parent)
+
+      expect(typeof node.properties.className).toBe("string")
+      expect(node.properties.className).toBe("existing-class same-page-link")
+    })
+
+    it("should handle internal links with no existing className", async () => {
+      // Create node manually to test the undefined className case
+      const node = {
+        type: "element",
+        tagName: "a",
+        properties: { href: "#section-1" },
+        children: [],
+      } as Element
+      const parent = h("p", [node])
 
       await linkfavicons.ModifyNode(node, parent)
 
       expect(Array.isArray(node.properties.className)).toBe(true)
-      expect(node.properties.className).toContain("existing-class")
-      expect(node.properties.className).toContain("same-page-link")
+      expect(node.properties.className).toEqual(["same-page-link"])
+    })
+
+    it.each([[123 as unknown as string], ["image.png"]])(
+      "should skip when href is %s",
+      async (href) => {
+        const node = h("a", { href })
+        const parent = h("div", [node])
+
+        await linkfavicons.ModifyNode(node, parent)
+        expect(node.children.length).toBe(0)
+      },
+    )
+
+    it.each([
+      ["external-link.html", "a", { className: "some-class same-page-link other-class" }],
+      [undefined, "div", {}],
+      [undefined, "a", {}],
+    ])("should skip when href=%s tagName=%s", async (href, tagName, extraProps) => {
+      const properties = href ? { href, ...extraProps } : extraProps
+      const node = h(tagName, properties)
+      const parent = h("div", [node])
+
+      await linkfavicons.ModifyNode(node, parent)
+      expect(node.children.length).toBe(0)
+    })
+
+    it("should handle DEFAULT_PATH from MaybeSaveFavicon", async () => {
+      const hostname = "example-that-fails.com"
+      const href = `https://${hostname}/page`
+
+      // Set up cache to return DEFAULT_PATH for this hostname
+      linkfavicons.urlCache.clear()
+      linkfavicons.urlCache.set(linkfavicons.getQuartzPath(hostname), linkfavicons.DEFAULT_PATH)
+
+      const node = h("a", { href }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent)
+      expect(node.children.length).toBe(0)
+    })
+
+    it("should handle URL processing errors", async () => {
+      // Create a URL that will cause an error in the new URL() constructor
+      const invalidHref = "http://[invalid-ipv6"
+      const node = h("a", { href: invalidHref }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent)
+      expect(node.children.length).toBe(0)
     })
   })
 })
@@ -500,13 +598,16 @@ describe("linkfavicons.downloadImage", () => {
     expect(global.fetch).toHaveBeenCalledWith(url)
 
     if (expectedFileContent !== undefined) {
+      // skipcq: JS-P1003
       const fileExists = await fsExtra.pathExists(imagePath)
       expect(fileExists).toBe(true)
       if (fileExists) {
+        // skipcq: JS-P1003
         const content = await fsExtra.readFile(imagePath, "utf-8")
         expect(content).toBe(expectedFileContent)
       }
     } else {
+      // skipcq: JS-P1003
       const fileExists = await fsExtra.pathExists(imagePath)
       expect(fileExists).toBe(false)
     }
@@ -522,35 +623,14 @@ describe("linkfavicons.downloadImage", () => {
     await runTest(mockResponse, true, mockContent)
   })
 
-  // runTest has expect assertions
-  // eslint-disable-next-line jest/expect-expect
-  it("should throw if fetch response is not ok", async () => {
-    const mockResponse = new Response("Mock image content", {
-      status: 404,
-      headers: { "Content-Type": "image/png" },
-    })
+  // eslint-disable-next-line jest/expect-expect -- runTest has expect assertions
+  it.each([
+    [new Response("Mock image content", { status: 404, headers: { "Content-Type": "image/png" } })],
+    [new Response(null, { status: 200, headers: { "Content-Type": "image/png" } })],
+    [new Response("Fake", { status: 200, headers: { "Content-Type": "txt" } })],
+    [new Error("Network error")],
+  ])("should throw error case %#", async (mockResponse) => {
     await runTest(mockResponse, false)
-  })
-
-  // eslint-disable-next-line jest/expect-expect
-  it("should throw if fetch response has no body", async () => {
-    const mockResponse = new Response(null, {
-      status: 200,
-      headers: { "Content-Type": "image/png" },
-    })
-    await runTest(mockResponse, false)
-  })
-
-  // eslint-disable-next-line jest/expect-expect
-  it("should throw if header is wrong", async () => {
-    const mockResponse = new Response("Fake", { status: 200, headers: { "Content-Type": "txt" } })
-    await runTest(mockResponse, false)
-  })
-
-  // eslint-disable-next-line jest/expect-expect
-  it("should handle fetch errors", async () => {
-    const mockError = new Error("Network error")
-    await runTest(mockError, false)
   })
 
   it("should create directory structure if it doesn't exist", async () => {
@@ -566,16 +646,85 @@ describe("linkfavicons.downloadImage", () => {
 
     await expect(linkfavicons.downloadImage(url, imagePath)).resolves.toBe(true)
 
+    // skipcq: JS-P1003
     const fileExists = await fsExtra.pathExists(imagePath)
     expect(fileExists).toBe(true)
 
+    // skipcq: JS-P1003
     const content = await fsExtra.readFile(imagePath, "utf-8")
     expect(content).toBe(mockContent)
 
     // Check if the directory structure was created
     const dirStructure = path.dirname(imagePath)
+    // skipcq: JS-P1003
     const dirExists = await fsExtra.pathExists(dirStructure)
     expect(dirExists).toBe(true)
+  })
+
+  it("should throw if downloaded file is empty and clean up", async () => {
+    const url = "https://example.com/image.png"
+    const imagePath = path.join(tempDir, "image.png")
+    const mockContent = ""
+    const mockResponse = new Response(mockContent, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
+
+    jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
+    jest
+      .spyOn(fs, "createWriteStream")
+      .mockImplementation(() => fsExtra.createWriteStream(imagePath))
+
+    await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
+      "Downloaded file is empty",
+    )
+
+    expect(fs.existsSync(imagePath)).toBe(false)
+  })
+
+  it("should throw if content-length indicates empty file", async () => {
+    const url = "https://example.com/image.png"
+    const imagePath = path.join(tempDir, "image.png")
+    const mockResponse = new Response("", {
+      status: 200,
+      headers: {
+        "Content-Type": "image/png",
+        "Content-Length": "0",
+      },
+    })
+
+    jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
+
+    await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow("Empty image file")
+  })
+
+  it("should throw if write stream fails", async () => {
+    const url = "https://example.com/image.png"
+    const imagePath = path.join(tempDir, "readonly-dir", "image.png")
+    const mockContent = "Mock image content"
+    const mockResponse = new Response(mockContent, {
+      status: 200,
+      headers: { "Content-Type": "image/png" },
+    })
+
+    jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
+
+    // Create a directory that doesn't allow writing
+    const readonlyDir = path.join(tempDir, "readonly-dir")
+    // skipcq: JS-P1003
+    await fsExtra.ensureDir(readonlyDir)
+    // skipcq: JS-P1003
+    await fsExtra.chmod(readonlyDir, 0o444) // Read-only permissions
+
+    try {
+      await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
+        "Failed to write image",
+      )
+    } finally {
+      // skipcq: JS-P1003
+      // Restore permissions so cleanup works
+      await fsExtra.chmod(readonlyDir, 0o755)
+    }
   })
 })
 
@@ -586,23 +735,23 @@ describe("writeCacheToFile", () => {
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
   })
 
-  it("should write the linkfavicons.urlCache to file", () => {
-    linkfavicons.urlCache.set("example.com", "https://example.com/favicon.ico")
-    linkfavicons.urlCache.set("test.com", "https://test.com/favicon.png")
-
-    linkfavicons.writeCacheToFile()
-
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      linkfavicons.FAVICON_URLS_FILE,
+  it.each([
+    [
+      new Map([
+        ["example.com", "https://example.com/favicon.ico"],
+        ["test.com", "https://test.com/favicon.png"],
+      ]),
       "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",
-      { flag: "w+" },
-    )
-  })
+      "populated cache",
+    ],
+    [new Map(), "", "empty cache"],
+  ])("should write $description to file", (cacheEntries, expectedContent) => {
+    linkfavicons.urlCache.clear()
+    cacheEntries.forEach((value, key) => linkfavicons.urlCache.set(key, value))
 
-  it("should write an empty string if linkfavicons.urlCache is empty", () => {
     linkfavicons.writeCacheToFile()
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(linkfavicons.FAVICON_URLS_FILE, "", {
+    expect(fs.writeFileSync).toHaveBeenCalledWith(linkfavicons.FAVICON_URLS_FILE, expectedContent, {
       flag: "w+",
     })
   })
@@ -613,30 +762,37 @@ describe("linkfavicons.readFaviconUrls", () => {
     jest.resetAllMocks()
   })
 
-  it("should read favicon URLs from file and return a Map", async () => {
-    const mockFileContent =
-      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png"
-    jest.spyOn(fs.promises, "readFile").mockResolvedValue(mockFileContent)
+  it.each([
+    [
+      "example.com,https://example.com/favicon.ico\ntest.com,https://test.com/favicon.png",
+      new Map([
+        ["example.com", "https://example.com/favicon.ico"],
+        ["test.com", "https://test.com/favicon.png"],
+      ]),
+      "valid file content",
+    ],
+    ["", new Map(), "empty file"],
+    [
+      "example.com,https://example.com/favicon.ico\ninvalid_line\ntest.com,https://test.com/favicon.png",
+      new Map([
+        ["example.com", "https://example.com/favicon.ico"],
+        ["test.com", "https://test.com/favicon.png"],
+      ]),
+      "file with invalid lines",
+    ],
+  ])("should handle $description", async (fileContent, expectedMap) => {
+    jest.spyOn(fs.promises, "readFile").mockResolvedValue(fileContent)
 
     const result = await linkfavicons.readFaviconUrls()
 
     expect(result).toBeInstanceOf(Map)
-    expect(result.size).toBe(2)
-    expect(result.get("example.com")).toBe("https://example.com/favicon.ico")
-    expect(result.get("test.com")).toBe("https://test.com/favicon.png")
-  })
-
-  it("should return an empty Map if the file is empty", async () => {
-    jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
-
-    const result = await linkfavicons.readFaviconUrls()
-
-    expect(result).toBeInstanceOf(Map)
-    expect(result.size).toBe(0)
+    expect(result.size).toBe(expectedMap.size)
+    expectedMap.forEach((value, key) => {
+      expect(result.get(key)).toBe(value)
+    })
   })
 
   it("should handle file read errors and return an empty Map", async () => {
-    // Mock console.warn to capture the warning without displaying it
     const mockError = new Error("File read error")
     const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined)
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(mockError)
@@ -646,19 +802,6 @@ describe("linkfavicons.readFaviconUrls", () => {
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)
     expect(consoleWarnSpy).toHaveBeenCalledWith(mockError)
-  })
-
-  it("should ignore invalid lines in the file", async () => {
-    const mockFileContent =
-      "example.com,https://example.com/favicon.ico\ninvalid_line\ntest.com,https://test.com/favicon.png"
-    jest.spyOn(fs.promises, "readFile").mockResolvedValue(mockFileContent)
-
-    const result = await linkfavicons.readFaviconUrls()
-
-    expect(result).toBeInstanceOf(Map)
-    expect(result.size).toBe(2)
-    expect(result.get("example.com")).toBe("https://example.com/favicon.ico")
-    expect(result.get("test.com")).toBe("https://test.com/favicon.png")
   })
 })
 
@@ -681,5 +824,83 @@ describe("isHeading", () => {
   it("should handle undefined tagName", () => {
     const node = {} as Element
     expect(linkfavicons.isHeading(node)).toBe(false)
+  })
+})
+
+describe("AddFavicons plugin", () => {
+  beforeEach(() => {
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
+  })
+
+  it("should return a plugin configuration with correct name", () => {
+    const plugin = linkfavicons.AddFavicons()
+    expect(plugin.name).toBe("AddFavicons")
+    expect(plugin.htmlPlugins).toBeDefined()
+    expect(typeof plugin.htmlPlugins).toBe("function")
+  })
+
+  it("should process HTML tree and add favicons to links", async () => {
+    const plugin = linkfavicons.AddFavicons()
+    const htmlPlugins = plugin.htmlPlugins()
+    const transformFunction = htmlPlugins[0]()
+
+    // Create a mock tree with anchor nodes
+    const tree = {
+      type: "root",
+      children: [
+        h("div", [h("a", { href: "mailto:test@example.com" }), h("a", { href: "#section" })]),
+      ],
+    }
+
+    await transformFunction(tree as unknown as import("hast").Root)
+
+    // Check that fs.writeFileSync was called (by writeCacheToFile)
+    expect(fs.writeFileSync).toHaveBeenCalled()
+
+    // Verify favicons were added
+    const divElement = tree.children[0] as Element
+    const mailtoLink = divElement.children[0] as Element
+    const sectionLink = divElement.children[1] as Element
+
+    expect(mailtoLink.children.length).toBe(1)
+    expect((mailtoLink.children[0] as Element).properties.src).toBe(linkfavicons.MAIL_PATH)
+
+    expect(sectionLink.children.length).toBe(1)
+    expect((sectionLink.children[0] as Element).properties.src).toBe(linkfavicons.ANCHOR_PATH)
+  })
+
+  it("should handle nodes with undefined parent", async () => {
+    const plugin = linkfavicons.AddFavicons()
+    const htmlPlugins = plugin.htmlPlugins()
+    const transformFunction = htmlPlugins[0]()
+
+    // This test covers the edge case where visit calls the callback with undefined parent
+    // which triggers the early return in the visitor function (line 557)
+    const tree = { type: "root", children: [] }
+    await transformFunction(tree as unknown as import("hast").Root)
+
+    expect(fs.writeFileSync).toHaveBeenCalled()
+  })
+
+  it("should skip elements without href", async () => {
+    const plugin = linkfavicons.AddFavicons()
+    const htmlPlugins = plugin.htmlPlugins()
+    const transformFunction = htmlPlugins[0]()
+
+    const tree = {
+      type: "root",
+      children: [h("div", [h("span"), h("a")])],
+    }
+
+    await transformFunction(tree as unknown as import("hast").Root)
+
+    expect(fs.writeFileSync).toHaveBeenCalled()
+
+    const divElement = tree.children[0] as Element
+    const spanElement = divElement.children[0] as Element
+    const anchorWithoutHref = divElement.children[1] as Element
+
+    expect(spanElement.children.length).toBe(0)
+    expect(anchorWithoutHref.children.length).toBe(0)
   })
 })

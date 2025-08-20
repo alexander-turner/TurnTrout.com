@@ -11,6 +11,8 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
+import { locale } from "../constants"
+import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
 import {
@@ -183,6 +185,326 @@ describe("renderPage", () => {
     )
     expect(html).toContain("Transcluded block content")
   })
+
+  it("handles transclusion when page is not found", () => {
+    const props = createMockProps({
+      tree: {
+        type: "root",
+        children: [
+          h("span", {
+            className: ["transclude"],
+            dataUrl: "non-existent-page",
+            dataBlock: "#^testBlock",
+          }),
+        ],
+      } as unknown as Root,
+    })
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    // Should not crash and should render normally
+    expect(html).toContain("<!DOCTYPE html>")
+  })
+
+  it("handles header transclusion without htmlAst", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "transcluded-page" as FullSlug,
+      frontmatter: { title: "Transcluded Page" },
+      // No htmlAst property
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", {
+              className: ["transclude"],
+              dataUrl: "transcluded-page",
+              dataBlock: "#section",
+            }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    expect(html).toContain("<!DOCTYPE html>")
+  })
+
+  it("handles page transclusion without htmlAst", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "transcluded-page" as FullSlug,
+      frontmatter: { title: "Transcluded Page" },
+      // No htmlAst property
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", {
+              className: ["transclude"],
+              dataUrl: "transcluded-page",
+              // No dataBlock property means page transclude
+            }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    expect(html).toContain("<!DOCTYPE html>")
+  })
+
+  it("handles header transclusion with htmlAst", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "transcluded-page" as FullSlug,
+      frontmatter: { title: "Transcluded Page" },
+      htmlAst: {
+        type: "root",
+        children: [
+          h("h2", { id: "section" }, "Section Title") as unknown as Element,
+          h("p", "Section content") as unknown as Element,
+        ],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", {
+              className: ["transclude"],
+              dataUrl: "transcluded-page",
+              dataBlock: "#section",
+            }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    expect(html).toContain("Section content")
+  })
+
+  it("handles page transclusion with htmlAst", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "transcluded-page" as FullSlug,
+      frontmatter: { title: "Transcluded Page" },
+      htmlAst: {
+        type: "root",
+        children: [
+          h("p", "Full page content") as unknown as Element,
+          h("div", "More content") as unknown as Element,
+        ],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", {
+              className: ["transclude"],
+              dataUrl: "transcluded-page",
+              // No dataBlock property means page transclude
+            }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    expect(html).toContain("Full page content")
+    expect(html).toContain("More content")
+  })
+
+  it("renders beforeBody components", () => {
+    // skipcq: JS-D1001
+    const MockBeforeBody: QuartzComponent = () => <div className="before-body">Before content</div>
+    const componentsWithBeforeBody = {
+      ...components,
+      beforeBody: [MockBeforeBody],
+    }
+
+    const html = renderPage(
+      componentData.cfg,
+      slug,
+      componentData,
+      componentsWithBeforeBody,
+      pageResources,
+    )
+    expect(html).toContain("Before content")
+    expect(html).toContain("before-body")
+  })
+
+  it("handles JavaScript resources with afterDOMReady loadTime", () => {
+    const pageResourcesWithJS: StaticResources = {
+      css: [],
+      js: [
+        {
+          src: "test.js",
+          loadTime: "afterDOMReady",
+          contentType: "external",
+        },
+        {
+          src: "other.js",
+          loadTime: "beforeDOMReady",
+          contentType: "external",
+        },
+      ],
+    }
+
+    const html = renderPage(componentData.cfg, slug, componentData, components, pageResourcesWithJS)
+    expect(html).toContain('src="test.js"')
+    // beforeDOMReady scripts should not appear at the end
+    expect(html.indexOf('src="other.js"')).toBeLessThan(html.indexOf('src="test.js"'))
+  })
+
+  it("defaults to 'en' language when no lang or locale specified", () => {
+    const propsNoLang = createMockProps()
+    delete (propsNoLang.cfg as unknown as { locale?: string }).locale
+
+    const html = renderPage(propsNoLang.cfg, slug, propsNoLang, components, pageResources)
+    expect(html).toContain(`lang="${locale}"`)
+  })
+
+  it("handles non-span elements in transclude processing", () => {
+    const props = createMockProps({
+      tree: {
+        type: "root",
+        children: [
+          h("div", { className: ["transclude"] }), // div instead of span
+        ],
+      } as unknown as Root,
+    })
+
+    const html = renderPage(props.cfg, slug, props, components, pageResources)
+    expect(html).toContain("<!DOCTYPE html>") // Should not crash
+  })
+
+  it("handles spans without transclude class", () => {
+    const props = createMockProps({
+      tree: {
+        type: "root",
+        children: [
+          h("span", { className: ["other-class"] }), // span without transclude
+        ],
+      } as unknown as Root,
+    })
+
+    const html = renderPage(props.cfg, slug, props, components, pageResources)
+    expect(html).toContain("<!DOCTYPE html>") // Should not crash
+  })
+
+  it("handles spans with null className", () => {
+    const props = createMockProps({
+      tree: {
+        type: "root",
+        children: [
+          h("span", { className: null }), // null className
+        ],
+      } as unknown as Root,
+    })
+
+    const html = renderPage(props.cfg, slug, props, components, pageResources)
+    expect(html).toContain("<!DOCTYPE html>") // Should not crash
+  })
+})
+
+describe("Header component", () => {
+  it("should render header element when children are provided", () => {
+    const props = createMockProps()
+    props.children = [<div key="child">Test Content</div>]
+
+    const HeaderComponent = Header()
+    const result = HeaderComponent(props) as React.ReactElement
+
+    expect(result).not.toBeNull()
+    expect(result.type).toBe("header")
+  })
+
+  it("should return null when no children are provided", () => {
+    const props = createMockProps()
+    props.children = []
+
+    const HeaderComponent = Header()
+    const result = HeaderComponent(props)
+
+    expect(result).toBeNull()
+  })
 })
 
 describe("renderPage helpers", () => {
@@ -241,5 +563,32 @@ describe("renderPage helpers", () => {
     addVirtualFileForSpecialTransclude(allSlug as FullSlug, props)
     addVirtualFileForSpecialTransclude(allTagsSlug as FullSlug, props)
     expect(props.allFiles.length).toBeGreaterThan(beforeCount)
+  })
+
+  it("setHeaderTransclusion returns early when no htmlAst", () => {
+    const node = h("span") as unknown as Element
+    const page = {} as unknown as QuartzPluginData // No htmlAst
+    const originalChildren = node.children
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "section")
+    expect(node.children).toEqual(originalChildren)
+  })
+
+  it("setPageTransclusion returns early when no htmlAst", () => {
+    const node = h("span") as unknown as Element
+    const page = {} as unknown as QuartzPluginData // No htmlAst
+    const originalChildren = node.children
+    setPageTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug)
+    expect(node.children).toEqual(originalChildren)
+  })
+
+  it("setHeaderTransclusion returns early when header id not found", () => {
+    const node = h("span") as unknown as Element
+    const h2 = h("h2", { id: "different-section" }, "title") as unknown as Element
+    const page = {
+      htmlAst: { type: "root", children: [h2] },
+    } as unknown as QuartzPluginData
+    const originalChildren = node.children
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "missing-section")
+    expect(node.children).toEqual(originalChildren)
   })
 })

@@ -13,8 +13,15 @@ import type { QuartzComponentProps } from "../types"
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
-import { type FullSlug } from "../../util/path"
-import { PageList, byDateAndAlphabetical, createPageListHast } from "../PageList"
+import { type FullSlug, resolveRelative } from "../../util/path"
+import {
+  PageList,
+  byDateAndAlphabetical,
+  createPageListHast,
+  createPageTitleElement,
+  createTagsElement,
+  createPageItemElement,
+} from "../PageList"
 
 // Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
@@ -27,6 +34,14 @@ const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPlugin
     ...overrides,
   }) as QuartzPluginData
 
+/****
+ * Creates properties based on Quartz plugin data.
+ *
+ * @param fileData - Data for the current file.
+ * @param allFiles - Collection of all file data.
+ * @param limit - Optional limit for number of items.
+ * @returns The generated properties object.
+ */
 const createProps = (
   fileData: QuartzPluginData,
   allFiles: QuartzPluginData[],
@@ -60,7 +75,7 @@ const createProps = (
 }
 
 describe("byDateAndAlphabetical", () => {
-  const cfg = { locale: "en-US", defaultDateType: "created" } as GlobalConfiguration
+  const cfg = { defaultDateType: "created" } as GlobalConfiguration
 
   it("sorts by date in descending order when both files have dates", () => {
     const file1 = createFileData({
@@ -157,6 +172,22 @@ describe("createPageListHast", () => {
     expect(html).toContain("tag2")
     expect(html).toContain("tag-link")
   })
+
+  it("handles missing fileData slug", () => {
+    const fileData = createFileData({ slug: undefined })
+    const allFiles = [fileData]
+    const hast = createPageListHast(
+      { defaultDateType: "created" } as GlobalConfiguration,
+      fileData,
+      allFiles,
+    )
+
+    expect(hast.type).toBe("element")
+    expect(hast.tagName).toBe("div")
+    expect(hast.properties?.className).toEqual(["page-listing"])
+    // Should still have content, just with empty slug fallback
+    expect(hast.children).toHaveLength(1)
+  })
 })
 
 describe("PageList", () => {
@@ -226,5 +257,159 @@ describe("PageList", () => {
     expect(html).toContain("page-divider")
     // Should have one less divider than total pages
     expect(html.match(/page-divider/g)?.length).toBe(1)
+  })
+})
+
+// Additional tests for full coverage
+
+describe("createPageTitleElement", () => {
+  it("generates an anchor with correct href and classes", () => {
+    const formattedTitle = "My Title"
+    const fileDataSlug = "src/page" as FullSlug
+    const pageSlug = "dest/page" as FullSlug
+
+    const element = createPageTitleElement(formattedTitle, fileDataSlug, pageSlug) as HastElement
+
+    // Expect a wrapping <p> element with the correct class
+    expect(element.tagName).toBe("p")
+    expect(element.properties?.className).toEqual(["page-listing-title"])
+
+    // The first (and only) child should be the anchor
+    const anchor = element.children[0] as HastElement
+    expect(anchor.tagName).toBe("a")
+    expect(anchor.properties?.href).toBe(resolveRelative(fileDataSlug, pageSlug))
+    expect(anchor.properties?.className).toContain("internal")
+
+    // Ensure the anchor contains the provided title text node
+    const textNode = anchor.children[0] as { type: "text"; value: string }
+    expect(textNode.type).toBe("text")
+    expect(textNode.value).toBe(formattedTitle)
+  })
+})
+
+describe("createTagsElement", () => {
+  it("creates an unordered list of tag links", () => {
+    const tags = ["tagA", "tagB"]
+    const fileDataSlug = "src/page" as FullSlug
+
+    const element = createTagsElement(tags, fileDataSlug) as HastElement
+    expect(element.tagName).toBe("ul")
+    expect(element.properties?.className).toEqual(["tags"])
+
+    // Validate each generated anchor
+    element.children.forEach((child, idx) => {
+      const anchor = child as HastElement
+      expect(anchor.tagName).toBe("a")
+      expect(anchor.properties?.href).toBe(
+        resolveRelative(fileDataSlug, `tags/${tags[idx]}` as FullSlug),
+      )
+
+      // Ensure a text node is present (avoid strict typing issues)
+      const textNode = anchor.children[0] as { type: "text"; value: string }
+      expect(textNode.type).toBe("text")
+      expect(textNode.value.length).toBeGreaterThan(0)
+    })
+  })
+})
+
+describe("createPageItemElement", () => {
+  const cfg = { defaultDateType: "created" } as GlobalConfiguration
+
+  it("omits the time element when no dates are present", () => {
+    const page = createFileData()
+    const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
+
+    const timeElements = (element.children as HastElement[]).filter(
+      (c) => (c as HastElement).tagName === "time",
+    )
+    expect(timeElements).toHaveLength(0)
+  })
+
+  it("sorts tags by length in descending order", () => {
+    const longerTag = "muchlonger"
+    const page = createFileData({
+      frontmatter: {
+        title: "Page",
+        tags: ["short", longerTag],
+      },
+    })
+
+    const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
+
+    const descDiv = (element.children.find((c) => (c as HastElement).tagName === "div") ??
+      {}) as HastElement
+    const tagsUl = (descDiv.children?.find((c) => (c as HastElement).tagName === "ul") ??
+      {}) as HastElement
+
+    const anchorChildren = tagsUl.children as HastElement[]
+    expect(anchorChildren).toHaveLength(2)
+
+    const firstAnchorText = (anchorChildren[0].children[0] as { value: string }).value
+    expect(firstAnchorText).toBe(longerTag)
+  })
+
+  it("handles missing frontmatter tags", () => {
+    const page = createFileData({
+      frontmatter: { title: "Test" },
+    })
+
+    const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
+    expect(element.tagName).toBe("div")
+    expect(element.properties?.className).toEqual(["section"])
+  })
+
+  it("handles missing page slug", () => {
+    const page = createFileData({
+      slug: undefined,
+      frontmatter: { title: "Test" },
+    })
+
+    const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
+
+    // Should still create the element successfully with empty slug fallback
+    expect(element.tagName).toBe("div")
+    expect(element.properties?.className).toEqual(["section"])
+  })
+})
+
+describe("byDateAndAlphabetical additional branches", () => {
+  it("returns 0 when both files have dates but the configured date field is missing", () => {
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
+
+    const file1 = createFileData({ dates: { modified: new Date("2023-03-03") } })
+    const file2 = createFileData({ dates: { modified: new Date("2022-01-01") } })
+
+    const sorter = byDateAndAlphabetical(cfg)
+    expect(sorter(file1, file2)).toBe(0)
+  })
+
+  it("handles files with null titles in alphabetical sorting", () => {
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
+
+    const file1 = createFileData({ frontmatter: { title: "" } })
+    const file2 = createFileData({ frontmatter: { title: "Beta" } })
+
+    const sorter = byDateAndAlphabetical(cfg)
+    expect(sorter(file1, file2)).toBeLessThan(0) // empty string comes before "Beta"
+  })
+
+  it("handles files with missing frontmatter in alphabetical sorting", () => {
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
+
+    const file1 = createFileData({ frontmatter: undefined })
+    const file2 = createFileData({ frontmatter: { title: "Beta" } })
+
+    const sorter = byDateAndAlphabetical(cfg)
+    expect(sorter(file1, file2)).toBeLessThan(0) // empty string comes before "Beta"
+  })
+
+  it("handles second file with missing title in alphabetical sorting", () => {
+    const cfg = { defaultDateType: "created" } as GlobalConfiguration
+
+    const file1 = createFileData({ frontmatter: { title: "Alpha" } })
+    const file2 = createFileData({ frontmatter: undefined })
+
+    const sorter = byDateAndAlphabetical(cfg)
+    expect(sorter(file1, file2)).toBeGreaterThan(0) // "Alpha" comes after empty string
   })
 })

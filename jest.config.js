@@ -9,6 +9,25 @@ const config = {
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
 
+  coveragePathIgnorePatterns: [
+    "quartz/cli/.*",
+    "quartz/depgraph\\.ts",
+    "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
+    "quartz/util/(jsx|resources)\\.tsx",
+    "quartz/.*\\.min\\.ts",
+    "quartz/components/constants\\.ts",
+    "quartz/plugins/transformers/logger_utils\\.ts",
+  ],
+
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      statements: 100,
+      functions: 100,
+      lines: 100,
+    },
+  },
+
   // A preset that is used as a base for Jest's configuration
   preset: "ts-jest",
 
@@ -46,7 +65,7 @@ const config = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    "/node_modules/(?!preact|preact-render-to-string|preact-context-provider).+\\.js$",
+    "/node_modules/(?!preact|preact-render-to-string|preact-context-provider|hastscript|rehype|unist-util-visit-parents).+\\.js$",
   ],
 }
 

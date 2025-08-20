@@ -24,6 +24,87 @@ const defaultOptions: Options = {
 }
 
 /**
+ * Checks if an element is a footnote list item.
+ *
+ * Footnotes are rendered as `<li>` elements with IDs that start with "user-content-fn".
+ */
+export function isFootnoteListItem(node: Element): boolean {
+  return (
+    node?.tagName === "li" && Boolean(node.properties?.id?.toString().startsWith("user-content-fn"))
+  )
+}
+
+/**
+ * Finds the back arrow link in a footnote's last paragraph.
+ *
+ * Back arrows are anchor elements with "data-footnote-backref" in their className,
+ * typically located at the end of the footnote's last paragraph.
+ *
+ * @param footnoteNode - The footnote list item element.
+ * @returns The back arrow element if found, null otherwise.
+ */
+export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
+  // Find the last paragraph in the footnote
+  if (!footnoteNode.children) {
+    return null
+  }
+
+  const lastParagraph = footnoteNode.children.find(
+    (child) => child.type === "element" && child.tagName === "p",
+  ) as Element | undefined
+
+  if (!lastParagraph || !lastParagraph.children) {
+    return null
+  }
+
+  // Get the last child element (where the back arrow should be)
+  const lastChild = lastParagraph.children.at(-1)
+
+  // Check if it's a back arrow link
+  if (
+    lastChild?.type === "element" &&
+    lastChild.tagName === "a" &&
+    lastChild.properties?.className?.toString().includes("data-footnote-backref")
+  ) {
+    return lastChild
+  }
+
+  return null
+}
+
+// See footnoteBacklinkPlugin for usage
+export function appendArrowToFootnoteListItemVisitor(node: Element) {
+  if (isFootnoteListItem(node)) {
+    const backArrow = findFootnoteBackArrow(node)
+    if (backArrow) {
+      maybeSpliceAndAppendBackArrow(node, backArrow)
+    }
+  }
+}
+
+/**
+ * Plugin to enhance footnote back arrows by preventing awkward line wrapping.
+ *
+ * Problem: GitHub's footnote back arrows (↩) often wrap to the next line by themselves,
+ * creating visually awkward single-character lines that look disconnected from the text.
+ *
+ * Solution: Take the last 4 characters of the footnote text and wrap them together
+ * with the back arrow in a <span> element. This ensures the back arrow stays visually
+ * connected to some preceding text, preventing orphaned arrows on their own lines.
+ *
+ * Example transformation:
+ * Before: "This is footnote text ↩" (where ↩ might wrap alone)
+ * After:  "This is footnote <span>text ↩</span>" (keeping them together)
+ */
+// istanbul ignore next -- this is a plugin
+function footnoteBacklinkPlugin() {
+  return (tree: Root) => {
+    if (!tree) return
+    visit(tree, "element", appendArrowToFootnoteListItemVisitor)
+  }
+}
+
+/**
  * A plugin that transforms GitHub-flavored Markdown into HTML.
  *
  * @param userOpts - The user options for the plugin.
@@ -38,40 +119,11 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [] // explicitly type the plugins array
-
-      /* The existing footnote back arrows will by default wrap onto the next line all alone. That looks weird.
-      We fix this by adding a span that contains the last four characters of preceding footnote text.
-      */
-      plugins.push(() => {
-        return (tree: Root) => {
-          visit(tree, "element", (node) => {
-            if (
-              node.tagName === "li" &&
-              node.properties?.id?.toString().startsWith("user-content-fn")
-            ) {
-              // Find the existing back arrow - it's a child of the last paragraph element
-              const lastParagraph = node.children.find(
-                (child) => child.type === "element" && child.tagName === "p",
-              )
-              if (lastParagraph && "children" in lastParagraph) {
-                const lastChild = lastParagraph.children.at(-1)
-                if (
-                  lastChild?.type === "element" &&
-                  lastChild.tagName === "a" &&
-                  lastChild.properties?.className?.toString().includes("data-footnote-backref")
-                ) {
-                  maybeSpliceAndAppendBackArrow(node, lastChild)
-                }
-              }
-            }
-          })
-        }
-      })
+      const plugins: PluggableList = [footnoteBacklinkPlugin()]
 
       if (opts.linkHeadings) {
-        plugins.push(slugFunction, [
-          rehypeAutolinkHeadings,
+        plugins.push(returnAddIdsToHeadingsFn, [
+          rehypeAutolinkHeadings as unknown as UnifiedPlugin,
           {
             behavior: "wrap",
             properties: {
@@ -80,7 +132,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
               tabIndex: -1,
             },
           },
-        ] as unknown as [UnifiedPlugin, Options])
+        ])
       }
 
       return plugins
@@ -119,13 +171,8 @@ export function resetSlugger() {
   slugger.reset()
 }
 
-/**
- * Add `id`s to headings.
- *
- * @returns
- *   Transform.
- */
-export function slugFunction() {
+// skipcq: JS-D1001
+export function returnAddIdsToHeadingsFn() {
   return (tree: Root) => {
     slugger.reset()
 
@@ -139,13 +186,9 @@ export function slugFunction() {
   }
 }
 
-/**
- * Removes back arrows from the footnote.
- *
- * @param node - The footnote node.
- */
-export function removeBackArrow(node: Element): void {
-  node.children = node.children.filter((child) => {
+// skipcq: JS-D1001
+export function removeBackArrowFromChildren(footnoteParent: Element): void {
+  footnoteParent.children = footnoteParent.children.filter((child) => {
     return !(
       child.type === "element" &&
       child.tagName === "a" &&
@@ -155,16 +198,15 @@ export function removeBackArrow(node: Element): void {
 }
 
 /**
- * Add a back arrow to the footnote. Modifies the footnote node in place, appending the back arrow to the footnote.
- *
- * @returns
- *   The back arrow element.
+ * Add a back arrow to the footnote. Modifies the footnote node in place.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
-  const lastParagraph = node.children[node.children.length - 1] as Element
-  if (lastParagraph.tagName !== "p") return
+  const lastParagraph = node.children[node.children.length - 1] as Element | undefined
+  if (!lastParagraph || lastParagraph.tagName !== "p") {
+    return
+  }
 
-  removeBackArrow(lastParagraph)
+  removeBackArrowFromChildren(lastParagraph)
 
   // Handle empty paragraph case
   if (lastParagraph.children.length === 0) {

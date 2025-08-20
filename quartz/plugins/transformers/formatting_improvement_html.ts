@@ -435,18 +435,18 @@ export function formatArrows(tree: Root): void {
 
     replaceRegex(
       node,
-      index ?? 0,
+      index ?? /* istanbul ignore next */ 0,
       parent,
       /(?:^|(?<= )|(?<=\w))[-]{1,2}>(?=\w| |$)/g,
       (match: RegExpMatchArray) => {
-        const matchIndex = match.index ?? 0
+        const matchIndex = match.index ?? /* istanbul ignore next */ 0
         const beforeChar = match.input?.slice(Math.max(0, matchIndex - 1), matchIndex)
 
-        const matchLength = match[0]?.length ?? 0
+        const matchLength = match[0]?.length ?? /* istanbul ignore next */ 0
         const afterChar = match.input?.slice(matchIndex + matchLength, matchIndex + matchLength + 1)
 
-        const needsSpaceBefore = /\w/.test(beforeChar ?? "")
-        const needsSpaceAfter = /\w/.test(afterChar ?? "")
+        const needsSpaceBefore = /\w/.test(beforeChar ?? /* istanbul ignore next */ "")
+        const needsSpaceAfter = /\w/.test(afterChar ?? /* istanbul ignore next */ "")
 
         return {
           before: needsSpaceBefore ? " " : "",
@@ -465,16 +465,25 @@ export function formatOrdinalSuffixes(tree: Root): void {
   visit(tree, "text", (node, index, parent) => {
     if (!parent || hasAncestor(parent as ElementMaybeWithParent, toSkip)) return
 
-    replaceRegex(node, index ?? 0, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      const numSpan = h("span.ordinal-num", match.groups?.number ?? "")
-      const suffixSpan = h("sup.ordinal-suffix", match.groups?.suffix ?? "")
+    replaceRegex(
+      node,
+      index ?? /* istanbul ignore next */ 0,
+      parent,
+      ordinalSuffixRegex,
+      (match: RegExpMatchArray) => {
+        const numSpan = h("span.ordinal-num", match.groups?.number ?? /* istanbul ignore next */ "")
+        const suffixSpan = h(
+          "sup.ordinal-suffix",
+          match.groups?.suffix ?? /* istanbul ignore next */ "",
+        )
 
-      return {
-        before: "",
-        replacedMatch: [numSpan, suffixSpan],
-        after: "",
-      }
-    })
+        return {
+          before: "",
+          replacedMatch: [numSpan, suffixSpan],
+          after: "",
+        }
+      },
+    )
   })
 }
 
@@ -661,6 +670,7 @@ export const rearrangeLinkPunctuation = (
     linkNode.children.push({ type: "text", value: "" })
   }
   const lastChild = linkNode.children[linkNode.children.length - 1]
+  /* istanbul ignore next */
   if (!("value" in lastChild)) {
     return
   }
@@ -732,12 +742,12 @@ export function setFirstLetterAttribute(tree: Root): void {
   }
 
   const firstLetter = getTextContent(firstParagraph).charAt(0)
-  firstParagraph.properties = firstParagraph.properties || {}
+  firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
-  // If the first letter is an apostrophe, add a space before it
+  // If the second letter is an apostrophe, add a space before it
   const secondLetter = getTextContent(firstParagraph).charAt(1)
-  if (secondLetter === "'" || secondLetter === "'") {
+  if (["'", "’", "‘"].includes(secondLetter)) {
     const firstTextNode = firstParagraph.children.find(
       (child): child is Text => child.type === "text",
     )
@@ -775,7 +785,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent): boolean {
 export function replaceFractions(node: Text, index: number | undefined, parent: Parent): void {
   replaceRegex(
     node,
-    index ?? 0,
+    index ?? /* istanbul ignore next */ 0,
     parent,
     fractionRegex,
     (match: RegExpMatchArray) => {

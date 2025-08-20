@@ -23,7 +23,7 @@ const searchInterface = (
           aria-label="Search"
           placeholder="Search"
         />
-        <div id="search-layout" data-preview></div>
+        <div id="search-layout" data-preview />
       </div>
     </div>
   </div>

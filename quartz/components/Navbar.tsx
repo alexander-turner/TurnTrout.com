@@ -3,9 +3,9 @@
 // skipcq: JS-W1028
 import React from "react"
 
-import { i18n } from "../i18n"
 import { type FullSlug, pathToRoot, resolveRelative } from "../util/path"
 import { pondVideoId } from "./component_utils"
+import { defaultTitle } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
@@ -121,7 +121,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
       </video>
     </span>
   )
-  const title = cfg?.pageTitle ?? i18n(cfg.locale).propertyDefaults.title
+  const title = cfg?.pageTitle ?? defaultTitle
   const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
 
   const pageLinks = (

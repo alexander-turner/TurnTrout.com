@@ -6,52 +6,25 @@ import type { QuartzTransformerPlugin } from "../types"
 
 export const troutContainerId = "trout-ornament-container"
 
-/**
- * The ornamental node with a trout image and decorative text.
- */
-export const ornamentNode: Element = {
-  type: "element",
-  tagName: "div",
-  properties: {
-    id: troutContainerId,
-  },
-  children: [
-    {
-      type: "element",
-      tagName: "span",
-      properties: {
-        class: "no-select",
-      },
-      children: [{ type: "text", value: "☙" }],
-    },
-    {
-      type: "element",
-      tagName: "img",
-      children: [],
-      properties: {
-        src: "https://assets.turntrout.com/static/trout-bw.svg",
-        alt: "Black and white trout",
-        class: "no-select",
-      },
-    },
-    {
-      type: "element",
-      tagName: "span",
-      properties: {
-        class: "no-select",
-      },
-      children: [{ type: "text", value: "❧" }],
-    },
-  ],
-}
+import { h } from "hastscript"
+
+export const ornamentNode: Element = h("div", { id: troutContainerId }, [
+  h("span", { class: "no-select" }, "☙"),
+  h("img", {
+    src: "https://assets.turntrout.com/static/trout-bw.svg",
+    alt: "Black and white trout",
+    class: "no-select",
+  }),
+  h("span", { class: "no-select" }, "❧"),
+])
 
 /**
  * Attempts to insert an ornament node before a heading that starts with "Appendix" or before footnotes.
  *
- * @param {Element} node - The current node being processed.
- * @param {number | undefined} index - The index of the current node in its parent's children array.
- * @param {Parent | undefined} parent - The parent node of the current node.
- * @returns {boolean} True if the ornament was inserted, false otherwise.
+ * @param node - The current node being processed.
+ * @param index - The index of the current node in its parent's children array.
+ * @param parent - The parent node of the current node.
+ * @returns True if the ornament was inserted, false otherwise.
  */
 export function maybeInsertOrnament(
   node: Element,
@@ -62,6 +35,7 @@ export function maybeInsertOrnament(
 
   // Check for "Appendix" headings
   if (node.tagName === "h1" || node.tagName === "h2") {
+    // skipcq: JS-D1001
     const startsWithAppendix = (text: string) => text.toLowerCase().startsWith("appendix")
 
     // Check direct text children
@@ -71,9 +45,13 @@ export function maybeInsertOrnament(
     }
 
     // Check link element
-    if (node.children[0]?.type === "element" && node.children[0].tagName === "a") {
-      const anchorText = node.children[0].children[0]
-      if (anchorText?.type === "text" && startsWithAppendix(anchorText.value)) {
+    const firstChild = node.children[0]
+    const firstChildIsLink = firstChild?.type === "element" && firstChild.tagName === "a"
+    if (firstChildIsLink) {
+      const anchorText = firstChild.children[0]
+      const anchorStartsWithAppendix =
+        anchorText?.type === "text" && startsWithAppendix(anchorText.value)
+      if (anchorStartsWithAppendix) {
         parent.children.splice(index, 0, ornamentNode)
         return true
       }
@@ -139,7 +117,6 @@ export function insertOrnamentNode(tree: Root): void {
 
 /**
  * Quartz transformer plugin for adding a trout ornament HR.
- * @returns {QuartzTransformerPlugin} The plugin object.
  */
 type TreeTransformer = (tree: Root) => void
 type PluginReturn = {
@@ -147,6 +124,7 @@ type PluginReturn = {
   htmlPlugins: () => TreeTransformer[]
 }
 
+// skipcq: JS-D1001
 export const TroutOrnamentHr: QuartzTransformerPlugin = (): PluginReturn => {
   return {
     name: "TroutOrnamentHr",

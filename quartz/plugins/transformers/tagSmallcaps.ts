@@ -7,8 +7,7 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { isCode } from "./formatting_improvement_html"
-import { hasClass } from "./utils"
-import { nodeBeginsWithCapital, replaceRegex, gatherTextBeforeIndex } from "./utils"
+import { shouldCapitalizeNodeText, replaceRegex, gatherTextBeforeIndex, hasClass } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {
@@ -61,32 +60,23 @@ const combinedRegex = new RegExp(
   "g",
 )
 
+// Predicate if we should skip smallcaps for a given node
+export const skipSmallcapsClasses = ["no-smallcaps", "no-formatting", "bad-handwriting", "katex"]
+
+// skipcq: JS-0257
 export function skipSmallcaps(node: Node): boolean {
   if (node.type === "element") {
+    const elementNode = node as Element
     return (
-      hasClass(node as Element, "no-smallcaps") ||
-      hasClass(node as Element, "no-formatting") ||
-      hasClass(node as Element, "bad-handwriting") ||
-      hasClass(node as Element, "katex") ||
-      (node as Element).tagName === "style"
+      skipSmallcapsClasses.some((className: string) => hasClass(elementNode, className)) ||
+      elementNode.tagName === "style"
     )
   }
   return false
 }
 
-function isElvish(node: Element): boolean {
-  return hasClass(node, "elvish")
-}
-
-function isAbbreviation(node: Element): boolean {
-  return node.tagName === "abbr"
-}
-
 /**
  * Determines if text node should skip acronym formatting
- * @param node - Text node to check
- * @param ancestors - Array of parent nodes
- * @returns True if node should skip formatting
  */
 export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
   if (
@@ -98,10 +88,8 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
     return true
   }
 
-  const parent = ancestors[ancestors.length - 1]
-  return (
-    parent?.type === "element" && (isElvish(parent as Element) || isAbbreviation(parent as Element))
-  )
+  const parent = ancestors[ancestors.length - 1] as Element
+  return hasClass(parent, "elvish") || parent.tagName === "abbr"
 }
 
 // If text comes after sentence ending, capitalize the first letter
@@ -139,7 +127,7 @@ export function shouldCapitalizeMatch(
   ancestors: Parent[],
 ): boolean {
   // Check if this is the first node and match is at start (ignoring punctuation)
-  const shouldBeginWithCapital = nodeBeginsWithCapital(index, ancestors[ancestors.length - 1])
+  const shouldBeginWithCapital = shouldCapitalizeNodeText(index, ancestors[ancestors.length - 1])
   // Remove any punctuation before the match
   const textBeforeMatch = node.value.substring(0, match.index).replace(PUNCTUATION_BEFORE_MATCH, "")
   const isStartOfNode = textBeforeMatch.trim().length === 0
@@ -155,6 +143,7 @@ export function shouldCapitalizeMatch(
     if (parent.type === "element" && INLINE_ELEMENTS.has((parent as Element).tagName)) {
       const grandParent = ancestors[ancestors.length - 2]
       const parentIndex = grandParent.children.indexOf(parent as Element)
+      // istanbul ignore if
       if (parentIndex === -1) {
         throw new Error("capitalizeMatch: parent is not the child of its grandparent")
       }
@@ -264,6 +253,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         }
       }
 
+      // istanbul ignore next -- hard-to-trigger edge case
       throw new Error(
         `Regular expression logic is broken; one of the regexes should match for ${matchText}`,
       )
@@ -285,6 +275,8 @@ export const rehypeTagSmallcaps: Plugin = () => {
   }
 }
 
+// skipcq: JS-D1001
+// istanbul ignore next
 export const TagSmallcaps: QuartzTransformerPlugin = () => {
   return {
     name: "TagSmallcaps",

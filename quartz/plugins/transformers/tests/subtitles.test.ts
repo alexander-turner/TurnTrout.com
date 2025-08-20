@@ -1,16 +1,19 @@
 import { expect, describe, it, test } from "@jest/globals"
-import { type Element, type Parent, type ElementContent } from "hast"
+import { type Element, type Parent, type ElementContent, type Root } from "hast"
 import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
+import type { BuildCtx } from "../../../util/ctx"
+
 import {
   transformAST,
   SUBTITLE_REGEX,
-  createSubtitleNode,
+  createSubtitleWithChildren,
   modifyNode,
   processParagraph,
+  rehypeCustomSubtitle,
 } from "../subtitles"
 
 /**
@@ -109,7 +112,7 @@ describe("rehype-custom-subtitle", () => {
 
   test("createSubtitleNode function", () => {
     const contentNode = { type: "text", value: "Subtitle content" } as ElementContent
-    const node = createSubtitleNode([contentNode]) as Element
+    const node = createSubtitleWithChildren([contentNode]) as Element
 
     expect(node.tagName).toBe("p")
     expect(node.properties?.className).toContain("subtitle")
@@ -144,6 +147,18 @@ describe("rehype-custom-subtitle", () => {
       expect(firstChild.type).toBe("text")
       expect(firstChild).toHaveProperty("value", resultText)
     })
+
+    it("handles paragraph with no children", () => {
+      const input = h("p", {})
+      const result = processParagraph(input as Element)
+      expect(result).toBe(false)
+    })
+
+    it("handles paragraph with non-text first child", () => {
+      const input = h("p", {}, [h("em", "Not text first")])
+      const result = processParagraph(input as Element)
+      expect(result).toBe(false)
+    })
   })
 
   describe("modifyNode function", () => {
@@ -162,6 +177,41 @@ describe("rehype-custom-subtitle", () => {
       const parent: Parent = { type: "root", children: [input] }
       modifyNode(input as Element, 0, parent)
       expect(removePositions(parent.children[0] as Element)).toEqual(removePositions(expected))
+    })
+
+    it("handles non-paragraph elements", () => {
+      const input = h("div", {}, "Not a paragraph")
+      const parent: Parent = { type: "root", children: [input] }
+      const originalNode = { ...input }
+      modifyNode(input as Element, 0, parent)
+      expect(removePositions(parent.children[0] as Element)).toEqual(removePositions(originalNode))
+    })
+
+    it("handles missing parent", () => {
+      const input = h("p", {}, "Subtitle: This is a subtitle")
+      expect(() => modifyNode(input as Element, 0, null)).not.toThrow()
+    })
+
+    it("handles undefined index", () => {
+      const input = h("p", {}, "Subtitle: This is a subtitle")
+      const parent: Parent = { type: "root", children: [input] }
+      expect(() => modifyNode(input as Element, undefined, parent)).not.toThrow()
+    })
+
+    it("throws error when index does not match node position in parent", () => {
+      const input = h("p", {}, "Subtitle: This is a subtitle")
+      const otherNode = h("p", {}, "Different node")
+      const parent: Parent = { type: "root", children: [otherNode] }
+
+      expect(() => modifyNode(input as Element, 1, parent)).toThrow("Index does not match node")
+    })
+
+    it("handles index 0 (falsy) without throwing error even when node mismatch", () => {
+      const input = h("p", {}, "Subtitle: This is a subtitle")
+      const otherNode = h("p", {}, "Different node")
+      const parent: Parent = { type: "root", children: [otherNode] }
+
+      expect(() => modifyNode(input as Element, 0, parent)).not.toThrow()
     })
   })
 })
@@ -226,5 +276,77 @@ describe("rehypeCustomSubtitle Plugin", () => {
     expect(output).toContain(
       '<p class="subtitle">This is a <strong>bold <em>and italic</em></strong> subtitle.</p>',
     )
+  })
+})
+
+describe("rehypeCustomSubtitle plugin function", () => {
+  const mockBuildCtx: BuildCtx = {
+    argv: {
+      directory: ".",
+      verbose: false,
+      output: "public",
+      serve: false,
+      fastRebuild: false,
+      port: 8080,
+      wsPort: 3001,
+    },
+    cfg: {} as BuildCtx["cfg"],
+    allSlugs: [],
+  }
+
+  it("returns plugin object with correct name and htmlPlugins function", () => {
+    const plugin = rehypeCustomSubtitle()
+    expect(plugin).toHaveProperty("name", "customSubtitle")
+    expect(plugin).toHaveProperty("htmlPlugins")
+    expect(typeof plugin.htmlPlugins).toBe("function")
+  })
+
+  it("htmlPlugins returns array with transformAST function", () => {
+    const plugin = rehypeCustomSubtitle()
+    const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
+    expect(Array.isArray(htmlPlugins)).toBe(true)
+    expect(htmlPlugins).toHaveLength(1)
+    expect(htmlPlugins?.[0]).toBeDefined()
+    expect(typeof htmlPlugins?.[0]).toBe("function")
+  })
+
+  it("plugin function can be called without arguments", () => {
+    expect(() => rehypeCustomSubtitle()).not.toThrow()
+  })
+
+  it("htmlPlugins function returns plugin that returns transformAST", () => {
+    const plugin = rehypeCustomSubtitle()
+    const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
+    const pluginFunction = htmlPlugins?.[0] as () => typeof transformAST
+    const transformer = pluginFunction()
+    expect(transformer).toBe(transformAST)
+  })
+})
+
+describe("transformAST function", () => {
+  it("transforms AST tree by visiting all elements", () => {
+    const mockRoot: Root = {
+      type: "root",
+      children: [
+        h("p", {}, "Subtitle: This is a subtitle"),
+        h("p", {}, "Regular paragraph"),
+        h("div", {}, [h("p", {}, "Subtitle: Nested subtitle")]),
+      ],
+    }
+
+    transformAST(mockRoot)
+
+    // Check that subtitle paragraphs were transformed
+    const firstChild = mockRoot.children[0] as Element
+    expect(firstChild.properties?.className).toContain("subtitle")
+
+    // Check that regular paragraphs weren't transformed
+    const secondChild = mockRoot.children[1] as Element
+    expect(secondChild.properties?.className).not.toBeTruthy()
+
+    // Check nested elements
+    const thirdChild = mockRoot.children[2] as Element
+    const nestedP = thirdChild.children[0] as Element
+    expect(nestedP.properties?.className).toContain("subtitle")
   })
 })
