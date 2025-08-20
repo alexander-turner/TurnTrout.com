@@ -202,13 +202,13 @@
 
   --border: color-mix(in srgb, var(--color) 30%, var(--background));
 
+  &.is-collapsed .admonition-title {
+    margin-bottom: var(--admonition-margin-outer);
+  }
+
   & > .admonition-title {
     margin-top: var(--admonition-margin-outer);
     margin-bottom: calc(0.75 * $base-margin);
-
-    .is-collapsed & {
-      margin-bottom: var(--admonition-margin-outer);
-    }
   }
 
   & > .admonition-content {
