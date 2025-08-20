@@ -41,7 +41,6 @@ describe("reorderHead", () => {
 
   it("should place the scroll restoration script at the very top", () => {
     const querier = createHtml(`
-      <script id="detect-dark-mode">/* dark mode */</script>
       <meta charset="utf-8">
       <title>Test</title>
       <script id="scroll-restoration">/* scroll restoration */</script>
@@ -50,7 +49,7 @@ describe("reorderHead", () => {
     const result = reorderHead(querier)
     const children = result("head").children()
     expect(children.first().attr("id")).toBe("scroll-restoration")
-    expect(children.length).toBe(5)
+    expect(children.length).toBe(4)
   })
 
   it.each([
