@@ -45,6 +45,9 @@ const defaultOptions: Options = {
   rssFullHtml: false,
   includeEmptyFiles: false,
 }
+/**
+ * Generates a sitemap URL entry for a given content slug.
+ */
 const createSiteMapURLEntry = (
   base: string,
   slug: SimpleSlug,
@@ -54,6 +57,13 @@ const createSiteMapURLEntry = (
     ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
   </url>`
 
+/**
+ * Generates a sitemap from the given content index.
+ *
+ * @param cfg The global configuration.
+ * @param idx The content index to generate the sitemap from.
+ * @returns An XML string representing the sitemap.
+ */
 function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
   const base = cfg.baseUrl ?? ""
   const urls = Array.from(idx)
@@ -62,6 +72,18 @@ function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
   return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`
 }
 
+/**
+ * Transforms a description string by escaping HTML entities and applying text transforms.
+ */
+const textTransformDescription = (description: string): string => {
+  const escapedDescription = description.replaceAll(/&/g, "&amp;")
+  const massTransformed = applyTextTransforms(escapedDescription)
+  return massTransformed
+}
+
+/**
+ * Generates an RSS feed URL entry for a given content slug.
+ */
 const createRSSURLEntry = (
   base: string,
   slug: SimpleSlug,
@@ -74,13 +96,15 @@ const createRSSURLEntry = (
     <pubDate>${content.date?.toUTCString()}</pubDate>
   </item>`
 
-const textTransformDescription = (description: string): string => {
-  const escapedDescription = description.replaceAll(/&/g, "&amp;")
-  const massTransformed = applyTextTransforms(escapedDescription)
-  return massTransformed
-}
-
-function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: number): string {
+/**
+ * Generates an RSS feed from the given content index.
+ * @returns An XML string representing the RSS feed.
+ */
+function generateRSSFeed(
+  cfg: GlobalConfiguration,
+  idx: ContentIndex,
+  maxItemsInFeed?: number,
+): string {
   const base = cfg.baseUrl ?? ""
 
   const items = Array.from(idx)
@@ -96,7 +120,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
       return f1.title.localeCompare(f2.title, locale)
     })
     .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
-    .slice(0, limit ?? idx.size)
+    .slice(0, maxItemsInFeed ?? idx.size)
     .join("")
 
   return `<?xml version="1.0" encoding="UTF-8" ?>
@@ -104,7 +128,7 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
     <channel>
       <title>${escapeHTML(cfg.pageTitle)}</title>
       <link>https://${base}</link>
-      <description>${limit ? uiStrings.pages.rss.lastFewNotes(limit) : uiStrings.pages.rss.recentNotes} on ${escapeHTML(
+      <description>${maxItemsInFeed ? uiStrings.pages.rss.lastFewNotes(maxItemsInFeed) : uiStrings.pages.rss.recentNotes} on ${escapeHTML(
         cfg.pageTitle,
       )}</description>
       ${items}
@@ -112,6 +136,17 @@ function generateRSSFeed(cfg: GlobalConfiguration, idx: ContentIndex, limit?: nu
   </rss>`
 }
 
+/**
+ * This plugin creates a content index for the entire site.
+ *
+ * This index is a JSON file that maps each content slug to its details,
+ * including title, links, tags, and content. It can be used for search functionality
+ * or for other plugins that need to access information about all pages.
+ *
+ * This plugin also optionally generates a sitemap and an RSS feed.
+ *
+ * @param opts Options for configuring the plugin.
+ */
 export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {
