@@ -629,4 +629,8 @@ Corrupted text
 
 [^footnote]: Here's the detail, in a footnote. And here's a nested footnote.[^nested]
 
+    > [!note] Admonition in a footnote
+    >
+    > Here be an admonition in a footnote.
+
 [^nested]: I'm a nested footnote. I'm enjoying my nest! 🪺

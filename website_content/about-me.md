@@ -29,7 +29,6 @@ Why the name "`TurnTrout`"?
 : Over the years, more people came to know me for the research which I posted as `TurnTrout`. Now, people often recognize me by that name. Some people just say "hey 'Trout"!
 
 Why do you love geese so much?
-![](about-me-20250820083602.gif){.float-right}
 
 : In 2020, I had just started a new relationship. My girlfriend was being quite silly, so I informed her that she was a silly goose. She liked the title.
 
