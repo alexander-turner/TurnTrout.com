@@ -4182,5 +4182,33 @@
   "https://assets.turntrout.com/static/images/external-favicons/edward-turner_com.avif": {
     "width": 32,
     "height": 32
+  },
+  "https://assets.turntrout.com/twemoji/1fabf.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f425.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "/static/images/external-favicons/goose_game.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/about-me-20250820083602.gif": {
+    "width": 512,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/goose_game.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me-20250820083602.mp4": {
+    "width": 512,
+    "height": 512
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me-20250820083602.webm": {
+    "width": 512,
+    "height": 512
   }
 }
