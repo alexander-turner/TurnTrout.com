@@ -53,7 +53,7 @@ export function replaceEmoji(content: string): string {
   } as TwemojiOptions)
 
   EMOJIS_TO_REPLACE.forEach((emoji) => {
-    twemojiContent = twemojiContent.replace(
+    twemojiContent = twemojiContent.replaceAll(
       `twemoji/${emoji}.svg`,
       `twemoji/replacements/${emoji}.svg`,
     )

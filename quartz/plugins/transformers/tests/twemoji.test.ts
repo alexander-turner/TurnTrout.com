@@ -38,7 +38,7 @@ jest.mock("../modules/twemoji.min", () => ({
   twemoji: {
     parse: jest.fn((content: string) =>
       content.replace(
-        "😀",
+        /😀/gu,
         `<img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
       ),
     ),
@@ -131,6 +131,14 @@ describe("Twemoji functions", () => {
       const content = "Hello world"
       const result = replaceEmoji(content)
       expect(result).toBe("Hello world")
+    })
+
+    it("should replace multiple emojis in a row on the same line", () => {
+      const content = "Hello 🪿🪿"
+      const result = replaceEmoji(content)
+      expect(result).toBe(
+        `Hello <img class="emoji" draggable="false" alt="🪿" src="${TWEMOJI_BASE_URL}replacements/1fabf.svg"/><img class="emoji" draggable="false" alt="🪿" src="${TWEMOJI_BASE_URL}replacements/1fabf.svg"/>`,
+      )
     })
 
     it("should process all emojis in EMOJIS_TO_REPLACE array", () => {

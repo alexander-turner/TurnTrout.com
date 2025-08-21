@@ -1593,6 +1593,22 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
 
 
 @pytest.mark.parametrize(
+    "path_str, expected_errors",
+    [
+        ("/path with/spaces/file.md", ["File path contains spaces"]),
+        ("/path-without-spaces/file.md", []),
+        ("file with spaces.md", ["File path contains spaces"]),
+        ("file-without-spaces.md", []),
+    ],
+)
+def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
+    """Tests the _check_spaces_in_path function with various paths."""
+    path = Path(path_str)
+    errors = source_file_checks._check_spaces_in_path(path)
+    assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
     "text, expected_errors",
     [
         ('This is a test. "This is a test."', []),
