@@ -144,12 +144,13 @@ export default (() => {
   // Set scroll restoration to manual to prevent page flicker
   history.scrollRestoration = "manual";
 
-  // Restore scroll on refresh
+  // Restore scroll to prevent page flicker
   if (history.state?.scroll) {
-  requestAnimationFrame(() => {
-    window.scrollTo({ top: history.state.scroll, behavior: "instant" });
-  });
-}
+    console.log("Early scroll restoration to", history.state.scroll)
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: history.state.scroll, behavior: "instant" });
+    });
+  }
 `,
           }}
         />
