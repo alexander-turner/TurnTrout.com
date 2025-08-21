@@ -413,7 +413,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   // Group <head> children by type
   const headChildren = head.children()
   // These scripts should load first to avoid FOUC
-  const scriptNamesToPutAtTop = ["detect-dark-mode"]
+  const scriptNamesToPutAtTop = ["detect-dark-mode", "scroll-restoration"]
   // skipcq: JS-D1001
   const isScriptToPutAtTop = (_i: number, el: CheerioElement): boolean =>
     el.type === "script" && scriptNamesToPutAtTop.includes(el.attribs.id)
