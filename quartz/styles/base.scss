@@ -6,6 +6,7 @@
 @use "./timeline";
 
 html {
+  scroll-behavior: auto;
   width: 100%;
 }
 
