@@ -478,9 +478,11 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
 
   // Handle initial scroll and dispatch nav event after DOM is loaded
   const onReady = () => {
-    // Fallback to scroll to hash after DOM is ready.
-    // This is in case the immediate hash scroll attempt failed because the element wasn't in the DOM yet.
-    if (window.location.hash) {
+    // Restore scroll on refresh if a previous scroll position exists in history state
+    if (history.state?.scroll) {
+      window.scrollTo({ top: history.state.scroll, behavior: "instant" })
+    } else if (window.location.hash) {
+      // Fallback to scroll to hash if no scroll state is found
       scrollToHash(window.location.hash)
     }
     dispatchNavEvent(getFullSlug(window))

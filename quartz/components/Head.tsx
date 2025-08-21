@@ -137,23 +137,6 @@ export default (() => {
       <head>
         <meta charSet="utf-8" />
         <script
-          id="scroll-restoration"
-          // skipcq: JS-0440
-          dangerouslySetInnerHTML={{
-            __html: `
-  // Set scroll restoration to manual to prevent page flicker
-  history.scrollRestoration = "manual";
-
-  // Restore scroll on refresh
-  if (history.state?.scroll) {
-  requestAnimationFrame(() => {
-    window.scrollTo({ top: history.state.scroll, behavior: "instant" });
-  });
-}
-`,
-          }}
-        />
-        <script
           data-cfasync="false" // Otherwise rocketloader delays the script
           id="detect-dark-mode"
           src="/static/scripts/detectDarkMode.js"

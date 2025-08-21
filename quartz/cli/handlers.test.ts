@@ -39,18 +39,17 @@ describe("reorderHead", () => {
       .toArray()
       .map((el) => (el as CheerioElement).tagName)
 
-  it("should place the scroll restoration script at the very top", () => {
+  it("should place the detect-dark-mode script at the very top", () => {
     const querier = createHtml(`
       <script id="detect-dark-mode">/* dark mode */</script>
       <meta charset="utf-8">
       <title>Test</title>
-      <script id="scroll-restoration">/* scroll restoration */</script>
       <script>console.log('other')</script>
     `)
     const result = reorderHead(querier)
     const children = result("head").children()
-    expect(children.first().attr("id")).toBe("scroll-restoration")
-    expect(children.length).toBe(5)
+    expect(children.first().attr("id")).toBe("detect-dark-mode")
+    expect(children.length).toBe(4)
   })
 
   it.each([
