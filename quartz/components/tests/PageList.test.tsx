@@ -48,7 +48,6 @@ const createProps = (
   limit?: number,
 ): QuartzComponentProps & { limit?: number } => {
   const cfg = {
-    enableSPA: true,
     baseUrl: "http://example.com",
     analytics: { provider: "google", tagId: "dummy" },
     configuration: {},

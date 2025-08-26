@@ -36,7 +36,6 @@ import {
 const config: QuartzConfig = {
   configuration: {
     pageTitle: "The Pond",
-    enableSPA: true,
     enablePopovers: true,
     analytics: null,
 

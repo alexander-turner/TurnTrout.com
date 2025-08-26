@@ -34,7 +34,6 @@ const createProps = (
   allFiles: QuartzPluginData[],
 ): QuartzComponentProps => {
   const cfg = {
-    enableSPA: true,
     baseUrl: "http://example.com",
     analytics: { provider: "google", tagId: "dummy" },
     configuration: {},
