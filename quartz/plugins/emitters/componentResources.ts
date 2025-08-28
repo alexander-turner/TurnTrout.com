@@ -16,16 +16,18 @@ import { type FilePath, type FullSlug } from "../../util/path"
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
 
-function joinStyles(...stylesheet: string[]): string {
-  return `${stylesheet.join("\n\n")}`
-}
-
 type ComponentResources = {
   css: string[]
   beforeDOMLoaded: string[]
   afterDOMLoaded: string[]
 }
 
+/**
+ * Retrieves all Quartz components and extracts their CSS, `beforeDOMLoaded`, and `afterDOMLoaded` resources.
+ *
+ * @param ctx The build context.
+ * @returns An object containing arrays of CSS, `beforeDOMLoaded`, and `afterDOMLoaded` scripts.
+ */
 function getComponentResources(ctx: BuildCtx): ComponentResources {
   const allComponents: Set<QuartzComponent> = new Set()
   for (const emitter of ctx.cfg.plugins.emitters) {
@@ -61,18 +63,24 @@ function getComponentResources(ctx: BuildCtx): ComponentResources {
   }
 }
 
-async function joinScripts(scripts: string[]): Promise<string> {
+async function joinScripts(scripts: string[], excludeKatex = false): Promise<string> {
   // wrap with iife to prevent scope collision
   const script = scripts.map((script) => `(function () {${script}})();`).join("\n")
 
-  // minify with esbuild
   const res = await transpile(script, {
     minify: true,
+    define: excludeKatex ? { katex: "{}" } : undefined,
   })
 
   return res.code
 }
 
+/**
+ * Adds global page resources such as popovers, analytics scripts (Google Analytics or Umami), and SPA navigation scripts.
+ *
+ * @param ctx The build context.
+ * @param componentResources The object containing component-specific resources to which global resources will be added.
+ */
 function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentResources) {
   const config = ctx.cfg.configuration
 
@@ -144,7 +152,7 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
       // that everyone else had the chance to register a listener for it
       addGlobalPageResources(ctx, componentResources)
 
-      const stylesheet = joinStyles(...componentResources.css, styles)
+      const stylesheet = `${componentResources.css.join("\n\n")}\n\n${styles}`
       const [prescript, postscript] = await Promise.all([
         joinScripts(componentResources.beforeDOMLoaded),
         joinScripts(componentResources.afterDOMLoaded),
