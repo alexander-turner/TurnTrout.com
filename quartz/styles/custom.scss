@@ -325,7 +325,7 @@ sup {
 // Sometimes there's an img between the video and the vsc-controller
 .vsc-controller:has(+ * + video.no-vsc),
 .vsc-controller:has(+ video[autoplay]) {
-  display: none;
+  display: none !important;
 }
 
 :root[data-theme="dark"] video,
