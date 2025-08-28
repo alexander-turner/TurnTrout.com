@@ -170,7 +170,7 @@ I like the pastel palettes provided by Catppuccin:
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets. I even used CSS to dynamically adjust the luminance of select favicons, avoiding the scourge of common jet-black favicons mixed in with my softer text color. My dark mode button rotates between "automatic", "force light mode", and "force dark mode."
 
-## Colors should accent content
+## Color should accent content
 
 Color is important to this website, but I need to be tasteful and strict in my usage or the site turns into a mess. For example, in-line [favicons](https://en.wikipedia.org/wiki/Favicon) are colorless (e.g. [YouTube's](https://youtube.com) logo is definitely red). To choose otherwise is to choose chaos and distraction.
 
