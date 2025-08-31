@@ -52,7 +52,7 @@ export function processInlineCode(text: string, parent: Parent): void {
  */
 export function processKatex(latex: string, parent: Parent): void {
   const html = renderToString(latex, { throwOnError: false })
-  const katexNode = {
+  const katexNode: Element = {
     type: "element",
     tagName: "span",
     properties: { className: ["katex-toc"] },

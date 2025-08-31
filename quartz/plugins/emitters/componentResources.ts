@@ -81,7 +81,7 @@ async function joinScripts(scripts: string[], excludeKatex = false): Promise<str
  * @param ctx The build context.
  * @param componentResources The object containing component-specific resources to which global resources will be added.
  */
-function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentResources) {
+function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentResources): void {
   const config = ctx.cfg.configuration
 
   if (config.enablePopovers) {
@@ -119,15 +119,7 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
     `)
   }
 
-  if (config.enableSPA) {
-    componentResources.afterDOMLoaded.push(spaRouterScript)
-  } else {
-    componentResources.afterDOMLoaded.push(`
-      window.spaNavigate = (url, _) => window.location.assign(url)
-      const event = new CustomEvent("nav", { detail: { url: document.body.dataset.slug } })
-      document.dispatchEvent(event)
-    `)
-  }
+  componentResources.beforeDOMLoaded.push(spaRouterScript)
 }
 
 // This emitter should not update the `resources` parameter. If it does, partial
