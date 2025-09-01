@@ -105,31 +105,39 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   const navbar = page.locator("#navbar")
-
-  // Initial state check
   await expect(navbar).toHaveCSS("opacity", "1")
 
   // Scroll down
   await page.evaluate(() => window.scrollBy(0, 100))
 
-  // Sample opacity values during the transition
-  const getNavbarOpacity = () => navbar.evaluate((el) => getComputedStyle(el).opacity)
-  const opacityValues: number[] = [Number(await getNavbarOpacity())]
-  for (let i = 0; i < 10; i++) {
-    const opacity = await getNavbarOpacity()
-    opacityValues.push(Number(opacity))
-    // eslint-disable-next-line playwright/no-wait-for-timeout
-    await page.waitForTimeout(80) // Wait a bit between samples
-  }
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
-  const finalOpacity = await navbar.evaluate((el) => getComputedStyle(el).opacity)
-  opacityValues.push(Number(finalOpacity))
+  await page.evaluate(() => {
+    // @ts-expect-error - for test
+    window.lastOpacity = 1
+    // @ts-expect-error - for test
+    window.consecutiveDecreases = 0
+  })
 
-  // Verify we saw some intermediate values between 1 and 0
-  expect(opacityValues).toContain(1) // Should start at 1
-  expect(opacityValues).toContain(0) // Should end at 0
-  expect(opacityValues.some((v) => v > 0 && v < 1)).toBeTruthy() // Should have intermediate values
+  await page.waitForFunction(() => {
+    const navbarEl = document.querySelector("#navbar")
+    if (!navbarEl) return false
+    const currentOpacity = Number(getComputedStyle(navbarEl).opacity)
+
+    // @ts-expect-error - for test
+    if (currentOpacity < window.lastOpacity) {
+      // @ts-expect-error - for test
+      window.consecutiveDecreases++
+    } else {
+      // @ts-expect-error - for test
+      window.consecutiveDecreases = 0
+    }
+
+    // @ts-expect-error - for test
+    window.lastOpacity = currentOpacity
+    // @ts-expect-error - for test
+    return window.consecutiveDecreases >= 2
+  })
+
+  await expect(navbar).toHaveCSS("opacity", "0")
 })
 
 test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, testInfo) => {
