@@ -1,4 +1,5 @@
 import pluginJs from "@eslint/js"
+import eslintConfigPrettier from "eslint-config-prettier"
 import jestPlugin from "eslint-plugin-jest"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
@@ -82,4 +83,6 @@ export default [
       },
     },
   },
+  // Turn off rules that might conflict with Prettier formatting
+  eslintConfigPrettier,
 ]
