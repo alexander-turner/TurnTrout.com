@@ -49,7 +49,8 @@ async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000)
       const currentScrollY = window.scrollY
       return Math.abs(currentScrollY - target) <= tolerance
     },
-    { target: targetScrollY, tolerance: TIGHT_SCROLL_TOLERANCE, timeout },
+    { target: targetScrollY, tolerance: TIGHT_SCROLL_TOLERANCE },
+    { timeout },
   )
 }
 
