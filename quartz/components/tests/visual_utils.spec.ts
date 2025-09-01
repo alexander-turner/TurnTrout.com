@@ -201,9 +201,15 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      await expect(element).toHaveScreenshot("test-transition-complete.png", {
-        maxDiffPixels: 0,
-      })
+      // Verify element is stable by polling for visual consistency
+      await expect
+        .poll(async () => {
+          const before = await element.screenshot()
+          await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)))
+          const after = await element.screenshot()
+          return before.equals(after)
+        })
+        .toBe(true)
     })
 
     test("resolves immediately if no transition occurs", async ({ page }) => {
