@@ -77,6 +77,8 @@ jobs:
           name: public-dir
           path: public/
 
+      - uses: actions/checkout@v4
+
       - name: Deploy to Cloudflare Pages
         uses: ./.github/actions/deploy-to-cloudflare
         with:
