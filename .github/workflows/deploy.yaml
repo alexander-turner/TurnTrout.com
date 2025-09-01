@@ -25,6 +25,16 @@ jobs:
       - name: Build Quartz and generate critical CSS
         run: npx quartz build
 
+      - name: Deploy to Cloudflare Pages (fast feedback for dev)
+        if: github.ref_name == 'dev'
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ github.ref_name }}
+
       - name: Install subfont
         run: npm install -g subfont
       - name: Make script executable
@@ -35,7 +45,7 @@ jobs:
       - name: Run site checks
         run: python scripts/built_site_checks.py --check-fonts
 
-      - name: Upload prepared site
+      - name: Upload prepared site after subfont
         uses: actions/upload-artifact@v4
         with:
           name: public-dir
@@ -58,7 +68,7 @@ jobs:
 
   deploy:
     needs: [prepare-deploy, verify-tests]
-    if: ${{ github.ref_name == 'dev' || needs.verify-tests.result == 'success' }}
+    if: ${{ (always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
       - name: Download prepared site
@@ -67,14 +77,11 @@ jobs:
           name: public-dir
           path: public/
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Deploy to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
-        run: |
-          export BRANCH=${{ github.ref_name }}
-          npx wrangler pages deploy ./public --project-name=turntrout --branch $BRANCH
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ github.ref_name }}
