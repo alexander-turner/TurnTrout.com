@@ -119,7 +119,19 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
     `)
   }
 
-  componentResources.beforeDOMLoaded.push(spaRouterScript)
+  // Early scroll restoration to prevent flicker
+  componentResources.beforeDOMLoaded.push(`
+    if (typeof window !== "undefined" && window.history && window.history.state && typeof window.history.state.scroll === "number") {
+      window.scrollRestoration = "manual"
+      try {
+        window.scrollTo({ top: window.history.state.scroll, behavior: "instant" })
+      } catch (e) {
+        console.error("Early scroll restoration error:", e)
+      }
+    }
+  `)
+
+  componentResources.afterDOMLoaded.push(spaRouterScript)
 }
 
 // This emitter should not update the `resources` parameter. If it does, partial
