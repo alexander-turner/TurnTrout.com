@@ -360,27 +360,19 @@ window.spaNavigate = navigate
  * Fallbacks to reloading the page on error.
  * @returns true if scroll was restored successfully, false on error/fallback.
  */
-function restoreScrollPosition(targetUrl: URL): boolean {
+function restoreScrollPosition(targetUrl: URL): void {
   // Some browsers may deliver null event.state on popstate in headless/mobile modes.
   // Use history.state as the source of truth.
   const historyState = history.state as { scroll?: number } | null | undefined
   const scrollTarget = historyState?.scroll
-  try {
-    if (typeof scrollTarget === "number") {
-      console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
-      window.scrollTo({ top: scrollTarget, behavior: "instant" })
-    } else if (targetUrl.hash) {
-      console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
-      scrollToHash(targetUrl.hash)
-    } else {
-      console.debug("[restoreScrollPosition] Scrolling to top (no state/hash)")
-      window.scrollTo({ top: 0, behavior: "instant" })
-    }
-  } catch (error) {
-    console.error("Popstate navigation error:", error)
-    return false
+
+  if (typeof scrollTarget === "number") {
+    console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
+    window.scrollTo({ top: scrollTarget, behavior: "instant" })
+  } else if (targetUrl.hash) {
+    console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
+    scrollToHash(targetUrl.hash)
   }
-  return true
 }
 
 /**
@@ -417,9 +409,7 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
   }
 
   // Restore scroll position *after* DOM update
-  if (!restoreScrollPosition(targetUrl)) {
-    return
-  }
+  restoreScrollPosition(targetUrl)
   dispatchNavEvent(getFullSlug(window))
 }
 
@@ -452,7 +442,7 @@ function createRouter() {
       event.preventDefault() // Prevent default link behavior
 
       const targetUrl = opts.url
-      const currentUrl = new URL(window.location.href)
+      const currentUrl = new URL(window.location.toString())
       const shouldFetch =
         targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search
 
@@ -478,7 +468,7 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
 
   // Handle initial scroll and dispatch nav event after DOM is loaded
   const onReady = () => {
-    restoreScrollPosition(new URL(window.location.href))
+    restoreScrollPosition(new URL(window.location.toString()))
 
     dispatchNavEvent(getFullSlug(window))
   }
