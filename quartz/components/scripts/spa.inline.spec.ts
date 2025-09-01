@@ -270,15 +270,8 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Flicker-Free Reload", () => {
-  test("restores scroll position on refresh without flickering", async ({ page }, testInfo) => {
-    test.skip(isFirefox(testInfo), "Firefox doesn't play well with this test.")
-
-    const scrollPos = 500
-    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
-    await waitForHistoryState(page, scrollPos)
-
-    // Capture scrollY after the first paint
-    await page.addInitScript(() => {
+  async function addScrollYAtFirstPaint(page: Page): Promise<void> {
+    await page.addInitScript(async () => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           // @ts-expect-error: test instrumentation
@@ -286,17 +279,63 @@ test.describe("Flicker-Free Reload", () => {
         })
       })
     })
+  }
 
-    await softRefresh(page)
-    await page.waitForLoadState("domcontentloaded")
+  async function getScrollYAtFirstPaint(page: Page): Promise<number> {
+    return page.evaluate(() => {
+      // @ts-expect-error: test instrumentation
+      return window.scrollYAtFirstPaint as number
+    })
+  }
 
-    const scrollYAtFirstPaint = await page.evaluate(
-      // @ts-expect-error: Attaching to window for test purposes
-      () => window.scrollYAtFirstPaint as number,
-    )
+  // skipcq: JS-0058
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(isFirefox(testInfo), "Firefox doesn't play well with this test.")
+  })
+
+  test("restores scroll position on refresh without flickering", async ({ page }) => {
+    const scrollPos = 500
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    await addScrollYAtFirstPaint(page)
+
+    await page.reload({ waitUntil: "domcontentloaded" })
 
     // Verify that scroll was non-zero at first paint (no flicker to top)
+    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
+    expect(scrollYAtFirstPaint).toBeGreaterThan(0)
     expect(scrollYAtFirstPaint).toBeCloseTo(scrollPos, -1)
+  })
+
+  test("restores hash on refresh without flickering", async ({ page }) => {
+    const anchorId = "lists"
+
+    // Go to the page and let it settle to get the ground truth scroll position
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.waitForLoadState("load") // Wait for images to load, preventing layout shift
+
+    // Record the settled scroll position as our expectation
+    const expectedScrollY = await page.evaluate(() => window.scrollY)
+    expect(expectedScrollY).toBeGreaterThan(0)
+
+    await addScrollYAtFirstPaint(page)
+    await page.reload({ waitUntil: "domcontentloaded" })
+
+    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
+    expect(scrollYAtFirstPaint).toBeCloseTo(expectedScrollY, -1)
+  })
+
+  // TODO passing on chrome even though it looks like it fails
+  test("not zero scrollY when loading a page with a hash", async ({ page }) => {
+    await addScrollYAtFirstPaint(page)
+    const slug = "design#color-scheme"
+    expect(page.url()).not.toContain(slug)
+
+    await page.goto(`http://localhost:8080/${slug}`)
+
+    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
+    expect(scrollYAtFirstPaint).toBeGreaterThan(0)
   })
 })
 
