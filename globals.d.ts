@@ -7,6 +7,7 @@ export declare global {
     dispatchEvent<K extends keyof CustomEventMap>(ev: CustomEventMap[K] | UIEvent): void
   }
   interface Window {
+    __routerInitialized?: boolean
     spaNavigate: (url: URL, opts?: { scroll?: boolean; fetch?: boolean }) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
   }

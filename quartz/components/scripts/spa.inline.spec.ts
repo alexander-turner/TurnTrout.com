@@ -273,7 +273,6 @@ test.describe("Flicker-Free Reload", () => {
   test("restores scroll position on refresh without flickering", async ({ page }, testInfo) => {
     test.skip(isFirefox(testInfo), "Firefox doesn't play well with this test.")
 
-    await createFinalAnchor(page)
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)

@@ -83,14 +83,14 @@ function dispatchNavEvent(url: FullSlug) {
 }
 
 // skipcq: JS-D1001
-function scrollToHash(hash: string) {
+function scrollToHash(hash: string): void {
   if (!hash) return
-  try {
-    const el = document.getElementById(decodeURIComponent(hash.substring(1)))
-    if (!el) return
-    el.scrollIntoView({ behavior: "instant" })
-  } catch {
-    // Ignore malformed URI
+
+  const id = decodeURIComponent(hash.substring(1))
+  const elt = document.getElementById(id)
+  if (elt) {
+    const targetPos = elt.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: targetPos, behavior: "instant" })
   }
 }
 
@@ -360,8 +360,11 @@ window.spaNavigate = navigate
  * Fallbacks to reloading the page on error.
  * @returns true if scroll was restored successfully, false on error/fallback.
  */
-function restoreScrollPosition(event: PopStateEvent, targetUrl: URL): boolean {
-  const scrollTarget = event.state?.scroll as number | undefined
+function restoreScrollPosition(targetUrl: URL): boolean {
+  // Some browsers may deliver null event.state on popstate in headless/mobile modes.
+  // Use history.state as the source of truth.
+  const historyState = history.state as { scroll?: number } | null | undefined
+  const scrollTarget = historyState?.scroll
   try {
     if (typeof scrollTarget === "number") {
       console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
@@ -373,12 +376,11 @@ function restoreScrollPosition(event: PopStateEvent, targetUrl: URL): boolean {
       console.debug("[restoreScrollPosition] Scrolling to top (no state/hash)")
       window.scrollTo({ top: 0, behavior: "instant" })
     }
-    return true
   } catch (error) {
     console.error("Popstate navigation error:", error)
-    window.location.reload()
     return false
   }
+  return true
 }
 
 /**
@@ -415,7 +417,7 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
   }
 
   // Restore scroll position *after* DOM update
-  if (!restoreScrollPosition(event, targetUrl)) {
+  if (!restoreScrollPosition(targetUrl)) {
     return
   }
   dispatchNavEvent(getFullSlug(window))
@@ -425,13 +427,12 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
  * - Handles browser back/forward navigation (popstate)
- * - Sets up manual scroll restoration and state saving
+ * - Sets up state saving
  */
 function createRouter() {
   if (typeof window !== "undefined" && !window.__routerInitialized) {
     window.__routerInitialized = true
 
-    // Setup manual scroll restoration and state saving
     window.addEventListener(
       "scroll",
       () => {
@@ -440,7 +441,6 @@ function createRouter() {
       },
       { passive: true },
     )
-    console.debug("Manual scroll restoration enabled.")
 
     document.addEventListener("click", async (event) => {
       // Use getOpts to check for valid local links ignoring modifiers/targets
@@ -466,7 +466,7 @@ function createRouter() {
       }
     })
 
-    // Add popstate listener for back/forward navigation
+    // Listener for back/forward navigation
     window.addEventListener("popstate", handlePopstate)
   }
 }
@@ -478,11 +478,8 @@ if (typeof window !== "undefined" && !window.__routerInitialized) {
 
   // Handle initial scroll and dispatch nav event after DOM is loaded
   const onReady = () => {
-    // Fallback to scroll to hash after DOM is ready.
-    // This is in case the immediate hash scroll attempt failed because the element wasn't in the DOM yet.
-    if (window.location.hash) {
-      scrollToHash(window.location.hash)
-    }
+    restoreScrollPosition(new URL(window.location.href))
+
     dispatchNavEvent(getFullSlug(window))
   }
 

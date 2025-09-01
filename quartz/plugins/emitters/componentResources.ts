@@ -89,26 +89,7 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
     componentResources.css.push(popoverStyle)
   }
 
-  if (config.analytics?.provider === "google") {
-    const tagId = config.analytics.tagId
-    componentResources.afterDOMLoaded.push(`
-      const gtagScript = document.createElement("script")
-      gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=${tagId}"
-      gtagScript.async = true
-      document.head.appendChild(gtagScript)
-
-      window.dataLayer = window.dataLayer || [];
-      function gtag() { dataLayer.push(arguments); }
-      gtag("js", new Date());
-      gtag("config", "${tagId}", { send_page_view: false });
-
-      document.addEventListener("nav", () => {
-        gtag("event", "page_view", {
-          page_title: document.title,
-          page_location: location.href,
-        });
-      });`)
-  } else if (config.analytics?.provider === "umami") {
+  if (config.analytics?.provider === "umami") {
     componentResources.afterDOMLoaded.push(`
       const umamiScript = document.createElement("script")
       umamiScript.src = "${config.analytics.host ?? "https://analytics.umami.is"}/script.js"
@@ -121,14 +102,8 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
 
   // Early scroll restoration to prevent flicker
   componentResources.beforeDOMLoaded.push(`
-    if (typeof window !== "undefined" && window.history && window.history.state && typeof window.history.state.scroll === "number") {
-      window.scrollRestoration = "manual"
-      try {
-        window.scrollTo({ top: window.history.state.scroll, behavior: "instant" })
-      } catch (e) {
-        console.error("Early scroll restoration error:", e)
-      }
-    }
+    window.scrollRestoration = "manual"
+    console.debug("Manual scroll restoration enabled.")
   `)
 
   componentResources.afterDOMLoaded.push(spaRouterScript)
