@@ -42,7 +42,7 @@ runs:
     - name: Download and install stable ffmpeg
       run: |
         set -e
-        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-08-11-14-16/ffmpeg-N-120653-g85e8e59001-linux64-gpl.tar.xz"
+        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
         FFMPEG_DIR="/opt/ffmpeg"
 
         # Create the target directory
