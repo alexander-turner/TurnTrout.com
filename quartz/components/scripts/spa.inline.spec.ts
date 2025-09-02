@@ -10,7 +10,7 @@
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
-import { isDesktopViewport, isFirefox } from "../tests/visual_utils"
+import { isDesktopViewport } from "../tests/visual_utils"
 
 const FIREFOX_SCROLL_DELAY = 2000
 const TIGHT_SCROLL_TOLERANCE = 10
@@ -272,10 +272,12 @@ test.describe("Scroll Behavior", () => {
 test.describe("Flicker-Free Reload", () => {
   async function addScrollYAtFirstPaint(page: Page): Promise<void> {
     await page.addInitScript(async () => {
-      requestAnimationFrame(() => {
+      // Schedule capture for the next animation frame after a microtask
+      Promise.resolve().then(() => {
         requestAnimationFrame(() => {
           // @ts-expect-error: test instrumentation
           window.scrollYAtFirstPaint = window.scrollY
+          console.log("scrollYAtFirstPaint", window.scrollY)
         })
       })
     })
@@ -288,17 +290,14 @@ test.describe("Flicker-Free Reload", () => {
     })
   }
 
-  // skipcq: JS-0058
-  test.beforeEach(async ({}, testInfo) => {
-    test.skip(isFirefox(testInfo), "Firefox doesn't play well with this test.")
+  test.beforeEach(async ({ page }) => {
+    await addScrollYAtFirstPaint(page)
   })
 
   test("restores scroll position on refresh without flickering", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
-
-    await addScrollYAtFirstPaint(page)
 
     await page.reload({ waitUntil: "domcontentloaded" })
 
