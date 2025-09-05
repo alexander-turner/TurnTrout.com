@@ -102,7 +102,7 @@ function addGlobalPageResources(ctx: BuildCtx, componentResources: ComponentReso
 
   // Early scroll restoration to prevent flicker
   componentResources.beforeDOMLoaded.push(`
-    history.scrollRestoration = "manual"
+    window.scrollRestoration = "manual"
     console.debug("Manual scroll restoration enabled.")
   `)
 
