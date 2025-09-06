@@ -86,11 +86,29 @@
     color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
     var(--secondary)
   );
+  --color-link-visited: light-dark(
+    color-mix(in srgb, var(--purple) 70%, var(--color-link)),
+    color-mix(in srgb, var(--purple) 40%, var(--color-link))
+  );
 
   @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
     --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
     --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--background));
   }
+}
+
+body,
+section {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.text-highlight {
+  background-color: var(--highlight);
+}
+
+::selection {
+  background-color: var(--midground-strong);
 }
 
 // Simulating dark/light mode
@@ -119,5 +137,62 @@
   .#{$color} > rect {
     fill: var(--background-#{$color}) !important;
     stroke: var(--border-#{$color}) !important;
+  }
+}
+
+p,
+ul,
+text,
+a,
+tr,
+td,
+li,
+ol,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+thead,
+.math {
+  color: var(--foreground);
+  fill: var(--foreground);
+}
+
+.katex {
+  color: inherit;
+  fill: var(--foreground);
+}
+
+hr {
+  background-color: var(--midground-faint);
+}
+
+pre {
+  background-color: var(--midground-faintest);
+
+  & [data-highlighted-chars] {
+    background-color: var(--highlight);
+  }
+
+  & [data-highlighted-line] {
+    background-color: var(--highlight);
+  }
+
+  & [data-rehype-pretty-code-title] {
+    color: var(--foreground);
+  }
+
+  &::before {
+    color: var(--midground-faint);
+  }
+}
+
+a {
+  color: var(--color-link);
+
+  &:visited {
+    color: var(--color-link-visited);
   }
 }
