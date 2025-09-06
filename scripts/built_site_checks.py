@@ -21,8 +21,8 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 sys.path.append(str(Path(__file__).parent.parent))
 
 # skipcq: FLK-E402
-# skipcq: FLK-E402
 from scripts import compress, source_file_checks
+# skipcq: FLK-E402
 from scripts import utils as script_utils
 
 _GIT_ROOT = script_utils.get_git_root()
@@ -1504,30 +1504,36 @@ def _process_html_files(
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            if file.endswith(".html") and Path(file).stem not in files_to_skip:
-                file_path = root_path / file
+            stem = Path(file).stem
+            is_valid_file = (
+                file.endswith(".html") and stem not in files_to_skip
+            )
+            if not is_valid_file:
+                continue
 
-                md_path = None
-                if root_path == public_dir:
-                    md_path = permalink_to_md_path_map.get(
-                        file_path.stem
-                    ) or permalink_to_md_path_map.get(file_path.stem.lower())
-                    if not md_path and script_utils.should_have_md(file_path):
-                        raise FileNotFoundError(
-                            f"Markdown file for {file_path.stem} not found"
-                        )
+            file_path = root_path / file
+            md_path = None
+            if root_path == public_dir:
+                md_path = permalink_to_md_path_map.get(
+                    stem
+                ) or permalink_to_md_path_map.get(stem.lower())
+                if not md_path and script_utils.should_have_md(file_path):
+                    raise FileNotFoundError(
+                        f"Markdown file for {stem} not found"
+                    )
 
-                issues = check_file_for_issues(
-                    file_path,
-                    public_dir,
-                    md_path,
-                    should_check_fonts=check_fonts,
-                    defined_css_variables=defined_css_vars,
-                )
+            issues = check_file_for_issues(
+                file_path,
+                public_dir,
+                md_path,
+                should_check_fonts=check_fonts,
+                defined_css_variables=defined_css_vars,
+            )
 
-                if any(lst for lst in issues.values()):
-                    _print_issues(file_path, issues)
-                    issues_found_in_html = True
+            if any(lst for lst in issues.values()):
+                _print_issues(file_path, issues)
+                issues_found_in_html = True
+
     return issues_found_in_html
 
 
