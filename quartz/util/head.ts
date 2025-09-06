@@ -1,5 +1,3 @@
-import { VFile } from "vfile"
-
 import { type GlobalConfiguration } from "../cfg"
 import { formatTitle } from "../components/component_utils"
 import {
@@ -9,13 +7,13 @@ import {
   appleTouchIconUrl,
   faviconUrl,
 } from "../components/constants"
-import { type ProcessedContent } from "../plugins/vfile"
+import { type QuartzPluginData } from "../plugins/vfile"
 import { escapeHTML } from "./escape"
 import { resolveRelative, type FullSlug } from "./path"
 
 interface HeadProps {
   cfg: GlobalConfiguration
-  fileData: ProcessedContent | VFile
+  fileData: QuartzPluginData
   slug: FullSlug
   redirect?: {
     slug: FullSlug
@@ -54,25 +52,24 @@ function renderImageTags(cardImage: string, altText: string | undefined): string
 
 // skipcq: JS-D1001
 export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string {
-  const data = Array.isArray(fileData) ? fileData[1].data : fileData.data
-  const title = formatTitle(data.frontmatter?.title ?? defaultTitle)
-  const description = data.frontmatter?.description?.trim() ?? defaultDescription
+  const title = formatTitle(fileData.frontmatter?.title ?? defaultTitle)
+  const description = fileData.frontmatter?.description?.trim() ?? defaultDescription
 
   const url = new URL(`https://${cfg.baseUrl ?? "turntrout.com"}`)
   const pageUrl = new URL(slug, url).href
   const redirUrl = redirect
     ? resolveRelative(redirect.slug, redirect.to)
-    : (data.permalink as string) || pageUrl
+    : (fileData.frontmatter?.permalink as string) || pageUrl
 
-  const cardImage = (data.frontmatter?.card_image as string) ?? defaultCardUrl
+  const cardImage = (fileData.frontmatter?.card_image as string) ?? defaultCardUrl
   const altText =
     cardImage === defaultCardUrl
       ? "A pond containing a trout and a goose peacefully swimming near a castle."
-      : description
+      : "" // No provided alt text NOTE update when we mandate alt text
   const imageTags = renderImageTags(cardImage, altText)
 
-  const authors = data.frontmatter?.authors as string | undefined
-  const videoPreview = data.frontmatter?.video_preview_link as string | undefined
+  const authors = fileData.frontmatter?.authors as string | undefined
+  const videoPreview = fileData.frontmatter?.video_preview_link as string | undefined
   const videoTags = videoPreview ? maybeProduceVideoTag(videoPreview) : ""
 
   return `

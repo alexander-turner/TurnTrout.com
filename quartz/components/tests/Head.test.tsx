@@ -30,8 +30,6 @@ jest.mock("hast-util-from-html", () => ({
   fromHtml: mockFromHtml,
 }))
 
-import { VFile } from "vfile"
-
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
@@ -312,7 +310,7 @@ describe("Head Component", () => {
       }
 
       // Test that renderMetaJsx can handle missing slug (uses fallback)
-      const jsxFragment = renderMetaJsx(mockConfig, fileDataWithoutSlug, new VFile(""))
+      const jsxFragment = renderMetaJsx(mockConfig, fileDataWithoutSlug)
       expect(jsxFragment).toBeDefined()
     })
 
