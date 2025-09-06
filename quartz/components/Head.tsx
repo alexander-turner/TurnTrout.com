@@ -5,7 +5,6 @@ import type { JSX } from "react"
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
-import { VFile } from "vfile"
 
 import { GlobalConfiguration } from "../cfg"
 import { QuartzPluginData } from "../plugins/vfile"
@@ -48,15 +47,12 @@ const CALLOUT_ICONS = [
 /*
  * Render the meta JSX for the head of the page.
  */
-export function renderMetaJsx(
-  cfg: GlobalConfiguration,
-  fileData: QuartzPluginData,
-  vfile: VFile,
-): JSX.Element {
+export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginData): JSX.Element {
   const headHtml = renderHead({
     cfg,
-    fileData: vfile,
+    fileData,
     slug: fileData.slug as FullSlug,
+    redirect: undefined,
   })
 
   // Convert HTML string to HAST tree, then to JSX
@@ -73,7 +69,7 @@ export function renderMetaJsx(
 export default (() => {
   // skipcq: JS-D1001
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
-    const headJsx = renderMetaJsx(cfg, fileData, new VFile(""))
+    const headJsx = renderMetaJsx(cfg, fileData)
 
     // Scripts
     const { js } = externalResources

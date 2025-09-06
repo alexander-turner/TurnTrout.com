@@ -2681,7 +2681,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.touch()
+    md_file_path.write_text(
+        """---
+title: Test Title
+description: Test Description
+---
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (
@@ -3785,3 +3791,411 @@ def test_check_unrendered_transclusions(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_transclusions(soup)
     assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "input_text,expected",
+    [
+        # Smart quotes normalization
+        ("Text with “smart quotes”", 'text with "smart quotes"'),
+        ("Text with ‘smart apostrophes’", 'text with "smart apostrophes"'),
+        # Mixed quote types - all normalized to double quotes
+        (
+            "Mixed \"quotes\" and 'apostrophes'",
+            'mixed "quotes" and "apostrophes"',
+        ),
+        # Regular quotes should be normalized to double quotes
+        (
+            "Regular \"quotes\" and 'apostrophes'",
+            'regular "quotes" and "apostrophes"',
+        ),
+        # Empty string
+        ("", ""),
+        # No quotes
+        ("No quotes here", "no quotes here"),
+        # Case conversion
+        ("UPPERCASE TEXT", "uppercase text"),
+        # HTML entities
+        (
+            "Title with &amp; entities &lt;tag&gt;",
+            "title with & entities <tag>",
+        ),
+        ("&quot;Quoted&quot; text", '"quoted" text'),
+        ("&gt;800 vectors", ">800 vectors"),
+        # Whitespace handling
+        ("  Text with spaces  ", "text with spaces"),
+        ("\tTabbed\ntext\r", "tabbed\ntext"),
+        # Complex example from the real use case
+        (
+            'I Found &gt;800 Orthogonal "Write Code" Steering Vectors',
+            'i found >800 orthogonal "write code" steering vectors',
+        ),
+        # All quote types in one string
+        (
+            "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
+            'mix of "quotes", "apostrophes", "regular", and "more"',
+        ),
+    ],
+)
+def test_untransform_text(input_text, expected):
+    """Test the _untransform_text helper function."""
+    result = built_site_checks._untransform_text(input_text)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "html_content,md_content,expected",
+    [
+        # Perfect match case - all 4 metadata fields match
+        (
+            """
+            <html>
+            <head>
+                <title>Test Article</title>
+                <meta name="description" content="This is a test description">
+                <meta property="og:title" content="Test Article">
+                <meta property="og:description" content="This is a test description">
+            </head>
+            </html>
+            """,
+            """---
+title: Test Article
+description: This is a test description
+---
+# Content here
+            """,
+            [],
+        ),
+        # Real-world case with smart quotes and HTML entities
+        (
+            """
+            <html>
+            <head>
+                <title>I Found &gt;800 Orthogonal "Write Code" Steering Vectors</title>
+                <meta name="description" content="800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?">
+                <meta property="og:title" content="I Found &gt;800 Orthogonal &quot;Write Code&quot; Steering Vectors">
+                <meta property="og:description" content="800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?">
+            </head>
+            </html>
+            """,
+            """---
+title: I Found >800 Orthogonal 'Write Code' Steering Vectors
+description: 800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?
+---
+# Content here
+            """,
+            [],  # Should match after normalization
+        ),
+        # Title mismatch in regular title but og:title matches
+        (
+            """
+            <html>
+            <head>
+                <title>Different Title</title>
+                <meta name="description" content="Same description">
+                <meta property="og:title" content="Markdown Title">
+                <meta property="og:description" content="Same description">
+            </head>
+            </html>
+            """,
+            """---
+title: Markdown Title
+description: Same description
+---
+# Content here
+            """,
+            ["title mismatch: markdown title != different title"],
+        ),
+        # Missing og:title tag
+        (
+            """
+            <html>
+            <head>
+                <title>Test Title</title>
+                <meta name="description" content="Test description">
+                <meta property="og:description" content="Test description">
+            </head>
+            </html>
+            """,
+            """---
+title: Test Title
+description: Test description
+---
+# Content here
+            """,
+            ["og:title mismatch: test title != None"],
+        ),
+        # Missing og:description tag
+        (
+            """
+            <html>
+            <head>
+                <title>Test Title</title>
+                <meta name="description" content="Test description">
+                <meta property="og:title" content="Test Title">
+            </head>
+            </html>
+            """,
+            """---
+title: Test Title
+description: Test description
+---
+# Content here
+            """,
+            ["og:description mismatch: test description != None"],
+        ),
+        # All HTML meta tags missing
+        (
+            """
+            <html>
+            <head>
+            </head>
+            </html>
+            """,
+            """---
+title: Markdown Title
+description: Markdown description
+---
+# Content here
+            """,
+            [
+                "title mismatch: markdown title != None",
+                "description mismatch: markdown description != None",
+                "og:title mismatch: markdown title != None",
+                "og:description mismatch: markdown description != None",
+            ],
+        ),
+        # Mixed mismatches - some match, some don't
+        (
+            """
+            <html>
+            <head>
+                <title>Correct Title</title>
+                <meta name="description" content="Wrong description">
+                <meta property="og:title" content="Correct Title">
+                <meta property="og:description" content="Correct description">
+            </head>
+            </html>
+            """,
+            """---
+title: Correct Title
+description: Correct description
+---
+# Content here
+            """,
+            ["description mismatch: correct description != wrong description"],
+        ),
+        # Empty content attributes
+        (
+            """
+            <html>
+            <head>
+                <title></title>
+                <meta name="description" content="">
+                <meta property="og:title" content="">
+                <meta property="og:description" content="">
+            </head>
+            </html>
+            """,
+            """---
+title: Markdown Title
+description: Markdown description
+---
+# Content here
+            """,
+            [
+                "title mismatch: markdown title != ",
+                "description mismatch: markdown description != ",
+                "og:title mismatch: markdown title != ",
+                "og:description mismatch: markdown description != ",
+            ],
+        ),
+        # Case sensitivity and quote normalization across all fields
+        (
+            """
+            <html>
+            <head>
+                <title>UPPERCASE "TITLE"</title>
+                <meta name="description" content="MiXeD 'CaSe' DeScRiPtIoN">
+                <meta property="og:title" content="UPPERCASE &quot;TITLE&quot;">
+                <meta property="og:description" content="MiXeD 'CaSe' DeScRiPtIoN">
+            </head>
+            </html>
+            """,
+            """---
+title: uppercase "title"
+description: mixed 'case' description
+---
+# Content here
+            """,
+            [],  # Should match after normalization
+        ),
+        # HTML entities in all fields
+        (
+            """
+            <html>
+            <head>
+                <title>Title with &amp; Entities &gt; Here</title>
+                <meta name="description" content="Description with &quot;quoted&quot; text">
+                <meta property="og:title" content="Title with &amp; Entities &gt; Here">
+                <meta property="og:description" content="Description with &quot;quoted&quot; text">
+            </head>
+            </html>
+            """,
+            """---
+title: Title with & Entities > Here
+description: Description with "quoted" text
+---
+# Content here
+            """,
+            [],
+        ),
+        # Only some Open Graph tags present
+        (
+            """
+            <html>
+            <head>
+                <title>Test Title</title>
+                <meta name="description" content="Test description">
+                <meta property="og:title" content="Different OG Title">
+            </head>
+            </html>
+            """,
+            """---
+title: Test Title
+description: Test description
+---
+# Content here
+            """,
+            [
+                "og:title mismatch: test title != different og title",
+                "og:description mismatch: test description != None",
+            ],
+        ),
+    ],
+)
+def test_check_metadata_matches(tmp_path, html_content, md_content, expected):
+    """Test the check_metadata_matches function with various metadata scenarios."""
+    # Create markdown file
+    md_file = tmp_path / "test.md"
+    md_file.write_text(md_content, encoding="utf-8")
+
+    # Parse HTML content
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    # Run the check
+    result = built_site_checks.check_metadata_matches(soup, md_file)
+
+    # Assert results
+    assert sorted(result) == sorted(expected)
+
+
+def test_check_metadata_matches_missing_md_keys(tmp_path):
+    """Test that missing markdown keys raise KeyError."""
+    html_content = """
+    <html>
+    <head>
+        <title>HTML Title</title>
+        <meta name="description" content="HTML description">
+        <meta property="og:title" content="HTML Title">
+        <meta property="og:description" content="HTML description">
+    </head>
+    </html>
+    """
+
+    md_content = """---
+permalink: /test
+tags: [test]
+---
+# Content here without title or description
+    """
+
+    md_file = tmp_path / "test.md"
+    md_file.write_text(md_content, encoding="utf-8")
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    # Should raise KeyError when trying to access missing keys
+    with pytest.raises(KeyError):
+        built_site_checks.check_metadata_matches(soup, md_file)
+
+
+def test_check_metadata_matches_with_nonexistent_md_file(tmp_path):
+    """Test that check_metadata_matches handles non-existent markdown files gracefully."""
+    html_content = """
+    <html>
+    <head>
+        <title>HTML Title</title>
+        <meta name="description" content="HTML description">
+        <meta property="og:title" content="HTML Title">
+        <meta property="og:description" content="HTML description">
+    </head>
+    </html>
+    """
+
+    soup = BeautifulSoup(html_content, "html.parser")
+    non_existent_md = tmp_path / "non_existent.md"
+
+    # This should raise an exception when trying to read the non-existent file
+    with pytest.raises(FileNotFoundError):
+        built_site_checks.check_metadata_matches(soup, non_existent_md)
+
+
+def test_check_metadata_matches_malformed_yaml(tmp_path):
+    """Test that malformed YAML in markdown file is handled appropriately."""
+    html_content = """
+    <html>
+    <head>
+        <title>HTML Title</title>
+        <meta name="description" content="HTML description">
+        <meta property="og:title" content="HTML Title">
+        <meta property="og:description" content="HTML description">
+    </head>
+    </html>
+    """
+
+    # Actually malformed YAML with unmatched brackets
+    md_content = """---
+title: Valid title
+description: [malformed yaml with unmatched bracket
+tags: [test
+---
+# Content here
+    """
+
+    md_file = tmp_path / "test.md"
+    md_file.write_text(md_content, encoding="utf-8")
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    # Should raise an exception when trying to parse malformed YAML
+    with pytest.raises(Exception):  # Could be various YAML parsing exceptions
+        built_site_checks.check_metadata_matches(soup, md_file)
+
+
+def test_check_metadata_matches_partial_og_tags(tmp_path):
+    """Test behavior when only some Open Graph tags are present."""
+    html_content = """
+    <html>
+    <head>
+        <title>Test Title</title>
+        <meta name="description" content="Test description">
+        <meta property="og:title" content="Test Title">
+        <!-- og:description is missing -->
+    </head>
+    </html>
+    """
+
+    md_content = """---
+title: Test Title
+description: Test description
+---
+# Content here
+    """
+
+    md_file = tmp_path / "test.md"
+    md_file.write_text(md_content, encoding="utf-8")
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    result = built_site_checks.check_metadata_matches(soup, md_file)
+
+    # Should only report the missing og:description
+    assert result == ["og:description mismatch: test description != None"]

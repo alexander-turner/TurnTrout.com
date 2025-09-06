@@ -2,6 +2,7 @@
 """Script to check the built static site for common issues and errors."""
 
 import argparse
+import html
 import os
 import re
 import subprocess
@@ -21,8 +22,8 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 sys.path.append(str(Path(__file__).parent.parent))
 
 # skipcq: FLK-E402
-from scripts import compress, source_file_checks
 # skipcq: FLK-E402
+from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 
 _GIT_ROOT = script_utils.get_git_root()
@@ -922,6 +923,48 @@ def check_katex_span_only_paragraph_child(soup: BeautifulSoup) -> list[str]:
     return problematic_paragraphs
 
 
+def _untransform_text(label: str) -> str:
+    lower_label = label.lower()
+    simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
+    unescaped_label = html.unescape(simple_quotes_label)
+    return unescaped_label.strip()
+
+
+def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
+    """Check that the metadata in the HTML file matches the metadata in the
+    markdown file."""
+    problematic_metadata: list[str] = []
+    md_metadata: dict[str, str] = script_utils.split_yaml(md_path)[0]
+
+    for md_attr, html_attr, html_field in [
+        ("title", "title", ""),
+        ("description", "description", "name"),
+        ("title", "og:title", "property"),
+        ("description", "og:description", "property"),
+    ]:
+        md_value = md_metadata[md_attr]
+        md_value = _untransform_text(md_value)
+
+        html_value = None
+        if html_attr == "title":
+            html_value_tag = soup.find("title")
+            if isinstance(html_value_tag, Tag):
+                html_value = _untransform_text(html_value_tag.get_text())
+        else:
+            html_value_tag = soup.find("meta", {html_field: html_attr})
+            if isinstance(html_value_tag, Tag):
+                html_value = _untransform_text(
+                    str(html_value_tag.get("content"))
+                )
+
+        if md_value != html_value:
+            problematic_metadata.append(
+                f"{html_attr} mismatch: {md_value} != {html_value}"
+            )
+
+    return problematic_metadata
+
+
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
@@ -997,6 +1040,7 @@ def check_file_for_issues(
         issues["missing_markdown_assets"] = check_markdown_assets_in_html(
             soup, md_path
         )
+        issues["metadata_mismatch"] = check_metadata_matches(soup, md_path)
 
     if file_path.name == "about.html":  # Not all pages need to be checked
         issues["missing_favicon"] = check_favicons_missing(soup)
