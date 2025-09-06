@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: AUP scales to superintelligence by penalizing power-seeking, but loopholes
   exist. I propose fixes and explore their implications.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-09-06 12:28:11.897024
 ---
+
 
 
 
