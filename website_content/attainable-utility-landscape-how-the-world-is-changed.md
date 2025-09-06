@@ -146,6 +146,7 @@ This isomorphism is a natural contender[^1] for the canonical (finite) MDP isomo
 Suppose I give you the following possibility sets, each containing the possibilities for a different state:
 
 $$
+\begin{align*}
 \left\{\begin{pmatrix}
            4 \\
            0 \\
@@ -156,6 +157,7 @@ $$
            2.25 \end{pmatrix},
 \begin{pmatrix}
            \frac{1}{.4375}\\ 4-\frac{1}{.4375} \\ 0 \end{pmatrix}\right\}
+\qquad \\
 \\
 \left\{\begin{pmatrix}
            0 \\
@@ -172,7 +174,7 @@ $$
            1 \\
            0 \end{pmatrix}
 \right\}
-
+\end{align*}
 $$
 > [!info] Exercise
 >
