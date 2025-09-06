@@ -1,6 +1,4 @@
-"""
-Compute the size of WEBM files and their MP4 equivalents.
-"""
+"""Compute the size of WEBM files and their MP4 equivalents."""
 
 import argparse
 import tempfile

@@ -1,4 +1,4 @@
-"""Unit tests for run_push_checks.py"""
+"""Unit tests for run_push_checks.py."""
 
 import importlib
 import json
@@ -17,7 +17,7 @@ from scripts import run_push_checks
 
 @pytest.fixture(autouse=True)
 def reset_global_state():
-    """Reset global state before each test"""
+    """Reset global state before each test."""
     import scripts.run_push_checks
 
     scripts.run_push_checks._server_to_cleanup = None
@@ -26,7 +26,7 @@ def reset_global_state():
 
 @pytest.fixture
 def temp_state_dir():
-    """Create a temporary directory for state files"""
+    """Create a temporary directory for state files."""
     with (
         tempfile.TemporaryDirectory() as temp_dir,
         patch("tempfile.gettempdir", return_value=temp_dir),
@@ -42,7 +42,7 @@ def temp_state_dir():
 
 @pytest.fixture
 def mock_process():
-    """Mock psutil.Process for testing process management functions"""
+    """Mock psutil.Process for testing process management functions."""
     mock = MagicMock()
     mock.pid = 12345
     mock.info = {"cmdline": ["npx", "quartz", "build", "--serve"]}
@@ -54,14 +54,14 @@ def mock_process():
 
 @pytest.fixture
 def mock_socket():
-    """Mock socket for testing port checking"""
+    """Mock socket for testing port checking."""
     mock = MagicMock()
     mock.connect_ex = MagicMock()
     return mock
 
 
 def test_is_port_in_use(monkeypatch):
-    """Test port availability checking"""
+    """Test port availability checking."""
     with patch("socket.socket") as mock_socket_cls:
         mock_sock_instance = MagicMock()
         mock_sock_instance.connect_ex.return_value = 0
@@ -76,7 +76,7 @@ def test_is_port_in_use(monkeypatch):
 
 
 def test_find_quartz_process(mock_process):
-    """Test finding Quartz process"""
+    """Test finding Quartz process."""
     with patch("psutil.process_iter", return_value=[mock_process]):
         assert run_push_checks.find_quartz_process() == 12345
 
@@ -86,7 +86,7 @@ def test_find_quartz_process(mock_process):
 
 
 def test_kill_process(mock_process):
-    """Test process termination"""
+    """Test process termination."""
     with patch("psutil.Process", return_value=mock_process):
         run_push_checks.kill_process(12345)
         mock_process.terminate.assert_called_once()
@@ -99,7 +99,7 @@ def test_kill_process(mock_process):
 
 
 def test_kill_process_no_such_process():
-    """Test kill_process handles non-existent process PID"""
+    """Test kill_process handles non-existent process PID."""
     with patch("psutil.Process") as mock_process_cls:
         mock_process_cls.side_effect = psutil.NoSuchProcess(99999)
         # Should not raise any exception
@@ -107,7 +107,7 @@ def test_kill_process_no_such_process():
 
 
 def test_create_server():
-    """Test server creation logic"""
+    """Test server creation logic."""
     with (
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
         patch(
@@ -162,7 +162,7 @@ def test_create_server():
 
 
 def test_create_server_failure():
-    """Test server creation timeout logic"""
+    """Test server creation timeout logic."""
     with (
         patch("scripts.run_push_checks.is_port_in_use", return_value=False),
         patch("subprocess.Popen") as mock_popen,
@@ -185,7 +185,7 @@ def test_create_server_failure():
 
 
 def test_server_manager_cleanup():
-    """Test that ServerManager only cleans up servers it created"""
+    """Test that ServerManager only cleans up servers it created."""
     server_manager = run_push_checks.ServerManager()
 
     with patch("scripts.run_push_checks.kill_process") as mock_kill:
@@ -202,7 +202,7 @@ def test_server_manager_cleanup():
 
 @pytest.fixture
 def test_steps():
-    """Fixture providing test check steps"""
+    """Fixture providing test check steps."""
     return [
         run_push_checks.CheckStep(
             name="Test Step 1", command=["echo", "test1"]
@@ -217,7 +217,7 @@ def test_steps():
 
 
 def test_run_checks_all_success(test_steps, temp_state_dir):
-    """Test that all checks run successfully when there are no failures"""
+    """Test that all checks run successfully when there are no failures."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         mock_run.return_value = (True, "", "")
         run_push_checks.run_checks(test_steps)
@@ -228,7 +228,7 @@ def test_run_checks_all_success(test_steps, temp_state_dir):
 def test_run_checks_exits_on_failure(
     test_steps, failing_step_index, temp_state_dir
 ):
-    """Test that run_checks exits immediately when a check fails"""
+    """Test that run_checks exits immediately when a check fails."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         # Create a list of results where one step fails
         results = [(True, "", "")] * len(test_steps)
@@ -243,7 +243,7 @@ def test_run_checks_exits_on_failure(
 
 
 def test_run_checks_shows_error_output(test_steps):
-    """Test that error output is properly displayed on failure"""
+    """Test that error output is properly displayed on failure."""
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.console.log") as mock_log,
@@ -260,7 +260,7 @@ def test_run_checks_shows_error_output(test_steps):
 
 
 def test_cleanup_handler():
-    """Test cleanup handler functionality"""
+    """Test cleanup handler functionality."""
     server_manager = run_push_checks.ServerManager()
     with (
         patch("scripts.run_push_checks.kill_process") as mock_kill,
@@ -291,7 +291,7 @@ def test_cleanup_handler():
 
 
 def test_run_command_success():
-    """Test successful command execution"""
+    """Test successful command execution."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
     )
@@ -313,7 +313,7 @@ def test_run_command_success():
 
 
 def test_run_command_failure():
-    """Test command execution failure"""
+    """Test command execution failure."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
     )
@@ -335,7 +335,7 @@ def test_run_command_failure():
 
 
 def test_run_command_shell_handling():
-    """Test command execution with shell=True"""
+    """Test command execution with shell=True."""
     step = run_push_checks.CheckStep(
         name="Test Command",
         command=["echo", "test"],
@@ -359,7 +359,7 @@ def test_run_command_shell_handling():
 
 
 def test_progress_bar_updates():
-    """Test that progress bar updates correctly with output"""
+    """Test that progress bar updates correctly with output."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
     )
@@ -408,7 +408,7 @@ def test_progress_bar_updates():
 
 
 def test_progress_bar_stderr_updates():
-    """Test that progress bar updates correctly with stderr output"""
+    """Test that progress bar updates correctly with stderr output."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
     )
@@ -435,7 +435,7 @@ def test_progress_bar_stderr_updates():
 
 
 def test_progress_bar_mixed_output():
-    """Test that progress bar handles mixed stdout/stderr correctly"""
+    """Test that progress bar handles mixed stdout/stderr correctly."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
     )
@@ -463,7 +463,7 @@ def test_progress_bar_mixed_output():
 
 
 def test_save_and_get_state(temp_state_dir):
-    """Test saving and retrieving state"""
+    """Test saving and retrieving state."""
     run_push_checks.save_state("Test Step 1")
     assert run_push_checks.get_last_step() == "Test Step 1"
 
@@ -473,7 +473,7 @@ def test_save_and_get_state(temp_state_dir):
 
 
 def test_reset_saved_progress(temp_state_dir):
-    """Test clearing state"""
+    """Test clearing state."""
     run_push_checks.save_state("Test Step")
     assert run_push_checks.get_last_step() == "Test Step"
 
@@ -482,7 +482,7 @@ def test_reset_saved_progress(temp_state_dir):
 
 
 def test_run_checks_with_resume(test_steps, temp_state_dir):
-    """Test resuming from a previous step"""
+    """Test resuming from a previous step."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         mock_run.return_value = (True, "", "")
 
@@ -502,7 +502,7 @@ def test_run_checks_with_resume(test_steps, temp_state_dir):
 
 
 def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
-    """Test resuming from a middle step with failure"""
+    """Test resuming from a middle step with failure."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         # Set up to fail on the last step
         mock_run.side_effect = [(False, "Failed", "Error")]
@@ -520,7 +520,7 @@ def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
 
 @pytest.mark.parametrize("resume_flag", [True, False])
 def test_argument_parsing(resume_flag, temp_state_dir):
-    """Test command line argument parsing with and without resume flag"""
+    """Test command line argument parsing with and without resume flag."""
     with patch("argparse.ArgumentParser.parse_args") as mock_parse:
         mock_parse.return_value = MagicMock(resume=resume_flag)
 
@@ -562,7 +562,7 @@ def test_argument_parsing(resume_flag, temp_state_dir):
 
 
 def test_main_clears_state_on_success(temp_state_dir):
-    """Test that main clears state file when all checks pass"""
+    """Test that main clears state file when all checks pass."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
@@ -590,7 +590,7 @@ def test_main_clears_state_on_success(temp_state_dir):
 
 
 def test_main_preserves_state_on_failure(temp_state_dir):
-    """Test that main preserves state file when a check fails"""
+    """Test that main preserves state file when a check fails."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
@@ -624,7 +624,8 @@ def test_main_preserves_state_on_failure(temp_state_dir):
 
 
 def test_main_skips_pre_server_steps(temp_state_dir):
-    """Test that main correctly skips pre-server steps when resuming from post-server step"""
+    """Test that main correctly skips pre-server steps when resuming from post-
+    server step."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
@@ -669,7 +670,8 @@ def test_main_skips_pre_server_steps(temp_state_dir):
 
 
 def test_run_checks_skips_until_last_step(temp_state_dir):
-    """Test that run_push_checks.run_checks skips steps until it reaches the last successful step"""
+    """Test that run_push_checks.run_checks skips steps until it reaches the
+    last successful step."""
     test_steps = [
         run_push_checks.CheckStep(name="Step 1", command=["test"]),
         run_push_checks.CheckStep(name="Step 2", command=["test"]),
@@ -697,7 +699,7 @@ def test_run_checks_skips_until_last_step(temp_state_dir):
 
 
 def test_get_last_step_invalid_json(temp_state_dir, capsys):
-    """Test get_last_step handles invalid JSON content"""
+    """Test get_last_step handles invalid JSON content."""
     state_file = Path(temp_state_dir) / "last_successful_step.json"
     with open(state_file, "w", encoding="utf-8") as f:
         f.write("this is not valid json")
@@ -717,7 +719,8 @@ def test_get_last_step_invalid_json(temp_state_dir, capsys):
     ],
 )
 def test_get_last_step_key_error(temp_state_dir, state_content: dict, capsys):
-    """Test get_last_step handles valid JSON with unexpected structure and prints error"""
+    """Test get_last_step handles valid JSON with unexpected structure and
+    prints error."""
     state_file_path = Path(temp_state_dir) / "last_successful_step.json"
     with open(state_file_path, "w", encoding="utf-8") as f:
         json.dump(state_content, f)
@@ -732,7 +735,7 @@ def test_get_last_step_key_error(temp_state_dir, state_content: dict, capsys):
 
 
 def test_invalid_step(temp_state_dir):
-    """Test that get_last_step handles invalid steps correctly"""
+    """Test that get_last_step handles invalid steps correctly."""
     test_steps = ["Step 1", "Step 2", "Step 3"]
     run_push_checks.save_state("Invalid Step")
 
@@ -744,7 +747,7 @@ def test_invalid_step(temp_state_dir):
 
 
 def test_get_check_steps():
-    """Test that check steps are properly configured"""
+    """Test that check steps are properly configured."""
     test_root = Path("/test/root")
     steps_before, steps_after = run_push_checks.get_check_steps(test_root)
 
@@ -775,7 +778,7 @@ def test_get_check_steps():
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):
-    """Test main() handles invalid resume state correctly"""
+    """Test main() handles invalid resume state correctly."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
@@ -810,7 +813,7 @@ def test_main_resume_with_invalid_step(temp_state_dir):
 
 
 def test_main_preserves_state_on_interrupt(temp_state_dir):
-    """Test that state is preserved when user interrupts"""
+    """Test that state is preserved when user interrupts."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
@@ -848,7 +851,7 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
 
 
 def test_create_server_progress_bar():
-    """Test server creation shows progress correctly"""
+    """Test server creation shows progress correctly."""
     with (
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
         patch("scripts.run_push_checks.Progress") as mock_progress_cls,
@@ -970,7 +973,7 @@ def test_run_interactive_command():
     ],
 )
 def test_run_command_delegates_to_interactive(step):
-    """Test that run_command correctly delegates to interactive runner"""
+    """Test that run_command correctly delegates to interactive runner."""
     with patch(
         "scripts.run_push_checks.run_interactive_command"
     ) as mock_interactive:
@@ -993,7 +996,8 @@ def test_run_command_delegates_to_interactive(step):
 
 
 def test_server_process_continues_running():
-    """Test that server process continues running after create_server returns"""
+    """Test that server process continues running after create_server
+    returns."""
     with (
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
         patch("subprocess.Popen") as mock_popen,
@@ -1036,7 +1040,7 @@ def test_server_process_continues_running():
 
 
 def test_reused_server_not_killed():
-    """Test that reused server isn't killed on cleanup"""
+    """Test that reused server isn't killed on cleanup."""
     with (
         patch(
             "scripts.run_push_checks.find_quartz_process"

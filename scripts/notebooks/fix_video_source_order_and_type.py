@@ -151,7 +151,8 @@ def _process_video_content(
 
 
 def process_markdown_file(md_path: Path) -> None:
-    """Finds video tags, checks source order and types, and updates markdown."""
+    """Finds video tags, checks source order and types, and updates
+    markdown."""
     print(f"Processing: {md_path.name}")
     try:
         original_content = md_path.read_text(encoding="utf-8")

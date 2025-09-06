@@ -12,9 +12,7 @@ from .. import utils as script_utils
 
 @pytest.fixture()
 def r2_cleanup():
-    """
-    Fixture to clean up uploaded files on R2 after each test.
-    """
+    """Fixture to clean up uploaded files on R2 after each test."""
     uploaded_files = []
     yield uploaded_files
     for file in uploaded_files:
@@ -814,10 +812,8 @@ def test_update_markdown_references_verbose_output(
 
 
 def test_files_to_upload_ignores_gitignore(mock_git_root: Path):
-    """
-    Test that --upload-from-directory finds all files, including those that
-    would be ignored by git.
-    """
+    """Test that --upload-from-directory finds all files, including those that
+    would be ignored by git."""
     static_dir = mock_git_root / "quartz" / "static"
     content_dir = mock_git_root / "quartz" / "website_content"
     static_dir.mkdir(parents=True, exist_ok=True)

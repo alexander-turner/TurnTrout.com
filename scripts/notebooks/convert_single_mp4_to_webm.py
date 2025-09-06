@@ -46,7 +46,8 @@ VIDEO_TAG_RE = re.compile(
 
 
 def _find_single_mp4_videos_for_update(content: str) -> Iterator[re.Match]:
-    """Finds <video> tags with a single MP4 source and yields the match object."""
+    """Finds <video> tags with a single MP4 source and yields the match
+    object."""
     yield from VIDEO_TAG_RE.finditer(content)
 
 
@@ -111,7 +112,8 @@ def _convert_to_webm(
 def _upload_and_move_webm(
     local_webm_path: Path, r2_key_webm: str, webm_url: str
 ) -> bool:
-    """Uploads the WEBM file to R2 and moves it to the local R2 media directory."""
+    """Uploads the WEBM file to R2 and moves it to the local R2 media
+    directory."""
     try:
         print(f"    Uploading {local_webm_path.name} to R2 key: {r2_key_webm}")
         upload_target = f"r2:{R2_BUCKET_NAME}/{r2_key_webm}"

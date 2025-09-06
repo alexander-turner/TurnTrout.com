@@ -1,6 +1,4 @@
-"""
-Tests for the check_css_vars.fish script.
-"""
+"""Tests for the check_css_vars.fish script."""
 
 import shutil
 import subprocess

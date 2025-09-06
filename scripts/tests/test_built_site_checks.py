@@ -215,7 +215,8 @@ def sample_soup_with_assets(sample_html_with_assets: str) -> BeautifulSoup:
     [0, -1],
 )
 def test_add_to_list_exceptions(preview_chars: int) -> None:
-    """Test that _add_to_list raises ValueError for non-positive preview_chars."""
+    """Test that _add_to_list raises ValueError for non-positive
+    preview_chars."""
     lst: list[str] = []
     with pytest.raises(
         ValueError, match="preview_chars must be greater than 0"
@@ -398,10 +399,8 @@ def test_check_invalid_anchors_external_page(
     other_files_content: dict[str, str],
     expected_invalid_anchors: list[str],
 ):
-    """
-    Test check_invalid_anchors for links pointing to anchors on other pages
-    within the site.
-    """
+    """Test check_invalid_anchors for links pointing to anchors on other pages
+    within the site."""
     # Create index.html
     index_path = temp_site_root / "index.html"
     index_path.write_text(f"<html><body>{index_html_content}</body></html>")
@@ -689,7 +688,8 @@ def test_check_unrendered_subtitles():
 
 
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
-    """Test that check_rss_file_for_issues validates a correctly formatted RSS file"""
+    """Test that check_rss_file_for_issues validates a correctly formatted RSS
+    file."""
     script_utils.get_git_root()
     rss_path = temp_site_root / "public" / "rss.xml"
     rss_path.parent.mkdir(parents=True, exist_ok=True)
@@ -719,7 +719,7 @@ def test_check_valid_rss_file_with_xmllint(temp_site_root):
 
 
 def test_check_invalid_rss_file_with_xmllint(temp_site_root):
-    """Test that check_rss_file_for_issues fails on an invalid RSS file"""
+    """Test that check_rss_file_for_issues fails on an invalid RSS file."""
     script_utils.get_git_root()
     rss_path = temp_site_root / "public" / "rss.xml"
     rss_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1052,7 +1052,8 @@ def test_check_unrendered_spoilers_parametrized(html, expected):
     ],
 )
 def test_check_problematic_paragraphs_with_headings(html, expected):
-    """Check that unrendered headings (paragraphs starting with #) are flagged."""
+    """Check that unrendered headings (paragraphs starting with #) are
+    flagged."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.paragraphs_contain_canary_phrases(soup)
     assert sorted(result) == sorted(expected)
@@ -1551,7 +1552,8 @@ def test_check_markdown_assets_in_html(
     html_content: str,
     expected: list[str],
 ):
-    """Test that markdown assets are properly checked against HTML output for all supported tags"""
+    """Test that markdown assets are properly checked against HTML output for
+    all supported tags."""
     # Setup test files
     md_path = tmp_path / "website_content" / "test.md"
     html_path = tmp_path / "public" / "test.html"
@@ -1574,7 +1576,8 @@ def test_check_markdown_assets_in_html(
 
 
 def test_check_markdown_assets_in_html_with_invalid_md_path():
-    """Test that check_markdown_assets_in_html returns an empty list when md_path is None"""
+    """Test that check_markdown_assets_in_html returns an empty list when
+    md_path is None."""
     soup = BeautifulSoup("<html><body></body></html>", "html.parser")
     md_path = Path("nonexistent.md")
     pytest.raises(
@@ -1921,7 +1924,8 @@ def test_meta_tags_first_10kb(tmp_path, html, expected):
     ],
 )
 def test_check_invalid_internal_links(html, expected_count):
-    """Test the check_invalid_internal_links function with various test cases."""
+    """Test the check_invalid_internal_links function with various test
+    cases."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_invalid_internal_links(soup)
     assert len(result) == expected_count
@@ -2019,7 +2023,8 @@ def test_check_invalid_internal_links(html, expected_count):
     ],
 )
 def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
-    """Test get_md_asset_counts with various markdown content including ignored blocks."""
+    """Test get_md_asset_counts with various markdown content including ignored
+    blocks."""
     md_file = tmp_path / "test.md"
     md_file.write_text(md_content, encoding="utf-8")
     result = built_site_checks.get_md_asset_counts(md_file)
@@ -2332,7 +2337,8 @@ def test_check_favicon_parent_elements(html, expected):
 def test_check_robots_txt_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
 ):
-    """Test the check_robots_txt_location function with various file structures."""
+    """Test the check_robots_txt_location function with various file
+    structures."""
     # Create the test files
     for file_path in file_structure:
         full_path = tmp_path / file_path
@@ -2545,7 +2551,8 @@ def test_check_file_for_issues_with_fonts(tmp_path):
     ],
 )
 def test_check_media_asset_sources(html, expected):
-    """Test the check_media_asset_sources function with various HTML structures."""
+    """Test the check_media_asset_sources function with various HTML
+    structures."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_media_asset_sources(soup)
     assert sorted(result) == sorted(expected)
@@ -2664,7 +2671,8 @@ def test_check_asset_references(
 
 
 def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
-    """Test that check_markdown_assets_in_html is called when md_path is valid."""
+    """Test that check_markdown_assets_in_html is called when md_path is
+    valid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
     content_dir = tmp_path / "website_content"
@@ -2703,7 +2711,8 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
 def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     tmp_path,
 ):
-    """Test that check_markdown_assets_in_html is NOT called when md_path is invalid."""
+    """Test that check_markdown_assets_in_html is NOT called when md_path is
+    invalid."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
     content_dir = tmp_path / "website_content"
@@ -2955,7 +2964,8 @@ def test_main_markdown_not_found_error(
     html_file,
     monkeypatch,
 ):
-    """Test that main() raises ValueError when a required markdown file is missing."""
+    """Test that main() raises ValueError when a required markdown file is
+    missing."""
     # Set up empty md map (missing the mapping)
     md_map = {}
 
@@ -3379,7 +3389,8 @@ def test_check_video_source_order_and_match(
     ],
 )
 def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
-    """Test the check_malformed_hrefs function correctly filters for external links."""
+    """Test the check_malformed_hrefs function correctly filters for external
+    links."""
     soup = BeautifulSoup(html_content, "html.parser")
     # Assuming built_site_checks contains the corrected check_malformed_hrefs
     result = built_site_checks.check_malformed_hrefs(soup)
@@ -3687,10 +3698,8 @@ def soup_check_setup(mock_environment, monkeypatch):
 def test_check_file_for_issues_raises_error_on_soup_modification(
     soup_check_setup, monkeypatch
 ):
-    """
-    Test that check_file_for_issues raises a RuntimeError if the soup object
-    is modified by one of the check functions.
-    """
+    """Test that check_file_for_issues raises a RuntimeError if the soup object
+    is modified by one of the check functions."""
     common_check_args, _ = soup_check_setup
 
     def malicious_check(soup: BeautifulSoup, *args, **kwargs) -> list[str]:
@@ -3714,10 +3723,8 @@ def test_check_file_for_issues_raises_error_on_soup_modification(
 def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
     soup_check_setup, monkeypatch
 ):
-    """
-    Test that check_file_for_issues does NOT raise the specific RuntimeError
-    about soup modification if the soup object is not modified by checks.
-    """
+    """Test that check_file_for_issues does NOT raise the specific RuntimeError
+    about soup modification if the soup object is not modified by checks."""
     common_check_args, html_file_path = soup_check_setup
     initial_content = html_file_path.read_text(encoding="utf-8")
 

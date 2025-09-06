@@ -581,7 +581,8 @@ def test_video_asset_staging_paths(
 def test_video_pattern_matching(
     input_str: str, expected_groups: dict[str, str]
 ):
-    """Test the regex patterns for video/gif tags directly to verify matching behavior"""
+    """Test the regex patterns for video/gif tags directly to verify matching
+    behavior."""
     ext = ".gif" if "gif" in input_str else ".mp4"
     test_file = Path(f"test{ext}")
     original_pattern = convert_assets._video_original_pattern(test_file)
@@ -786,7 +787,8 @@ def test_video_conversion_long_html(setup_test_env):
 
 
 def test_multiple_bracket_video_links(setup_test_env):
-    """Test that multiple ![[...]] video links on separate lines are handled correctly."""
+    """Test that multiple ![[...]] video links on separate lines are handled
+    correctly."""
     test_dir = Path(setup_test_env)
     content_dir = test_dir / "website_content"
 

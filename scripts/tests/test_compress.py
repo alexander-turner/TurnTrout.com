@@ -18,9 +18,7 @@ from . import utils
 
 @pytest.mark.parametrize("image_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
 def test_avif_creation(temp_dir: Path, image_ext: str) -> None:
-    """
-    Assert that AVIF files are created during conversion.
-    """
+    """Assert that AVIF files are created during conversion."""
     input_file = temp_dir / f"test{image_ext}"
     utils.create_test_image(input_file, "100x100")
 
@@ -31,9 +29,7 @@ def test_avif_creation(temp_dir: Path, image_ext: str) -> None:
 
 @pytest.mark.parametrize("image_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
 def test_avif_size_reduction(temp_dir: Path, image_ext: str) -> None:
-    """
-    Assert that AVIF files are smaller than the original image files.
-    """
+    """Assert that AVIF files are smaller than the original image files."""
     input_file = temp_dir / f"test{image_ext}"
     utils.create_test_image(input_file, "100x100")
     original_size = input_file.stat().st_size
@@ -282,7 +278,8 @@ def _has_audio_stream(file_path: Path) -> bool:
 
 
 def test_convert_gif_output_has_no_audio(temp_dir: Path) -> None:
-    """Verify that converting a GIF results in video files without audio streams."""
+    """Verify that converting a GIF results in video files without audio
+    streams."""
     input_file = temp_dir / "test_gif_no_audio.gif"
     utils._create_test_gif(input_file)
     compress.video(input_file)
@@ -485,7 +482,8 @@ def test_avif_format_pixel_depth(temp_dir: Path) -> None:
 def test_get_gif_frame_rate_parametrized(
     temp_dir: Path, test_id: str, length_in_seconds: float, expected_fps: int
 ) -> None:
-    """Test `_get_gif_frame_rate` with various valid GIF `length_in_seconds`."""
+    """Test `_get_gif_frame_rate` with various valid GIF
+    `length_in_seconds`."""
     input_file = temp_dir / f"{test_id}.gif"
     utils._create_test_gif(
         input_file,
@@ -499,7 +497,8 @@ def test_get_gif_frame_rate_parametrized(
 def test_get_gif_frame_rate_zero_length_in_seconds(
     temp_dir: Path, monkeypatch
 ) -> None:
-    """Test `_get_gif_frame_rate` when Pillow reports zero `length_in_seconds`."""
+    """Test `_get_gif_frame_rate` when Pillow reports zero
+    `length_in_seconds`."""
     input_file = temp_dir / "zero_length_in_seconds.gif"
     utils._create_test_gif(input_file)
 

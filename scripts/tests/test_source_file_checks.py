@@ -22,9 +22,7 @@ else:
 
 @pytest.fixture
 def valid_metadata() -> Dict[str, str | List[str]]:
-    """
-    Fixture providing valid metadata that should pass all checks.
-    """
+    """Fixture providing valid metadata that should pass all checks."""
     return {
         "title": "Test Title",
         "description": "Test Description",
@@ -213,9 +211,7 @@ tags: [test]
     ],
 )
 def test_url_uniqueness(tmp_path: Path, monkeypatch, test_case) -> None:
-    """
-    Test detection of duplicate URLs (permalinks and aliases).
-    """
+    """Test detection of duplicate URLs (permalinks and aliases)."""
     # Setup
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
@@ -238,9 +234,7 @@ def test_url_uniqueness(tmp_path: Path, monkeypatch, test_case) -> None:
 
 
 def test_invalid_md_links(tmp_path: Path, monkeypatch) -> None:
-    """
-    Test detection of invalid markdown links.
-    """
+    """Test detection of invalid markdown links."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
@@ -273,9 +267,7 @@ Valid external: [Link](https://example.com)
 
 @pytest.fixture
 def scss_scenarios() -> Dict[str, Dict[str, Any]]:
-    """
-    Fixture providing different SCSS test scenarios.
-    """
+    """Fixture providing different SCSS test scenarios."""
     return {
         "valid": {
             "website_content": """
@@ -336,9 +328,7 @@ def scss_scenarios() -> Dict[str, Dict[str, Any]]:
 def setup_font_test(
     tmp_path: Path,
 ) -> Callable[[str, List[str]], Tuple[Path, Path]]:
-    """
-    Fixture providing a function to set up font test environment.
-    """
+    """Fixture providing a function to set up font test environment."""
 
     def _setup(scss_content: str, font_files: List[str]) -> Tuple[Path, Path]:
         # Create directory structure
@@ -373,9 +363,7 @@ def test_font_file_scenarios(
     scss_scenarios: Dict[str, Dict[str, Any]],
     setup_font_test: Callable,
 ) -> None:
-    """
-    Test various font file scenarios.
-    """
+    """Test various font file scenarios."""
     test_case = scss_scenarios[scenario]
     fonts_scss, tmp_path = setup_font_test(
         test_case["website_content"], test_case["files"]
@@ -391,9 +379,7 @@ def test_scss_compilation_error(
     scss_scenarios: Dict[str, Dict[str, Any]],
     setup_font_test: Callable,
 ) -> None:
-    """
-    Test handling of SCSS compilation errors.
-    """
+    """Test handling of SCSS compilation errors."""
     test_case = scss_scenarios["scss_error"]
     fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
 
@@ -409,9 +395,7 @@ def test_integration_with_main(
     setup_font_test: Callable,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """
-    Integration test including font file checks.
-    """
+    """Integration test including font file checks."""
     # Set up test environment with missing fonts scenario
     test_case = scss_scenarios["missing"]
     fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
@@ -435,9 +419,7 @@ def test_integration_with_main(
 
 
 def test_compile_scss(tmp_path: Path) -> None:
-    """
-    Test SCSS compilation.
-    """
+    """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
     scss_file.write_text(
         """
@@ -452,9 +434,7 @@ def test_compile_scss(tmp_path: Path) -> None:
 
 
 def test_check_font_files(tmp_path: Path) -> None:
-    """
-    Test font file checking.
-    """
+    """Test font file checking."""
     css_content = """
         @font-face {
             font-family: 'TestFont';
@@ -467,9 +447,7 @@ def test_check_font_files(tmp_path: Path) -> None:
 
 
 def test_check_font_families() -> None:
-    """
-    Test font family declaration checking.
-    """
+    """Test font family declaration checking."""
     css_content = """
         @font-face {
             font-family: 'DeclaredFont';
@@ -485,9 +463,7 @@ def test_check_font_families() -> None:
 
 
 def test_check_font_families_with_opentype() -> None:
-    """
-    Test font family checking with OpenType features.
-    """
+    """Test font family checking with OpenType features."""
     css_content = """
         @font-face {
             font-family: 'EBGaramond';
@@ -504,9 +480,7 @@ def test_check_font_families_with_opentype() -> None:
 
 
 def test_check_latex_tags(tmp_path: Path) -> None:
-    """
-    Test detection of LaTeX \tag{} commands in markdown files.
-    """
+    """Test detection of LaTeX \tag{} commands in markdown files."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
@@ -630,7 +604,8 @@ def test_latex_tags_variations(
 )
 def test_check_sequence_relationships(test_case: Dict[str, Any]) -> None:
     """
-    Test checking bidirectional relationships between posts using next/prev post slugs.
+    Test checking bidirectional relationships between posts using next/prev
+    post slugs.
 
     Args:
         test_case: Dictionary containing test data including:
@@ -650,9 +625,7 @@ def test_check_sequence_relationships(test_case: Dict[str, Any]) -> None:
 
 
 def test_check_sequence_relationships_invalid_input() -> None:
-    """
-    Test check_sequence_relationships with invalid input.
-    """
+    """Test check_sequence_relationships with invalid input."""
     # Test with empty permalink
     with pytest.raises(ValueError, match="Invalid permalink"):
         source_file_checks.check_sequence_relationships("", {})
@@ -760,9 +733,8 @@ def test_check_post_titles(test_case: Dict[str, Any]) -> None:
 
 @pytest.fixture
 def create_test_file(tmp_path: Path) -> Callable[[str, str], Path]:
-    """
-    Fixture providing a function to create test markdown files with given content.
-    """
+    """Fixture providing a function to create test markdown files with given
+    content."""
 
     def _create_file(filename: str, content: str) -> Path:
         file_path = tmp_path / filename
@@ -773,9 +745,7 @@ def create_test_file(tmp_path: Path) -> Callable[[str, str], Path]:
 
 
 def test_build_sequence_data_basic(create_test_file: Callable) -> None:
-    """
-    Test basic functionality of _build_sequence_data with a single file.
-    """
+    """Test basic functionality of _build_sequence_data with a single file."""
     content = """---
 title: Test Post
 permalink: /test
@@ -804,9 +774,7 @@ Test content
 
 
 def test_build_sequence_data_with_aliases(create_test_file: Callable) -> None:
-    """
-    Test _build_sequence_data with a file containing aliases.
-    """
+    """Test _build_sequence_data with a file containing aliases."""
     content = """---
 title: Test Post
 permalink: /test
@@ -831,9 +799,8 @@ Test content
 def test_build_sequence_data_multiple_files(
     create_test_file: Callable,
 ) -> None:
-    """
-    Test _build_sequence_data with multiple files having different combinations of fields.
-    """
+    """Test _build_sequence_data with multiple files having different
+    combinations of fields."""
     file1_content = """---
 title: First Post
 permalink: /first
@@ -886,9 +853,8 @@ permalink: /third
 
 
 def test_build_sequence_data_empty_cases(create_test_file: Callable) -> None:
-    """
-    Test _build_sequence_data with edge cases like empty metadata and empty aliases.
-    """
+    """Test _build_sequence_data with edge cases like empty metadata and empty
+    aliases."""
     # File with empty metadata
     file1_content = """---
 ---
@@ -916,9 +882,7 @@ aliases: [""]
 
 
 def test_build_sequence_data_no_files() -> None:
-    """
-    Test _build_sequence_data with an empty list of files.
-    """
+    """Test _build_sequence_data with an empty list of files."""
     sequence_data = source_file_checks.build_sequence_data([])
     assert sequence_data == {}
 
@@ -953,9 +917,7 @@ def test_build_sequence_data_no_files() -> None:
 def test_check_card_image(
     metadata: dict, mock_response: Any, expected_errors: List[str]
 ) -> None:
-    """
-    Test checking card image URLs in metadata.
-    """
+    """Test checking card image URLs in metadata."""
     with patch("requests.head") as mock_head:
         if mock_response is not None:
             mock_head.return_value = mock_response
@@ -965,9 +927,7 @@ def test_check_card_image(
 
 
 def test_check_card_image_request_exception() -> None:
-    """
-    Test handling of request exceptions when checking card image URLs.
-    """
+    """Test handling of request exceptions when checking card image URLs."""
     metadata = {"card_image": "https://example.com/image.jpg"}
 
     with patch("requests.head") as mock_head:
@@ -980,9 +940,7 @@ def test_check_card_image_request_exception() -> None:
 
 
 def test_check_card_image_sends_user_agent() -> None:
-    """
-    Test that check_card_image sends a User-Agent header.
-    """
+    """Test that check_card_image sends a User-Agent header."""
     metadata = {"card_image": "https://example.com/image.jpg"}
     with patch("requests.head") as mock_head:
         mock_head.return_value = type("Response", (), {"ok": True})
@@ -1027,9 +985,7 @@ def test_check_card_image_sends_user_agent() -> None:
 def test_check_card_image_extension(
     metadata: dict, expected_errors: List[str]
 ) -> None:
-    """
-    Test checking card image URL extensions in metadata.
-    """
+    """Test checking card image URL extensions in metadata."""
     errors = source_file_checks.check_card_image_extension(metadata)
     assert errors == expected_errors
 
@@ -1148,9 +1104,8 @@ def test_check_table_alignments(
 def test_check_table_alignments_integration(
     tmp_path: Path, monkeypatch
 ) -> None:
-    """
-    Integration test for table alignment checking within the main workflow.
-    """
+    """Integration test for table alignment checking within the main
+    workflow."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
@@ -1323,9 +1278,8 @@ def test_unescaped_braces(
 
 
 def test_unescaped_braces_integration(tmp_path: Path, monkeypatch) -> None:
-    """
-    Integration test for unescaped braces checking within the main workflow.
-    """
+    """Integration test for unescaped braces checking within the main
+    workflow."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
     git.Repo.init(tmp_path)
@@ -1439,9 +1393,7 @@ def test_remove_code_and_math(input_text: str, expected_output: str) -> None:
 def test_remove_code_and_math_with_replacement_character(
     input_text: str, expected_output: str
 ) -> None:
-    """
-    Test removing code and math elements with the replacement character.
-    """
+    """Test removing code and math elements with the replacement character."""
     result = source_file_checks.remove_code_and_math(
         input_text, mark_boundaries=True
     )
@@ -1449,10 +1401,8 @@ def test_remove_code_and_math_with_replacement_character(
 
 
 def test_remove_code_and_math_with_fenced_blocks() -> None:
-    """
-    Test stripping fenced code blocks specifically, which should be handled by
-    regex with the DOTALL flag.
-    """
+    """Test stripping fenced code blocks specifically, which should be handled
+    by regex with the DOTALL flag."""
     # Current implementation doesn't handle fenced code blocks
     input_text = """
     Normal text.
@@ -1499,9 +1449,7 @@ def test_remove_code_and_math_with_fenced_blocks() -> None:
 def test_remove_code_and_math_with_block_math(
     input_text: str, expected_output: str
 ) -> None:
-    """
-    Test stripping multi-line math blocks.
-    """
+    """Test stripping multi-line math blocks."""
     result = source_file_checks.remove_code_and_math(input_text)
     assert result == expected_output
 
@@ -1537,7 +1485,8 @@ def test_remove_code_and_math_with_block_math(
 )
 def test_slug_in_metadata(slug: str, metadata: dict, expected: bool) -> None:
     """
-    Test the _slug_in_metadata function with various combinations of slug and metadata.
+    Test the _slug_in_metadata function with various combinations of slug and
+    metadata.
 
     Args:
         slug: The slug to check for

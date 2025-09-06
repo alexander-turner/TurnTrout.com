@@ -1,6 +1,4 @@
-"""
-Compute the size of AVIF files and their PNG equivalents.
-"""
+"""Compute the size of AVIF files and their PNG equivalents."""
 
 import argparse
 import subprocess
@@ -13,16 +11,12 @@ from .. import utils as script_utils
 
 
 def get_file_size(path: Path) -> int:
-    """
-    Get file size in bytes.
-    """
+    """Get file size in bytes."""
     return path.stat().st_size
 
 
 def avif_to_png(avif_path: Path) -> Path | None:
-    """
-    Convert AVIF to PNG using ImageMagick.
-    """
+    """Convert AVIF to PNG using ImageMagick."""
     png_path = avif_path.with_suffix(".png")
     magick_executable = script_utils.find_executable("magick")
     try:

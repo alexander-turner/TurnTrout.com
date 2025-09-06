@@ -161,9 +161,7 @@ def test_process_card_image_in_markdown_skips(
 
 
 def test_parse_markdown_frontmatter():
-    """
-    Test parsing of markdown frontmatter.
-    """
+    """Test parsing of markdown frontmatter."""
     content = """---
 title: "Test Post"
 date: "2023-10-10"
@@ -180,18 +178,14 @@ Test content"""
 
 
 def test_parse_markdown_frontmatter_no_frontmatter():
-    """
-    Test parsing markdown with no frontmatter.
-    """
+    """Test parsing markdown with no frontmatter."""
     content = "Just some content"
     result = convert_markdown_yaml._parse_markdown_frontmatter(content)
     assert result is None
 
 
 def test_download_image(tmp_path):
-    """
-    Test image download functionality.
-    """
+    """Test image download functionality."""
     output_path = tmp_path / "test.avif"
     url = "http://example.com/image.avif"
 
@@ -208,9 +202,7 @@ def test_download_image(tmp_path):
 
 
 def test_download_image_failure(tmp_path):
-    """
-    Test image download failure handling.
-    """
+    """Test image download failure handling."""
     output_path = tmp_path / "test.avif"
     url = "http://example.com/image.avif"
 
@@ -225,9 +217,7 @@ def test_download_image_failure(tmp_path):
 
 
 def test_convert_to_png(tmp_path):
-    """
-    Test PNG conversion.
-    """
+    """Test PNG conversion."""
     input_path = tmp_path / "test.avif"
     output_path = tmp_path / "test.png"
     input_path.touch()

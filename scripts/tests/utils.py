@@ -23,7 +23,6 @@ def create_test_image(
     """
     Creates a test image using ImageMagick.
 
-
     Args:
         path (Path): The file path where the image will be saved.
         size (str): The size of the image in ImageMagick format (e.g., "100x100").
@@ -67,9 +66,8 @@ def create_test_video(
     framerate: float = 15,
 ) -> None:
     """
-    Creates a test video using `ffmpeg` with a silent audio track.
-    Uses MPEG-2 with high bitrate and all I-frames for maximum inefficiency.
-
+    Creates a test video using `ffmpeg` with a silent audio track. Uses MPEG-2
+    with high bitrate and all I-frames for maximum inefficiency.
 
     Args:
         path (Path): The file path where the video will be saved.
@@ -167,9 +165,7 @@ def _create_test_gif(
     size: tuple[int, int] = (50, 50),
     framerate: float = 15.0,
 ) -> None:
-    """
-    Create a test GIF file.
-    """
+    """Create a test GIF file."""
     if length_in_seconds <= 0:
         raise ValueError("length_in_seconds must be positive")
     if framerate <= 0:
@@ -196,9 +192,7 @@ def _create_test_gif(
 
 @pytest.fixture
 def setup_test_env(tmp_path: Path) -> Generator[Path, None, None]:
-    """
-    Sets up a temporary Git repository and populates it with test assets.
-    """
+    """Sets up a temporary Git repository and populates it with test assets."""
 
     # Create the required directories for testing
     for dir_name in ["quartz/static", "scripts", "website_content"]:

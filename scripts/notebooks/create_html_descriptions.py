@@ -37,9 +37,7 @@ example_posts: list[str] = [
 
 
 def prepare_few_shot_examples() -> str:
-    """
-    Prepare few-shot examples from the example posts.
-    """
+    """Prepare few-shot examples from the example posts."""
     few_shot_examples = ""
     for post in example_posts:
         post_path = Path(f"website_content/{post}.md")
@@ -71,9 +69,8 @@ safety_settings = {
 
 
 def get_gemini_description(content: str) -> str:
-    """
-    Generate a description for a blog post using the Gemini 1.5 Pro model.
-    """
+    """Generate a description for a blog post using the Gemini 1.5 Pro
+    model."""
     model = genai.GenerativeModel("gemini-1.5-pro")
     prompt = """
     Based on the following content, write a concise description for a blog post. Offer a factual, neutral summary of the content. 
@@ -105,10 +102,8 @@ def get_gemini_description(content: str) -> str:
 
 
 def process_file(file_path: Path) -> None:
-    """
-    Process a single file, extract YAML front matter, generate a description if
-    needed, and update the file.
-    """
+    """Process a single file, extract YAML front matter, generate a description
+    if needed, and update the file."""
     git_root = script_utils.get_git_root()
     content_dir = git_root / "website_content"
     if not file_path.resolve().is_relative_to(content_dir):
@@ -170,9 +165,7 @@ def process_file(file_path: Path) -> None:
 
 
 def main() -> None:
-    """
-    Main function to process all Markdown files in the current directory.
-    """
+    """Main function to process all Markdown files in the current directory."""
     git_root = script_utils.get_git_root()
     directory = git_root / "website_content"
     for filename in os.listdir(directory):

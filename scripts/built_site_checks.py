@@ -20,6 +20,8 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 # pylint: disable=C0413
 sys.path.append(str(Path(__file__).parent.parent))
 
+# skipcq: FLK-E402
+# skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 
@@ -214,8 +216,8 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
 # Check that no blockquote element ends with ">",
 # because it probably needed a newline before it
 def check_blockquote_elements(soup: BeautifulSoup) -> list[str]:
-    """Check for blockquote elements ending with ">" as long as they don't end
-    in a "<\\w+>" pattern."""
+    r"""Check for blockquote elements ending with ">" as long as they don't end
+    in a "<\w+>" pattern."""
     problematic_blockquotes: list[str] = []
     blockquotes = soup.find_all("blockquote")
     for blockquote in blockquotes:
@@ -532,12 +534,12 @@ def check_critical_css(soup: BeautifulSoup) -> bool:
 
 
 def check_duplicate_ids(soup: BeautifulSoup) -> list[str]:
-    """
+    r"""
     Check for duplicate anchor IDs in the HTML.
 
     Returns a list of:
     - IDs that appear multiple times
-    - IDs existing with and without -\\d suffix (e.g., 'intro' and 'intro-1')
+    - IDs existing with and without -\d suffix (e.g., 'intro' and 'intro-1')
     Excludes IDs within mermaid flowcharts.
     """
     # Get all IDs except those in flowcharts
@@ -673,7 +675,7 @@ def check_unprocessed_quotes(soup: BeautifulSoup) -> list[str]:
 
 def check_unprocessed_dashes(soup: BeautifulSoup) -> list[str]:
     """Check for text nodes containing multiple dashes (-- or ---) that should
-    have been processed into em dashes by formatting_improvement_html.ts."""
+    have been processed into em dashes by formatting_improvement_html."""
     problematic_dashes: list[str] = []
 
     for element in soup.find_all(string=True):
