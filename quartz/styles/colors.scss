@@ -87,8 +87,8 @@
     var(--secondary)
   );
   --color-link-visited: light-dark(
-    color-mix(in srgb, var(--purple) 70%, var(--color-link)),
-    color-mix(in srgb, var(--purple) 40%, var(--color-link))
+    color-mix(in srgb, var(--purple) 40%, var(--color-link)),
+    color-mix(in srgb, var(--purple) 25%, var(--color-link))
   );
 
   @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
