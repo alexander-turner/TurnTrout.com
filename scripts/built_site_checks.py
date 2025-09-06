@@ -1548,9 +1548,8 @@ def _process_html_files(
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            stem = Path(file).stem
             is_valid_file = (
-                file.endswith(".html") and stem not in files_to_skip
+                file.endswith(".html") and Path(file).stem not in files_to_skip
             )
             if not is_valid_file:
                 continue
@@ -1559,11 +1558,11 @@ def _process_html_files(
             md_path = None
             if root_path == public_dir:
                 md_path = permalink_to_md_path_map.get(
-                    stem
-                ) or permalink_to_md_path_map.get(stem.lower())
+                    Path(file).stem
+                ) or permalink_to_md_path_map.get(Path(file).stem.lower())
                 if not md_path and script_utils.should_have_md(file_path):
                     raise FileNotFoundError(
-                        f"Markdown file for {stem} not found"
+                        f"Markdown file for {Path(file).stem} not found"
                     )
 
             issues = check_file_for_issues(
