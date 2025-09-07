@@ -10,7 +10,8 @@ table {
     width: 100%;
   }
 
-  &.center-table-headings th {
+  &.center-table-headings th,
+  &.center-table-headings td {
     // Important to override the inline styling applied by Markdown
     text-align: center !important;
   }
