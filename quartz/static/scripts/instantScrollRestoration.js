@@ -1,25 +1,35 @@
 ;(function () {
   console.debug("[InstantScrollRestoration] Script loaded")
 
-  window.scrollRestoration = "manual"
-  history.scrollRestoration = "manual"
+  // Force manual scroll restoration across all browsers
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual"
+  }
+  if ("scrollRestoration" in window) {
+    window.scrollRestoration = "manual"
+  }
 
   const savedScroll =
     history.state && typeof history.state.scroll === "number" ? history.state.scroll : null
 
   console.debug("[InstantScrollRestoration] savedScroll:", savedScroll, "hash:", location.hash)
 
+  // Don't restore hash if we have a saved scroll position - user manually scrolled away
+  const shouldRestoreHash = !savedScroll && location.hash.length > 1
+
   /**
    * Determine target scroll based on history state or hash.
    * Returns null if neither is applicable yet (e.g., hash element not in DOM yet).
    */
   function computeTarget() {
+    // Always prioritize saved scroll position over hash
     if (savedScroll !== null) {
       console.debug("[InstantScrollRestoration] Using saved scroll:", savedScroll)
       return savedScroll
     }
 
-    if (location.hash.length > 1) {
+    // Only restore hash if we should (no saved scroll position)
+    if (shouldRestoreHash) {
       const id = decodeURIComponent(location.hash.slice(1))
       const elt = document.getElementById(id)
       if (elt) {
@@ -64,5 +74,10 @@
     }
   }
 
-  tryScroll()
+  // Only run restoration if we have something to restore
+  if (savedScroll !== null || shouldRestoreHash) {
+    tryScroll()
+  } else {
+    console.debug("[InstantScrollRestoration] Nothing to restore")
+  }
 })()
