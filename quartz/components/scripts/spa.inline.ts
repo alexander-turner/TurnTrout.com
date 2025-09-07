@@ -472,10 +472,9 @@ function createRouter() {
 if (typeof window !== "undefined" && !window.__routerInitialized) {
   createRouter()
 
-  // Handle initial scroll and dispatch nav event after DOM is loaded
+  // Handle initial nav event after DOM is loaded
+  // Note: Scroll restoration is now handled by instantScrollRestoration.js in <head>
   const onReady = () => {
-    restoreScrollPosition(new URL(window.location.toString()))
-
     dispatchNavEvent(getFullSlug(window))
   }
 
