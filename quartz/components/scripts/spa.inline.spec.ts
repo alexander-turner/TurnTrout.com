@@ -422,17 +422,18 @@ test.describe("Same-page navigation", () => {
   })
 
   test("going back after anchor navigation returns to original position", async ({ page }) => {
-    const scrollTarget = 1000
+    // NOTE: This scroll target must put the to-be-clicked ToC link in view
+    const scrollTarget = 100
     await page.evaluate((scrollTarget) => window.scrollTo(0, scrollTarget), scrollTarget)
     await waitForScroll(page, scrollTarget)
+    await waitForHistoryState(page, scrollTarget)
 
     await clickToc(page)
 
-    const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(scrollTarget)
-
     await page.goBack()
-    await waitForScroll(page, scrollTarget)
+
+    const finalScroll = await page.evaluate(() => window.scrollY)
+    expect(finalScroll).toBeCloseTo(scrollTarget, -1)
   })
 })
 
