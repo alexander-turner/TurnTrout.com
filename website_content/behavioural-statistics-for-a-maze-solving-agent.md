@@ -86,7 +86,7 @@ The videos we studied are hard to interpret without quantitative tools, so we re
 
 We suspect that the agent’s conditions for pursuing cheese generalize properties of historically reinforced cheese-directed moves in a “soft” way. Consider that movements can be "directed" on paths towards the cheese, the top-right corner, both, or neither. In the training environment, unambiguously cheese-directed movements are towards a cheese square that is both _close to the mouse’s current position_ and _close to the top-right._[^2]
 
-![](https://assets.turntrout.com/static/images/posts/0f36fa697965a17145efcd0c9e8b5ecaf6e09b3389d7d386.avif)
+![](https://assets.turntrout.com/static/images/posts/0f36fa697965a17145efcd0c9e8b5ecaf6e09b3389d7d386.avif){style="width:50%;"}
 <br/>Figure: Decision-square in red. We outline in yellow the 5x5 region where cheese can appear during training. In almost all cases that can arise in training, the decision-square is inside the 5x5 region. Unambiguously cheese-seeking moves are almost always moves to a _nearby_ cheese square which is _close_ to the top-right.
 
 Our impression is that in the test environment, "closeness to top-right" and "closeness to cheese" each become a decision-factor that encourages cheese-directed movement in proportion to “how strongly” the historical condition holds at present. In shard theory terminology, the top-right- and cheese-shards seem to activate more strongly in situations which are similar to historical reinforcement events.
