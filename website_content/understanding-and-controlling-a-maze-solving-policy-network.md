@@ -63,7 +63,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 
-<video autoplay loop muted playsinline   webkit-playsinline preload="auto"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+<video autoplay loop muted playsinline   webkit-playsinline preload="auto" style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals. <br/><br/>(_The red dot is not part of the image observed by the network_, it just represents the modified activation. Also, this GIF is selected to look cool. Our simple technique often works, but it isn't effortless, and some dot locations are harder to steer towards.)
@@ -183,7 +183,7 @@ Uli cracked open the vector field hydrant.
 ![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
 ![](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
 
-![](https://assets.turntrout.com/static/images/posts/seed-44071.avif)
+![[understanding-and-controlling-a-maze-solving-policy-network-20250907120829.png]]
 
 ![](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
 Figure: To generate your own mazes, play with this [Colab notebook](https://colab.research.google.com/drive/1zHk6jxjTjQ4yL12Fbp3REpTXsqQGV1dp?usp=sharing).
@@ -204,7 +204,8 @@ Imagine that you're looking at a maze and trying to predict whether the mouse wi
 Some mazes are easy to predict, because the cheese is _on the way_ to the top-right corner. There's no _decision square_ where the agent has to make the hard choice between the paths to the cheese and to the top-right corner:
 
 ![](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
-<br/>Figure: At the decision square, the agent must choose between two paths—cheese, and top-right.
+
+Figure: At the decision square, the agent must choose between two paths—cheese, and top-right.
 
 So let's just predict mazes with decision squares. In the above red-dotted maze with a decision square (`seed=0`), how would you guess whether the mouse goes to the cheese or not? What features should you be paying attention to?
 
@@ -366,7 +367,7 @@ The intervention is not trivial because we compute the cheese vector based on ob
 
 To quantify the effect of subtracting the cheese vector, define $P(\text{cheese}\mid\text{decision square})$ to be the probability the _policy_ assigns to the action leading to the cheese from the decision square where the agent confronts a fork in the road. As a refresher, the red dot demarcates the decision square in seed 0:
 
-![](https://assets.turntrout.com/static/images/posts/wekgewrilyyrmi6auonc.avif)
+![](https://assets.turntrout.com/static/images/posts/wekgewrilyyrmi6auonc.avif){style="width: 50%;"}  
 <br/>Figure: At the decision square, the agent must choose between the paths to the cheese and to the top-right corner.
 
 Across seeds 0 to 99, subtracting the cheese vector has a large effect:
@@ -478,9 +479,9 @@ The cheese vector was easy to find. We immediately tried the _dumbest, easiest_ 
 
 We had this cheese vector technique pretty early on. But we still felt frustrated. We hadn't made much progress on understanding the network, or redirecting it in any finer way than "ignore cheese"...
 
-That was about to change. Uli built a graphical maze editor, and Alex had built an activation visualization tool, which automatically updates along with the maze editor:
+That was about to change. Uli built a graphical maze editor, and Alex had built an activation visualization tool which updates along with the maze editor:
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4" type="video/mp4; codecs=hvc1">
+<video autoplay loop muted playsinline style="width: 80%;"><source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.webm" type="video/webm"></video>
 
 Figure: Inspection reveals that channel 55 (visualized) puts positive numbers (blue) on cheese and negative (red) elsewhere. Use [this Colab](https://colab.research.google.com/drive/11yqoQgckV3lpe7adN0gkaqUcsKEutiCS?usp=sharing) to play around with the activations yourself.
@@ -498,8 +499,8 @@ This was our "in"—we had found a piece of the agent's cognition which seemed t
 
 Alex had a hunch that if he moved the positive numbers in channel 55, he'd move the mouse in the maze. (In a fit of passion, he failed to book predictions before finding out.) As shown in the introduction, that's exactly what happens.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
-<source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
+<video autoplay loop muted playsinline style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+<source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>  
 
 To understand in mechanistic detail what's happening here, it's time to learn a few more facts about the network. Channel 55 is one of 128 residual channels at a `ResidualAdd` layer halfway through the network.
 
@@ -790,7 +791,7 @@ Understanding, predicting, and controlling goal formation seems like a core chal
     - $L_2$ norm of the cheese global coordinates (e.g. $(0,10)\mapsto 10$)
 
 [^4]: An example of the power of cheese Euclidean distance to top-right corner:
-    <img src="https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif"/><figcaption>In this maze, the mouse will happily detour four squares on its path to the top-right to pick up the cheese...</figcaption><p><img src="https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif"/></p><figcaption>…but in <em>this</em> maze won't detour the <em>measly two squares</em> for the cheese. Empirically, how far the _cheese_ lies from the top-right matters a great deal.</figcaption><br/>Note that this result obtains even though the second maze has cheese at $\frac{1}{\sqrt{2}}$ the visual distance ($2$ instead of $2\sqrt{2}$) and at half the path-distance ($2$ instead of $4$). Cheese tends to be more influential when it's closer to the top-right, even controlling for other factors.
+    <img style="width: 50%;" src="https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif"/><figcaption>In this maze, the mouse will happily detour four squares on its path to the top-right to pick up the cheese...</figcaption><p><img  style="width: 50%;" src="https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif"/></p><figcaption>…but in <em>this</em> maze won't detour the <em>measly two squares</em> for the cheese. Empirically, how far the _cheese_ lies from the top-right matters a great deal.</figcaption><br/>Note that this result obtains even though the second maze has cheese at $\frac{1}{\sqrt{2}}$ the visual distance ($2$ instead of $2\sqrt{2}$) and at half the path-distance ($2$ instead of $4$). Cheese tends to be more influential when it's closer to the top-right, even controlling for other factors.
 
 [^6]: This was the first model editing idea we tried, and it worked.
 [^7]:
@@ -805,12 +806,12 @@ Understanding, predicting, and controlling goal formation seems like a core chal
 [^8]: A given `embedder.block2.res1.resadd_out` channel activation doesn't neatly correspond to any single grid square. This is because grids are 25x25, while the residual channels are 16x16 due to the maxpools.
 [^9]:
     For example, we hypothesize channel 55 to be a "cheese channel." We randomly selected channel 52 and computed resampling statistics. We found that channel 52 seems across-the-board less influential, even under totally random resampling (i.e. different cheese location):
-    <br/><div class="table-container"><table><thead><tr><th style="text-align:right;"></th><th>Same cheese location</th><th>Different cheese location</th></tr></thead><tbody><tr><td style="text-align:right;">Channel 55</td><td>0.18%</td><td>0.31%</td></tr><tr><td style="text-align:right;">Channel 52</td><td>0.06%</td><td>0.06%</td></tr></tbody></table></div>
+    <br/><div class="table-container"><table class="center-table-headings"><thead><tr><th style="text-align:right;"></th><th>Same cheese location</th><th>Different cheese location</th></tr></thead><tbody><tr><td style="text-align:right;">Channel 55</td><td>0.18%</td><td>0.31%</td></tr><tr><td style="text-align:right;">Channel 52</td><td>0.06%</td><td>0.06%</td></tr></tbody></table></div>
 
 [^10]:
     By the time you hit the residual addition layer in question (`block2.res1.resadd_out`), cheese pixels on the top-left corner of the screen can only affect $5\times 5=25$ out of the $16\times 16=256$ residual activations at that layer and channel.
 
-    ![](https://assets.turntrout.com/static/images/posts/cr9dhux7svjb1tw5ojzd.avif)
+    ![](https://assets.turntrout.com/static/images/posts/cr9dhux7svjb1tw5ojzd.avif){style="width:50%;"}
     <br/>Figure: The 16x16 residual channel at `block2.res1.resadd_out`. The plot shows the nonzero activations present halfway through the network due to the presence of a pixel in the top-left.
 
      Due to the convolutional nature of the network (and the kernel sizes and strides in particular), that convolutional layers can only pass messages one "square" at a time. There's no global attention at all, and no dense linear layers until the end of the forward pass.
