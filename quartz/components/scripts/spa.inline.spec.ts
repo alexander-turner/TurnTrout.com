@@ -325,6 +325,8 @@ test.describe("Flicker-Free Reload", () => {
     expect(scrollYAtFirstPaint).toBeCloseTo(expectedScrollY, -1)
   })
 
+  // TODO have back-nav test?
+
   // TODO passing on chrome even though it looks like it fails
   test("not zero scrollY when loading a page with a hash", async ({ page }) => {
     await addScrollYAtFirstPaint(page)
@@ -355,14 +357,17 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
 })
 
 test.describe("Same-page navigation", () => {
+  async function clickToc(page: Page): Promise<void> {
+    const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const toc = await page.locator(tocSelector).all()
+    await toc[10].click()
+  }
+
   test("click same-page link, go back, check scroll is reset to top", async ({ page }) => {
     const initialScroll = await page.evaluate(() => window.scrollY)
     expect(initialScroll).toBe(0)
 
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    const selector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
-    const headers = await page.locator(selector).all()
-    await headers[3].click()
+    await clickToc(page)
     await page.waitForFunction(() => window.scrollY > 0)
 
     const scrollAfterClick = await page.evaluate(() => window.scrollY)
@@ -370,9 +375,6 @@ test.describe("Same-page navigation", () => {
 
     await page.goBack()
     await page.waitForFunction((tolerance) => window.scrollY <= tolerance, TIGHT_SCROLL_TOLERANCE)
-
-    const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
@@ -420,15 +422,17 @@ test.describe("Same-page navigation", () => {
   })
 
   test("going back after anchor navigation returns to original position", async ({ page }) => {
-    const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
-    await waitForHistoryScrollNotEquals(page, undefined)
+    const scrollTarget = 1000
+    await page.evaluate((scrollTarget) => window.scrollTo(0, scrollTarget), scrollTarget)
+    await waitForScroll(page, scrollTarget)
+
+    await clickToc(page)
 
     const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(1000)
+    expect(scrollAfterAnchor).toBeGreaterThan(scrollTarget)
 
     await page.goBack()
-    await waitForScroll(page, 0)
+    await waitForScroll(page, scrollTarget)
   })
 })
 

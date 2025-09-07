@@ -319,11 +319,17 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
 
   // Store the current scroll position *before* fetching/navigating
   const currentScroll = getScrollPosition()
-  const state = { ...history.state, scroll: currentScroll }
 
-  // Only push state if the URL is actually changing
+  // Persist the current scroll position in the *existing* history entry so that
+  // navigating back restores the correct position (e.g., top-of-page before an
+  // in-page anchor navigation).
+  history.replaceState({ ...history.state, scroll: currentScroll }, "")
+
+  // Only push a new history entry if the URL is actually changing. The new
+  // entry intentionally starts without a scroll position; it will be updated
+  // via `updateScrollState` after any subsequent scrolling.
   if (url.toString() !== window.location.href) {
-    history.pushState(state, "", url)
+    history.pushState({}, "", url)
   }
 
   let finalUrl = url
