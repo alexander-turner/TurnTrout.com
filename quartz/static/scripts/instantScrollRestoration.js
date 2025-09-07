@@ -74,6 +74,12 @@
     }
   }
 
+  // Don't run during SPA navigation - let the SPA router handle scroll restoration
+  if (window.__routerInitialized) {
+    console.debug("[InstantScrollRestoration] SPA router detected, skipping instant restoration")
+    return
+  }
+
   // Only run restoration if we have something to restore
   if (savedScroll !== null || shouldRestoreHash) {
     tryScroll()
