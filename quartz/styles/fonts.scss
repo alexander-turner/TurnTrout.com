@@ -237,7 +237,6 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
 code,
 pre {
   font-family: var(--font-monospace);
-  background-color: transparent;
   color: inherit;
   font-size: 0.81em;
   font-variant-caps: normal; // Ignore small-caps in code
