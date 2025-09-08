@@ -183,7 +183,7 @@ Uli cracked open the vector field hydrant.
 ![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
 ![](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
 
-![[understanding-and-controlling-a-maze-solving-policy-network-20250907120829.png]]
+![[https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.avif]]
 
 ![](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
 Figure: To generate your own mazes, play with this [Colab notebook](https://colab.research.google.com/drive/1zHk6jxjTjQ4yL12Fbp3REpTXsqQGV1dp?usp=sharing).
