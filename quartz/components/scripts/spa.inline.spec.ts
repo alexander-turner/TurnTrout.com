@@ -290,7 +290,6 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    // Reload and wait for the script to potentially load
     await page.reload({ waitUntil: "domcontentloaded" })
 
     // Check if script was requested

@@ -9,8 +9,25 @@
     window.scrollRestoration = "manual"
   }
 
-  const savedScroll =
-    history.state && typeof history.state.scroll === "number" ? history.state.scroll : null
+  // Firefox sometimes loses history.state on reload, so check multiple sources
+  let savedScroll = null
+  if (history.state && typeof history.state.scroll === "number") {
+    savedScroll = history.state.scroll
+  } else if (window.history.state && typeof window.history.state.scroll === "number") {
+    savedScroll = window.history.state.scroll
+  } else if (typeof Storage !== "undefined") {
+    // Fallback for Firefox: check sessionStorage
+    const sessionScroll = sessionStorage.getItem("instantScrollRestore")
+    if (sessionScroll) {
+      const parsed = parseInt(sessionScroll, 10)
+      if (!isNaN(parsed)) {
+        savedScroll = parsed
+        console.debug("[InstantScrollRestoration] Using sessionStorage fallback:", savedScroll)
+        // Clear it after use to avoid stale data
+        sessionStorage.removeItem("instantScrollRestore")
+      }
+    }
+  }
 
   console.debug("[InstantScrollRestoration] savedScroll:", savedScroll, "hash:", location.hash)
 
@@ -62,7 +79,7 @@
 
       if (Math.abs(actualScroll - target) < 1 || attempts >= MAX_ATTEMPTS) {
         console.debug("[InstantScrollRestoration] Restoration complete")
-        return // done
+        return // done with initial attempts
       }
     }
 

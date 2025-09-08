@@ -38,6 +38,11 @@ const updateScrollState = debounce(
       history.state,
     )
     history.replaceState({ ...history.state, scroll: currentScroll }, "")
+
+    // Firefox fallback: also save to sessionStorage
+    if (typeof Storage !== "undefined") {
+      sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
+    }
   }) as () => void,
   DEBOUNCE_WAIT_MS,
 )
@@ -322,6 +327,11 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
   // in-page anchor navigation).
   const currentScroll = getScrollPosition()
   history.replaceState({ ...history.state, scroll: currentScroll }, "")
+
+  // Firefox fallback: also save to sessionStorage
+  if (typeof Storage !== "undefined") {
+    sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
+  }
 
   // Only push a new history entry if the URL is actually changing. The new
   // entry intentionally starts without a scroll position; it will be updated
