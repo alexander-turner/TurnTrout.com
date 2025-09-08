@@ -935,8 +935,15 @@ img.emoji {
 }
 
 #mermaid-0,
-#mermaid-1 {
+#mermaid-1,
+#mermaid-2 {
   font-size: 14px !important;
+
+  & span,
+  & .label {
+    color: var(--foreground) !important;
+    fill: var(--foreground) !important;
+  }
 }
 
 #mermaid-1 {
