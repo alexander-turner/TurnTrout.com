@@ -102,7 +102,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
           cfg: ctx.cfg as unknown as GlobalConfiguration,
-          fileData: file,
+          fileData: file.data,
           slug: file.data.slug as FullSlug,
           redirect: { slug, to: file.data.slug as FullSlug },
         })

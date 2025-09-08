@@ -1,4 +1,5 @@
 import { describe, it, expect } from "@jest/globals"
+import { type Parent } from "hast"
 import { VFile } from "vfile"
 
 import { type GlobalConfiguration } from "../../cfg"
@@ -35,35 +36,34 @@ describe("renderHead", () => {
     baseUrl: "turntrout.com",
   } as GlobalConfiguration
 
-  const createMockVFile = (frontmatter: Record<string, unknown> = {}): VFile => {
-    const vfile = new VFile("")
-    vfile.data = {
+  const createMockData = (frontmatter: Record<string, unknown> = {}) => {
+    return {
       frontmatter: {
         title: "Test Article",
         description: "Test description",
         ...frontmatter,
       },
-    }
-    return vfile
+    } as Record<string, unknown>
   }
 
   const createMockProcessedContent = (
     frontmatter: Record<string, unknown> = {},
   ): ProcessedContent => {
-    const vfile = createMockVFile(frontmatter)
-    return [{ type: "root", children: [] }, vfile] as unknown as ProcessedContent
+    const vfile = new VFile("")
+    vfile.data = createMockData(frontmatter)
+    return [{ type: "root", children: [] } as Parent, vfile] as ProcessedContent
   }
 
   describe("basic metadata generation", () => {
-    it("should generate basic meta tags for VFile input", () => {
-      const vfile = createMockVFile({
+    it("should generate basic meta tags for data input", () => {
+      const data = createMockData({
         title: "My Test Article",
         description: "This is a test description",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-article" as FullSlug,
       })
 
@@ -84,7 +84,7 @@ describe("renderHead", () => {
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: content,
+        fileData: content[1].data,
         slug: "processed-content" as FullSlug,
       })
 
@@ -94,12 +94,11 @@ describe("renderHead", () => {
     })
 
     it("should use default values when frontmatter is missing", () => {
-      const vfile = new VFile("")
-      vfile.data = { frontmatter: undefined }
+      const data = { frontmatter: undefined }
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "no-frontmatter" as FullSlug,
       })
 
@@ -110,7 +109,7 @@ describe("renderHead", () => {
     })
 
     it("should include all required meta tags in complete structure", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         title: "Complete Test",
         description: "Complete description",
         authors: "Test Author",
@@ -118,7 +117,7 @@ describe("renderHead", () => {
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "complete-test" as FullSlug,
       })
 
@@ -154,11 +153,11 @@ describe("renderHead", () => {
   describe("URL generation", () => {
     it("should generate correct URLs with custom baseUrl", () => {
       const customConfig = { ...mockConfig, baseUrl: "example.com" }
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: customConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -166,11 +165,11 @@ describe("renderHead", () => {
     })
 
     it("should handle redirect URLs correctly", () => {
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "canonical-page" as FullSlug,
         redirect: {
           slug: "old-page" as FullSlug,
@@ -182,14 +181,14 @@ describe("renderHead", () => {
     })
 
     it("should use permalink when available", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         permalink: "https://example.com/custom-permalink",
       })
-      vfile.data.permalink = "https://example.com/custom-permalink"
+      ;(data as Record<string, unknown>).permalink = "https://example.com/custom-permalink"
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -202,14 +201,14 @@ describe("renderHead", () => {
   describe("image handling", () => {
     it("should use custom card image when provided", () => {
       const customImageUrl = "https://example.com/custom-image.jpg"
-      const vfile = createMockVFile({
+      const data = createMockData({
         card_image: customImageUrl,
         description: "Custom image description",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -221,11 +220,11 @@ describe("renderHead", () => {
     })
 
     it("should use default card image and alt text when no custom image", () => {
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -238,13 +237,13 @@ describe("renderHead", () => {
 
     it("should handle video preview when provided", () => {
       const videoUrl = "https://example.com/video.mp4"
-      const vfile = createMockVFile({
+      const data = createMockData({
         video_preview_link: videoUrl,
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -252,11 +251,11 @@ describe("renderHead", () => {
     })
 
     it("should not include video tag when video preview is not provided", () => {
-      const vfile = createMockVFile() // No video_preview_link at all
+      const data = createMockData() // No video_preview_link at all
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -265,13 +264,13 @@ describe("renderHead", () => {
     })
 
     it("should not include video tag when video preview is empty string", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         video_preview_link: "",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -282,13 +281,13 @@ describe("renderHead", () => {
 
   describe("author handling", () => {
     it("should include author meta tags when authors are provided", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         authors: "John Doe, Jane Smith",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -297,11 +296,11 @@ describe("renderHead", () => {
     })
 
     it("should not include author meta tags when authors are missing", () => {
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -312,13 +311,13 @@ describe("renderHead", () => {
 
   describe("description handling", () => {
     it("should trim description whitespace", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         description: "  Description with whitespace  ",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -331,13 +330,13 @@ describe("renderHead", () => {
     })
 
     it("should handle non-string description values", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         description: null,
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -348,13 +347,13 @@ describe("renderHead", () => {
     })
 
     it("should handle empty description", () => {
-      const vfile = createMockVFile({
+      const data = createMockData({
         description: "",
       })
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -366,11 +365,11 @@ describe("renderHead", () => {
 
   describe("favicon handling", () => {
     it("should include favicon link tags", () => {
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -381,25 +380,23 @@ describe("renderHead", () => {
 
   describe("edge cases", () => {
     it("should handle missing frontmatter gracefully", () => {
-      const vfile = new VFile("")
-      vfile.data = {}
+      const data = {}
 
       expect(() => {
         renderHead({
           cfg: mockConfig,
-          fileData: vfile,
+          fileData: data,
           slug: "test-page" as FullSlug,
         })
       }).not.toThrow()
     })
 
     it("should handle empty frontmatter gracefully", () => {
-      const vfile = new VFile("")
-      vfile.data = { frontmatter: undefined }
+      const data = { frontmatter: undefined }
 
       const result = renderHead({
         cfg: mockConfig,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -409,11 +406,11 @@ describe("renderHead", () => {
 
     it("should handle missing baseUrl by using default", () => {
       const configWithoutBaseUrl = { ...mockConfig, baseUrl: undefined }
-      const vfile = createMockVFile()
+      const data = createMockData()
 
       const result = renderHead({
         cfg: configWithoutBaseUrl,
-        fileData: vfile,
+        fileData: data,
         slug: "test-page" as FullSlug,
       })
 
@@ -424,18 +421,17 @@ describe("renderHead", () => {
   })
 
   it("should escape special characters in title and description", () => {
-    const vfile = createMockVFile({
+    const data = createMockData({
       title: 'Title with "quotes" & ampersands',
       description: "Description with <script>tags</script>",
     })
 
     const result = renderHead({
       cfg: mockConfig,
-      fileData: vfile,
+      fileData: data,
       slug: "test-escape" as FullSlug,
     })
 
-    // Title checks
     expect(result).toContain("<title>Title with “Quotes” &amp; Ampersands</title>")
     expect(result).toContain(
       '<meta property="og:title" content="Title with “Quotes” &amp; Ampersands" />',
@@ -444,7 +440,6 @@ describe("renderHead", () => {
       '<meta name="twitter:title" content="Title with “Quotes” &amp; Ampersands" />',
     )
 
-    // Description checks
     expect(result).toContain(
       '<meta name="description" content="Description with &lt;script&gt;tags&lt;/script&gt;">',
     )
@@ -457,13 +452,13 @@ describe("renderHead", () => {
   })
 
   it("should escape special characters in author names", () => {
-    const vfile = createMockVFile({
+    const data = createMockData({
       authors: "Author <Name>",
     })
 
     const result = renderHead({
       cfg: mockConfig,
-      fileData: vfile,
+      fileData: data,
       slug: "test-escape" as FullSlug,
     })
 
@@ -471,14 +466,14 @@ describe("renderHead", () => {
   })
 
   it("should escape special characters in URLs and permalinks", () => {
-    const vfile = createMockVFile({
+    const data = createMockData({
       card_image: "https://example.com/image?a=1&b=2",
     })
-    vfile.data.permalink = "https://example.com/page?a=1&b=2"
+    ;(data as Record<string, unknown>).permalink = "https://example.com/page?a=1&b=2"
 
     const result = renderHead({
       cfg: mockConfig,
-      fileData: vfile,
+      fileData: data,
       slug: "test-escape" as FullSlug,
     })
 

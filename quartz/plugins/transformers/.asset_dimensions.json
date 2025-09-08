@@ -4210,5 +4210,17 @@
   "https://assets.turntrout.com/static/images/posts/about-me-20250820083602.webm": {
     "width": 512,
     "height": 512
+  },
+  "./asset_staging/understanding-and-controlling-a-maze-solving-policy-network-20250907120809.png": {
+    "width": 895,
+    "height": 452
+  },
+  "./asset_staging/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.png": {
+    "width": 895,
+    "height": 452
+  },
+  "https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.avif": {
+    "width": 895,
+    "height": 452
   }
 }

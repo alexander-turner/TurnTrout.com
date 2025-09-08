@@ -138,6 +138,12 @@ export default (() => {
           src="/static/scripts/detectDarkMode.js"
           spa-preserve
         />
+        <script
+          data-cfasync="false"
+          id="instant-scroll-restoration"
+          src="/static/scripts/instantScrollRestoration.js"
+          spa-preserve
+        />
         <meta name="viewport" content="width=device-width" />
         {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />

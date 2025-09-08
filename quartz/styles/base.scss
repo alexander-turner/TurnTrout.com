@@ -15,8 +15,6 @@ section {
   margin: 0;
   max-width: 100%;
   box-sizing: border-box;
-  background-color: var(--background);
-  color: var(--foreground);
 }
 
 /* Define the scrollbar style */
@@ -39,14 +37,12 @@ body::-webkit-scrollbar-thumb {
 }
 
 .text-highlight {
-  background-color: #fff23688;
   padding: 0 0.1rem;
   border-radius: 5px;
 }
 
 ::selection {
   background: color-mix(in srgb, var(--tertiary) 30%, rgb(255 255 255 / 0%));
-  color: var(--midground-strong);
 }
 
 p,
@@ -59,8 +55,6 @@ li,
 ol,
 .katex,
 .math {
-  color: var(--foreground);
-  fill: var(--foreground);
   overflow-wrap: anywhere;
   hyphens: none;
 }
@@ -73,7 +67,6 @@ ol,
 
 .katex {
   overflow: auto hidden;
-  color: inherit;
   font-size: 0.9em !important;
   margin-left: auto; // Center katex
   margin-right: auto;
@@ -133,17 +126,6 @@ a {
   }
 
   & article {
-    & li:has(> input[type="checkbox"]) {
-      list-style-type: none;
-      padding-left: 0;
-    }
-
-    & li:has(> input[type="checkbox"]:checked) {
-      text-decoration: line-through;
-      text-decoration-color: var(--midground);
-      color: var(--midground);
-    }
-
     & li > *:first-child:not(blockquote) {
       margin-top: 0;
     }
@@ -282,7 +264,6 @@ h4,
 h5,
 h6,
 thead {
-  color: var(--foreground);
   position: relative; // For anchor links
 
   article & > a[role="anchor"] {
@@ -298,10 +279,6 @@ thead {
     .popover & {
       display: none;
     }
-  }
-
-  & a {
-    color: var(--foreground);
   }
 }
 
@@ -356,7 +333,6 @@ figure[data-rehype-pretty-code-figure] {
     width: max-content;
     border-radius: 5px;
     margin-bottom: -0.5rem;
-    color: var(--foreground);
   }
 
   & > pre {
@@ -370,7 +346,6 @@ pre {
   border-radius: 5px;
   overflow-x: auto;
   position: relative;
-  background-color: var(--midground-faintest);
 
   &:has(> code.mermaid) {
     border: none;
@@ -385,7 +360,6 @@ pre {
     padding: 0.5rem 0;
 
     & [data-highlighted-chars] {
-      background-color: var(--highlight);
       border-radius: 5px;
     }
 
@@ -402,7 +376,6 @@ pre {
       border-left: 3px solid transparent;
 
       &[data-highlighted-line] {
-        background-color: var(--highlight);
         border-left: 3px solid var(--blue);
       }
 
@@ -412,7 +385,6 @@ pre {
         width: calc(2 * $base-margin);
         display: inline-block;
         text-align: right;
-        color: var(--midground-faint);
 
         // Split between padding and margin for border
         margin-left: calc(1 * $base-margin);
@@ -457,7 +429,6 @@ hr {
   margin: 2rem auto;
   height: 1px;
   border: none;
-  background-color: var(--midground-faint);
 }
 
 audio,

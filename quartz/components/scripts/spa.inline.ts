@@ -38,6 +38,11 @@ const updateScrollState = debounce(
       history.state,
     )
     history.replaceState({ ...history.state, scroll: currentScroll }, "")
+
+    // Firefox fallback: also save to sessionStorage for reload cases
+    if (typeof Storage !== "undefined") {
+      sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
+    }
   }) as () => void,
   DEBOUNCE_WAIT_MS,
 )
@@ -317,19 +322,28 @@ let lastKnownPathname = window.location.pathname
 async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }): Promise<void> {
   removePopovers()
 
-  // Store the current scroll position *before* fetching/navigating
+  // 1. Persist the current scroll position in the *existing* history entry so that
+  // navigating back restores the correct position (e.g., top-of-page before an
+  // in-page anchor navigation).
   const currentScroll = getScrollPosition()
-  const state = { ...history.state, scroll: currentScroll }
+  history.replaceState({ ...history.state, scroll: currentScroll }, "")
 
-  // Only push state if the URL is actually changing
-  if (url.toString() !== window.location.href) {
-    history.pushState(state, "", url)
+  // Firefox fallback: also save to sessionStorage for reload cases
+  if (typeof Storage !== "undefined") {
+    sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
   }
 
+  // Only push a new history entry if the URL is actually changing. The new
+  // entry intentionally starts without a scroll position; it will be updated
+  // via `updateScrollState` after any subsequent scrolling.
+  if (url.toString() !== window.location.href) {
+    history.pushState({}, "", url)
+  }
+
+  // 2. Fetch content, handling redirects
   let finalUrl = url
   const doFetch = opts?.fetch ?? true
   if (doFetch) {
-    // 1. Fetch content, handling redirects
     const fetchResult = await fetchAndProcessContent(url)
     if (!fetchResult) {
       // Fetching or redirect handling failed and triggered a fallback (full page load)
@@ -338,7 +352,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
     const { content, finalUrl: redirectedUrl } = fetchResult
     finalUrl = redirectedUrl
 
-    // 2. Parse and update the DOM
+    // 3. Parse and update the DOM
     const updateSuccess = await updateDOM(content, url)
     if (!updateSuccess) {
       // DOM update failed and triggered a fallback (full page load)
@@ -347,10 +361,10 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
     lastKnownPathname = finalUrl.pathname
   }
 
-  // 3. Handle scrolling *after* DOM update, based on the FINAL URL
+  // 4. Handle scrolling *after* DOM update, based on the FINAL URL
   handleNavigationScroll(finalUrl, opts)
 
-  // 4. Notify other components of navigation
+  // 5. Notify other components of navigation
   dispatchNavEvent(getFullSlug(window))
 }
 window.spaNavigate = navigate
@@ -466,10 +480,9 @@ function createRouter() {
 if (typeof window !== "undefined" && !window.__routerInitialized) {
   createRouter()
 
-  // Handle initial scroll and dispatch nav event after DOM is loaded
+  // Handle initial nav event after DOM is loaded
+  // Note: Scroll restoration is now handled by instantScrollRestoration.js in <head>
   const onReady = () => {
-    restoreScrollPosition(new URL(window.location.toString()))
-
     dispatchNavEvent(getFullSlug(window))
   }
 

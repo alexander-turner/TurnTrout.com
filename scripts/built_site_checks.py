@@ -1520,13 +1520,17 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
-def check_robots_txt_location(base_dir: Path) -> list[str]:
-    """Check that robots.txt exists in the root directory and not in
-    subdirectories."""
+REQUIRED_ROOT_FILES = ("robots.txt", "favicon.ico")
+
+
+def check_root_files_location(base_dir: Path) -> list[str]:
+    """Check that required files exist in the root directory."""
     issues = []
-    root_robots = base_dir / "robots.txt"
-    if not root_robots.is_file():
-        issues.append("robots.txt not found in site root")
+
+    for filename in REQUIRED_ROOT_FILES:
+        file_path = base_dir / filename
+        if not file_path.is_file():
+            issues.append(f"{filename} not found in site root")
 
     return issues
 
@@ -1548,9 +1552,8 @@ def _process_html_files(
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            stem = Path(file).stem
             is_valid_file = (
-                file.endswith(".html") and stem not in files_to_skip
+                file.endswith(".html") and Path(file).stem not in files_to_skip
             )
             if not is_valid_file:
                 continue
@@ -1559,11 +1562,11 @@ def _process_html_files(
             md_path = None
             if root_path == public_dir:
                 md_path = permalink_to_md_path_map.get(
-                    stem
-                ) or permalink_to_md_path_map.get(stem.lower())
+                    Path(file).stem
+                ) or permalink_to_md_path_map.get(Path(file).stem.lower())
                 if not md_path and script_utils.should_have_md(file_path):
                     raise FileNotFoundError(
-                        f"Markdown file for {stem} not found"
+                        f"Markdown file for {Path(file).stem} not found"
                     )
 
             issues = check_file_for_issues(
@@ -1593,9 +1596,9 @@ def main() -> None:
         _print_issues(css_file_path, {"CSS_issues": css_issues})
         overall_issues_found = True
 
-    robots_issues = check_robots_txt_location(_PUBLIC_DIR)
-    if robots_issues:
-        _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
+    root_files_issues = check_root_files_location(_PUBLIC_DIR)
+    if root_files_issues:
+        _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
         overall_issues_found = True
 
     defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)

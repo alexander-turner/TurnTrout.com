@@ -11,8 +11,9 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2025-08-19 20:19:47.849267
+date_updated: 2025-09-06 12:28:11.897024
 ---
+
 
 
 
@@ -297,20 +298,6 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>
 <source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"></video>
-
-Checking for layout shift due to these videos which contrast the site before and after CLS prevention measures:
-
-<figure>
-  <div class="subfigure">
-    <figcaption>Layout shift:</figcaption>
-    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"></video>
-  </div>
-  
-  <div class="subfigure">
-    <figcaption>No layout shift:</figcaption>
-    <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"></video>
-  </div>
-</figure>
 
 # Audio
 

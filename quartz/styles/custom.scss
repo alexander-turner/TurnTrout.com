@@ -220,16 +220,10 @@ p:has(+ ul) {
 
 /* Wrap links properly */
 a {
-  color: var(--color-link);
   white-space: normal;
   word-break: break-word;
   margin-top: 0;
   text-underline-offset: 2.5px; // Default underline too close to text
-
-  // After you visit a link, it becomes less important that it stands out
-  &:visited {
-    color: color-mix(in srgb, currentcolor 50%, var(--color-link));
-  }
 
   // Don't have anchor links with box behind them
   &[role="anchor"] {
@@ -941,17 +935,20 @@ img.emoji {
 }
 
 #mermaid-0,
-#mermaid-1 {
+#mermaid-1,
+#mermaid-2 {
   font-size: 14px !important;
+
+  & span,
+  & .label {
+    color: var(--foreground) !important;
+    fill: var(--foreground) !important;
+  }
 }
 
 #mermaid-1 {
   // Needed to ensure arrowheads are visible
   fill: var(--midground-faint) !important;
-}
-
-.label span {
-  color: var(--foreground) !important;
 }
 
 .flowchart-link {

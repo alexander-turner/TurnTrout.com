@@ -598,3 +598,36 @@ test("First paragraph is the same before and after clicking on a heading", async
     await fs.rm(snapshotPath, { force: true })
   }
 })
+
+test.describe("Link color states", () => {
+  for (const theme of ["light", "dark"]) {
+    test(`Normal vs visited link colors in ${theme} mode (lostpixel)`, async ({
+      page,
+    }, testInfo) => {
+      await setTheme(page, theme as "light" | "dark")
+
+      // Create test HTML with both normal and visited links
+      await page.evaluate(() => {
+        document.body.innerHTML = `
+          <div id="link-test-container" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <a href="#never-visited" class="internal">Normal internal link</a>
+            <a href="#already-visited" class="internal visited-link">Visited internal link</a>
+            <a href="https://example.com" class="external" target="_blank" rel="noopener noreferrer">Normal external link</a>
+            <a href="https://visited.com" class="external visited-link" target="_blank" rel="noopener noreferrer">Visited external link</a>
+          </div>
+        `
+
+        // Apply visited styles to simulate visited state
+        const visitedLinks = document.querySelectorAll(".visited-link") as NodeListOf<HTMLElement>
+        visitedLinks.forEach((link) => {
+          link.style.setProperty("color", "var(--color-link-visited)", "important")
+        })
+      })
+
+      const linkContainer = page.locator("#link-test-container")
+      await takeRegressionScreenshot(page, testInfo, `link-colors-${theme}`, {
+        elementToScreenshot: linkContainer,
+      })
+    })
+  }
+})

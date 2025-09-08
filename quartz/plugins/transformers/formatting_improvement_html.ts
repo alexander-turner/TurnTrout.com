@@ -157,36 +157,41 @@ export function transformElement(
 
 /**
  * Converts standard quotes to typographic smart quotes
- * @param text - The text to process
- * @returns Text with smart quotes
  */
 export function niceQuotes(text: string): string {
   // Single quotes //
   // Ending comes first so as to not mess with the open quote
-  const afterEndingSingle = `(?!=')(?=${chr}?(?:s${chr}?)?(?:[\\s\\.!?;,\\)—\\-\\]"]|$))`
+  const afterEndingSinglePatterns = `\\s\\.!?;,\\)—\\-\\]"`
+  const afterEndingSingle = `(?=${chr}?(?:s${chr}?)?(?:[${afterEndingSinglePatterns}]|$))`
   const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
   text = text.replace(new RegExp(endingSingle, "gm"), "’")
 
   // Contractions are sandwiched between two letters
-  const contraction = `(?<=[A-Za-z])['](?=${chr}?[a-zA-Z])`
+  const contraction = `(?<=[A-Za-z])['’](?=${chr}?[a-zA-Z])`
   text = text.replace(new RegExp(contraction, "gm"), "’")
 
   // Apostrophes always point down
   //  Whitelist for eg rock 'n' roll
   const apostropheWhitelist = "(?=n’ )"
+  const endQuoteNotContraction = `(?!${contraction})’${afterEndingSingle}`
   //  Convert to apostrophe if not followed by an end quote
-  const apostrophe = `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘']*’${afterEndingSingle}))`
-  text = text.replace(new RegExp(apostrophe, "gm"), "’")
+  const apostropheRegex = new RegExp(
+    `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
+    "gm",
+  )
+  text = text.replace(apostropheRegex, "’")
 
   // Beginning single quotes
   const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
   text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
 
+  // Double quotes //
   const beginningDouble = new RegExp(
     `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
     "gm",
   )
   text = text.replace(beginningDouble, "$<beforeChr>“$<afterChr>")
+
   // Open quote after brace (generally in math mode)
   text = text.replace(new RegExp(`(?<=\\{)(${chr}? )?["]`, "g"), "$1“")
 
@@ -199,6 +204,7 @@ export function niceQuotes(text: string): string {
   // If single quote has a right double quote after it, replace with right single and then double
   text = text.replace(/'(?=”)/gu, "’")
 
+  // Punctuation //
   // Periods inside quotes
   const periodRegex = new RegExp(`(?<![!?:\\.…])(${chr}?)([’”])(${chr}?)(?!\\.\\.\\.)\\.`, "g")
   text = text.replace(periodRegex, "$1.$2$3")

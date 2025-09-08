@@ -59,13 +59,13 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
   const pageUrl = new URL(slug, url).href
   const redirUrl = redirect
     ? resolveRelative(redirect.slug, redirect.to)
-    : (fileData.frontmatter?.permalink as string) || pageUrl
+    : (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || pageUrl
 
   const cardImage = (fileData.frontmatter?.card_image as string) ?? defaultCardUrl
   const altText =
     cardImage === defaultCardUrl
       ? "A pond containing a trout and a goose peacefully swimming near a castle."
-      : "" // No provided alt text NOTE update when we mandate alt text
+      : description // Use description as alt text for custom images
   const imageTags = renderImageTags(cardImage, altText)
 
   const authors = fileData.frontmatter?.authors as string | undefined

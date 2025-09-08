@@ -44,8 +44,9 @@ original_url:
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is
   how. "
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-09-06 12:28:11.897024
 ---
+
 
 
 

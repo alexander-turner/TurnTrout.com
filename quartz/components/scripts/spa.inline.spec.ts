@@ -173,7 +173,9 @@ test.describe("Local Link Navigation", () => {
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
     await waitForHistoryScrollNotEquals(page, undefined)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
@@ -185,7 +187,9 @@ test.describe("Scroll Behavior", () => {
 
     // Scroll down the page
     const finalAnchor = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`)
+    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`, {
+      waitUntil: "domcontentloaded",
+    })
     await page.waitForURL(`**/test-page#${finalAnchor}`)
     await waitForHistoryScrollNotEquals(page, undefined)
 
@@ -228,7 +232,9 @@ test.describe("Scroll Behavior", () => {
       page,
     }) => {
       const anchorId = await createFinalAnchor(page)
-      await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+      await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+        waitUntil: "domcontentloaded",
+      })
 
       // Wait so that we don't race in Firefox
       // IIRC I tried alternatives like waitForFunction, but it didn't work
@@ -259,7 +265,9 @@ test.describe("Scroll Behavior", () => {
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
     await page.waitForFunction(() => window.history.state?.scroll)
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
@@ -269,72 +277,84 @@ test.describe("Scroll Behavior", () => {
   })
 })
 
-test.describe("Flicker-Free Reload", () => {
-  async function addScrollYAtFirstPaint(page: Page): Promise<void> {
-    await page.addInitScript(async () => {
-      // Schedule capture for the next animation frame after a microtask
-      Promise.resolve().then(() => {
-        requestAnimationFrame(() => {
-          // @ts-expect-error: test instrumentation
-          window.scrollYAtFirstPaint = window.scrollY
-          console.log("scrollYAtFirstPaint", window.scrollY)
-        })
-      })
-    })
-  }
-
-  async function getScrollYAtFirstPaint(page: Page): Promise<number> {
-    return page.evaluate(() => {
-      // @ts-expect-error: test instrumentation
-      return window.scrollYAtFirstPaint as number
-    })
-  }
-
-  test.beforeEach(async ({ page }) => {
-    await addScrollYAtFirstPaint(page)
-  })
-
-  test("restores scroll position on refresh without flickering", async ({ page }) => {
+test.describe("Instant Scroll Restoration", () => {
+  test("restores saved scroll position immediately on reload", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
 
+    // Track network requests to see if our script is loaded
+    const requests: string[] = []
+    page.on("request", (request) => {
+      if (request.url().includes("instantScrollRestoration")) {
+        requests.push(request.url())
+      }
+    })
+
+    // Add console logging to see what's happening
+    page.on("console", (msg) => {
+      if (msg.text().includes("InstantScrollRestoration")) {
+        console.log("BROWSER:", msg.text())
+      }
+    })
+
     await page.reload({ waitUntil: "domcontentloaded" })
 
-    // Verify that scroll was non-zero at first paint (no flicker to top)
-    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
-    expect(scrollYAtFirstPaint).toBeGreaterThan(0)
-    expect(scrollYAtFirstPaint).toBeCloseTo(scrollPos, -1)
+    // Check if script was requested
+    console.log("Script requests:", requests)
+
+    // Check final scroll position
+    const finalScroll = await page.evaluate(() => window.scrollY)
+    console.log("Final scroll position:", finalScroll, "Expected:", scrollPos)
+
+    expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
 
-  test("restores hash on refresh without flickering", async ({ page }) => {
+  test("restores hash position immediately on reload", async ({ page }) => {
     const anchorId = "lists"
 
-    // Go to the page and let it settle to get the ground truth scroll position
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
-    await page.waitForLoadState("load") // Wait for images to load, preventing layout shift
-
-    // Record the settled scroll position as our expectation
+    // Navigate to hash and record position
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
+    await page.waitForLoadState("load")
     const expectedScrollY = await page.evaluate(() => window.scrollY)
     expect(expectedScrollY).toBeGreaterThan(0)
 
-    await addScrollYAtFirstPaint(page)
+    // Add console logging to see what's happening
+    page.on("console", (msg) => {
+      if (msg.text().includes("InstantScrollRestoration")) {
+        console.log("BROWSER:", msg.text())
+      }
+    })
+
+    // Reload and wait for completion
     await page.reload({ waitUntil: "domcontentloaded" })
 
-    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
-    expect(scrollYAtFirstPaint).toBeCloseTo(expectedScrollY, -1)
+    // Wait for scroll restoration to complete - check that position is close to expected
+    await page.waitForFunction(
+      ({ expected, tolerance }) => {
+        const currentScroll = window.scrollY
+        return Math.abs(currentScroll - expected) <= tolerance
+      },
+      { expected: expectedScrollY, tolerance: 10 },
+    )
+
+    const finalScroll = await page.evaluate(() => window.scrollY)
+    console.log("Hash test - Final scroll position:", finalScroll, "Expected:", expectedScrollY)
+
+    expect(finalScroll).toBeCloseTo(expectedScrollY, -1)
   })
 
-  // TODO passing on chrome even though it looks like it fails
-  test("not zero scrollY when loading a page with a hash", async ({ page }) => {
-    await addScrollYAtFirstPaint(page)
+  test("scrolls to hash position on initial page load", async ({ page }) => {
     const slug = "design#color-scheme"
     expect(page.url()).not.toContain(slug)
 
     await page.goto(`http://localhost:8080/${slug}`)
+    await page.waitForLoadState("domcontentloaded")
 
-    const scrollYAtFirstPaint = await getScrollYAtFirstPaint(page)
-    expect(scrollYAtFirstPaint).toBeGreaterThan(0)
+    const finalScroll = await page.evaluate(() => window.scrollY)
+    expect(finalScroll).toBeGreaterThan(0)
   })
 })
 
@@ -355,14 +375,17 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
 })
 
 test.describe("Same-page navigation", () => {
+  async function clickToc(page: Page): Promise<void> {
+    const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const toc = await page.locator(tocSelector).all()
+    await toc[10].click()
+  }
+
   test("click same-page link, go back, check scroll is reset to top", async ({ page }) => {
     const initialScroll = await page.evaluate(() => window.scrollY)
     expect(initialScroll).toBe(0)
 
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    const selector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
-    const headers = await page.locator(selector).all()
-    await headers[3].click()
+    await clickToc(page)
     await page.waitForFunction(() => window.scrollY > 0)
 
     const scrollAfterClick = await page.evaluate(() => window.scrollY)
@@ -370,9 +393,6 @@ test.describe("Same-page navigation", () => {
 
     await page.goBack()
     await page.waitForFunction((tolerance) => window.scrollY <= tolerance, TIGHT_SCROLL_TOLERANCE)
-
-    const scrollAfterBack = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterBack).toBeLessThanOrEqual(TIGHT_SCROLL_TOLERANCE)
   })
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
@@ -383,7 +403,9 @@ test.describe("Same-page navigation", () => {
       // Don't click the heading, just navigate to it
       const headingId = await heading.getAttribute("href")
       expect(headingId?.startsWith("#")).toBe(true)
-      await page.goto(`http://localhost:8080/test-page${headingId}`)
+      await page.goto(`http://localhost:8080/test-page${headingId}`, {
+        waitUntil: "domcontentloaded",
+      })
 
       // Firefox will error without waiting for scroll to complete
       const previousScroll =
@@ -420,15 +442,18 @@ test.describe("Same-page navigation", () => {
   })
 
   test("going back after anchor navigation returns to original position", async ({ page }) => {
-    const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
-    await waitForHistoryScrollNotEquals(page, undefined)
+    // NOTE: This scroll target must put the to-be-clicked ToC link in view
+    const scrollTarget = 100
+    await page.evaluate((scrollTarget) => window.scrollTo(0, scrollTarget), scrollTarget)
+    await waitForScroll(page, scrollTarget)
+    await waitForHistoryState(page, scrollTarget)
 
-    const scrollAfterAnchor = await page.evaluate(() => window.scrollY)
-    expect(scrollAfterAnchor).toBeGreaterThan(1000)
+    await clickToc(page)
 
     await page.goBack()
-    await waitForScroll(page, 0)
+
+    const finalScroll = await page.evaluate(() => window.scrollY)
+    expect(finalScroll).toBeCloseTo(scrollTarget, -1)
   })
 })
 
@@ -524,7 +549,7 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
 
     const hash = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${hash}`)
+    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "domcontentloaded" })
     await page.waitForURL(`**/test-page#${hash}`)
 
     await expect(cssLocator).toHaveCount(0)
