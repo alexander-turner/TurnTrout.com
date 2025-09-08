@@ -1520,13 +1520,17 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
-def check_robots_txt_location(base_dir: Path) -> list[str]:
-    """Check that robots.txt exists in the root directory and not in
-    subdirectories."""
+REQUIRED_ROOT_FILES = ("robots.txt", "favicon.ico")
+
+
+def check_root_files_location(base_dir: Path) -> list[str]:
+    """Check that required files exist in the root directory."""
     issues = []
-    root_robots = base_dir / "robots.txt"
-    if not root_robots.is_file():
-        issues.append("robots.txt not found in site root")
+
+    for filename in REQUIRED_ROOT_FILES:
+        file_path = base_dir / filename
+        if not file_path.is_file():
+            issues.append(f"{filename} not found in site root")
 
     return issues
 
@@ -1592,9 +1596,9 @@ def main() -> None:
         _print_issues(css_file_path, {"CSS_issues": css_issues})
         overall_issues_found = True
 
-    robots_issues = check_robots_txt_location(_PUBLIC_DIR)
-    if robots_issues:
-        _print_issues(_PUBLIC_DIR, {"robots_txt_issues": robots_issues})
+    root_files_issues = check_root_files_location(_PUBLIC_DIR)
+    if root_files_issues:
+        _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
         overall_issues_found = True
 
     defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)

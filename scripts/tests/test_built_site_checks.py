@@ -99,6 +99,17 @@ def robots_txt_file(mock_environment):
 
 
 @pytest.fixture
+def root_files(mock_environment):
+    """Create both robots.txt and favicon.ico files."""
+    public_dir = mock_environment["public_dir"]
+    robots_txt = public_dir / "robots.txt"
+    favicon = public_dir / "favicon.ico"
+    robots_txt.touch()
+    favicon.touch()
+    return [robots_txt, favicon]
+
+
+@pytest.fixture
 def html_file(mock_environment):
     """Create a test HTML file."""
     public_dir = mock_environment["public_dir"]
@@ -2326,27 +2337,52 @@ def test_check_favicon_parent_elements(html, expected):
 @pytest.mark.parametrize(
     "file_structure,expected",
     [
-        # Test robots.txt in root (valid)
-        (["robots.txt"], []),
-        # Test missing robots.txt
-        ([], ["robots.txt not found in site root"]),
-        # Test robots.txt in subdirectory (should still report missing from root)
-        (["static/robots.txt"], ["robots.txt not found in site root"]),
+        # Test both files in root (valid)
+        (["robots.txt", "favicon.ico"], []),
+        # Test missing both files
+        (
+            [],
+            [
+                "robots.txt not found in site root",
+                "favicon.ico not found in site root",
+            ],
+        ),
+        # Test missing robots.txt only
+        (["favicon.ico"], ["robots.txt not found in site root"]),
+        # Test missing favicon.ico only
+        (["robots.txt"], ["favicon.ico not found in site root"]),
+        # Test files in subdirectory (should still report missing from root)
+        (
+            ["static/robots.txt", "static/favicon.ico"],
+            [
+                "robots.txt not found in site root",
+                "favicon.ico not found in site root",
+            ],
+        ),
+        # Test mixed: one in root, one in subdirectory
+        (
+            ["robots.txt", "static/favicon.ico"],
+            ["favicon.ico not found in site root"],
+        ),
+        (
+            ["static/robots.txt", "favicon.ico"],
+            ["robots.txt not found in site root"],
+        ),
     ],
 )
-def test_check_robots_txt_location(
+def test_check_root_files_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
 ):
-    """Test the check_robots_txt_location function with various file
-    structures."""
+    """Test the check_root_files_location function with various file
+    structures for both robots.txt and favicon.ico."""
     # Create the test files
     for file_path in file_structure:
         full_path = tmp_path / file_path
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.touch()
 
-    result = built_site_checks.check_robots_txt_location(tmp_path)
-    assert result == expected
+    result = built_site_checks.check_root_files_location(tmp_path)
+    assert sorted(result) == sorted(expected)
 
 
 @pytest.mark.parametrize(
@@ -2819,7 +2855,7 @@ def test_parser_args_check_fonts(
 def test_main_no_issues(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     monkeypatch,
     disable_md_requirement,
@@ -2842,7 +2878,7 @@ def test_main_no_issues(
 def test_main_css_issues(
     mock_environment,
     invalid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     monkeypatch,
     disable_md_requirement,
@@ -2872,14 +2908,14 @@ def test_main_css_issues(
     )
 
 
-def test_main_robots_txt_issues(
+def test_main_root_files_issues(
     mock_environment,
     valid_css_file,
     html_file,
     monkeypatch,
     disable_md_requirement,
 ):
-    """Test main() when robots.txt is missing."""
+    """Test main() when root files (robots.txt and favicon.ico) are missing."""
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
@@ -2893,17 +2929,22 @@ def test_main_robots_txt_issues(
             built_site_checks.main()
         assert excinfo.value.code == 1
 
-        # Verify robots.txt issues were printed
+        # Verify root files issues were printed
         mock_print.assert_any_call(
             mock_environment["public_dir"],
-            {"robots_txt_issues": ["robots.txt not found in site root"]},
+            {
+                "root_files_issues": [
+                    "robots.txt not found in site root",
+                    "favicon.ico not found in site root",
+                ]
+            },
         )
 
 
 def test_main_html_issues(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     monkeypatch,
     disable_md_requirement,
@@ -2934,7 +2975,7 @@ def test_main_html_issues(
 def test_main_handles_markdown_mapping(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     md_file,
     monkeypatch,
@@ -2966,7 +3007,7 @@ def test_main_handles_markdown_mapping(
 def test_main_markdown_not_found_error(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     monkeypatch,
 ):
@@ -2994,7 +3035,7 @@ def test_main_markdown_not_found_error(
 def test_main_command_line_args(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file,
     monkeypatch,
     disable_md_requirement,
@@ -3024,7 +3065,7 @@ def test_main_command_line_args(
 def test_main_skips_drafts(
     mock_environment,
     valid_css_file,
-    robots_txt_file,
+    root_files,
     html_file_in_drafts,  # Use the new fixture
     monkeypatch,
 ):

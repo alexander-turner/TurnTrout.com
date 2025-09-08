@@ -17,7 +17,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     const staticPath = joinSegments(QUARTZ, "static")
     const fps = await glob("**", staticPath, cfg.configuration.ignorePatterns)
     for (const fp of fps) {
-      if (fp === "robots.txt") {
+      if (fp === "robots.txt" || fp === "favicon.ico") {
         graph.addEdge(
           joinSegments("static", fp) as FilePath,
           joinSegments(argv.output, fp) as FilePath,
@@ -44,6 +44,13 @@ export const Static: QuartzEmitterPlugin = () => ({
       emittedFiles.push(joinSegments(argv.output, "robots.txt") as FilePath)
     }
 
+    // Copy favicon.ico to root
+    const faviconPath = joinSegments(staticPath, "favicon.ico")
+    if (fs.existsSync(faviconPath)) {
+      await fs.promises.copyFile(faviconPath, joinSegments(argv.output, "favicon.ico"))
+      emittedFiles.push(joinSegments(argv.output, "favicon.ico") as FilePath)
+    }
+
     // Copy everything else to /static/
     await fs.promises.cp(staticPath, joinSegments(argv.output, "static"), {
       recursive: true,
@@ -53,7 +60,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     // Add all other files to emitted files list
     emittedFiles.push(
       ...(fps
-        .filter((fp) => fp !== "robots.txt")
+        .filter((fp) => !("robots.txt" === fp || "favicon.ico" === fp))
         .map((fp) => joinSegments(argv.output, "static", fp)) as FilePath[]),
     )
 
