@@ -173,7 +173,9 @@ test.describe("Local Link Navigation", () => {
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
     await waitForHistoryScrollNotEquals(page, undefined)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
@@ -185,7 +187,9 @@ test.describe("Scroll Behavior", () => {
 
     // Scroll down the page
     const finalAnchor = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`)
+    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`, {
+      waitUntil: "domcontentloaded",
+    })
     await page.waitForURL(`**/test-page#${finalAnchor}`)
     await waitForHistoryScrollNotEquals(page, undefined)
 
@@ -228,7 +232,9 @@ test.describe("Scroll Behavior", () => {
       page,
     }) => {
       const anchorId = await createFinalAnchor(page)
-      await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+      await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+        waitUntil: "domcontentloaded",
+      })
 
       // Wait so that we don't race in Firefox
       // IIRC I tried alternatives like waitForFunction, but it didn't work
@@ -259,7 +265,9 @@ test.describe("Scroll Behavior", () => {
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
     await page.waitForFunction(() => window.history.state?.scroll)
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
@@ -306,7 +314,9 @@ test.describe("Instant Scroll Restoration", () => {
     const anchorId = "lists"
 
     // Navigate to hash and record position
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`)
+    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      waitUntil: "domcontentloaded",
+    })
     await page.waitForLoadState("load")
     const expectedScrollY = await page.evaluate(() => window.scrollY)
     expect(expectedScrollY).toBeGreaterThan(0)
@@ -393,7 +403,9 @@ test.describe("Same-page navigation", () => {
       // Don't click the heading, just navigate to it
       const headingId = await heading.getAttribute("href")
       expect(headingId?.startsWith("#")).toBe(true)
-      await page.goto(`http://localhost:8080/test-page${headingId}`)
+      await page.goto(`http://localhost:8080/test-page${headingId}`, {
+        waitUntil: "domcontentloaded",
+      })
 
       // Firefox will error without waiting for scroll to complete
       const previousScroll =
@@ -537,7 +549,7 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
 
     const hash = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${hash}`)
+    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "domcontentloaded" })
     await page.waitForURL(`**/test-page#${hash}`)
 
     await expect(cssLocator).toHaveCount(0)
