@@ -33,6 +33,8 @@
 
   // Don't restore hash if we have a saved scroll position - user manually scrolled away
   const shouldRestoreHash = !savedScroll && location.hash.length > 1
+  const BASE_MARGIN = 12 // px
+  const SCROLL_MARGIN_TOP = 6 * BASE_MARGIN // defined in base.scss
 
   /**
    * Determine target scroll based on history state or hash.
@@ -52,7 +54,7 @@
       if (elt) {
         const target = elt.getBoundingClientRect().top + window.scrollY
         console.debug("[InstantScrollRestoration] Hash target found:", target)
-        return target
+        return target - SCROLL_MARGIN_TOP
       } else {
         console.debug("[InstantScrollRestoration] Hash element not found yet:", id)
       }
