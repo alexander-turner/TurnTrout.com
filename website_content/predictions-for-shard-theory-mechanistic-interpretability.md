@@ -80,7 +80,7 @@ Also: _Try not to update on this work being shared to begin with._ When reading 
 5. The agent always starts in the bottom-left corner of the available maze.
 6. The agent was trained off of pixels until it reached reward-convergence, reliably getting to the cheese in training.
 
-![](https://assets.turntrout.com/static/images/posts/yh7pt8s1kxr72cyhxnpf.avif)
+![](https://assets.turntrout.com/static/images/posts/yh7pt8s1kxr72cyhxnpf.avif){style="width:75%;"}
 <br/>Figure: POV you’re the agent. Input observations are 64x64 RGB images.
 
 The architecture looks like this:
