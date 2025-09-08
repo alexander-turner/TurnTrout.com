@@ -39,7 +39,7 @@ const updateScrollState = debounce(
     )
     history.replaceState({ ...history.state, scroll: currentScroll }, "")
 
-    // Firefox fallback: also save to sessionStorage
+    // Firefox fallback: also save to sessionStorage for reload cases
     if (typeof Storage !== "undefined") {
       sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
     }
@@ -328,7 +328,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
   const currentScroll = getScrollPosition()
   history.replaceState({ ...history.state, scroll: currentScroll }, "")
 
-  // Firefox fallback: also save to sessionStorage
+  // Firefox fallback: also save to sessionStorage for reload cases
   if (typeof Storage !== "undefined") {
     sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
   }

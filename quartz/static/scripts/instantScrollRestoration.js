@@ -78,7 +78,10 @@
       console.debug("[InstantScrollRestoration] Scrolled to:", actualScroll, "target was:", target)
 
       if (Math.abs(actualScroll - target) < 1 || attempts >= MAX_ATTEMPTS) {
-        console.debug("[InstantScrollRestoration] Restoration complete")
+        console.debug(
+          "[InstantScrollRestoration] Initial scroll complete, waiting for layout stability",
+        )
+        waitForLayoutStability(target)
         return // done with initial attempts
       }
     }
@@ -89,6 +92,34 @@
     } else {
       console.debug("[InstantScrollRestoration] Max attempts reached, giving up")
     }
+  }
+
+  function waitForLayoutStability(targetPos) {
+    // Monitor for a few frames to catch Firefox layout drift
+    let frameCount = 0
+    const MAX_MONITOR_FRAMES = 15 // A few more frames to catch late drift
+
+    const monitorScroll = () => {
+      const currentScroll = window.scrollY
+
+      // Correct if we've drifted more than 2px from target
+      if (Math.abs(currentScroll - targetPos) > 2) {
+        console.debug(
+          `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
+        )
+        window.scrollTo(0, targetPos)
+      }
+
+      frameCount++
+
+      if (frameCount < MAX_MONITOR_FRAMES) {
+        requestAnimationFrame(monitorScroll)
+      } else {
+        console.debug("[InstantScrollRestoration] Monitoring complete")
+      }
+    }
+
+    requestAnimationFrame(monitorScroll)
   }
 
   // Don't run during SPA navigation - let the SPA router handle scroll restoration
