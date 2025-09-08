@@ -71,13 +71,13 @@ jobs:
     if: ${{ (always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download prepared site
         uses: actions/download-artifact@v4
         with:
           name: public-dir
           path: public/
-
-      - uses: actions/checkout@v4
 
       - name: Deploy to Cloudflare Pages
         uses: ./.github/actions/deploy-to-cloudflare
