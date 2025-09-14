@@ -209,31 +209,31 @@ Post your answers as a comment and enjoy the social approval for registering pre
 
 <figcaption>Random maze for illustrating terminology (<em>not</em> a reference maze for which you're supposed to predict behavior).</figcaption>
 
-| Symbol | Description |
-|--------|-------------|
-| **T** | top-right free square |
-| **M** | agent ("mouse") starting square |
-| **R** | 5x5 top-right corner area;<br style="display:block;"/>where the cheese appeared in training |
-| **C** | cheese |
-| **D** | decision-square |
+| Symbol | Description                                                                                 |
+| -----: | :------------------------------------------------------------------------------------------ |
+| **T**  | top-right free square                                                                       |
+| **M**  | agent ("mouse") starting square                                                             |
+| **R**  | 5x5 top-right corner area;<br style="display:block;"/>where the cheese appeared in training |
+| **C**  | cheese                                                                                      |
+| **D**  | decision-square                                                                             |
 
 > [!note] Instructions
 > Write down a credence for each of the following behavioral propositions about Lauro’s `rand_region_5` model tested on syntactically legal mazes, **excluding** test mazes where the cheese is in the top-right 5x5 and excluding mazes that do not have a decision-square.
 
 When we statistically analyze a large batch of randomly generated mazes, we will find that controlling for the other factors on the list the mouse is **more likely** to take the cheese…
 
-| Factor | Percentage credence |
-|-------:|-------------------:|
-| …the closer the cheese is to the decision-square spatially. | <pre>    %</pre> |
-| …the closer the cheese is to the decision-square step-wise. | <pre>    %</pre> |
-| …the closer the cheese is to the top-right free square spatially. | <pre>    %</pre> |
-| …the closer the cheese is to the top-right free square step-wise. | <pre>    %</pre> |
-| …the closer the decision-square is to the top-right free square spatially. | <pre>    %</pre> |
-| …the closer the decision-square is to the top-right free square step-wise. | <pre>    %</pre> |
-| …the shorter the minimal step-distance from cheese to 5\*5 top-right corner area. | <pre>    %</pre> |
-| …the shorter the minimal spatial distance from cheese to 5\*5 top-right corner area. | <pre>    %</pre> |
-| …the shorter the minimal step-distance from decision-square to 5\*5 top-right corner area. | <pre>    %</pre> |
-| …the shorter the minimal spatial distance from decision-square to 5\*5 top-right corner area. | <pre>    %</pre> |
-| Any predictive power of step-distance between the decision square and cheese is an artifact of the shorter chain of "correct" stochastic outcomes required to take the cheese when the step-distance is short. | <pre>    %</pre> |
+|                                                                                                                                                                                                         Factor | Percentage credence |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | ------------------: |
+|                                                                                                                                                    …the closer the cheese is to the decision-square spatially. |    <pre>    %</pre> |
+|                                                                                                                                                    …the closer the cheese is to the decision-square step-wise. |    <pre>    %</pre> |
+|                                                                                                                                              …the closer the cheese is to the top-right free square spatially. |    <pre>    %</pre> |
+|                                                                                                                                              …the closer the cheese is to the top-right free square step-wise. |    <pre>    %</pre> |
+|                                                                                                                                     …the closer the decision-square is to the top-right free square spatially. |    <pre>    %</pre> |
+|                                                                                                                                     …the closer the decision-square is to the top-right free square step-wise. |    <pre>    %</pre> |
+|                                                                                                                              …the shorter the minimal step-distance from cheese to 5\*5 top-right corner area. |    <pre>    %</pre> |
+|                                                                                                                           …the shorter the minimal spatial distance from cheese to 5\*5 top-right corner area. |    <pre>    %</pre> |
+|                                                                                                                     …the shorter the minimal step-distance from decision-square to 5\*5 top-right corner area. |    <pre>    %</pre> |
+|                                                                                                                  …the shorter the minimal spatial distance from decision-square to 5\*5 top-right corner area. |    <pre>    %</pre> |
+| Any predictive power of step-distance between the decision square and cheese is an artifact of the shorter chain of "correct" stochastic outcomes required to take the cheese when the step-distance is short. |    <pre>    %</pre> |
 
 [^1]: Excluding trivial patches like "replace layer activations with the activations for an identical maze where the cheese is at the top right corner."
