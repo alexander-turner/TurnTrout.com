@@ -1553,7 +1553,7 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
 def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
     """Tests the _check_spaces_in_path function with various paths."""
     path = Path(path_str)
-    errors = source_file_checks._check_spaces_in_path(path)
+    errors = source_file_checks.check_spaces_in_path(path)
     assert errors == expected_errors
 
 
@@ -1619,3 +1619,42 @@ def test_check_stray_katex(text: str, expected_errors: List[str]):
     """Test the check_stray_katex function."""
     errors = source_file_checks.check_stray_katex(text)
     assert sorted(errors) == sorted(expected_errors)
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # No HTML or valid HTML
+        ("Plain text", []),
+        ("<video></video>", []),
+        # HTML with style braces (should error)
+        (
+            '</video>{style="width:50%"}',
+            [
+                'HTML element with style braces at line 1: </video>{style="width:50%"}'
+            ],
+        ),
+        (
+            "</div>{.container}",
+            ["HTML element with style braces at line 1: </div>{.container}"],
+        ),
+        # Multiple errors
+        (
+            '</video>{style="width:50%"}\n</div>{.test}',
+            [
+                'HTML element with style braces at line 1: </video>{style="width:50%"}',
+                "HTML element with style braces at line 2: </div>{.test}",
+            ],
+        ),
+        # Should ignore code/math blocks
+        ('`</div>{style="test"}`', []),
+        ('$</video>{style="width:50%"}$', []),
+        # Valid braces not after HTML
+        ('Text {style="color: red"}', []),
+        ('<img/>{style="width:50%"}', []),  # Self-closing tags
+    ],
+)
+def test_check_html_with_braces(text: str, expected_errors: List[str]):
+    """Test the check_html_with_braces function."""
+    errors = source_file_checks.check_html_with_braces(text)
+    assert errors == expected_errors

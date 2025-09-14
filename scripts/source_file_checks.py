@@ -319,7 +319,7 @@ def check_card_image(metadata: dict) -> List[str]:
     return errors
 
 
-def _check_spaces_in_path(file_path: Path) -> List[str]:
+def check_spaces_in_path(file_path: Path) -> List[str]:
     """Check if the file path contains spaces."""
     return ["File path contains spaces"] if " " in str(file_path) else []
 
@@ -445,6 +445,26 @@ def check_stray_katex(text: str) -> List[str]:
     return errors
 
 
+def check_html_with_braces(text: str) -> List[str]:
+    """Check for HTML elements followed by {style="..."}, which won't work as
+    intended."""
+    errors = []
+    stripped_text = remove_code_and_math(text)
+
+    # Pattern to match HTML closing tag followed by {[^}]*="..."}
+    # e.g. </video>{style="width:50%;"}
+    pattern = r"</[a-zA-Z][^>]*>\s*\{[^}]+\}"
+
+    for match in re.finditer(pattern, stripped_text):
+        line_num = stripped_text[: match.start()].count("\n") + 1
+        errors.append(
+            f"HTML element with style braces at line {line_num}: "
+            f"{match.group().strip()}"
+        )
+
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -473,7 +493,8 @@ def check_file_data(
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
-        "invalid_filename": _check_spaces_in_path(file_path),
+        "html_braces": check_html_with_braces(text),
+        "invalid_filename": check_spaces_in_path(file_path),
     }
 
     if metadata:
