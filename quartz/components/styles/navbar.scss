@@ -245,12 +245,38 @@
   }
 }
 
+#video-toggle-span {
+  --video-toggle-icon-size: 15px;
+
+  position: absolute;
+  top: 3%;
+  left: 3%;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+
+  & #video-toggle {
+    width: var(--video-toggle-icon-size);
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+
+    & svg {
+      width: inherit;
+      margin: 0;
+      color: var(--midground);
+    }
+  }
+}
+
 #darkmode-span {
+  --darkmode-icon-size: 25px;
+
   z-index: 3;
   position: absolute;
   right: 0;
   top: 5%;
-  font-size: var(--font-size-minus-2);
   text-align: right;
   display: flex;
   flex-direction: row-reverse;
@@ -269,18 +295,19 @@
 
   & #theme-toggle {
     display: inline-block;
-    width: 20px;
-    min-width: 20px; // Prevent flex collapse
-    height: 20px;
+    width: var(--darkmode-icon-size);
+    min-width: var(--darkmode-icon-size); // Prevent flex collapse
+    height: var(--darkmode-icon-size);
     position: relative;
     border: none;
     background-color: transparent;
-    margin-right: calc(0.5 * $base-margin);
+    margin-right: calc(0.25 * $base-margin);
+    margin-top: calc(0.125 * $base-margin);
 
     @media all and (min-width: $min-desktop-width) {
-      margin-right: 0;
-      margin-bottom: calc(0.5 * $base-margin);
-      align-self: center; // Centered above the auto text
+      --darkmode-icon-size: 15px;
+
+      margin-right: calc(0.5 * $base-margin);
     }
   }
 
@@ -290,6 +317,7 @@
     margin: 0;
     margin-right: calc(0.75 * $base-margin);
     flex-shrink: 0; // Don't want it to wrap
+    font-size: var(--font-size-minus-2);
     font-style: italic; // Differentiate from navbar links
     user-select: all;
     cursor: text;

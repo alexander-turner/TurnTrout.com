@@ -1,8 +1,67 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page, type Locator } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
+
+// Video test helpers
+interface VideoElements {
+  video: Locator
+  autoplayToggle: Locator
+  playIcon: Locator
+  pauseIcon: Locator
+}
+
+function getVideoElements(page: Page): VideoElements {
+  return {
+    video: page.locator(`video#${pondVideoId}`),
+    autoplayToggle: page.locator("#video-toggle"),
+    playIcon: page.locator("#play-icon"),
+    pauseIcon: page.locator("#pause-icon"),
+  }
+}
+
+async function getCurrentTime(video: Locator): Promise<number> {
+  return video.evaluate((v: HTMLVideoElement) => v.currentTime)
+}
+
+async function isPaused(video: Locator): Promise<boolean> {
+  return video.evaluate((v: HTMLVideoElement) => v.paused)
+}
+
+async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
+  await videoElements.autoplayToggle.click()
+  await videoElements.video
+    .page()
+    .waitForFunction(
+      (id: string) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+      pondVideoId,
+    )
+}
+
+async function waitForVideoTimestamp(video: Locator, minTime: number): Promise<void> {
+  await video.page().waitForFunction(
+    (args: { id: string; minTime: number }) => {
+      const vid = document.querySelector<HTMLVideoElement>(`#${args.id}`)
+      return vid && vid.currentTime > args.minTime
+    },
+    { id: pondVideoId, minTime },
+  )
+}
+
+async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
+  const { video } = videoElements
+
+  await ensureVideoPlaying(videoElements)
+
+  // Wait for video to play for a bit to get a non-zero timestamp
+  await waitForVideoTimestamp(video, 1)
+
+  const timestamp = await getCurrentTime(video)
+  expect(timestamp).toBeGreaterThan(1)
+
+  return timestamp
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
@@ -72,11 +131,9 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
 
   const navbar = page.locator("#navbar")
 
-  // Initial state check
   await expect(navbar).toBeVisible()
   await expect(navbar).not.toHaveClass(/hide-above-screen/)
 
-  // Scroll down
   await page.evaluate(() => {
     window.scrollTo({
       top: 250,
@@ -84,11 +141,9 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
     })
   })
 
-  // Wait for scroll animation and navbar to hide
   await expect(navbar).toHaveClass(/hide-above-screen/)
   await expect(navbar).toHaveCSS("opacity", "0")
 
-  // Scroll back up
   await page.evaluate(() => {
     window.scrollTo({
       top: 0,
@@ -96,7 +151,6 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
     })
   })
 
-  // Wait for scroll animation and navbar to show
   await expect(navbar).not.toHaveClass(/hide-above-screen/)
   await expect(navbar).toBeVisible()
 })
@@ -107,7 +161,6 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   const navbar = page.locator("#navbar")
   await expect(navbar).toHaveCSS("opacity", "1")
 
-  // Scroll down
   await page.evaluate(() => window.scrollBy(0, 100))
 
   await page.evaluate(() => {
@@ -163,7 +216,6 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
     })
   }
 
-  // Initial state - no shadow
   await expect(navbar).not.toHaveClass(/shadow/)
   await takeNavbarScreenshot("navbar-no-shadow")
 
@@ -175,7 +227,6 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
     })
   })
 
-  // Verify shadow class is added
   await expect(navbar).toHaveClass(/shadow/)
   await takeNavbarScreenshot("navbar-with-shadow")
 
@@ -231,76 +282,133 @@ test("Right sidebar is visible on desktop on page load", async ({ page }) => {
   expect(initialDisplayStyle).toBe("flex")
 })
 
-test("Video plays on hover and pauses on mouse leave", async ({ page }) => {
+test("Clicking TOC title scrolls to top", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  const video = page.locator(`video#${pondVideoId}`)
+  await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }))
+  await page.waitForFunction(() => window.scrollY === 500)
 
-  const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
+  const tocTitle = page.locator("#toc-title button")
+  await expect(tocTitle).toBeVisible()
+  await tocTitle.click()
 
-  // 1. Initial state: Paused
+  await page.waitForFunction(() => window.scrollY === 0)
+})
+
+test("Video toggle button is visible and functional", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  const { autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
+
+  await expect(autoplayToggle).toBeVisible()
+  await expect(pauseIcon).toBeVisible()
+  await expect(playIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
+})
+
+test("Video toggle changes autoplay behavior", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
+
   await expect(video).toBeVisible()
-  expect(await isPaused()).toBe(true)
+  expect(await isPaused(video)).toBe(false)
+  await expect(pauseIcon).toBeVisible()
+  await expect(playIcon).toBeHidden()
 
-  // 2. Hover over: Plays
-  await video.dispatchEvent("mouseenter")
-  await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  await autoplayToggle.click()
 
-  // 3. Hover away: Pauses
-  await video.dispatchEvent("mouseleave")
+  // Video should pause and icons should switch
   await page.waitForFunction(
     (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
   )
+  await expect(playIcon).toBeVisible()
+  await expect(pauseIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
+
+  await autoplayToggle.click()
+
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
+  await expect(pauseIcon).toBeVisible()
+  await expect(playIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
 })
 
-test("Video plays on hover and pauses on mouse leave (SPA)", async ({ page }) => {
+test("Video autoplay preference persists across page reloads", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  const video = page.locator(`video#${pondVideoId}`)
+  const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
-  const isPaused = async () => video.evaluate((v: HTMLVideoElement) => v.paused)
+  await autoplayToggle.click()
+  await expect(playIcon).toBeVisible()
+  await expect(pauseIcon).toBeHidden()
 
-  // 1. Initial state: Paused
-  await expect(video).toBeVisible()
-  expect(await isPaused()).toBe(true)
+  await page.reload({ waitUntil: "load" })
 
-  // Navigate to a new page
+  await expect(playIcon).toBeVisible()
+  await expect(pauseIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
+  expect(await isPaused(video)).toBe(true)
+})
+
+test("Video autoplay works correctly after SPA navigation", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  const { video, autoplayToggle } = getVideoElements(page)
+
+  await autoplayToggle.click()
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
+
+  const initialUrl = page.url()
+  // TODO might not be local
+  const localLink = page.locator("a").first()
+  await localLink.click()
+  await page.waitForURL((url) => url.pathname !== initialUrl)
+
+  // Setting should persist and video should still be paused
+  expect(await isPaused(video)).toBe(true)
+
+  await autoplayToggle.click()
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
+})
+
+test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  const videoElements = getVideoElements(page)
+  const { video } = videoElements
+
+  const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
+
   const initialUrl = page.url()
   const localLink = page.locator("a").first()
   await localLink.click()
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
-  // 2. Hover over: Plays
-  await video.dispatchEvent("mouseenter")
-  await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
-
-  // 3. Hover away: Pauses
-  await video.dispatchEvent("mouseleave")
-  await page.waitForFunction(
-    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  const timestampAfterNavigation = await getCurrentTime(video)
+  expect(Math.abs(timestampAfterNavigation - timestampBeforeNavigation)).toBeLessThan(0.5)
 })
 
-test("Clicking TOC title scrolls to top", async ({ page }) => {
+test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  // Scroll down the page
-  await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }))
-  await page.waitForFunction(() => window.scrollY === 500)
+  const videoElements = getVideoElements(page)
+  const { video } = videoElements
 
-  // Click the TOC title button
-  const tocTitle = page.locator("#toc-title button")
-  await expect(tocTitle).toBeVisible()
-  await tocTitle.click()
+  const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
 
-  // Wait for the smooth scroll to finish and verify scroll position
-  await page.waitForFunction(() => window.scrollY === 0)
+  await page.reload()
+
+  const timestampAfterRefresh = await getCurrentTime(video)
+  expect(Math.abs(timestampAfterRefresh - timestampBeforeRefresh)).toBeLessThan(0.5)
 })

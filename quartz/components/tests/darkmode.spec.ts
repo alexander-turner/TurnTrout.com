@@ -139,7 +139,7 @@ test("Dark mode icons toggle correctly through states using setTheme", async ({ 
   await helper.verifyThemeLabel(finalState)
 })
 
-/* If detectDarkMode.js isn't working right, the FOUC will happen here */
+/* If detectInitialState.js isn't working right, the FOUC will happen here */
 test("No flash of unstyled content on page load", async ({ page }) => {
   const afterScreenshots = new Map<Theme, Buffer>()
   const minimalHtml = `
@@ -147,7 +147,7 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     <html>
       <head>
         <link rel="stylesheet" href="/index.css">
-        <script id="detect-dark-mode" src="/static/scripts/detectDarkMode.js"></script>
+        <script id="detect-dark-mode" src="/static/scripts/detectInitialState.js"></script>
       </head>
       <body>
       </body>

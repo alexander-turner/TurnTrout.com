@@ -4222,5 +4222,17 @@
   "https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.avif": {
     "width": 895,
     "height": 452
+  },
+  "./asset_staging/team-shard-20250908171607.png": {
+    "width": 512,
+    "height": 512
+  },
+  "./asset_staging/design-20250914111053.png": {
+    "width": 520,
+    "height": 378
+  },
+  "./asset_staging/design-20250914111611.gif": {
+    "width": 494,
+    "height": 514
   }
 }

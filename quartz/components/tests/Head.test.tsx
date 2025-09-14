@@ -200,7 +200,7 @@ describe("Head Component", () => {
       const html = render(h(Head, mockProps))
 
       expect(html).toContain('id="detect-dark-mode"')
-      expect(html).toContain("/static/scripts/detectDarkMode.js")
+      expect(html).toContain("/static/scripts/detectInitialState.js")
     })
 
     it("should include analytics script", () => {

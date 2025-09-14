@@ -242,14 +242,16 @@ However, it was quite difficult to produce a transparent MP4 (as required by Saf
 
 #### Website video looping
 
-To make the site quieter and more peaceful, the desktop website's pond video (below) only plays while the mouse hovers over it.
+I love the desktop website's pond video. However, some find it distracting. I provide a pause button to bring them peace.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/pond-video-interaction.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/pond-video-interaction.webm" type="video/webm"></video>
+![](design-20250914111611.gif){style="width:50%;"}  
 
-Figure: By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video frame stays constant until the user hovers over the video again. Furthermore, since the auto/light/dark mode selector is above the pond, that provides a natural interaction pathway for the user to realize the "pond image" is actually a "pond video"!
+By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video state remains stable, giving the appearance of a persistent pond scene which unfolds throughout your time on my site.
+
+Previously, I had the video only play when hovered. However, that prevented looping the video throughout the reading experience—a feature which several others missed. Hopefully, `gwern` and others find peace via the pause button.
 
 <!-- spellchecker-disable -->
-> [!quote] [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h), who suggested this design choice
+> [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
 > In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
 >
