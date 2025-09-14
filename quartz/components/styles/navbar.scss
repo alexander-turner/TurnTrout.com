@@ -250,7 +250,7 @@
 
   position: absolute;
   top: 3%;
-  left: 3%;
+  left: $base-margin;
 
   @media all and (max-width: $max-mobile-width) {
     display: none;
@@ -261,6 +261,7 @@
     border: none;
     cursor: pointer;
     background-color: transparent;
+    margin: 0;
 
     & svg {
       width: inherit;
