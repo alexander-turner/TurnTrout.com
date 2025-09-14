@@ -434,6 +434,41 @@ test.describe("Right sidebar", () => {
     })
   })
 
+  test("ContentMeta first link has hover coloring", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    await setDummyContentMeta(page)
+
+    const firstLink = page.locator("#content-meta a").first()
+    await firstLink.scrollIntoViewIfNeeded()
+    await expect(firstLink).toBeVisible()
+
+    const expectedHoverColor = await page.evaluate(() => {
+      const dummy = document.createElement("div")
+      dummy.style.color = "var(--color-link-hover)"
+      document.body.appendChild(dummy)
+      const color = getComputedStyle(dummy).color
+      dummy.remove()
+      return color
+    })
+
+    await firstLink.hover()
+
+    // Wait until color matches expected hover color
+    await page.waitForFunction(
+      ([sel, expected]) => {
+        const el = document.querySelector(sel)
+        return el && getComputedStyle(el).color === expected
+      },
+      ["#content-meta a", expectedHoverColor],
+    )
+
+    const hoverColor = await firstLink.evaluate((el) => getComputedStyle(el).color)
+    console.log("hoverColor", hoverColor)
+
+    expect(hoverColor).toEqual(expectedHoverColor)
+  })
+
   test("Backlinks are visible (lostpixel)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     const backlinks = page.locator("#backlinks").first()
