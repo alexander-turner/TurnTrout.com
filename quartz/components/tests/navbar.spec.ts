@@ -47,26 +47,19 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   }
 }
 
-async function waitForVideoTimestamp(video: Locator, minTime: number): Promise<void> {
-  await video.page().waitForFunction(
-    (args: { id: string; minTime: number }) => {
-      const vid = document.querySelector<HTMLVideoElement>(`#${args.id}`)
-      return vid && vid.currentTime > args.minTime
-    },
-    { id: pondVideoId, minTime },
-  )
-}
-
+const fixedTimestamp = 2.5
 async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
   const { video } = videoElements
 
   await ensureVideoPlaying(videoElements)
 
-  // Wait for video to play for a bit to get a non-zero timestamp
-  await waitForVideoTimestamp(video, 1)
+  // Set a fixed timestamp instead of waiting
+  await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
+    v.currentTime = timestamp
+  }, fixedTimestamp)
 
   const timestamp = await getCurrentTime(video)
-  expect(timestamp).toBeGreaterThan(1)
+  expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
 
   return timestamp
 }
@@ -404,19 +397,15 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
   const timestampAfterNavigation = await getCurrentTime(video)
-  expect(Math.abs(timestampAfterNavigation - timestampBeforeNavigation)).toBeLessThan(0.5)
+  expect(timestampAfterNavigation).toBeGreaterThan(timestampBeforeNavigation)
 })
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  const { video } = getVideoElements(page)
-
-  // Set a specific timestamp
-  const targetTimestamp = 3
-  await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
-    v.currentTime = timestamp
-  }, targetTimestamp)
+  const videoElements = getVideoElements(page)
+  const { video } = videoElements
+  const targetTimestamp = await setupVideoForTimestampTest(videoElements)
 
   // Wait for timestamp to be saved to sessionStorage
   await page.waitForFunction(

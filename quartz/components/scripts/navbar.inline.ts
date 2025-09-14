@@ -8,11 +8,9 @@ const autoplayKey = "pond-video-autoplay"
 
 function getAutoplayEnabled(): boolean {
   const saved = localStorage.getItem(autoplayKey)
-  console.debug("Local storage value for autoplay: ", saved)
   return saved !== null ? saved === "true" : true // Default to enabled
 }
 
-// TODO use for detect initial state
 function updatePlayPauseButton(): void {
   const button = document.getElementById("video-toggle") as HTMLButtonElement | null
   const playIcon = document.getElementById("play-icon")
@@ -72,21 +70,21 @@ function setupPondVideo(): void {
     // Restore timestamp
     const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
     if (savedTime) {
-      console.debug("Restoring video timestamp", savedTime)
+      console.debug("[setupPondVideo] Restoring video timestamp", savedTime)
       videoElement.currentTime = parseFloat(savedTime)
     }
 
+    // Apply current autoplay state
     if (getAutoplayEnabled()) {
       void videoElement.play()
     } else {
       videoElement.pause()
     }
 
-    // TODO load at detect initial state -- getting flickering of poster
     // Save timestamp before page unload/refresh
     const saveTimestamp = () => {
       sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-      console.debug("Saving video timestamp", videoElement.currentTime)
+      console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
     }
 
     // Save timestamp on various events
@@ -104,7 +102,7 @@ function setupPondVideo(): void {
 setupDarkMode()
 setupHamburgerMenu()
 setupSearch()
-setupScrollHandler() // Mobile: hide navbar on scroll down, show on scroll up
+setupScrollHandler()
 setupPondVideo()
 setupAutoplayToggle()
 

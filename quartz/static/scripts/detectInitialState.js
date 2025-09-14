@@ -27,13 +27,14 @@
       "aria-label",
       autoplayEnabled ? "Disable video autoplay" : "Enable video autoplay",
     )
+    console.debug("[DetectInitialState] Pond video autoplay enabled: ", autoplayEnabled)
 
     if (autoplayEnabled) {
-      playIcon.style.display = "block"
-      pauseIcon.style.display = "none"
-    } else {
       playIcon.style.display = "none"
       pauseIcon.style.display = "block"
+    } else {
+      playIcon.style.display = "block"
+      pauseIcon.style.display = "none"
     }
   }
 })()
