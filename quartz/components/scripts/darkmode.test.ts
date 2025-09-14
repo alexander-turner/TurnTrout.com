@@ -45,6 +45,13 @@ describe("darkmode", () => {
     toggle.click()
   }
 
+  const getThemeLabelContent = (): string => {
+    const customPropertyValue =
+      document.documentElement.style.getPropertyValue("--theme-label-content")
+    // Remove surrounding quotes if present
+    return customPropertyValue.replace(/"/g, "")
+  }
+
   beforeEach(() => {
     document.body.innerHTML = `
       <div id="darkmode-span">
@@ -97,7 +104,7 @@ describe("darkmode", () => {
         document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
 
         expect(document.documentElement.getAttribute("data-theme")).toBe(systemPrefers)
-        expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+        expect(getThemeLabelContent()).toBe("Auto")
       })
     }
 
@@ -109,7 +116,7 @@ describe("darkmode", () => {
       document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
 
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
-      expect(document.querySelector("#theme-label")?.textContent).toBe("Dark")
+      expect(getThemeLabelContent()).toBe("Dark")
     })
   })
 
@@ -119,7 +126,7 @@ describe("darkmode", () => {
       document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
 
       triggerToggle()
-      expect(document.querySelector("#theme-label")?.textContent).toBe("Light")
+      expect(getThemeLabelContent()).toBe("Light")
     })
 
     it("should update localStorage when theme is changed", () => {
@@ -129,7 +136,7 @@ describe("darkmode", () => {
       triggerToggle()
 
       expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "light")
-      expect(document.querySelector("#theme-label")?.textContent).toBe("Light")
+      expect(getThemeLabelContent()).toBe("Light")
     })
   })
 
@@ -213,14 +220,14 @@ describe("darkmode", () => {
       expect(localStorage.getItem("saved-theme")).toBe("light")
       expect(document.documentElement.getAttribute("data-theme")).toBe("light")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("light")
-      expect(document.querySelector("#theme-label")?.textContent).toBe("Light")
+      expect(getThemeLabelContent()).toBe("Light")
 
       // light -> dark
       rotateTheme()
       expect(localStorage.getItem("saved-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("dark")
-      expect(document.querySelector("#theme-label")?.textContent).toBe("Dark")
+      expect(getThemeLabelContent()).toBe("Dark")
 
       // dark -> auto
       rotateTheme()

@@ -199,7 +199,7 @@ describe("Head Component", () => {
     it("should include dark mode detection script", () => {
       const html = render(h(Head, mockProps))
 
-      expect(html).toContain('id="detect-dark-mode"')
+      expect(html).toContain('id="detect-initial-state"')
       expect(html).toContain("/static/scripts/detectInitialState.js")
     })
 
