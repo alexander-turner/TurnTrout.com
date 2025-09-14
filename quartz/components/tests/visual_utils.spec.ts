@@ -121,12 +121,17 @@ test.describe("visual_utils functions", () => {
       )
       expect(themeMode).toBe(theme)
 
-      // Check theme label text
-      const labelText = await page.evaluate(
-        () => document.querySelector("#theme-label")?.textContent,
-      )
+      // Check theme label content via CSS custom property
+      const labelContent = await page.evaluate(() => {
+        const computedStyle = getComputedStyle(document.documentElement)
+        return computedStyle.getPropertyValue("--theme-label-content").replace(/"/g, "")
+      })
       const expectedLabel = (theme as string).charAt(0).toUpperCase() + theme.slice(1)
-      expect(labelText).toBe(expectedLabel)
+      expect(labelContent).toBe(expectedLabel)
+
+      // Also verify the visual appearance shows the correct text
+      const labelElement = page.locator("#theme-label")
+      await expect(labelElement).toHaveText(expectedLabel)
     })
   }
 

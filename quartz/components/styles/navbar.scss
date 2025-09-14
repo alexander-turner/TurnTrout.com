@@ -268,6 +268,14 @@
       margin: 0;
       color: var(--midground);
     }
+
+    & #play-icon {
+      display: var(--video-play-display, none);
+    }
+
+    & #pause-icon {
+      display: var(--video-pause-display, block);
+    }
   }
 }
 
@@ -322,6 +330,10 @@
     font-style: italic; // Differentiate from navbar links
     user-select: all;
     cursor: text;
+
+    &::after {
+      content: var(--theme-label-content, "Auto");
+    }
 
     @media all and (max-width: $max-mobile-width) {
       margin-left: calc(0.25 * $base-margin);

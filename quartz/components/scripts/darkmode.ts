@@ -17,10 +17,10 @@ export function getSystemTheme(): Theme {
  * @param theme - The current theme
  */
 function updateThemeLabel(theme: Theme) {
-  const toggle = document.querySelector("#theme-label") as HTMLButtonElement
-  if (toggle) {
-    toggle.textContent = theme.charAt(0).toUpperCase() + theme.slice(1)
-  }
+  const themeLabel = theme.charAt(0).toUpperCase() + theme.slice(1)
+
+  // Update CSS custom property - the CSS ::after will display this content
+  document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
 }
 
 /* istanbul ignore next: DOM manipulation, tested in darkmode.spec.ts */

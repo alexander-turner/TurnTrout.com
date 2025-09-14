@@ -40,10 +40,9 @@ export async function setTheme(page: Page, theme: Theme) {
   await page.evaluate((t) => {
     localStorage.setItem("saved-theme", t)
 
-    const themeLabel = document.querySelector("#theme-label") as HTMLElement
-    if (themeLabel) {
-      themeLabel.textContent = t.charAt(0).toUpperCase() + t.slice(1)
-    }
+    // Set theme label content via CSS custom property (not textContent to avoid duplication)
+    const themeLabel = t.charAt(0).toUpperCase() + t.slice(1)
+    document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
 
     const root = document.documentElement
     root.setAttribute("data-theme-mode", t)

@@ -13,25 +13,23 @@ function getAutoplayEnabled(): boolean {
 
 function updatePlayPauseButton(): void {
   const button = document.getElementById("video-toggle") as HTMLButtonElement | null
-  const playIcon = document.getElementById("play-icon")
-  const pauseIcon = document.getElementById("pause-icon")
 
-  if (button && playIcon && pauseIcon) {
+  if (button) {
     const autoplayEnabled = getAutoplayEnabled()
     button.setAttribute(
       "aria-label",
       autoplayEnabled ? "Disable video autoplay" : "Enable video autoplay",
     )
 
-    if (autoplayEnabled) {
-      // Show pause icon, hide play icon
-      playIcon.style.display = "none"
-      pauseIcon.style.display = "block"
-    } else {
-      // Show play icon, hide pause icon
-      playIcon.style.display = "block"
-      pauseIcon.style.display = "none"
-    }
+    // Update CSS custom properties to control icon visibility
+    document.documentElement.style.setProperty(
+      "--video-play-display",
+      autoplayEnabled ? "none" : "block",
+    )
+    document.documentElement.style.setProperty(
+      "--video-pause-display",
+      autoplayEnabled ? "block" : "none",
+    )
   }
 }
 

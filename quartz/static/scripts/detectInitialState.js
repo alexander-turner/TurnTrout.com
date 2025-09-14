@@ -1,40 +1,39 @@
 ;(() => {
-  let theme = localStorage.getItem("saved-theme") || "auto"
-  document.documentElement.setAttribute("data-theme-mode", theme)
+  let themeMode = localStorage.getItem("saved-theme") || "auto"
+  document.documentElement.setAttribute("data-theme-mode", themeMode)
 
-  // If the theme is auto, set it to the user's preference
-  if (theme === "auto") {
-    const userPref = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-    theme = userPref
+  // Determine the actual theme to apply
+  let actualTheme = themeMode
+  if (themeMode === "auto") {
+    const windowMatchMedia = window.matchMedia("(prefers-color-scheme: dark)")
+    actualTheme = windowMatchMedia.matches ? "dark" : "light"
   }
 
-  document.documentElement.setAttribute("data-theme", theme)
+  document.documentElement.setAttribute("data-theme", actualTheme)
 
-  // Update the theme label
-  const themeLabel = document.querySelector("#theme-label")
-  if (themeLabel) {
-    themeLabel.textContent = theme.charAt(0).toUpperCase() + theme.slice(1)
-  }
+  // Set theme label content in CSS custom property - show the mode, not the resolved theme
+  document.documentElement.style.setProperty(
+    "--theme-label-content",
+    '"' + themeMode.charAt(0).toUpperCase() + themeMode.slice(1) + '"',
+  )
 
-  // Set video autoplay button state
+  // Set video autoplay button state in CSS custom properties
   const autoplayEnabled = localStorage.getItem("pond-video-autoplay") !== "false" // Default to true
-  const button = document.querySelector("#video-toggle")
-  const playIcon = document.querySelector("#play-icon")
-  const pauseIcon = document.querySelector("#pause-icon")
+  document.documentElement.style.setProperty(
+    "--video-play-display",
+    autoplayEnabled ? "none" : "block",
+  )
+  document.documentElement.style.setProperty(
+    "--video-pause-display",
+    autoplayEnabled ? "block" : "none",
+  )
 
-  if (button && playIcon && pauseIcon) {
-    button.setAttribute(
-      "aria-label",
-      autoplayEnabled ? "Disable video autoplay" : "Enable video autoplay",
-    )
-    console.debug("[DetectInitialState] Pond video autoplay enabled: ", autoplayEnabled)
-
-    if (autoplayEnabled) {
-      playIcon.style.display = "none"
-      pauseIcon.style.display = "block"
-    } else {
-      playIcon.style.display = "block"
-      pauseIcon.style.display = "none"
-    }
-  }
+  console.debug(
+    "[DetectInitialState] Theme mode:",
+    themeMode,
+    "Actual theme:",
+    actualTheme,
+    "Video autoplay enabled:",
+    autoplayEnabled,
+  )
 })()
