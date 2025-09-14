@@ -53,9 +53,16 @@ class DarkModeHelper {
   }
 
   async verifyThemeLabel(expectedTheme: Theme): Promise<void> {
-    const label = this.page.locator("#theme-label")
     const expectedLabel = expectedTheme.charAt(0).toUpperCase() + expectedTheme.slice(1)
-    await expect(label).toHaveText(expectedLabel)
+
+    // The theme label text is displayed via CSS ::after pseudo-element
+    // We need to read the CSS custom property value instead of textContent
+    const labelContent = await this.page.evaluate(() => {
+      const computedStyle = getComputedStyle(document.documentElement)
+      return computedStyle.getPropertyValue("--theme-label-content").replace(/"/g, "")
+    })
+
+    expect(labelContent).toBe(expectedLabel)
   }
 }
 

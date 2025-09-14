@@ -129,9 +129,15 @@ test.describe("visual_utils functions", () => {
       const expectedLabel = (theme as string).charAt(0).toUpperCase() + theme.slice(1)
       expect(labelContent).toBe(expectedLabel)
 
-      // Also verify the visual appearance shows the correct text
-      const labelElement = page.locator("#theme-label")
-      await expect(labelElement).toHaveText(expectedLabel)
+      // Also verify the visual appearance shows the correct text via computed styles
+      // Note: The text is displayed via CSS ::after pseudo-element, not textContent
+      const actualDisplayedText = await page.evaluate(() => {
+        const element = document.querySelector("#theme-label")
+        if (!element) return ""
+        const computedStyle = getComputedStyle(element, "::after")
+        return computedStyle.getPropertyValue("content").replace(/"/g, "")
+      })
+      expect(actualDisplayedText).toBe(expectedLabel)
     })
   }
 
