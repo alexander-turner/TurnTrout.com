@@ -81,6 +81,22 @@ function setupPondVideo(): void {
     } else {
       videoElement.pause()
     }
+
+    // TODO load at detect initial state -- getting flickering of poster
+    // Save timestamp before page unload/refresh
+    const saveTimestamp = () => {
+      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+      console.debug("Saving video timestamp", videoElement.currentTime)
+    }
+
+    // Save timestamp on various events
+    window.addEventListener("beforeunload", saveTimestamp)
+    window.addEventListener("pagehide", saveTimestamp)
+
+    // Also save timestamp periodically during playback
+    videoElement.addEventListener("timeupdate", () => {
+      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    })
   }
 }
 

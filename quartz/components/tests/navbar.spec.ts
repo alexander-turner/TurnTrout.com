@@ -30,13 +30,21 @@ async function isPaused(video: Locator): Promise<boolean> {
 }
 
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
-  await videoElements.autoplayToggle.click()
-  await videoElements.video
-    .page()
-    .waitForFunction(
-      (id: string) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-      pondVideoId,
-    )
+  const { video } = videoElements
+
+  // Check if video is already playing
+  const isCurrentlyPaused = await isPaused(video)
+
+  // If video is paused, click toggle to enable autoplay
+  if (isCurrentlyPaused) {
+    await videoElements.autoplayToggle.click()
+    await video
+      .page()
+      .waitForFunction(
+        (id: string) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+        pondVideoId,
+      )
+  }
 }
 
 async function waitForVideoTimestamp(video: Locator, minTime: number): Promise<void> {
@@ -402,13 +410,25 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  const videoElements = getVideoElements(page)
-  const { video } = videoElements
+  const { video } = getVideoElements(page)
 
-  const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
+  // Set a specific timestamp
+  const targetTimestamp = 3
+  await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
+    v.currentTime = timestamp
+  }, targetTimestamp)
+
+  // Wait for timestamp to be saved to sessionStorage
+  await page.waitForFunction(
+    (args) => {
+      const saved = sessionStorage.getItem(args.key)
+      return saved && Math.abs(parseFloat(saved) - args.timestamp) < 0.1
+    },
+    { key: "pond-video-timestamp", timestamp: targetTimestamp },
+  )
 
   await page.reload()
 
   const timestampAfterRefresh = await getCurrentTime(video)
-  expect(Math.abs(timestampAfterRefresh - timestampBeforeRefresh)).toBeLessThan(0.5)
+  expect(timestampAfterRefresh).toBeGreaterThan(targetTimestamp)
 })
