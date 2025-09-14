@@ -41,14 +41,14 @@ describe("reorderHead", () => {
 
   it("should place the scroll restoration script at the very top", () => {
     const querier = createHtml(`
-      <script id="detect-dark-mode">/* dark mode */</script>
+      <script id="detect-initial-state">/* dark mode */</script>
       <meta charset="utf-8">
       <title>Test</title>
       <script>console.log('other')</script>
     `)
     const result = reorderHead(querier)
     const children = result("head").children()
-    expect(children.first().attr("id")).toBe("detect-dark-mode")
+    expect(children.first().attr("id")).toBe("detect-initial-state")
     expect(children.length).toBe(4)
   })
 
@@ -61,9 +61,9 @@ describe("reorderHead", () => {
         <link rel="stylesheet" href="style.css">
         <style id="critical-css">.test{color:red}</style>
         <title>Test</title>
-        <script id="detect-dark-mode">/* dark mode */</script>
+        <script id="detect-initial-state">/* initial state */</script>
       `,
-      expectedOrder: ["script", "meta", "title", "style", "link", "script"], // dark mode, meta, title, critical, link, other script
+      expectedOrder: ["script", "meta", "title", "style", "link", "script"], // initial state, meta, title, critical, link, other script
     },
     {
       name: "minimal elements",
@@ -94,7 +94,7 @@ describe("reorderHead", () => {
       expected: "Test &amp; example &gt; other text",
     },
     { selector: "title", expected: "Test &amp; Title" },
-    { selector: "script#detect-dark-mode", expected: "if (x &lt; 5 &amp;&amp; y &gt; 3) {}" },
+    { selector: "script#detect-initial-state", expected: "if (x &lt; 5 &amp;&amp; y &gt; 3) {}" },
     { selector: "style#critical-css", expected: "/* test &amp; comment */" },
     { selector: 'link[rel="stylesheet"]', attr: "href", expected: "style.css?foo=1&amp;bar=2" },
   ]
@@ -105,7 +105,7 @@ describe("reorderHead", () => {
       const initialQuerier = createHtml(`
         <meta name="description" content="Test &amp; example &gt; other text">
         <title>Test &amp; Title</title>
-        <script id="detect-dark-mode">if (x &lt; 5 &amp;&amp; y &gt; 3) {}</script>
+        <script id="detect-initial-state">if (x &lt; 5 &amp;&amp; y &gt; 3) {}</script>
         <style id="critical-css">/* test &amp; comment */</style>
         <link rel="stylesheet" href="style.css?foo=1&amp;bar=2">
       `)

@@ -147,7 +147,7 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     <html>
       <head>
         <link rel="stylesheet" href="/index.css">
-        <script id="detect-dark-mode" src="/static/scripts/detectInitialState.js"></script>
+        <script id="detect-initial-state" src="/static/scripts/detectInitialState.js"></script>
       </head>
       <body>
       </body>

@@ -128,13 +128,13 @@ export default (() => {
       )
     })
 
-    // Inline the detect-dark-mode script to prevent FOUC
+    // Inline the detect-initial-state script to prevent FOUC
     return (
       <head>
         <meta charSet="utf-8" />
         <script
           data-cfasync="false" // Otherwise rocketloader delays the script
-          id="detect-dark-mode"
+          id="detect-initial-state"
           src="/static/scripts/detectInitialState.js"
           spa-preserve
         />
