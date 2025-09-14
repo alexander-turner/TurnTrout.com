@@ -102,7 +102,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ![](https://assets.turntrout.com/static/images/posts/kr6sUam.avif )
 
-<pre class="h2" style="display:block; text-align: center"> ¯\__(ツ)__/¯</pre>
+<pre class="h2" style="display:block; text-align: center; background-color: transparent;"> ¯\__(ツ)__/¯</pre>
 
 ![](https://assets.turntrout.com/static/images/posts/PWJmONq.avif)
 
