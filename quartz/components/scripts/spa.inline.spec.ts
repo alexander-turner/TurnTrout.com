@@ -356,6 +356,36 @@ test.describe("Instant Scroll Restoration", () => {
     const finalScroll = await page.evaluate(() => window.scrollY)
     expect(finalScroll).toBeGreaterThan(0)
   })
+
+  test("layout stability monitoring cancels when user scrolls", async ({ page }) => {
+    const scrollPos = 500
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    // Track console messages to verify monitoring cancellation
+    const consoleMessages: string[] = []
+    page.on("console", (msg) => {
+      if (msg.text().includes("InstantScrollRestoration")) {
+        consoleMessages.push(msg.text())
+      }
+    })
+
+    await page.reload({ waitUntil: "domcontentloaded" })
+
+    // Wait for layout stability monitoring to start
+    await page.waitForFunction(() => {
+      return window.scrollY > 0
+    })
+
+    await page.mouse.wheel(0, 50)
+
+    // Wait for the monitoring to detect and cancel by polling the messages array.
+    // We poll on the Node.js side because the `consoleMessages` array lives here,
+    // not in the browser context that page.waitForFunction evaluates in.
+    await expect
+      .poll(() => consoleMessages.find((msg) => msg.includes("canceled due to user input")))
+      .toBeDefined()
+  })
 })
 
 test.describe("Popstate (Back/Forward) Navigation", () => {

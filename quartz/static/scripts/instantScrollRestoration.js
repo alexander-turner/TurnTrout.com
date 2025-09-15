@@ -100,8 +100,32 @@
     // Monitor for a few frames to catch Firefox layout drift
     let frameCount = 0
     const MAX_MONITOR_FRAMES = 15 // A few more frames to catch late drift
+    let userHasScrolled = false
+
+    // Track user scroll events to cancel monitoring
+    const scrollHandler = () => {
+      const currentScroll = window.scrollY
+      // Only consider it user scrolling if it's significantly different from our target
+      // and not just a small drift we're correcting
+      if (Math.abs(currentScroll - targetPos) > 10) {
+        userHasScrolled = true
+        console.debug(
+          "[InstantScrollRestoration] User scroll detected, canceling layout monitoring",
+        )
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
+      }
+    }
+
+    window.addEventListener("scroll", scrollHandler, { passive: true })
 
     const monitorScroll = () => {
+      // Cancel if user has started scrolling
+      if (userHasScrolled) {
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
+        console.debug("[InstantScrollRestoration] Monitoring canceled due to user input")
+        return
+      }
+
       const currentScroll = window.scrollY
 
       // Correct if we've drifted more than 2px from target
@@ -117,6 +141,7 @@
       if (frameCount < MAX_MONITOR_FRAMES) {
         requestAnimationFrame(monitorScroll)
       } else {
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
         console.debug("[InstantScrollRestoration] Monitoring complete")
       }
     }
