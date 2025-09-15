@@ -35,7 +35,7 @@ For months, I have built a new home for my online content: [`www.turntrout.com`]
 
 <center><strong><img class="emoji" draggable="false" alt="🏰" src="https://assets.turntrout.com/twemoji/1f3f0.svg" loading="lazy"><img class="emoji" draggable="false" alt="🌊" src="https://assets.turntrout.com/twemoji/1f30a.svg" loading="lazy">Welcome to The Pond! <img class="emoji" draggable="false" alt="🐟" src="https://assets.turntrout.com/twemoji/1f41f.svg" loading="lazy"><img class="emoji" draggable="false" alt="🪿" src="https://assets.turntrout.com/twemoji/replacements/1fabf.svg" loading="lazy"></strong></center>
 
-![](https://assets.turntrout.com/static/pond.gif){style="margin-bottom: -3.5rem;"}
+![](https://assets.turntrout.com/static/cropped-pond.gif)
 
 Figure: I commissioned this GIF for $270.94. I paid a bit extra to ensure the goose honks twice.
 
