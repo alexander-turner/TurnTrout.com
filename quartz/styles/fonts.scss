@@ -80,14 +80,14 @@ $fonts-dir: "/static/styles/fonts";
   font-family: "EBGaramondInitialsF1";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2") format("woff2");
   font-display: block;
-  -subfont: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
 }
 
 @font-face {
   font-family: "EBGaramondInitialsF2";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2") format("woff2");
   font-display: block;
-  -subfont: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 }
 
 @font-face {
