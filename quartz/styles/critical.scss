@@ -101,15 +101,27 @@ em {
   }
 
   #left-sidebar {
-    flex-basis: 200px;
-    flex-shrink: 0.25;
-    margin-left: 0;
+    @media all and (min-width: $min-desktop-width) {
+      flex-basis: $left-sidebar-width;
+      flex-shrink: 0.25;
+      margin-left: calc(0.25 * #{$max-sidebar-gap});
+
+      @media all and (min-width: $wider-gap-breakpoint) {
+        margin-left: 0;
+      }
+    }
   }
 
   #right-sidebar {
-    flex-basis: 330px;
-    flex-shrink: 1;
-    padding-right: 0;
+    @media all and (min-width: $min-desktop-width) {
+      padding-right: calc(0.5 * #{$max-sidebar-gap});
+      flex-basis: $right-sidebar-width;
+      flex-shrink: 1;
+
+      @media all and (min-width: $wider-gap-breakpoint) {
+        margin-right: 0;
+      }
+    }
   }
 
   #center-content {

@@ -136,8 +136,6 @@ a {
   }
 
   & > #quartz-body {
-    $wider-gap-breakpoint: calc(#{$min-desktop-width} + 300px);
-
     width: 100%;
     display: flex;
 
