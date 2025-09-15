@@ -118,6 +118,18 @@ a {
   }
 }
 
+#left-sidebar {
+  order: 1;
+}
+
+#center-content {
+  order: 2;
+}
+
+#right-sidebar {
+  order: 3;
+}
+
 .page {
   @media all and (max-width: $max-mobile-width) {
     margin: 0 auto;

@@ -367,11 +367,11 @@ export function renderPage(
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}
+          {RightComponent}
           <div id="center-content">
             {pageHeader}
             <Content {...componentData} />
           </div>
-          {RightComponent}
         </Body>
         <Footer {...componentData} />
       </div>

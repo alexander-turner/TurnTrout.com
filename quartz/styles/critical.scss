@@ -90,45 +90,67 @@ em {
   --blue: #406ecc;
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  margin-top: $top-spacing;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  height: fit-content;
+}
+
 @media all and (min-width: $min-desktop-width) {
   #quartz-body {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    gap: 4rem;
+    gap: calc(0.5 * #{$max-sidebar-gap});
     margin: 0 auto;
   }
 
-  #left-sidebar {
-    @media all and (min-width: $min-desktop-width) {
-      flex-basis: $left-sidebar-width;
-      flex-shrink: 0.25;
-      margin-left: calc(0.25 * #{$max-sidebar-gap});
+  .sidebar {
+    position: sticky;
+    top: $top-spacing;
+    overflow-y: auto;
+    max-height: calc(100vh - #{$top-spacing});
+  }
 
-      @media all and (min-width: $wider-gap-breakpoint) {
-        margin-left: 0;
-      }
-    }
+  #left-sidebar {
+    flex-basis: $left-sidebar-width;
+    flex-shrink: 0.25;
+    margin-left: calc(0.25 * #{$max-sidebar-gap});
+    z-index: 1;
+    order: 1;
   }
 
   #right-sidebar {
-    @media all and (min-width: $min-desktop-width) {
-      padding-right: calc(0.5 * #{$max-sidebar-gap});
-      flex-basis: $right-sidebar-width;
-      flex-shrink: 1;
-
-      @media all and (min-width: $wider-gap-breakpoint) {
-        margin-right: 0;
-      }
-    }
+    padding-right: calc(0.5 * #{$max-sidebar-gap});
+    flex-basis: $right-sidebar-width;
+    flex-shrink: 1;
+    order: 3;
   }
 
   #center-content {
     flex-grow: 1;
     flex-shrink: 1;
-    max-width: 720px;
+    max-width: $page-width;
     overflow-x: hidden;
     width: 100%;
+    order: 2;
+  }
+}
+
+@media all and (min-width: $wider-gap-breakpoint) {
+  #quartz-body {
+    gap: $max-sidebar-gap;
+  }
+
+  #left-sidebar {
+    margin-left: 0;
+  }
+
+  #right-sidebar {
+    margin-right: 0;
   }
 }
