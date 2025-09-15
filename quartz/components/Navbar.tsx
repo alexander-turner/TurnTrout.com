@@ -69,11 +69,11 @@ const videoToggle = (
 
 const darkMode = (
   <span id="darkmode-span" className="no-select">
+    <p id="theme-label" />
     <button id="theme-toggle" type="button" aria-label="Toggle theme">
       {lightSvg}
       {darkSvg}
     </button>
-    <p id="theme-label" />
   </span>
 )
 

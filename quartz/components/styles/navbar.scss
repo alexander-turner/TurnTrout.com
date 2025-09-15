@@ -288,18 +288,13 @@
   top: 5%;
   text-align: right;
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row;
 
   @media all and (max-width: $max-mobile-width) {
     position: relative;
     left: inherit;
     top: inherit;
     margin: 0 calc(1.5 * $base-margin);
-    flex-direction: row; // Left-to-right
-  }
-
-  & #darkmode-toggle {
-    display: none;
   }
 
   & #theme-toggle {
@@ -311,12 +306,15 @@
     border: none;
     background-color: transparent;
     margin-right: calc(0.25 * $base-margin);
-    margin-top: calc(0.125 * $base-margin);
 
     @media all and (min-width: $min-desktop-width) {
       --darkmode-icon-size: 15px;
 
       margin-right: calc(0.5 * $base-margin);
+    }
+
+    @media all and (max-width: $max-mobile-width) {
+      margin-top: calc(0.125 * $base-margin);
     }
   }
 
@@ -325,6 +323,7 @@
     transition: opacity 0.5s ease;
     margin: 0;
     margin-right: calc(0.75 * $base-margin);
+    margin-top: calc(-0.25 * $base-margin);
     flex-shrink: 0; // Don't want it to wrap
     font-size: var(--font-size-minus-2);
     font-style: italic; // Differentiate from navbar links
@@ -336,8 +335,7 @@
     }
 
     @media all and (max-width: $max-mobile-width) {
-      margin-left: calc(0.25 * $base-margin);
-      order: 999; // Push to the end of the row
+      margin-top: calc(0.25 * $base-margin);
     }
   }
 
