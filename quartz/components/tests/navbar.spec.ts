@@ -80,6 +80,8 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await menuButton.click()
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
+  // Move mouse away
+  await page.mouse.move(0, 0)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
     elementToScreenshot: navbarRightMenu,
   })
