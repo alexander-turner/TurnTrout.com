@@ -95,7 +95,7 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack with wait", async ({ page }) => {
-  const allLinks = await page.locator(".can-trigger-popover").all()
+  const allLinks = await page.locator("#center-content .can-trigger-popover").all()
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await link.scrollIntoViewIfNeeded()
@@ -111,7 +111,7 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
-  const allLinks = await page.locator(".can-trigger-popover").all()
+  const allLinks = await page.locator("#center-content .can-trigger-popover").all()
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await expect(link).toBeAttached()
