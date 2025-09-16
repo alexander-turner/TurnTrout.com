@@ -240,7 +240,7 @@ test.describe("Table of contents", () => {
       }
     })
 
-    const tocContent = page.locator(".admonition").first()
+    const tocContent = page.locator(":has(> #toc-content-mobile)").first()
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       elementToScreenshot: tocContent,
     })
