@@ -377,7 +377,9 @@ test.describe("Instant Scroll Restoration", () => {
       return window.scrollY > 0
     })
 
-    await page.mouse.wheel(0, 50)
+    await page.evaluate(() => {
+      window.scrollBy(0, 50)
+    })
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
     // We poll on the Node.js side because the `consoleMessages` array lives here,
