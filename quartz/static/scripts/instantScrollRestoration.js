@@ -1,6 +1,4 @@
 ;(function () {
-  console.debug("[InstantScrollRestoration] Script loaded")
-
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
     window.history.scrollRestoration = "manual"
@@ -33,8 +31,19 @@
 
   // Don't restore hash if we have a saved scroll position - user manually scrolled away
   const shouldRestoreHash = !savedScroll && location.hash.length > 1
-  const BASE_MARGIN = 12 // px
-  const SCROLL_MARGIN_TOP = 6 * BASE_MARGIN // defined in base.scss
+  /**
+   * Returns the computed scroll-margin-top (in px) for a given element.
+   * Falls back to 0 if the property is unavailable or unparsable.
+   */
+  function getScrollMarginTop(elt) {
+    if (!elt || typeof window === "undefined" || !window.getComputedStyle) return 0
+
+    const style = window.getComputedStyle(elt)
+    // Some browsers expose the camelCase property, others require the CSS name
+    const raw = style.scrollMarginTop || style.getPropertyValue("scroll-margin-top")
+    const parsed = parseFloat(raw)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
 
   /**
    * Determine target scroll based on history state or hash.
@@ -53,8 +62,14 @@
       const elt = document.getElementById(id)
       if (elt) {
         const target = elt.getBoundingClientRect().top + window.scrollY
-        console.debug("[InstantScrollRestoration] Hash target found:", target)
-        return target - SCROLL_MARGIN_TOP
+        const marginTop = getScrollMarginTop(elt)
+        console.debug(
+          "[InstantScrollRestoration] Hash target found:",
+          target,
+          "scroll-margin-top:",
+          marginTop,
+        )
+        return target - marginTop
       } else {
         console.debug("[InstantScrollRestoration] Hash element not found yet:", id)
       }
@@ -64,6 +79,16 @@
 
   let attempts = 0
   const MAX_ATTEMPTS = 180 // 3 seconds @ 60fps
+
+  // Flag & helper to mark programmatic scrolls so scroll listeners can ignore them
+  let programmaticScroll = false
+
+  function scrollToProgrammatic(y) {
+    programmaticScroll = true
+    window.scrollTo(0, y)
+    // Reset flag on next frame; scroll event fires before this
+    requestAnimationFrame(() => (programmaticScroll = false))
+  }
 
   function tryScroll() {
     const target = computeTarget()
@@ -75,7 +100,7 @@
     )
 
     if (target !== null) {
-      window.scrollTo(0, target)
+      scrollToProgrammatic(target)
       const actualScroll = window.scrollY
       console.debug("[InstantScrollRestoration] Scrolled to:", actualScroll, "target was:", target)
 
@@ -104,6 +129,8 @@
 
     // Track user scroll events to cancel monitoring
     const scrollHandler = () => {
+      if (programmaticScroll) return
+
       const currentScroll = window.scrollY
       // Only consider it user scrolling if it's significantly different from our target
       // and not just a small drift we're correcting
@@ -126,6 +153,8 @@
         return
       }
 
+      if (programmaticScroll) return
+
       const currentScroll = window.scrollY
 
       // Correct if we've drifted more than 2px from target
@@ -133,7 +162,7 @@
         console.debug(
           `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
         )
-        window.scrollTo(0, targetPos)
+        scrollToProgrammatic(targetPos)
       }
 
       frameCount++
