@@ -127,14 +127,32 @@
     const MAX_MONITOR_FRAMES = 15 // A few more frames to catch late drift
     let userHasScrolled = false
 
-    // Track user scroll events to cancel monitoring
+    // Track explicit user interaction separate from scroll events, since some browsers
+    // may emit additional scroll events due to late layout shifts (e.g., Safari after
+    // images load). We only treat a large scroll delta as a _user_ scroll if it was
+    // preceded by an actual interaction such as wheel, touch, pointer, or key press.
+    let userInteracted = false
+    const markInteraction = () => {
+      userInteracted = true
+    }
+    for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+      window.addEventListener(event, markInteraction, { passive: true, once: true })
+    }
+
+    // Scroll handler for monitoring drift
     const scrollHandler = () => {
       if (programmaticScroll) return
 
       const currentScroll = window.scrollY
-      // Only consider it user scrolling if it's significantly different from our target
-      // and not just a small drift we're correcting
-      if (Math.abs(currentScroll - targetPos) > 10) {
+
+      // Determine if this scroll likely originates from the user. Explicit interaction
+      // (wheel/touch/pointer/keyboard) is a strong signal, but very large deltas are
+      // also unlikely to stem from subtle layout shifts. Treat either case as user
+      // input and cancel monitoring. Small/medium deltas without interaction are
+      // handled as layout drift and corrected.
+      const delta = Math.abs(currentScroll - targetPos)
+      const LARGE_DELTA_THRESHOLD = 60 // px
+      if (delta > 10 && (userInteracted || delta > LARGE_DELTA_THRESHOLD)) {
         userHasScrolled = true
         console.debug(
           "[InstantScrollRestoration] User scroll detected, canceling layout monitoring",
@@ -149,7 +167,7 @@
       // Cancel if user has started scrolling
       if (userHasScrolled) {
         window.removeEventListener("scroll", scrollHandler, { passive: true })
-        console.debug("[InstantScrollRestoration] Monitoring canceled due to user input")
+        console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
         return
       }
 
