@@ -377,8 +377,14 @@ test.describe("Instant Scroll Restoration", () => {
       return window.scrollY > 0
     })
 
+    // Ensure the layout monitoring has begun before triggering user scroll.
+    // We wait until at least one InstantScrollRestoration console message has appeared.
+    await expect
+      .poll(() => consoleMessages.length, { message: "waiting for monitoring to start" })
+      .toBeGreaterThan(0)
+
     await page.evaluate(() => {
-      window.scrollBy(0, 50)
+      window.scrollBy(0, 100)
     })
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
