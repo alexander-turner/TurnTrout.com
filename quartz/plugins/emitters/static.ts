@@ -60,7 +60,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     // Add all other files to emitted files list
     emittedFiles.push(
       ...(fps
-        .filter((fp) => !("robots.txt" === fp || "favicon.ico" === fp))
+        .filter((fp) => !(fp === "robots.txt" || fp === "favicon.ico"))
         .map((fp) => joinSegments(argv.output, "static", fp)) as FilePath[]),
     )
 

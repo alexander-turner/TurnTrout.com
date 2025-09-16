@@ -1,5 +1,5 @@
 ;(() => {
-  let themeMode = localStorage.getItem("saved-theme") || "auto"
+  const themeMode = localStorage.getItem("saved-theme") || "auto"
   document.documentElement.setAttribute("data-theme-mode", themeMode)
 
   // Determine the actual theme to apply

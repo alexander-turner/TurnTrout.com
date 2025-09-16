@@ -53,7 +53,7 @@ function handleVideoToggle(): void {
   if (videoElement) {
     if (!autoplayEnabled) {
       // If we're enabling autoplay
-      void videoElement.play()
+      videoElement.play()
     } else {
       // If we're disabling autoplay
       videoElement.pause()
@@ -74,7 +74,7 @@ function setupPondVideo(): void {
 
     // Apply current autoplay state
     if (getAutoplayEnabled()) {
-      void videoElement.play()
+      videoElement.play()
     } else {
       videoElement.pause()
     }

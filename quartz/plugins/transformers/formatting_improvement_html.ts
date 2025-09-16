@@ -161,7 +161,7 @@ export function transformElement(
 export function niceQuotes(text: string): string {
   // Single quotes //
   // Ending comes first so as to not mess with the open quote
-  const afterEndingSinglePatterns = `\\s\\.!?;,\\)—\\-\\]"`
+  const afterEndingSinglePatterns = '\\s\\.!?;,\\)—\\-\\]"'
   const afterEndingSingle = `(?=${chr}?(?:s${chr}?)?(?:[${afterEndingSinglePatterns}]|$))`
   const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
   text = text.replace(new RegExp(endingSingle, "gm"), "’")
