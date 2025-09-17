@@ -187,6 +187,7 @@
       transform 0.45s ease,
       opacity 0.45s ease;
     z-index: 910;
+    padding-top: calc(0.5 * $base-margin);
 
     &.shadow {
       box-shadow: 0 4px 4px 0 var(--midground-faintest);
