@@ -187,6 +187,7 @@
       transform 0.45s ease,
       opacity 0.45s ease;
     z-index: 910;
+    padding-top: calc(0.5 * $base-margin);
 
     &.shadow {
       box-shadow: 0 4px 4px 0 var(--midground-faintest);
@@ -285,7 +286,7 @@
   z-index: 3;
   position: absolute;
   right: 0;
-  top: 5%;
+  top: 1.75%;
   text-align: right;
   align-items: center;
   display: flex;
@@ -324,7 +325,7 @@
     transition: opacity 0.5s ease;
     margin: 0;
     margin-right: calc(0.75 * $base-margin);
-    margin-top: 0;
+    margin-top: calc(0.25 * $base-margin);
     line-height: var(--darkmode-icon-size);
     flex-shrink: 0; // Don't want it to wrap
     font-size: var(--font-size-minus-2);
@@ -339,7 +340,6 @@
     @media all and (max-width: $max-mobile-width) {
       font-size: var(--font-size-minus-1); // Make easier to read on mobile
       margin-right: $base-margin; // More space for the theme label
-      margin-top: 0; // Use align-items: center
     }
   }
 

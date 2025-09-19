@@ -627,22 +627,23 @@ describe("CreateTableOfContents", () => {
     expect(result).toBeNull()
   })
 
-  it("should use default title when no title in frontmatter", () => {
-    const propsWithoutTitle = {
+  it.each([
+    [undefined, "Table of Contents"],
+    ["understanding machine learning algorithms", "Understanding Machine Learning Algorithms"],
+    ["ai & machine learning: the future", "Ai & Machine Learning: The Future"],
+  ])("should format title correctly: %s -> %s", (inputTitle, expectedTitle) => {
+    const props = {
       ...mockQuartzComponentProps,
       fileData: {
         ...mockQuartzComponentProps.fileData,
-        frontmatter: {},
+        frontmatter: inputTitle ? { title: inputTitle } : {},
       },
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(propsWithoutTitle)
-
-    // Verify the default title is used
-    const header = result?.props.children[0]
-    const button = header.props.children
-    expect(button.props.children).toBe("Table of Contents")
+    const result = (CreateTableOfContents as any)(props)
+    const button = result?.props.children[0].props.children
+    expect(button.props.children).toBe(expectedTitle)
   })
 
   it("should render complex TOC structure with multiple levels", () => {

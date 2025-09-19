@@ -15,6 +15,7 @@ import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_tex
 import { createWinstonLogger } from "../plugins/transformers/logger_utils"
 import { type TocEntry } from "../plugins/transformers/toc"
 import {
+  formatTitle,
   processInlineCode,
   processKatex,
   processSmallCaps,
@@ -56,7 +57,7 @@ export const CreateTableOfContents: QuartzComponent = ({
     <div id="table-of-contents" className="desktop-only">
       <h6 id="toc-title">
         <button className="internal same-page-link">
-          {fileData.frontmatter?.title || "Table of Contents"}
+          {formatTitle(fileData.frontmatter?.title || "Table of Contents")}
         </button>
       </h6>
       <div id="toc-content">

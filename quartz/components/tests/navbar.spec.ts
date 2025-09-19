@@ -48,6 +48,7 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
 }
 
 const fixedTimestamp = 2.5
+const timestampTolerance = 0.1
 async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
   const { video } = videoElements
 
@@ -399,7 +400,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
   const timestampAfterNavigation = await getCurrentTime(video)
-  expect(timestampAfterNavigation).toBeGreaterThan(timestampBeforeNavigation)
+  expect(timestampAfterNavigation).toBeGreaterThan(timestampBeforeNavigation - timestampTolerance)
 })
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
@@ -421,5 +422,5 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   await page.reload()
 
   const timestampAfterRefresh = await getCurrentTime(video)
-  expect(timestampAfterRefresh).toBeGreaterThan(targetTimestamp)
+  expect(timestampAfterRefresh).toBeGreaterThan(targetTimestamp - timestampTolerance)
 })

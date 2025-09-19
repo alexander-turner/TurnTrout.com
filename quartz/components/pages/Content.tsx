@@ -96,7 +96,7 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
       <div className="admonition-title">
         <div className="admonition-icon"></div>
         <div className="admonition-title-inner">
-          <p>Table of contents</p>
+          <p>Table of Contents</p>
         </div>
         <div className="fold-admonition-icon"></div>
       </div>

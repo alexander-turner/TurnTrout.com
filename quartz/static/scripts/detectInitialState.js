@@ -1,5 +1,5 @@
 ;(() => {
-  let themeMode = localStorage.getItem("saved-theme") || "auto"
+  const themeMode = localStorage.getItem("saved-theme") || "auto"
   document.documentElement.setAttribute("data-theme-mode", themeMode)
 
   // Determine the actual theme to apply
@@ -14,7 +14,7 @@
   // Set theme label content in CSS custom property - show the mode, not the resolved theme
   document.documentElement.style.setProperty(
     "--theme-label-content",
-    '"' + themeMode.charAt(0).toUpperCase() + themeMode.slice(1) + '"',
+    `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
   // Set video autoplay button state in CSS custom properties

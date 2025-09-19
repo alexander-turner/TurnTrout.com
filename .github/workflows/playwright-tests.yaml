@@ -71,13 +71,23 @@ jobs:
         id: playwright
         continue-on-error: true
         run: |
-          npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots
+          set -o pipefail
+          npx playwright test --config playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-log-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Upload Playwright traces
         if: steps.playwright.outcome == 'failure'
@@ -91,3 +101,15 @@ jobs:
       - name: Fail if playwright tests failed
         if: steps.playwright.outcome == 'failure'
         run: exit 1
+
+  summarize-failures:
+    name: Summarize Failures
+    if: always() && needs.playwright-tests.result == 'failure'
+    needs: playwright-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: playwright-log-shard-*
+          final-log-name: playwright-failed-logs
