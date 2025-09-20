@@ -259,6 +259,67 @@ for (const theme of ["light", "dark", "auto"]) {
   })
 }
 
+async function backgroundMatchesBodyDuringTransition(
+  page: Page,
+  selector: string,
+  theme: Theme,
+): Promise<boolean> {
+  // Start from opposite theme to trigger transition
+  const startTheme = theme === "light" ? "dark" : "light"
+  await setTheme(page, startTheme)
+
+  // Trigger theme change
+  const darkmodeButton = page.locator("#theme-toggle")
+  await darkmodeButton.click()
+
+  // This will poll for mismatches and store result on window
+  await page.evaluate((sel) => {
+    let mismatchFound = false
+    let isPolling = true
+
+    const poll = () => {
+      const el = document.querySelector(sel)
+      if (
+        el &&
+        getComputedStyle(el).backgroundColor !== getComputedStyle(document.body).backgroundColor
+      ) {
+        mismatchFound = true
+      }
+      if (isPolling) {
+        requestAnimationFrame(poll)
+      }
+    }
+    requestAnimationFrame(poll)
+
+    // @ts-expect-error - for test instrumentation
+    window.stopBgPolling = () => {
+      isPolling = false
+      return !mismatchFound
+    }
+  }, selector)
+
+  // Stop polling and get result
+  return page.evaluate(() => {
+    // @ts-expect-error - for test instrumentation
+    if (typeof window.stopBgPolling !== "function") {
+      return false
+    }
+    // @ts-expect-error - for test instrumentation
+    return window.stopBgPolling()
+  })
+}
+
+for (const theme of ["light", "dark"]) {
+  test(`Left sidebar background matches body throughout transition to ${theme}`, async ({
+    page,
+  }) => {
+    test.skip(isDesktopViewport(page), "Mobile-only test")
+
+    const ok = await backgroundMatchesBodyDuringTransition(page, "#left-sidebar", theme as Theme)
+    expect(ok).toBe(true)
+  })
+}
+
 test("Right sidebar is visible on desktop on page load", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
