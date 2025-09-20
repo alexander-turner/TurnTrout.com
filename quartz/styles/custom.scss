@@ -296,10 +296,14 @@ sup {
 .temporary-transition *::-webkit-media-controls-panel,
 .temporary-transition #left-sidebar {
   transition:
+    color 1s ease-in-out,
     background-color 1s ease-in-out,
     border-color 1s ease-in-out,
     fill 1s ease-in-out,
     stroke 1s ease-in-out,
+    box-shadow 1s ease-in-out,
+    text-decoration-color 1s ease-in-out,
+    filter 1s ease-in-out,
     scrollbar-color 1s ease-in-out !important;
 }
 
