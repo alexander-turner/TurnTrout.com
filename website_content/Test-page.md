@@ -252,7 +252,7 @@ This footnote has a table.[^table]
        </td>
        <td>
          <p>Cell 2: image and list</p>
-          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="">
+          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
            <ol>
              <li>Ordered list item 1</li>
              <li>Ordered list item 2</li>
@@ -270,7 +270,7 @@ This footnote has a table.[^table]
        <td>
          <p>Cell 4: mixed content</p>
          <p>More text here.</p>
-          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="">
+          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
          <ul>
              <li>list item</li>
          </ul>

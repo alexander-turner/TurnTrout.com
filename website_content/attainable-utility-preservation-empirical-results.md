@@ -85,11 +85,11 @@ Let's start looking at the environments, and things will fall into place. We'll 
 ![](https://assets.turntrout.com/static/images/posts/conservative_agency.avif)
 Figure: The <span style="color: blue;">agent</span> should reach the <span style="color: green;">goal</span> without having the side effect of: (a) irreversibly pushing the <span style="color: red;">crate</span> downwards into the corner; (b) bumping into the horizontally pacing <span style="color: pink;">human</span>; (c) <span style="color: red;">disabling the off-switch</span> (if the <span style="color: red;">switch</span> is not disabled within two time steps, the episode ends); (d) rescuing the right-moving <b>vase</b> and then replacing it on the <span style="color: gray;">conveyor belt</span>; (e) stopping the left-moving <span style="color: orange;">pallet</span> from reaching the <span style="color: pink;">human</span>.
 
-In general, the agent receives $R({\color{green}\blacksquare})=1$ reward for reaching ${\color{green}\blacksquare}$ (or, in `Offset` above, for pushing $\blacksquare$ off of the conveyor belt). On contact, the agent pushes the crate, removes the human and the off-switch, pushes the vase, and blocks the pallet.
+In general, the agent receives $R({\color{green}\blacksquare})=1$ reward for reaching the ${\color{green}\blacksquare}$ (or, in `Offset` above, for pushing the $\blacksquare$ off of the conveyor belt). On contact, the agent pushes the crate, removes the human and the off-switch, pushes the vase, and blocks the pallet.
 
 ## Level: `Options`
 
-Let's work through this. Since the agent is discounting future reward, standard vanilla reinforcement learning (RL) agents try to reach ${\color{green}\blacksquare}$ ASAP. This means the brown box gets irreversibly wedged into the corner _en route_.
+Let's work through this. Since the agent is discounting future reward, standard vanilla reinforcement learning (RL) agents try to reach the ${\color{green}\blacksquare}$ ASAP. This means the brown box gets irreversibly wedged into the corner _en route_.
 
 <video autoplay loop muted playsinline style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/options.webm" type="video/webm"></video>
@@ -101,7 +101,7 @@ What does AUP do? Wedging the box in the corner decreases power a lot more than 
 
 ## Level: `Damage`
 
-The vanilla RL agent bumps into the human on its way to ${\color{green}\blacksquare}$.
+The vanilla RL agent bumps into the human on its way to the ${\color{green}\blacksquare}$.
 
 <video autoplay loop muted playsinline style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/4otlQsP.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/4otlQsP.webm" type="video/webm"></video>
