@@ -190,7 +190,7 @@
     padding-top: calc(0.5 * $base-margin);
 
     &.shadow {
-      box-shadow: 0 4px 4px 0 var(--midground-faintest);
+      box-shadow: 0 4px 4px 0 var(--background);
       clip-path: inset(0 0 -1500px 0);
     }
 
