@@ -971,13 +971,12 @@ Cryptographic timestamping
 
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
+<!-- TODO: make this part of the <dd>-->
 ```shell
 git clone https://github.com/alexander-turner/.timestamps
 cd .timestamps
 ots --no-bitcoin verify "files/ABC012.txt.ots" 
 ```
-
-{style="margin-left: 2rem;"}
 
 # Github Actions
 
