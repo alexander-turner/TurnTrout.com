@@ -3,6 +3,7 @@
 import argparse
 import atexit
 import json
+import shutil
 import signal
 import subprocess
 import sys
@@ -296,6 +297,22 @@ class DisplayManager:
 
     def close_all_images(self) -> None:
         """Close all opened image viewers."""
+        # On macOS, the `open` command often launches Preview and returns
+        # immediately, so the spawned `open` process terminates before we can
+        # track or kill it. As a fallback, explicitly ask Preview to quit to
+        # ensure no lingering windows remain.
+        if sys.platform == "darwin" and shutil.which("osascript") is not None:
+            subprocess.run(
+                [
+                    "osascript",
+                    "-e",
+                    'tell application "Preview" to quit',
+                ],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
         while self._image_processes:
             self.close_current_image()
 

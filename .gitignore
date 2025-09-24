@@ -54,3 +54,4 @@ prettierrc
 coverage
 
 scripts/asset_queue.json
+scripts/asset_captions.json

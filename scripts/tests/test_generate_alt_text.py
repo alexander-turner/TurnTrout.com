@@ -659,6 +659,7 @@ class TestDisplayManager:
             patch(
                 "subprocess.Popen", side_effect=[mock_process1, mock_process2]
             ),
+            patch("subprocess.run"),  # Mock the osascript call
         ):
             display_manager.show_image(test_image1)
             display_manager.show_image(test_image2)
