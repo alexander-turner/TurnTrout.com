@@ -155,11 +155,11 @@ def _build_prompt(
 
         Critical requirements:
         - Under {max_chars} characters (aim for 1-2 sentences when possible)
-        - Skip "image of" or "picture of" phrases  
+        - Do not include redundant information (e.g. "image of", "picture of")
+        - Return only the alt text, no quotes
         - For text-heavy images: transcribe key text content, then describe visual elements
         - Include relevant keywords naturally
         - Describe spatial relationships and visual hierarchy when important
-        - Return only the alt text, no quotes
 
         Prioritize completeness over brevity - include both textual content and visual description as needed.
         """
@@ -372,31 +372,29 @@ def _estimate_cost(
 def generate_alt_text(
     root: Path,
     model: str,
-    limit: int | None,
     max_chars: int,
     timeout: int,
-) -> list[AltGenerationResult]:
+    output_path: Path,
+) -> None:
     """Generate alt text suggestions for assets in the queue."""
     console = Console()
     display = DisplayManager(console)
+    results: list[AltGenerationResult] = []
 
-    # Register cleanup functions to close images on exit
     def cleanup() -> None:
         display.close_all_images()
+        _write_output(results, output_path)
 
     atexit.register(cleanup)
 
     # Handle Ctrl+C gracefully
     def signal_handler(_signum: int, _frame: object) -> None:
         console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
-        cleanup()
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
 
     queue_items = scan_for_empty_alt.build_queue(root)
-    if limit is not None:
-        queue_items = queue_items[:limit]
 
     # Show cost estimation
     cost_estimate = _estimate_cost(model, len(queue_items))
@@ -405,42 +403,27 @@ def generate_alt_text(
     )
     console.print(f"[dim]{cost_estimate}[/dim]\n")
 
-    try:
-        input("Press Enter to continue...")
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Cancelled by user.[/yellow]")
-        cleanup()
-        sys.exit(0)
+    input("Press Enter to continue...")
 
-    results: list[AltGenerationResult] = []
-    try:
-        for queue_item in queue_items:
-            try:
-                result = _process_queue_item(
-                    queue_item=queue_item,
-                    display=display,
-                    model=model,
-                    max_chars=max_chars,
-                    timeout=timeout,
-                )
-                results.append(result)
-            except (
-                AltGenerationError,
-                FileNotFoundError,
-                requests.RequestException,
-            ) as err:
-                display.show_error(str(err))
-                # Close any image that might be open for this failed item
-                display.close_current_image()
-    except KeyboardInterrupt:
-        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
-        cleanup()
-        sys.exit(0)
-    finally:
-        # Ensure all images are closed when done
-        cleanup()
-
-    return results
+    for queue_item in queue_items:
+        try:
+            result = _process_queue_item(
+                queue_item=queue_item,
+                display=display,
+                model=model,
+                max_chars=max_chars,
+                timeout=timeout,
+            )
+            results.append(result)
+        except (
+            AltGenerationError,
+            FileNotFoundError,
+            requests.RequestException,
+        ) as err:
+            display.show_error(str(err))
+            # Close any image that might be open for this failed item
+            display.close_current_image()
+    cleanup()
 
 
 def _write_output(
@@ -448,6 +431,7 @@ def _write_output(
 ) -> None:
     """Write results to JSON file."""
     payload = [result.to_json() for result in results]
+    print(f"Writing {len(payload)} results to {output_path}")
     output_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -478,11 +462,6 @@ def _parse_args() -> argparse.Namespace:
         help="Path to write generated captions.",
     )
     parser.add_argument(
-        "--limit",
-        type=int,
-        help="Only process the first N queue items.",
-    )
-    parser.add_argument(
         "--max-chars",
         type=int,
         default=250,
@@ -500,15 +479,13 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     """Main entry point."""
     args = _parse_args()
-    results = generate_alt_text(
+    generate_alt_text(
         root=args.root,
         model=args.model,
-        limit=args.limit,
         max_chars=args.max_chars,
         timeout=args.timeout,
+        output_path=args.output,
     )
-    _write_output(results, args.output)
-    print(f"Wrote {len(results)} result(s) to {args.output}")
 
 
 if __name__ == "__main__":
