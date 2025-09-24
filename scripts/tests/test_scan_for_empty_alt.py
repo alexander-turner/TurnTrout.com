@@ -34,7 +34,7 @@ def _write_md(tmp_path: Path, content: str, name: str = "test.md") -> Path:
     return file_path
 
 
-def test_build_queue_markdown_image(tmp_path: Path) -> None:
+def test_build_queue_markdown_asset(tmp_path: Path) -> None:
     md_content = """
 Paragraph one.
 
@@ -46,7 +46,7 @@ Paragraph two.
     queue = scan_for_empty_alt.build_queue(tmp_path)
     assert len(queue) == 1
     item = queue[0]
-    assert item.image_path == "img/foo.png"
+    assert item.asset_path == "img/foo.png"
     assert item.line_number == 4
     assert "Paragraph one." in item.context_snippet
     assert "Paragraph two." in item.context_snippet
@@ -61,7 +61,7 @@ Intro.
     _write_md(tmp_path, md_content, "html.md")
     queue = scan_for_empty_alt.build_queue(tmp_path)
     assert len(queue) == 1, f"{queue} doesn't have the right elements"
-    assert queue[0].image_path == "assets/pic.jpg"
+    assert queue[0].asset_path == "assets/pic.jpg"
 
 
 def test_build_queue_ignores_good_alt(tmp_path: Path) -> None:
@@ -71,7 +71,7 @@ def test_build_queue_ignores_good_alt(tmp_path: Path) -> None:
 
     # only the empty alt should be queued
     assert len(queue) == 1, f"{queue} doesn't have the right elements"
-    assert queue[0].image_path == "foo.png"
+    assert queue[0].asset_path == "foo.png"
 
 
 @pytest.mark.parametrize(
@@ -96,13 +96,13 @@ def test_build_queue_ignores_good_alt(tmp_path: Path) -> None:
 def test_queue_expected_paths(
     tmp_path: Path, content: str, expected_paths: list[str]
 ) -> None:
-    """Verify that *build_queue* includes exactly the expected offending images."""
+    """Verify that *build_queue* includes exactly the expected offending assets."""
 
     file_path = tmp_path / "edge.md"
     file_path.write_text(content, encoding="utf-8")
 
     queue = scan_for_empty_alt.build_queue(tmp_path)
-    assert sorted(item.image_path for item in queue) == sorted(expected_paths)
+    assert sorted(item.asset_path for item in queue) == sorted(expected_paths)
 
 
 def test_paragraph_context_grabs_neighboring_paragraphs() -> None:

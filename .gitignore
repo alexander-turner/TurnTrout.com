@@ -52,3 +52,5 @@ hint-report
 /playwright/.cache/
 prettierrc
 coverage
+
+scripts/asset_queue.json

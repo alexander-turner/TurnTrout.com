@@ -1,5 +1,5 @@
 """
-Scan markdown files for images without meaningful alt text.
+Scan markdown files for assets without meaningful alt text.
 
 This script produces a JSON work-queue.
 """
@@ -22,36 +22,33 @@ from scripts import utils as script_utils
 
 _JSON_INDENT: int = 2
 
-# ``markdown_it`` represents HTML img tags inside an ``html_inline`` or
-# ``html_block`` token. Use a lightweight regex so we do not pull in another
-# HTML parser just for <img>.
-_IMG_TAG_RE = re.compile(
-    r"<img\s+[^>]*src=\"(?P<src>[^\"]+)\"[^>]*>", re.IGNORECASE | re.DOTALL
-)
-
 
 @dataclass(slots=True)
 class QueueItem:
-    """Represents a single image lacking adequate alt text."""
+    """Represents a single asset lacking adequate alt text."""
 
     markdown_file: str
-    image_path: str
-    line_number: int  # 1-based
+    asset_path: str
+    line_number: int  # 1-based, must be positive
     context_snippet: str
 
-    def to_json(self) -> dict[str, str | int]:  # pragma: no cover
+    def __post_init__(self) -> None:
+        if self.line_number <= 0:
+            raise ValueError("line_number must be positive")
+
+    def to_json(self) -> dict[str, str | int]:  # pylint: disable=C0116
         return asdict(self)
 
 
 def _create_queue_item(
     md_path: Path,
-    image_path: str,
+    asset_path: str,
     line_number: int,
     lines: Sequence[str],
 ) -> QueueItem:
     return QueueItem(
         markdown_file=str(md_path),
-        image_path=image_path,
+        asset_path=asset_path,
         line_number=line_number,
         context_snippet=_paragraph_context(lines, line_number - 1),
     )
@@ -103,6 +100,13 @@ def _iter_image_tokens(tokens: Sequence[Token]) -> Iterable[Token]:
 
 
 _ALT_RE = re.compile(r"alt=\"(?P<alt>[^\"]*)\"", re.IGNORECASE)
+
+# ``markdown_it`` represents HTML img tags inside an ``html_inline`` or
+# ``html_block`` token. Use a lightweight regex so we do not pull in another
+# HTML parser just for <img>.
+_IMG_TAG_RE = re.compile(
+    r"<img\s+[^>]*src=\"(?P<src>[^\"]+)\"[^>]*>", re.IGNORECASE | re.DOTALL
+)
 
 
 def _extract_html_img_info(token: Token) -> list[tuple[str, str | None]]:
@@ -167,12 +171,12 @@ def _handle_md_asset(
     Process a markdown ``image`` token.
 
     Args:
-        token: The ``markdown_it`` token representing the image.
+        token: The ``markdown_it`` token representing the asset.
         md_path: Current markdown file path.
         lines: Contents of *md_path* split by lines.
 
     Returns:
-        Zero or one-element list containing a ``QueueItem`` for images with
+        Zero or one-element list containing a ``QueueItem`` for assets with
         missing or placeholder alt text.
     """
 
@@ -186,7 +190,7 @@ def _handle_md_asset(
     if token.map:
         line_no = token.map[0] + 1
     else:
-        # Fallback: locate the first line containing the image markdown.
+        # Fallback: locate the first line containing the asset markdown.
         search_snippet = f"({src_attr})"
         line_no = next(
             (
@@ -243,7 +247,7 @@ def _process_file(md_path: Path) -> list[QueueItem]:
 
 
 def build_queue(root: Path) -> list[QueueItem]:
-    """Return a queue of images lacking alt text beneath *root*."""
+    """Return a queue of assets lacking alt text beneath *root*."""
 
     md_files = script_utils.get_files(
         root, filetypes_to_match=(".md",), use_git_ignore=True
@@ -260,24 +264,28 @@ def build_queue(root: Path) -> list[QueueItem]:
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:  # pragma: no cover
+# pylint: disable=C0116
+def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate image alt-text queue."
+        description="Generate asset alt-text queue."
     )
     parser.add_argument(
         "--root",
         type=Path,
-        default=script_utils.get_git_root(),
-        help="Directory to search (default: repo root)",
+        default=script_utils.get_git_root() / "website_content",
+        help="Directory to search (default: website_content)",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        help="Path for output JSON file (default: <root>/image_queue.json)",
+        help="Path for output JSON file (default: <git_root>/scripts/asset_queue.json)",
     )
     args = parser.parse_args()
 
-    output_path = args.output or args.root / "image_queue.json"
+    output_path = (
+        args.output
+        or script_utils.get_git_root() / "scripts" / "asset_queue.json"
+    )
     queue_items = build_queue(args.root)
 
     output_path.write_text(
