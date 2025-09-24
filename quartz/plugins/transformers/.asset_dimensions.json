@@ -4246,5 +4246,9 @@
   "https://assets.turntrout.com/static/images/posts/design-20250914111611.webm": {
     "width": 494,
     "height": 514
+  },
+  "/static/images/external-favicons/pip-tools_readthedocs_io.png": {
+    "width": 32,
+    "height": 32
   }
 }
