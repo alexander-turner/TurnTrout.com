@@ -121,12 +121,10 @@ def _extract_html_img_info(token: Token) -> list[tuple[str, str | None]]:
     return infos
 
 
-def _paragraph_context(
-    lines: Sequence[str], idx: int, num_paragraphs: int = 2
-) -> str:
+def _paragraph_context(lines: Sequence[str], idx: int) -> str:
     """
-    Return *num_paragraphs* before and after *idx* (inclusive) separated by
-    blank lines.
+    Return all paragraphs before *idx* and one paragraph after *idx*
+    (inclusive) separated by blank lines.
 
     Each paragraph is returned exactly as it appears in the file.
     """
@@ -155,8 +153,10 @@ def _paragraph_context(
         current_idx += 1
 
     para_idx = line_to_para.get(idx, 0)
-    start_idx = max(0, para_idx - num_paragraphs)
-    end_idx = min(len(paragraphs), para_idx + num_paragraphs + 1)
+    # Get all paragraphs before the image (start from 0)
+    start_idx = 0
+    # Get one paragraph after the image
+    end_idx = min(len(paragraphs), para_idx + 2)
     snippet_lines: list[str] = []
     for p in paragraphs[start_idx:end_idx]:
         snippet_lines.extend(p)

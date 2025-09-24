@@ -115,11 +115,14 @@ def test_paragraph_context_grabs_neighboring_paragraphs() -> None:
         "Para B line 2\n",
         "\n",
         "Para C line 1\n",
+        "\n",
+        "Para D is outside of the context\n",
     ]
 
-    snippet = scan_for_empty_alt._paragraph_context(lines, 2, num_paragraphs=1)
+    snippet = scan_for_empty_alt._paragraph_context(lines, 2)
 
     # Should include paragraphs B and C, but not A.
-    assert "Para A" not in snippet
+    assert "Para A" in snippet
     assert "Para B line 1" in snippet and "Para B line 2" in snippet
     assert "Para C line 1" in snippet
+    assert "Para D" not in snippet
