@@ -589,6 +589,7 @@ class TestDisplayManager:
         with (
             patch("sys.stdout.isatty", return_value=True),
             patch("subprocess.Popen", return_value=mock_process),
+            patch("subprocess.run"),
         ):
             display_manager.show_image(test_image)
             assert len(display_manager._image_processes) == 1
@@ -614,6 +615,7 @@ class TestDisplayManager:
         with (
             patch("sys.stdout.isatty", return_value=True),
             patch("subprocess.Popen", return_value=mock_process),
+            patch("subprocess.run"),
         ):
             display_manager.show_image(test_image)
             display_manager.close_current_image()
@@ -635,6 +637,7 @@ class TestDisplayManager:
         with (
             patch("sys.stdout.isatty", return_value=True),
             patch("subprocess.Popen", return_value=mock_process),
+            patch("subprocess.run"),
         ):
             display_manager.show_image(test_image)
             display_manager.close_current_image()
