@@ -3,6 +3,7 @@
 import argparse
 import atexit
 import json
+import readline
 import shutil
 import signal
 import subprocess
@@ -18,7 +19,6 @@ import requests
 from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -249,12 +249,14 @@ class DisplayManager:
         )
 
     def prompt_for_edit(self, suggestion: str) -> str:
-        """Prompt user to edit the suggestion."""
-        return Prompt.ask(
-            "\n[bold blue]Edit alt text (or press Enter to accept)[/bold blue]",
-            default=suggestion,
-            console=self.console,
+        """Prompt user to edit the suggestion with prefilled editable text."""
+        readline.set_startup_hook(lambda: readline.insert_text(suggestion))
+        self.console.print(
+            "\n[bold blue]Edit alt text (or press Enter to accept):[/bold blue]"
         )
+        result = input("> ")
+        readline.set_startup_hook(None)
+        return result if result.strip() else suggestion
 
     def show_rule(self, title: str) -> None:
         """Display a separator rule."""
