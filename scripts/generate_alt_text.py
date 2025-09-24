@@ -1,7 +1,5 @@
 """Generate AI alt text suggestions for assets lacking meaningful alt text."""
 
-from __future__ import annotations
-
 import argparse
 import json
 import subprocess
@@ -61,6 +59,28 @@ def _is_url(path: str) -> bool:
     return bool(parsed.scheme and parsed.netloc)
 
 
+def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
+    """Convert AVIF images to PNG format for LLM compatibility."""
+    if asset_path.suffix.lower() != ".avif":
+        return asset_path
+
+    png_target = workspace / f"{asset_path.stem}.png"
+    magick_executable = script_utils.find_executable("magick")
+
+    try:
+        subprocess.run(
+            [magick_executable, str(asset_path), str(png_target)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return png_target
+    except subprocess.CalledProcessError as err:
+        raise AltGenerationError(
+            f"Failed to convert AVIF to PNG: {err.stderr or err.stdout}"
+        ) from err
+
+
 def _download_asset(
     queue_item: scan_for_empty_alt.QueueItem, workspace: Path
 ) -> Path:
@@ -84,19 +104,19 @@ def _download_asset(
         with target.open("wb") as handle:
             for chunk in response.iter_content(chunk_size=8192):
                 handle.write(chunk)
-        return target
+        return _convert_avif_to_png(target, workspace)
 
     # Try relative to markdown file first
     markdown_path = Path(queue_item.markdown_file)
     candidate = markdown_path.parent / asset_path
     if candidate.exists():
-        return candidate.resolve()
+        return _convert_avif_to_png(candidate.resolve(), workspace)
 
     # Try relative to git root
     git_root = script_utils.get_git_root()
     alternative = git_root / asset_path.lstrip("/")
     if alternative.exists():
-        return alternative.resolve()
+        return _convert_avif_to_png(alternative.resolve(), workspace)
 
     raise FileNotFoundError(
         f"Unable to locate asset '{asset_path}' referenced in {queue_item.markdown_file}"
