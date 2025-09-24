@@ -19,7 +19,7 @@ handle_cleanup() {
   if [ "$_git_status" -gt 0 ]; then
     echo "Committing changes..."
     git add -A
-    git commit -m "chore: update date on publish" || true
+    git commit -m "chore: updated publication dates and/or requirements.txt" || true
   fi
 
   _pushed_changes=$1
@@ -52,6 +52,7 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
   exit 0
 fi
 
+sh "$GIT_ROOT/scripts/update_requirements.sh"
 python "$GIT_ROOT/scripts/update_date_on_publish.py"
 
 exit 0
