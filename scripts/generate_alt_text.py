@@ -12,7 +12,7 @@ import textwrap
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterable
+from typing import Iterable, Sequence
 from urllib.parse import urlparse
 
 import requests
@@ -389,12 +389,50 @@ def _estimate_cost(
     return f"Estimated cost: ${total_cost:.3f} (${input_cost:.3f} input + ${output_cost:.3f} output)"
 
 
-def generate_alt_text(
-    root: Path,
-    model: str,
-    max_chars: int,
-    timeout: int,
+def _load_existing_captions(captions_path: Path) -> set[str]:
+    """Load existing asset paths from captions file."""
+    try:
+        with open(captions_path, encoding="utf-8") as f:
+            data = json.load(f)
+        return {item["asset_path"] for item in data if "asset_path" in item}
+    except (FileNotFoundError, json.JSONDecodeError, KeyError, TypeError):
+        return set()
+
+
+def _filter_existing_captions(
+    queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_path: Path,
+    console: Console,
+) -> list[scan_for_empty_alt.QueueItem]:
+    existing_captions = _load_existing_captions(output_path)
+    original_count = len(queue_items)
+    filtered_items = [
+        item
+        for item in queue_items
+        if item.asset_path not in existing_captions
+    ]
+    skipped_count = original_count - len(filtered_items)
+    if skipped_count > 0:
+        console.print(
+            f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
+        )
+    return filtered_items
+
+
+@dataclass(slots=True)
+class GenerateAltTextOptions:
+    """Options for generating alt text."""
+
+    root: Path
+    model: str
+    max_chars: int
+    timeout: int
+    output_path: Path
+    skip_existing: bool = False
+
+
+def generate_alt_text(
+    options: GenerateAltTextOptions,
 ) -> None:
     """Generate alt text suggestions for assets in the queue."""
     console = Console()
@@ -403,7 +441,7 @@ def generate_alt_text(
 
     def cleanup() -> None:
         display.close_all_images()
-        _write_output(results, output_path)
+        _write_output(results, options.output_path)
 
     atexit.register(cleanup)
 
@@ -414,12 +452,16 @@ def generate_alt_text(
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    queue_items = scan_for_empty_alt.build_queue(root)
+    queue_items = scan_for_empty_alt.build_queue(options.root)
+    if options.skip_existing:
+        queue_items = _filter_existing_captions(
+            queue_items, options.output_path, console
+        )
 
     # Show cost estimation
-    cost_estimate = _estimate_cost(model, len(queue_items))
+    cost_estimate = _estimate_cost(options.model, len(queue_items))
     console.print(
-        f"\n[bold blue]Processing {len(queue_items)} items with model '{model}'[/bold blue]"
+        f"\n[bold blue]Processing {len(queue_items)} items with model '{options.model}'[/bold blue]"
     )
     console.print(f"[dim]{cost_estimate}[/dim]\n")
 
@@ -430,9 +472,9 @@ def generate_alt_text(
             result = _process_queue_item(
                 queue_item=queue_item,
                 display=display,
-                model=model,
-                max_chars=max_chars,
-                timeout=timeout,
+                model=options.model,
+                max_chars=options.max_chars,
+                timeout=options.timeout,
             )
             results.append(result)
         except (
@@ -458,7 +500,7 @@ def _write_output(
     )
 
 
-def _parse_args() -> argparse.Namespace:
+def _parse_args() -> GenerateAltTextOptions:
     """Parse command line arguments."""
     git_root = script_utils.get_git_root()
     parser = argparse.ArgumentParser(
@@ -493,19 +535,25 @@ def _parse_args() -> argparse.Namespace:
         default=120,
         help="Seconds to wait for the LLM command to complete.",
     )
-    return parser.parse_args()
-
-
-def main() -> None:
-    """Main entry point."""
-    args = _parse_args()
-    generate_alt_text(
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="Skip files that already have captions in asset_captions.json.",
+    )
+    args = parser.parse_args()
+    return GenerateAltTextOptions(
         root=args.root,
         model=args.model,
         max_chars=args.max_chars,
         timeout=args.timeout,
         output_path=args.output,
+        skip_existing=args.skip_existing,
     )
+
+
+def main() -> None:
+    """Main entry point."""
+    generate_alt_text(_parse_args())
 
 
 if __name__ == "__main__":

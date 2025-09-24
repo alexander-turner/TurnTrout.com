@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, patch
@@ -782,6 +783,329 @@ def test_run_llm_success(temp_dir: Path) -> None:
         assert "-a" in call_args
         assert str(attachment) in call_args
         assert prompt in call_args
+
+
+class TestLoadExistingCaptions:
+    """Test the _load_existing_captions function."""
+
+    @pytest.mark.parametrize(
+        "captions_data, expected_paths",
+        [
+            # Empty file
+            ([], set()),
+            # Valid captions with asset_path
+            (
+                [
+                    {"asset_path": "image1.jpg", "suggested_alt": "Alt 1"},
+                    {"asset_path": "image2.png", "suggested_alt": "Alt 2"},
+                ],
+                {"image1.jpg", "image2.png"},
+            ),
+            # Mixed data with some missing asset_path
+            (
+                [
+                    {"asset_path": "image1.jpg", "suggested_alt": "Alt 1"},
+                    {"suggested_alt": "Alt without path"},
+                    {"asset_path": "image2.png", "suggested_alt": "Alt 2"},
+                ],
+                {"image1.jpg", "image2.png"},
+            ),
+            # Data with non-dict items (should be filtered out)
+            (
+                [
+                    {"asset_path": "image1.jpg", "suggested_alt": "Alt 1"},
+                    "invalid_entry",
+                    {"asset_path": "image2.png", "suggested_alt": "Alt 2"},
+                ],
+                {"image1.jpg", "image2.png"},
+            ),
+        ],
+    )
+    def test_load_existing_captions_valid_file(
+        self, temp_dir: Path, captions_data: list, expected_paths: set[str]
+    ) -> None:
+        """Test loading existing captions from valid JSON file."""
+        captions_file = temp_dir / "captions.json"
+        captions_file.write_text(json.dumps(captions_data), encoding="utf-8")
+
+        result = generate_alt_text._load_existing_captions(captions_file)
+        assert result == expected_paths
+
+    def test_load_existing_captions_nonexistent_file(
+        self, temp_dir: Path
+    ) -> None:
+        """Test loading captions from non-existent file returns empty set."""
+        nonexistent_file = temp_dir / "nonexistent.json"
+        result = generate_alt_text._load_existing_captions(nonexistent_file)
+        assert result == set()
+
+    def test_load_existing_captions_invalid_json(self, temp_dir: Path) -> None:
+        """Test loading captions from invalid JSON file returns empty set."""
+        invalid_file = temp_dir / "invalid.json"
+        invalid_file.write_text("{ invalid json", encoding="utf-8")
+
+        result = generate_alt_text._load_existing_captions(invalid_file)
+        assert result == set()
+
+    def test_load_existing_captions_non_list_json(
+        self, temp_dir: Path
+    ) -> None:
+        """Test loading captions from JSON that's not a list returns empty set."""
+        non_list_file = temp_dir / "non_list.json"
+        non_list_file.write_text('{"not": "a list"}', encoding="utf-8")
+
+        result = generate_alt_text._load_existing_captions(non_list_file)
+        assert result == set()
+
+
+class TestGenerateAltTextSkipExisting:
+    """Test the generate_alt_text function with skip_existing parameter."""
+
+    @pytest.fixture
+    def mock_dependencies(self):
+        """Mock external dependencies for generate_alt_text testing."""
+        with (
+            patch.object(
+                generate_alt_text.scan_for_empty_alt, "build_queue"
+            ) as mock_build_queue,
+            patch.object(
+                generate_alt_text, "_process_queue_item"
+            ) as mock_process_item,
+            patch.object(
+                generate_alt_text, "_write_output"
+            ) as mock_write_output,
+            patch.object(
+                generate_alt_text,
+                "_estimate_cost",
+                return_value="Test cost: $0.000",
+            ),
+            patch("builtins.input", return_value=""),
+            patch("atexit.register"),
+        ):
+            yield {
+                "build_queue": mock_build_queue,
+                "process_item": mock_process_item,
+                "write_output": mock_write_output,
+            }
+
+    @pytest.fixture
+    def sample_queue_items(self) -> list[scan_for_empty_alt.QueueItem]:
+        """Sample queue items for testing."""
+        return [
+            scan_for_empty_alt.QueueItem(
+                markdown_file="test1.md",
+                asset_path="image1.jpg",
+                line_number=1,
+                context_snippet="context1",
+            ),
+            scan_for_empty_alt.QueueItem(
+                markdown_file="test2.md",
+                asset_path="image2.jpg",
+                line_number=1,
+                context_snippet="context2",
+            ),
+        ]
+
+    def _create_queue_items(self, *asset_paths: str) -> list:
+        """Helper to create test queue items."""
+        return [
+            scan_for_empty_alt.QueueItem(
+                markdown_file=f"test{i}.md",
+                asset_path=path,
+                line_number=1,
+                context_snippet=f"context{i}",
+            )
+            for i, path in enumerate(asset_paths, 1)
+        ]
+
+    @pytest.fixture
+    def sample_captions(self, temp_dir: Path) -> dict[str, Path]:
+        """Sample captions files for testing."""
+
+        def create_captions_file(captions: dict[str, str]) -> Path:
+            captions_file = temp_dir / "captions.json"
+            captions_data = [
+                {"asset_path": path, "suggested_alt": alt}
+                for path, alt in captions.items()
+            ]
+            captions_file.write_text(
+                json.dumps(captions_data), encoding="utf-8"
+            )
+            return captions_file
+
+        return {
+            "single": create_captions_file({"image1.jpg": "Existing"}),
+            "multiple": create_captions_file(
+                {"image1.jpg": "Alt 1", "image2.jpg": "Alt 2"}
+            ),
+            "empty": create_captions_file({}),
+        }
+
+    def _create_captions_file(
+        self, temp_dir: Path, captions: dict[str, str]
+    ) -> Path:
+        """Helper to create a captions file."""
+        captions_file = temp_dir / "captions.json"
+        captions_data = [
+            {"asset_path": path, "suggested_alt": alt}
+            for path, alt in captions.items()
+        ]
+        captions_file.write_text(json.dumps(captions_data), encoding="utf-8")
+        return captions_file
+
+    @pytest.fixture
+    def base_options(
+        self, temp_dir: Path
+    ) -> generate_alt_text.GenerateAltTextOptions:
+        """Base options for generate_alt_text testing."""
+        return generate_alt_text.GenerateAltTextOptions(
+            root=temp_dir,
+            model="test-model",
+            max_chars=100,
+            timeout=60,
+            output_path=temp_dir / "captions.json",
+            skip_existing=False,
+        )
+
+    def _create_options(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        **overrides,
+    ) -> generate_alt_text.GenerateAltTextOptions:
+        """Helper to create options with overrides."""
+        return generate_alt_text.GenerateAltTextOptions(
+            **{**asdict(base_options), **overrides}
+        )
+
+    def _run_generate_alt_text(
+        self,
+        options: generate_alt_text.GenerateAltTextOptions,
+        queue_items: list,
+        mock_dependencies,
+    ):
+        """Helper to run generate_alt_text with options."""
+        mock_dependencies["build_queue"].return_value = queue_items
+        generate_alt_text.generate_alt_text(options)
+
+    def test_skip_existing_false_processes_all_items(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        mock_dependencies,
+    ) -> None:
+        """Test skip_existing=False processes all items regardless of existing captions."""
+        queue_items = self._create_queue_items("image1.jpg", "image2.jpg")
+        captions_file = self._create_captions_file(
+            base_options.root, {"image1.jpg": "Existing"}
+        )
+        options = self._create_options(
+            base_options,
+            output_path=captions_file,
+            skip_existing=False,
+        )
+
+        self._run_generate_alt_text(options, queue_items, mock_dependencies)
+        assert mock_dependencies["process_item"].call_count == 2
+
+    def test_skip_existing_true_filters_existing_items(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        mock_dependencies,
+    ) -> None:
+        """Test skip_existing=True filters out items that already have captions."""
+        queue_items = self._create_queue_items("image1.jpg", "image2.jpg")
+        captions_file = self._create_captions_file(
+            base_options.root, {"image1.jpg": "Existing"}
+        )
+        options = self._create_options(
+            base_options,
+            output_path=captions_file,
+            skip_existing=True,
+        )
+
+        self._run_generate_alt_text(options, queue_items, mock_dependencies)
+        assert mock_dependencies["process_item"].call_count == 1
+
+    def test_skip_existing_no_captions_file_processes_all(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        mock_dependencies,
+    ) -> None:
+        """Test skip_existing=True processes all items when no captions file exists."""
+        queue_items = self._create_queue_items("image1.jpg")
+        options = self._create_options(base_options, skip_existing=True)
+
+        self._run_generate_alt_text(options, queue_items, mock_dependencies)
+        assert mock_dependencies["process_item"].call_count == 1
+
+    def test_skip_existing_all_items_filtered(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        mock_dependencies,
+    ) -> None:
+        """Test skip_existing=True processes no items when all exist in captions."""
+        queue_items = self._create_queue_items("image1.jpg", "image2.jpg")
+        captions_file = self._create_captions_file(
+            base_options.root, {"image1.jpg": "Alt 1", "image2.jpg": "Alt 2"}
+        )
+        options = self._create_options(
+            base_options,
+            output_path=captions_file,
+            skip_existing=True,
+        )
+
+        self._run_generate_alt_text(options, queue_items, mock_dependencies)
+        assert mock_dependencies["process_item"].call_count == 0
+
+    def test_skip_existing_filters_correct_item(
+        self,
+        base_options: generate_alt_text.GenerateAltTextOptions,
+        mock_dependencies,
+    ) -> None:
+        """Test that skip_existing filters the correct items."""
+        queue_items = self._create_queue_items("image1.jpg", "image2.jpg")
+        captions_file = self._create_captions_file(
+            base_options.root, {"image1.jpg": "Existing"}
+        )
+
+        options = self._create_options(
+            base_options, output_path=captions_file, skip_existing=True
+        )
+
+        self._run_generate_alt_text(options, queue_items, mock_dependencies)
+
+        # Should only process image2.jpg
+        assert mock_dependencies["process_item"].call_count == 1
+        processed_item = mock_dependencies["process_item"].call_args[1][
+            "queue_item"
+        ]
+        assert processed_item.asset_path == "image2.jpg"
+
+
+class TestSkipExistingCLI:
+    """Test CLI argument parsing for --skip-existing."""
+
+    @pytest.mark.parametrize(
+        "args, expected_skip_existing",
+        [
+            (["generate_alt_text.py", "--model", "test-model"], False),
+            (
+                [
+                    "generate_alt_text.py",
+                    "--model",
+                    "test-model",
+                    "--skip-existing",
+                ],
+                True,
+            ),
+        ],
+    )
+    def test_parse_args_skip_existing(
+        self, args: list[str], expected_skip_existing: bool
+    ) -> None:
+        """Test --skip-existing argument parsing."""
+        with patch("sys.argv", args):
+            parsed_args = generate_alt_text._parse_args()
+            assert parsed_args.skip_existing is expected_skip_existing
 
 
 def test_run_llm_failure(temp_dir: Path) -> None:
