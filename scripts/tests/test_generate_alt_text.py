@@ -1,0 +1,632 @@
+"""Tests for generate_alt_text.py module."""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import Mock, patch
+
+import pytest
+import requests
+
+sys.path.append(str(Path(__file__).parent.parent))
+
+from .. import generate_alt_text, scan_for_empty_alt
+from . import utils as test_utils
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    [
+        ("https://example.com/image.jpg", True),
+        ("http://example.com/image.png", True),
+        ("ftp://example.com/file.txt", True),
+        ("./local/file.jpg", False),
+        ("../parent/file.png", False),
+        ("/absolute/path/file.jpg", False),
+        ("relative/path/file.png", False),
+        ("file.jpg", False),
+        ("", False),
+        ("   ", False),  # Whitespace only
+        ("not-a-url", False),
+        ("http://", False),  # Incomplete URL
+        ("://missing-scheme", False),
+    ],
+)
+def test_is_url(path: str, expected: bool) -> None:
+    assert generate_alt_text._is_url(path) is expected
+
+
+def test_extract_video_sources_empty_context() -> None:
+    context = ""
+    sources = generate_alt_text._extract_video_sources(context)
+    assert sources == ()
+
+
+def test_extract_video_sources_with_sources() -> None:
+    context = """
+    <video>
+        <source src="video.mp4" type="video/mp4">
+        <source src="video.webm" type="video/webm">
+    </video>
+    """
+    sources = generate_alt_text._extract_video_sources(context)
+    assert sources == ("video.mp4", "video.webm")
+
+
+def test_extract_video_sources_mixed_content() -> None:
+    context = """
+    Some text here
+    <source src="first.mp4" type="video/mp4">
+    More text
+    <img src="image.jpg" alt="not a source">
+    <source src="second.webm" type="video/webm">
+    """
+    sources = generate_alt_text._extract_video_sources(context)
+    assert sources == ("first.mp4", "second.webm")
+
+
+def test_build_prompt() -> None:
+    """Test prompt building function."""
+    queue_item = scan_for_empty_alt.QueueItem(
+        markdown_file="test.md",
+        asset_path="image.jpg",
+        line_number=5,
+        context_snippet="This is a test image context.",
+    )
+    max_chars = 150
+
+    prompt = generate_alt_text._build_prompt(queue_item, max_chars)
+
+    assert "test.md" in prompt
+    assert "This is a test image context." in prompt
+    assert str(max_chars) in prompt
+    assert "Under 150 characters" in prompt
+    assert "Return only the alt text" in prompt
+
+
+def test_build_prompt_respects_max_chars() -> None:
+    long_context = "x" * 1000
+    queue_item = scan_for_empty_alt.QueueItem(
+        markdown_file="test.md",
+        asset_path="image.jpg",
+        line_number=5,
+        context_snippet=long_context,  # Very long context
+    )
+
+    prompt_150 = generate_alt_text._build_prompt(queue_item, 150)
+    prompt_50 = generate_alt_text._build_prompt(queue_item, 50)
+
+    assert "Under 150 characters" in prompt_150
+    assert "Under 50 characters" in prompt_50
+    # Both should contain the long context
+    assert long_context in prompt_150
+    assert long_context in prompt_50
+
+
+@pytest.mark.parametrize(
+    "markdown_file, context_snippet, max_chars, expected_in_prompt",
+    [
+        ("empty.md", "", 100, ["empty.md", "Under 100 characters"]),
+        ("test.md", "", 10, ["test.md", "Under 10 characters"]),
+        ("large.md", "", 10000, ["large.md", "Under 10000 characters"]),
+        (
+            "context.md",
+            "Some context",
+            250,
+            ["context.md", "Some context", "Under 250 characters"],
+        ),
+        (
+            "special.md",
+            "Context with special chars: <>&\"'",
+            150,
+            ["special.md", "special chars", "Under 150 characters"],
+        ),
+    ],
+)
+def test_build_prompt_edge_cases(
+    markdown_file: str,
+    context_snippet: str,
+    max_chars: int,
+    expected_in_prompt: list[str],
+) -> None:
+    queue_item = scan_for_empty_alt.QueueItem(
+        markdown_file=markdown_file,
+        asset_path="image.jpg",
+        line_number=1,
+        context_snippet=context_snippet,
+    )
+    prompt = generate_alt_text._build_prompt(queue_item, max_chars)
+
+    for expected in expected_in_prompt:
+        assert expected in prompt
+
+
+@pytest.mark.parametrize(
+    "model, queue_count, avg_prompt_tokens, avg_output_tokens",
+    [
+        ("gemini-2.5-flash", 10, 300, 50),
+        ("gemini-2.5-flash-lite", 100, 300, 50),
+        ("gemini-2.5-flash", 1, 200, 30),
+        ("gemini-2.5-flash-lite", 50, 400, 80),
+    ],
+)
+def test_estimate_cost_calculation_parametrized(
+    model: str,
+    queue_count: int,
+    avg_prompt_tokens: int,
+    avg_output_tokens: int,
+) -> None:
+    # Retrieve costs from the actual MODEL_COSTS constant
+    model_costs = generate_alt_text.MODEL_COSTS[model]
+    input_cost_per_1k = model_costs["input"]
+    output_cost_per_1k = model_costs["output"]
+
+    expected_input = (
+        avg_prompt_tokens * queue_count / 1000
+    ) * input_cost_per_1k
+    expected_output = (
+        avg_output_tokens * queue_count / 1000
+    ) * output_cost_per_1k
+    expected_total = expected_input + expected_output
+
+    result = generate_alt_text._estimate_cost(
+        model, queue_count, avg_prompt_tokens, avg_output_tokens
+    )
+
+    assert f"${expected_total:.3f}" in result
+    assert f"${expected_input:.3f} input" in result
+    assert f"${expected_output:.3f} output" in result
+
+
+@pytest.mark.parametrize(
+    "model, queue_count",
+    [
+        ("gemini-2.5-flash", 1),
+        ("gemini-2.5-flash", 10),
+        ("gemini-2.5-flash-lite", 5),
+        ("gemini-2.5-flash-lite", 100),
+    ],
+)
+def test_estimate_cost_format_consistency(
+    model: str, queue_count: int
+) -> None:
+    """Test that cost estimation returns consistently formatted results."""
+    result = generate_alt_text._estimate_cost(model, queue_count)
+
+    # Check format consistency
+    assert result.startswith("Estimated cost: $")
+    assert " input + $" in result
+    assert " output)" in result
+    assert result.count("$") == 3  # Total, input, output
+
+
+def test_estimate_cost_invalid_model() -> None:
+    """Test cost estimation with invalid model raises ValueError."""
+    with pytest.raises(ValueError, match="Unknown model"):
+        generate_alt_text._estimate_cost("invalid-model", 10)
+
+
+class TestConvertAvifToPng:
+    """Test the AVIF to PNG conversion function."""
+
+    def test_non_avif_passthrough(self, temp_dir: Path) -> None:
+        """Test that non-AVIF files are passed through unchanged."""
+        test_file = temp_dir / "test.jpg"
+        test_file.write_bytes(b"fake image data")
+
+        result = generate_alt_text._convert_avif_to_png(test_file, temp_dir)
+        assert result == test_file
+
+    def test_avif_conversion_success(self, temp_dir: Path) -> None:
+        avif_file = temp_dir / "test.avif"
+        png_file = temp_dir / "test.png"
+
+        test_utils.create_test_image(avif_file, "100x100")
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = None
+            result = generate_alt_text._convert_avif_to_png(
+                avif_file, temp_dir
+            )
+
+            assert result == png_file
+            mock_run.assert_called_once()
+
+            # Verify exact command structure
+            call_args = mock_run.call_args[0][0]
+            assert call_args[0].endswith("magick")
+            assert call_args[1] == str(avif_file)
+            assert call_args[2] == str(png_file)
+            assert len(call_args) == 3  # Should be exactly 3 arguments
+
+            # Verify subprocess.run parameters
+            call_kwargs = mock_run.call_args[1]
+            assert call_kwargs["check"] is True
+            assert call_kwargs["capture_output"] is True
+            assert call_kwargs["text"] is True
+
+    def test_avif_conversion_failure(self, temp_dir: Path) -> None:
+        """Test AVIF to PNG conversion failure handling."""
+        avif_file = temp_dir / "test.avif"
+        avif_file.write_bytes(b"invalid avif data")
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(
+                1, "magick", stderr="Conversion failed"
+            )
+
+            with pytest.raises(
+                generate_alt_text.AltGenerationError,
+                match="Failed to convert AVIF to PNG",
+            ):
+                generate_alt_text._convert_avif_to_png(avif_file, temp_dir)
+
+
+class TestDownloadAsset:
+    """Test the asset download function."""
+
+    def test_local_file_exists_non_avif(self, temp_dir: Path) -> None:
+        """Test downloading local non-AVIF file."""
+        test_file = temp_dir / "image.jpg"
+        test_file.write_bytes(b"fake image data")
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="image.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        with TemporaryDirectory() as workspace_str:
+            workspace = Path(workspace_str)
+            result = generate_alt_text._download_asset(queue_item, workspace)
+
+            # Should return the original file since it's not AVIF
+            assert result == test_file.resolve()
+
+    def test_local_file_exists_avif(self, temp_dir: Path) -> None:
+        """Test downloading local AVIF file gets converted."""
+        avif_file = temp_dir / "image.avif"
+        test_utils.create_test_image(avif_file, "100x100")
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="image.avif",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        with TemporaryDirectory() as workspace_str:
+            workspace = Path(workspace_str)
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = None
+                result = generate_alt_text._download_asset(
+                    queue_item, workspace
+                )
+
+                assert result.suffix == ".png"
+                assert result.parent == workspace
+
+    def test_url_download_success(self, temp_dir: Path) -> None:
+        """Test successful URL download."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="https://example.com/image.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        mock_response = Mock()
+        mock_response.iter_content.return_value = [b"fake", b"image", b"data"]
+        mock_response.raise_for_status.return_value = None
+
+        with (
+            TemporaryDirectory() as workspace_str,
+            patch("requests.get", return_value=mock_response) as mock_get,
+        ):
+            workspace = Path(workspace_str)
+            result = generate_alt_text._download_asset(queue_item, workspace)
+
+            mock_get.assert_called_once()
+            call_kwargs = mock_get.call_args[1]
+            assert "User-Agent" in call_kwargs["headers"]
+            assert "timeout" in call_kwargs
+            assert "stream" in call_kwargs
+
+            assert result.parent == workspace
+            assert result.name.startswith("asset")
+
+    def test_url_download_avif_conversion(self, temp_dir: Path) -> None:
+        """Test URL download of AVIF file with conversion."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="https://example.com/image.avif",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        mock_response = Mock()
+        mock_response.iter_content.return_value = [b"fake", b"avif", b"data"]
+        mock_response.raise_for_status.return_value = None
+
+        with TemporaryDirectory() as workspace_str:
+            workspace = Path(workspace_str)
+            with patch("requests.get", return_value=mock_response):
+                with patch("subprocess.run") as mock_run:
+                    mock_run.return_value = None
+                    result = generate_alt_text._download_asset(
+                        queue_item, workspace
+                    )
+
+                    # Should have converted to PNG
+                    assert result.suffix == ".png"
+                    mock_run.assert_called_once()
+
+    def test_file_not_found(self, temp_dir: Path) -> None:
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="nonexistent.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        with TemporaryDirectory() as workspace_str:
+            workspace = Path(workspace_str)
+            with pytest.raises(
+                FileNotFoundError, match="Unable to locate asset"
+            ):
+                generate_alt_text._download_asset(queue_item, workspace)
+
+    def test_url_download_http_error(self, temp_dir: Path) -> None:
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="https://turntrout.com/error.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        mock_response = Mock()
+        mock_response.raise_for_status.side_effect = requests.HTTPError(
+            "404 Not Found"
+        )
+
+        with (
+            TemporaryDirectory() as workspace_str,
+            patch("requests.get", return_value=mock_response),
+            pytest.raises(requests.HTTPError),
+        ):
+            generate_alt_text._download_asset(queue_item, Path(workspace_str))
+
+    @pytest.mark.parametrize(
+        "exception_type, exception_args",
+        [
+            (requests.Timeout, ("Request timed out",)),
+            (requests.ConnectionError, ("Connection failed",)),
+            (requests.RequestException, ("Network error",)),
+        ],
+    )
+    def test_url_download_request_errors(
+        self, temp_dir: Path, exception_type, exception_args
+    ) -> None:
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="https://turntrout.com/error.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        with (
+            TemporaryDirectory() as workspace_str,
+            patch("requests.get") as mock_get,
+            pytest.raises(exception_type),
+        ):
+            mock_get.side_effect = exception_type(*exception_args)
+            generate_alt_text._download_asset(queue_item, Path(workspace_str))
+
+    def test_url_download_partial_content(self, temp_dir: Path) -> None:
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(temp_dir / "test.md"),
+            asset_path="https://example.com/partial.jpg",
+            line_number=1,
+            context_snippet="test context",
+        )
+
+        mock_response = Mock()
+        mock_response.iter_content.return_value = [
+            b"partial"
+        ]  # Incomplete data
+        mock_response.raise_for_status.return_value = None
+
+        with (
+            TemporaryDirectory() as workspace_str,
+            patch("requests.get", return_value=mock_response),
+        ):
+            result = generate_alt_text._download_asset(
+                queue_item, Path(workspace_str)
+            )
+
+            # Should still create file even with partial content
+            assert result.exists()
+            assert result.read_bytes() == b"partial"
+
+
+class TestDisplayManager:
+    """Test the DisplayManager class."""
+
+    def test_display_manager_creation(self) -> None:
+        """Test DisplayManager can be created with a console."""
+        from rich.console import Console
+
+        console = Console()
+        display = generate_alt_text.DisplayManager(console)
+        assert display.console is console
+
+    def test_show_context(self) -> None:
+        """Test showing context information."""
+        from rich.console import Console
+
+        console = Console(file=Mock())
+        display = generate_alt_text.DisplayManager(console)
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file="test.md",
+            asset_path="image.jpg",
+            line_number=5,
+            context_snippet="Test context snippet",
+        )
+
+        # Should not raise an exception
+        display.show_context(queue_item)
+
+    def test_show_video_sources_empty(self) -> None:
+        """Test showing empty video sources."""
+        from rich.console import Console
+
+        console = Console(file=Mock())
+        display = generate_alt_text.DisplayManager(console)
+
+        display.show_video_sources([])
+        # Should not raise an exception
+
+    def test_show_video_sources_with_data(self) -> None:
+        """Test showing video sources with data."""
+        from rich.console import Console
+
+        console = Console(file=Mock())
+        display = generate_alt_text.DisplayManager(console)
+
+        sources = ["video1.mp4", "video2.webm"]
+        display.show_video_sources(sources)
+        # Should not raise an exception
+
+
+class TestAltGenerationResult:
+    """Test the AltGenerationResult dataclass."""
+
+    def test_to_json(self) -> None:
+        """Test converting result to JSON."""
+        result = generate_alt_text.AltGenerationResult(
+            markdown_file="test.md",
+            asset_path="image.jpg",
+            suggested_alt="A test image",
+            model="gemini-2.5-flash",
+            ai_generated=True,
+            context_snippet="Test context",
+            video_sources=("video1.mp4", "video2.webm"),
+        )
+
+        json_data = result.to_json()
+
+        assert json_data["markdown_file"] == "test.md"
+        assert json_data["asset_path"] == "image.jpg"
+        assert json_data["suggested_alt"] == "A test image"
+        assert json_data["model"] == "gemini-2.5-flash"
+        assert json_data["ai_generated"] is True
+        assert json_data["context_snippet"] == "Test context"
+        assert json_data["video_sources"] == ("video1.mp4", "video2.webm")
+
+
+def test_write_output(temp_dir: Path) -> None:
+    """Test writing results to JSON file."""
+    results = [
+        generate_alt_text.AltGenerationResult(
+            markdown_file="test1.md",
+            asset_path="image1.jpg",
+            suggested_alt="First image",
+            model="gemini-2.5-flash",
+            ai_generated=True,
+            context_snippet="First context",
+            video_sources=(),
+        ),
+        generate_alt_text.AltGenerationResult(
+            markdown_file="test2.md",
+            asset_path="image2.jpg",
+            suggested_alt="Second image",
+            model="gemini-2.5-flash",
+            ai_generated=True,
+            context_snippet="Second context",
+            video_sources=("video.mp4",),
+        ),
+    ]
+
+    output_file = temp_dir / "output.json"
+    generate_alt_text._write_output(results, output_file)
+
+    assert output_file.exists()
+    with output_file.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert len(data) == 2
+    assert data[0]["markdown_file"] == "test1.md"
+    assert data[1]["suggested_alt"] == "Second image"
+
+
+def test_run_llm_success(temp_dir: Path) -> None:
+    """Test successful LLM execution."""
+    attachment = temp_dir / "test.jpg"
+    attachment.write_bytes(b"fake image")
+    prompt = "Generate alt text for this image"
+    model = "gemini-2.5-flash"
+    timeout = 60
+
+    mock_result = Mock()
+    mock_result.returncode = 0
+    mock_result.stdout = "Generated alt text"
+    mock_result.stderr = ""
+
+    with patch("subprocess.run", return_value=mock_result) as mock_run:
+        result = generate_alt_text._run_llm(attachment, prompt, model, timeout)
+
+        assert result == "Generated alt text"
+        mock_run.assert_called_once()
+        call_args = mock_run.call_args[0][0]
+        assert "llm" in call_args[0]
+        assert "-m" in call_args
+        assert model in call_args
+        assert "-a" in call_args
+        assert str(attachment) in call_args
+        assert prompt in call_args
+
+
+def test_run_llm_failure(temp_dir: Path) -> None:
+    """Test LLM execution failure."""
+    attachment = temp_dir / "test.jpg"
+    attachment.write_bytes(b"fake image")
+    prompt = "Generate alt text for this image"
+    model = "gemini-2.5-flash"
+    timeout = 60
+
+    mock_result = Mock()
+    mock_result.returncode = 1
+    mock_result.stdout = ""
+    mock_result.stderr = "LLM error"
+
+    with patch("subprocess.run", return_value=mock_result):
+        with pytest.raises(
+            generate_alt_text.AltGenerationError,
+            match="Caption generation failed",
+        ):
+            generate_alt_text._run_llm(attachment, prompt, model, timeout)
+
+
+def test_run_llm_empty_output(temp_dir: Path) -> None:
+    """Test LLM returning empty output."""
+    attachment = temp_dir / "test.jpg"
+    attachment.write_bytes(b"fake image")
+    prompt = "Generate alt text for this image"
+    model = "gemini-2.5-flash"
+    timeout = 60
+
+    mock_result = Mock()
+    mock_result.returncode = 0
+    mock_result.stdout = "   "  # Only whitespace
+    mock_result.stderr = ""
+
+    with patch("subprocess.run", return_value=mock_result):
+        with pytest.raises(
+            generate_alt_text.AltGenerationError,
+            match="LLM returned empty caption",
+        ):
+            generate_alt_text._run_llm(attachment, prompt, model, timeout)
