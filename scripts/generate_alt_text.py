@@ -250,6 +250,8 @@ class DisplayManager:
 
     def prompt_for_edit(self, suggestion: str) -> str:
         """Prompt user to edit the suggestion with prefilled editable text."""
+        # Enable vim keybindings for readline
+        readline.parse_and_bind("set editing-mode vi")
         readline.set_startup_hook(lambda: readline.insert_text(suggestion))
         self.console.print(
             "\n[bold blue]Edit alt text (or press Enter to accept):[/bold blue]"
