@@ -1,7 +1,9 @@
 """Generate AI alt text suggestions for assets lacking meaningful alt text."""
 
 import argparse
+import atexit
 import json
+import signal
 import subprocess
 import sys
 import textwrap
@@ -193,6 +195,7 @@ class DisplayManager:
 
     def __init__(self, console: Console) -> None:
         self.console = console
+        self._image_processes: list[subprocess.Popen[bytes]] = []
 
     def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
         """Display context information for the queue item."""
@@ -215,9 +218,28 @@ class DisplayManager:
             )
 
     def show_image(self, path: Path) -> None:
-        """Display image path information."""
+        """Display the actual image using the system's default image viewer."""
         if sys.stdout.isatty():
             self.console.print(f"[dim]Image: {path}[/dim]")
+
+            # Open the image with the default system viewer (macOS/Linux/Windows compatible)
+            try:
+                if sys.platform == "darwin":  # macOS
+                    # Use Popen to track the process for later cleanup
+                    process = subprocess.Popen(["open", str(path)])
+                    self._image_processes.append(process)
+                elif sys.platform.startswith("linux"):  # Linux
+                    process = subprocess.Popen(["xdg-open", str(path)])
+                    self._image_processes.append(process)
+                elif sys.platform == "win32":  # Windows
+                    process = subprocess.Popen(
+                        ["start", str(path)], shell=True
+                    )
+                    self._image_processes.append(process)
+                else:
+                    raise ValueError(f"Unsupported platform: {sys.platform}")
+            except (subprocess.SubprocessError, OSError) as err:
+                raise ValueError(f"Failed to open image: {err}") from err
 
     def show_suggestion(self, suggestion: str) -> None:
         """Display the generated alt text suggestion."""
@@ -254,6 +276,29 @@ class DisplayManager:
             self.console.print("\033]1337;StealFocus\a", end="")
             self.console.print()
 
+    def close_current_image(self) -> None:
+        """Close the most recently opened image viewer."""
+        if not self._image_processes:
+            return
+
+        process = self._image_processes[-1]
+        try:
+            if process.poll() is None:  # Process is still running
+                process.terminate()
+                # Give it a moment to close gracefully
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()  # Force kill if it doesn't close
+        except (OSError, subprocess.SubprocessError):
+            pass  # Process might already be dead
+        self._image_processes.pop()
+
+    def close_all_images(self) -> None:
+        """Close all opened image viewers."""
+        while self._image_processes:
+            self.close_current_image()
+
 
 def _process_queue_item(
     queue_item: scan_for_empty_alt.QueueItem,
@@ -283,6 +328,8 @@ def _process_queue_item(
         final_alt = suggestion
         if sys.stdout.isatty():
             final_alt = display.prompt_for_edit(suggestion)
+
+        display.close_current_image()
 
         return AltGenerationResult(
             markdown_file=queue_item.markdown_file,
@@ -333,6 +380,20 @@ def generate_alt_text(
     console = Console()
     display = DisplayManager(console)
 
+    # Register cleanup functions to close images on exit
+    def cleanup() -> None:
+        display.close_all_images()
+
+    atexit.register(cleanup)
+
+    # Handle Ctrl+C gracefully
+    def signal_handler(_signum: int, _frame: object) -> None:
+        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
+        cleanup()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
     queue_items = scan_for_empty_alt.build_queue(root)
     if limit is not None:
         queue_items = queue_items[:limit]
@@ -343,25 +404,41 @@ def generate_alt_text(
         f"\n[bold blue]Processing {len(queue_items)} items with model '{model}'[/bold blue]"
     )
     console.print(f"[dim]{cost_estimate}[/dim]\n")
-    input("Press Enter to continue...")
+
+    try:
+        input("Press Enter to continue...")
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Cancelled by user.[/yellow]")
+        cleanup()
+        sys.exit(0)
 
     results: list[AltGenerationResult] = []
-    for queue_item in queue_items:
-        try:
-            result = _process_queue_item(
-                queue_item=queue_item,
-                display=display,
-                model=model,
-                max_chars=max_chars,
-                timeout=timeout,
-            )
-            results.append(result)
-        except (
-            AltGenerationError,
-            FileNotFoundError,
-            requests.RequestException,
-        ) as err:
-            display.show_error(str(err))
+    try:
+        for queue_item in queue_items:
+            try:
+                result = _process_queue_item(
+                    queue_item=queue_item,
+                    display=display,
+                    model=model,
+                    max_chars=max_chars,
+                    timeout=timeout,
+                )
+                results.append(result)
+            except (
+                AltGenerationError,
+                FileNotFoundError,
+                requests.RequestException,
+            ) as err:
+                display.show_error(str(err))
+                # Close any image that might be open for this failed item
+                display.close_current_image()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
+        cleanup()
+        sys.exit(0)
+    finally:
+        # Ensure all images are closed when done
+        cleanup()
 
     return results
 

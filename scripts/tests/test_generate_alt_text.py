@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+from rich import console
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -214,7 +215,7 @@ class TestConvertAvifToPng:
     def test_non_avif_passthrough(self, temp_dir: Path) -> None:
         """Test that non-AVIF files are passed through unchanged."""
         test_file = temp_dir / "test.jpg"
-        test_file.write_bytes(b"fake image data")
+        test_utils.create_test_image(test_file, "100x100")
 
         result = generate_alt_text._convert_avif_to_png(test_file, temp_dir)
         assert result == test_file
@@ -455,21 +456,28 @@ class TestDownloadAsset:
 class TestDisplayManager:
     """Test the DisplayManager class."""
 
+    @pytest.fixture
+    def display_manager(self) -> generate_alt_text.DisplayManager:
+        """Create a DisplayManager with mocked console for testing."""
+        richConsole = console.Console(file=Mock())
+        return generate_alt_text.DisplayManager(richConsole)
+
+    def _mock_running_process(self) -> Mock:
+        """Helper to create a mock running process."""
+        mock_process = Mock()
+        mock_process.poll.return_value = None  # Process is running
+        mock_process.terminate.return_value = None
+        mock_process.wait.return_value = None
+        return mock_process
+
     def test_display_manager_creation(self) -> None:
-        """Test DisplayManager can be created with a console."""
-        from rich.console import Console
+        richConsole = console.Console()
+        display = generate_alt_text.DisplayManager(richConsole)
+        assert display.console is richConsole
 
-        console = Console()
-        display = generate_alt_text.DisplayManager(console)
-        assert display.console is console
-
-    def test_show_context(self) -> None:
-        """Test showing context information."""
-        from rich.console import Console
-
-        console = Console(file=Mock())
-        display = generate_alt_text.DisplayManager(console)
-
+    def test_show_context(
+        self, display_manager: generate_alt_text.DisplayManager
+    ) -> None:
         queue_item = scan_for_empty_alt.QueueItem(
             markdown_file="test.md",
             asset_path="image.jpg",
@@ -478,28 +486,210 @@ class TestDisplayManager:
         )
 
         # Should not raise an exception
-        display.show_context(queue_item)
+        display_manager.show_context(queue_item)
 
-    def test_show_video_sources_empty(self) -> None:
-        """Test showing empty video sources."""
-        from rich.console import Console
-
-        console = Console(file=Mock())
-        display = generate_alt_text.DisplayManager(console)
-
-        display.show_video_sources([])
+    def test_show_video_sources_empty(
+        self, display_manager: generate_alt_text.DisplayManager
+    ) -> None:
+        display_manager.show_video_sources([])
         # Should not raise an exception
 
-    def test_show_video_sources_with_data(self) -> None:
-        """Test showing video sources with data."""
-        from rich.console import Console
-
-        console = Console(file=Mock())
-        display = generate_alt_text.DisplayManager(console)
-
+    def test_show_video_sources_with_data(
+        self, display_manager: generate_alt_text.DisplayManager
+    ) -> None:
         sources = ["video1.mp4", "video2.webm"]
-        display.show_video_sources(sources)
+        display_manager.show_video_sources(sources)
         # Should not raise an exception
+
+    def test_show_image_not_tty(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        with patch("sys.stdout.isatty", return_value=False):
+            # Should not raise an exception and should not try to open image
+            display_manager.show_image(test_image)
+
+    def test_show_image_success(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        mock_process = self._mock_running_process()
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen", return_value=mock_process) as mock_popen,
+        ):
+            display_manager.show_image(test_image)
+
+            # Should have attempted to create subprocess to open the image
+            mock_popen.assert_called_once()
+            call_args = mock_popen.call_args[0][0]  # Get the command list
+            assert str(test_image) in call_args
+
+    def test_show_image_subprocess_error(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen") as mock_popen,
+        ):
+            mock_popen.side_effect = subprocess.SubprocessError(
+                "Failed to start"
+            )
+            with pytest.raises(ValueError, match="Failed to open image"):
+                display_manager.show_image(test_image)
+
+    def test_show_image_file_not_found_error(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen") as mock_popen,
+        ):
+            mock_popen.side_effect = OSError("open command not found")
+            with pytest.raises(ValueError, match="Failed to open image"):
+                display_manager.show_image(test_image)
+
+    def test_show_image_unsupported_platform(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("sys.platform", "unsupported_os"),
+        ):
+            with pytest.raises(ValueError, match="Unsupported platform"):
+                display_manager.show_image(test_image)
+
+    def test_close_current_image_no_processes(
+        self, display_manager: generate_alt_text.DisplayManager
+    ) -> None:
+        # Should not raise an exception
+        display_manager.close_current_image()
+
+    def test_close_current_image_with_running_process(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        mock_process = self._mock_running_process()
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen", return_value=mock_process),
+        ):
+            display_manager.show_image(test_image)
+            assert len(display_manager._image_processes) == 1
+
+            display_manager.close_current_image()
+
+            mock_process.terminate.assert_called_once()
+            mock_process.wait.assert_called_once_with(timeout=2)
+            assert len(display_manager._image_processes) == 0
+
+    def test_close_current_image_force_kill(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        mock_process = Mock()
+        mock_process.poll.return_value = None  # Process is running
+        mock_process.terminate.return_value = None
+        mock_process.wait.side_effect = subprocess.TimeoutExpired("cmd", 2)
+        mock_process.kill.return_value = None
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen", return_value=mock_process),
+        ):
+            display_manager.show_image(test_image)
+            display_manager.close_current_image()
+
+            mock_process.terminate.assert_called_once()
+            mock_process.kill.assert_called_once()
+            assert len(display_manager._image_processes) == 0
+
+    def test_close_current_image_dead_process(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        mock_process = Mock()
+        mock_process.poll.return_value = 0  # Process already terminated
+        mock_process.terminate.side_effect = OSError("Process already dead")
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen", return_value=mock_process),
+        ):
+            display_manager.show_image(test_image)
+            display_manager.close_current_image()
+
+            # Should handle the OSError gracefully
+            assert len(display_manager._image_processes) == 0
+
+    def test_close_all_images(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image1 = temp_dir / "test1.jpg"
+        test_utils.create_test_image(test_image1, "100x100")
+
+        test_image2 = temp_dir / "test2.jpg"
+        test_utils.create_test_image(test_image2, "100x100")
+
+        mock_process1 = self._mock_running_process()
+        mock_process2 = self._mock_running_process()
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch(
+                "subprocess.Popen", side_effect=[mock_process1, mock_process2]
+            ),
+        ):
+            display_manager.show_image(test_image1)
+            display_manager.show_image(test_image2)
+            assert len(display_manager._image_processes) == 2
+
+            display_manager.close_all_images()
+
+            # Both processes should be terminated
+            mock_process1.terminate.assert_called_once()
+            mock_process2.terminate.assert_called_once()
+            assert len(display_manager._image_processes) == 0
+
+    def test_image_process_tracking(
+        self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
+    ) -> None:
+        test_image = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_image, "100x100")
+
+        mock_process = self._mock_running_process()
+
+        with (
+            patch("sys.stdout.isatty", return_value=True),
+            patch("subprocess.Popen", return_value=mock_process),
+        ):
+            # Initially no processes
+            assert len(display_manager._image_processes) == 0
+
+            # Show image should add process
+            display_manager.show_image(test_image)
+            assert len(display_manager._image_processes) == 1
+            assert display_manager._image_processes[0] is mock_process
 
 
 class TestAltGenerationResult:
