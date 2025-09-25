@@ -261,6 +261,85 @@ class TestConvertAvifToPng:
                 generate_alt_text._convert_avif_to_png(avif_file, temp_dir)
 
 
+class TestConvertGifToMp4:
+    """Test the GIF to MP4 conversion function."""
+
+    def test_non_gif_raises_error(self, temp_dir: Path) -> None:
+        """Test that non-GIF files raise ValueError."""
+        test_file = temp_dir / "test.jpg"
+        test_utils.create_test_image(test_file, "100x100")
+
+        with pytest.raises(ValueError, match="Unsupported file type"):
+            generate_alt_text._convert_gif_to_mp4(test_file, temp_dir)
+
+    def test_gif_conversion_success(self, temp_dir: Path) -> None:
+        """Test successful GIF to MP4 conversion."""
+        gif_file = temp_dir / "test.gif"
+        mp4_file = temp_dir / "test.mp4"
+        test_utils.create_test_image(gif_file, "100x100")
+
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = None
+            result = generate_alt_text._convert_gif_to_mp4(gif_file, temp_dir)
+
+            assert result == mp4_file
+            mock_run.assert_called_once()
+
+            call_args = mock_run.call_args[0][0]
+            assert str(mp4_file) in call_args
+
+            call_kwargs = mock_run.call_args[1]
+            assert call_kwargs["check"] is True
+            assert call_kwargs["capture_output"] is True
+            assert call_kwargs["text"] is True
+            assert "timeout" in call_kwargs
+
+    def test_gif_conversion_failure(self, temp_dir: Path) -> None:
+        """Test GIF to MP4 conversion failure handling."""
+        gif_file = temp_dir / "test.gif"
+        gif_file.write_bytes(b"invalid gif data")
+
+        with patch("subprocess.run") as mock_run:
+            exc = subprocess.CalledProcessError(
+                1, "ffmpeg", stderr="Conversion failed"
+            )
+            mock_run.side_effect = exc
+
+            with pytest.raises(
+                generate_alt_text.AltGenerationError,
+                match=f"Failed to convert GIF to MP4: {exc!s}",
+            ):
+                generate_alt_text._convert_gif_to_mp4(gif_file, temp_dir)
+
+
+class TestConvertAssetForLlm:
+    """Test the asset conversion router function."""
+
+    @patch("scripts.generate_alt_text._convert_avif_to_png")
+    def test_avif_calls_avif_converter(
+        self, mock_convert: Mock, temp_dir: Path
+    ) -> None:
+        """Test that .avif files are routed to the AVIF converter."""
+        avif_file = temp_dir / "test.avif"
+        generate_alt_text._convert_asset_for_llm(avif_file, temp_dir)
+        mock_convert.assert_called_once_with(avif_file, temp_dir)
+
+    @patch("scripts.generate_alt_text._convert_gif_to_mp4")
+    def test_gif_calls_gif_converter(
+        self, mock_convert: Mock, temp_dir: Path
+    ) -> None:
+        """Test that .gif files are routed to the GIF converter."""
+        gif_file = temp_dir / "test.gif"
+        generate_alt_text._convert_asset_for_llm(gif_file, temp_dir)
+        mock_convert.assert_called_once_with(gif_file, temp_dir)
+
+    def test_unsupported_file_passthrough(self, temp_dir: Path) -> None:
+        """Test that unsupported files are passed through."""
+        jpg_file = temp_dir / "test.jpg"
+        result = generate_alt_text._convert_asset_for_llm(jpg_file, temp_dir)
+        assert result == jpg_file
+
+
 class TestDownloadAsset:
     """Test the asset download function."""
 
@@ -794,14 +873,16 @@ class TestGenerateAltTextSkipExisting:
 
     @pytest.fixture
     def mock_dependencies(self):
-        """Mock external dependencies for generate_alt_text testing."""
+        """Mock external dependencies for batch_generate_alt_text testing."""
         with (
             patch.object(
                 generate_alt_text.scan_for_empty_alt, "build_queue"
             ) as mock_build_queue,
             patch.object(
-                generate_alt_text, "_process_queue_item"
-            ) as mock_process_item,
+                generate_alt_text,
+                "_async_generate_suggestions",
+                return_value=[],
+            ) as mock_async_generate,
             patch.object(
                 generate_alt_text, "_write_output"
             ) as mock_write_output,
@@ -812,10 +893,13 @@ class TestGenerateAltTextSkipExisting:
             ),
             patch("builtins.input", return_value=""),
             patch("atexit.register"),
+            patch.object(
+                generate_alt_text, "_label_suggestions", return_value=[]
+            ),
         ):
             yield {
                 "build_queue": mock_build_queue,
-                "process_item": mock_process_item,
+                "async_generate": mock_async_generate,
                 "write_output": mock_write_output,
             }
 
@@ -875,7 +959,7 @@ class TestGenerateAltTextSkipExisting:
     ):
         """Helper to run generate_alt_text with options."""
         mock_dependencies["build_queue"].return_value = queue_items
-        generate_alt_text.generate_alt_text(options)
+        generate_alt_text.batch_generate_alt_text(options)
 
     def test_skip_existing_false_processes_all_items(
         self,
@@ -894,7 +978,9 @@ class TestGenerateAltTextSkipExisting:
         )
 
         self._run_generate_alt_text(options, queue_items, mock_dependencies)
-        assert mock_dependencies["process_item"].call_count == 2
+        mock_dependencies["async_generate"].assert_called_once()
+        processed_items = mock_dependencies["async_generate"].call_args[0][0]
+        assert len(processed_items) == 2
 
     def test_skip_existing_true_filters_existing_items(
         self,
@@ -913,7 +999,9 @@ class TestGenerateAltTextSkipExisting:
         )
 
         self._run_generate_alt_text(options, queue_items, mock_dependencies)
-        assert mock_dependencies["process_item"].call_count == 1
+        mock_dependencies["async_generate"].assert_called_once()
+        processed_items = mock_dependencies["async_generate"].call_args[0][0]
+        assert len(processed_items) == 1
 
     def test_skip_existing_no_captions_file_processes_all(
         self,
@@ -925,7 +1013,9 @@ class TestGenerateAltTextSkipExisting:
         options = self._create_options(base_options, skip_existing=True)
 
         self._run_generate_alt_text(options, queue_items, mock_dependencies)
-        assert mock_dependencies["process_item"].call_count == 1
+        mock_dependencies["async_generate"].assert_called_once()
+        processed_items = mock_dependencies["async_generate"].call_args[0][0]
+        assert len(processed_items) == 1
 
     def test_skip_existing_all_items_filtered(
         self,
@@ -944,7 +1034,7 @@ class TestGenerateAltTextSkipExisting:
         )
 
         self._run_generate_alt_text(options, queue_items, mock_dependencies)
-        assert mock_dependencies["process_item"].call_count == 0
+        mock_dependencies["async_generate"].assert_not_called()
 
     def test_skip_existing_filters_correct_item(
         self,
@@ -964,11 +1054,10 @@ class TestGenerateAltTextSkipExisting:
         self._run_generate_alt_text(options, queue_items, mock_dependencies)
 
         # Should only process image2.jpg
-        assert mock_dependencies["process_item"].call_count == 1
-        processed_item = mock_dependencies["process_item"].call_args[1][
-            "queue_item"
-        ]
-        assert processed_item.asset_path == "image2.jpg"
+        mock_dependencies["async_generate"].assert_called_once()
+        processed_items = mock_dependencies["async_generate"].call_args[0][0]
+        assert len(processed_items) == 1
+        assert processed_items[0].asset_path == "image2.jpg"
 
 
 def test_filter_existing_captions_filters_items(

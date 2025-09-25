@@ -90,7 +90,7 @@ def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
 def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
     """Convert GIF files to MP4 format for LLM compatibility."""
     if asset_path.suffix.lower() != ".gif":
-        return asset_path
+        raise ValueError(f"Unsupported file type '{asset_path.suffix}'.")
 
     mp4_target = workspace / f"{asset_path.stem}.mp4"
     ffmpeg_executable = script_utils.find_executable("ffmpeg")
@@ -101,10 +101,6 @@ def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
                 ffmpeg_executable,
                 "-i",
                 str(asset_path),
-                "-movflags",
-                "faststart",
-                "-pix_fmt",
-                "yuv420p",
                 "-vf",
                 "scale=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-y",
@@ -117,10 +113,8 @@ def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
         )
         return mp4_target
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
-        stderr = err.stderr if hasattr(err, "stderr") else ""
-        stdout = err.stdout if hasattr(err, "stdout") else ""
         raise AltGenerationError(
-            f"Failed to convert GIF to MP4: {stderr or stdout}"
+            f"Failed to convert GIF to MP4: {err}"
         ) from err
 
 
