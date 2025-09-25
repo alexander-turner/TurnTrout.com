@@ -442,11 +442,7 @@ def _load_learning_examples(
         # Filter examples where suggestion was edited
         learning_examples = []
         for item in data:
-            if (
-                item["suggested_alt"] != item["final_alt"]
-                and item["suggested_alt"].strip()
-                and item["final_alt"].strip()
-            ):
+            if item["suggested_alt"] != item["final_alt"]:
                 learning_examples.append(
                     {
                         "suggested_alt": item["suggested_alt"],

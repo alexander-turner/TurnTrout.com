@@ -1102,3 +1102,173 @@ def test_run_llm_empty_output(temp_dir: Path) -> None:
             match="LLM returned empty caption",
         ):
             generate_alt_text._run_llm(attachment, prompt, model, timeout)
+
+
+class TestLoadLearningExamples:
+    """Test the _load_learning_examples function."""
+
+    @pytest.mark.parametrize(
+        "captions_data, expected_count, max_examples",
+        [
+            # Empty file
+            ([], 0, 5),
+            # No examples with different suggested/final alt
+            (
+                [
+                    {
+                        "suggested_alt": "Same text",
+                        "final_alt": "Same text",
+                        "context_snippet": "context",
+                    }
+                ],
+                0,
+                5,
+            ),
+            # One example with different alt text
+            (
+                [
+                    {
+                        "suggested_alt": "Initial suggestion",
+                        "final_alt": "Final version",
+                        "context_snippet": "test context",
+                    }
+                ],
+                1,
+                5,
+            ),
+            # Multiple examples, limited by max_examples
+            (
+                [
+                    {
+                        "suggested_alt": f"Suggestion {i}",
+                        "final_alt": f"Final {i}",
+                        "context_snippet": f"context {i}",
+                    }
+                    for i in range(10)
+                ],
+                3,
+                3,
+            ),
+        ],
+    )
+    def test_load_learning_examples_valid_file(
+        self,
+        temp_dir: Path,
+        captions_data: list,
+        expected_count: int,
+        max_examples: int,
+    ) -> None:
+        """Test loading learning examples from valid JSON file."""
+        captions_file = temp_dir / "captions.json"
+        captions_file.write_text(json.dumps(captions_data), encoding="utf-8")
+
+        result = generate_alt_text._load_learning_examples(
+            captions_file, max_examples=max_examples
+        )
+        assert len(result) == expected_count
+
+    def test_load_learning_examples_nonexistent_file(
+        self, temp_dir: Path
+    ) -> None:
+        """Test loading examples from non-existent file returns empty list."""
+        nonexistent_file = temp_dir / "nonexistent.json"
+        result = generate_alt_text._load_learning_examples(nonexistent_file)
+        assert result == []
+
+    def test_load_learning_examples_invalid_json(self, temp_dir: Path) -> None:
+        """Test loading examples from invalid JSON file returns empty list."""
+        invalid_file = temp_dir / "invalid.json"
+        invalid_file.write_text("{ invalid json", encoding="utf-8")
+
+        result = generate_alt_text._load_learning_examples(invalid_file)
+        assert result == []
+
+    def test_load_learning_examples_content_structure(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that loaded examples have the correct structure."""
+        captions_data = [
+            {
+                "suggested_alt": "Initial suggestion",
+                "final_alt": "Improved final version",
+                "markdown_file": "test.md",
+                "asset_path": "image.jpg",
+            }
+        ]
+        captions_file = temp_dir / "captions.json"
+        captions_file.write_text(json.dumps(captions_data), encoding="utf-8")
+
+        result = generate_alt_text._load_learning_examples(captions_file)
+        assert len(result) == 1
+        assert result[0]["suggested_alt"] == "Initial suggestion"
+        assert result[0]["final_alt"] == "Improved final version"
+
+
+class TestBuildPromptWithExamples:
+    """Test the _build_prompt function with learning examples."""
+
+    def test_build_prompt_no_examples(self) -> None:
+        """Test prompt building without learning examples."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file="test.md",
+            asset_path="image.jpg",
+            line_number=5,
+            context_snippet="This is a test image context.",
+        )
+        prompt = generate_alt_text._build_prompt(queue_item, max_chars=150)
+
+        assert "test.md" in prompt
+        assert "This is a test image context." in prompt
+        assert "Under 150 characters" in prompt
+        assert (
+            "Here are examples of how initial suggestions were improved"
+            not in prompt
+        )
+
+    def test_build_prompt_with_examples(self) -> None:
+        """Test prompt building with learning examples."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file="test.md",
+            asset_path="image.jpg",
+            line_number=5,
+            context_snippet="This is a test image context.",
+        )
+        learning_examples = [
+            {
+                "suggested_alt": "Initial suggestion",
+                "final_alt": "Improved version",
+            },
+            {
+                "suggested_alt": "Another initial",
+                "final_alt": "Another improved",
+            },
+        ]
+
+        prompt = generate_alt_text._build_prompt(
+            queue_item, max_chars=150, learning_examples=learning_examples
+        )
+
+        assert "Examples of how initial suggestions were improved" in prompt
+        assert "Example 1:" in prompt
+        assert "Example 2:" in prompt
+        assert "Initial suggestion" in prompt
+        assert "Improved version" in prompt
+        assert "Another initial" in prompt
+        assert "Another improved" in prompt
+        assert "Learn from these examples" in prompt
+
+    def test_build_prompt_empty_examples(self) -> None:
+        """Test prompt building with empty learning examples list."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file="test.md",
+            asset_path="image.jpg",
+            line_number=5,
+            context_snippet="This is a test image context.",
+        )
+        prompt = generate_alt_text._build_prompt(
+            queue_item, max_chars=150, learning_examples=[]
+        )
+
+        assert "test.md" in prompt
+        assert "This is a test image context." in prompt
+        assert "how initial suggestions were improved" not in prompt
