@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -22,6 +23,7 @@ from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
 from tqdm.rich import tqdm
+from tqdm.std import TqdmExperimentalWarning
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -29,6 +31,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from scripts import scan_for_empty_alt
 from scripts import utils as script_utils
+
+warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
 # Approximate cost estimates per 1000 tokens (as of Sep 2025)
 MODEL_COSTS = {
