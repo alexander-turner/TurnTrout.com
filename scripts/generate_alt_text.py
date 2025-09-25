@@ -593,20 +593,70 @@ async def _async_generate_suggestions(
 
     suggestions: list[AltTextResult] = []
     with tqdm(total=task_count, desc="Generating alt text") as progress_bar:
-        for finished in asyncio.as_completed(tasks):
-            suggestions.append(await finished)
-            progress_bar.update(1)
+        try:
+            for finished in asyncio.as_completed(tasks):
+                suggestions.append(await finished)
+                progress_bar.update(1)
+        except asyncio.CancelledError:
+            progress_bar.set_description(
+                "Generating alt text (cancelled, finishing up...)"
+            )
 
     return suggestions
+
+
+def _process_single_suggestion_for_labeling(
+    suggestion_data: AltTextResult,
+    display: DisplayManager,
+    output_path: Path,
+) -> None:
+    # Recreate queue item for display
+    queue_item = scan_for_empty_alt.QueueItem(
+        markdown_file=suggestion_data.markdown_file,
+        asset_path=suggestion_data.asset_path,
+        line_number=int(suggestion_data.line_number),
+        context_snippet=suggestion_data.context_snippet,
+    )
+
+    # Download asset for display
+    with TemporaryDirectory() as temp_dir:
+        workspace = Path(temp_dir)
+        attachment = _download_asset(queue_item, workspace)
+
+        # Display results
+        display.show_rule(queue_item.asset_path)
+        display.show_context(queue_item)
+        display.show_image(attachment)
+        display.refocus_terminal()
+        display.show_suggestion(suggestion_data.suggested_alt)
+
+        # Allow user to edit the suggestion
+        final_alt = suggestion_data.suggested_alt
+        if sys.stdout.isatty():
+            final_alt = display.prompt_for_edit(suggestion_data.suggested_alt)
+
+        display.close_current_image()
+
+    result = AltGenerationResult(
+        markdown_file=suggestion_data.markdown_file,
+        asset_path=suggestion_data.asset_path,
+        suggested_alt=suggestion_data.suggested_alt,
+        final_alt=final_alt,
+        model=suggestion_data.model,
+        context_snippet=suggestion_data.context_snippet,
+    )
+    _write_output([result], output_path, append_mode=True)
 
 
 def _label_suggestions(
     suggestions: list[AltTextResult],
     console: Console,
-) -> list[AltGenerationResult]:
-    """Load suggestions and allow user to label them without LLM calls."""
+    output_path: Path,
+    append_mode: bool,
+) -> int:
+    """Load suggestions and allow user to label them, saving after each."""
     display = DisplayManager(console)
-    results: list[AltGenerationResult] = []
+    processed_count = 0
 
     def cleanup() -> None:
         display.close_all_images()
@@ -615,7 +665,9 @@ def _label_suggestions(
 
     # Handle Ctrl+C gracefully
     def signal_handler(_signum: int, _frame: object) -> None:
-        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
+        console.print(
+            "\n[yellow]Interrupted by user. Progress has been saved.[/yellow]"
+        )
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -624,46 +676,25 @@ def _label_suggestions(
         f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
     )
 
-    for suggestion_data in suggestions:
-        try:
-            # Recreate queue item for display
-            queue_item = scan_for_empty_alt.QueueItem(
-                markdown_file=suggestion_data.markdown_file,
-                asset_path=suggestion_data.asset_path,
-                line_number=int(suggestion_data.line_number),
-                context_snippet=suggestion_data.context_snippet,
+    suggestions_to_process = suggestions
+    if append_mode:
+        existing_captions = _load_existing_captions(output_path)
+        original_count = len(suggestions_to_process)
+        suggestions_to_process = [
+            s for s in suggestions if s.asset_path not in existing_captions
+        ]
+        skipped_count = original_count - len(suggestions_to_process)
+        if skipped_count > 0:
+            console.print(
+                f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
             )
 
-            # Download asset for display
-            with TemporaryDirectory() as temp_dir:
-                workspace = Path(temp_dir)
-                attachment = _download_asset(queue_item, workspace)
-
-                # Display results
-                display.show_rule(queue_item.asset_path)
-                display.show_context(queue_item)
-                display.show_image(attachment)
-                display.refocus_terminal()
-                display.show_suggestion(suggestion_data.suggested_alt)
-
-                # Allow user to edit the suggestion
-                final_alt = suggestion_data.suggested_alt
-                if sys.stdout.isatty():
-                    final_alt = display.prompt_for_edit(
-                        suggestion_data.suggested_alt
-                    )
-
-                display.close_current_image()
-
-                result = AltGenerationResult(
-                    markdown_file=suggestion_data.markdown_file,
-                    asset_path=suggestion_data.asset_path,
-                    suggested_alt=suggestion_data.suggested_alt,
-                    final_alt=final_alt,
-                    model=suggestion_data.model,
-                    context_snippet=suggestion_data.context_snippet,
-                )
-                results.append(result)
+    for suggestion_data in suggestions_to_process:
+        try:
+            _process_single_suggestion_for_labeling(
+                suggestion_data, display, output_path
+            )
+            processed_count += 1
 
         except (
             AltGenerationError,
@@ -674,7 +705,7 @@ def _label_suggestions(
             display.close_current_image()
 
     cleanup()
-    return results
+    return processed_count
 
 
 def batch_generate_alt_text(
@@ -740,14 +771,13 @@ def batch_generate_alt_text(
         )
         return
 
-    results = _label_suggestions(suggestions, console)
+    processed_count = _label_suggestions(
+        suggestions, console, options.output_path, options.skip_existing
+    )
 
     # Write final results
-    _write_output(
-        results, options.output_path, append_mode=options.skip_existing
-    )
     console.print(
-        f"\n[green]Completed! Wrote {len(results)} results to {options.output_path}[/green]"
+        f"\n[green]Completed! Wrote {processed_count} results to {options.output_path}[/green]"
     )
 
 
@@ -805,12 +835,13 @@ def label_from_suggestions_file(
         f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
     )
 
-    results = _label_suggestions(suggestions, console)
+    processed_count = _label_suggestions(
+        suggestions, console, output_path, skip_existing
+    )
 
     # Write final results
-    _write_output(results, output_path, append_mode=skip_existing)
     console.print(
-        f"\n[green]Completed! Wrote {len(results)} results to {output_path}[/green]"
+        f"\n[green]Completed! Wrote {processed_count} results to {output_path}[/green]"
     )
 
 
