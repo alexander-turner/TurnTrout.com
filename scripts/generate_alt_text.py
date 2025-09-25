@@ -486,7 +486,9 @@ def generate_alt_text(
 
     def cleanup() -> None:
         display.close_all_images()
-        _write_output(results, options.output_path)
+        _write_output(
+            results, options.output_path, append_mode=options.skip_existing
+        )
 
     atexit.register(cleanup)
 
@@ -532,10 +534,24 @@ def generate_alt_text(
 
 
 def _write_output(
-    results: Iterable[AltGenerationResult], output_path: Path
+    results: Iterable[AltGenerationResult],
+    output_path: Path,
+    append_mode: bool = False,
 ) -> None:
     """Write results to JSON file."""
     payload = [result.to_json() for result in results]
+
+    if append_mode and output_path.exists():
+        # Load existing data and append new results
+        try:
+            with open(output_path, encoding="utf-8") as f:
+                existing_data = json.load(f)
+            if isinstance(existing_data, list):
+                payload = existing_data + payload
+        except (json.JSONDecodeError, TypeError):
+            # If existing file is corrupted, just use new data
+            print(f"Existing file {output_path} is corrupted, using new data")
+
     print(f"Writing {len(payload)} results to {output_path}")
     output_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False),
