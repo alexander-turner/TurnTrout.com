@@ -176,9 +176,10 @@ def test_estimate_cost_format_consistency(
 
 
 def test_estimate_cost_invalid_model() -> None:
-    """Test cost estimation with invalid model raises ValueError."""
-    with pytest.raises(ValueError, match="Unknown model"):
-        generate_alt_text._estimate_cost("invalid-model", 10)
+    """Test cost estimation with invalid model returns informative message."""
+    result = generate_alt_text._estimate_cost("invalid-model", 10)
+
+    assert result.startswith("Can't estimate cost for unknown model")
 
 
 class TestConvertAvifToPng:
@@ -712,101 +713,6 @@ def test_write_output(temp_dir: Path) -> None:
     assert data[1]["final_alt"] == "Second image FINAL"
 
 
-def test_write_output_append_mode(temp_dir: Path) -> None:
-    """Test writing results to JSON file in append mode."""
-    # Create initial results
-    initial_results = [
-        generate_alt_text.AltGenerationResult(
-            markdown_file="existing.md",
-            asset_path="existing.jpg",
-            suggested_alt="Existing image",
-            final_alt="Existing image",
-            model="gemini-2.5-flash",
-            context_snippet="Existing context",
-        ),
-    ]
-
-    output_file = temp_dir / "output.json"
-    generate_alt_text._write_output(initial_results, output_file)
-
-    # Add new results in append mode
-    new_results = [
-        generate_alt_text.AltGenerationResult(
-            markdown_file="new.md",
-            asset_path="new.jpg",
-            suggested_alt="New image",
-            final_alt="New image",
-            model="gemini-2.5-flash",
-            context_snippet="New context",
-        ),
-    ]
-
-    generate_alt_text._write_output(new_results, output_file, append_mode=True)
-
-    # Verify both results are present
-    assert output_file.exists()
-    with output_file.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    assert len(data) == 2
-    assert data[0]["markdown_file"] == "existing.md"
-    assert data[0]["asset_path"] == "existing.jpg"
-    assert data[1]["markdown_file"] == "new.md"
-    assert data[1]["asset_path"] == "new.jpg"
-
-
-def test_write_output_append_mode_nonexistent_file(temp_dir: Path) -> None:
-    """Test writing results to JSON file in append mode when file doesn't exist."""
-    results = [
-        generate_alt_text.AltGenerationResult(
-            markdown_file="test.md",
-            asset_path="test.jpg",
-            suggested_alt="Test image",
-            final_alt="Test image",
-            model="gemini-2.5-flash",
-            context_snippet="Test context",
-        ),
-    ]
-
-    output_file = temp_dir / "nonexistent.json"
-    generate_alt_text._write_output(results, output_file, append_mode=True)
-
-    # Should create new file normally
-    assert output_file.exists()
-    with output_file.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    assert len(data) == 1
-    assert data[0]["markdown_file"] == "test.md"
-
-
-def test_write_output_append_mode_corrupted_file(temp_dir: Path) -> None:
-    """Test writing results to JSON file in append mode when existing file is corrupted."""
-    output_file = temp_dir / "corrupted.json"
-    output_file.write_text("invalid json content", encoding="utf-8")
-
-    results = [
-        generate_alt_text.AltGenerationResult(
-            markdown_file="test.md",
-            asset_path="test.jpg",
-            suggested_alt="Test image",
-            final_alt="Test image",
-            model="gemini-2.5-flash",
-            context_snippet="Test context",
-        ),
-    ]
-
-    generate_alt_text._write_output(results, output_file, append_mode=True)
-
-    # Should overwrite corrupted file with new data
-    assert output_file.exists()
-    with output_file.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    assert len(data) == 1
-    assert data[0]["markdown_file"] == "test.md"
-
-
 def test_run_llm_success(temp_dir: Path) -> None:
     """Test successful LLM execution."""
     attachment = temp_dir / "test.jpg"
@@ -1136,15 +1042,19 @@ class TestSkipExistingCLI:
     @pytest.mark.parametrize(
         "args, expected_skip_existing",
         [
-            (["generate_alt_text.py", "--model", "test-model"], False),
+            (
+                ["generate_alt_text.py", "generate", "--model", "test-model"],
+                True,
+            ),
             (
                 [
                     "generate_alt_text.py",
+                    "generate",
                     "--model",
                     "test-model",
-                    "--skip-existing",
+                    "--process-existing",
                 ],
-                True,
+                False,
             ),
         ],
     )

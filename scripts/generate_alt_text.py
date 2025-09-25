@@ -1,6 +1,7 @@
 """Generate AI alt text suggestions for assets lacking meaningful alt text."""
 
 import argparse
+import asyncio
 import atexit
 import json
 import readline
@@ -8,6 +9,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import textwrap
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -19,6 +21,7 @@ import requests
 from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
+from tqdm import tqdm
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -134,7 +137,8 @@ def _build_prompt(
     """Build prompt for LLM caption generation."""
     base_prompt = textwrap.dedent(
         """
-        Generate concise alt text for accessibility and SEO. Describe the intended information of the image clearly and accurately.
+        Generate concise alt text for accessibility and SEO. 
+        Describe the intended information of the image clearly and accurately.
         """
     ).strip()
 
@@ -475,6 +479,218 @@ def _filter_existing_captions(
     return filtered_items
 
 
+def _batch_generate_suggestions(
+    queue_items: Sequence[scan_for_empty_alt.QueueItem],
+    options: GenerateAltTextOptions,
+    console: Console,
+) -> list[dict[str, str]]:
+    """Generate alt text suggestions for all items without user interaction."""
+
+    def _generate_suggestion(
+        item: scan_for_empty_alt.QueueItem,
+    ) -> dict[str, str] | None:
+        """
+        Generate an alt-text suggestion for a single queue item.
+
+        Returns None if generation fails for any handled error type.
+        """
+
+        try:
+            with TemporaryDirectory() as temp_dir:
+                workspace = Path(temp_dir)
+                attachment = _download_asset(item, workspace)
+
+                # Build prompt without learning examples for batch processing
+                prompt = _build_prompt(
+                    item,
+                    max_chars=options.max_chars,
+                    learning_examples=None,
+                )
+
+                suggestion_text = _run_llm(
+                    attachment,
+                    prompt,
+                    model=options.model,
+                    timeout=options.timeout,
+                )
+
+            return {
+                "markdown_file": item.markdown_file,
+                "asset_path": item.asset_path,
+                "suggested_alt": suggestion_text,
+                "model": options.model,
+                "context_snippet": item.context_snippet,
+                "line_number": str(item.line_number),
+            }
+
+        except (
+            AltGenerationError,
+            FileNotFoundError,
+            requests.RequestException,
+        ) as err:
+            console.print(
+                f"[red]Error processing {item.asset_path}: {err}[/red]"
+            )
+            return None
+
+    suggestions: list[dict[str, str]] = []
+
+    for queue_item in tqdm(
+        queue_items, desc="Generating alt text suggestions", unit="image"
+    ):
+        result = _generate_suggestion(queue_item)
+        if result is not None:
+            suggestions.append(result)
+
+    return suggestions
+
+
+# ---------------------------------------------------------------------------
+# Async helpers for parallel LLM calls
+# ---------------------------------------------------------------------------
+
+
+_CONCURRENCY_LIMIT = 32
+
+
+async def _run_llm_async(
+    queue_item: scan_for_empty_alt.QueueItem,
+    attachment: Path,
+    workspace: Path,
+    prompt: str,
+    model: str,
+    timeout: int,
+    sem: asyncio.Semaphore,
+) -> dict[str, str]:
+    """Run LLM in a thread; clean up workspace; return suggestion payload."""
+
+    try:
+        async with sem:
+            caption = await asyncio.to_thread(
+                _run_llm, attachment, prompt, model, timeout
+            )
+        return {
+            "markdown_file": queue_item.markdown_file,
+            "asset_path": queue_item.asset_path,
+            "suggested_alt": caption,
+            "model": model,
+            "context_snippet": queue_item.context_snippet,
+            "line_number": str(queue_item.line_number),
+        }
+    finally:
+        shutil.rmtree(workspace, ignore_errors=True)
+
+
+async def _async_generate_suggestions(
+    queue_items: Sequence[scan_for_empty_alt.QueueItem],
+    options: GenerateAltTextOptions,
+) -> list[dict[str, str]]:
+    """Generate suggestions concurrently for *queue_items*."""
+    sem = asyncio.Semaphore(_CONCURRENCY_LIMIT)
+    tasks: list[asyncio.Task[dict[str, str]]] = []
+
+    for qi in queue_items:
+        workspace = Path(tempfile.mkdtemp())
+        attachment = _download_asset(qi, workspace)
+        prompt = _build_prompt(qi, options.max_chars, learning_examples=None)
+        tasks.append(
+            asyncio.create_task(
+                _run_llm_async(
+                    qi,
+                    attachment,
+                    workspace,
+                    prompt,
+                    options.model,
+                    options.timeout,
+                    sem,
+                )
+            )
+        )
+
+    suggestions: list[dict[str, str]] = []
+    for finished in asyncio.as_completed(tasks):
+        suggestions.append(await finished)
+
+    return suggestions
+
+
+def _label_suggestions(
+    suggestions: list[dict[str, str]],
+    console: Console,
+) -> list[AltGenerationResult]:
+    """Load suggestions and allow user to label them without LLM calls."""
+    display = DisplayManager(console)
+    results: list[AltGenerationResult] = []
+
+    def cleanup() -> None:
+        display.close_all_images()
+
+    atexit.register(cleanup)
+
+    # Handle Ctrl+C gracefully
+    def signal_handler(_signum: int, _frame: object) -> None:
+        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
+    console.print(
+        f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
+    )
+
+    for suggestion_data in suggestions:
+        try:
+            # Recreate queue item for display
+            queue_item = scan_for_empty_alt.QueueItem(
+                markdown_file=suggestion_data["markdown_file"],
+                asset_path=suggestion_data["asset_path"],
+                line_number=int(suggestion_data["line_number"]),
+                context_snippet=suggestion_data["context_snippet"],
+            )
+
+            # Download asset for display
+            with TemporaryDirectory() as temp_dir:
+                workspace = Path(temp_dir)
+                attachment = _download_asset(queue_item, workspace)
+
+                # Display results
+                display.show_rule(queue_item.asset_path)
+                display.show_context(queue_item)
+                display.show_image(attachment)
+                display.refocus_terminal()
+                display.show_suggestion(suggestion_data["suggested_alt"])
+
+                # Allow user to edit the suggestion
+                final_alt = suggestion_data["suggested_alt"]
+                if sys.stdout.isatty():
+                    final_alt = display.prompt_for_edit(
+                        suggestion_data["suggested_alt"]
+                    )
+
+                display.close_current_image()
+
+                result = AltGenerationResult(
+                    markdown_file=suggestion_data["markdown_file"],
+                    asset_path=suggestion_data["asset_path"],
+                    suggested_alt=suggestion_data["suggested_alt"],
+                    final_alt=final_alt,
+                    model=suggestion_data["model"],
+                    context_snippet=suggestion_data["context_snippet"],
+                )
+                results.append(result)
+
+        except (
+            AltGenerationError,
+            FileNotFoundError,
+            requests.RequestException,
+        ) as err:
+            display.show_error(str(err))
+            display.close_current_image()
+
+    cleanup()
+    return results
+
+
 def generate_alt_text(
     options: GenerateAltTextOptions,
 ) -> None:
@@ -532,6 +748,80 @@ def generate_alt_text(
     cleanup()
 
 
+def batch_generate_alt_text(
+    options: GenerateAltTextOptions,
+) -> None:
+    """Generate alt text suggestions in batch mode: estimate cost, generate all suggestions, then label."""
+    console = Console()
+
+    queue_items = scan_for_empty_alt.build_queue(options.root)
+    if options.skip_existing:
+        queue_items = _filter_existing_captions(
+            queue_items, options.output_path, console
+        )
+
+    if not queue_items:
+        console.print("[yellow]No items to process.[/yellow]")
+        return
+
+    # Step 1: Cost estimation
+    cost_estimate = _estimate_cost(options.model, len(queue_items))
+    console.print(
+        f"\n[bold blue]Batch processing {len(queue_items)} items with model '{options.model}'[/bold blue]"
+    )
+    console.print(f"[dim]{cost_estimate}[/dim]\n")
+
+    user_input = input("Press Enter to continue or 'q' to quit: ")
+    if user_input.lower().strip() == "q":
+        console.print("[yellow]Aborted.[/yellow]")
+        return
+
+    # Step 2: Batch generation (no user input)
+    console.print(
+        "\n[bold green]Step 2: Generating all suggestions (no user input required)[/bold green]"
+    )
+    suggestions = asyncio.run(
+        _async_generate_suggestions(queue_items, options)
+    )
+
+    if not suggestions:
+        console.print("[yellow]No suggestions generated.[/yellow]")
+        return
+
+    # Save suggestions to temporary file
+    suggestions_file = (
+        options.output_path.parent / f"suggested_alts_{options.model}.json"
+    )
+    suggestions_file.write_text(
+        json.dumps(suggestions, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    console.print(
+        f"\n[green]Saved {len(suggestions)} suggestions to {suggestions_file}[/green]"
+    )
+
+    # Step 3: User labeling
+    console.print(
+        "\n[bold green]Step 3: Review and edit suggestions[/bold green]"
+    )
+    user_input = input("Press Enter to start labeling or 'q' to quit: ")
+    if user_input.lower().strip() == "q":
+        console.print(
+            f"[yellow]Suggestions saved to {suggestions_file}. You can resume labeling later.[/yellow]"
+        )
+        return
+
+    results = _label_suggestions(suggestions, console)
+
+    # Write final results
+    _write_output(
+        results, options.output_path, append_mode=options.skip_existing
+    )
+    console.print(
+        f"\n[green]Completed! Wrote {len(results)} results to {options.output_path}[/green]"
+    )
+
+
 def _write_output(
     results: Iterable[AltGenerationResult],
     output_path: Path,
@@ -558,61 +848,213 @@ def _write_output(
     )
 
 
-def _parse_args() -> GenerateAltTextOptions:
-    """Parse command line arguments."""
-    git_root = script_utils.get_git_root()
-    parser = argparse.ArgumentParser(
-        description="Generate AI alt text suggestions for markdown assets.",
+def _load_suggestions_from_file(
+    suggestions_file: Path,
+) -> list[dict[str, str]]:
+    """Load suggestions from a JSON file."""
+    try:
+        with open(suggestions_file, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as err:
+        raise ValueError(
+            f"Could not load suggestions from {suggestions_file}: {err}"
+        ) from err
+
+
+def label_from_suggestions_file(
+    suggestions_file: Path,
+    output_path: Path,
+    skip_existing: bool = False,
+) -> None:
+    """Load suggestions from file and start labeling process."""
+    console = Console()
+
+    suggestions = _load_suggestions_from_file(suggestions_file)
+    console.print(
+        f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
     )
-    parser.add_argument(
+
+    results = _label_suggestions(suggestions, console)
+
+    # Write final results
+    _write_output(results, output_path, append_mode=skip_existing)
+    console.print(
+        f"\n[green]Completed! Wrote {len(results)} results to {output_path}[/green]"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Sub-command CLI helpers
+# ---------------------------------------------------------------------------
+
+
+def _run_estimate(options: GenerateAltTextOptions) -> None:
+    """Estimate and print LLM cost for the current queue."""
+    console = Console()
+    queue_items = scan_for_empty_alt.build_queue(options.root)
+    if options.skip_existing:
+        queue_items = _filter_existing_captions(
+            queue_items, options.output_path, console
+        )
+
+    cost_est = _estimate_cost(options.model, len(queue_items))
+    console.print(
+        f"[bold blue]{len(queue_items)} items → {cost_est} using model '{options.model}'[/bold blue]"
+    )
+
+
+def _run_generate(
+    options: GenerateAltTextOptions, suggestions_path: Path
+) -> None:
+    """Batch-generate suggestions and save them to *suggestions_path*."""
+    console = Console()
+    queue_items = scan_for_empty_alt.build_queue(options.root)
+    if options.skip_existing:
+        queue_items = _filter_existing_captions(
+            queue_items, options.output_path, console
+        )
+
+    if not queue_items:
+        console.print("[yellow]No items to process.[/yellow]")
+        return
+
+    console.print(
+        f"[bold green]Generating {len(queue_items)} suggestions with '{options.model}'[/bold green]"
+    )
+    suggestions = _batch_generate_suggestions(queue_items, options, console)
+    suggestions_path.write_text(
+        json.dumps(suggestions, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    console.print(f"[green]Saved suggestions to {suggestions_path}[/green]")
+
+
+def _run_label(
+    suggestions_path: Path,
+    output_path: Path,
+    skip_existing: bool,
+) -> None:
+    """Load *suggestions_path* and launch the labeling flow."""
+    label_from_suggestions_file(suggestions_path, output_path, skip_existing)
+
+
+# ---------------------------------------------------------------------------
+# CLI parsing
+# ---------------------------------------------------------------------------
+
+
+def _parse_args() -> argparse.Namespace:
+    """Return parsed CLI arguments using sub-commands."""
+    git_root = script_utils.get_git_root()
+
+    # Common flags shared by estimate/generate sub-commands
+    common_parent = argparse.ArgumentParser(add_help=False)
+    common_parent.add_argument(
         "--root",
         type=Path,
         default=git_root / "website_content",
-        help="Directory root to search for markdown files.",
+        help="Markdown root directory",
     )
-    parser.add_argument(
-        "--model",
-        required=True,
-        help="Model identifier to pass to the 'llm' CLI.",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=git_root / "scripts" / "asset_captions.json",
-        help="Path to write generated captions.",
-    )
-    parser.add_argument(
+    common_parent.add_argument("--model", required=False)
+    common_parent.add_argument(
         "--max-chars",
         type=int,
         default=250,
-        help="Maximum character length for generated alt text (no hard technical limit, but consider UX).",
+        help="Max characters for generated alt text",
     )
-    parser.add_argument(
-        "--timeout",
-        type=int,
-        default=120,
-        help="Seconds to wait for the LLM command to complete.",
+    common_parent.add_argument(
+        "--timeout", type=int, default=120, help="LLM command timeout seconds"
     )
-    parser.add_argument(
+    common_parent.add_argument(
+        "--process-existing",
+        dest="skip_existing",
+        action="store_false",
+        help="Also process assets that already have captions (default is to skip)",
+    )
+    common_parent.set_defaults(skip_existing=True)
+
+    parser = argparse.ArgumentParser(description="Alt-text assistant")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    # estimate
+    sp_est = sub.add_parser(
+        "estimate", parents=[common_parent], help="Estimate LLM cost"
+    )
+    sp_est.set_defaults(cmd="estimate")
+
+    # generate
+    sp_gen = sub.add_parser(
+        "generate", parents=[common_parent], help="Batch-generate suggestions"
+    )
+    sp_gen.add_argument(
+        "--captions",
+        type=Path,
+        default=git_root / "scripts" / "asset_captions.json",
+        help="Existing/final captions JSON path (used to skip existing unless --process-existing)",
+    )
+    sp_gen.add_argument(
+        "--suggestions-out",
+        type=Path,
+        default=git_root / "scripts" / "suggested_alts.json",
+        help="Path to write suggestions JSON",
+    )
+    sp_gen.set_defaults(cmd="generate")
+
+    # label
+    sp_label = sub.add_parser("label", help="Label suggestions JSON")
+    sp_label.add_argument("suggestions_file", type=Path)
+    sp_label.add_argument(
+        "--output",
+        type=Path,
+        default=git_root / "scripts" / "asset_captions.json",
+        help="Final captions JSON path",
+    )
+    sp_label.add_argument(
         "--skip-existing",
         action="store_true",
         default=True,
-        help="Skip files that already have captions in asset_captions.json.",
+        help="Skip captions already present in output file",
     )
-    args = parser.parse_args()
-    return GenerateAltTextOptions(
-        root=args.root,
-        model=args.model,
-        max_chars=args.max_chars,
-        timeout=args.timeout,
-        output_path=args.output,
-        skip_existing=args.skip_existing,
-    )
+    sp_label.set_defaults(cmd="label")
+
+    return parser.parse_args()
 
 
-def main() -> None:
-    """Main entry point."""
-    generate_alt_text(_parse_args())
+# ---------------------------------------------------------------------------
+# Main entry
+# ---------------------------------------------------------------------------
+
+
+def main() -> None:  # pylint: disable=C0116
+    args = _parse_args()
+
+    if args.cmd == "estimate":
+        if args.model is None:
+            raise SystemExit("--model is required for estimate")
+        opts = GenerateAltTextOptions(
+            root=args.root,
+            model=args.model,
+            max_chars=args.max_chars,
+            timeout=args.timeout,
+            output_path=Path(),  # unused
+            skip_existing=args.skip_existing,
+        )
+        _run_estimate(opts)
+
+    elif args.cmd == "generate":
+        if args.model is None:
+            raise SystemExit("--model is required for generate")
+        opts = GenerateAltTextOptions(
+            root=args.root,
+            model=args.model,
+            max_chars=args.max_chars,
+            timeout=args.timeout,
+            output_path=args.captions,
+            skip_existing=args.skip_existing,
+        )
+        _run_generate(opts, args.suggestions_out)
+
+    elif args.cmd == "label":
+        _run_label(args.suggestions_file, args.output, args.skip_existing)
 
 
 if __name__ == "__main__":
