@@ -29,7 +29,8 @@ from scripts import utils as script_utils
 
 # Approximate cost estimates per 1000 tokens (as of Sep 2025)
 MODEL_COSTS = {
-    # https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash
+    # https://www.helicone.ai/llm-cost
+    "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
     "gemini-2.5-flash": {"input": 0.0003, "output": 0.0025},
     "gemini-2.5-flash-lite": {"input": 0.00001, "output": 0.00004},
 }
@@ -396,8 +397,8 @@ def _process_queue_item(
 def _estimate_cost(
     model: str,
     queue_count: int,
-    avg_prompt_tokens: int = 300,
-    avg_output_tokens: int = 50,
+    avg_prompt_tokens: int = 4500,
+    avg_output_tokens: int = 1500,
 ) -> str:
     """Estimate the cost of processing the queue with the given model."""
     # Normalize model name for cost lookup
@@ -406,9 +407,7 @@ def _estimate_cost(
     if model_lower in MODEL_COSTS:
         cost_info = MODEL_COSTS[model_lower]
     else:
-        raise ValueError(
-            f"Unknown model: {model}. Available models: {MODEL_COSTS.keys()}"
-        )
+        return f"Can't estimate cost for unknown model: {model}. Available models: {MODEL_COSTS.keys()}"
 
     # Calculate costs
     input_cost = (avg_prompt_tokens * queue_count / 1000) * cost_info["input"]
@@ -597,6 +596,7 @@ def _parse_args() -> GenerateAltTextOptions:
     parser.add_argument(
         "--skip-existing",
         action="store_true",
+        default=True,
         help="Skip files that already have captions in asset_captions.json.",
     )
     args = parser.parse_args()
