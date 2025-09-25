@@ -161,7 +161,7 @@ def _build_prompt(
 
         Critical requirements:
         - Under {max_chars} characters (aim for 1-2 sentences when possible)
-        - Do not include redundant information (e.g. "image of", "picture of")
+        - Do not include redundant information (e.g. "image of", "picture of", "diagram illustrating")
         - Return only the alt text, no quotes
         - For text-heavy images: transcribe key text content, then describe visual elements
         - Include relevant keywords naturally
@@ -179,7 +179,7 @@ def _run_llm(attachment: Path, prompt: str, model: str, timeout: int) -> str:
     llm_path = script_utils.find_executable("llm")
 
     result = subprocess.run(
-        [llm_path, "-m", model, "-a", str(attachment), prompt],
+        [llm_path, "-m", model, "-a", str(attachment), "--usage", prompt],
         check=False,
         capture_output=True,
         text=True,
