@@ -479,72 +479,6 @@ def _filter_existing_captions(
     return filtered_items
 
 
-def _batch_generate_suggestions(
-    queue_items: Sequence[scan_for_empty_alt.QueueItem],
-    options: GenerateAltTextOptions,
-    console: Console,
-) -> list[dict[str, str]]:
-    """Generate alt text suggestions for all items without user interaction."""
-
-    def _generate_suggestion(
-        item: scan_for_empty_alt.QueueItem,
-    ) -> dict[str, str] | None:
-        """
-        Generate an alt-text suggestion for a single queue item.
-
-        Returns None if generation fails for any handled error type.
-        """
-
-        try:
-            with TemporaryDirectory() as temp_dir:
-                workspace = Path(temp_dir)
-                attachment = _download_asset(item, workspace)
-
-                # Build prompt without learning examples for batch processing
-                prompt = _build_prompt(
-                    item,
-                    max_chars=options.max_chars,
-                    learning_examples=None,
-                )
-
-                suggestion_text = _run_llm(
-                    attachment,
-                    prompt,
-                    model=options.model,
-                    timeout=options.timeout,
-                )
-
-            return {
-                "markdown_file": item.markdown_file,
-                "asset_path": item.asset_path,
-                "suggested_alt": suggestion_text,
-                "model": options.model,
-                "context_snippet": item.context_snippet,
-                "line_number": str(item.line_number),
-            }
-
-        except (
-            AltGenerationError,
-            FileNotFoundError,
-            requests.RequestException,
-        ) as err:
-            console.print(
-                f"[red]Error processing {item.asset_path}: {err}[/red]"
-            )
-            return None
-
-    suggestions: list[dict[str, str]] = []
-
-    for queue_item in tqdm(
-        queue_items, desc="Generating alt text suggestions", unit="image"
-    ):
-        result = _generate_suggestion(queue_item)
-        if result is not None:
-            suggestions.append(result)
-
-    return suggestions
-
-
 # ---------------------------------------------------------------------------
 # Async helpers for parallel LLM calls
 # ---------------------------------------------------------------------------
@@ -553,30 +487,40 @@ def _batch_generate_suggestions(
 _CONCURRENCY_LIMIT = 32
 
 
+@dataclass(slots=True)
+class AltTextResult:  # pylint: disable=C0115
+    markdown_file: str
+    asset_path: str
+    suggested_alt: str
+    model: str
+    context_snippet: str
+    line_number: str
+
+
 async def _run_llm_async(
     queue_item: scan_for_empty_alt.QueueItem,
     attachment: Path,
     workspace: Path,
-    prompt: str,
-    model: str,
-    timeout: int,
+    options: GenerateAltTextOptions,
     sem: asyncio.Semaphore,
-) -> dict[str, str]:
+) -> AltTextResult:
     """Run LLM in a thread; clean up workspace; return suggestion payload."""
-
     try:
+        prompt = _build_prompt(
+            queue_item, options.max_chars, learning_examples=None
+        )
         async with sem:
             caption = await asyncio.to_thread(
-                _run_llm, attachment, prompt, model, timeout
+                _run_llm, attachment, prompt, options.model, options.timeout
             )
-        return {
-            "markdown_file": queue_item.markdown_file,
-            "asset_path": queue_item.asset_path,
-            "suggested_alt": caption,
-            "model": model,
-            "context_snippet": queue_item.context_snippet,
-            "line_number": str(queue_item.line_number),
-        }
+        return AltTextResult(
+            markdown_file=queue_item.markdown_file,
+            asset_path=queue_item.asset_path,
+            suggested_alt=caption,
+            model=options.model,
+            context_snippet=queue_item.context_snippet,
+            line_number=str(queue_item.line_number),
+        )
     finally:
         shutil.rmtree(workspace, ignore_errors=True)
 
@@ -584,38 +528,41 @@ async def _run_llm_async(
 async def _async_generate_suggestions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     options: GenerateAltTextOptions,
-) -> list[dict[str, str]]:
+) -> list[AltTextResult]:
     """Generate suggestions concurrently for *queue_items*."""
     sem = asyncio.Semaphore(_CONCURRENCY_LIMIT)
-    tasks: list[asyncio.Task[dict[str, str]]] = []
+    tasks: list[asyncio.Task[AltTextResult]] = []
 
     for qi in queue_items:
         workspace = Path(tempfile.mkdtemp())
         attachment = _download_asset(qi, workspace)
-        prompt = _build_prompt(qi, options.max_chars, learning_examples=None)
         tasks.append(
             asyncio.create_task(
                 _run_llm_async(
                     qi,
                     attachment,
                     workspace,
-                    prompt,
-                    options.model,
-                    options.timeout,
+                    options,
                     sem,
                 )
             )
         )
 
-    suggestions: list[dict[str, str]] = []
-    for finished in asyncio.as_completed(tasks):
-        suggestions.append(await finished)
+    task_count = len(tasks)
+    if task_count == 0:
+        return []
+
+    suggestions: list[AltTextResult] = []
+    with tqdm(total=task_count, desc="Generating alt text") as progress_bar:
+        for finished in asyncio.as_completed(tasks):
+            suggestions.append(await finished)
+            progress_bar.update(1)
 
     return suggestions
 
 
 def _label_suggestions(
-    suggestions: list[dict[str, str]],
+    suggestions: list[AltTextResult],
     console: Console,
 ) -> list[AltGenerationResult]:
     """Load suggestions and allow user to label them without LLM calls."""
@@ -642,10 +589,10 @@ def _label_suggestions(
         try:
             # Recreate queue item for display
             queue_item = scan_for_empty_alt.QueueItem(
-                markdown_file=suggestion_data["markdown_file"],
-                asset_path=suggestion_data["asset_path"],
-                line_number=int(suggestion_data["line_number"]),
-                context_snippet=suggestion_data["context_snippet"],
+                markdown_file=suggestion_data.markdown_file,
+                asset_path=suggestion_data.asset_path,
+                line_number=int(suggestion_data.line_number),
+                context_snippet=suggestion_data.context_snippet,
             )
 
             # Download asset for display
@@ -658,24 +605,24 @@ def _label_suggestions(
                 display.show_context(queue_item)
                 display.show_image(attachment)
                 display.refocus_terminal()
-                display.show_suggestion(suggestion_data["suggested_alt"])
+                display.show_suggestion(suggestion_data.suggested_alt)
 
                 # Allow user to edit the suggestion
-                final_alt = suggestion_data["suggested_alt"]
+                final_alt = suggestion_data.suggested_alt
                 if sys.stdout.isatty():
                     final_alt = display.prompt_for_edit(
-                        suggestion_data["suggested_alt"]
+                        suggestion_data.suggested_alt
                     )
 
                 display.close_current_image()
 
                 result = AltGenerationResult(
-                    markdown_file=suggestion_data["markdown_file"],
-                    asset_path=suggestion_data["asset_path"],
-                    suggested_alt=suggestion_data["suggested_alt"],
+                    markdown_file=suggestion_data.markdown_file,
+                    asset_path=suggestion_data.asset_path,
+                    suggested_alt=suggestion_data.suggested_alt,
                     final_alt=final_alt,
-                    model=suggestion_data["model"],
-                    context_snippet=suggestion_data["context_snippet"],
+                    model=suggestion_data.model,
+                    context_snippet=suggestion_data.context_snippet,
                 )
                 results.append(result)
 
@@ -869,7 +816,9 @@ def label_from_suggestions_file(
     """Load suggestions from file and start labeling process."""
     console = Console()
 
-    suggestions = _load_suggestions_from_file(suggestions_file)
+    suggestions_from_file = _load_suggestions_from_file(suggestions_file)
+    suggestions = [AltTextResult(**s) for s in suggestions_from_file]
+
     console.print(
         f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
     )
@@ -921,9 +870,14 @@ def _run_generate(
     console.print(
         f"[bold green]Generating {len(queue_items)} suggestions with '{options.model}'[/bold green]"
     )
-    suggestions = _batch_generate_suggestions(queue_items, options, console)
+    suggestions = asyncio.run(
+        _async_generate_suggestions(queue_items, options)
+    )
+
+    suggestions_as_dicts = [asdict(s) for s in suggestions]
     suggestions_path.write_text(
-        json.dumps(suggestions, indent=2, ensure_ascii=False), encoding="utf-8"
+        json.dumps(suggestions_as_dicts, indent=2, ensure_ascii=False),
+        encoding="utf-8",
     )
     console.print(f"[green]Saved suggestions to {suggestions_path}[/green]")
 

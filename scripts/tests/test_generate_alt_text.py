@@ -5,7 +5,7 @@ import subprocess
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from typing import Iterable
 from unittest.mock import Mock, patch
 
 import pytest
@@ -16,6 +16,17 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from .. import generate_alt_text, scan_for_empty_alt
 from . import utils as test_utils
+
+
+@pytest.fixture
+def base_queue_item(temp_dir: Path) -> scan_for_empty_alt.QueueItem:
+    """Provides a base QueueItem for testing."""
+    return scan_for_empty_alt.QueueItem(
+        markdown_file=str(temp_dir / "test.md"),
+        asset_path="image.jpg",
+        line_number=5,
+        context_snippet="This is a test image context.",
+    )
 
 
 @pytest.mark.parametrize(
@@ -40,17 +51,12 @@ def test_is_url(path: str, expected: bool) -> None:
     assert generate_alt_text._is_url(path) is expected
 
 
-def test_build_prompt() -> None:
+def test_build_prompt(
+    base_queue_item: scan_for_empty_alt.QueueItem,
+) -> None:
     """Test prompt building function."""
-    queue_item = scan_for_empty_alt.QueueItem(
-        markdown_file="test.md",
-        asset_path="image.jpg",
-        line_number=5,
-        context_snippet="This is a test image context.",
-    )
     max_chars = 150
-
-    prompt = generate_alt_text._build_prompt(queue_item, max_chars)
+    prompt = generate_alt_text._build_prompt(base_queue_item, max_chars)
 
     assert "test.md" in prompt
     assert "This is a test image context." in prompt
@@ -59,17 +65,14 @@ def test_build_prompt() -> None:
     assert "Return only the alt text" in prompt
 
 
-def test_build_prompt_respects_max_chars() -> None:
+def test_build_prompt_respects_max_chars(
+    base_queue_item: scan_for_empty_alt.QueueItem,
+) -> None:
     long_context = "x" * 1000
-    queue_item = scan_for_empty_alt.QueueItem(
-        markdown_file="test.md",
-        asset_path="image.jpg",
-        line_number=5,
-        context_snippet=long_context,  # Very long context
-    )
+    base_queue_item.context_snippet = long_context  # Very long context
 
-    prompt_150 = generate_alt_text._build_prompt(queue_item, 150)
-    prompt_50 = generate_alt_text._build_prompt(queue_item, 50)
+    prompt_150 = generate_alt_text._build_prompt(base_queue_item, 150)
+    prompt_50 = generate_alt_text._build_prompt(base_queue_item, 50)
 
     assert "Under 150 characters" in prompt_150
     assert "Under 50 characters" in prompt_50
@@ -99,21 +102,41 @@ def test_build_prompt_respects_max_chars() -> None:
     ],
 )
 def test_build_prompt_edge_cases(
+    base_queue_item: scan_for_empty_alt.QueueItem,
     markdown_file: str,
     context_snippet: str,
     max_chars: int,
     expected_in_prompt: list[str],
 ) -> None:
-    queue_item = scan_for_empty_alt.QueueItem(
-        markdown_file=markdown_file,
-        asset_path="image.jpg",
-        line_number=1,
-        context_snippet=context_snippet,
-    )
-    prompt = generate_alt_text._build_prompt(queue_item, max_chars)
+    base_queue_item.markdown_file = markdown_file
+    base_queue_item.context_snippet = context_snippet
+
+    prompt = generate_alt_text._build_prompt(base_queue_item, max_chars)
 
     for expected in expected_in_prompt:
         assert expected in prompt
+
+
+@pytest.mark.parametrize(
+    "context_snippet, expected",
+    [
+        ("Single paragraph", "Single paragraph"),
+        ("First\n\nSecond", "First\n\nSecond"),
+        ("Intro\n\nMiddle\n\nFinal", "Middle\n\nFinal"),
+        (
+            "  Intro paragraph  \n\n\n\nSecond paragraph\n\nThird paragraph  ",
+            "Second paragraph\n\nThird paragraph",
+        ),
+    ],
+)
+def test_truncate_context_for_display(
+    context_snippet: str, expected: str
+) -> None:
+    truncated = generate_alt_text._truncate_context_for_display(
+        context_snippet
+    )
+
+    assert truncated == expected
 
 
 @pytest.mark.parametrize(
@@ -241,67 +264,52 @@ class TestConvertAvifToPng:
 class TestDownloadAsset:
     """Test the asset download function."""
 
-    def test_local_file_exists_non_avif(self, temp_dir: Path) -> None:
+    def test_local_file_exists_non_avif(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test downloading local non-AVIF file."""
         test_file = temp_dir / "image.jpg"
         test_file.write_bytes(b"fake image data")
 
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="image.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+        base_queue_item.asset_path = "image.jpg"
 
-        with TemporaryDirectory() as workspace_str:
-            workspace = Path(workspace_str)
-            result = generate_alt_text._download_asset(queue_item, workspace)
+        result = generate_alt_text._download_asset(base_queue_item, temp_dir)
 
-            # Should return the original file since it's not AVIF
-            assert result == test_file.resolve()
+        # Should return the original file since it's not AVIF
+        assert result == test_file.resolve()
 
-    def test_local_file_exists_avif(self, temp_dir: Path) -> None:
+    def test_local_file_exists_avif(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test downloading local AVIF file gets converted."""
         avif_file = temp_dir / "image.avif"
         test_utils.create_test_image(avif_file, "100x100")
 
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="image.avif",
-            line_number=1,
-            context_snippet="test context",
-        )
+        base_queue_item.asset_path = "image.avif"
 
-        with TemporaryDirectory() as workspace_str:
-            workspace = Path(workspace_str)
-            with patch("subprocess.run") as mock_run:
-                mock_run.return_value = None
-                result = generate_alt_text._download_asset(
-                    queue_item, workspace
-                )
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = None
+            result = generate_alt_text._download_asset(
+                base_queue_item, temp_dir
+            )
 
-                assert result.suffix == ".png"
-                assert result.parent == workspace
+            assert result.suffix == ".png"
+            assert result.parent == temp_dir
 
-    def test_url_download_success(self, temp_dir: Path) -> None:
+    def test_url_download_success(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test successful URL download."""
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="https://example.com/image.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+        base_queue_item.asset_path = "https://example.com/image.jpg"
 
         mock_response = Mock()
         mock_response.iter_content.return_value = [b"fake", b"image", b"data"]
         mock_response.raise_for_status.return_value = None
 
-        with (
-            TemporaryDirectory() as workspace_str,
-            patch("requests.get", return_value=mock_response) as mock_get,
-        ):
-            workspace = Path(workspace_str)
-            result = generate_alt_text._download_asset(queue_item, workspace)
+        with patch("requests.get", return_value=mock_response) as mock_get:
+            result = generate_alt_text._download_asset(
+                base_queue_item, temp_dir
+            )
 
             mock_get.assert_called_once()
             call_kwargs = mock_get.call_args[1]
@@ -309,57 +317,42 @@ class TestDownloadAsset:
             assert "timeout" in call_kwargs
             assert "stream" in call_kwargs
 
-            assert result.parent == workspace
+            assert result.parent == temp_dir
             assert result.name.startswith("asset")
 
-    def test_url_download_avif_conversion(self, temp_dir: Path) -> None:
+    def test_url_download_avif_conversion(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test URL download of AVIF file with conversion."""
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="https://example.com/image.avif",
-            line_number=1,
-            context_snippet="test context",
-        )
+        base_queue_item.asset_path = "https://example.com/image.avif"
 
         mock_response = Mock()
         mock_response.iter_content.return_value = [b"fake", b"avif", b"data"]
         mock_response.raise_for_status.return_value = None
 
-        with TemporaryDirectory() as workspace_str:
-            workspace = Path(workspace_str)
-            with patch("requests.get", return_value=mock_response):
-                with patch("subprocess.run") as mock_run:
-                    mock_run.return_value = None
-                    result = generate_alt_text._download_asset(
-                        queue_item, workspace
-                    )
+        with patch("requests.get", return_value=mock_response):
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = None
+                result = generate_alt_text._download_asset(
+                    base_queue_item, temp_dir
+                )
 
-                    # Should have converted to PNG
-                    assert result.suffix == ".png"
-                    mock_run.assert_called_once()
+                # Should have converted to PNG
+                assert result.suffix == ".png"
+                mock_run.assert_called_once()
 
-    def test_file_not_found(self, temp_dir: Path) -> None:
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="nonexistent.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+    def test_file_not_found(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
+        base_queue_item.asset_path = "nonexistent.jpg"
 
-        with TemporaryDirectory() as workspace_str:
-            workspace = Path(workspace_str)
-            with pytest.raises(
-                FileNotFoundError, match="Unable to locate asset"
-            ):
-                generate_alt_text._download_asset(queue_item, workspace)
+        with pytest.raises(FileNotFoundError, match="Unable to locate asset"):
+            generate_alt_text._download_asset(base_queue_item, temp_dir)
 
-    def test_url_download_http_error(self, temp_dir: Path) -> None:
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="https://turntrout.com/error.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+    def test_url_download_http_error(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
+        base_queue_item.asset_path = "https://turntrout.com/error.jpg"
 
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError(
@@ -367,11 +360,10 @@ class TestDownloadAsset:
         )
 
         with (
-            TemporaryDirectory() as workspace_str,
             patch("requests.get", return_value=mock_response),
             pytest.raises(requests.HTTPError),
         ):
-            generate_alt_text._download_asset(queue_item, Path(workspace_str))
+            generate_alt_text._download_asset(base_queue_item, temp_dir)
 
     @pytest.mark.parametrize(
         "exception_type, exception_args",
@@ -382,30 +374,22 @@ class TestDownloadAsset:
         ],
     )
     def test_url_download_request_errors(
-        self, temp_dir: Path, exception_type, exception_args
+        self,
+        temp_dir: Path,
+        base_queue_item: scan_for_empty_alt.QueueItem,
+        exception_type,
+        exception_args,
     ) -> None:
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="https://turntrout.com/error.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+        base_queue_item.asset_path = "https://turntrout.com/error.jpg"
 
-        with (
-            TemporaryDirectory() as workspace_str,
-            patch("requests.get") as mock_get,
-            pytest.raises(exception_type),
-        ):
+        with patch("requests.get") as mock_get, pytest.raises(exception_type):
             mock_get.side_effect = exception_type(*exception_args)
-            generate_alt_text._download_asset(queue_item, Path(workspace_str))
+            generate_alt_text._download_asset(base_queue_item, temp_dir)
 
-    def test_url_download_partial_content(self, temp_dir: Path) -> None:
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file=str(temp_dir / "test.md"),
-            asset_path="https://example.com/partial.jpg",
-            line_number=1,
-            context_snippet="test context",
-        )
+    def test_url_download_partial_content(
+        self, temp_dir: Path, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
+        base_queue_item.asset_path = "https://example.com/partial.jpg"
 
         mock_response = Mock()
         mock_response.iter_content.return_value = [
@@ -413,12 +397,9 @@ class TestDownloadAsset:
         ]  # Incomplete data
         mock_response.raise_for_status.return_value = None
 
-        with (
-            TemporaryDirectory() as workspace_str,
-            patch("requests.get", return_value=mock_response),
-        ):
+        with patch("requests.get", return_value=mock_response):
             result = generate_alt_text._download_asset(
-                queue_item, Path(workspace_str)
+                base_queue_item, temp_dir
             )
 
             # Should still create file even with partial content
@@ -449,17 +430,12 @@ class TestDisplayManager:
         assert display.console is richConsole
 
     def test_show_context(
-        self, display_manager: generate_alt_text.DisplayManager
+        self,
+        display_manager: generate_alt_text.DisplayManager,
+        base_queue_item: scan_for_empty_alt.QueueItem,
     ) -> None:
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file="test.md",
-            asset_path="image.jpg",
-            line_number=5,
-            context_snippet="Test context snippet",
-        )
-
         # Should not raise an exception
-        display_manager.show_context(queue_item)
+        display_manager.show_context(base_queue_item)
 
     def test_show_image_not_tty(
         self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
@@ -843,24 +819,6 @@ class TestGenerateAltTextSkipExisting:
                 "write_output": mock_write_output,
             }
 
-    @pytest.fixture
-    def sample_queue_items(self) -> list[scan_for_empty_alt.QueueItem]:
-        """Sample queue items for testing."""
-        return [
-            scan_for_empty_alt.QueueItem(
-                markdown_file="test1.md",
-                asset_path="image1.jpg",
-                line_number=1,
-                context_snippet="context1",
-            ),
-            scan_for_empty_alt.QueueItem(
-                markdown_file="test2.md",
-                asset_path="image2.jpg",
-                line_number=1,
-                context_snippet="context2",
-            ),
-        ]
-
     def _create_queue_items(self, *asset_paths: str) -> list:
         """Helper to create test queue items."""
         return [
@@ -872,29 +830,6 @@ class TestGenerateAltTextSkipExisting:
             )
             for i, path in enumerate(asset_paths, 1)
         ]
-
-    @pytest.fixture
-    def sample_captions(self, temp_dir: Path) -> dict[str, Path]:
-        """Sample captions files for testing."""
-
-        def create_captions_file(captions: dict[str, str]) -> Path:
-            captions_file = temp_dir / "captions.json"
-            captions_data = [
-                {"asset_path": path, "suggested_alt": alt}
-                for path, alt in captions.items()
-            ]
-            captions_file.write_text(
-                json.dumps(captions_data), encoding="utf-8"
-            )
-            return captions_file
-
-        return {
-            "single": create_captions_file({"image1.jpg": "Existing"}),
-            "multiple": create_captions_file(
-                {"image1.jpg": "Alt 1", "image2.jpg": "Alt 2"}
-            ),
-            "empty": create_captions_file({}),
-        }
 
     def _create_captions_file(
         self, temp_dir: Path, captions: dict[str, str]
@@ -1034,6 +969,47 @@ class TestGenerateAltTextSkipExisting:
             "queue_item"
         ]
         assert processed_item.asset_path == "image2.jpg"
+
+
+def test_filter_existing_captions_filters_items(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    queue_items = [
+        scan_for_empty_alt.QueueItem(
+            markdown_file="test1.md",
+            asset_path="image1.jpg",
+            line_number=1,
+            context_snippet="context1",
+        ),
+        scan_for_empty_alt.QueueItem(
+            markdown_file="test2.md",
+            asset_path="image2.jpg",
+            line_number=2,
+            context_snippet="context2",
+        ),
+    ]
+
+    def fake_load_existing_captions(_path: Path) -> set[str]:
+        return {"image1.jpg"}
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_load_existing_captions",
+        fake_load_existing_captions,
+    )
+
+    console_mock = Mock()
+    console_mock.print = Mock()
+
+    filtered = generate_alt_text._filter_existing_captions(
+        queue_items,
+        Path("captions.json"),
+        console_mock,
+    )
+
+    assert len(filtered) == 1
+    assert filtered[0].asset_path == "image2.jpg"
+    console_mock.print.assert_called_once()
 
 
 class TestSkipExistingCLI:
@@ -1212,15 +1188,13 @@ class TestLoadLearningExamples:
 class TestBuildPromptWithExamples:
     """Test the _build_prompt function with learning examples."""
 
-    def test_build_prompt_no_examples(self) -> None:
+    def test_build_prompt_no_examples(
+        self, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test prompt building without learning examples."""
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file="test.md",
-            asset_path="image.jpg",
-            line_number=5,
-            context_snippet="This is a test image context.",
+        prompt = generate_alt_text._build_prompt(
+            base_queue_item, max_chars=150
         )
-        prompt = generate_alt_text._build_prompt(queue_item, max_chars=150)
 
         assert "test.md" in prompt
         assert "This is a test image context." in prompt
@@ -1230,14 +1204,10 @@ class TestBuildPromptWithExamples:
             not in prompt
         )
 
-    def test_build_prompt_with_examples(self) -> None:
+    def test_build_prompt_with_examples(
+        self, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test prompt building with learning examples."""
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file="test.md",
-            asset_path="image.jpg",
-            line_number=5,
-            context_snippet="This is a test image context.",
-        )
         learning_examples = [
             {
                 "suggested_alt": "Initial suggestion",
@@ -1250,7 +1220,7 @@ class TestBuildPromptWithExamples:
         ]
 
         prompt = generate_alt_text._build_prompt(
-            queue_item, max_chars=150, learning_examples=learning_examples
+            base_queue_item, max_chars=150, learning_examples=learning_examples
         )
 
         assert "Examples of how initial suggestions were improved" in prompt
@@ -1262,18 +1232,177 @@ class TestBuildPromptWithExamples:
         assert "Another improved" in prompt
         assert "Learn from these examples" in prompt
 
-    def test_build_prompt_empty_examples(self) -> None:
+    def test_build_prompt_empty_examples(
+        self, base_queue_item: scan_for_empty_alt.QueueItem
+    ) -> None:
         """Test prompt building with empty learning examples list."""
-        queue_item = scan_for_empty_alt.QueueItem(
-            markdown_file="test.md",
-            asset_path="image.jpg",
-            line_number=5,
-            context_snippet="This is a test image context.",
-        )
         prompt = generate_alt_text._build_prompt(
-            queue_item, max_chars=150, learning_examples=[]
+            base_queue_item, max_chars=150, learning_examples=[]
         )
 
         assert "test.md" in prompt
         assert "This is a test image context." in prompt
         assert "how initial suggestions were improved" not in prompt
+
+
+@pytest.mark.asyncio
+async def test_async_generate_suggestions(
+    monkeypatch: pytest.MonkeyPatch, temp_dir: Path
+) -> None:
+    queue_items = [
+        scan_for_empty_alt.QueueItem(
+            markdown_file="test1.md",
+            asset_path="image1.jpg",
+            line_number=1,
+            context_snippet="context1",
+        ),
+        scan_for_empty_alt.QueueItem(
+            markdown_file="test2.md",
+            asset_path="image2.jpg",
+            line_number=2,
+            context_snippet="context2",
+        ),
+    ]
+
+    def fake_download_asset(
+        queue_item: scan_for_empty_alt.QueueItem, workspace: Path
+    ) -> Path:
+        asset_filename = Path(queue_item.asset_path).name or "asset"
+        target_path = workspace / asset_filename
+        target_path.write_bytes(b"data")
+        return target_path
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_download_asset",
+        fake_download_asset,
+    )
+
+    def fake_run_llm(
+        attachment: Path, prompt: str, model: str, timeout: int
+    ) -> str:
+        return f"{attachment.name}-caption"
+
+    monkeypatch.setattr(generate_alt_text, "_run_llm", fake_run_llm)
+
+    options = generate_alt_text.GenerateAltTextOptions(
+        root=temp_dir,
+        model="test-model",
+        max_chars=50,
+        timeout=10,
+        output_path=temp_dir / "captions.json",
+        skip_existing=False,
+    )
+
+    results = await generate_alt_text._async_generate_suggestions(
+        queue_items, options
+    )
+
+    assert len(results) == len(queue_items)
+    result_asset_paths = {result.asset_path for result in results}
+    expected_asset_paths = {item.asset_path for item in queue_items}
+    assert result_asset_paths == expected_asset_paths
+
+    expected_suggestions = {
+        f"{Path(item.asset_path).name}-caption" for item in queue_items
+    }
+    actual_suggestions = {result.suggested_alt for result in results}
+    assert actual_suggestions == expected_suggestions
+
+
+def test_load_suggestions_from_file_success(temp_dir: Path) -> None:
+    suggestions_file = temp_dir / "suggestions.json"
+    payload = [{"example": "value"}]
+    suggestions_file.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = generate_alt_text._load_suggestions_from_file(suggestions_file)
+
+    assert result == payload
+
+
+def test_load_suggestions_from_file_errors(temp_dir: Path) -> None:
+    missing_file = temp_dir / "missing.json"
+
+    with pytest.raises(ValueError, match="Could not load suggestions"):
+        generate_alt_text._load_suggestions_from_file(missing_file)
+
+    invalid_file = temp_dir / "invalid.json"
+    invalid_file.write_text("not json", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Could not load suggestions"):
+        generate_alt_text._load_suggestions_from_file(invalid_file)
+
+
+def test_label_from_suggestions_file(
+    monkeypatch: pytest.MonkeyPatch, temp_dir: Path
+) -> None:
+    suggestions_file = temp_dir / "suggestions.json"
+    output_file = temp_dir / "captions.json"
+
+    suggestions_payload = [
+        {
+            "markdown_file": "test.md",
+            "asset_path": "image.jpg",
+            "suggested_alt": "Suggested",
+            "model": "model",
+            "context_snippet": "context",
+            "line_number": "3",
+        }
+    ]
+
+    def fake_load_suggestions(_file: Path) -> list[dict[str, str]]:
+        return suggestions_payload
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_load_suggestions_from_file",
+        fake_load_suggestions,
+    )
+
+    alt_result = generate_alt_text.AltGenerationResult(
+        markdown_file="test.md",
+        asset_path="image.jpg",
+        suggested_alt="Suggested",
+        final_alt="Final",
+        model="model",
+        context_snippet="context",
+    )
+
+    def fake_label(
+        suggestions: list[generate_alt_text.AltTextResult],
+        console_instance: console.Console,
+    ) -> list[generate_alt_text.AltGenerationResult]:
+        assert len(suggestions) == 1
+        assert isinstance(console_instance, console.Console)
+        suggestion = suggestions[0]
+        assert suggestion.asset_path == "image.jpg"
+        return [alt_result]
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_label_suggestions",
+        fake_label,
+    )
+
+    written_results: list[generate_alt_text.AltGenerationResult] = []
+
+    def fake_write_output(
+        results: Iterable[generate_alt_text.AltGenerationResult],
+        output_path: Path,
+        append_mode: bool = False,
+    ) -> None:
+        written_results.extend(results)
+        assert output_path == output_file
+        assert append_mode is False
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_write_output",
+        fake_write_output,
+    )
+
+    generate_alt_text.label_from_suggestions_file(
+        suggestions_file, output_file, skip_existing=False
+    )
+
+    assert written_results == [alt_result]
