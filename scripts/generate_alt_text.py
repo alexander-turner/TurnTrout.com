@@ -21,7 +21,7 @@ import requests
 from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
-from tqdm import tqdm
+from tqdm.rich import tqdm
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -87,6 +87,52 @@ def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
         ) from err
 
 
+def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
+    """Convert GIF files to MP4 format for LLM compatibility."""
+    if asset_path.suffix.lower() != ".gif":
+        return asset_path
+
+    mp4_target = workspace / f"{asset_path.stem}.mp4"
+    ffmpeg_executable = script_utils.find_executable("ffmpeg")
+
+    try:
+        subprocess.run(
+            [
+                ffmpeg_executable,
+                "-i",
+                str(asset_path),
+                "-movflags",
+                "faststart",
+                "-pix_fmt",
+                "yuv420p",
+                "-vf",
+                "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+                "-y",
+                str(mp4_target),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return mp4_target
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
+        stderr = err.stderr if hasattr(err, "stderr") else ""
+        stdout = err.stdout if hasattr(err, "stdout") else ""
+        raise AltGenerationError(
+            f"Failed to convert GIF to MP4: {stderr or stdout}"
+        ) from err
+
+
+def _convert_asset_for_llm(asset_path: Path, workspace: Path) -> Path:
+    """Converts asset to a format compatible with the LLM if needed."""
+    if asset_path.suffix.lower() == ".avif":
+        return _convert_avif_to_png(asset_path, workspace)
+    if asset_path.suffix.lower() == ".gif":
+        return _convert_gif_to_mp4(asset_path, workspace)
+    return asset_path
+
+
 def _download_asset(
     queue_item: scan_for_empty_alt.QueueItem, workspace: Path
 ) -> Path:
@@ -110,19 +156,19 @@ def _download_asset(
         with target.open("wb") as handle:
             for chunk in response.iter_content(chunk_size=8192):
                 handle.write(chunk)
-        return _convert_avif_to_png(target, workspace)
+        return _convert_asset_for_llm(target, workspace)
 
     # Try relative to markdown file first
     markdown_path = Path(queue_item.markdown_file)
     candidate = markdown_path.parent / asset_path
     if candidate.exists():
-        return _convert_avif_to_png(candidate.resolve(), workspace)
+        return _convert_asset_for_llm(candidate.resolve(), workspace)
 
     # Try relative to git root
     git_root = script_utils.get_git_root()
     alternative = git_root / asset_path.lstrip("/")
     if alternative.exists():
-        return _convert_avif_to_png(alternative.resolve(), workspace)
+        return _convert_asset_for_llm(alternative.resolve(), workspace)
 
     raise FileNotFoundError(
         f"Unable to locate asset '{asset_path}' referenced in {queue_item.markdown_file}"
@@ -499,17 +545,20 @@ class AltTextResult:  # pylint: disable=C0115
 
 async def _run_llm_async(
     queue_item: scan_for_empty_alt.QueueItem,
-    attachment: Path,
-    workspace: Path,
     options: GenerateAltTextOptions,
     sem: asyncio.Semaphore,
 ) -> AltTextResult:
-    """Run LLM in a thread; clean up workspace; return suggestion payload."""
+    """Download asset, run LLM in a thread; clean up; return suggestion
+    payload."""
+    workspace = Path(tempfile.mkdtemp())
     try:
-        prompt = _build_prompt(
-            queue_item, options.max_chars, learning_examples=None
-        )
         async with sem:
+            attachment = await asyncio.to_thread(
+                _download_asset, queue_item, workspace
+            )
+            prompt = _build_prompt(
+                queue_item, options.max_chars, learning_examples=None
+            )
             caption = await asyncio.to_thread(
                 _run_llm, attachment, prompt, options.model, options.timeout
             )
@@ -534,14 +583,10 @@ async def _async_generate_suggestions(
     tasks: list[asyncio.Task[AltTextResult]] = []
 
     for qi in queue_items:
-        workspace = Path(tempfile.mkdtemp())
-        attachment = _download_asset(qi, workspace)
         tasks.append(
             asyncio.create_task(
                 _run_llm_async(
                     qi,
-                    attachment,
-                    workspace,
                     options,
                     sem,
                 )
@@ -636,63 +681,6 @@ def _label_suggestions(
 
     cleanup()
     return results
-
-
-def generate_alt_text(
-    options: GenerateAltTextOptions,
-) -> None:
-    """Generate alt text suggestions for assets in the queue."""
-    console = Console()
-    display = DisplayManager(console)
-    results: list[AltGenerationResult] = []
-
-    def cleanup() -> None:
-        display.close_all_images()
-        _write_output(
-            results, options.output_path, append_mode=options.skip_existing
-        )
-
-    atexit.register(cleanup)
-
-    # Handle Ctrl+C gracefully
-    def signal_handler(_signum: int, _frame: object) -> None:
-        console.print("\n[yellow]Interrupted by user. Cleaning up...[/yellow]")
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, signal_handler)
-
-    queue_items = scan_for_empty_alt.build_queue(options.root)
-    if options.skip_existing:
-        queue_items = _filter_existing_captions(
-            queue_items, options.output_path, console
-        )
-
-    # Show cost estimation
-    cost_estimate = _estimate_cost(options.model, len(queue_items))
-    console.print(
-        f"\n[bold blue]Processing {len(queue_items)} items with model '{options.model}'[/bold blue]"
-    )
-    console.print(f"[dim]{cost_estimate}[/dim]\n")
-
-    input("Press Enter to continue...")
-
-    for queue_item in queue_items:
-        try:
-            result = _process_queue_item(
-                queue_item=queue_item,
-                display=display,
-                options=options,
-            )
-            results.append(result)
-        except (
-            AltGenerationError,
-            FileNotFoundError,
-            requests.RequestException,
-        ) as err:
-            display.show_error(str(err))
-            # Close any image that might be open for this failed item
-            display.close_current_image()
-    cleanup()
 
 
 def batch_generate_alt_text(
