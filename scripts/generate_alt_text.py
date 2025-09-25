@@ -126,13 +126,36 @@ def _download_asset(
 
 
 def _build_prompt(
-    queue_item: scan_for_empty_alt.QueueItem, max_chars: int
+    queue_item: scan_for_empty_alt.QueueItem,
+    max_chars: int,
+    learning_examples: list[dict[str, str]] | None = None,
 ) -> str:
     """Build prompt for LLM caption generation."""
-    return textwrap.dedent(
-        f"""
-        Generate concise alt text for accessibility and SEO. Describe what's in the image clearly and accurately.
+    base_prompt = textwrap.dedent(
+        """
+        Generate concise alt text for accessibility and SEO. Describe the intended information of the image clearly and accurately.
+        """
+    ).strip()
 
+    # Add multi-shot examples if available
+    examples_section = ""
+    if learning_examples:
+        examples_section = (
+            "\n\nExamples of how initial suggestions were improved:\n\n"
+        )
+        for i, example in enumerate(learning_examples, 1):
+            examples_section += textwrap.dedent(
+                f"""
+                Example {i}:
+                Initial suggestion: {example["suggested_alt"]}
+                Improved version: {example["final_alt"]}
+                
+                """
+            )
+        examples_section += "Learn from these examples to generate better initial suggestions.\n"
+
+    main_prompt = textwrap.dedent(
+        f"""
         Context from {queue_item.markdown_file}:
         {queue_item.context_snippet}
 
@@ -147,6 +170,8 @@ def _build_prompt(
         Prioritize completeness over brevity - include both textual content and visual description as needed.
         """
     ).strip()
+
+    return f"{base_prompt}{examples_section}\n{main_prompt}"
 
 
 def _run_llm(attachment: Path, prompt: str, model: str, timeout: int) -> str:
@@ -312,19 +337,38 @@ class DisplayManager:
             self.close_current_image()
 
 
+@dataclass(slots=True)
+class GenerateAltTextOptions:
+    """Options for generating alt text."""
+
+    root: Path
+    model: str
+    max_chars: int
+    timeout: int
+    output_path: Path
+    skip_existing: bool = False
+
+
 def _process_queue_item(
     queue_item: scan_for_empty_alt.QueueItem,
     display: DisplayManager,
-    model: str,
-    max_chars: int,
-    timeout: int,
+    options: GenerateAltTextOptions,
 ) -> AltGenerationResult:
     """Process a single queue item and generate alt text."""
     with TemporaryDirectory() as temp_dir:
         workspace = Path(temp_dir)
         attachment = _download_asset(queue_item, workspace)
-        prompt = _build_prompt(queue_item, max_chars=max_chars)
-        suggestion = _run_llm(attachment, prompt, model=model, timeout=timeout)
+
+        # Load learning examples for multi-shot prompting
+        learning_examples = _load_learning_examples(options.output_path)
+        prompt = _build_prompt(
+            queue_item,
+            max_chars=options.max_chars,
+            learning_examples=learning_examples,
+        )
+        suggestion = _run_llm(
+            attachment, prompt, model=options.model, timeout=options.timeout
+        )
 
         # Display results
         display.show_rule(queue_item.asset_path)
@@ -344,7 +388,7 @@ def _process_queue_item(
             asset_path=queue_item.asset_path,
             suggested_alt=suggestion,
             final_alt=final_alt,
-            model=model,
+            model=options.model,
             context_snippet=queue_item.context_snippet,
         )
 
@@ -386,6 +430,36 @@ def _load_existing_captions(captions_path: Path) -> set[str]:
         return set()
 
 
+def _load_learning_examples(
+    captions_path: Path, max_examples: int = 5
+) -> list[dict[str, str]]:
+    """Load examples where suggested_alt differs from final_alt for multi-shot
+    learning."""
+    try:
+        with open(captions_path, encoding="utf-8") as f:
+            data = json.load(f)
+
+        # Filter examples where suggestion was edited
+        learning_examples = []
+        for item in data:
+            if (
+                item["suggested_alt"] != item["final_alt"]
+                and item["suggested_alt"].strip()
+                and item["final_alt"].strip()
+            ):
+                learning_examples.append(
+                    {
+                        "suggested_alt": item["suggested_alt"],
+                        "final_alt": item["final_alt"],
+                    }
+                )
+
+        # Return up to max_examples, prioritizing more recent ones (later in file)
+        return learning_examples[-max_examples:] if learning_examples else []
+    except (FileNotFoundError, json.JSONDecodeError, KeyError, TypeError):
+        return []
+
+
 def _filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_path: Path,
@@ -404,18 +478,6 @@ def _filter_existing_captions(
             f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
         )
     return filtered_items
-
-
-@dataclass(slots=True)
-class GenerateAltTextOptions:
-    """Options for generating alt text."""
-
-    root: Path
-    model: str
-    max_chars: int
-    timeout: int
-    output_path: Path
-    skip_existing: bool = False
 
 
 def generate_alt_text(
@@ -459,9 +521,7 @@ def generate_alt_text(
             result = _process_queue_item(
                 queue_item=queue_item,
                 display=display,
-                model=options.model,
-                max_chars=options.max_chars,
-                timeout=options.timeout,
+                options=options,
             )
             results.append(result)
         except (
