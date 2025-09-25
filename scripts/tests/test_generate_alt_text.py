@@ -40,35 +40,6 @@ def test_is_url(path: str, expected: bool) -> None:
     assert generate_alt_text._is_url(path) is expected
 
 
-def test_extract_video_sources_empty_context() -> None:
-    context = ""
-    sources = generate_alt_text._extract_video_sources(context)
-    assert sources == ()
-
-
-def test_extract_video_sources_with_sources() -> None:
-    context = """
-    <video>
-        <source src="video.mp4" type="video/mp4">
-        <source src="video.webm" type="video/webm">
-    </video>
-    """
-    sources = generate_alt_text._extract_video_sources(context)
-    assert sources == ("video.mp4", "video.webm")
-
-
-def test_extract_video_sources_mixed_content() -> None:
-    context = """
-    Some text here
-    <source src="first.mp4" type="video/mp4">
-    More text
-    <img src="image.jpg" alt="not a source">
-    <source src="second.webm" type="video/webm">
-    """
-    sources = generate_alt_text._extract_video_sources(context)
-    assert sources == ("first.mp4", "second.webm")
-
-
 def test_build_prompt() -> None:
     """Test prompt building function."""
     queue_item = scan_for_empty_alt.QueueItem(
@@ -489,19 +460,6 @@ class TestDisplayManager:
         # Should not raise an exception
         display_manager.show_context(queue_item)
 
-    def test_show_video_sources_empty(
-        self, display_manager: generate_alt_text.DisplayManager
-    ) -> None:
-        display_manager.show_video_sources([])
-        # Should not raise an exception
-
-    def test_show_video_sources_with_data(
-        self, display_manager: generate_alt_text.DisplayManager
-    ) -> None:
-        sources = ["video1.mp4", "video2.webm"]
-        display_manager.show_video_sources(sources)
-        # Should not raise an exception
-
     def test_show_image_not_tty(
         self, display_manager: generate_alt_text.DisplayManager, temp_dir: Path
     ) -> None:
@@ -706,10 +664,9 @@ class TestAltGenerationResult:
             markdown_file="test.md",
             asset_path="image.jpg",
             suggested_alt="A test image",
+            final_alt="A test image",
             model="gemini-2.5-flash",
-            ai_generated=True,
             context_snippet="Test context",
-            video_sources=("video1.mp4", "video2.webm"),
         )
 
         json_data = result.to_json()
@@ -718,9 +675,7 @@ class TestAltGenerationResult:
         assert json_data["asset_path"] == "image.jpg"
         assert json_data["suggested_alt"] == "A test image"
         assert json_data["model"] == "gemini-2.5-flash"
-        assert json_data["ai_generated"] is True
         assert json_data["context_snippet"] == "Test context"
-        assert json_data["video_sources"] == ("video1.mp4", "video2.webm")
 
 
 def test_write_output(temp_dir: Path) -> None:
@@ -730,19 +685,17 @@ def test_write_output(temp_dir: Path) -> None:
             markdown_file="test1.md",
             asset_path="image1.jpg",
             suggested_alt="First image",
+            final_alt="First image",
             model="gemini-2.5-flash",
-            ai_generated=True,
             context_snippet="First context",
-            video_sources=(),
         ),
         generate_alt_text.AltGenerationResult(
             markdown_file="test2.md",
             asset_path="image2.jpg",
             suggested_alt="Second image",
+            final_alt="Second image FINAL",
             model="gemini-2.5-flash",
-            ai_generated=True,
             context_snippet="Second context",
-            video_sources=("video.mp4",),
         ),
     ]
 
@@ -756,6 +709,7 @@ def test_write_output(temp_dir: Path) -> None:
     assert len(data) == 2
     assert data[0]["markdown_file"] == "test1.md"
     assert data[1]["suggested_alt"] == "Second image"
+    assert data[1]["final_alt"] == "Second image FINAL"
 
 
 def test_run_llm_success(temp_dir: Path) -> None:

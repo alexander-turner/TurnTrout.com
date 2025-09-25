@@ -42,10 +42,9 @@ class AltGenerationResult:
     markdown_file: str
     asset_path: str
     suggested_alt: str
+    final_alt: str
     model: str
-    ai_generated: bool
     context_snippet: str
-    video_sources: tuple[str, ...]
 
     def to_json(self) -> dict[str, object]:
         """Convert to JSON-serializable dict."""
@@ -126,23 +125,6 @@ def _download_asset(
     )
 
 
-def _extract_video_sources(context_snippet: str) -> tuple[str, ...]:
-    """Extract video source URLs from HTML context."""
-    sources: list[str] = []
-    for line in context_snippet.splitlines():
-        line_stripped = line.strip()
-        if "<source" not in line_stripped:
-            continue
-        parts = line_stripped.split("src=")
-        if len(parts) < 2:
-            continue
-        fragment = parts[1].split('"')
-        if len(fragment) < 2:
-            continue
-        sources.append(fragment[1])
-    return tuple(sources)
-
-
 def _build_prompt(
     queue_item: scan_for_empty_alt.QueueItem, max_chars: int
 ) -> str:
@@ -191,6 +173,21 @@ def _run_llm(attachment: Path, prompt: str, model: str, timeout: int) -> str:
     return cleaned
 
 
+def _truncate_context_for_display(context_snippet: str) -> str:
+    """Truncate context to show only the two paragraphs just before the
+    image."""
+    # Split context into paragraphs by double newlines
+    paragraphs = context_snippet.split("\n\n")
+
+    # Remove empty paragraphs
+    paragraphs = [p.strip() for p in paragraphs if p.strip()]
+
+    # Return the last two paragraphs (just before the image)
+    if len(paragraphs) <= 2:
+        return context_snippet.strip()
+    return "\n\n".join(paragraphs[-2:])
+
+
 class DisplayManager:
     """Handles rich console display operations."""
 
@@ -200,23 +197,18 @@ class DisplayManager:
 
     def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
         """Display context information for the queue item."""
+        # Show only the two paragraphs just before the image
+        truncated_context = _truncate_context_for_display(
+            queue_item.context_snippet
+        )
         self.console.print(
             Panel(
-                queue_item.context_snippet.strip(),
+                truncated_context,
                 title="Context",
                 subtitle=f"{queue_item.markdown_file}:{queue_item.line_number}",
                 box=ROUNDED,
             )
         )
-
-    def show_video_sources(self, sources: Iterable[str]) -> None:
-        """Display related video sources if any."""
-        entries = list(sources)
-        if entries:
-            display = "\n".join(entries)
-            self.console.print(
-                Panel(display, title="Related video sources", box=ROUNDED)
-            )
 
     def show_image(self, path: Path) -> None:
         """Display the actual image using the system's default image viewer."""
@@ -337,12 +329,8 @@ def _process_queue_item(
         # Display results
         display.show_rule(queue_item.asset_path)
         display.show_context(queue_item)
-
-        video_sources = _extract_video_sources(queue_item.context_snippet)
-        display.show_video_sources(video_sources)
         display.show_image(attachment)
         display.refocus_terminal()
-        display.show_suggestion(suggestion)
 
         # Allow user to edit the suggestion
         final_alt = suggestion
@@ -354,11 +342,10 @@ def _process_queue_item(
         return AltGenerationResult(
             markdown_file=queue_item.markdown_file,
             asset_path=queue_item.asset_path,
-            suggested_alt=final_alt,
+            suggested_alt=suggestion,
+            final_alt=final_alt,
             model=model,
-            ai_generated=True,
             context_snippet=queue_item.context_snippet,
-            video_sources=video_sources,
         )
 
 
