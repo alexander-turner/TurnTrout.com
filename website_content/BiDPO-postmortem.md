@@ -162,7 +162,7 @@ When evaluating BIDPO vectors mid-training, we “renormalized” them to have a
 
 Our LORAs are trained with rank 1, a learning rate of $10^{-4}$, and a batch size of 16. We evaluate the trained LORAs every 50 steps and evaluate validation accuracy on the checkpoint with lowest validation loss.
 
-The LORA modifies every layer of the transformer. With a rank of $n_\mathrm{rank}$, a LORA has $2\cdot d_{\text{model}} \cdot n_{\text{layers}}$ parameters. Since BIDPO only trains a bias term of size $d_{\text{model}}$, rank-$n_\mathrm{rank}$ LORA uses $2\cdot n_\mathrm{rank} \cdot n_{\text{layers}}$ times the parameter count. As it is not uncommon to use e.g. $n_\mathrm{rank}=128$ LORAs, on e.g. a 50-layer model, a LORA may well require 12,800 times as many parameters as a BIDPO steering vector.
+The LORA modifies every layer of the transformer. With a rank of $n_\mathrm{rank}$, a LORA has $2\cdot d_{\text{model}} \cdot n_{\text{layers}}$ parameters. Since BIDPO only trains a bias term of size $d_{\text{model}}$, rank-$n_\mathrm{rank}$ LORA uses $2\cdot n_\mathrm{rank} \cdot n_{\text{layers}}$ times the parameter count.  $n_\mathrm{rank}\approx128$ LORAs are common. On a 50-layer model, such a LORA requires about 12,800 times as many parameters as does a BIDPO steering vector.
 
 # Experiment design
 
