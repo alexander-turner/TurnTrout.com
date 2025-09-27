@@ -12,6 +12,13 @@ use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 79
 
+[tool.pytest.ini_options]
+addopts = "--cov=scripts --cov-report=term-missing --cov-report=html -n auto"
+testpaths = ["scripts/tests"]
+filterwarnings = [
+    "ignore:rich is experimental/alpha:tqdm.std.TqdmExperimentalWarning",
+]
+
 [tool.docformatter]
 wrap-summaries = 79
 wrap-descriptions = 79
