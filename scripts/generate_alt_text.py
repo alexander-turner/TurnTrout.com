@@ -69,12 +69,6 @@ class AltGenerationError(Exception):
     """Raised when caption generation fails."""
 
 
-def _is_url(path: str) -> bool:
-    """Check if path is a URL."""
-    parsed = urlparse(path)
-    return bool(parsed.scheme and parsed.netloc)
-
-
 def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
     """Convert AVIF images to PNG format for LLM compatibility."""
     if asset_path.suffix.lower() != ".avif":
@@ -143,7 +137,7 @@ def _download_asset(
     """Download or locate asset file, returning path to accessible copy."""
     asset_path = queue_item.asset_path
 
-    if _is_url(asset_path):
+    if script_utils.is_url(asset_path):
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "

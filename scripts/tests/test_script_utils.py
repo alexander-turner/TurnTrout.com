@@ -1056,3 +1056,48 @@ def test_get_classes_invalid_type_attribute():
     tag["class"] = 123
     with pytest.raises(ValueError, match="Invalid class attribute value"):
         script_utils.get_classes(tag)
+
+
+@pytest.mark.parametrize(
+    "path, expected",
+    [
+        ("https://example.com/image.jpg", True),
+        ("http://example.com/image.png", True),
+        ("ftp://example.com/file.txt", True),
+        ("./local/file.jpg", False),
+        ("../parent/file.png", False),
+        ("/absolute/path/file.jpg", False),
+        ("relative/path/file.png", False),
+        ("file.jpg", False),
+        ("", False),
+        ("   ", False),  # Whitespace only
+        ("not-a-url", False),
+        ("http://", False),  # Incomplete URL
+        ("://missing-scheme", False),
+    ],
+)
+def test_is_url(path: str, expected: bool) -> None:
+    """Test URL detection functionality."""
+    assert script_utils.is_url(path) is expected
+
+
+def test_paragraph_context_grabs_neighboring_paragraphs() -> None:
+    """Ensure that the context snippet contains adjacent paragraphs."""
+    lines = [
+        "Para A line 1\n",
+        "\n",
+        "Para B line 1\n",
+        "Para B line 2\n",
+        "\n",
+        "Para C line 1\n",
+        "\n",
+        "Para D is outside of the context\n",
+    ]
+
+    snippet = script_utils.paragraph_context(lines, 2)
+
+    # Should include paragraphs B and C, but not A.
+    assert "Para A" in snippet
+    assert "Para B line 1" in snippet and "Para B line 2" in snippet
+    assert "Para C line 1" in snippet
+    assert "Para D" not in snippet

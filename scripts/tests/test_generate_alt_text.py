@@ -29,28 +29,6 @@ def base_queue_item(temp_dir: Path) -> scan_for_empty_alt.QueueItem:
 
 
 @pytest.mark.parametrize(
-    "path, expected",
-    [
-        ("https://example.com/image.jpg", True),
-        ("http://example.com/image.png", True),
-        ("ftp://example.com/file.txt", True),
-        ("./local/file.jpg", False),
-        ("../parent/file.png", False),
-        ("/absolute/path/file.jpg", False),
-        ("relative/path/file.png", False),
-        ("file.jpg", False),
-        ("", False),
-        ("   ", False),  # Whitespace only
-        ("not-a-url", False),
-        ("http://", False),  # Incomplete URL
-        ("://missing-scheme", False),
-    ],
-)
-def test_is_url(path: str, expected: bool) -> None:
-    assert generate_alt_text._is_url(path) is expected
-
-
-@pytest.mark.parametrize(
     "markdown_file, context_snippet, max_chars, expected_in_prompt",
     [
         ("empty.md", "", 100, ["empty.md", "Under 100 characters"]),

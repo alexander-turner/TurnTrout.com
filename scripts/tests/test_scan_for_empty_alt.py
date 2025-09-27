@@ -103,26 +103,3 @@ def test_queue_expected_paths(
 
     queue = scan_for_empty_alt.build_queue(tmp_path)
     assert sorted(item.asset_path for item in queue) == sorted(expected_paths)
-
-
-def test_paragraph_context_grabs_neighboring_paragraphs() -> None:
-    """Ensure that the context snippet contains adjacent paragraphs."""
-
-    lines = [
-        "Para A line 1\n",
-        "\n",
-        "Para B line 1\n",
-        "Para B line 2\n",
-        "\n",
-        "Para C line 1\n",
-        "\n",
-        "Para D is outside of the context\n",
-    ]
-
-    snippet = scan_for_empty_alt._paragraph_context(lines, 2)
-
-    # Should include paragraphs B and C, but not A.
-    assert "Para A" in snippet
-    assert "Para B line 1" in snippet and "Para B line 2" in snippet
-    assert "Para C line 1" in snippet
-    assert "Para D" not in snippet

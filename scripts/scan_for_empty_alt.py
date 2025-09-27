@@ -50,7 +50,7 @@ def _create_queue_item(
         markdown_file=str(md_path),
         asset_path=asset_path,
         line_number=line_number,
-        context_snippet=_paragraph_context(lines, line_number - 1),
+        context_snippet=script_utils.paragraph_context(lines, line_number - 1),
     )
 
 
@@ -119,49 +119,6 @@ def _extract_html_img_info(token: Token) -> list[tuple[str, str | None]]:
         alt: str | None = alt_match.group("alt") if alt_match else None
         infos.append((src, alt))
     return infos
-
-
-def _paragraph_context(lines: Sequence[str], idx: int) -> str:
-    """
-    Return all paragraphs before *idx* and one paragraph after *idx*
-    (inclusive) separated by blank lines.
-
-    Each paragraph is returned exactly as it appears in the file.
-    """
-    # Identify paragraph boundaries based on blank lines.
-    paragraphs: list[list[str]] = []
-    current: list[str] = []
-    for line in lines:
-        if line.strip() == "":
-            if current:
-                paragraphs.append(current)
-                current = []
-        else:
-            current.append(line.rstrip("\n"))
-    if current:
-        paragraphs.append(current)
-
-    # Map line index -> paragraph index.
-    line_to_para: dict[int, int] = {}
-    current_idx = 0
-    for p_idx, para in enumerate(paragraphs):
-        for _ in para:
-            line_to_para[current_idx] = p_idx
-            current_idx += 1
-        # Account for the blank line after paragraph.
-        line_to_para[current_idx] = p_idx  # blank line maps to this para idx
-        current_idx += 1
-
-    para_idx = line_to_para.get(idx, 0)
-    # Get all paragraphs before the image (start from 0)
-    start_idx = 0
-    # Get one paragraph after the image
-    end_idx = min(len(paragraphs), para_idx + 2)
-    snippet_lines: list[str] = []
-    for p in paragraphs[start_idx:end_idx]:
-        snippet_lines.extend(p)
-        snippet_lines.append("")  # restore blank line separator
-    return "\n".join(snippet_lines).strip()
 
 
 def _handle_md_asset(

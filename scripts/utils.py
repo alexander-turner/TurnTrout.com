@@ -3,13 +3,20 @@
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Collection, Dict, Optional, Set
+from typing import Collection, Dict, Optional, Sequence, Set
+from urllib.parse import urlparse
 
 import git
 from bs4 import BeautifulSoup, Tag
 from ruamel.yaml import YAML, YAMLError
 
 _executable_cache: Dict[str, str] = {}
+
+
+def is_url(path: str) -> bool:
+    """Check if path is a URL."""
+    parsed = urlparse(path)
+    return bool(parsed.scheme and parsed.netloc)
 
 
 def find_executable(name: str) -> str:
@@ -301,3 +308,46 @@ def get_classes(tag: Tag) -> list[str]:
     if class_attr_value is None:
         return []
     raise ValueError("Invalid class attribute value")
+
+
+def paragraph_context(lines: Sequence[str], idx: int) -> str:
+    """
+    Return all paragraphs before *idx* and one paragraph after *idx*
+    (inclusive) separated by blank lines.
+
+    Each paragraph is returned exactly as it appears in the file.
+    """
+    # Identify paragraph boundaries based on blank lines.
+    paragraphs: list[list[str]] = []
+    current: list[str] = []
+    for line in lines:
+        if line.strip() == "":
+            if current:
+                paragraphs.append(current)
+                current = []
+        else:
+            current.append(line.rstrip("\n"))
+    if current:
+        paragraphs.append(current)
+
+    # Map line index -> paragraph index.
+    line_to_para: dict[int, int] = {}
+    current_idx = 0
+    for p_idx, para in enumerate(paragraphs):
+        for _ in para:
+            line_to_para[current_idx] = p_idx
+            current_idx += 1
+        # Account for the blank line after paragraph.
+        line_to_para[current_idx] = p_idx  # blank line maps to this para idx
+        current_idx += 1
+
+    para_idx = line_to_para.get(idx, 0)
+    # Get all paragraphs before the image (start from 0)
+    start_idx = 0
+    # Get one paragraph after the image
+    end_idx = min(len(paragraphs), para_idx + 2)
+    snippet_lines: list[str] = []
+    for p in paragraphs[start_idx:end_idx]:
+        snippet_lines.extend(p)
+        snippet_lines.append("")  # restore blank line separator
+    return "\n".join(snippet_lines).strip()
