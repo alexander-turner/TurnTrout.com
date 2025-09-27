@@ -692,6 +692,99 @@ def test_write_output(temp_dir: Path) -> None:
     assert data[1]["final_alt"] == "Second image FINAL"
 
 
+def _create_test_result(
+    markdown_file: str, asset_path: str, final_alt: str
+) -> generate_alt_text.AltGenerationResult:
+    """Helper to create a test result with minimal boilerplate."""
+    return generate_alt_text.AltGenerationResult(
+        markdown_file=markdown_file,
+        asset_path=asset_path,
+        suggested_alt=final_alt,
+        final_alt=final_alt,
+        model="gemini-2.5-flash",
+        context_snippet="Test context",
+    )
+
+
+@pytest.mark.parametrize(
+    "initial_data,append_data,expected_count,description",
+    [
+        # Normal append case
+        (
+            [_create_test_result("test1.md", "image1.jpg", "First image")],
+            [_create_test_result("test2.md", "image2.jpg", "Second image")],
+            2,
+            "normal append",
+        ),
+        # Append to non-existent file
+        (
+            None,
+            [_create_test_result("test.md", "image.jpg", "Only image")],
+            1,
+            "append to non-existent file",
+        ),
+        # Multiple items in each batch
+        (
+            [
+                _create_test_result(
+                    "batch1_1.md", "image1.jpg", "Batch 1 Image 1"
+                ),
+                _create_test_result(
+                    "batch1_2.md", "image2.jpg", "Batch 1 Image 2"
+                ),
+            ],
+            [
+                _create_test_result(
+                    "batch2_1.md", "image3.jpg", "Batch 2 Image 1"
+                )
+            ],
+            3,
+            "multiple batches",
+        ),
+    ],
+)
+def test_write_output_append_mode(
+    temp_dir: Path, initial_data, append_data, expected_count, description
+) -> None:
+    """Test writing results with append_mode=True in various scenarios."""
+    output_file = temp_dir / f"{description.replace(' ', '_')}.json"
+
+    # Write initial data if provided
+    if initial_data:
+        generate_alt_text._write_output(initial_data, output_file)
+
+    # Append the additional results
+    generate_alt_text._write_output(append_data, output_file, append_mode=True)
+
+    # Verify results
+    assert output_file.exists()
+    with output_file.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert len(data) == expected_count
+
+    # Verify order preservation for multiple batches case
+    if description == "multiple batches":
+        assert data[0]["markdown_file"] == "batch1_1.md"
+        assert data[1]["markdown_file"] == "batch1_2.md"
+        assert data[2]["markdown_file"] == "batch2_1.md"
+
+
+def test_write_output_append_mode_corrupted_file(temp_dir: Path) -> None:
+    """Test append mode gracefully handles corrupted existing files."""
+    output_file = temp_dir / "corrupted.json"
+    output_file.write_text("{ invalid json", encoding="utf-8")
+
+    result = _create_test_result("test.md", "image.jpg", "Test image")
+    generate_alt_text._write_output([result], output_file, append_mode=True)
+
+    with output_file.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert len(data) == 1
+    assert data[0]["markdown_file"] == "test.md"
+
+
 def test_run_llm_success(temp_dir: Path) -> None:
     """Test successful LLM execution."""
     attachment = temp_dir / "test.jpg"

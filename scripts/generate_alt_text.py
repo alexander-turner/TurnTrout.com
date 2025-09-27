@@ -173,7 +173,7 @@ def _download_asset(
     )
 
 
-# TODO remove
+# TODO remove learning_examples
 def _build_prompt(
     queue_item: scan_for_empty_alt.QueueItem,
     max_chars: int,
@@ -227,7 +227,12 @@ def _build_prompt(
     return f"{base_prompt}{examples_section}\n{main_prompt}"
 
 
-def _run_llm(attachment: Path, prompt: str, model: str, timeout: int) -> str:
+def _run_llm(
+    attachment: Path,
+    prompt: str,
+    model: str,
+    timeout: int,
+) -> str:
     """Execute LLM command and return generated caption."""
     llm_path = script_utils.find_executable("llm")
 
@@ -565,7 +570,11 @@ async def _run_llm_async(
                 queue_item, options.max_chars, learning_examples=None
             )
             caption = await asyncio.to_thread(
-                _run_llm, attachment, prompt, options.model, options.timeout
+                _run_llm,
+                attachment,
+                prompt,
+                options.model,
+                options.timeout,
             )
         return AltTextResult(
             markdown_file=queue_item.markdown_file,
@@ -619,8 +628,7 @@ async def _async_generate_suggestions(
 def _process_single_suggestion_for_labeling(
     suggestion_data: AltTextResult,
     display: DisplayManager,
-    output_path: Path,
-) -> None:
+) -> AltGenerationResult:
     # Recreate queue item for display
     queue_item = scan_for_empty_alt.QueueItem(
         markdown_file=suggestion_data.markdown_file,
@@ -648,7 +656,7 @@ def _process_single_suggestion_for_labeling(
 
         display.close_current_image()
 
-    result = AltGenerationResult(
+    return AltGenerationResult(
         markdown_file=suggestion_data.markdown_file,
         asset_path=suggestion_data.asset_path,
         suggested_alt=suggestion_data.suggested_alt,
@@ -656,7 +664,6 @@ def _process_single_suggestion_for_labeling(
         model=suggestion_data.model,
         context_snippet=suggestion_data.context_snippet,
     )
-    _write_output([result], output_path, append_mode=True)
 
 
 def _label_suggestions(
@@ -665,9 +672,9 @@ def _label_suggestions(
     output_path: Path,
     append_mode: bool,
 ) -> int:
-    """Load suggestions and allow user to label them, saving after each."""
+    """Load suggestions and allow user to label them, collecting results."""
     display = DisplayManager(console)
-    processed_count = 0
+    processed_results: list[AltGenerationResult] = []
 
     def cleanup() -> None:
         display.close_all_images()
@@ -676,6 +683,11 @@ def _label_suggestions(
 
     # Handle Ctrl+C gracefully
     def signal_handler(_signum: int, _frame: object) -> None:
+        # Save any results we've collected so far
+        if processed_results:
+            _write_output(
+                processed_results, output_path, append_mode=append_mode
+            )
         console.print(
             "\n[yellow]Interrupted by user. Progress has been saved.[/yellow]"
         )
@@ -702,10 +714,10 @@ def _label_suggestions(
 
     for suggestion_data in suggestions_to_process:
         try:
-            _process_single_suggestion_for_labeling(
-                suggestion_data, display, output_path
+            result = _process_single_suggestion_for_labeling(
+                suggestion_data, display
             )
-            processed_count += 1
+            processed_results.append(result)
 
         except (
             AltGenerationError,
@@ -715,8 +727,12 @@ def _label_suggestions(
             display.show_error(str(err))
             display.close_current_image()
 
+    # Write all results at once
+    if processed_results:
+        _write_output(processed_results, output_path, append_mode=append_mode)
+
     cleanup()
-    return processed_count
+    return len(processed_results)
 
 
 def batch_generate_alt_text(
@@ -855,7 +871,9 @@ def _run_estimate(options: GenerateAltTextOptions) -> None:
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, [options.output_path], console
+            queue_items,
+            [options.output_path, options.suggestions_out],
+            console,
         )
 
     cost_est = _estimate_cost(options.model, len(queue_items))
@@ -872,7 +890,9 @@ def _run_generate(
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, [options.output_path, suggestions_path], console
+            queue_items,
+            [options.output_path, suggestions_path],
+            console,
         )
 
     if not queue_items:
@@ -1002,10 +1022,8 @@ def main() -> None:  # pylint: disable=C0116
             output_path=args.captions,
             skip_existing=args.skip_existing,
         )
-        if args.estimate_only:
-            _run_estimate(opts)
-        else:
-            _run_generate(opts, args.suggestions_out)
+        _run_estimate(opts)
+        _run_generate(opts, args.suggestions_out)
 
     elif args.cmd == "label":
         label_from_suggestions_file(
