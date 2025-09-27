@@ -516,6 +516,7 @@ def _filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_paths: Sequence[Path],
     console: Console,
+    verbose: bool = True,
 ) -> list[scan_for_empty_alt.QueueItem]:
     """Filter out items that already have captions in the output paths."""
     existing_captions = set()
@@ -528,7 +529,7 @@ def _filter_existing_captions(
         if item.asset_path not in existing_captions
     ]
     skipped_count = original_count - len(filtered_items)
-    if skipped_count > 0:
+    if skipped_count > 0 and verbose:
         console.print(
             f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
         )
@@ -744,7 +745,7 @@ def batch_generate_alt_text(
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, [options.output_path], console
+            queue_items, [options.output_path], console, verbose=True
         )
 
     if not queue_items:
@@ -865,14 +866,16 @@ def label_from_suggestions_file(
 # ---------------------------------------------------------------------------
 
 
-def _run_estimate(options: GenerateAltTextOptions) -> None:
+def _run_estimate(
+    options: GenerateAltTextOptions, suggestions_path: Path
+) -> None:
     """Estimate and print LLM cost for the current queue."""
     console = Console()
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
             queue_items,
-            [options.output_path, options.suggestions_out],
+            [options.output_path, suggestions_path],
             console,
         )
 
@@ -893,6 +896,7 @@ def _run_generate(
             queue_items,
             [options.output_path, suggestions_path],
             console,
+            verbose=False,
         )
 
     if not queue_items:
@@ -1022,7 +1026,7 @@ def main() -> None:  # pylint: disable=C0116
             output_path=args.captions,
             skip_existing=args.skip_existing,
         )
-        _run_estimate(opts)
+        _run_estimate(opts, args.suggestions_out)
         _run_generate(opts, args.suggestions_out)
 
     elif args.cmd == "label":
