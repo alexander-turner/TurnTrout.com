@@ -173,6 +173,7 @@ def _download_asset(
     )
 
 
+# TODO remove
 def _build_prompt(
     queue_item: scan_for_empty_alt.QueueItem,
     max_chars: int,
@@ -216,7 +217,10 @@ def _build_prompt(
         - Include relevant keywords naturally
         - Describe spatial relationships and visual hierarchy when important
 
-        Prioritize completeness over brevity - include both textual content and visual description as needed.
+        Prioritize completeness over brevity - include both textual content and visual description as needed. 
+        Propose a candidate alt text. Then critique the candidate alt text—
+        does it accurately describe the information the image is meant to convey? 
+        Incorporate the critique into the alt text to improve it.
         """
     ).strip()
 
@@ -899,44 +903,38 @@ def _parse_args() -> argparse.Namespace:
     """Return parsed CLI arguments using sub-commands."""
     git_root = script_utils.get_git_root()
 
-    # Common flags shared by estimate/generate sub-commands
-    common_parent = argparse.ArgumentParser(add_help=False)
-    common_parent.add_argument(
+    parser = argparse.ArgumentParser(description="Alt-text assistant")
+    sub = parser.add_subparsers(dest="cmd")
+
+    # Arguments shared by generate/estimate
+    shared_args = argparse.ArgumentParser(add_help=False)
+    shared_args.add_argument(
         "--root",
         type=Path,
         default=git_root / "website_content",
         help="Markdown root directory",
     )
-    common_parent.add_argument("--model", required=False)
-    common_parent.add_argument(
+    shared_args.add_argument("--model")
+    shared_args.add_argument(
         "--max-chars",
         type=int,
-        default=250,
+        default=300,
         help="Max characters for generated alt text",
     )
-    common_parent.add_argument(
+    shared_args.add_argument(
         "--timeout", type=int, default=120, help="LLM command timeout seconds"
     )
-    common_parent.add_argument(
+    shared_args.add_argument(
         "--process-existing",
         dest="skip_existing",
         action="store_false",
         help="Also process assets that already have captions (default is to skip)",
     )
-    common_parent.set_defaults(skip_existing=True)
+    shared_args.set_defaults(skip_existing=True)
 
-    parser = argparse.ArgumentParser(description="Alt-text assistant")
-    sub = parser.add_subparsers(dest="cmd", required=True)
-
-    # estimate
-    sp_est = sub.add_parser(
-        "estimate", parents=[common_parent], help="Estimate LLM cost"
-    )
-    sp_est.set_defaults(cmd="estimate")
-
-    # generate
+    # generate (default command)
     sp_gen = sub.add_parser(
-        "generate", parents=[common_parent], help="Batch-generate suggestions"
+        "generate", parents=[shared_args], help="Batch-generate suggestions"
     )
     sp_gen.add_argument(
         "--captions",
@@ -949,6 +947,11 @@ def _parse_args() -> argparse.Namespace:
         type=Path,
         default=git_root / "scripts" / "suggested_alts.json",
         help="Path to write suggestions JSON",
+    )
+    sp_gen.add_argument(
+        "--estimate-only",
+        action="store_true",
+        help="Only estimate cost without generating suggestions",
     )
     sp_gen.set_defaults(cmd="generate")
 
@@ -969,7 +972,13 @@ def _parse_args() -> argparse.Namespace:
     )
     sp_label.set_defaults(cmd="label")
 
-    return parser.parse_args()
+    # If no subcommand is given, parse as if 'generate' was provided
+    args = parser.parse_args()
+    if args.cmd is None:
+        # Re-parse with 'generate' as the default command
+        args = parser.parse_args(["generate"] + sys.argv[1:])
+
+    return args
 
 
 # ---------------------------------------------------------------------------
@@ -980,22 +989,11 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:  # pylint: disable=C0116
     args = _parse_args()
 
-    if args.cmd == "estimate":
-        if args.model is None:
-            raise SystemExit("--model is required for estimate")
-        opts = GenerateAltTextOptions(
-            root=args.root,
-            model=args.model,
-            max_chars=args.max_chars,
-            timeout=args.timeout,
-            output_path=Path(),  # unused
-            skip_existing=args.skip_existing,
-        )
-        _run_estimate(opts)
+    if args.cmd == "generate":
+        if not args.model:
+            print("Error: --model is required for the generate command")
+            sys.exit(1)
 
-    elif args.cmd == "generate":
-        if args.model is None:
-            raise SystemExit("--model is required for generate")
         opts = GenerateAltTextOptions(
             root=args.root,
             model=args.model,
@@ -1004,7 +1002,10 @@ def main() -> None:  # pylint: disable=C0116
             output_path=args.captions,
             skip_existing=args.skip_existing,
         )
-        _run_generate(opts, args.suggestions_out)
+        if args.estimate_only:
+            _run_estimate(opts)
+        else:
+            _run_generate(opts, args.suggestions_out)
 
     elif args.cmd == "label":
         label_from_suggestions_file(
