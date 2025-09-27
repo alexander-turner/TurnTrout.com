@@ -885,6 +885,51 @@ class TestLoadExistingCaptions:
         assert result == set()
 
 
+def test_run_generate_appends_to_suggestions_file(temp_dir: Path) -> None:
+    """Test that _run_generate appends to existing suggestions file instead of overwriting."""
+    suggestions_file = temp_dir / "suggested_alts.json"
+
+    existing_data = [{"asset_path": "existing.jpg", "suggested_alt": "Old"}]
+    suggestions_file.write_text(json.dumps(existing_data), encoding="utf-8")
+
+    new_suggestion = generate_alt_text.AltTextResult(
+        markdown_file="new.md",
+        asset_path="new.jpg",
+        suggested_alt="New",
+        model="test",
+        context_snippet="ctx",
+        line_number="1",
+    )
+
+    options = generate_alt_text.GenerateAltTextOptions(
+        root=temp_dir,
+        model="test",
+        max_chars=100,
+        timeout=60,
+        output_path=temp_dir / "captions.json",
+        skip_existing=False,
+    )
+
+    with (
+        patch.object(
+            generate_alt_text.scan_for_empty_alt,
+            "build_queue",
+            return_value=[],
+        ),
+        patch.object(
+            generate_alt_text,
+            "_async_generate_suggestions",
+            return_value=[new_suggestion],
+        ),
+    ):
+        generate_alt_text._run_generate(options, suggestions_file)
+
+    data = json.loads(suggestions_file.read_text())
+    assert len(data) == 2
+    assert data[0]["asset_path"] == "existing.jpg"
+    assert data[1]["asset_path"] == "new.jpg"
+
+
 def test_filter_existing_captions_filters_items(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

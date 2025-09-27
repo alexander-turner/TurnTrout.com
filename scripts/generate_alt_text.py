@@ -779,12 +779,24 @@ def _run_generate(
         _async_generate_suggestions(queue_items, options)
     )
 
-    suggestions_as_dicts = [asdict(s) for s in suggestions]
-    suggestions_path.write_text(
-        json.dumps(suggestions_as_dicts, indent=2, ensure_ascii=False),
-        encoding="utf-8",
+    # Convert suggestions to the same format as AltGenerationResult for consistency
+    suggestion_results = [
+        AltGenerationResult(
+            markdown_file=s.markdown_file,
+            asset_path=s.asset_path,
+            suggested_alt=s.suggested_alt,
+            final_alt=s.suggested_alt,  # For suggestions, these are the same
+            model=s.model,
+            context_snippet=s.context_snippet,
+        )
+        for s in suggestions
+    ]
+
+    # Use the same append logic as the main output writing
+    _write_output(suggestion_results, suggestions_path, append_mode=True)
+    console.print(
+        f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
     )
-    console.print(f"[green]Saved suggestions to {suggestions_path}[/green]")
 
 
 # ---------------------------------------------------------------------------
