@@ -172,11 +172,9 @@ def _download_asset(
     )
 
 
-# TODO remove learning_examples
 def _build_prompt(
     queue_item: scan_for_empty_alt.QueueItem,
     max_chars: int,
-    learning_examples: list[dict[str, str]] | None = None,
 ) -> str:
     """Build prompt for LLM caption generation."""
     base_prompt = textwrap.dedent(
@@ -185,23 +183,6 @@ def _build_prompt(
         Describe the intended information of the image clearly and accurately.
         """
     ).strip()
-
-    # Add multi-shot examples if available
-    examples_section = ""
-    if learning_examples:
-        examples_section = (
-            "\n\nExamples of how initial suggestions were improved:\n\n"
-        )
-        for i, example in enumerate(learning_examples, 1):
-            examples_section += textwrap.dedent(
-                f"""
-                Example {i}:
-                Initial suggestion: {example["suggested_alt"]}
-                Improved version: {example["final_alt"]}
-                
-                """
-            )
-        examples_section += "Learn from these examples to generate better initial suggestions.\n"
 
     main_prompt = textwrap.dedent(
         f"""
@@ -223,7 +204,7 @@ def _build_prompt(
         """
     ).strip()
 
-    return f"{base_prompt}{examples_section}\n{main_prompt}"
+    return f"{base_prompt}\n{main_prompt}"
 
 
 def _run_llm(
@@ -416,12 +397,9 @@ def _process_queue_item(
         workspace = Path(temp_dir)
         attachment = _download_asset(queue_item, workspace)
 
-        # Load learning examples for multi-shot prompting
-        learning_examples = _load_learning_examples(options.output_path)
         prompt = _build_prompt(
             queue_item,
             max_chars=options.max_chars,
-            learning_examples=learning_examples,
         )
         suggestion = _run_llm(
             attachment, prompt, model=options.model, timeout=options.timeout
@@ -485,32 +463,6 @@ def _load_existing_captions(captions_path: Path) -> set[str]:
         return set()
 
 
-def _load_learning_examples(
-    captions_path: Path, max_examples: int = 5
-) -> list[dict[str, str]]:
-    """Load examples where suggested_alt differs from final_alt for multi-shot
-    learning."""
-    try:
-        with open(captions_path, encoding="utf-8") as f:
-            data = json.load(f)
-
-        # Filter examples where suggestion was edited
-        learning_examples = []
-        for item in data:
-            if item["suggested_alt"] != item["final_alt"]:
-                learning_examples.append(
-                    {
-                        "suggested_alt": item["suggested_alt"],
-                        "final_alt": item["final_alt"],
-                    }
-                )
-
-        # Return up to max_examples, prioritizing more recent ones (later in file)
-        return learning_examples[-max_examples:] if learning_examples else []
-    except (FileNotFoundError, json.JSONDecodeError, KeyError, TypeError):
-        return []
-
-
 def _filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_paths: Sequence[Path],
@@ -566,9 +518,7 @@ async def _run_llm_async(
             attachment = await asyncio.to_thread(
                 _download_asset, queue_item, workspace
             )
-            prompt = _build_prompt(
-                queue_item, options.max_chars, learning_examples=None
-            )
+            prompt = _build_prompt(queue_item, options.max_chars)
             caption = await asyncio.to_thread(
                 _run_llm,
                 attachment,
