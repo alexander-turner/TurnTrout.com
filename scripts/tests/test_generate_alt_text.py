@@ -1214,3 +1214,63 @@ async def test_async_generate_suggestions(
     }
     actual_suggestions = {result.suggested_alt for result in results}
     assert actual_suggestions == expected_suggestions
+
+
+def test_label_from_suggestions_file_loads_and_filters_data(
+    temp_dir: Path,
+) -> None:
+    """Test that label_from_suggestions_file loads suggestions and filters extra fields."""
+    suggestions_file = temp_dir / "suggestions.json"
+    output_file = temp_dir / "output.json"
+
+    suggestions_data = [
+        {
+            "markdown_file": "test.md",
+            "asset_path": "image.jpg",
+            "suggested_alt": "Test suggestion",
+            "final_alt": "Extra field",  # Should be filtered out
+            "model": "test-model",
+            "context_snippet": "context",
+            "line_number": "10",
+        }
+    ]
+
+    suggestions_file.write_text(json.dumps(suggestions_data), encoding="utf-8")
+
+    with patch.object(generate_alt_text, "_label_suggestions") as mock_label:
+        mock_label.return_value = 1
+        generate_alt_text.label_from_suggestions_file(
+            suggestions_file, output_file, skip_existing=False
+        )
+
+    loaded_suggestions = mock_label.call_args[0][0]
+    assert len(loaded_suggestions) == 1
+    assert loaded_suggestions[0].asset_path == "image.jpg"
+    assert loaded_suggestions[0].line_number == "10"
+    assert not hasattr(loaded_suggestions[0], "final_alt")
+
+
+@pytest.mark.parametrize(
+    "error,file_content",
+    [
+        (json.JSONDecodeError, "invalid json"),
+        (FileNotFoundError, None),  # File doesn't exist
+        (
+            KeyError,
+            '[{"markdown_file": "test.md"}]',
+        ),  # Missing required fields
+    ],
+)
+def test_label_from_suggestions_file_error_handling(
+    temp_dir: Path, error: type, file_content: str | None
+) -> None:
+    """Test error handling for various file and data issues."""
+    suggestions_file = temp_dir / "suggestions.json"
+
+    if file_content is not None:
+        suggestions_file.write_text(file_content, encoding="utf-8")
+
+    with pytest.raises(error):
+        generate_alt_text.label_from_suggestions_file(
+            suggestions_file, temp_dir / "output.json", skip_existing=False
+        )

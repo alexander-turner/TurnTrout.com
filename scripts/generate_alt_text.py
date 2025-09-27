@@ -198,9 +198,9 @@ def _build_prompt(
         - Describe spatial relationships and visual hierarchy when important
 
         Prioritize completeness over brevity - include both textual content and visual description as needed. 
-        Propose a candidate alt text. Then critique the candidate alt text—
+        While thinking quietly, propose a candidate alt text. Then critique the candidate alt text—
         does it accurately describe the information the image is meant to convey? 
-        Incorporate the critique into the alt text to improve it.
+        Incorporate the critique into the alt text to improve it. Only output the improved alt text.
         """
     ).strip()
 
@@ -714,7 +714,19 @@ def label_from_suggestions_file(
 
     with open(suggestions_file, encoding="utf-8") as f:
         suggestions_from_file = json.load(f)
-    suggestions = [AltTextResult(**s) for s in suggestions_from_file]
+
+    # Convert loaded data to AltTextResult, filtering out extra fields
+    suggestions = []
+    for s in suggestions_from_file:
+        filtered_data = {
+            "markdown_file": s["markdown_file"],
+            "asset_path": s["asset_path"],
+            "suggested_alt": s["suggested_alt"],
+            "model": s["model"],
+            "context_snippet": s["context_snippet"],
+            "line_number": s.get("line_number", "1"),
+        }
+        suggestions.append(AltTextResult(**filtered_data))
 
     console.print(
         f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
