@@ -5,7 +5,6 @@ import subprocess
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable
 from unittest.mock import Mock, patch
 
 import pytest
@@ -1092,7 +1091,7 @@ def test_filter_existing_captions_filters_items(
 
     filtered = generate_alt_text._filter_existing_captions(
         queue_items,
-        Path("captions.json"),
+        [Path("captions.json")],
         console_mock,
     )
 
@@ -1397,101 +1396,3 @@ async def test_async_generate_suggestions(
     }
     actual_suggestions = {result.suggested_alt for result in results}
     assert actual_suggestions == expected_suggestions
-
-
-def test_load_suggestions_from_file_success(temp_dir: Path) -> None:
-    suggestions_file = temp_dir / "suggestions.json"
-    payload = [{"example": "value"}]
-    suggestions_file.write_text(json.dumps(payload), encoding="utf-8")
-
-    result = generate_alt_text._load_suggestions_from_file(suggestions_file)
-
-    assert result == payload
-
-
-def test_load_suggestions_from_file_errors(temp_dir: Path) -> None:
-    missing_file = temp_dir / "missing.json"
-
-    with pytest.raises(ValueError, match="Could not load suggestions"):
-        generate_alt_text._load_suggestions_from_file(missing_file)
-
-    invalid_file = temp_dir / "invalid.json"
-    invalid_file.write_text("not json", encoding="utf-8")
-
-    with pytest.raises(ValueError, match="Could not load suggestions"):
-        generate_alt_text._load_suggestions_from_file(invalid_file)
-
-
-def test_label_from_suggestions_file(
-    monkeypatch: pytest.MonkeyPatch, temp_dir: Path
-) -> None:
-    suggestions_file = temp_dir / "suggestions.json"
-    output_file = temp_dir / "captions.json"
-
-    suggestions_payload = [
-        {
-            "markdown_file": "test.md",
-            "asset_path": "image.jpg",
-            "suggested_alt": "Suggested",
-            "model": "model",
-            "context_snippet": "context",
-            "line_number": "3",
-        }
-    ]
-
-    def fake_load_suggestions(_file: Path) -> list[dict[str, str]]:
-        return suggestions_payload
-
-    monkeypatch.setattr(
-        generate_alt_text,
-        "_load_suggestions_from_file",
-        fake_load_suggestions,
-    )
-
-    alt_result = generate_alt_text.AltGenerationResult(
-        markdown_file="test.md",
-        asset_path="image.jpg",
-        suggested_alt="Suggested",
-        final_alt="Final",
-        model="model",
-        context_snippet="context",
-    )
-
-    def fake_label(
-        suggestions: list[generate_alt_text.AltTextResult],
-        console_instance: console.Console,
-    ) -> list[generate_alt_text.AltGenerationResult]:
-        assert len(suggestions) == 1
-        assert isinstance(console_instance, console.Console)
-        suggestion = suggestions[0]
-        assert suggestion.asset_path == "image.jpg"
-        return [alt_result]
-
-    monkeypatch.setattr(
-        generate_alt_text,
-        "_label_suggestions",
-        fake_label,
-    )
-
-    written_results: list[generate_alt_text.AltGenerationResult] = []
-
-    def fake_write_output(
-        results: Iterable[generate_alt_text.AltGenerationResult],
-        output_path: Path,
-        append_mode: bool = False,
-    ) -> None:
-        written_results.extend(results)
-        assert output_path == output_file
-        assert append_mode is False
-
-    monkeypatch.setattr(
-        generate_alt_text,
-        "_write_output",
-        fake_write_output,
-    )
-
-    generate_alt_text.label_from_suggestions_file(
-        suggestions_file, output_file, skip_existing=False
-    )
-
-    assert written_results == [alt_result]

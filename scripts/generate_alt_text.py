@@ -511,10 +511,13 @@ def _load_learning_examples(
 
 def _filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
-    output_path: Path,
+    output_paths: Sequence[Path],
     console: Console,
 ) -> list[scan_for_empty_alt.QueueItem]:
-    existing_captions = _load_existing_captions(output_path)
+    """Filter out items that already have captions in the output paths."""
+    existing_captions = set()
+    for output_path in output_paths:
+        existing_captions.update(_load_existing_captions(output_path))
     original_count = len(queue_items)
     filtered_items = [
         item
@@ -727,7 +730,7 @@ def batch_generate_alt_text(
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, options.output_path, console
+            queue_items, [options.output_path], console
         )
 
     if not queue_items:
@@ -817,19 +820,6 @@ def _write_output(
     )
 
 
-def _load_suggestions_from_file(
-    suggestions_file: Path,
-) -> list[dict[str, str]]:
-    """Load suggestions from a JSON file."""
-    try:
-        with open(suggestions_file, encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as err:
-        raise ValueError(
-            f"Could not load suggestions from {suggestions_file}: {err}"
-        ) from err
-
-
 def label_from_suggestions_file(
     suggestions_file: Path,
     output_path: Path,
@@ -838,7 +828,8 @@ def label_from_suggestions_file(
     """Load suggestions from file and start labeling process."""
     console = Console()
 
-    suggestions_from_file = _load_suggestions_from_file(suggestions_file)
+    with open(suggestions_file, encoding="utf-8") as f:
+        suggestions_from_file = json.load(f)
     suggestions = [AltTextResult(**s) for s in suggestions_from_file]
 
     console.print(
@@ -866,7 +857,7 @@ def _run_estimate(options: GenerateAltTextOptions) -> None:
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, options.output_path, console
+            queue_items, [options.output_path], console
         )
 
     cost_est = _estimate_cost(options.model, len(queue_items))
@@ -883,7 +874,7 @@ def _run_generate(
     queue_items = scan_for_empty_alt.build_queue(options.root)
     if options.skip_existing:
         queue_items = _filter_existing_captions(
-            queue_items, options.output_path, console
+            queue_items, [options.output_path, suggestions_path], console
         )
 
     if not queue_items:
@@ -903,15 +894,6 @@ def _run_generate(
         encoding="utf-8",
     )
     console.print(f"[green]Saved suggestions to {suggestions_path}[/green]")
-
-
-def _run_label(
-    suggestions_path: Path,
-    output_path: Path,
-    skip_existing: bool,
-) -> None:
-    """Load *suggestions_path* and launch the labeling flow."""
-    label_from_suggestions_file(suggestions_path, output_path, skip_existing)
 
 
 # ---------------------------------------------------------------------------
@@ -1031,7 +1013,9 @@ def main() -> None:  # pylint: disable=C0116
         _run_generate(opts, args.suggestions_out)
 
     elif args.cmd == "label":
-        _run_label(args.suggestions_file, args.output, args.skip_existing)
+        label_from_suggestions_file(
+            args.suggestions_file, args.output, args.skip_existing
+        )
 
 
 if __name__ == "__main__":
