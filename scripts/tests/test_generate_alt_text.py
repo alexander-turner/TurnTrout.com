@@ -910,11 +910,19 @@ def test_run_generate_appends_to_suggestions_file(temp_dir: Path) -> None:
         skip_existing=False,
     )
 
+    # Create a dummy queue item that will trigger the async suggestions call
+    dummy_queue_item = generate_alt_text.scan_for_empty_alt.QueueItem(
+        markdown_file="test.md",
+        asset_path="test.jpg",
+        line_number=1,
+        context_snippet="test context",
+    )
+
     with (
         patch.object(
             generate_alt_text.scan_for_empty_alt,
             "build_queue",
-            return_value=[],
+            return_value=[dummy_queue_item],
         ),
         patch.object(
             generate_alt_text,

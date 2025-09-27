@@ -835,6 +835,12 @@ def _parse_args() -> argparse.Namespace:
         action="store_false",
         help="Also process assets that already have captions (default is to skip)",
     )
+    shared_args.add_argument(
+        "--suggestions-file",
+        type=Path,
+        default=git_root / "scripts" / "suggested_alts.json",
+        help="Path to read/write suggestions JSON",
+    )
     shared_args.set_defaults(skip_existing=True)
 
     # generate (default command)
@@ -847,12 +853,7 @@ def _parse_args() -> argparse.Namespace:
         default=git_root / "scripts" / "asset_captions.json",
         help="Existing/final captions JSON path (used to skip existing unless --process-existing)",
     )
-    sp_gen.add_argument(
-        "--suggestions-out",
-        type=Path,
-        default=git_root / "scripts" / "suggested_alts.json",
-        help="Path to write suggestions JSON",
-    )
+
     sp_gen.add_argument(
         "--estimate-only",
         action="store_true",
@@ -861,8 +862,9 @@ def _parse_args() -> argparse.Namespace:
     sp_gen.set_defaults(cmd="generate")
 
     # label
-    sp_label = sub.add_parser("label", help="Label suggestions JSON")
-    sp_label.add_argument("suggestions_file", type=Path)
+    sp_label = sub.add_parser(
+        "label", parents=[shared_args], help="Label suggestions JSON"
+    )
     sp_label.add_argument(
         "--output",
         type=Path,
@@ -907,8 +909,8 @@ def main() -> None:  # pylint: disable=C0116
             output_path=args.captions,
             skip_existing=args.skip_existing,
         )
-        _run_estimate(opts, args.suggestions_out)
-        _run_generate(opts, args.suggestions_out)
+        _run_estimate(opts, args.suggestions_file)
+        _run_generate(opts, args.suggestions_file)
 
     elif args.cmd == "label":
         label_from_suggestions_file(
