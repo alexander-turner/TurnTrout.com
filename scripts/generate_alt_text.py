@@ -40,6 +40,12 @@ MODEL_COSTS = {
     "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
     "gemini-2.5-flash": {"input": 0.0003, "output": 0.0025},
     "gemini-2.5-flash-lite": {"input": 0.00001, "output": 0.00004},
+    # https://developers.googleblog.com/en/continuing-to-bring-you-our-latest-models-with-an-improved-gemini-2-5-flash-and-flash-lite-release/?ref=testingcatalog.com
+    "gemini-2.5-flash-lite-preview-09-2025": {
+        "input": 0.00001,
+        "output": 0.00004,
+    },
+    "gemini-2.5-flash-preview-09-2025": {"input": 0.00001, "output": 0.00004},
 }
 
 
