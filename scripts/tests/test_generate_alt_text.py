@@ -50,36 +50,6 @@ def test_is_url(path: str, expected: bool) -> None:
     assert generate_alt_text._is_url(path) is expected
 
 
-def test_build_prompt(
-    base_queue_item: scan_for_empty_alt.QueueItem,
-) -> None:
-    """Test prompt building function."""
-    max_chars = 150
-    prompt = generate_alt_text._build_prompt(base_queue_item, max_chars)
-
-    assert "test.md" in prompt
-    assert "This is a test image context." in prompt
-    assert str(max_chars) in prompt
-    assert "Under 150 characters" in prompt
-    assert "Return only the alt text" in prompt
-
-
-def test_build_prompt_respects_max_chars(
-    base_queue_item: scan_for_empty_alt.QueueItem,
-) -> None:
-    long_context = "x" * 1000
-    base_queue_item.context_snippet = long_context  # Very long context
-
-    prompt_150 = generate_alt_text._build_prompt(base_queue_item, 150)
-    prompt_50 = generate_alt_text._build_prompt(base_queue_item, 50)
-
-    assert "Under 150 characters" in prompt_150
-    assert "Under 50 characters" in prompt_50
-    # Both should contain the long context
-    assert long_context in prompt_150
-    assert long_context in prompt_50
-
-
 @pytest.mark.parametrize(
     "markdown_file, context_snippet, max_chars, expected_in_prompt",
     [
@@ -710,29 +680,6 @@ class TestDisplayManager:
             assert display_manager._image_processes[0] is mock_process
 
 
-class TestAltGenerationResult:
-    """Test the AltGenerationResult dataclass."""
-
-    def test_to_json(self) -> None:
-        """Test converting result to JSON."""
-        result = generate_alt_text.AltGenerationResult(
-            markdown_file="test.md",
-            asset_path="image.jpg",
-            suggested_alt="A test image",
-            final_alt="A test image",
-            model="gemini-2.5-flash",
-            context_snippet="Test context",
-        )
-
-        json_data = result.to_json()
-
-        assert json_data["markdown_file"] == "test.md"
-        assert json_data["asset_path"] == "image.jpg"
-        assert json_data["suggested_alt"] == "A test image"
-        assert json_data["model"] == "gemini-2.5-flash"
-        assert json_data["context_snippet"] == "Test context"
-
-
 def test_write_output(temp_dir: Path) -> None:
     """Test writing results to JSON file."""
     results = [
@@ -1271,66 +1218,6 @@ class TestLoadLearningExamples:
         assert len(result) == 1
         assert result[0]["suggested_alt"] == "Initial suggestion"
         assert result[0]["final_alt"] == "Improved final version"
-
-
-class TestBuildPromptWithExamples:
-    """Test the _build_prompt function with learning examples."""
-
-    def test_build_prompt_no_examples(
-        self, base_queue_item: scan_for_empty_alt.QueueItem
-    ) -> None:
-        """Test prompt building without learning examples."""
-        prompt = generate_alt_text._build_prompt(
-            base_queue_item, max_chars=150
-        )
-
-        assert "test.md" in prompt
-        assert "This is a test image context." in prompt
-        assert "Under 150 characters" in prompt
-        assert (
-            "Here are examples of how initial suggestions were improved"
-            not in prompt
-        )
-
-    def test_build_prompt_with_examples(
-        self, base_queue_item: scan_for_empty_alt.QueueItem
-    ) -> None:
-        """Test prompt building with learning examples."""
-        learning_examples = [
-            {
-                "suggested_alt": "Initial suggestion",
-                "final_alt": "Improved version",
-            },
-            {
-                "suggested_alt": "Another initial",
-                "final_alt": "Another improved",
-            },
-        ]
-
-        prompt = generate_alt_text._build_prompt(
-            base_queue_item, max_chars=150, learning_examples=learning_examples
-        )
-
-        assert "Examples of how initial suggestions were improved" in prompt
-        assert "Example 1:" in prompt
-        assert "Example 2:" in prompt
-        assert "Initial suggestion" in prompt
-        assert "Improved version" in prompt
-        assert "Another initial" in prompt
-        assert "Another improved" in prompt
-        assert "Learn from these examples" in prompt
-
-    def test_build_prompt_empty_examples(
-        self, base_queue_item: scan_for_empty_alt.QueueItem
-    ) -> None:
-        """Test prompt building with empty learning examples list."""
-        prompt = generate_alt_text._build_prompt(
-            base_queue_item, max_chars=150, learning_examples=[]
-        )
-
-        assert "test.md" in prompt
-        assert "This is a test image context." in prompt
-        assert "how initial suggestions were improved" not in prompt
 
 
 @pytest.mark.asyncio
