@@ -6,7 +6,6 @@ import atexit
 import json
 import readline
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
@@ -682,20 +681,6 @@ def _label_suggestions(
 
     atexit.register(cleanup)
 
-    # Handle Ctrl+C gracefully
-    def signal_handler(_signum: int, _frame: object) -> None:
-        # Save any results we've collected so far
-        if processed_results:
-            _write_output(
-                processed_results, output_path, append_mode=append_mode
-            )
-        console.print(
-            "\n[yellow]Interrupted by user. Progress has been saved.[/yellow]"
-        )
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, signal_handler)
-
     console.print(
         f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
     )
@@ -713,26 +698,33 @@ def _label_suggestions(
                 f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
             )
 
-    for suggestion_data in suggestions_to_process:
-        try:
-            result = _process_single_suggestion_for_labeling(
-                suggestion_data, display
+    try:
+        for suggestion_data in suggestions_to_process:
+            try:
+                result = _process_single_suggestion_for_labeling(
+                    suggestion_data, display
+                )
+                processed_results.append(result)
+            # Individual errors don't halt the loop
+            except (
+                AltGenerationError,
+                FileNotFoundError,
+                requests.RequestException,
+            ) as err:
+                display.show_error(str(err))
+                display.close_current_image()
+                continue
+    finally:
+        # Always save results regardless of how we exit
+        if processed_results:
+            _write_output(
+                processed_results, output_path, append_mode=append_mode
             )
-            processed_results.append(result)
+            console.print(
+                f"[green]Saved {len(processed_results)} results to {output_path}[/green]"
+            )
+        cleanup()
 
-        except (
-            AltGenerationError,
-            FileNotFoundError,
-            requests.RequestException,
-        ) as err:
-            display.show_error(str(err))
-            display.close_current_image()
-
-    # Write all results at once
-    if processed_results:
-        _write_output(processed_results, output_path, append_mode=append_mode)
-
-    cleanup()
     return len(processed_results)
 
 

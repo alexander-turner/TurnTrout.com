@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+from contextlib import contextmanager
 from dataclasses import asdict
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -1289,6 +1290,105 @@ class TestLoadLearningExamples:
         assert len(result) == 1
         assert result[0]["suggested_alt"] == "Initial suggestion"
         assert result[0]["final_alt"] == "Improved final version"
+
+
+@pytest.fixture
+def test_suggestions() -> list[generate_alt_text.AltTextResult]:
+    """Test suggestions for error handling tests."""
+    return [
+        generate_alt_text.AltTextResult(
+            markdown_file="test1.md",
+            asset_path="image1.jpg",
+            suggested_alt="First",
+            model="test",
+            context_snippet="ctx1",
+            line_number="1",
+        ),
+        generate_alt_text.AltTextResult(
+            markdown_file="test2.md",
+            asset_path="image2.jpg",
+            suggested_alt="Second",
+            model="test",
+            context_snippet="ctx2",
+            line_number="2",
+        ),
+    ]
+
+
+@contextmanager
+def _setup_error_mocks(error_type, error_on_item: str):
+    """Helper to set up mocks that raise errors on specific items."""
+
+    def mock_download_asset(queue_item, workspace):
+        if error_on_item in queue_item.asset_path:
+            raise error_type(f"Error on {queue_item.asset_path}")
+        test_file = workspace / "test.jpg"
+        test_file.write_bytes(b"fake image")
+        return test_file
+
+    with (
+        patch("sys.stdout.isatty", return_value=False),
+        patch.object(
+            generate_alt_text,
+            "_download_asset",
+            side_effect=mock_download_asset,
+        ),
+        patch.object(generate_alt_text.DisplayManager, "show_error"),
+        patch.object(generate_alt_text.DisplayManager, "close_current_image"),
+    ):
+        yield
+
+
+def _maybe_assert_saved_results(
+    output_file: Path, expected_count: int
+) -> None:
+    """Helper to assert saved results match expectations."""
+    if expected_count > 0:
+        assert output_file.exists()
+        with output_file.open("r", encoding="utf-8") as f:
+            saved_data = json.load(f)
+        assert len(saved_data) == expected_count
+
+
+def test_label_suggestions_handles_file_errors(
+    temp_dir: Path, test_suggestions: list[generate_alt_text.AltTextResult]
+) -> None:
+    """Test that individual file errors are handled gracefully and processing continues."""
+    output_file = temp_dir / "test_output.json"
+
+    with _setup_error_mocks(FileNotFoundError, "image2.jpg"):
+        result_count = generate_alt_text._label_suggestions(
+            test_suggestions, Mock(), output_file, append_mode=False
+        )
+
+    assert result_count == 1  # Only first item processed successfully
+    _maybe_assert_saved_results(output_file, 1)
+
+
+@pytest.mark.parametrize(
+    "error_type, error_on_item, expected_saved_count",
+    [
+        (KeyboardInterrupt, "image2.jpg", 1),  # Interrupt after first item
+        (RuntimeError, "image1.jpg", 0),  # Error before any processing
+    ],
+)
+def test_label_suggestions_saves_on_exceptions(
+    temp_dir: Path,
+    test_suggestions: list[generate_alt_text.AltTextResult],
+    error_type,
+    error_on_item: str,
+    expected_saved_count: int,
+) -> None:
+    """Test that results are saved when exceptions occur during processing."""
+    output_file = temp_dir / "test_output.json"
+
+    with _setup_error_mocks(error_type, error_on_item):
+        with pytest.raises(error_type):
+            generate_alt_text._label_suggestions(
+                test_suggestions, Mock(), output_file, append_mode=False
+            )
+
+    _maybe_assert_saved_results(output_file, expected_saved_count)
 
 
 @pytest.mark.asyncio
