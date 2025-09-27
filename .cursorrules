@@ -20,5 +20,5 @@
 - **Prioritize Performance**: Write efficient and performant code. Consider algorithmic complexity and resource usage where applicable.
 - **Robustness and Error Handling**: Implement robust error handling, logging, and validation. Consider and handle potential edge cases.
 - **Modern Best Practices**: Use current, stable language features and libraries. Avoid deprecated functions. Always explicitly declare types for variables, parameters, and return values. Avoid `Any` or equivalent dynamic types.
-- **Environment**: Before running code, make sure to `conda list`, infer the environment, and `conda activate` that environment.
+- **Environment**: Before running code, make sure run `conda init && conda activate website`, otherwise you'll get "command not found: python".
   </code_guidelines>
