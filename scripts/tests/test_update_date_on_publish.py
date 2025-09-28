@@ -1,4 +1,3 @@
-import io
 import subprocess
 import tempfile
 from datetime import datetime
@@ -12,14 +11,13 @@ from ruamel.yaml.timestamp import TimeStamp
 import scripts.utils as script_utils
 
 from .. import update_date_on_publish as update_lib
+from .utils import create_markdown_file
 
 
 @pytest.fixture
-def temp_content_dir(tmp_path):
+def temp_content_dir(quartz_project_structure):
     """Create a temporary content directory with test files."""
-    content_dir = tmp_path / "website_content"
-    content_dir.mkdir()
-    return content_dir
+    return quartz_project_structure["content"]
 
 
 def create_timestamp(dt: datetime) -> TimeStamp:
@@ -75,29 +73,12 @@ def mock_git(temp_content_dir):
     return _mock_git
 
 
-def create_md_file(
-    directory: Path, filename: str, frontmatter_content: dict
-) -> Path:
-    """Helper to create markdown test files."""
-    file_path = directory / filename
-
-    # Use ruamel.yaml for consistent dumping with the main script
-    stream = io.StringIO()
-    update_lib.yaml_parser.dump(frontmatter_content, stream)
-    yaml_content = stream.getvalue()
-
-    content = "---\n"
-    content += yaml_content
-    content += "---\n"
-    content += "Test content"
-    file_path.write_text(content, encoding="utf-8")
-    return file_path
-
-
 def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git):
     """Test that date is added when missing."""
-    test_file = create_md_file(
-        temp_content_dir, "test1.md", {"title": "Test Post", "tags": ["test"]}
+    test_file = create_markdown_file(
+        temp_content_dir / "test1.md",
+        frontmatter={"title": "Test Post", "tags": ["test"]},
+        content="Test content",
     )
 
     with patch("subprocess.check_output", side_effect=mock_git):
@@ -115,10 +96,10 @@ def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git):
 def test_preserves_existing_date(temp_content_dir, mock_git):
     """Test that existing dates are not modified."""
     existing_date = "12/25/2023"
-    test_file = create_md_file(
-        temp_content_dir,
-        "test2.md",
-        {"title": "Test Post", "date_published": existing_date},
+    test_file = create_markdown_file(
+        temp_content_dir / "test2.md",
+        frontmatter={"title": "Test Post", "date_published": existing_date},
+        content="Test content",
     )
 
     with patch("subprocess.check_output", side_effect=mock_git):
@@ -133,10 +114,10 @@ def test_preserves_existing_date(temp_content_dir, mock_git):
 
 def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
     """Test that empty dates are updated."""
-    test_file = create_md_file(
-        temp_content_dir,
-        "test3.md",
-        {"title": "Test Post", "date_published": ""},
+    test_file = create_markdown_file(
+        temp_content_dir / "test3.md",
+        frontmatter={"title": "Test Post", "date_published": ""},
+        content="Test content",
     )
 
     with patch("subprocess.check_output", side_effect=mock_git):
@@ -155,14 +136,14 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
 def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
     """Test that date_updated is modified when git shows changes."""
     # Create initial dates as strings instead of TimeStamp objects
-    test_file = create_md_file(
-        temp_content_dir,
-        "test2.md",
-        {
+    test_file = create_markdown_file(
+        temp_content_dir / "test2.md",
+        frontmatter={
             "title": "Test Post",
             "date_published": "2024-01-01",
             "date_updated": "2024-01-01",
         },
+        content="Test content",
     )
 
     # Fix: Use the mock_git fixture with modified files
@@ -184,14 +165,14 @@ def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
 
 def test_preserves_dates_when_not_modified(temp_content_dir, mock_git):
     """Test that dates aren't modified when git shows no changes."""
-    test_file = create_md_file(
-        temp_content_dir,
-        "test3.md",
-        {
+    test_file = create_markdown_file(
+        temp_content_dir / "test3.md",
+        frontmatter={
             "title": "Test Post",
             "date_published": "01/01/2023",
             "date_updated": "01/01/2023",
         },
+        content="Test content",
     )
 
     with patch(
@@ -211,8 +192,8 @@ def test_preserves_dates_when_not_modified(temp_content_dir, mock_git):
 def test_split_yaml_invalid_format(temp_content_dir):
     """Test handling of invalid YAML format."""
     file_path = temp_content_dir / "invalid.md"
-    file_path.write_text(
-        "Invalid content without proper frontmatter", encoding="utf-8"
+    create_markdown_file(
+        file_path, content="Invalid content without proper frontmatter"
     )
 
     metadata, content = script_utils.split_yaml(file_path)
@@ -223,7 +204,7 @@ def test_split_yaml_invalid_format(temp_content_dir):
 def test_split_yaml_empty_frontmatter(temp_content_dir):
     """Test handling of empty frontmatter."""
     file_path = temp_content_dir / "empty.md"
-    file_path.write_text("---\n---\nContent", encoding="utf-8")
+    create_markdown_file(file_path, frontmatter={}, content="Content")
 
     metadata, content = script_utils.split_yaml(file_path)
     assert metadata == {}
@@ -252,8 +233,10 @@ def test_write_to_yaml_preserves_order(temp_content_dir):
         "date_updated": "01/01/2024",
     }
 
-    test_file = create_md_file(
-        temp_content_dir, "order_test.md", original_metadata
+    test_file = create_markdown_file(
+        temp_content_dir / "order_test.md",
+        frontmatter=original_metadata,
+        content="Test content",
     )
     metadata, content = script_utils.split_yaml(test_file)
     update_lib.write_to_yaml(test_file, metadata, content)
@@ -284,7 +267,11 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     ]
 
     for filename, metadata in files:
-        create_md_file(temp_content_dir, filename, metadata)
+        create_markdown_file(
+            temp_content_dir / filename,
+            frontmatter=metadata,
+            content="Test content",
+        )
 
     with (
         patch(
@@ -468,7 +455,9 @@ Content
 )
 def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
     """Test that both dates are set when missing."""
-    test_file = create_md_file(temp_content_dir, "test.md", {})
+    test_file = create_markdown_file(
+        temp_content_dir / "test.md", frontmatter={}, content="Test content"
+    )
     with open(test_file, "w") as f:
         f.write(test_case)
 
@@ -482,9 +471,9 @@ def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
 
 def test_preserve_existing_publish_date(temp_content_dir):
     """Test that existing publish date is preserved but updated date is set."""
-    test_file = create_md_file(
-        temp_content_dir, "test.md", {}
-    )  # Using existing helper
+    test_file = create_markdown_file(
+        temp_content_dir / "test.md", frontmatter={}, content="Test content"
+    )
     content = """---
 title: "Test Post"
 date_published: "01/01/2023"
@@ -503,7 +492,9 @@ Content
 
 def test_preserve_both_dates(temp_content_dir):
     """Test that both dates are preserved when they exist."""
-    test_file = create_md_file(temp_content_dir, "test.md", {})
+    test_file = create_markdown_file(
+        temp_content_dir / "test.md", frontmatter={}, content="Test content"
+    )
     content = """---
 title: "Test Post"
 date_published: "01/01/2023"
@@ -523,7 +514,9 @@ Content
 
 def test_formatting_preservation(temp_content_dir):
     """Test that YAML formatting is preserved during updates."""
-    test_file = create_md_file(temp_content_dir, "test.md", {})
+    test_file = create_markdown_file(
+        temp_content_dir / "test.md", frontmatter={}, content="Test content"
+    )
     content = """---
 # Header comment
 title: "Test Post"  # Title comment
@@ -556,14 +549,14 @@ Content
 
 def test_git_modified_date_update(temp_content_dir, mock_git):
     """Test that date_updated is set when file is modified in git."""
-    test_file = create_md_file(
-        temp_content_dir,
-        "test2.md",
-        {
+    test_file = create_markdown_file(
+        temp_content_dir / "test2.md",
+        frontmatter={
             "title": "Test Post",
             "date_published": "01/01/2023",
             "date_updated": "01/02/2023",
         },
+        content="Test content",
     )
 
     with patch(
@@ -631,9 +624,15 @@ def test_main_default_content_dir(mock_datetime, mock_git):
 
 def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
     """Test that main skips files with invalid/empty frontmatter."""
-    create_md_file(temp_content_dir, "valid.md", {"title": "Valid"})
+    create_markdown_file(
+        temp_content_dir / "valid.md",
+        frontmatter={"title": "Valid"},
+        content="Test content",
+    )
     invalid_file = temp_content_dir / "invalid.md"
-    invalid_file.write_text("Not a valid markdown file with frontmatter")
+    create_markdown_file(
+        invalid_file, content="Not a valid markdown file with frontmatter"
+    )
 
     # Mock split_yaml to return empty for the invalid file
     original_split = script_utils.split_yaml

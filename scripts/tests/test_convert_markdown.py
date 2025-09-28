@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from .. import convert_markdown_yaml
+from .utils import create_markdown_file
 
 try:
     # ruff: noqa: F401
@@ -15,13 +16,14 @@ except ImportError:
 
 
 @pytest.fixture
-def mock_git_root(tmp_path):
-    git_root = tmp_path / "git"
-    git_root.mkdir()
+def mock_git_root(quartz_project_structure):
+    git_root = quartz_project_structure["public"].parent
     (git_root / "quartz" / "static" / "images" / "card_images").mkdir(
-        parents=True
+        parents=True, exist_ok=True
     )
-    (git_root / "static" / "images" / "posts").mkdir(parents=True)
+    (git_root / "static" / "images" / "posts").mkdir(
+        parents=True, exist_ok=True
+    )
     with mock.patch("scripts.utils.get_git_root", return_value=git_root):
         yield git_root
 
@@ -61,8 +63,7 @@ def test_process_card_image_in_markdown_skips_cases(
     setup_test_env, mock_git_root, markdown_content
 ):
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.parent.mkdir(exist_ok=True)
-    md_file.write_text(markdown_content)
+    create_markdown_file(md_file, content=markdown_content)
 
     with (
         mock.patch("requests.get") as mock_get,
@@ -306,8 +307,7 @@ tags:
 Content with AVIF card_image.
 """
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.parent.mkdir(exist_ok=True)
-    md_file.write_text(markdown_content)
+    create_markdown_file(md_file, content=markdown_content)
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir_path = Path(temp_dir)
@@ -373,8 +373,7 @@ card_image: http://example.com/static/image.avif
 Content with AVIF card_image.
 """
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.parent.mkdir(exist_ok=True)
-    md_file.write_text(markdown_content)
+    create_markdown_file(md_file, content=markdown_content)
 
     with (
         mock.patch(
@@ -405,8 +404,7 @@ card_image: http://example.com/static/image.avif
 Content with AVIF card_image.
 """
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.parent.mkdir(parents=True, exist_ok=True)
-    md_file.write_text(markdown_content)
+    create_markdown_file(md_file, content=markdown_content)
 
     with (
         mock.patch(
@@ -439,11 +437,8 @@ def test_process_card_image_in_markdown_wrong_directory(mock_git_root):
     other_dir = mock_git_root / "other_dir"
     other_dir.mkdir()
     md_file = other_dir / "test.md"
-    md_file.write_text(
-        """---
-title: Test
----
-Content"""
+    create_markdown_file(
+        md_file, frontmatter={"title": "Test"}, content="Content"
     )
 
     with pytest.raises(

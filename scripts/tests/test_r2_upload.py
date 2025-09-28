@@ -8,6 +8,7 @@ import pytest
 
 from .. import r2_upload
 from .. import utils as script_utils
+from .utils import create_markdown_file
 
 
 @pytest.fixture()
@@ -28,22 +29,23 @@ def r2_cleanup():
 
 
 @pytest.fixture
-def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_media_setup(
+    quartz_project_structure, monkeypatch: pytest.MonkeyPatch
+):
     """
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
         - Markdown files with image references.
         - Git initialization to simulate a real project.
     """
+    tmp_path = quartz_project_structure["public"].parent
     monkeypatch.setenv("HOME", str(tmp_path))
 
     dirs = {
         "quartz": tmp_path / "quartz",
-        "website_content": tmp_path / "quartz" / "website_content",
-        "static": tmp_path / "quartz" / "static",
+        "website_content": quartz_project_structure["content"],
+        "static": quartz_project_structure["static"],
     }
-    for d in dirs.values():
-        d.mkdir(parents=True, exist_ok=True)
 
     test_files = [
         "test.jpg",
@@ -69,7 +71,7 @@ def test_media_setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         for f, content in md_content.items()
     ]
     for file_path, content in md_files:
-        file_path.write_text(content)
+        create_markdown_file(file_path, content=content)
 
     git_executable = script_utils.find_executable("git")
     subprocess.run([git_executable, "init", tmp_path], check=True)
@@ -352,8 +354,9 @@ def test_main_upload_all_custom_filetypes(
 
         # Create a test markdown file
         test_md = content_dir / "test.md"
-        test_md.write_text(
-            "![](quartz/static/file4.png)\n![](quartz/static/file5.jpg)"
+        create_markdown_file(
+            test_md,
+            content="![](quartz/static/file4.png)\n![](quartz/static/file5.jpg)",
         )
 
         arg_list = [
@@ -454,8 +457,9 @@ def test_preserve_path_structure_with_replacement(
         static_file.touch()
 
         md_file = content_dir / "test_reference.md"
-        md_file.write_text(
-            "![Test Image](quartz/static/images/test_static.jpg)"
+        create_markdown_file(
+            md_file,
+            content="![Test Image](quartz/static/images/test_static.jpg)",
         )
 
         with patch("subprocess.run"), patch("shutil.move") as mock_move:
@@ -755,7 +759,7 @@ def test_update_markdown_references_with_links(
     """
 
     md_file = content_dir / "test.md"
-    md_file.write_text(md_content)
+    create_markdown_file(md_file, content=md_content)
 
     r2_key = r2_upload.get_r2_key(test_file)
     r2_address = f"https://assets.turntrout.com/{r2_key}"
@@ -798,7 +802,7 @@ def test_update_markdown_references_verbose_output(
     test_file.touch()
 
     md_file = content_dir / "test.md"
-    md_file.write_text("![](quartz/static/test.jpg)")
+    create_markdown_file(md_file, content="![](quartz/static/test.jpg)")
 
     r2_address = "https://assets.turntrout.com/static/test.jpg"
 

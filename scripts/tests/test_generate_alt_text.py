@@ -94,9 +94,10 @@ Para 8: Eighth paragraph after image
 
 Para 9: Ninth paragraph (should not appear)"""
 
-        test_md = temp_dir / "test_context.md"
-        test_md.write_text(content)
-        return test_md
+        return test_utils.create_markdown_file(
+            temp_dir / "test_context.md",
+            content=content,
+        )
 
     def test_generates_article_context(self, sample_markdown: Path) -> None:
         """Test that article context includes all before and 2 after target."""
@@ -159,8 +160,9 @@ def test_edge_positions(
 ) -> None:
     """Test article context generation at various target positions."""
     content = "Para 1\n\nPara 2\n\nPara 3\n\nPara 4\n\nPara 5\n\nPara 6"
-    test_md = temp_dir / "test_edge.md"
-    test_md.write_text(content)
+    test_md = test_utils.create_markdown_file(
+        temp_dir / "test_edge.md", content=content
+    )
 
     queue_item = scan_for_empty_alt.QueueItem(
         markdown_file=str(test_md),
@@ -205,9 +207,9 @@ Para 10: Should appear
 
 Para 11: Should not appear"""
 
-        test_md = temp_dir / "test_prompt.md"
-        test_md.write_text(content)
-        return test_md
+        return test_utils.create_markdown_file(
+            temp_dir / "test_prompt.md", content=content
+        )
 
     def test_uses_limited_context_not_original(
         self, extensive_markdown: Path
@@ -645,7 +647,9 @@ class TestDisplayManager:
     ) -> None:
         # Create the markdown file that the queue item references
         markdown_file = Path(base_queue_item.markdown_file)
-        markdown_file.write_text("Test content for context display.")
+        test_utils.create_markdown_file(
+            markdown_file, content="Test content for context display."
+        )
 
         # Should not raise an exception
         display_manager.show_context(base_queue_item)

@@ -11,6 +11,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 from .. import utils as script_utils
+from .utils import create_markdown_file
 
 
 def test_git_root_is_ancestor(
@@ -399,9 +400,7 @@ def test_build_permalink_map(
     """
     # Create test files
     for file_path, content in md_contents.items():
-        full_path = tmp_path / file_path
-        full_path.parent.mkdir(parents=True, exist_ok=True)
-        full_path.write_text(content)
+        create_markdown_file(tmp_path / file_path, content=content)
 
     # Build the permalink map
     result = script_utils.build_html_to_md_map(tmp_path)
@@ -969,9 +968,7 @@ def test_collect_aliases(
     """Test collect_aliases with various file contents and structures."""
     # Create test files and directories
     for file_path_str, content in md_contents.items():
-        file_path = tmp_path / file_path_str
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.write_text(content)
+        create_markdown_file(tmp_path / file_path_str, content=content)
 
     result = script_utils.collect_aliases(tmp_path)
 

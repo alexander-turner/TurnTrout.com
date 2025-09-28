@@ -9,6 +9,7 @@ import pytest
 import requests  # type: ignore[import]
 
 from .. import utils as script_utils
+from .utils import create_markdown_file
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -82,47 +83,47 @@ def test_check_required_fields(
     assert set(errors) == set(expected_errors)
 
 
-def test_main_workflow(tmp_path: Path, monkeypatch) -> None:
+def test_main_workflow(
+    git_repo_setup, quartz_project_structure, monkeypatch
+) -> None:
     """
     Integration test for the main workflow. Tests both valid and invalid
     markdown files in the content directory.
 
     Args:
-        tmp_path: Pytest fixture providing temporary directory
+        git_repo_setup: Pytest fixture providing git repository setup
+        quartz_project_structure: Pytest fixture providing directory structure
         monkeypatch: Pytest fixture for mocking
     """
     # Set up test directory structure
-    content_dir = tmp_path / "website_content"
-    content_dir.mkdir()
-
-    # Initialize git repo
-    git.Repo.init(tmp_path)
+    content_dir = quartz_project_structure["content"]
+    tmp_path = git_repo_setup["root"]
 
     # Create test files
     valid_file = content_dir / "valid.md"
     invalid_file = content_dir / "invalid.md"
 
     # Valid markdown with proper frontmatter
-    valid_content = """---
-title: Test Title
-description: Test Description
-tags: [test]
-permalink: /test
-date_published: 01/01/2024
----
-Test content
-"""
+    valid_frontmatter = {
+        "title": "Test Title",
+        "description": "Test Description",
+        "tags": ["test"],
+        "permalink": "/test",
+        "date_published": "01/01/2024",
+    }
 
     # Invalid markdown with missing required fields
-    invalid_content = """---
-description: Test Description
-date_published: 2024-01-01
----
-Test content
-"""
+    invalid_frontmatter = {
+        "description": "Test Description",
+        "date_published": "2024-01-01",
+    }
 
-    valid_file.write_text(valid_content)
-    invalid_file.write_text(invalid_content)
+    create_markdown_file(
+        valid_file, frontmatter=valid_frontmatter, content="Test content"
+    )
+    create_markdown_file(
+        invalid_file, frontmatter=invalid_frontmatter, content="Test content"
+    )
 
     # Mock git root to use our temporary directory
     monkeypatch.setattr(
@@ -210,16 +211,17 @@ tags: [test]
         },
     ],
 )
-def test_url_uniqueness(tmp_path: Path, monkeypatch, test_case) -> None:
-    """Test detection of duplicate URLs (permalinks and aliases)."""
+def test_url_uniqueness(
+    git_repo_setup, quartz_project_structure, monkeypatch, test_case
+) -> None:
+    """Test the check_links function workflow."""
     # Setup
-    content_dir = tmp_path / "website_content"
-    content_dir.mkdir()
-    git.Repo.init(tmp_path)
+    content_dir = quartz_project_structure["content"]
+    tmp_path = git_repo_setup["root"]
 
     # Create test files
     for filename, content in test_case["files"].items():
-        (content_dir / filename).write_text(content)
+        create_markdown_file(content_dir / filename, content=content)
 
     # Mock git root to use our temporary directory
     monkeypatch.setattr(
@@ -233,11 +235,12 @@ def test_url_uniqueness(tmp_path: Path, monkeypatch, test_case) -> None:
         source_file_checks.main()  # Should not raise
 
 
-def test_invalid_md_links(tmp_path: Path, monkeypatch) -> None:
+def test_check_links_invalid_links(
+    git_repo_setup, quartz_project_structure, monkeypatch
+) -> None:
     """Test detection of invalid markdown links."""
-    content_dir = tmp_path / "website_content"
-    content_dir.mkdir()
-    git.Repo.init(tmp_path)
+    content_dir = quartz_project_structure["content"]
+    tmp_path = git_repo_setup["root"]
 
     # Create test file with invalid links
     test_file = content_dir / "test.md"
@@ -253,7 +256,7 @@ Invalid link: [Link](path/to/page)
 Another invalid: [Link](page.md)
 Valid external: [Link](https://example.com)
 """
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     # Mock git root
     monkeypatch.setattr(
@@ -498,7 +501,7 @@ Valid equation: $x^2 + y^2 = z^2$
 Invalid tag: $$x^2 \\tag{1}$$
 Another invalid: $\\tag{eq:test}$
 """
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     # Test direct function
     errors = source_file_checks.check_latex_tags(content, test_file)
@@ -528,7 +531,7 @@ def test_latex_tags_variations(
         expected_count: Expected number of tag violations
     """
     test_file = tmp_path / "test.md"
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     errors = source_file_checks.check_latex_tags(content, test_file)
     assert len(errors) == expected_count
@@ -1095,7 +1098,7 @@ def test_check_table_alignments(
         expected_errors: List of expected error messages
     """
     test_file = tmp_path / "test.md"
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     errors = source_file_checks.check_table_alignments(content)
     assert errors == expected_errors
@@ -1123,7 +1126,7 @@ permalink: /test
 |----------|----------|
 | Data 1   | Data 2   |
 """
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     # Mock git root
     monkeypatch.setattr(
@@ -1271,7 +1274,7 @@ def test_unescaped_braces(
         expected_errors: Expected error messages
     """
     test_file = tmp_path / "test.md"
-    test_file.write_text(content)
+    create_markdown_file(test_file, content=content)
 
     errors = source_file_checks.check_unescaped_braces(content)
     assert sorted(errors) == sorted(expected_errors)

@@ -1,11 +1,14 @@
 import subprocess
 from pathlib import Path
-from typing import Generator
+from typing import Any, Generator
+from unittest.mock import Mock
 
 import numpy as np
 import PIL
 import pytest
+import requests
 from PIL import Image
+from ruamel.yaml import YAML
 
 from .. import compress
 from .. import utils as script_utils
@@ -188,6 +191,50 @@ def _create_test_gif(
         duration=int(1000 / framerate),  # delay per frame in ms
         loop=0,
     )
+
+
+def create_markdown_file(
+    path: Path,
+    frontmatter: dict[str, Any] | None = None,
+    content: str = "# Test",
+) -> Path:
+    """Create a markdown file with YAML front-matter.
+
+    Args:
+        path: Destination *Path*.
+        frontmatter: Mapping to serialise as YAML front-matter. If *None*, no
+            front-matter is written.
+        content: Markdown body to append after the front-matter.
+    """
+    if frontmatter is not None:
+        # Use ruamel.yaml for compatibility with TimeStamp objects
+        yaml_parser = YAML(typ="rt")
+        yaml_parser.preserve_quotes = True
+
+        from io import StringIO
+
+        stream = StringIO()
+        yaml_parser.dump(frontmatter, stream)
+        yaml_text = stream.getvalue().strip()
+
+        md_text = f"---\n{yaml_text}\n---\n{content}"
+    else:
+        md_text = content
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(md_text, encoding="utf-8")
+    return path
+
+
+# type: ignore[name-defined]
+def mock_http_response(
+    *, status_code: int = 200, content: bytes = b"test"
+) -> requests.Response:
+    """Return a *requests.Response*-like mock object for HTTP tests."""
+    mock_resp = Mock()
+    mock_resp.status_code = status_code
+    mock_resp.iter_content.return_value = [content]
+    mock_resp.raise_for_status.return_value = None
+    return mock_resp
 
 
 @pytest.fixture

@@ -20,25 +20,11 @@ else:
 
 
 @pytest.fixture
-def site_setup(tmp_path):
-    """Set up a basic site directory structure."""
-    public_dir = tmp_path / "public"
-    content_dir = tmp_path / "website_content"
-    public_dir.mkdir()
-    content_dir.mkdir()
-
-    return {
-        "public_dir": public_dir,
-        "content_dir": content_dir,
-        "tmp_path": tmp_path,
-    }
-
-
-@pytest.fixture
-def mock_environment(site_setup, monkeypatch):
+def mock_environment(quartz_project_structure, monkeypatch):
     """Set up common mocks and environment variables."""
-    public_dir = site_setup["public_dir"]
-    tmp_path = site_setup["tmp_path"]
+    public_dir = quartz_project_structure["public"]
+    content_dir = quartz_project_structure["content"]
+    tmp_path = public_dir.parent
 
     # Mock functions and constants
     monkeypatch.setattr(built_site_checks, "_PUBLIC_DIR", public_dir)
@@ -55,7 +41,11 @@ def mock_environment(site_setup, monkeypatch):
         lambda *args, **kwargs: None,
     )
 
-    return site_setup
+    return {
+        "public_dir": public_dir,
+        "content_dir": content_dir,
+        "tmp_path": tmp_path,
+    }
 
 
 @pytest.fixture
