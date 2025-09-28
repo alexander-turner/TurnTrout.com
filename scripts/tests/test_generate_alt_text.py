@@ -58,32 +58,223 @@ def test_build_prompt_edge_cases(
     base_queue_item.markdown_file = markdown_file
     base_queue_item.context_snippet = context_snippet
 
-    prompt = generate_alt_text._build_prompt(base_queue_item, max_chars)
+    # Mock _generate_article_context to return the context_snippet
+    with patch.object(
+        generate_alt_text,
+        "_generate_article_context",
+        return_value=context_snippet,
+    ):
+        prompt = generate_alt_text._build_prompt(base_queue_item, max_chars)
 
     for expected in expected_in_prompt:
         assert expected in prompt
 
 
+class TestGenerateArticleContext:
+    """Test suite for _generate_article_context function."""
+
+    @pytest.fixture
+    def sample_markdown(self, temp_dir: Path) -> Path:
+        """Create a sample markdown file with multiple paragraphs."""
+        content = """Para 1: First paragraph
+
+Para 2: Second paragraph
+
+Para 3: Third paragraph
+
+Para 4: Fourth paragraph
+
+Para 5: Fifth paragraph
+
+Para 6: Sixth paragraph with image
+
+Para 7: Seventh paragraph after image
+
+Para 8: Eighth paragraph after image
+
+Para 9: Ninth paragraph (should not appear)"""
+
+        test_md = temp_dir / "test_context.md"
+        test_md.write_text(content)
+        return test_md
+
+    def test_generates_article_context(self, sample_markdown: Path) -> None:
+        """Test that article context includes all before and 2 after target."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(sample_markdown),
+            asset_path="image.jpg",
+            line_number=11,  # "Para 6: Sixth paragraph with image"
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(queue_item)
+
+        # Verify correct inclusion/exclusion
+        should_include = [
+            "Para 1",
+            "Para 2",
+            "Para 3",
+            "Para 4",
+            "Para 5",
+            "Para 6",
+            "Para 7",
+            "Para 8",
+        ]
+        should_exclude = ["Para 9"]
+
+        for text in should_include:
+            assert text in context, f"Expected '{text}' in context"
+        for text in should_exclude:
+            assert text not in context, f"Expected '{text}' NOT in context"
+
+
 @pytest.mark.parametrize(
-    "context_snippet, expected",
+    "target_line,should_include,should_exclude",
     [
-        ("Single paragraph", "Single paragraph"),
-        ("First\n\nSecond", "First\n\nSecond"),
-        ("Intro\n\nMiddle\n\nFinal", "Middle\n\nFinal"),
-        (
-            "  Intro paragraph  \n\n\n\nSecond paragraph\n\nThird paragraph  ",
-            "Second paragraph\n\nThird paragraph",
+        pytest.param(
+            1,
+            ["Para 1", "Para 2", "Para 3"],
+            ["Para 4", "Para 5", "Para 6"],
+            id="target_at_beginning",
+        ),
+        pytest.param(
+            9,
+            ["Para 1", "Para 2", "Para 3", "Para 4", "Para 5", "Para 6"],
+            [],
+            id="target_at_end",
+        ),
+        pytest.param(
+            5,
+            ["Para 1", "Para 2", "Para 3", "Para 4", "Para 5"],
+            ["Para 6"],
+            id="target_in_middle",
         ),
     ],
 )
-def test_truncate_context_for_display(
-    context_snippet: str, expected: str
+def test_edge_positions(
+    temp_dir: Path,
+    target_line: int,
+    should_include: list[str],
+    should_exclude: list[str],
 ) -> None:
-    truncated = generate_alt_text._truncate_context_for_display(
-        context_snippet
+    """Test article context generation at various target positions."""
+    content = "Para 1\n\nPara 2\n\nPara 3\n\nPara 4\n\nPara 5\n\nPara 6"
+    test_md = temp_dir / "test_edge.md"
+    test_md.write_text(content)
+
+    queue_item = scan_for_empty_alt.QueueItem(
+        markdown_file=str(test_md),
+        asset_path="image.jpg",
+        line_number=target_line,
+        context_snippet="unused",
     )
 
-    assert truncated == expected
+    context = generate_alt_text._generate_article_context(queue_item)
+
+    for text in should_include:
+        assert text in context, f"Expected '{text}' in context"
+    for text in should_exclude:
+        assert text not in context, f"Expected '{text}' NOT in context"
+
+
+class TestBuildPromptIntegration:
+    """Test integration of _build_prompt with article context generation."""
+
+    @pytest.fixture
+    def extensive_markdown(self, temp_dir: Path) -> Path:
+        """Create markdown with many paragraphs for testing prompt generation."""
+        content = """Para 1: Should not appear
+
+Para 2: Should not appear
+
+Para 3: Should appear
+
+Para 4: Should appear
+
+Para 5: Should appear
+
+Para 6: Should appear
+
+Para 7: Should appear
+
+Para 8: Target paragraph with image
+
+Para 9: Should appear
+
+Para 10: Should appear
+
+Para 11: Should not appear"""
+
+        test_md = temp_dir / "test_prompt.md"
+        test_md.write_text(content)
+        return test_md
+
+    def test_uses_limited_context_not_original(
+        self, extensive_markdown: Path
+    ) -> None:
+        """Test that _build_prompt uses full context before target."""
+        text = extensive_markdown.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        line_number = lines.index("Para 8: Target paragraph with image") + 1
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(extensive_markdown),
+            asset_path="image.jpg",
+            line_number=line_number,
+            context_snippet="This is the original full context that includes everything",
+        )
+
+        prompt = generate_alt_text._build_prompt(queue_item, max_chars=200)
+
+        # Verify full context before target is used (all before + target + 2 after)
+        should_be_in_prompt = [
+            "Para 1",
+            "Para 2",
+            "Para 3",
+            "Para 4",
+            "Para 5",
+            "Para 6",
+            "Para 7",
+            "Para 8",
+            "Para 9",
+            "Para 10",
+        ]
+        should_not_be_in_prompt = ["Para 11"]
+
+        for text in should_be_in_prompt:
+            assert text in prompt, f"Expected '{text}' in prompt"
+        for text in should_not_be_in_prompt:
+            assert text not in prompt, f"Expected '{text}' NOT in prompt"
+
+        # Verify original context_snippet is ignored
+        assert "original full context" not in prompt
+
+    @pytest.mark.parametrize(
+        "max_chars,expected_in_prompt",
+        [
+            pytest.param(100, ["Under 100 characters"], id="small_limit"),
+            pytest.param(500, ["Under 500 characters"], id="large_limit"),
+        ],
+    )
+    def test_prompt_includes_char_limit(
+        self,
+        extensive_markdown: Path,
+        max_chars: int,
+        expected_in_prompt: list[str],
+    ) -> None:
+        """Test that prompt includes the specified character limit."""
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(extensive_markdown),
+            asset_path="image.jpg",
+            line_number=17,
+            context_snippet="unused",
+        )
+
+        prompt = generate_alt_text._build_prompt(
+            queue_item, max_chars=max_chars
+        )
+
+        for expected in expected_in_prompt:
+            assert expected in prompt
 
 
 @pytest.mark.parametrize(
@@ -460,6 +651,10 @@ class TestDisplayManager:
         display_manager: generate_alt_text.DisplayManager,
         base_queue_item: scan_for_empty_alt.QueueItem,
     ) -> None:
+        # Create the markdown file that the queue item references
+        markdown_file = Path(base_queue_item.markdown_file)
+        markdown_file.write_text("Test content for context display.")
+
         # Should not raise an exception
         display_manager.show_context(base_queue_item)
 
@@ -1095,6 +1290,11 @@ def _setup_error_mocks(error_type, error_on_item: str):
         ),
         patch.object(generate_alt_text.DisplayManager, "show_error"),
         patch.object(generate_alt_text.DisplayManager, "close_current_image"),
+        patch.object(generate_alt_text.DisplayManager, "show_context"),
+        patch.object(generate_alt_text.DisplayManager, "show_rule"),
+        patch.object(generate_alt_text.DisplayManager, "show_image"),
+        patch.object(generate_alt_text.DisplayManager, "refocus_terminal"),
+        patch.object(generate_alt_text.DisplayManager, "show_suggestion"),
     ):
         yield
 
@@ -1190,6 +1390,17 @@ async def test_async_generate_suggestions(
         return f"{attachment.name}-caption"
 
     monkeypatch.setattr(generate_alt_text, "_run_llm", fake_run_llm)
+
+    def fake_generate_article_context(
+        queue_item: scan_for_empty_alt.QueueItem,
+    ) -> str:
+        return queue_item.context_snippet
+
+    monkeypatch.setattr(
+        generate_alt_text,
+        "_generate_article_context",
+        fake_generate_article_context,
+    )
 
     options = generate_alt_text.GenerateAltTextOptions(
         root=temp_dir,

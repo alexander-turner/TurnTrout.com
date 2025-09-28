@@ -172,6 +172,18 @@ def _download_asset(
     )
 
 
+def _generate_article_context(queue_item: scan_for_empty_alt.QueueItem) -> str:
+    """Generate context with all preceding paragraphs and 2 after for LLM
+    prompts."""
+    markdown_path = Path(queue_item.markdown_file)
+    source_text = markdown_path.read_text(encoding="utf-8")
+    lines = source_text.splitlines()
+
+    return script_utils.paragraph_context(
+        lines, queue_item.line_number - 1, max_before=None, max_after=2
+    )
+
+
 def _build_prompt(
     queue_item: scan_for_empty_alt.QueueItem,
     max_chars: int,
@@ -184,10 +196,11 @@ def _build_prompt(
         """
     ).strip()
 
+    article_context = _generate_article_context(queue_item)
     main_prompt = textwrap.dedent(
         f"""
         Context from {queue_item.markdown_file}:
-        {queue_item.context_snippet}
+        {article_context}
 
         Critical requirements:
         - Under {max_chars} characters (aim for 1-2 sentences when possible)
@@ -236,21 +249,6 @@ def _run_llm(
     return cleaned
 
 
-def _truncate_context_for_display(context_snippet: str) -> str:
-    """Truncate context to show only the two paragraphs just before the
-    image."""
-    # Split context into paragraphs by double newlines
-    paragraphs = context_snippet.split("\n\n")
-
-    # Remove empty paragraphs
-    paragraphs = [p.strip() for p in paragraphs if p.strip()]
-
-    # Return the last two paragraphs (just before the image)
-    if len(paragraphs) <= 2:
-        return context_snippet.strip()
-    return "\n\n".join(paragraphs[-2:])
-
-
 class DisplayManager:
     """Handles rich console display operations."""
 
@@ -260,13 +258,10 @@ class DisplayManager:
 
     def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
         """Display context information for the queue item."""
-        # Show only the two paragraphs just before the image
-        truncated_context = _truncate_context_for_display(
-            queue_item.context_snippet
-        )
+        context = _generate_article_context(queue_item)
         self.console.print(
             Panel(
-                truncated_context,
+                context,
                 title="Context",
                 subtitle=f"{queue_item.markdown_file}:{queue_item.line_number}",
                 box=ROUNDED,
@@ -664,6 +659,8 @@ def _label_suggestions(
                 display.show_error(str(err))
                 display.close_current_image()
                 continue
+            # Let KeyboardInterrupt and other critical exceptions bubble up
+            # but ensure we save any processed results in the finally block
     finally:
         # Always save results regardless of how we exit
         if processed_results:
