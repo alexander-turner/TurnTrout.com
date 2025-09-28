@@ -182,11 +182,24 @@ def _generate_article_context(
     prompts."""
     markdown_path = Path(queue_item.markdown_file)
     source_text = markdown_path.read_text(encoding="utf-8")
-    lines = source_text.splitlines()
+
+    # Try to split YAML frontmatter and get content only
+    _, split_content = script_utils.split_yaml(markdown_path, verbose=False)
+
+    lines_to_show = source_lines = source_text.splitlines()
+    # If no frontmatter found, split_yaml returns empty split_content, so use original
+    if not split_content.strip():
+        adjusted_line_number = queue_item.line_number - 1
+    else:
+        lines_to_show = split_content.splitlines()
+        num_frontmatter_lines = len(source_lines) - len(lines_to_show)
+        adjusted_line_number = (
+            queue_item.line_number - 1 - num_frontmatter_lines
+        )
 
     return script_utils.paragraph_context(
-        lines,
-        queue_item.line_number - 1,
+        lines_to_show,
+        adjusted_line_number,
         max_before=max_before,
         max_after=max_after,
     )

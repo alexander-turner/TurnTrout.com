@@ -128,6 +128,104 @@ Para 9: Ninth paragraph (should not appear)"""
         for text in should_exclude:
             assert text not in context, f"Expected '{text}' NOT in context"
 
+    def test_removes_yaml_frontmatter_from_context(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that YAML frontmatter is removed from displayed context."""
+        frontmatter = {"title": "Test Article", "date": "2023-01-01"}
+        content = "Para 1\n\nPara 2 with image\n\nPara 3"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_frontmatter.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        # Find line number for "Para 2 with image"
+        source_lines = markdown_file.read_text().splitlines()
+        target_line = next(
+            i + 1
+            for i, line in enumerate(source_lines)
+            if "Para 2 with image" in line
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=target_line,
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(queue_item)
+
+        # Verify frontmatter is removed but content remains
+        assert "title:" not in context
+        assert "Test Article" not in context
+        assert "Para 1" in context
+        assert "Para 2 with image" in context
+
+    def test_handles_files_without_frontmatter(self, temp_dir: Path) -> None:
+        """Test that files without frontmatter work correctly."""
+        content = "Para 1\n\nPara 2 with image\n\nPara 3"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_no_frontmatter.md",
+            frontmatter=None,
+            content=content,
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=3,  # "Para 2 with image"
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(queue_item)
+
+        # Verify all content is included
+        assert "Para 1" in context
+        assert "Para 2 with image" in context
+        assert "Para 3" in context
+
+    def test_line_number_adjustment_with_frontmatter(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that line numbers are correctly adjusted when frontmatter is present."""
+        frontmatter = {"title": "Test Article"}
+        content = "Para 1\n\nTarget para\n\nPara 3"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_line_adjustment.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        # Find line number for "Target para"
+        source_lines = markdown_file.read_text().splitlines()
+        target_line = next(
+            i + 1
+            for i, line in enumerate(source_lines)
+            if "Target para" in line
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=target_line,
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(
+            queue_item, max_before=1, max_after=1
+        )
+
+        # Frontmatter should be removed, content should remain
+        assert "title:" not in context
+        assert "Para 1" in context
+        assert "Target para" in context
+        assert "Para 3" in context
+
 
 @pytest.mark.parametrize(
     "target_line,should_include,should_exclude",
