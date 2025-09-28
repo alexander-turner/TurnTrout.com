@@ -178,29 +178,35 @@ def _generate_article_context(
     queue_item: scan_for_empty_alt.QueueItem,
     max_before: int | None = None,
     max_after: int = 2,
+    trim_frontmatter: bool = False,
 ) -> str:
     """Generate context with all preceding paragraphs and 2 after for LLM
     prompts."""
     markdown_path = Path(queue_item.markdown_file)
     source_text = markdown_path.read_text(encoding="utf-8")
+    source_lines = source_text.splitlines()
 
-    # Try to split YAML frontmatter and get content only
-    _, split_content = script_utils.split_yaml(markdown_path, verbose=False)
+    # Convert from 1-based line number to 0-based index
+    line_number_to_pass = queue_item.line_number - 1
+    lines_to_show = source_lines
 
-    lines_to_show = source_lines = source_text.splitlines()
-    # If no frontmatter found, split_yaml returns empty split_content, so use original
-    if not split_content.strip():
-        adjusted_line_number = queue_item.line_number - 1
-    else:
-        lines_to_show = split_content.splitlines()
-        num_frontmatter_lines = len(source_lines) - len(lines_to_show)
-        adjusted_line_number = (
-            queue_item.line_number - 1 - num_frontmatter_lines
+    if trim_frontmatter:
+        # Try to split YAML frontmatter and get content only
+        _, split_content = script_utils.split_yaml(
+            markdown_path, verbose=False
         )
+
+        # If frontmatter found, use content without frontmatter
+        if split_content.strip():
+            lines_to_show = split_content.splitlines()
+            num_frontmatter_lines = len(source_lines) - len(lines_to_show)
+            line_number_to_pass = (
+                queue_item.line_number - 1 - num_frontmatter_lines
+            )
 
     return script_utils.paragraph_context(
         lines_to_show,
-        adjusted_line_number,
+        line_number_to_pass,
         max_before=max_before,
         max_after=max_after,
     )
@@ -219,7 +225,9 @@ def _build_prompt(
     ).strip()
 
     # TODO add an "IMAGE HERE" marker?
-    article_context = _generate_article_context(queue_item)
+    article_context = _generate_article_context(
+        queue_item, trim_frontmatter=False
+    )
     main_prompt = textwrap.dedent(
         f"""
         Context from {queue_item.markdown_file}:
@@ -281,7 +289,7 @@ class DisplayManager:
     def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
         """Display context information for the queue item."""
         context = _generate_article_context(
-            queue_item, max_before=4, max_after=1
+            queue_item, max_before=4, max_after=1, trim_frontmatter=True
         )
         rendered_context = Markdown(context)
         basename = Path(queue_item.markdown_file).name

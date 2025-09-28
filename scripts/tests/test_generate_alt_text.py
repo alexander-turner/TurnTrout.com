@@ -100,7 +100,7 @@ Para 9: Ninth paragraph (should not appear)"""
         )
 
     def test_generates_article_context(self, sample_markdown: Path) -> None:
-        """Test that article context includes all before and 2 after target."""
+        """Test that article context includes all before and 2 after target (default trim_frontmatter=False)."""
         queue_item = scan_for_empty_alt.QueueItem(
             markdown_file=str(sample_markdown),
             asset_path="image.jpg",
@@ -108,6 +108,7 @@ Para 9: Ninth paragraph (should not appear)"""
             context_snippet="unused",
         )
 
+        # Test default behavior (trim_frontmatter=False)
         context = generate_alt_text._generate_article_context(queue_item)
 
         # Verify correct inclusion/exclusion
@@ -128,10 +129,10 @@ Para 9: Ninth paragraph (should not appear)"""
         for text in should_exclude:
             assert text not in context, f"Expected '{text}' NOT in context"
 
-    def test_removes_yaml_frontmatter_from_context(
+    def test_preserves_yaml_frontmatter_by_default(
         self, temp_dir: Path
     ) -> None:
-        """Test that YAML frontmatter is removed from displayed context."""
+        """Test that YAML frontmatter is preserved by default (trim_frontmatter=False)."""
         frontmatter = {"title": "Test Article", "date": "2023-01-01"}
         content = "Para 1\n\nPara 2 with image\n\nPara 3"
 
@@ -156,11 +157,12 @@ Para 9: Ninth paragraph (should not appear)"""
             context_snippet="unused",
         )
 
+        # Test default behavior (trim_frontmatter=False) - frontmatter should be preserved
         context = generate_alt_text._generate_article_context(queue_item)
 
-        # Verify frontmatter is removed but content remains
-        assert "title:" not in context
-        assert "Test Article" not in context
+        # Verify frontmatter is preserved and content remains
+        assert "title: Test Article" in context
+        assert "date: '2023-01-01'" in context
         assert "Para 1" in context
         assert "Para 2 with image" in context
 
@@ -217,7 +219,7 @@ Para 9: Ninth paragraph (should not appear)"""
         )
 
         context = generate_alt_text._generate_article_context(
-            queue_item, max_before=1, max_after=1
+            queue_item, max_before=1, max_after=1, trim_frontmatter=True
         )
 
         # Frontmatter should be removed, content should remain
@@ -225,6 +227,199 @@ Para 9: Ninth paragraph (should not appear)"""
         assert "Para 1" in context
         assert "Target para" in context
         assert "Para 3" in context
+
+    def test_trim_frontmatter_true_removes_yaml(self, temp_dir: Path) -> None:
+        """Test that trim_frontmatter=True removes YAML frontmatter from context."""
+        frontmatter = {
+            "title": "Test Article",
+            "date": "2023-01-01",
+            "tags": ["test"],
+        }
+        content = "Para 1: First paragraph\n\nPara 2: Target paragraph\n\nPara 3: Third paragraph"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_trim_true.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        # Find line number for "Para 2: Target paragraph"
+        source_lines = markdown_file.read_text().splitlines()
+        target_line = next(
+            i + 1
+            for i, line in enumerate(source_lines)
+            if "Para 2: Target paragraph" in line
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=target_line,
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(
+            queue_item, trim_frontmatter=True
+        )
+
+        # Verify frontmatter is completely removed
+        assert "title:" not in context
+        assert "Test Article" not in context
+        assert "date:" not in context
+        assert "2023-01-01" not in context
+        assert "tags:" not in context
+        assert "test" not in context
+        assert "---" not in context
+
+        # Verify content remains
+        assert "Para 1: First paragraph" in context
+        assert "Para 2: Target paragraph" in context
+        assert "Para 3: Third paragraph" in context
+
+    def test_trim_frontmatter_false_preserves_yaml(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that trim_frontmatter=False explicitly preserves YAML frontmatter in context."""
+        frontmatter = {"title": "Test Article", "date": "2023-01-01"}
+        content = "Para 1: First paragraph\n\nPara 2: Target paragraph\n\nPara 3: Third paragraph"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_trim_false.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        # Find line number for "Para 2: Target paragraph"
+        source_lines = markdown_file.read_text().splitlines()
+        target_line = next(
+            i + 1
+            for i, line in enumerate(source_lines)
+            if "Para 2: Target paragraph" in line
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=target_line,
+            context_snippet="unused",
+        )
+
+        context = generate_alt_text._generate_article_context(
+            queue_item, trim_frontmatter=False
+        )
+
+        # Verify frontmatter is preserved
+        assert "title: Test Article" in context
+        assert "date: '2023-01-01'" in context
+
+        # Verify content remains
+        assert "Para 1: First paragraph" in context
+        assert "Para 2: Target paragraph" in context
+        assert "Para 3: Third paragraph" in context
+
+    def test_trim_frontmatter_with_no_frontmatter_file(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that trim_frontmatter works correctly with files that have no frontmatter."""
+        content = "Para 1: First paragraph\n\nPara 2: Target paragraph\n\nPara 3: Third paragraph"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_no_frontmatter_trim.md",
+            frontmatter=None,
+            content=content,
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=3,  # "Para 2: Target paragraph"
+            context_snippet="unused",
+        )
+
+        # Test both trim_frontmatter=True and False should work the same
+        context_true = generate_alt_text._generate_article_context(
+            queue_item, trim_frontmatter=True
+        )
+        context_false = generate_alt_text._generate_article_context(
+            queue_item, trim_frontmatter=False
+        )
+
+        # Both should include all content
+        for context in [context_true, context_false]:
+            assert "Para 1: First paragraph" in context
+            assert "Para 2: Target paragraph" in context
+            assert "Para 3: Third paragraph" in context
+
+        # Results should be identical when no frontmatter exists
+        assert context_true == context_false
+
+    def test_trim_frontmatter_line_number_adjustment(
+        self, temp_dir: Path
+    ) -> None:
+        """Test that line numbers are correctly adjusted when trim_frontmatter=True."""
+        frontmatter = {"title": "Test Article", "author": "Test Author"}
+        content = "Para 1\n\nPara 2\n\nTarget para\n\nPara 4"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_line_adjustment_trim.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        # Find line number for "Target para" in the full file
+        source_lines = markdown_file.read_text().splitlines()
+        target_line = next(
+            i + 1
+            for i, line in enumerate(source_lines)
+            if "Target para" in line
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=target_line,
+            context_snippet="unused",
+        )
+
+        # Test with trim_frontmatter=True and limited context
+        context = generate_alt_text._generate_article_context(
+            queue_item, max_before=1, max_after=1, trim_frontmatter=True
+        )
+
+        # Should include the paragraph before and after target, but no frontmatter
+        assert "title:" not in context
+        assert "author:" not in context
+        assert "Para 2" in context  # One before
+        assert "Target para" in context  # Target
+        assert "Para 4" in context  # One after
+        assert (
+            "Para 1" not in context
+        )  # Should be excluded due to max_before=1
+
+    def test_trim_frontmatter_default_behavior(self, temp_dir: Path) -> None:
+        """Test that the default behavior (no trim_frontmatter parameter) preserves frontmatter."""
+        frontmatter = {"title": "Default Test"}
+        content = "Content paragraph"
+
+        markdown_file = test_utils.create_markdown_file(
+            temp_dir / "test_default_trim.md",
+            frontmatter=frontmatter,
+            content=content,
+        )
+
+        queue_item = scan_for_empty_alt.QueueItem(
+            markdown_file=str(markdown_file),
+            asset_path="image.jpg",
+            line_number=4,  # Content paragraph line
+            context_snippet="unused",
+        )
+
+        # Call without trim_frontmatter parameter (should default to False)
+        context = generate_alt_text._generate_article_context(queue_item)
+
+        # Should preserve frontmatter by default
+        assert "title: Default Test" in context
+        assert "Content paragraph" in context
 
 
 @pytest.mark.parametrize(
@@ -1354,6 +1549,9 @@ async def test_async_generate_suggestions(
 
     def fake_generate_article_context(
         queue_item: scan_for_empty_alt.QueueItem,
+        max_before: int | None = None,
+        max_after: int = 2,
+        trim_frontmatter: bool = False,
     ) -> str:
         return queue_item.context_snippet
 
