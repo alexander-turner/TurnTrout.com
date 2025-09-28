@@ -1,4 +1,5 @@
 import sys
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -103,3 +104,56 @@ def test_queue_expected_paths(
 
     queue = scan_for_empty_alt.build_queue(tmp_path)
     assert sorted(item.asset_path for item in queue) == sorted(expected_paths)
+
+
+def test_html_img_line_number_fallback(tmp_path: Path) -> None:
+    """If markdown-it does not supply *token.map* for an HTML image, the
+    fallback logic should locate the correct source line instead of defaulting
+    to 1."""
+
+    md_content = textwrap.dedent(
+        """
+        Intro line.
+
+        <img src="assets/foo.jpg">
+
+        After image.
+        """
+    )
+    _write_md(tmp_path, md_content, "fallback.md")
+
+    queue = scan_for_empty_alt.build_queue(tmp_path)
+    assert len(queue) == 1
+
+    item = queue[0]
+    # The <img> tag is on the 4th line of the file (1-based)
+    assert item.line_number == 4, f"Expected line 4, got {item.line_number}"
+
+
+def test_html_img_line_number_with_frontmatter(tmp_path: Path) -> None:
+    """Ensure line numbers for HTML images located *after* YAML front-matter
+    are computed relative to the full file."""
+
+    md_content = textwrap.dedent(
+        """
+        ---
+        title: Sample
+        ---
+
+        Preamble text.
+
+        <img src="assets/bar.jpg">
+        """
+    )
+    file_path = _write_md(tmp_path, md_content, "frontmatter.md")
+
+    # Sanity-check the actual line number of the <img> element
+    img_line_no = next(
+        idx + 1
+        for idx, ln in enumerate(file_path.read_text().splitlines())
+        if "<img" in ln
+    )
+
+    queue = scan_for_empty_alt.build_queue(tmp_path)
+    assert len(queue) == 1
+    assert queue[0].line_number == img_line_no

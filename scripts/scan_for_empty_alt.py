@@ -121,6 +121,18 @@ def _extract_html_img_info(token: Token) -> list[tuple[str, str | None]]:
     return infos
 
 
+def _get_line_number(
+    token: Token, lines: Sequence[str], search_snippet: str
+) -> int:
+    if token.map:
+        return token.map[0] + 1
+    else:
+        return next(
+            (idx + 1 for idx, ln in enumerate(lines) if search_snippet in ln),
+            1,
+        )
+
+
 def _handle_md_asset(
     token: Token, md_path: Path, lines: Sequence[str]
 ) -> list[QueueItem]:
@@ -144,20 +156,7 @@ def _handle_md_asset(
     if not src_attr or _is_alt_meaningful(alt_text):
         return []
 
-    if token.map:
-        line_no = token.map[0] + 1
-    else:
-        # Fallback: locate the first line containing the asset markdown.
-        search_snippet = f"({src_attr})"
-        line_no = next(
-            (
-                idx + 1
-                for idx, line in enumerate(lines)
-                if search_snippet in line
-            ),
-            1,
-        )
-
+    line_no = _get_line_number(token, lines, f"({src_attr})")
     return [_create_queue_item(md_path, src_attr, line_no, lines)]
 
 
@@ -181,7 +180,7 @@ def _handle_html_asset(
         if _is_alt_meaningful(alt_text):
             continue
 
-        line_no = (token.map[0] + 1) if token.map else 1
+        line_no = _get_line_number(token, lines, src_attr)
         items.append(_create_queue_item(md_path, src_attr, line_no, lines))
 
     return items
