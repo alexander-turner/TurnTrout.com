@@ -1053,7 +1053,7 @@ def test_run_generate_appends_to_suggestions_file(temp_dir: Path) -> None:
         suggested_alt="New",
         model="test",
         context_snippet="ctx",
-        line_number="1",
+        line_number=1,
     )
 
     options = generate_alt_text.GenerateAltTextOptions(
@@ -1217,7 +1217,7 @@ def test_suggestions() -> list[generate_alt_text.AltTextResult]:
             suggested_alt="First",
             model="test",
             context_snippet="ctx1",
-            line_number="1",
+            line_number=1,
         ),
         generate_alt_text.AltTextResult(
             markdown_file="test2.md",
@@ -1225,7 +1225,7 @@ def test_suggestions() -> list[generate_alt_text.AltTextResult]:
             suggested_alt="Second",
             model="test",
             context_snippet="ctx2",
-            line_number="2",
+            line_number=2,
         ),
     ]
 
@@ -1399,7 +1399,7 @@ def test_label_from_suggestions_file_loads_and_filters_data(
             "final_alt": "Extra field",  # Should be filtered out
             "model": "test-model",
             "context_snippet": "context",
-            "line_number": "10",
+            "line_number": 10,
         }
     ]
 
@@ -1414,7 +1414,7 @@ def test_label_from_suggestions_file_loads_and_filters_data(
     loaded_suggestions = mock_label.call_args[0][0]
     assert len(loaded_suggestions) == 1
     assert loaded_suggestions[0].asset_path == "image.jpg"
-    assert loaded_suggestions[0].line_number == "10"
+    assert loaded_suggestions[0].line_number == 10
     assert not hasattr(loaded_suggestions[0], "final_alt")
 
 

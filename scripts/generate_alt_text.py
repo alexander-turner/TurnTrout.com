@@ -472,7 +472,7 @@ class AltTextResult:  # pylint: disable=C0115
     suggested_alt: str
     model: str
     context_snippet: str
-    line_number: str
+    line_number: int
 
 
 async def _run_llm_async(
@@ -502,7 +502,7 @@ async def _run_llm_async(
             suggested_alt=caption,
             model=options.model,
             context_snippet=queue_item.context_snippet,
-            line_number=str(queue_item.line_number),
+            line_number=queue_item.line_number,
         )
     finally:
         shutil.rmtree(workspace, ignore_errors=True)
@@ -564,7 +564,7 @@ def _process_single_suggestion_for_labeling(
     queue_item = scan_for_empty_alt.QueueItem(
         markdown_file=suggestion_data.markdown_file,
         asset_path=suggestion_data.asset_path,
-        line_number=int(suggestion_data.line_number),
+        line_number=suggestion_data.line_number,
         context_snippet=suggestion_data.context_snippet,
     )
 
@@ -699,7 +699,7 @@ def label_from_suggestions_file(
             "suggested_alt": s["suggested_alt"],
             "model": s["model"],
             "context_snippet": s["context_snippet"],
-            "line_number": s.get("line_number", "1"),
+            "line_number": int(s["line_number"]),
         }
         suggestions.append(AltTextResult(**filtered_data))
 
