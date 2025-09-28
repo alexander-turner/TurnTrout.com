@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 import requests
 from rich.box import ROUNDED
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.panel import Panel
 from tqdm.rich import tqdm
 from tqdm.std import TqdmExperimentalWarning
@@ -268,9 +269,10 @@ class DisplayManager:
         context = _generate_article_context(
             queue_item, max_before=4, max_after=1
         )
+        rendered_context = Markdown(context)
         self.console.print(
             Panel(
-                context,
+                rendered_context,
                 title="Context",
                 subtitle=f"{queue_item.markdown_file}:{queue_item.line_number}",
                 box=ROUNDED,
@@ -569,14 +571,14 @@ def _process_single_suggestion_for_labeling(
                 suggestion_data.suggested_alt, current, total
             )
 
-    return AltGenerationResult(
-        markdown_file=suggestion_data.markdown_file,
-        asset_path=suggestion_data.asset_path,
-        suggested_alt=suggestion_data.suggested_alt,
-        final_alt=final_alt,
-        model=suggestion_data.model,
-        context_snippet=suggestion_data.context_snippet,
-    )
+        return AltGenerationResult(
+            markdown_file=suggestion_data.markdown_file,
+            asset_path=suggestion_data.asset_path,
+            suggested_alt=suggestion_data.suggested_alt,
+            final_alt=final_alt,
+            model=suggestion_data.model,
+            context_snippet=suggestion_data.context_snippet,
+        )
 
 
 def _label_suggestions(
@@ -751,12 +753,7 @@ def _run_generate(
         suggestions = asyncio.run(
             _async_generate_suggestions(queue_items, options)
         )
-    except Exception as err:
-        console.print(f"[red]Error during generation: {err}[/red]")
-        # Even if there's an error, we might have partial results
-        suggestions = []
-
-    if suggestions:
+    finally:
         # Convert suggestions to the same format as AltGenerationResult for consistency
         suggestion_results = [
             AltGenerationResult(
@@ -774,10 +771,6 @@ def _run_generate(
         _write_output(suggestion_results, suggestions_path, append_mode=True)
         console.print(
             f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
-        )
-    else:
-        console.print(
-            "[yellow]No suggestions were generated successfully.[/yellow]"
         )
 
 
