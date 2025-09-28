@@ -823,6 +823,7 @@ def test_write_output(temp_dir: Path) -> None:
             final_alt="First image",
             model="gemini-2.5-flash",
             context_snippet="First context",
+            line_number=1,
         ),
         generate_alt_text.AltGenerationResult(
             markdown_file="test2.md",
@@ -831,6 +832,7 @@ def test_write_output(temp_dir: Path) -> None:
             final_alt="Second image FINAL",
             model="gemini-2.5-flash",
             context_snippet="Second context",
+            line_number=2,
         ),
     ]
 
@@ -858,6 +860,7 @@ def _create_test_result(
         final_alt=final_alt,
         model="gemini-2.5-flash",
         context_snippet="Test context",
+        line_number=1,
     )
 
 
@@ -1047,7 +1050,7 @@ def test_run_generate_appends_to_suggestions_file(temp_dir: Path) -> None:
     existing_data = [{"asset_path": "existing.jpg", "suggested_alt": "Old"}]
     suggestions_file.write_text(json.dumps(existing_data), encoding="utf-8")
 
-    new_suggestion = generate_alt_text.AltTextResult(
+    new_suggestion = generate_alt_text.AltGenerationResult(
         markdown_file="new.md",
         asset_path="new.jpg",
         suggested_alt="New",
@@ -1208,10 +1211,10 @@ def test_run_llm_empty_output(temp_dir: Path) -> None:
 
 
 @pytest.fixture
-def test_suggestions() -> list[generate_alt_text.AltTextResult]:
+def test_suggestions() -> list[generate_alt_text.AltGenerationResult]:
     """Test suggestions for error handling tests."""
     return [
-        generate_alt_text.AltTextResult(
+        generate_alt_text.AltGenerationResult(
             markdown_file="test1.md",
             asset_path="image1.jpg",
             suggested_alt="First",
@@ -1219,7 +1222,7 @@ def test_suggestions() -> list[generate_alt_text.AltTextResult]:
             context_snippet="ctx1",
             line_number=1,
         ),
-        generate_alt_text.AltTextResult(
+        generate_alt_text.AltGenerationResult(
             markdown_file="test2.md",
             asset_path="image2.jpg",
             suggested_alt="Second",
@@ -1268,7 +1271,8 @@ def _maybe_assert_saved_results(
 
 
 def test_label_suggestions_handles_file_errors(
-    temp_dir: Path, test_suggestions: list[generate_alt_text.AltTextResult]
+    temp_dir: Path,
+    test_suggestions: list[generate_alt_text.AltGenerationResult],
 ) -> None:
     """Test that individual file errors are handled gracefully and processing continues."""
     output_file = temp_dir / "test_output.json"
@@ -1291,7 +1295,7 @@ def test_label_suggestions_handles_file_errors(
 )
 def test_label_suggestions_saves_on_exceptions(
     temp_dir: Path,
-    test_suggestions: list[generate_alt_text.AltTextResult],
+    test_suggestions: list[generate_alt_text.AltGenerationResult],
     error_type,
     error_on_item: str,
     expected_saved_count: int,
@@ -1415,7 +1419,7 @@ def test_label_from_suggestions_file_loads_and_filters_data(
     assert len(loaded_suggestions) == 1
     assert loaded_suggestions[0].asset_path == "image.jpg"
     assert loaded_suggestions[0].line_number == 10
-    assert not hasattr(loaded_suggestions[0], "final_alt")
+    assert loaded_suggestions[0].final_alt is None
 
 
 @pytest.mark.parametrize(

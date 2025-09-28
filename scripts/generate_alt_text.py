@@ -56,9 +56,10 @@ class AltGenerationResult:
     markdown_file: str
     asset_path: str
     suggested_alt: str
-    final_alt: str
     model: str
     context_snippet: str
+    line_number: int
+    final_alt: str | None = None
 
     def to_json(self) -> dict[str, object]:
         """Convert to JSON-serializable dict."""
@@ -395,6 +396,7 @@ def _process_queue_item(
             final_alt=final_alt,
             model=options.model,
             context_snippet=queue_item.context_snippet,
+            line_number=queue_item.line_number,
         )
 
 
@@ -465,21 +467,11 @@ def _filter_existing_captions(
 _CONCURRENCY_LIMIT = 32
 
 
-@dataclass(slots=True)
-class AltTextResult:  # pylint: disable=C0115
-    markdown_file: str
-    asset_path: str
-    suggested_alt: str
-    model: str
-    context_snippet: str
-    line_number: int
-
-
 async def _run_llm_async(
     queue_item: scan_for_empty_alt.QueueItem,
     options: GenerateAltTextOptions,
     sem: asyncio.Semaphore,
-) -> AltTextResult:
+) -> AltGenerationResult:
     """Download asset, run LLM in a thread; clean up; return suggestion
     payload."""
     workspace = Path(tempfile.mkdtemp())
@@ -496,7 +488,7 @@ async def _run_llm_async(
                 options.model,
                 options.timeout,
             )
-        return AltTextResult(
+        return AltGenerationResult(
             markdown_file=queue_item.markdown_file,
             asset_path=queue_item.asset_path,
             suggested_alt=caption,
@@ -511,10 +503,10 @@ async def _run_llm_async(
 async def _async_generate_suggestions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     options: GenerateAltTextOptions,
-) -> list[AltTextResult]:
+) -> list[AltGenerationResult]:
     """Generate suggestions concurrently for *queue_items*."""
     sem = asyncio.Semaphore(_CONCURRENCY_LIMIT)
-    tasks: list[asyncio.Task[AltTextResult]] = []
+    tasks: list[asyncio.Task[AltGenerationResult]] = []
 
     for qi in queue_items:
         tasks.append(
@@ -531,7 +523,7 @@ async def _async_generate_suggestions(
     if task_count == 0:
         return []
 
-    suggestions: list[AltTextResult] = []
+    suggestions: list[AltGenerationResult] = []
     with tqdm(total=task_count, desc="Generating alt text") as progress_bar:
         try:
             for finished in asyncio.as_completed(tasks):
@@ -555,7 +547,7 @@ async def _async_generate_suggestions(
 
 
 def _process_single_suggestion_for_labeling(
-    suggestion_data: AltTextResult,
+    suggestion_data: AltGenerationResult,
     display: DisplayManager,
     current: int | None = None,
     total: int | None = None,
@@ -592,11 +584,12 @@ def _process_single_suggestion_for_labeling(
             final_alt=final_alt,
             model=suggestion_data.model,
             context_snippet=suggestion_data.context_snippet,
+            line_number=suggestion_data.line_number,
         )
 
 
 def _label_suggestions(
-    suggestions: list[AltTextResult],
+    suggestions: list[AltGenerationResult],
     console: Console,
     output_path: Path,
     append_mode: bool,
@@ -690,7 +683,7 @@ def label_from_suggestions_file(
     with open(suggestions_file, encoding="utf-8") as f:
         suggestions_from_file = json.load(f)
 
-    # Convert loaded data to AltTextResult, filtering out extra fields
+    # Convert loaded data to AltGenerationResult, filtering out extra fields
     suggestions = []
     for s in suggestions_from_file:
         filtered_data = {
@@ -701,7 +694,7 @@ def label_from_suggestions_file(
             "context_snippet": s["context_snippet"],
             "line_number": int(s["line_number"]),
         }
-        suggestions.append(AltTextResult(**filtered_data))
+        suggestions.append(AltGenerationResult(**filtered_data))
 
     console.print(
         f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
@@ -763,26 +756,16 @@ def _run_generate(
         f"[bold green]Generating {len(queue_items)} suggestions with '{options.model}'[/bold green]"
     )
 
+    suggestions = []
     try:
         suggestions = asyncio.run(
             _async_generate_suggestions(queue_items, options)
         )
     finally:
         # Convert suggestions to the same format as AltGenerationResult for consistency
-        suggestion_results = [
-            AltGenerationResult(
-                markdown_file=s.markdown_file,
-                asset_path=s.asset_path,
-                suggested_alt=s.suggested_alt,
-                final_alt=s.suggested_alt,  # For suggestions, these are the same
-                model=s.model,
-                context_snippet=s.context_snippet,
-            )
-            for s in suggestions
-        ]
 
         # Use the same append logic as the main output writing
-        _write_output(suggestion_results, suggestions_path, append_mode=True)
+        _write_output(suggestions, suggestions_path, append_mode=True)
         console.print(
             f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
         )
