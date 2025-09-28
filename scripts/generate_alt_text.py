@@ -270,11 +270,12 @@ class DisplayManager:
             queue_item, max_before=4, max_after=1
         )
         rendered_context = Markdown(context)
+        basename = Path(queue_item.markdown_file).name
         self.console.print(
             Panel(
                 rendered_context,
                 title="Context",
-                subtitle=f"{queue_item.markdown_file}:{queue_item.line_number}",
+                subtitle=f"{basename}:{queue_item.line_number}",
                 box=ROUNDED,
             )
         )
