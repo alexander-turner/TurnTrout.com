@@ -126,11 +126,23 @@ def _get_line_number(
 ) -> int:
     if token.map:
         return token.map[0] + 1
-    else:
-        return next(
-            (idx + 1 for idx, ln in enumerate(lines) if search_snippet in ln),
-            1,
-        )
+
+    # Try exact match first
+    for idx, ln in enumerate(lines):
+        if search_snippet in ln:
+            return idx + 1
+
+    # If exact match fails, try with whitespace variations
+    # Remove parentheses and search for just the asset path with flexible whitespace
+    if search_snippet.startswith("(") and search_snippet.endswith(")"):
+        asset_path = search_snippet[1:-1]  # Remove parentheses
+        for idx, ln in enumerate(lines):
+            if asset_path in ln:
+                return idx + 1
+
+    raise ValueError(
+        f"Could not find asset '{search_snippet}' in markdown file"
+    )
 
 
 def _handle_md_asset(

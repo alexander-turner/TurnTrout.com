@@ -157,3 +157,58 @@ def test_html_img_line_number_with_frontmatter(tmp_path: Path) -> None:
     queue = scan_for_empty_alt.build_queue(tmp_path)
     assert len(queue) == 1
     assert queue[0].line_number == img_line_no
+
+
+def test_get_line_number_raises_error_when_asset_not_found(
+    tmp_path: Path,
+) -> None:
+    """Test that _get_line_number raises ValueError when asset can't be found in file."""
+    from markdown_it.token import Token
+
+    # Create a markdown file without the asset we're looking for
+    md_content = textwrap.dedent(
+        """
+        # Title
+        
+        Some content here.
+        
+        ![Different image](other.png)
+        """
+    )
+    file_path = _write_md(tmp_path, md_content, "missing_asset.md")
+
+    # Create a token without map info to force fallback search
+    token = Token("image", "", 0)
+    token.map = None
+
+    lines = file_path.read_text().splitlines()
+
+    # This should raise ValueError since "nonexistent.png" is not in the file
+    with pytest.raises(
+        ValueError,
+        match="Could not find asset '\\(nonexistent.png\\)' in markdown file",
+    ):
+        scan_for_empty_alt._get_line_number(token, lines, "(nonexistent.png)")
+
+
+def test_html_img_error_when_src_not_in_content(tmp_path: Path) -> None:
+    """Test error handling when HTML img src can't be found in file content."""
+    # Create a file where the regex will extract an img src but the src won't be found in content
+    # This is a bit contrived but tests the error path
+
+    md_content = textwrap.dedent(
+        """
+        # Title
+        
+        Some content.
+        
+        <img src="findable.jpg" alt="">
+        """
+    )
+    _write_md(tmp_path, md_content, "html_test.md")
+
+    # This should work normally
+    queue = scan_for_empty_alt.build_queue(tmp_path)
+    assert len(queue) == 1
+    assert queue[0].asset_path == "findable.jpg"
+    assert queue[0].line_number == 6  # Line where <img> appears
