@@ -2,8 +2,8 @@
 
 import argparse
 import asyncio
-import atexit
 import json
+import os
 import readline
 import shutil
 import subprocess
@@ -172,7 +172,11 @@ def _download_asset(
     )
 
 
-def _generate_article_context(queue_item: scan_for_empty_alt.QueueItem) -> str:
+def _generate_article_context(
+    queue_item: scan_for_empty_alt.QueueItem,
+    max_before: int | None = None,
+    max_after: int = 2,
+) -> str:
     """Generate context with all preceding paragraphs and 2 after for LLM
     prompts."""
     markdown_path = Path(queue_item.markdown_file)
@@ -180,7 +184,10 @@ def _generate_article_context(queue_item: scan_for_empty_alt.QueueItem) -> str:
     lines = source_text.splitlines()
 
     return script_utils.paragraph_context(
-        lines, queue_item.line_number - 1, max_before=None, max_after=2
+        lines,
+        queue_item.line_number - 1,
+        max_before=max_before,
+        max_after=max_after,
     )
 
 
@@ -196,6 +203,7 @@ def _build_prompt(
         """
     ).strip()
 
+    # TODO add an "IMAGE HERE" marker?
     article_context = _generate_article_context(queue_item)
     main_prompt = textwrap.dedent(
         f"""
@@ -204,10 +212,10 @@ def _build_prompt(
 
         Critical requirements:
         - Under {max_chars} characters (aim for 1-2 sentences when possible)
-        - Do not include redundant information (e.g. "image of", "picture of", "diagram illustrating")
+        - Do not include redundant information (e.g. "image of", "picture of", "diagram illustrating", "a diagram of")
         - Return only the alt text, no quotes
         - For text-heavy images: transcribe key text content, then describe visual elements
-        - Include relevant keywords naturally
+        - Don't reintroduce acronyms
         - Describe spatial relationships and visual hierarchy when important
 
         Prioritize completeness over brevity - include both textual content and visual description as needed. 
@@ -254,11 +262,12 @@ class DisplayManager:
 
     def __init__(self, console: Console) -> None:
         self.console = console
-        self._image_processes: list[subprocess.Popen[bytes]] = []
 
     def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
         """Display context information for the queue item."""
-        context = _generate_article_context(queue_item)
+        context = _generate_article_context(
+            queue_item, max_before=4, max_after=1
+        )
         self.console.print(
             Panel(
                 context,
@@ -269,37 +278,34 @@ class DisplayManager:
         )
 
     def show_image(self, path: Path) -> None:
-        """Display the actual image using the system's default image viewer."""
-        if sys.stdout.isatty():
-            self.console.print(f"[dim]Image: {path}[/dim]")
+        """Display the image using imgcat."""
+        if "TMUX" in os.environ:
+            raise ValueError("Cannot open image in tmux")
+        try:
+            subprocess.run(["imgcat", str(path)], check=True)
+        except subprocess.CalledProcessError as err:
+            raise ValueError(
+                f"Failed to open image: {err}; is imgcat installed?"
+            ) from err
 
-            # Open the image with the default system viewer (macOS/Linux/Windows compatible)
-            try:
-                if sys.platform == "darwin":  # macOS
-                    # Use Popen to track the process for later cleanup
-                    process = subprocess.Popen(["open", str(path)])
-                    self._image_processes.append(process)
-                elif sys.platform.startswith("linux"):  # Linux
-                    process = subprocess.Popen(["xdg-open", str(path)])
-                    self._image_processes.append(process)
-                elif sys.platform == "win32":  # Windows
-                    process = subprocess.Popen(
-                        ["start", str(path)], shell=True
-                    )
-                    self._image_processes.append(process)
-                else:
-                    raise ValueError(f"Unsupported platform: {sys.platform}")
-            except (subprocess.SubprocessError, OSError) as err:
-                raise ValueError(f"Failed to open image: {err}") from err
-
-    def show_suggestion(self, suggestion: str) -> None:
-        """Display the generated alt text suggestion."""
-        self.console.print(
-            Panel(suggestion, title="Suggested alt text", box=ROUNDED)
+    def show_progress(self, current: int, total: int) -> None:
+        """Display progress information."""
+        progress_text = (
+            f"Progress: {current}/{total} ({current/total*100:.1f}%)"
         )
+        self.console.print(f"[dim]{progress_text}[/dim]")
 
-    def prompt_for_edit(self, suggestion: str) -> str:
+    def prompt_for_edit(
+        self,
+        suggestion: str,
+        current: int | None = None,
+        total: int | None = None,
+    ) -> str:
         """Prompt user to edit the suggestion with prefilled editable text."""
+        # Show progress if provided
+        if current is not None and total is not None:
+            self.show_progress(current, total)
+
         # Enable vim keybindings for readline
         readline.parse_and_bind("set editing-mode vi")
         readline.set_startup_hook(lambda: readline.insert_text(suggestion))
@@ -324,50 +330,6 @@ class DisplayManager:
                 style="red",
             )
         )
-
-    def refocus_terminal(self) -> None:
-        """Attempt to refocus terminal (iTerm2 specific)."""
-        if sys.stdout.isatty():
-            self.console.print("\033]1337;StealFocus\a", end="")
-            self.console.print()
-
-    def close_current_image(self) -> None:
-        """Close the most recently opened image viewer."""
-        # On macOS, the `open` command often launches Preview and returns
-        # immediately, so the spawned `open` process terminates before we can
-        # track or kill it. As a fallback, explicitly ask Preview to quit.
-        if sys.platform == "darwin" and shutil.which("osascript") is not None:
-            subprocess.run(
-                [
-                    "osascript",
-                    "-e",
-                    'tell application "Preview" to quit',
-                ],
-                check=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-
-        if not self._image_processes:
-            return
-
-        process = self._image_processes[-1]
-        try:
-            if process.poll() is None:  # Process is still running
-                process.terminate()
-                # Give it a moment to close gracefully
-                try:
-                    process.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    process.kill()  # Force kill if it doesn't close
-        except (OSError, subprocess.SubprocessError):
-            pass  # Process might already be dead
-        self._image_processes.pop()
-
-    def close_all_images(self) -> None:
-        """Close all opened image viewers."""
-        while self._image_processes:
-            self.close_current_image()
 
 
 @dataclass(slots=True)
@@ -404,14 +366,11 @@ def _process_queue_item(
         display.show_rule(queue_item.asset_path)
         display.show_context(queue_item)
         display.show_image(attachment)
-        display.refocus_terminal()
 
         # Allow user to edit the suggestion
         final_alt = suggestion
         if sys.stdout.isatty():
             final_alt = display.prompt_for_edit(suggestion)
-
-        display.close_current_image()
 
         return AltGenerationResult(
             markdown_file=queue_item.markdown_file,
@@ -560,7 +519,16 @@ async def _async_generate_suggestions(
     with tqdm(total=task_count, desc="Generating alt text") as progress_bar:
         try:
             for finished in asyncio.as_completed(tasks):
-                suggestions.append(await finished)
+                try:
+                    result = await finished
+                    suggestions.append(result)
+                except (
+                    AltGenerationError,
+                    FileNotFoundError,
+                    requests.RequestException,
+                ) as err:
+                    # Skip individual items that fail (e.g., unsupported file types)
+                    progress_bar.write(f"Skipped item due to error: {err}")
                 progress_bar.update(1)
         except asyncio.CancelledError:
             progress_bar.set_description(
@@ -573,6 +541,8 @@ async def _async_generate_suggestions(
 def _process_single_suggestion_for_labeling(
     suggestion_data: AltTextResult,
     display: DisplayManager,
+    current: int | None = None,
+    total: int | None = None,
 ) -> AltGenerationResult:
     # Recreate queue item for display
     queue_item = scan_for_empty_alt.QueueItem(
@@ -591,15 +561,13 @@ def _process_single_suggestion_for_labeling(
         display.show_rule(queue_item.asset_path)
         display.show_context(queue_item)
         display.show_image(attachment)
-        display.refocus_terminal()
-        display.show_suggestion(suggestion_data.suggested_alt)
 
         # Allow user to edit the suggestion
         final_alt = suggestion_data.suggested_alt
         if sys.stdout.isatty():
-            final_alt = display.prompt_for_edit(suggestion_data.suggested_alt)
-
-        display.close_current_image()
+            final_alt = display.prompt_for_edit(
+                suggestion_data.suggested_alt, current, total
+            )
 
     return AltGenerationResult(
         markdown_file=suggestion_data.markdown_file,
@@ -621,11 +589,6 @@ def _label_suggestions(
     display = DisplayManager(console)
     processed_results: list[AltGenerationResult] = []
 
-    def cleanup() -> None:
-        display.close_all_images()
-
-    atexit.register(cleanup)
-
     console.print(
         f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
     )
@@ -644,10 +607,11 @@ def _label_suggestions(
             )
 
     try:
-        for suggestion_data in suggestions_to_process:
+        total_count = len(suggestions_to_process)
+        for i, suggestion_data in enumerate(suggestions_to_process, 1):
             try:
                 result = _process_single_suggestion_for_labeling(
-                    suggestion_data, display
+                    suggestion_data, display, current=i, total=total_count
                 )
                 processed_results.append(result)
             # Individual errors don't halt the loop
@@ -657,7 +621,6 @@ def _label_suggestions(
                 requests.RequestException,
             ) as err:
                 display.show_error(str(err))
-                display.close_current_image()
                 continue
             # Let KeyboardInterrupt and other critical exceptions bubble up
             # but ensure we save any processed results in the finally block
@@ -670,7 +633,6 @@ def _label_suggestions(
             console.print(
                 f"[green]Saved {len(processed_results)} results to {output_path}[/green]"
             )
-        cleanup()
 
     return len(processed_results)
 
@@ -784,28 +746,39 @@ def _run_generate(
     console.print(
         f"[bold green]Generating {len(queue_items)} suggestions with '{options.model}'[/bold green]"
     )
-    suggestions = asyncio.run(
-        _async_generate_suggestions(queue_items, options)
-    )
 
-    # Convert suggestions to the same format as AltGenerationResult for consistency
-    suggestion_results = [
-        AltGenerationResult(
-            markdown_file=s.markdown_file,
-            asset_path=s.asset_path,
-            suggested_alt=s.suggested_alt,
-            final_alt=s.suggested_alt,  # For suggestions, these are the same
-            model=s.model,
-            context_snippet=s.context_snippet,
+    try:
+        suggestions = asyncio.run(
+            _async_generate_suggestions(queue_items, options)
         )
-        for s in suggestions
-    ]
+    except Exception as err:
+        console.print(f"[red]Error during generation: {err}[/red]")
+        # Even if there's an error, we might have partial results
+        suggestions = []
 
-    # Use the same append logic as the main output writing
-    _write_output(suggestion_results, suggestions_path, append_mode=True)
-    console.print(
-        f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
-    )
+    if suggestions:
+        # Convert suggestions to the same format as AltGenerationResult for consistency
+        suggestion_results = [
+            AltGenerationResult(
+                markdown_file=s.markdown_file,
+                asset_path=s.asset_path,
+                suggested_alt=s.suggested_alt,
+                final_alt=s.suggested_alt,  # For suggestions, these are the same
+                model=s.model,
+                context_snippet=s.context_snippet,
+            )
+            for s in suggestions
+        ]
+
+        # Use the same append logic as the main output writing
+        _write_output(suggestion_results, suggestions_path, append_mode=True)
+        console.print(
+            f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
+        )
+    else:
+        console.print(
+            "[yellow]No suggestions were generated successfully.[/yellow]"
+        )
 
 
 # ---------------------------------------------------------------------------
