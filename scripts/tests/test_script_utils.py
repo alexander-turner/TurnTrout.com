@@ -1094,10 +1094,184 @@ def test_paragraph_context_grabs_neighboring_paragraphs() -> None:
         "Para D is outside of the context\n",
     ]
 
-    snippet = script_utils.paragraph_context(lines, 2)
+    snippet = script_utils.paragraph_context(lines, 2, max_after=0)
 
-    # Should include paragraphs B and C, but not A.
+    # Should include paragraphs A and B (target is line 2 which is in Para B)
     assert "Para A" in snippet
     assert "Para B line 1" in snippet and "Para B line 2" in snippet
-    assert "Para C line 1" in snippet
+    assert "Para C" not in snippet
     assert "Para D" not in snippet
+
+
+class TestParagraphContext:
+    """Test suite for paragraph_context function."""
+
+    @pytest.fixture
+    def sample_text_lines(self) -> list[str]:
+        """Sample text with multiple paragraphs for testing."""
+        return [
+            "Para A line 1",  # Para 0
+            "",
+            "Para B line 1",  # Para 1
+            "Para B line 2",
+            "",
+            "Para C line 1",  # Para 2
+            "",
+            "Para D line 1",  # Para 3
+            "",
+            "Para E line 1",  # Para 4
+            "",
+            "Para F line 1",  # Para 5 (target paragraph at line 10)
+            "",
+            "Para G line 1",  # Para 6 (after target)
+            "",
+            "Para H line 1",  # Para 7 (after target)
+        ]
+
+    @pytest.mark.parametrize(
+        "max_before,should_include,should_exclude",
+        [
+            pytest.param(
+                None,
+                ["Para A", "Para B", "Para C", "Para D", "Para E", "Para F"],
+                ["Para G", "Para H"],
+                id="no_limit_all_before",
+            ),
+            pytest.param(
+                2,
+                ["Para D", "Para E", "Para F"],
+                ["Para A", "Para B", "Para C", "Para G", "Para H"],
+                id="limit_2_before",
+            ),
+            pytest.param(
+                1,
+                ["Para E", "Para F"],
+                ["Para A", "Para B", "Para C", "Para D", "Para G", "Para H"],
+                id="limit_1_before",
+            ),
+            pytest.param(
+                0,
+                ["Para F"],
+                [
+                    "Para A",
+                    "Para B",
+                    "Para C",
+                    "Para D",
+                    "Para E",
+                    "Para G",
+                    "Para H",
+                ],
+                id="no_paragraphs_before",
+            ),
+            pytest.param(
+                10,
+                ["Para A", "Para B", "Para C", "Para D", "Para E", "Para F"],
+                ["Para G", "Para H"],
+                id="limit_exceeds_available",
+            ),
+        ],
+    )
+    def test_max_before_parameter(
+        self,
+        sample_text_lines: list[str],
+        max_before: int | None,
+        should_include: list[str],
+        should_exclude: list[str],
+    ) -> None:
+        """Test paragraph_context with various max_before values."""
+        target_line = sample_text_lines.index("Para F line 1")
+        snippet = script_utils.paragraph_context(
+            sample_text_lines, target_line, max_before=max_before, max_after=0
+        )
+
+        for text in should_include:
+            assert text in snippet, f"Expected '{text}' in snippet"
+
+        for text in should_exclude:
+            assert text not in snippet, f"Expected '{text}' NOT in snippet"
+
+    @pytest.mark.parametrize(
+        "lines,target_line,expected_result",
+        [
+            pytest.param(["Only line"], 0, "Only line", id="single_line"),
+            pytest.param([], 0, "", id="empty_input"),
+            pytest.param(["", "", ""], 1, "", id="only_blank_lines"),
+        ],
+    )
+    def test_edge_cases(
+        self, lines: list[str], target_line: int, expected_result: str
+    ) -> None:
+        """Test edge cases for paragraph_context."""
+        result = script_utils.paragraph_context(
+            lines, target_line, max_after=0
+        )
+        assert result == expected_result
+
+    def test_preserves_formatting(self) -> None:
+        """Test that original formatting is preserved."""
+        lines = [
+            "# Header",
+            "",
+            "First **bold** text",
+            "and a second line",
+            "",
+            "Second [link](url)",
+            "",
+            "Third paragraph",
+        ]
+
+        snippet = script_utils.paragraph_context(
+            lines, 4, max_before=1, max_after=0
+        )
+
+        assert "**bold**" in snippet
+        assert "[link](url)" in snippet
+        assert "# Header" not in snippet
+
+    @pytest.mark.parametrize(
+        "max_before,expected_present,expected_absent",
+        [
+            pytest.param(
+                0, ["Para 3"], ["Para 1", "Para 2"], id="zero_before"
+            ),
+            pytest.param(
+                2, ["Para 1", "Para 2", "Para 3"], [], id="exact_available"
+            ),
+        ],
+    )
+    def test_boundary_conditions(
+        self,
+        max_before: int,
+        expected_present: list[str],
+        expected_absent: list[str],
+    ) -> None:
+        """Test boundary conditions for max_before parameter."""
+        lines = [
+            "Para 1",
+            "",
+            "Para 2",
+            "",
+            "Para 3",
+            "",
+            "Para 4",
+            "",
+            "Para 5",
+        ]
+        target_line = 4  # "Para 3"
+
+        snippet = script_utils.paragraph_context(
+            lines, target_line, max_before=max_before, max_after=0
+        )
+
+        for text in expected_present:
+            assert text in snippet
+        for text in expected_absent:
+            assert text not in snippet
+
+    def test_out_of_bounds_target(self) -> None:
+        """Test behavior when target line is out of bounds."""
+        lines = ["Line 1", "", "Line 2"]
+        result = script_utils.paragraph_context(
+            lines, 10, max_before=2, max_after=0
+        )
+        assert isinstance(result, str)  # Should not crash

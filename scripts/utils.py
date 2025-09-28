@@ -310,44 +310,105 @@ def get_classes(tag: Tag) -> list[str]:
     raise ValueError("Invalid class attribute value")
 
 
-def paragraph_context(lines: Sequence[str], idx: int) -> str:
-    """
-    Return all paragraphs before *idx* and one paragraph after *idx*
-    (inclusive) separated by blank lines.
-
-    Each paragraph is returned exactly as it appears in the file.
-    """
-    # Identify paragraph boundaries based on blank lines.
+def _parse_paragraphs(
+    lines: Sequence[str],
+) -> tuple[list[list[str]], list[int]]:
+    """Parse lines into paragraphs and their start indices."""
     paragraphs: list[list[str]] = []
+    paragraph_starts: list[int] = []
     current: list[str] = []
-    for line in lines:
+
+    for idx, line in enumerate(lines):
         if line.strip() == "":
             if current:
                 paragraphs.append(current)
+                paragraph_starts.append(idx - len(current))
                 current = []
         else:
             current.append(line.rstrip("\n"))
+
     if current:
         paragraphs.append(current)
+        paragraph_starts.append(len(lines) - len(current))
 
-    # Map line index -> paragraph index.
-    line_to_para: dict[int, int] = {}
-    current_idx = 0
-    for p_idx, para in enumerate(paragraphs):
-        for _ in para:
-            line_to_para[current_idx] = p_idx
-            current_idx += 1
-        # Account for the blank line after paragraph.
-        line_to_para[current_idx] = p_idx  # blank line maps to this para idx
-        current_idx += 1
+    return paragraphs, paragraph_starts
 
-    para_idx = line_to_para.get(idx, 0)
-    # Get all paragraphs before the image (start from 0)
-    start_idx = 0
-    # Get one paragraph after the image
-    end_idx = min(len(paragraphs), para_idx + 2)
+
+def _find_target_paragraph(
+    lines: Sequence[str],
+    target_idx: int,
+    paragraphs: list[list[str]],
+    paragraph_starts: list[int],
+) -> int | None:
+    """Find the paragraph index for the target line."""
+    selected_line = lines[target_idx] if target_idx < len(lines) else ""
+
+    if selected_line.strip() != "":
+        selected_stripped = selected_line.rstrip("\n")
+        for i, paragraph in enumerate(paragraphs):
+            if selected_stripped in paragraph:
+                return i
+    else:
+        for i, start in enumerate(paragraph_starts):
+            if start > target_idx:
+                return i
+    return None
+
+
+def paragraph_context(
+    lines: Sequence[str],
+    target_idx: int,
+    max_before: int | None = None,
+    max_after: int = 2,
+) -> str:
+    """
+    Return a slice of text around *target_idx* in **paragraph** units.
+
+    A *paragraph* is any non-empty run of lines separated by at least one blank
+    line.  The returned snippet includes:
+
+    • Up to *max_before* paragraphs **before** the target paragraph.
+      – ``None`` means *unlimited* (all preceding paragraphs).
+      – ``0`` means *no* paragraphs before the target.
+    • The target paragraph itself.
+    • Up to *max_after* paragraphs **after** the target paragraph (``0`` means
+      none).
+
+    If *target_idx* is located on a blank line, the function treats the **next**
+    paragraph as the target.  Requests that are out-of-bounds or that point
+    past the last paragraph return an empty string instead of raising.  The
+    original line formatting (including Markdown, punctuation, etc.) is
+    preserved.
+    """
+    if (
+        target_idx < 0
+        or (max_before is not None and max_before < 0)
+        or max_after < 0
+    ):  # pragma: no cover
+        raise ValueError(
+            f"{target_idx=}, {max_before=}, and {max_after=} must be non-negative"
+        )
+
+    paragraphs, paragraph_starts = _parse_paragraphs(lines)
+    par_idx = _find_target_paragraph(
+        lines, target_idx, paragraphs, paragraph_starts
+    )
+
+    if par_idx is None:
+        return ""
+
+    if max_before is None:
+        start_idx = 0
+    elif max_before == 0:
+        start_idx = par_idx
+    else:
+        start_idx = max(0, par_idx - max_before)
+
+    end_idx = min(len(paragraphs), par_idx + max_after + 1)
+
     snippet_lines: list[str] = []
-    for p in paragraphs[start_idx:end_idx]:
-        snippet_lines.extend(p)
-        snippet_lines.append("")  # restore blank line separator
+    for para in paragraphs[start_idx:end_idx]:
+        snippet_lines.extend(para)
+        snippet_lines.append("")
+
     return "\n".join(snippet_lines).strip()
