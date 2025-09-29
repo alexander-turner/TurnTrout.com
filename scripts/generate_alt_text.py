@@ -11,7 +11,7 @@ import sys
 import tempfile
 import textwrap
 import warnings
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Iterable, Sequence
@@ -241,7 +241,8 @@ def _build_prompt(
         - Return only the alt text, no quotes
         - For text-heavy images: transcribe key text content, then describe visual elements
         - Don't reintroduce acronyms
-        - Don't describe purely visual elements unless directly relevant for understanding the content (e.g. don't say "the line in this scientific chart is green")
+        - Don't describe purely visual elements unless directly relevant for
+        understanding the content (e.g. don't say "the line in this scientific chart is green")
         - Describe spatial relationships and visual hierarchy when important
 
         Prioritize completeness over brevity - include both textual content and visual description as needed. 
@@ -364,7 +365,7 @@ class DisplayManager:
     def show_progress(self, current: int, total: int) -> None:
         """Display progress information."""
         progress_text = (
-            f"Progress: {current}/{total} ({current/total*100:.1f}%)"
+            f"Progress: {current}/{total} ({(current-1)/total*100:.1f}%)"
         )
         self.console.print(f"[dim]{progress_text}[/dim]")
 
@@ -632,11 +633,14 @@ def _process_single_suggestion_for_labeling(
         display.show_image(attachment)
 
         # Allow user to edit the suggestion
-        final_alt = suggestion_data.suggested_alt
+        prefill_text = (
+            suggestion_data.final_alt
+            if suggestion_data.final_alt is not None
+            else suggestion_data.suggested_alt
+        )
+        final_alt = prefill_text
         if sys.stdout.isatty():
-            final_alt = display.prompt_for_edit(
-                suggestion_data.suggested_alt, current, total
-            )
+            final_alt = display.prompt_for_edit(prefill_text, current, total)
 
         return AltGenerationResult(
             markdown_file=suggestion_data.markdown_file,
@@ -696,6 +700,16 @@ def _label_suggestions(
                     if undone_result:
                         console.print(
                             f"[yellow]Undoing: {undone_result.asset_path}[/yellow]"
+                        )
+                        # Update the current suggestion with the undone final_alt for prefill
+                        prefill_text = (
+                            undone_result.final_alt
+                            if undone_result.final_alt is not None
+                            else undone_result.suggested_alt
+                        )
+                        session.suggestions[session.current_index] = replace(
+                            session.suggestions[session.current_index],
+                            final_alt=prefill_text,
                         )
                     else:
                         console.print(

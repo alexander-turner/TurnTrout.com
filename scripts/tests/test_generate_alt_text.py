@@ -1774,3 +1774,53 @@ def test_label_suggestions_sequences(
         for r in json.loads(output_path.read_text(encoding="utf-8"))
     ]
     assert saved[: len(expected_saved)] == expected_saved
+
+
+def test_prefill_after_undo(temp_dir: Path) -> None:
+    """Ensure that after an undo, the previous final_alt is used as prefill."""
+
+    console = Console()
+    output_path = temp_dir / "output.json"
+
+    suggestions = [create_alt(1), create_alt(2)]
+
+    # Sequence: accept → undo → modify → accept next
+    sequence: list[str] = [
+        "accepted first",
+        generate_alt_text.UNDO_REQUESTED,
+        "modified first",
+        "accepted second",
+    ]
+
+    call_index = 0
+    observed_final_alts: list[str | None] = []
+
+    def mock_process_single_suggestion(
+        suggestion_data, display, current=None, total=None
+    ):
+        nonlocal call_index
+        # Record the final_alt that arrives as prefill for this prompt
+        observed_final_alts.append(suggestion_data.final_alt)
+
+        final = (
+            sequence[call_index]
+            if call_index < len(sequence)
+            else "accepted tail"
+        )
+        call_index += 1
+        return create_alt(suggestion_data.line_number, final_alt=final)
+
+    with patch.object(
+        generate_alt_text,
+        "_process_single_suggestion_for_labeling",
+        side_effect=mock_process_single_suggestion,
+    ):
+        generate_alt_text._label_suggestions(
+            suggestions, console, output_path, append_mode=False
+        )
+
+    # First prompt: no prefill; re-prompt after undo: prefilled with prior accepted text
+    assert [observed_final_alts[0], observed_final_alts[2]] == [
+        None,
+        "accepted first",
+    ]
