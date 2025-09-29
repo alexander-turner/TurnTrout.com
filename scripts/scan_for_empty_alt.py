@@ -18,6 +18,7 @@ from markdown_it.token import Token
 # pylint: disable=C0413
 sys.path.append(str(Path(__file__).parent.parent))
 
+from scripts import alt_text_utils
 from scripts import utils as script_utils
 
 _JSON_INDENT: int = 2
@@ -50,7 +51,9 @@ def _create_queue_item(
         markdown_file=str(md_path),
         asset_path=asset_path,
         line_number=line_number,
-        context_snippet=script_utils.paragraph_context(lines, line_number - 1),
+        context_snippet=alt_text_utils.paragraph_context(
+            lines, line_number - 1
+        ),
     )
 
 

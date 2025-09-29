@@ -2,26 +2,16 @@
 
 import argparse
 import asyncio
-import json
-import os
-import readline
 import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 import warnings
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Iterable, Sequence
-from urllib.parse import urlparse
+from typing import Sequence
 
-import requests
-from rich.box import ROUNDED
 from rich.console import Console
-from rich.markdown import Markdown
-from rich.panel import Panel
 from tqdm.rich import tqdm
 from tqdm.std import TqdmExperimentalWarning
 
@@ -29,7 +19,7 @@ from tqdm.std import TqdmExperimentalWarning
 # pylint: disable=C0413
 sys.path.append(str(Path(__file__).parent.parent))
 
-from scripts import scan_for_empty_alt
+from scripts import alt_text_utils, label_alt_text, scan_for_empty_alt
 from scripts import utils as script_utils
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
@@ -47,211 +37,6 @@ MODEL_COSTS = {
     },
     "gemini-2.5-flash-preview-09-2025": {"input": 0.00001, "output": 0.00004},
 }
-
-UNDO_REQUESTED = "UNDO_REQUESTED"
-
-
-@dataclass(slots=True)
-class AltGenerationResult:
-    """Container for AI-generated alt text suggestions."""
-
-    markdown_file: str
-    asset_path: str
-    suggested_alt: str
-    model: str
-    context_snippet: str
-    line_number: int
-    final_alt: str | None = None
-
-    def to_json(self) -> dict[str, object]:
-        """Convert to JSON-serializable dict."""
-        return asdict(self)
-
-
-class AltGenerationError(Exception):
-    """Raised when caption generation fails."""
-
-
-def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
-    """Convert AVIF images to PNG format for LLM compatibility."""
-    if asset_path.suffix.lower() != ".avif":
-        return asset_path
-
-    png_target = workspace / f"{asset_path.stem}.png"
-    magick_executable = script_utils.find_executable("magick")
-
-    try:
-        subprocess.run(
-            [magick_executable, str(asset_path), str(png_target)],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        return png_target
-    except subprocess.CalledProcessError as err:
-        raise AltGenerationError(
-            f"Failed to convert AVIF to PNG: {err.stderr or err.stdout}"
-        ) from err
-
-
-def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
-    """Convert GIF files to MP4 format for LLM compatibility."""
-    if asset_path.suffix.lower() != ".gif":
-        raise ValueError(f"Unsupported file type '{asset_path.suffix}'.")
-
-    mp4_target = workspace / f"{asset_path.stem}.mp4"
-    ffmpeg_executable = script_utils.find_executable("ffmpeg")
-
-    try:
-        subprocess.run(
-            [
-                ffmpeg_executable,
-                "-i",
-                str(asset_path),
-                "-vf",
-                "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-                "-y",
-                str(mp4_target),
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        return mp4_target
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
-        raise AltGenerationError(
-            f"Failed to convert GIF to MP4: {err}"
-        ) from err
-
-
-def _convert_asset_for_llm(asset_path: Path, workspace: Path) -> Path:
-    """Converts asset to a format compatible with the LLM if needed."""
-    if asset_path.suffix.lower() == ".avif":
-        return _convert_avif_to_png(asset_path, workspace)
-    if asset_path.suffix.lower() == ".gif":
-        return _convert_gif_to_mp4(asset_path, workspace)
-    return asset_path
-
-
-def _download_asset(
-    queue_item: scan_for_empty_alt.QueueItem, workspace: Path
-) -> Path:
-    """Download or locate asset file, returning path to accessible copy."""
-    asset_path = queue_item.asset_path
-
-    if script_utils.is_url(asset_path):
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/91.0.4472.124 Safari/537.36"
-            )
-        }
-        response = requests.get(
-            asset_path, timeout=20, stream=True, headers=headers
-        )
-        response.raise_for_status()
-        suffix = Path(urlparse(asset_path).path).suffix or ".bin"
-        target = workspace / f"asset{suffix}"
-        with target.open("wb") as handle:
-            for chunk in response.iter_content(chunk_size=8192):
-                handle.write(chunk)
-        return _convert_asset_for_llm(target, workspace)
-
-    # Try relative to markdown file first
-    markdown_path = Path(queue_item.markdown_file)
-    candidate = markdown_path.parent / asset_path
-    if candidate.exists():
-        return _convert_asset_for_llm(candidate.resolve(), workspace)
-
-    # Try relative to git root
-    git_root = script_utils.get_git_root()
-    alternative = git_root / asset_path.lstrip("/")
-    if alternative.exists():
-        return _convert_asset_for_llm(alternative.resolve(), workspace)
-
-    raise FileNotFoundError(
-        f"Unable to locate asset '{asset_path}' referenced in {queue_item.markdown_file}"
-    )
-
-
-def _generate_article_context(
-    queue_item: scan_for_empty_alt.QueueItem,
-    max_before: int | None = None,
-    max_after: int = 2,
-    trim_frontmatter: bool = False,
-) -> str:
-    """Generate context with all preceding paragraphs and 2 after for LLM
-    prompts."""
-    markdown_path = Path(queue_item.markdown_file)
-    source_text = markdown_path.read_text(encoding="utf-8")
-    source_lines = source_text.splitlines()
-
-    # Convert from 1-based line number to 0-based index
-    line_number_to_pass = queue_item.line_number - 1
-    lines_to_show = source_lines
-
-    if trim_frontmatter:
-        # Try to split YAML frontmatter and get content only
-        _, split_content = script_utils.split_yaml(
-            markdown_path, verbose=False
-        )
-
-        # If frontmatter found, use content without frontmatter
-        if split_content.strip():
-            lines_to_show = split_content.splitlines()
-            num_frontmatter_lines = len(source_lines) - len(lines_to_show)
-            line_number_to_pass = (
-                queue_item.line_number - 1 - num_frontmatter_lines
-            )
-
-    return script_utils.paragraph_context(
-        lines_to_show,
-        line_number_to_pass,
-        max_before=max_before,
-        max_after=max_after,
-    )
-
-
-def _build_prompt(
-    queue_item: scan_for_empty_alt.QueueItem,
-    max_chars: int,
-) -> str:
-    """Build prompt for LLM caption generation."""
-    base_prompt = textwrap.dedent(
-        """
-        Generate concise alt text for accessibility and SEO. 
-        Describe the intended information of the image clearly and accurately.
-        """
-    ).strip()
-
-    article_context = _generate_article_context(
-        queue_item, trim_frontmatter=False
-    )
-    main_prompt = textwrap.dedent(
-        f"""
-        Context from {queue_item.markdown_file}:
-        {article_context}
-
-        Critical requirements:
-        - Under {max_chars} characters (aim for 1-2 sentences when possible)
-        - Do not include redundant information (e.g. "image of", "picture of", "diagram illustrating", "a diagram of")
-        - Return only the alt text, no quotes
-        - For text-heavy images: transcribe key text content, then describe visual elements
-        - Don't reintroduce acronyms
-        - Don't describe purely visual elements unless directly relevant for
-        understanding the content (e.g. don't say "the line in this scientific chart is green")
-        - Describe spatial relationships and visual hierarchy when important
-
-        Prioritize completeness over brevity - include both textual content and visual description as needed. 
-        While thinking quietly, propose a candidate alt text. Then critique the candidate alt text—
-        does it accurately describe the information the image is meant to convey? 
-        Incorporate the critique into the alt text to improve it. Only output the improved alt text.
-        """
-    ).strip()
-
-    return f"{base_prompt}\n{main_prompt}"
 
 
 def _run_llm(
@@ -273,141 +58,14 @@ def _run_llm(
 
     if result.returncode != 0:
         error_output = result.stderr.strip() or result.stdout.strip()
-        raise AltGenerationError(
+        raise alt_text_utils.AltGenerationError(
             f"Caption generation failed for {attachment}: {error_output}"
         )
 
     cleaned = result.stdout.strip()
     if not cleaned:
-        raise AltGenerationError("LLM returned empty caption")
+        raise alt_text_utils.AltGenerationError("LLM returned empty caption")
     return cleaned
-
-
-class LabelingSession:
-    """Manages the labeling session state and navigation."""
-
-    def __init__(self, suggestions: list[AltGenerationResult]) -> None:
-        self.suggestions = suggestions
-        self.current_index = 0
-        self.processed_results: list[AltGenerationResult] = []
-
-    def can_undo(self) -> bool:
-        """Check if undo is possible."""
-        return len(self.processed_results) > 0
-
-    def undo(self) -> AltGenerationResult | None:
-        """Undo the last processed result and return to previous item."""
-        if not self.can_undo():
-            return None
-
-        undone_result = self.processed_results.pop()
-        self.current_index = max(0, self.current_index - 1)
-        return undone_result
-
-    def add_result(self, result: AltGenerationResult) -> None:
-        """Add a processed result and advance to next item."""
-        self.processed_results.append(result)
-        self.current_index += 1
-
-    def get_current_suggestion(self) -> AltGenerationResult | None:
-        """Get the current suggestion to process."""
-        if self.current_index >= len(self.suggestions):
-            return None
-        return self.suggestions[self.current_index]
-
-    def is_complete(self) -> bool:
-        """Check if all suggestions have been processed."""
-        return self.current_index >= len(self.suggestions)
-
-    def get_progress(self) -> tuple[int, int]:
-        """Get current position and total count."""
-        return self.current_index + 1, len(self.suggestions)
-
-    def skip_current(self) -> None:
-        """Skip the current suggestion due to error and advance index."""
-        self.current_index += 1
-
-
-class DisplayManager:
-    """Handles rich console display operations."""
-
-    def __init__(self, console: Console) -> None:
-        self.console = console
-
-    def show_context(self, queue_item: scan_for_empty_alt.QueueItem) -> None:
-        """Display context information for the queue item."""
-        context = _generate_article_context(
-            queue_item, max_before=4, max_after=1, trim_frontmatter=True
-        )
-        rendered_context = Markdown(context)
-        basename = Path(queue_item.markdown_file).name
-        self.console.print(
-            Panel(
-                rendered_context,
-                title="Context",
-                subtitle=f"{basename}:{queue_item.line_number}",
-                box=ROUNDED,
-            )
-        )
-
-    def show_image(self, path: Path) -> None:
-        """Display the image using imgcat."""
-        if "TMUX" in os.environ:
-            raise ValueError("Cannot open image in tmux")
-        try:
-            subprocess.run(["imgcat", str(path)], check=True)
-        except subprocess.CalledProcessError as err:
-            raise ValueError(
-                f"Failed to open image: {err}; is imgcat installed?"
-            ) from err
-
-    def show_progress(self, current: int, total: int) -> None:
-        """Display progress information."""
-        progress_text = (
-            f"Progress: {current}/{total} ({(current-1)/total*100:.1f}%)"
-        )
-        self.console.print(f"[dim]{progress_text}[/dim]")
-
-    def prompt_for_edit(
-        self,
-        suggestion: str,
-        current: int | None = None,
-        total: int | None = None,
-    ) -> str:
-        """Prompt user to edit the suggestion with prefilled editable text."""
-        # Show progress if provided
-        if current is not None and total is not None:
-            self.show_progress(current, total)
-
-        # Enable vim keybindings for readline
-        readline.parse_and_bind("set editing-mode vi")
-        readline.set_startup_hook(lambda: readline.insert_text(suggestion))
-        self.console.print(
-            "\n[bold blue]Edit alt text (or press Enter to accept, 'undo' to go back):[/bold blue]"
-        )
-        result = input("> ")
-        readline.set_startup_hook(None)
-
-        # Check for undo command
-        if result.strip().lower() in ("undo", "u"):
-            return UNDO_REQUESTED
-
-        return result if result.strip() else suggestion
-
-    def show_rule(self, title: str) -> None:
-        """Display a separator rule."""
-        self.console.rule(title)
-
-    def show_error(self, error_message: str) -> None:
-        """Display error message."""
-        self.console.print(
-            Panel(
-                error_message,
-                title="Alt generation error",
-                box=ROUNDED,
-                style="red",
-            )
-        )
 
 
 @dataclass(slots=True)
@@ -420,45 +78,6 @@ class GenerateAltTextOptions:
     timeout: int
     output_path: Path
     skip_existing: bool = False
-
-
-def _process_queue_item(
-    queue_item: scan_for_empty_alt.QueueItem,
-    display: DisplayManager,
-    options: GenerateAltTextOptions,
-) -> AltGenerationResult:
-    """Process a single queue item and generate alt text."""
-    with TemporaryDirectory() as temp_dir:
-        workspace = Path(temp_dir)
-        attachment = _download_asset(queue_item, workspace)
-
-        prompt = _build_prompt(
-            queue_item,
-            max_chars=options.max_chars,
-        )
-        suggestion = _run_llm(
-            attachment, prompt, model=options.model, timeout=options.timeout
-        )
-
-        # Display results
-        display.show_rule(queue_item.asset_path)
-        display.show_context(queue_item)
-        display.show_image(attachment)
-
-        # Allow user to edit the suggestion
-        final_alt = suggestion
-        if sys.stdout.isatty():
-            final_alt = display.prompt_for_edit(suggestion)
-
-        return AltGenerationResult(
-            markdown_file=queue_item.markdown_file,
-            asset_path=queue_item.asset_path,
-            suggested_alt=suggestion,
-            final_alt=final_alt,
-            model=options.model,
-            context_snippet=queue_item.context_snippet,
-            line_number=queue_item.line_number,
-        )
 
 
 def _estimate_cost(
@@ -486,16 +105,6 @@ def _estimate_cost(
     return f"Estimated cost: ${total_cost:.3f} (${input_cost:.3f} input + ${output_cost:.3f} output)"
 
 
-def _load_existing_captions(captions_path: Path) -> set[str]:
-    """Load existing asset paths from captions file."""
-    try:
-        with open(captions_path, encoding="utf-8") as f:
-            data = json.load(f)
-        return {item["asset_path"] for item in data if "asset_path" in item}
-    except (FileNotFoundError, json.JSONDecodeError, KeyError, TypeError):
-        return set()
-
-
 def _filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_paths: Sequence[Path],
@@ -505,7 +114,9 @@ def _filter_existing_captions(
     """Filter out items that already have captions in the output paths."""
     existing_captions = set()
     for output_path in output_paths:
-        existing_captions.update(_load_existing_captions(output_path))
+        existing_captions.update(
+            alt_text_utils.load_existing_captions(output_path)
+        )
     original_count = len(queue_items)
     filtered_items = [
         item
@@ -532,16 +143,16 @@ async def _run_llm_async(
     queue_item: scan_for_empty_alt.QueueItem,
     options: GenerateAltTextOptions,
     sem: asyncio.Semaphore,
-) -> AltGenerationResult:
+) -> alt_text_utils.AltGenerationResult:
     """Download asset, run LLM in a thread; clean up; return suggestion
     payload."""
     workspace = Path(tempfile.mkdtemp())
     try:
         async with sem:
             attachment = await asyncio.to_thread(
-                _download_asset, queue_item, workspace
+                alt_text_utils.download_asset, queue_item, workspace
             )
-            prompt = _build_prompt(queue_item, options.max_chars)
+            prompt = alt_text_utils.build_prompt(queue_item, options.max_chars)
             caption = await asyncio.to_thread(
                 _run_llm,
                 attachment,
@@ -549,7 +160,7 @@ async def _run_llm_async(
                 options.model,
                 options.timeout,
             )
-        return AltGenerationResult(
+        return alt_text_utils.AltGenerationResult(
             markdown_file=queue_item.markdown_file,
             asset_path=queue_item.asset_path,
             suggested_alt=caption,
@@ -564,10 +175,10 @@ async def _run_llm_async(
 async def _async_generate_suggestions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     options: GenerateAltTextOptions,
-) -> list[AltGenerationResult]:
+) -> list[alt_text_utils.AltGenerationResult]:
     """Generate suggestions concurrently for *queue_items*."""
     sem = asyncio.Semaphore(_CONCURRENCY_LIMIT)
-    tasks: list[asyncio.Task[AltGenerationResult]] = []
+    tasks: list[asyncio.Task[alt_text_utils.AltGenerationResult]] = []
 
     for qi in queue_items:
         tasks.append(
@@ -584,7 +195,7 @@ async def _async_generate_suggestions(
     if task_count == 0:
         return []
 
-    suggestions: list[AltGenerationResult] = []
+    suggestions: list[alt_text_utils.AltGenerationResult] = []
     with tqdm(total=task_count, desc="Generating alt text") as progress_bar:
         try:
             for finished in asyncio.as_completed(tasks):
@@ -592,9 +203,8 @@ async def _async_generate_suggestions(
                     result = await finished
                     suggestions.append(result)
                 except (
-                    AltGenerationError,
+                    alt_text_utils.AltGenerationError,
                     FileNotFoundError,
-                    requests.RequestException,
                 ) as err:
                     # Skip individual items that fail (e.g., unsupported file types)
                     progress_bar.write(f"Skipped item due to error: {err}")
@@ -605,225 +215,6 @@ async def _async_generate_suggestions(
             )
 
     return suggestions
-
-
-def _process_single_suggestion_for_labeling(
-    suggestion_data: AltGenerationResult,
-    display: DisplayManager,
-    current: int | None = None,
-    total: int | None = None,
-) -> AltGenerationResult:
-    # Recreate queue item for display
-    queue_item = scan_for_empty_alt.QueueItem(
-        markdown_file=suggestion_data.markdown_file,
-        asset_path=suggestion_data.asset_path,
-        line_number=suggestion_data.line_number,
-        context_snippet=suggestion_data.context_snippet,
-    )
-
-    # Download asset for display
-    with TemporaryDirectory() as temp_dir:
-        workspace = Path(temp_dir)
-        attachment = _download_asset(queue_item, workspace)
-
-        # Display results
-        display.show_rule(queue_item.asset_path)
-        display.show_context(queue_item)
-        display.show_image(attachment)
-
-        # Allow user to edit the suggestion
-        prefill_text = (
-            suggestion_data.final_alt
-            if suggestion_data.final_alt is not None
-            else suggestion_data.suggested_alt
-        )
-        final_alt = prefill_text
-        if sys.stdout.isatty():
-            final_alt = display.prompt_for_edit(prefill_text, current, total)
-
-        return AltGenerationResult(
-            markdown_file=suggestion_data.markdown_file,
-            asset_path=suggestion_data.asset_path,
-            suggested_alt=suggestion_data.suggested_alt,
-            final_alt=final_alt,
-            model=suggestion_data.model,
-            context_snippet=suggestion_data.context_snippet,
-            line_number=suggestion_data.line_number,
-        )
-
-
-def _filter_suggestions_by_existing(
-    suggestions: list[AltGenerationResult],
-    output_path: Path,
-    console: Console,
-) -> list[AltGenerationResult]:
-    """Filter out suggestions that already have captions."""
-    existing_captions = _load_existing_captions(output_path)
-    filtered = [
-        s for s in suggestions if s.asset_path not in existing_captions
-    ]
-
-    skipped_count = len(suggestions) - len(filtered)
-    if skipped_count > 0:
-        console.print(
-            f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
-        )
-
-    return filtered
-
-
-def _handle_undo_request(
-    session: LabelingSession,
-    console: Console,
-) -> None:
-    """Handle undo request by reverting to previous suggestion."""
-    undone_result = session.undo()
-
-    if undone_result is None:
-        console.print("[yellow]Nothing to undo - at the beginning[/yellow]")
-        return
-
-    console.print(f"[yellow]Undoing: {undone_result.asset_path}[/yellow]")
-
-    # Prefill with the previous final_alt value
-    prefill_text = (
-        undone_result.final_alt
-        if undone_result.final_alt is not None
-        else undone_result.suggested_alt
-    )
-    session.suggestions[session.current_index] = replace(
-        session.suggestions[session.current_index],
-        final_alt=prefill_text,
-    )
-
-
-def _process_labeling_loop(
-    session: LabelingSession,
-    display: DisplayManager,
-    console: Console,
-) -> None:
-    """Process all suggestions in the labeling session."""
-    while not session.is_complete():
-        current_suggestion = session.get_current_suggestion()
-        if current_suggestion is None:
-            break
-
-        try:
-            current, total = session.get_progress()
-            result = _process_single_suggestion_for_labeling(
-                current_suggestion, display, current=current, total=total
-            )
-
-            if result.final_alt == UNDO_REQUESTED:
-                _handle_undo_request(session, console)
-            else:
-                session.add_result(result)
-
-        except (
-            AltGenerationError,
-            FileNotFoundError,
-            requests.RequestException,
-        ) as err:
-            display.show_error(str(err))
-            session.skip_current()
-
-
-def _label_suggestions(
-    suggestions: list[AltGenerationResult],
-    console: Console,
-    output_path: Path,
-    append_mode: bool,
-) -> int:
-    """Load suggestions and allow user to label them, collecting results."""
-    console.print(
-        f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
-    )
-
-    suggestions_to_process = (
-        _filter_suggestions_by_existing(suggestions, output_path, console)
-        if append_mode
-        else suggestions
-    )
-
-    session = LabelingSession(suggestions_to_process)
-    display = DisplayManager(console)
-
-    try:
-        _process_labeling_loop(session, display, console)
-    finally:
-        if session.processed_results:
-            _write_output(
-                session.processed_results, output_path, append_mode=append_mode
-            )
-            console.print(
-                f"[green]Saved {len(session.processed_results)} results to {output_path}[/green]"
-            )
-
-    return len(session.processed_results)
-
-
-def _write_output(
-    results: Iterable[AltGenerationResult],
-    output_path: Path,
-    append_mode: bool = False,
-) -> None:
-    """Write results to JSON file."""
-    payload = [result.to_json() for result in results]
-
-    if append_mode and output_path.exists():
-        # Load existing data and append new results
-        try:
-            with open(output_path, encoding="utf-8") as f:
-                existing_data = json.load(f)
-            if isinstance(existing_data, list):
-                payload = existing_data + payload
-        except (json.JSONDecodeError, TypeError):
-            # If existing file is corrupted, just use new data
-            print(f"Existing file {output_path} is corrupted, using new data")
-
-    print(f"Writing {len(payload)} results to {output_path}")
-    output_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-
-
-def label_from_suggestions_file(
-    suggestions_file: Path,
-    output_path: Path,
-    skip_existing: bool = False,
-) -> None:
-    """Load suggestions from file and start labeling process."""
-    console = Console()
-
-    with open(suggestions_file, encoding="utf-8") as f:
-        suggestions_from_file = json.load(f)
-
-    # Convert loaded data to AltGenerationResult, filtering out extra fields
-    suggestions = []
-    for s in suggestions_from_file:
-        filtered_data = {
-            "markdown_file": s["markdown_file"],
-            "asset_path": s["asset_path"],
-            "suggested_alt": s["suggested_alt"],
-            "model": s["model"],
-            "context_snippet": s["context_snippet"],
-            "line_number": int(s["line_number"]),
-        }
-        suggestions.append(AltGenerationResult(**filtered_data))
-
-    console.print(
-        f"[green]Loaded {len(suggestions)} suggestions from {suggestions_file}[/green]"
-    )
-
-    processed_count = _label_suggestions(
-        suggestions, console, output_path, skip_existing
-    )
-
-    # Write final results
-    console.print(
-        f"\n[green]Completed! Wrote {processed_count} results to {output_path}[/green]"
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -881,7 +272,9 @@ def _run_generate(
         # Convert suggestions to the same format as AltGenerationResult for consistency
 
         # Use the same append logic as the main output writing
-        _write_output(suggestions, suggestions_path, append_mode=True)
+        alt_text_utils.write_output(
+            suggestions, suggestions_path, append_mode=True
+        )
         console.print(
             f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
         )
@@ -1001,7 +394,7 @@ def main() -> None:  # pylint: disable=C0116
         _run_generate(opts, args.suggestions_file)
 
     elif args.cmd == "label":
-        label_from_suggestions_file(
+        label_alt_text.label_from_suggestions_file(
             args.suggestions_file, args.output, args.skip_existing
         )
 
