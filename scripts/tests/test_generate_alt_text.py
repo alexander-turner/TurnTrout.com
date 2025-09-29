@@ -10,11 +10,29 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 from rich import console
+from rich.console import Console
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from .. import generate_alt_text, scan_for_empty_alt
 from . import utils as test_utils
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def create_alt(idx: int, *, final_alt: str | None = None) -> generate_alt_text.AltGenerationResult:  # type: ignore
+    """Factory for AltGenerationResult with deterministic dummy fields."""
+    return generate_alt_text.AltGenerationResult(
+        markdown_file=f"test{idx}.md",
+        asset_path=f"image{idx}.jpg",
+        suggested_alt=f"suggestion {idx}",
+        final_alt=final_alt,
+        model="test-model",
+        context_snippet=f"context {idx}",
+        line_number=idx,
+    )
 
 
 @pytest.fixture
@@ -1644,3 +1662,115 @@ def test_label_from_suggestions_file_error_handling(
         generate_alt_text.label_from_suggestions_file(
             suggestions_file, temp_dir / "output.json", skip_existing=False
         )
+
+
+@pytest.mark.parametrize("user_input", ["undo", "u", "UNDO"])
+def test_prompt_for_edit_undo_command(user_input: str) -> None:
+    """prompt_for_edit returns sentinel on various undo inputs."""
+    console = Console()
+    display = generate_alt_text.DisplayManager(console)
+
+    with patch("builtins.input", return_value=user_input):
+        result = display.prompt_for_edit("test suggestion")
+        assert result == generate_alt_text.UNDO_REQUESTED
+
+
+def test_labeling_session() -> None:
+    """Test the LabelingSession helper class."""
+    suggestions = [create_alt(1), create_alt(2)]
+
+    session = generate_alt_text.LabelingSession(suggestions)
+
+    # Initial state
+    assert not session.is_complete()
+    assert not session.can_undo()
+    assert session.get_progress() == (1, 2)
+    assert session.get_current_suggestion() == suggestions[0]
+
+    # Process first item
+    result1 = create_alt(1, final_alt="final 1")
+    session.add_result(result1)
+
+    # After processing first item
+    assert not session.is_complete()
+    assert session.can_undo()
+    assert session.get_progress() == (2, 2)
+    assert session.get_current_suggestion() == suggestions[1]
+
+    # Test undo
+    undone = session.undo()
+    assert undone == result1
+    assert session.get_progress() == (1, 2)
+    assert session.get_current_suggestion() == suggestions[0]
+    assert not session.can_undo()
+
+    # Process both items
+    session.add_result(result1)
+    result2 = create_alt(2, final_alt="final 2")
+    session.add_result(result2)
+
+    # Complete
+    assert session.is_complete()
+    assert session.get_current_suggestion() is None
+    assert len(session.processed_results) == 2
+
+
+@pytest.mark.parametrize(
+    "sequence,expected_saved",
+    [
+        # Undo in middle then accept second item
+        (
+            [
+                "accepted 1",
+                generate_alt_text.UNDO_REQUESTED,
+                "modified 1",
+                "accepted 2",
+            ],
+            ["modified 1", "accepted 2"],
+        ),
+        # Undo at beginning then accept
+        (
+            [generate_alt_text.UNDO_REQUESTED, "accepted"],
+            ["accepted"],
+        ),
+    ],
+)
+def test_label_suggestions_sequences(
+    temp_dir: Path, sequence: list[str], expected_saved: list[str]
+) -> None:
+    """Parametrized test covering various undo/accept sequences."""
+
+    console = Console()
+    output_path = temp_dir / "output.json"
+
+    # Build suggestions equal to length of unique images needed (max 3)
+    suggestions = [create_alt(i + 1) for i in range(max(3, len(sequence)))]
+
+    call_count = 0
+
+    def mock_process_single_suggestion(
+        suggestion_data, display, current=None, total=None
+    ):
+        nonlocal call_count
+        final = (
+            sequence[call_count]
+            if call_count < len(sequence)
+            else "accepted tail"
+        )
+        call_count += 1
+        return create_alt(suggestion_data.line_number, final_alt=final)
+
+    with patch.object(
+        generate_alt_text,
+        "_process_single_suggestion_for_labeling",
+        side_effect=mock_process_single_suggestion,
+    ):
+        generate_alt_text._label_suggestions(
+            suggestions, console, output_path, append_mode=True
+        )
+
+    saved = [
+        r["final_alt"]
+        for r in json.loads(output_path.read_text(encoding="utf-8"))
+    ]
+    assert saved[: len(expected_saved)] == expected_saved

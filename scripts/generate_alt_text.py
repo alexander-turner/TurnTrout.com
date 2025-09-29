@@ -48,6 +48,8 @@ MODEL_COSTS = {
     "gemini-2.5-flash-preview-09-2025": {"input": 0.00001, "output": 0.00004},
 }
 
+UNDO_REQUESTED = "UNDO_REQUESTED"
+
 
 @dataclass(slots=True)
 class AltGenerationResult:
@@ -239,6 +241,7 @@ def _build_prompt(
         - Return only the alt text, no quotes
         - For text-heavy images: transcribe key text content, then describe visual elements
         - Don't reintroduce acronyms
+        - Don't describe purely visual elements unless directly relevant for understanding the content (e.g. don't say "the line in this scientific chart is green")
         - Describe spatial relationships and visual hierarchy when important
 
         Prioritize completeness over brevity - include both textual content and visual description as needed. 
@@ -278,6 +281,51 @@ def _run_llm(
     if not cleaned:
         raise AltGenerationError("LLM returned empty caption")
     return cleaned
+
+
+class LabelingSession:
+    """Manages the labeling session state and navigation."""
+
+    def __init__(self, suggestions: list[AltGenerationResult]) -> None:
+        self.suggestions = suggestions
+        self.current_index = 0
+        self.processed_results: list[AltGenerationResult] = []
+
+    def can_undo(self) -> bool:
+        """Check if undo is possible."""
+        return len(self.processed_results) > 0
+
+    def undo(self) -> AltGenerationResult | None:
+        """Undo the last processed result and return to previous item."""
+        if not self.can_undo():
+            return None
+
+        undone_result = self.processed_results.pop()
+        self.current_index = max(0, self.current_index - 1)
+        return undone_result
+
+    def add_result(self, result: AltGenerationResult) -> None:
+        """Add a processed result and advance to next item."""
+        self.processed_results.append(result)
+        self.current_index += 1
+
+    def get_current_suggestion(self) -> AltGenerationResult | None:
+        """Get the current suggestion to process."""
+        if self.current_index >= len(self.suggestions):
+            return None
+        return self.suggestions[self.current_index]
+
+    def is_complete(self) -> bool:
+        """Check if all suggestions have been processed."""
+        return self.current_index >= len(self.suggestions)
+
+    def get_progress(self) -> tuple[int, int]:
+        """Get current position and total count."""
+        return self.current_index + 1, len(self.suggestions)
+
+    def skip_current(self) -> None:
+        """Skip the current suggestion due to error and advance index."""
+        self.current_index += 1
 
 
 class DisplayManager:
@@ -335,10 +383,15 @@ class DisplayManager:
         readline.parse_and_bind("set editing-mode vi")
         readline.set_startup_hook(lambda: readline.insert_text(suggestion))
         self.console.print(
-            "\n[bold blue]Edit alt text (or press Enter to accept):[/bold blue]"
+            "\n[bold blue]Edit alt text (or press Enter to accept, 'undo' to go back):[/bold blue]"
         )
         result = input("> ")
         readline.set_startup_hook(None)
+
+        # Check for undo command
+        if result.strip().lower() in ("undo", "u"):
+            return UNDO_REQUESTED
+
         return result if result.strip() else suggestion
 
     def show_rule(self, title: str) -> None:
@@ -604,7 +657,6 @@ def _label_suggestions(
 ) -> int:
     """Load suggestions and allow user to label them, collecting results."""
     display = DisplayManager(console)
-    processed_results: list[AltGenerationResult] = []
 
     console.print(
         f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
@@ -623,14 +675,35 @@ def _label_suggestions(
                 f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
             )
 
+    session = LabelingSession(suggestions_to_process)
+
     try:
-        total_count = len(suggestions_to_process)
-        for i, suggestion_data in enumerate(suggestions_to_process, 1):
+        while not session.is_complete():
+            current_suggestion = session.get_current_suggestion()
+            if current_suggestion is None:
+                break
+
+            current, total = session.get_progress()
+
             try:
                 result = _process_single_suggestion_for_labeling(
-                    suggestion_data, display, current=i, total=total_count
+                    current_suggestion, display, current=current, total=total
                 )
-                processed_results.append(result)
+
+                # Check if user requested undo
+                if result.final_alt == UNDO_REQUESTED:
+                    undone_result = session.undo()
+                    if undone_result:
+                        console.print(
+                            f"[yellow]Undoing: {undone_result.asset_path}[/yellow]"
+                        )
+                    else:
+                        console.print(
+                            "[yellow]Nothing to undo - at the beginning[/yellow]"
+                        )
+                else:
+                    session.add_result(result)
+
             # Individual errors don't halt the loop
             except (
                 AltGenerationError,
@@ -638,20 +711,21 @@ def _label_suggestions(
                 requests.RequestException,
             ) as err:
                 display.show_error(str(err))
+                session.skip_current()  # Skip this item on error
                 continue
             # Let KeyboardInterrupt and other critical exceptions bubble up
             # but ensure we save any processed results in the finally block
     finally:
         # Always save results regardless of how we exit
-        if processed_results:
+        if session.processed_results:
             _write_output(
-                processed_results, output_path, append_mode=append_mode
+                session.processed_results, output_path, append_mode=append_mode
             )
             console.print(
-                f"[green]Saved {len(processed_results)} results to {output_path}[/green]"
+                f"[green]Saved {len(session.processed_results)} results to {output_path}[/green]"
             )
 
-    return len(processed_results)
+    return len(session.processed_results)
 
 
 def _write_output(
