@@ -1,6 +1,5 @@
 """Generate AI alt text suggestions for assets lacking meaningful alt text."""
 
-import argparse
 import asyncio
 import shutil
 import subprocess
@@ -19,7 +18,7 @@ from tqdm.std import TqdmExperimentalWarning
 # pylint: disable=C0413
 sys.path.append(str(Path(__file__).parent.parent))
 
-from scripts import alt_text_utils, label_alt_text, scan_for_empty_alt
+from scripts import alt_text_utils, scan_for_empty_alt
 from scripts import utils as script_utils
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
@@ -80,7 +79,7 @@ class GenerateAltTextOptions:
     skip_existing: bool = False
 
 
-def _estimate_cost(
+def estimate_cost(
     model: str,
     queue_count: int,
     avg_prompt_tokens: int = 4500,
@@ -105,7 +104,7 @@ def _estimate_cost(
     return f"Estimated cost: ${total_cost:.3f} (${input_cost:.3f} input + ${output_cost:.3f} output)"
 
 
-def _filter_existing_captions(
+def filter_existing_captions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     output_paths: Sequence[Path],
     console: Console,
@@ -172,7 +171,7 @@ async def _run_llm_async(
         shutil.rmtree(workspace, ignore_errors=True)
 
 
-async def _async_generate_suggestions(
+async def async_generate_suggestions(
     queue_items: Sequence[scan_for_empty_alt.QueueItem],
     options: GenerateAltTextOptions,
 ) -> list[alt_text_utils.AltGenerationResult]:
@@ -215,189 +214,3 @@ async def _async_generate_suggestions(
             )
 
     return suggestions
-
-
-# ---------------------------------------------------------------------------
-# Sub-command CLI helpers
-# ---------------------------------------------------------------------------
-
-
-def _run_estimate(
-    options: GenerateAltTextOptions, suggestions_path: Path
-) -> None:
-    """Estimate and print LLM cost for the current queue."""
-    console = Console()
-    queue_items = scan_for_empty_alt.build_queue(options.root)
-    if options.skip_existing:
-        queue_items = _filter_existing_captions(
-            queue_items,
-            [options.output_path, suggestions_path],
-            console,
-        )
-
-    cost_est = _estimate_cost(options.model, len(queue_items))
-    console.print(
-        f"[bold blue]{len(queue_items)} items → {cost_est} using model '{options.model}'[/bold blue]"
-    )
-
-
-def _run_generate(
-    options: GenerateAltTextOptions, suggestions_path: Path
-) -> None:
-    """Batch-generate suggestions and save them to *suggestions_path*."""
-    console = Console()
-    queue_items = scan_for_empty_alt.build_queue(options.root)
-    if options.skip_existing:
-        queue_items = _filter_existing_captions(
-            queue_items,
-            [options.output_path, suggestions_path],
-            console,
-            verbose=False,
-        )
-
-    if not queue_items:
-        console.print("[yellow]No items to process.[/yellow]")
-        return
-
-    console.print(
-        f"[bold green]Generating {len(queue_items)} suggestions with '{options.model}'[/bold green]"
-    )
-
-    suggestions = []
-    try:
-        suggestions = asyncio.run(
-            _async_generate_suggestions(queue_items, options)
-        )
-    finally:
-        # Convert suggestions to the same format as AltGenerationResult for consistency
-
-        # Use the same append logic as the main output writing
-        alt_text_utils.write_output(
-            suggestions, suggestions_path, append_mode=True
-        )
-        console.print(
-            f"[green]Saved {len(suggestions)} suggestions to {suggestions_path}[/green]"
-        )
-
-
-# ---------------------------------------------------------------------------
-# CLI parsing
-# ---------------------------------------------------------------------------
-
-
-def _parse_args() -> argparse.Namespace:
-    """Return parsed CLI arguments using sub-commands."""
-    git_root = script_utils.get_git_root()
-
-    parser = argparse.ArgumentParser(description="Alt-text assistant")
-    sub = parser.add_subparsers(dest="cmd")
-
-    # Arguments shared by generate/estimate
-    shared_args = argparse.ArgumentParser(add_help=False)
-    shared_args.add_argument(
-        "--root",
-        type=Path,
-        default=git_root / "website_content",
-        help="Markdown root directory",
-    )
-    shared_args.add_argument("--model")
-    shared_args.add_argument(
-        "--max-chars",
-        type=int,
-        default=300,
-        help="Max characters for generated alt text",
-    )
-    shared_args.add_argument(
-        "--timeout", type=int, default=120, help="LLM command timeout seconds"
-    )
-    shared_args.add_argument(
-        "--process-existing",
-        dest="skip_existing",
-        action="store_false",
-        help="Also process assets that already have captions (default is to skip)",
-    )
-    shared_args.add_argument(
-        "--suggestions-file",
-        type=Path,
-        default=git_root / "scripts" / "suggested_alts.json",
-        help="Path to read/write suggestions JSON",
-    )
-    shared_args.set_defaults(skip_existing=True)
-
-    # generate (default command)
-    sp_gen = sub.add_parser(
-        "generate", parents=[shared_args], help="Batch-generate suggestions"
-    )
-    sp_gen.add_argument(
-        "--captions",
-        type=Path,
-        default=git_root / "scripts" / "asset_captions.json",
-        help="Existing/final captions JSON path (used to skip existing unless --process-existing)",
-    )
-
-    sp_gen.add_argument(
-        "--estimate-only",
-        action="store_true",
-        help="Only estimate cost without generating suggestions",
-    )
-    sp_gen.set_defaults(cmd="generate")
-
-    # label
-    sp_label = sub.add_parser(
-        "label", parents=[shared_args], help="Label suggestions JSON"
-    )
-    sp_label.add_argument(
-        "--output",
-        type=Path,
-        default=git_root / "scripts" / "asset_captions.json",
-        help="Final captions JSON path",
-    )
-    sp_label.add_argument(
-        "--skip-existing",
-        action="store_true",
-        default=True,
-        help="Skip captions already present in output file",
-    )
-    sp_label.set_defaults(cmd="label")
-
-    # If no subcommand is given, parse as if 'generate' was provided
-    args = parser.parse_args()
-    if args.cmd is None:
-        # Re-parse with 'generate' as the default command
-        args = parser.parse_args(["generate"] + sys.argv[1:])
-
-    return args
-
-
-# ---------------------------------------------------------------------------
-# Main entry
-# ---------------------------------------------------------------------------
-
-
-def main() -> None:  # pylint: disable=C0116
-    args = _parse_args()
-
-    if args.cmd == "generate":
-        if not args.model:
-            print("Error: --model is required for the generate command")
-            sys.exit(1)
-
-        opts = GenerateAltTextOptions(
-            root=args.root,
-            model=args.model,
-            max_chars=args.max_chars,
-            timeout=args.timeout,
-            output_path=args.captions,
-            skip_existing=args.skip_existing,
-        )
-        _run_estimate(opts, args.suggestions_file)
-        _run_generate(opts, args.suggestions_file)
-
-    elif args.cmd == "label":
-        label_alt_text.label_from_suggestions_file(
-            args.suggestions_file, args.output, args.skip_existing
-        )
-
-
-if __name__ == "__main__":
-    main()

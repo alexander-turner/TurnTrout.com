@@ -1,6 +1,5 @@
 """Tests for generate_alt_text.py module."""
 
-import json
 import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -40,7 +39,7 @@ def test_estimate_cost_calculation_parametrized(
     ) * output_cost_per_1k
     expected_total = expected_input + expected_output
 
-    result = generate_alt_text._estimate_cost(
+    result = generate_alt_text.estimate_cost(
         model, queue_count, avg_prompt_tokens, avg_output_tokens
     )
 
@@ -62,7 +61,7 @@ def test_estimate_cost_format_consistency(
     model: str, queue_count: int
 ) -> None:
     """Test that cost estimation returns consistently formatted results."""
-    result = generate_alt_text._estimate_cost(model, queue_count)
+    result = generate_alt_text.estimate_cost(model, queue_count)
 
     # Check format consistency
     assert result.startswith("Estimated cost: $")
@@ -73,7 +72,7 @@ def test_estimate_cost_format_consistency(
 
 def test_estimate_cost_invalid_model() -> None:
     """Test cost estimation with invalid model returns informative message."""
-    result = generate_alt_text._estimate_cost("invalid-model", 10)
+    result = generate_alt_text.estimate_cost("invalid-model", 10)
 
     assert result.startswith("Can't estimate cost for unknown model")
 
@@ -103,59 +102,6 @@ def test_run_llm_success(temp_dir: Path) -> None:
         assert "-a" in call_args
         assert str(attachment) in call_args
         assert prompt in call_args
-
-
-def test_run_generate_appends_to_suggestions_file(temp_dir: Path) -> None:
-    """Test that _run_generate appends to existing suggestions file instead of overwriting."""
-    suggestions_file = temp_dir / "suggested_alts.json"
-
-    existing_data = [{"asset_path": "existing.jpg", "suggested_alt": "Old"}]
-    suggestions_file.write_text(json.dumps(existing_data), encoding="utf-8")
-
-    new_suggestion = alt_text_utils.AltGenerationResult(
-        markdown_file="new.md",
-        asset_path="new.jpg",
-        suggested_alt="New",
-        model="test",
-        context_snippet="ctx",
-        line_number=1,
-    )
-
-    options = generate_alt_text.GenerateAltTextOptions(
-        root=temp_dir,
-        model="test",
-        max_chars=100,
-        timeout=60,
-        output_path=temp_dir / "captions.json",
-        skip_existing=False,
-    )
-
-    # Create a dummy queue item that will trigger the async suggestions call
-    dummy_queue_item = scan_for_empty_alt.QueueItem(
-        markdown_file="test.md",
-        asset_path="test.jpg",
-        line_number=1,
-        context_snippet="test context",
-    )
-
-    with (
-        patch.object(
-            scan_for_empty_alt,
-            "build_queue",
-            return_value=[dummy_queue_item],
-        ),
-        patch.object(
-            generate_alt_text,
-            "_async_generate_suggestions",
-            return_value=[new_suggestion],
-        ),
-    ):
-        generate_alt_text._run_generate(options, suggestions_file)
-
-    data = json.loads(suggestions_file.read_text())
-    assert len(data) == 2
-    assert data[0]["asset_path"] == "existing.jpg"
-    assert data[1]["asset_path"] == "new.jpg"
 
 
 def test_filter_existing_captions_filters_items(
@@ -188,7 +134,7 @@ def test_filter_existing_captions_filters_items(
     console_mock = Mock()
     console_mock.print = Mock()
 
-    filtered = generate_alt_text._filter_existing_captions(
+    filtered = generate_alt_text.filter_existing_captions(
         queue_items,
         [Path("captions.json")],
         console_mock,
@@ -197,37 +143,6 @@ def test_filter_existing_captions_filters_items(
     assert len(filtered) == 1
     assert filtered[0].asset_path == "image2.jpg"
     console_mock.print.assert_called_once()
-
-
-class TestSkipExistingCLI:
-    """Test CLI argument parsing for --skip-existing."""
-
-    @pytest.mark.parametrize(
-        "args, expected_skip_existing",
-        [
-            (
-                ["generate_alt_text.py", "generate", "--model", "test-model"],
-                True,
-            ),
-            (
-                [
-                    "generate_alt_text.py",
-                    "generate",
-                    "--model",
-                    "test-model",
-                    "--process-existing",
-                ],
-                False,
-            ),
-        ],
-    )
-    def test_parse_args_skip_existing(
-        self, args: list[str], expected_skip_existing: bool
-    ) -> None:
-        """Test --skip-existing argument parsing."""
-        with patch("sys.argv", args):
-            parsed_args = generate_alt_text._parse_args()
-            assert parsed_args.skip_existing is expected_skip_existing
 
 
 def test_run_llm_failure(temp_dir: Path) -> None:
@@ -335,7 +250,7 @@ async def test_async_generate_suggestions(
         skip_existing=False,
     )
 
-    results = await generate_alt_text._async_generate_suggestions(
+    results = await generate_alt_text.async_generate_suggestions(
         queue_items, options
     )
 

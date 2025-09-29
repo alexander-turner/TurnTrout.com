@@ -4,8 +4,6 @@ Scan markdown files for assets without meaningful alt text.
 This script produces a JSON work-queue.
 """
 
-import argparse
-import json
 import re
 import sys
 from dataclasses import asdict, dataclass
@@ -20,8 +18,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from scripts import alt_text_utils
 from scripts import utils as script_utils
-
-_JSON_INDENT: int = 2
 
 
 @dataclass(slots=True)
@@ -228,47 +224,3 @@ def build_queue(root: Path) -> list[QueueItem]:
         queue.extend(_process_file(md_file))
 
     return queue
-
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-
-# pylint: disable=C0116
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Generate asset alt-text queue."
-    )
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=script_utils.get_git_root() / "website_content",
-        help="Directory to search (default: website_content)",
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        help="Path for output JSON file (default: <git_root>/scripts/asset_queue.json)",
-    )
-    args = parser.parse_args()
-
-    output_path = (
-        args.output
-        or script_utils.get_git_root() / "scripts" / "asset_queue.json"
-    )
-    queue_items = build_queue(args.root)
-
-    output_path.write_text(
-        json.dumps(
-            [item.to_json() for item in queue_items],
-            indent=_JSON_INDENT,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-    print(f"Wrote {len(queue_items)} queue item(s) to {output_path}")
-
-
-if __name__ == "__main__":
-    main()
