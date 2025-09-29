@@ -1,21 +1,169 @@
 """Shared utilities for alt text generation and labeling."""
 
 import json
+import shutil
 import subprocess
 import sys
 import textwrap
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Collection, Dict, Iterable, Optional, Sequence
 from urllib.parse import urlparse
 
+import git
 import requests
+from ruamel.yaml import YAML, YAMLError
 
 # pylint: disable=C0413
 sys.path.append(str(Path(__file__).parent.parent))
 
 from scripts import scan_for_empty_alt
-from scripts import utils as script_utils
+
+_executable_cache: Dict[str, str] = {}
+
+
+def find_executable(name: str) -> str:
+    """
+    Find and cache the absolute path of an executable.
+
+    Args:
+        name: The name of the executable to find.
+
+    Returns:
+        The absolute path to the executable.
+
+    Raises:
+        FileNotFoundError: If the executable cannot be found.
+    """
+    if name in _executable_cache:
+        return _executable_cache[name]
+
+    executable_path = shutil.which(name)
+    if not executable_path:
+        raise FileNotFoundError(
+            f"Executable '{name}' not found. Please ensure it is in your PATH."
+        )
+
+    _executable_cache[name] = executable_path
+    return executable_path
+
+
+def get_git_root(starting_dir: Optional[Path] = None) -> Path:
+    """
+    Returns the absolute path to the top-level directory of the Git repository.
+
+    Args:
+        starting_dir: Directory from which to start searching for the Git root.
+
+    Returns:
+        Path: Absolute path to the Git repository root.
+
+    Raises:
+        RuntimeError: If Git root cannot be determined.
+    """
+    git_executable = find_executable("git")
+    completed_process = subprocess.run(
+        [git_executable, "rev-parse", "--show-toplevel"],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd=starting_dir if starting_dir else Path.cwd(),
+    )
+    if completed_process.returncode == 0:
+        return Path(completed_process.stdout.strip())
+    raise RuntimeError("Failed to get Git root")
+
+
+def get_files(
+    dir_to_search: Optional[Path] = None,
+    filetypes_to_match: Collection[str] = (".md",),
+    use_git_ignore: bool = True,
+    ignore_dirs: Optional[Collection[str]] = None,
+) -> tuple[Path, ...]:
+    """
+    Returns a tuple of all files in the specified directory of the Git
+    repository.
+
+    Args:
+        dir_to_search: A directory to search for files.
+        filetypes_to_match: A collection of file types to search for.
+        use_git_ignore: Whether to exclude files based on .gitignore.
+        ignore_dirs: Directory names to ignore.
+
+    Returns:
+        tuple[Path, ...]: A tuple of all matching files.
+    """
+    files: list[Path] = []
+    if dir_to_search is not None:
+        for filetype in filetypes_to_match:
+            files.extend(dir_to_search.rglob(f"*{filetype}"))
+
+        # Filter out ignored directories
+        if ignore_dirs:
+            files = [
+                f
+                for f in files
+                if not any(ignore_dir in f.parts for ignore_dir in ignore_dirs)
+            ]
+
+        if use_git_ignore:
+            try:
+                root = get_git_root(starting_dir=dir_to_search)
+                repo = git.Repo(root)
+                # Convert file paths to paths relative to the git root
+                relative_files = [file.relative_to(root) for file in files]
+                # Filter out ignored files
+                files = [
+                    file
+                    for file, rel_file in zip(files, relative_files)
+                    if not repo.ignored(rel_file)
+                ]
+            except (
+                git.GitCommandError,
+                ValueError,
+                RuntimeError,
+                subprocess.CalledProcessError,
+            ):
+                # If Git operations fail, continue without Git filtering
+                pass
+    return tuple(files)
+
+
+def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
+    """
+    Split a markdown file into its YAML frontmatter and content.
+
+    Args:
+        file_path: Path to the markdown file
+        verbose: Whether to print error messages
+
+    Returns:
+        Tuple of (metadata dict, content string)
+    """
+    yaml = YAML(
+        typ="rt"
+    )  # 'rt' means round-trip, preserving comments and formatting
+    yaml.preserve_quotes = True  # Preserve quote style
+
+    with file_path.open("r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Split frontmatter and content
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        if verbose:
+            print(f"Skipping {file_path}: No valid frontmatter found")
+        return {}, ""
+
+    try:
+        metadata = yaml.load(parts[1])
+        if not metadata:
+            metadata = {}
+    except YAMLError as e:
+        print(f"Error parsing YAML in {file_path}: {str(e)}")
+        return {}, ""
+
+    return metadata, parts[2]
 
 
 def is_url(path: str) -> bool:
@@ -155,7 +303,7 @@ def _convert_avif_to_png(asset_path: Path, workspace: Path) -> Path:
         return asset_path
 
     png_target = workspace / f"{asset_path.stem}.png"
-    magick_executable = script_utils.find_executable("magick")
+    magick_executable = find_executable("magick")
 
     try:
         subprocess.run(
@@ -177,7 +325,7 @@ def _convert_gif_to_mp4(asset_path: Path, workspace: Path) -> Path:
         raise ValueError(f"Unsupported file type '{asset_path.suffix}'.")
 
     mp4_target = workspace / f"{asset_path.stem}.mp4"
-    ffmpeg_executable = script_utils.find_executable("ffmpeg")
+    ffmpeg_executable = find_executable("ffmpeg")
 
     try:
         subprocess.run(
@@ -243,7 +391,7 @@ def download_asset(
         return _convert_asset_for_llm(candidate.resolve(), workspace)
 
     # Try relative to git root
-    git_root = script_utils.get_git_root()
+    git_root = get_git_root()
     alternative = git_root / asset_path.lstrip("/")
     if alternative.exists():
         return _convert_asset_for_llm(alternative.resolve(), workspace)
@@ -271,9 +419,7 @@ def generate_article_context(
 
     if trim_frontmatter:
         # Try to split YAML frontmatter and get content only
-        _, split_content = script_utils.split_yaml(
-            markdown_path, verbose=False
-        )
+        _, split_content = split_yaml(markdown_path, verbose=False)
 
         # If frontmatter found, use content without frontmatter
         if split_content.strip():

@@ -19,7 +19,6 @@ from tqdm.std import TqdmExperimentalWarning
 sys.path.append(str(Path(__file__).parent.parent))
 
 from scripts import alt_text_utils, scan_for_empty_alt
-from scripts import utils as script_utils
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
@@ -45,7 +44,7 @@ def _run_llm(
     timeout: int,
 ) -> str:
     """Execute LLM command and return generated caption."""
-    llm_path = script_utils.find_executable("llm")
+    llm_path = alt_text_utils.find_executable("llm")
 
     result = subprocess.run(
         [llm_path, "-m", model, "-a", str(attachment), "--usage", prompt],

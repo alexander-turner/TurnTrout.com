@@ -17,7 +17,6 @@ from markdown_it.token import Token
 sys.path.append(str(Path(__file__).parent.parent))
 
 from scripts import alt_text_utils
-from scripts import utils as script_utils
 
 
 @dataclass(slots=True)
@@ -216,7 +215,7 @@ def _process_file(md_path: Path) -> list[QueueItem]:
 def build_queue(root: Path) -> list[QueueItem]:
     """Return a queue of assets lacking alt text beneath *root*."""
 
-    md_files = script_utils.get_files(
+    md_files = alt_text_utils.get_files(
         root, filetypes_to_match=(".md",), use_git_ignore=True
     )
     queue: list[QueueItem] = []

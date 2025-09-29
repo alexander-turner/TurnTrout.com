@@ -18,7 +18,6 @@ from scripts import (
     label_alt_text,
     scan_for_empty_alt,
 )
-from scripts import utils as script_utils
 
 _JSON_INDENT: int = 2
 
@@ -35,7 +34,7 @@ def _scan_command(args: argparse.Namespace) -> None:
     """Execute the scan sub-command."""
     output_path = (
         args.output
-        or script_utils.get_git_root() / "scripts" / "asset_queue.json"
+        or alt_text_utils.get_git_root() / "scripts" / "asset_queue.json"
     )
     queue_items = scan_for_empty_alt.build_queue(args.root)
 
@@ -119,7 +118,7 @@ def _label_command(args: argparse.Namespace) -> None:
 
 def _parse_args() -> argparse.Namespace:
     """Parse command-line arguments for all alt text workflows."""
-    git_root = script_utils.get_git_root()
+    git_root = alt_text_utils.get_git_root()
 
     parser = argparse.ArgumentParser(
         description="Alt text generation and labeling workflows"

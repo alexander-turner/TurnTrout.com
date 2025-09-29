@@ -1,11 +1,14 @@
 """Tests for alt_text_utils.py module."""
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+from unittest import mock
 from unittest.mock import Mock, patch
 
+import git
 import pytest
 import requests
 
@@ -1275,3 +1278,210 @@ class TestParagraphContext:
             lines, 10, max_before=2, max_after=0
         )
         assert isinstance(result, str)  # Should not crash
+
+
+# ---------------------------------------------------------------------------
+# Tests for utility functions copied from script_utils
+# ---------------------------------------------------------------------------
+
+
+def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test finding the git root directory."""
+    expected_output = "/path/to/git/root"
+
+    def mock_subprocess_run(*args, **_kwargs) -> subprocess.CompletedProcess:
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=expected_output,
+        )
+
+    monkeypatch.setattr(alt_text_utils.subprocess, "run", mock_subprocess_run)
+    assert alt_text_utils.get_git_root() == Path(expected_output)
+
+
+def test_get_git_root_raises_error() -> None:
+    """Test that get_git_root raises RuntimeError when git command fails."""
+
+    def mock_subprocess_run(*args, **_kwargs) -> subprocess.CompletedProcess:
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=1,
+            stdout="",
+        )
+
+    with (
+        mock.patch.object(
+            alt_text_utils.subprocess, "run", mock_subprocess_run
+        ),
+        pytest.raises(RuntimeError),
+    ):
+        alt_text_utils.get_git_root()
+
+
+def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that find_executable raises FileNotFoundError for an executable
+    that does not exist."""
+    monkeypatch.setattr(alt_text_utils, "_executable_cache", {})
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    with pytest.raises(FileNotFoundError):
+        alt_text_utils.find_executable("non_existent_executable")
+
+
+def test_find_executable_success_and_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that find_executable finds an executable and caches the result."""
+    monkeypatch.setattr(alt_text_utils, "_executable_cache", {})
+    mock_which = mock.Mock(return_value="/fake/path/to/git")
+    monkeypatch.setattr(shutil, "which", mock_which)
+
+    # First call, should call `which`
+    path = alt_text_utils.find_executable("git")
+    assert path == "/fake/path/to/git"
+    mock_which.assert_called_once_with("git")
+
+    # Second call, should use cache and not call `which` again
+    path2 = alt_text_utils.find_executable("git")
+    assert path2 == "/fake/path/to/git"
+    mock_which.assert_called_once()
+
+
+def test_get_files_no_dir() -> None:
+    """Test when no directory is provided."""
+    result = alt_text_utils.get_files()
+    assert isinstance(result, tuple)
+    assert not result  # Empty tuple since no directory was given
+
+
+@pytest.mark.parametrize(
+    "file_paths, expected_files",
+    [
+        (["test.md", "test.txt"], ["test.md"]),
+        (
+            ["subdir1/test1.md", "subdir1/test1.txt", "subdir2/test2.md"],
+            ["subdir1/test1.md", "subdir2/test2.md"],
+        ),
+        (
+            ["test.md", "test.txt", "image.jpg", "document.pdf"],
+            ["test.md", "test.txt"],
+        ),
+    ],
+)
+def test_get_files_specific_dir(
+    tmp_path: Path, file_paths: list[str], expected_files: list[str]
+) -> None:
+    """Test file discovery by inferring structure from file paths."""
+    # Create test files and directories
+    for file_path in file_paths:
+        file: Path = tmp_path / file_path
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch()  # Just create empty files
+
+    # Get files based on the file extensions in the file paths
+    filetypes_to_match = list({p.suffix for p in map(Path, expected_files)})
+    result = alt_text_utils.get_files(
+        dir_to_search=tmp_path,
+        filetypes_to_match=filetypes_to_match,
+        use_git_ignore=False,
+    )
+
+    # Normalize file paths and compare
+    result_paths = [str(p.relative_to(tmp_path)) for p in result]
+    assert sorted(result_paths) == sorted(expected_files)
+
+
+def test_get_files_gitignore(tmp_path: Path) -> None:
+    """Test with a .gitignore file."""
+    try:
+        # Create a git repository in tmp_path
+        repo = git.Repo.init(tmp_path)
+        (tmp_path / ".gitignore").write_text("*.txt\n")  # Ignore text files
+
+        md_file = tmp_path / "test.md"
+        txt_file = tmp_path / "test.txt"
+        md_file.write_text("Markdown content")
+        txt_file.write_text("Text content")
+        repo.index.add([".gitignore", "test.md", "test.txt"])
+        repo.index.commit("Initial commit")
+
+        # Test getting files with gitignore
+        result = alt_text_utils.get_files(dir_to_search=tmp_path)
+        assert len(result) == 1
+        assert result[0] == md_file
+    except git.GitCommandError:
+        pytest.skip("Git not installed or not in PATH")
+
+
+def test_get_files_ignore_dirs(tmp_path: Path) -> None:
+    """Test that specified directories are ignored."""
+    # Create test directory structure
+    templates_dir = tmp_path / "templates"
+    regular_dir = tmp_path / "regular"
+    nested_templates = tmp_path / "docs" / "templates"
+
+    # Create directories
+    for dir_path in [templates_dir, regular_dir, nested_templates]:
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Create test files
+    test_files = [
+        templates_dir / "template.md",
+        regular_dir / "regular.md",
+        nested_templates / "nested.md",
+        tmp_path / "root.md",
+    ]
+
+    for file in test_files:
+        file.write_text("test content")
+
+    # Get files, ignoring 'templates' directories
+    result = alt_text_utils.get_files(
+        dir_to_search=tmp_path,
+        filetypes_to_match=(".md",),
+        ignore_dirs=["templates"],
+        use_git_ignore=False,
+    )
+
+    # Convert results to set of strings for easier comparison
+    result_paths = {str(p.relative_to(tmp_path)) for p in result}
+
+    # Expected files (only files not in 'templates' directories)
+    expected_paths = {"regular/regular.md", "root.md"}
+
+    assert result_paths == expected_paths
+
+
+def test_split_yaml_invalid_format(tmp_path: Path) -> None:
+    """Test handling of invalid YAML format."""
+    file_path = tmp_path / "invalid.md"
+    file_path.write_text(
+        "Invalid content without proper frontmatter", encoding="utf-8"
+    )
+
+    metadata, content = alt_text_utils.split_yaml(file_path)
+    assert metadata == {}
+    assert content == ""
+
+
+def test_split_yaml_empty_frontmatter(tmp_path: Path) -> None:
+    """Test handling of empty frontmatter."""
+    file_path = tmp_path / "empty.md"
+    file_path.write_text("---\n---\nContent", encoding="utf-8")
+
+    metadata, content = alt_text_utils.split_yaml(file_path)
+    assert metadata == {}
+    assert content == "\nContent"
+
+
+def test_split_yaml_malformed_yaml(tmp_path: Path) -> None:
+    """Test handling of malformed YAML."""
+    file_path = tmp_path / "malformed.md"
+    file_path.write_text(
+        '---\ntitle: "Unclosed quote\n---\nContent', encoding="utf-8"
+    )
+
+    # Expect split_yaml to return empty metadata and content for malformed files
+    metadata, content = alt_text_utils.split_yaml(file_path, verbose=True)
+    assert metadata == {}
+    assert content == ""
