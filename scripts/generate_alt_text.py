@@ -226,7 +226,6 @@ def _build_prompt(
         """
     ).strip()
 
-    # TODO add an "IMAGE HERE" marker?
     article_context = _generate_article_context(
         queue_item, trim_frontmatter=False
     )
@@ -653,6 +652,82 @@ def _process_single_suggestion_for_labeling(
         )
 
 
+def _filter_suggestions_by_existing(
+    suggestions: list[AltGenerationResult],
+    output_path: Path,
+    console: Console,
+) -> list[AltGenerationResult]:
+    """Filter out suggestions that already have captions."""
+    existing_captions = _load_existing_captions(output_path)
+    filtered = [
+        s for s in suggestions if s.asset_path not in existing_captions
+    ]
+
+    skipped_count = len(suggestions) - len(filtered)
+    if skipped_count > 0:
+        console.print(
+            f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
+        )
+
+    return filtered
+
+
+def _handle_undo_request(
+    session: LabelingSession,
+    console: Console,
+) -> None:
+    """Handle undo request by reverting to previous suggestion."""
+    undone_result = session.undo()
+
+    if undone_result is None:
+        console.print("[yellow]Nothing to undo - at the beginning[/yellow]")
+        return
+
+    console.print(f"[yellow]Undoing: {undone_result.asset_path}[/yellow]")
+
+    # Prefill with the previous final_alt value
+    prefill_text = (
+        undone_result.final_alt
+        if undone_result.final_alt is not None
+        else undone_result.suggested_alt
+    )
+    session.suggestions[session.current_index] = replace(
+        session.suggestions[session.current_index],
+        final_alt=prefill_text,
+    )
+
+
+def _process_labeling_loop(
+    session: LabelingSession,
+    display: DisplayManager,
+    console: Console,
+) -> None:
+    """Process all suggestions in the labeling session."""
+    while not session.is_complete():
+        current_suggestion = session.get_current_suggestion()
+        if current_suggestion is None:
+            break
+
+        try:
+            current, total = session.get_progress()
+            result = _process_single_suggestion_for_labeling(
+                current_suggestion, display, current=current, total=total
+            )
+
+            if result.final_alt == UNDO_REQUESTED:
+                _handle_undo_request(session, console)
+            else:
+                session.add_result(result)
+
+        except (
+            AltGenerationError,
+            FileNotFoundError,
+            requests.RequestException,
+        ) as err:
+            display.show_error(str(err))
+            session.skip_current()
+
+
 def _label_suggestions(
     suggestions: list[AltGenerationResult],
     console: Console,
@@ -660,77 +735,22 @@ def _label_suggestions(
     append_mode: bool,
 ) -> int:
     """Load suggestions and allow user to label them, collecting results."""
-    display = DisplayManager(console)
-
     console.print(
         f"\n[bold blue]Labeling {len(suggestions)} suggestions[/bold blue]\n"
     )
 
-    suggestions_to_process = suggestions
-    if append_mode:
-        existing_captions = _load_existing_captions(output_path)
-        original_count = len(suggestions_to_process)
-        suggestions_to_process = [
-            s for s in suggestions if s.asset_path not in existing_captions
-        ]
-        skipped_count = original_count - len(suggestions_to_process)
-        if skipped_count > 0:
-            console.print(
-                f"[dim]Skipped {skipped_count} items with existing captions[/dim]"
-            )
+    suggestions_to_process = (
+        _filter_suggestions_by_existing(suggestions, output_path, console)
+        if append_mode
+        else suggestions
+    )
 
     session = LabelingSession(suggestions_to_process)
+    display = DisplayManager(console)
 
     try:
-        while not session.is_complete():
-            current_suggestion = session.get_current_suggestion()
-            if current_suggestion is None:
-                break
-
-            current, total = session.get_progress()
-
-            try:
-                result = _process_single_suggestion_for_labeling(
-                    current_suggestion, display, current=current, total=total
-                )
-
-                # Check if user requested undo
-                if result.final_alt == UNDO_REQUESTED:
-                    undone_result = session.undo()
-                    if undone_result:
-                        console.print(
-                            f"[yellow]Undoing: {undone_result.asset_path}[/yellow]"
-                        )
-                        # Update the current suggestion with the undone final_alt for prefill
-                        prefill_text = (
-                            undone_result.final_alt
-                            if undone_result.final_alt is not None
-                            else undone_result.suggested_alt
-                        )
-                        session.suggestions[session.current_index] = replace(
-                            session.suggestions[session.current_index],
-                            final_alt=prefill_text,
-                        )
-                    else:
-                        console.print(
-                            "[yellow]Nothing to undo - at the beginning[/yellow]"
-                        )
-                else:
-                    session.add_result(result)
-
-            # Individual errors don't halt the loop
-            except (
-                AltGenerationError,
-                FileNotFoundError,
-                requests.RequestException,
-            ) as err:
-                display.show_error(str(err))
-                session.skip_current()  # Skip this item on error
-                continue
-            # Let KeyboardInterrupt and other critical exceptions bubble up
-            # but ensure we save any processed results in the finally block
+        _process_labeling_loop(session, display, console)
     finally:
-        # Always save results regardless of how we exit
         if session.processed_results:
             _write_output(
                 session.processed_results, output_path, append_mode=append_mode
