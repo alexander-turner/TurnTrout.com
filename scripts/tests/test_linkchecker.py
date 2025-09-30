@@ -1,26 +1,18 @@
-import subprocess
 from pathlib import Path
 
 import pytest
 
 from .. import utils as script_utils
+from .utils import run_shell_command
 
 
 @pytest.fixture(scope="session")
 def html_linkchecker_result():
     git_root = script_utils.get_git_root()
+    script_path = git_root / Path("scripts", "linkchecker.fish")
+    test_html = Path(git_root, "scripts", "tests", ".linkchecker.test.html")
 
-    fish_executable = script_utils.find_executable("fish")
-    result = subprocess.run(
-        [
-            fish_executable,
-            git_root / Path("scripts", "linkchecker.fish"),
-            Path(git_root, "scripts", "tests", ".linkchecker.test.html"),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = run_shell_command(script_path, str(test_html))
     return result
 
 

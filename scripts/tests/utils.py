@@ -1,14 +1,18 @@
+import shutil
 import subprocess
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Generator
 from unittest.mock import Mock
 
+import git
 import numpy as np
 import PIL
 import pytest
 import requests
 from PIL import Image
 from ruamel.yaml import YAML
+from ruamel.yaml.timestamp import TimeStamp
 
 from .. import compress
 from .. import utils as script_utils
@@ -320,3 +324,78 @@ def _get_video_frame_rate(filename: Path) -> float:
 
 def _get_gif_frame_rate(gif_path: Path) -> float:
     return 1000 / PIL.Image.open(gif_path).info["duration"]
+
+
+def run_shell_command(
+    script_path: Path, *args: str, shell: str = "fish"
+) -> subprocess.CompletedProcess:
+    """Execute a shell script with the specified shell interpreter.
+
+    Args:
+        script_path: Path to the script to execute.
+        args: Additional arguments to pass to the script.
+        shell: Shell interpreter to use (default: "fish").
+
+    Returns:
+        CompletedProcess with captured output.
+    """
+    shell_executable = shutil.which(shell) or shell
+    cmd = [shell_executable, str(script_path)]
+    cmd.extend(args)
+    return subprocess.run(cmd, capture_output=True, text=True, check=False)
+
+
+def create_timestamp(dt: datetime) -> TimeStamp:
+    """Convert a datetime object to a ruamel.yaml TimeStamp.
+
+    Args:
+        dt: The datetime to convert.
+
+    Returns:
+        TimeStamp object compatible with ruamel.yaml serialization.
+    """
+    return TimeStamp(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+
+
+def setup_git_repo_with_files(
+    tmp_path: Path,
+    files: dict[str, dict[str, Any]],
+    *,
+    configure_user: bool = True,
+    initial_commit: bool = True,
+) -> git.Repo:
+    """Create a git repository with specified markdown files.
+
+    Args:
+        tmp_path: Base directory for the repository.
+        files: Dictionary mapping relative file paths to file configurations.
+               Each config should have 'frontmatter' (optional) and 'content' keys.
+               Example: {"file.md": {"frontmatter": {...}, "content": "..."}}
+        configure_user: Whether to configure git user.name and user.email.
+        initial_commit: Whether to create an initial commit with the files.
+
+    Returns:
+        The initialized git.Repo object.
+    """
+    repo = git.Repo.init(tmp_path)
+
+    if configure_user:
+        config_writer = repo.config_writer()
+        config_writer.set_value("user", "name", "Test User")
+        config_writer.set_value("user", "email", "test@example.com")
+        config_writer.release()
+
+    for file_path, file_config in files.items():
+        full_path = tmp_path / file_path
+        create_markdown_file(
+            full_path,
+            frontmatter=file_config.get("frontmatter"),
+            content=file_config.get("content", "# Test"),
+        )
+        if initial_commit:
+            repo.index.add([str(full_path)])
+
+    if initial_commit and files:
+        repo.index.commit("Initial commit")
+
+    return repo

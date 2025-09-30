@@ -11,26 +11,13 @@ from ruamel.yaml.timestamp import TimeStamp
 import scripts.utils as script_utils
 
 from .. import update_date_on_publish as update_lib
-from .utils import create_markdown_file
+from .utils import create_markdown_file, create_timestamp
 
 
 @pytest.fixture
 def temp_content_dir(quartz_project_structure):
     """Create a temporary content directory with test files."""
     return quartz_project_structure["content"]
-
-
-def create_timestamp(dt: datetime) -> TimeStamp:
-    """Helper function to create TimeStamp objects from datetime."""
-    return TimeStamp(
-        dt.year,
-        dt.month,
-        dt.day,
-        dt.hour,
-        dt.minute,
-        dt.second,
-        dt.microsecond,
-    )
 
 
 @pytest.fixture

@@ -99,33 +99,6 @@ def test_media_setup(
     shutil.rmtree(tmp_path)
 
 
-@pytest.fixture
-def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
-    project_root = tmp_path / "turntrout.com"
-
-    # Create a mock Repo object
-    mock_repo = MagicMock()
-    mock_repo.working_tree_dir = str(project_root)
-
-    def mock_repo_init(*args, **kwargs):
-        return mock_repo
-
-    monkeypatch.setattr("git.Repo", mock_repo_init)
-
-    def mock_get_git_root(*args, **kwargs):
-        return project_root
-
-    monkeypatch.setattr(script_utils, "get_git_root", mock_get_git_root)
-    return project_root
-
-
-@pytest.fixture(autouse=True)
-def mock_rclone():
-    with patch("subprocess.run") as mock_run:
-        mock_run.return_value.returncode = 0
-        yield mock_run
-
-
 @pytest.fixture(autouse=True)
 def mock_home_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     r2_upload._HOME_DIR = tmp_path
@@ -148,7 +121,7 @@ def test_verbose_output(
     assert "Moving original file:" in captured.out
 
 
-def test_upload_to_r2_success(mock_git_root: Path, r2_cleanup: list[str]):
+def test_upload_to_r2_success(mock_git_root: Path):
     test_file = mock_git_root / "quartz" / "static" / "test.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -170,8 +143,6 @@ def test_upload_to_r2_success(mock_git_root: Path, r2_cleanup: list[str]):
     # Check the second call (upload)
     assert mock_run.call_args_list[1][0][0][:2] == ["rclone", "copyto"]
     assert mock_run.call_args_list[1][0][0][2] == str(test_file)
-
-    r2_cleanup.append("static/test.jpg")
 
 
 @pytest.mark.parametrize(
@@ -279,7 +250,6 @@ def test_main_function(
 def test_upload_and_move(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     tmp_path: Path,
-    r2_cleanup: list[str],
     mock_git_root: Path,
     mock_rclone: MagicMock,
 ):
@@ -295,8 +265,6 @@ def test_upload_and_move(
     r2_upload.upload_and_move(
         test_image, references_dir=content_dir, move_to_dir=move_to_dir
     )
-
-    r2_cleanup.append("static/test.jpg")
 
     # Check if the file is moved to the correct location with preserved structure
     expected_moved_path = move_to_dir / test_image.relative_to(mock_git_root)
