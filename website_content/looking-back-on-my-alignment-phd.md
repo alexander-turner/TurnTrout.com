@@ -75,7 +75,7 @@ next-post-title: Insights from "The Manga Guide to Physiology"
 
 The funny thing about long periods of time is that they do, eventually, come to an end. I'm proud of what I accomplished during my PhD. That said, I'm going to first focus on mistakes I've made over the past four[^1] years.
 
-![](https://assets.turntrout.com/static/images/posts/phdReflection.avif)
+![The author, dressed for his thesis defense, sits at a desk with his chin in his hand, looking thoughtfully to the side as he reflects on his alignment research.](https://assets.turntrout.com/static/images/posts/phdReflection.avif)
 Figure: Before my thesis defense -- thinking about what I'd done to advance alignment research, and if it would be enough.
 
 # Mistakes

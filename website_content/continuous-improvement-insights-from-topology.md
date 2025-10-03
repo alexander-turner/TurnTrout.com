@@ -89,7 +89,7 @@ At first, I was confused why _open_ subspaces $Y$ of compact $X$ don't have to b
 
 I was confused why we needed compactness. Essentially, I didn't understand [the tube lemma](https://dantopology.wordpress.com/2011/05/01/the-tube-lemma/).
 
-![](https://assets.turntrout.com/static/images/posts/qmbh27L.avif)
+![A diagram illustrates the Tube Lemma: A horizontal "slice" (e.g. y=3) is contained within a wider "tube" (e.g. {(x,y) | 1<y<2}. Text states the lemma: "If X is compact and if a slice S is contained in an open set V, then there's also a tube T such that S ⊆ T ⊆ V." A warning notes the diagram's example (ℝxℝ) is not compact.](https://assets.turntrout.com/static/images/posts/qmbh27L.avif)
 
 Now let's prove the theorem. Suppose $C$ is closed in $X \times Y$. We want to show $f(C)$ is also closed. Take $y\not \in \pi(C)$. $(X\times Y)-C$ is an open set of the domain containing the slice $X \times \{y\}$. Since $X$ is compact, apply the tube lemma to get a tube $X \times U$. The projection of this tube is both open (because $U$ is open in $Y$) and disjoint from $\pi(C)$ (because the tube is contained in $(X\times Y)-C$). Thus, all $y \not \in \pi(C)$ have an open neighborhood disjoint from $\pi(C)$, so $\pi(C)$ must be closed.
 
@@ -108,7 +108,7 @@ Another definition uses topological convergence. $f:X\to Y$ is continuous at $x$
 
 These definitions are equivalent. The latter lets us think about how different winding paths you can take in a domain always must topologically converge to the same thing in the co-domain.
 
-![](https://assets.turntrout.com/static/images/posts/k6b4WRE.avif)
+![A diagram illustrating the definition of continuity for a function f from a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. The function f maps this to Y, where the corresponding sequence f(x_n) converges to f(x), visually demonstrating topological convergence.](https://assets.turntrout.com/static/images/posts/k6b4WRE.avif)
 
 Continuity in the variables says that paths along the axes converge in the right way. But for continuity overall, we need _all_ paths to converge in the right way. Directional continuity when the domain is $\mathbb{R}$ is a special case of this: continuity from below and from above if and only if continuity for all sequences converging topologically to $x$.
 
@@ -116,7 +116,7 @@ Continuity in the variables says that paths along the axes converge in the right
 
 Suppose $p:C\to Y$ is a [covering map](https://en.wikipedia.org/wiki/Covering_space). One way of understanding [lifts](https://en.wikipedia.org/wiki/Lift_\(mathematics\)) in algebraic topology is that, for some path $f:X\to Y$, the lift $\tilde{f}:X\to C$ is the unique path in the covering space $C$ corresponding to $f=p\circ \tilde{f}$.
 
-![](https://assets.turntrout.com/static/images/posts/psLCumW.avif)
+![Three diagrams illustrate path lifting in topology, where a path on a circle is "unwrapped" onto a real number line. ... 1. A counter-clockwise half-circle path lifts to the line interval from 0 to 1/2. ... 2. A clockwise half-circle path lifts to the line interval from 0 to -1/2. ... 3. A path wrapping the circle twice lifts to the line interval from 0 to 2.](https://assets.turntrout.com/static/images/posts/psLCumW.avif)
 
 Once you fix the initial point, the lift corresponds to the unique path in the covering space which produces $f$. It's just helping you find the corresponding path in the lifted up covering space!
 

@@ -41,7 +41,7 @@ Data scraping practices are a serious problem. The tool we are currently releasi
 
 We reduce the friction of serving data in a scraper-resistant fashion.
 
-![](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif)
+![The "Easy (Responsible) Data Sharing" portal after successful Cloudflare verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080348.avif)
 Figure: At most, users click a box. They don't have to complete any annoying tasks.
 
 ![The protected download page after verification.](https://assets.turntrout.com/static/images/posts/prevent-ai-scraping-20250723080452.avif)

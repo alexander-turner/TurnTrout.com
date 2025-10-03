@@ -70,7 +70,7 @@ I explore how instrumental convergence works in this case. I also walk through h
 
 Consider the following environment, where the agent can either stay put or move along a purple arrow.
 
-![](https://assets.turntrout.com/static/images/posts/ye-olde-gridworld.avif){style="width:85%;"}
+![A diagram, "Ye Olde Gridworld, Shape featurization," showing a six-state environment. A central "start" state has purple arrows to the left and right. The left path only allows access to the triangle terminal state. The right path preserves access to the circle and the star. Orange arrows labeled "State embedding φ" connect pairs of states.](https://assets.turntrout.com/static/images/posts/ye-olde-gridworld.avif){style="width:85%;"}
 
 Figure: From left to right, top to bottom, the states have labels $s_\triangle, s_\bigcirc,s_\text{left},s_\text{start},s_\text{right},s_\bigstar.$
 
@@ -86,7 +86,7 @@ This particular featurization **increases** the strength of the orbit-level ince
 
 There's another point I want to make in this tiny environment.
 
-![](https://assets.turntrout.com/static/images/posts/ye-olde-gridworld.avif){style="width:85%;"}
+![A diagram, "Ye Olde Gridworld, Shape featurization," showing a six-state environment. A central "start" state has purple arrows to the left and right. The left path only allows access to the triangle terminal state. The right path preserves access to the circle and the star. Orange arrows labeled "State embedding φ" connect pairs of states.](https://assets.turntrout.com/static/images/posts/ye-olde-gridworld.avif){style="width:85%;"}
 <br/>Figure: From left to right, top to bottom, the states have labels $s_\triangle, s_\bigcirc,s_\text{left},s_\text{start},s_\text{right},s_\bigstar.$
 
 Suppose we find an environmental symmetry $\phi$ which lets us apply the [original power-seeking theorems](https://proceedings.neurips.cc/paper/2021/hash/c26820b8a4c1b3c2aa868d6d57e14a79-Abstract.html) to raw reward functions over the world state. Letting $\mathbf{e}_s\in \mathbb{R}^6$ be a column vector with an entry of 1 at state $s$ and 0 elsewhere, in this environment, we have the symmetry enforced by
@@ -119,13 +119,13 @@ The shape featurization plays nice with the actual nitty-gritty environment-leve
 
 In a different featurization, suppose the featurization is the agent's $x/y$ coordinates. $R(s_{x,y}) = \alpha_1 x + \alpha_2 y$.
 
-![](https://assets.turntrout.com/static/images/posts/ye-olde-coordinates.avif){style="width:85%;"}
+!["Ye Olde Gridworld, Coordinate featurization". A diagram of a 5-square grid on an x-y plane. The "Start" square is at (x=0, y=0). From the start, an agent can move up to (0,1) or right to (1,0). Other arrows show paths between squares (1,0), (2,0), (0,1), and (2,1).](https://assets.turntrout.com/static/images/posts/ye-olde-coordinates.avif){style="width:85%;"}
 
 Given the **start** state, if the agent goes _up_, its reachable feature vector is just $(x=0, y=1)$, whereas the agent can induce $(x=1, y=0)$ if it goes _right_. Therefore, whenever _up_ is strictly optimal for a featurized reward function, we can permute that reward function's feature weights by swapping the $x$- and $y$-coefficients ($\alpha_1$ and $\alpha_2$, respectively). Again, this new reward function is featurized, and it makes going _right_ strictly optimal. So the usual arguments ensure that at least half of these featurized reward functions make it optimal to go right.
 
 Sometimes, these similarities won't hold, even when it initially looks like they "should"!
 
-![](https://assets.turntrout.com/static/images/posts/ye-olde-negative-coordinates.avif){style="width:85%;"}
+!["Ye Olde Gridworld; Coordinate featurization, negative." A diagram with a "Start" square at coordinates (x=0, y=0). From start, a left path leads to (-1,0) then to terminal state (-1,-1). A right path leads to (1,0) then to terminal state (1,1).](https://assets.turntrout.com/static/images/posts/ye-olde-negative-coordinates.avif){style="width:85%;"}
 
 | Action | Feature vectors available                                                                            |
 | ----: | :--------------------------------------------------------------------------------------------------- |
@@ -142,7 +142,7 @@ If the agent can be made to "hate everything" (all feature weights $\alpha_i$ ar
 
 Consider a deep RL training process where the agent's episodic reward is featurized into a weighted sum of the different resources the agent has at the end of the game, with weight vector $\alpha$. For simplicity, we fix an opponent policy and a learning regime (number of epochs, learning rate, hyperparameters, network architecture, and so on). We consider the effects of varying the reward feature coefficients $\alpha$.
 
-![](https://assets.turntrout.com/static/images/posts/sc2_resources.avif)
+![A screenshot from StarCraft II showing a Terran base with buildings and worker units. The units are gathering resources from blue mineral fields, illustrating an environment where an AI's reward can be based on collecting different types of resources.](https://assets.turntrout.com/static/images/posts/sc2_resources.avif)
 
 ---
 
@@ -162,7 +162,7 @@ What the theorems say
 
 Similar setup to StarCraft II, but now the agent's episode reward is $\alpha_1 \cdot$(Amount of iron ore in chests within 100 blocks of spawn after 2 in-game days)$+\alpha_2\cdot$(Same but for coal), where $\alpha_1,\alpha_2\in \mathbb{R}$ are scalars (together, they form the coefficient vector $\alpha\in \mathbb{R}^2$).
 
-![](https://assets.turntrout.com/static/images/posts/iron_block.avif)
+![A pixelated, cube-shaped block of iron ore from the video game Minecraft, shown as gray stone with brownish-orange flecks.](https://assets.turntrout.com/static/images/posts/iron_block.avif)
 Figure: An iron ore block in Minecraft.
 
 Outcomes of interest

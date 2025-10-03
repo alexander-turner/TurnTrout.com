@@ -227,7 +227,7 @@ a = b + c
 
 Code: A `<figcaption>` element created from the Markdown cue of "Code:".
 
-![Test image.](https://assets.turntrout.com/static/images/posts/goose-majestic.avif)
+![A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose.](https://assets.turntrout.com/static/images/posts/goose-majestic.avif)
 Figure: A `<figcaption>` element created from the Markdown cue of "Figure:".
 
 # Tables
@@ -252,7 +252,7 @@ This footnote has a table.[^table]
        </td>
        <td>
          <p>Cell 2: image and list</p>
-          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
+          <img style="width: 25%;" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
            <ol>
              <li>Ordered list item 1</li>
              <li>Ordered list item 2</li>
@@ -270,7 +270,7 @@ This footnote has a table.[^table]
        <td>
          <p>Cell 4: mixed content</p>
          <p>More text here.</p>
-          <img style="width: 25%;" src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
+          <img style="width: 25%;" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
          <ul>
              <li>list item</li>
          </ul>
@@ -360,7 +360,7 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 ## External links with favicons
 
-Check out [GitHub](https://github.com). <img src="https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.avif" class="favicon no-span" alt="">
+Check out [GitHub](https://github.com). <img src="https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.avif" class="favicon no-span" alt="A red abstract logo of interconnected nodes and lines forming a flame-like shape on a green background.">
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons)
 

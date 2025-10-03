@@ -56,7 +56,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 >
 > My journey through the MIRI research guide.
 
-![](https://assets.turntrout.com/static/images/posts/test_library.avif)
+![An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.](https://assets.turntrout.com/static/images/posts/test_library.avif)
 
 1. [Set Up for Success: Insights from "Naïve Set Theory"](/set-up-for-success-insights-from-naive-set-theory)
 2. [Lightness and Unease](./lightness-and-unease.md)
@@ -84,7 +84,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 > [!quote] Original sequence description
 > Why do some things seem like really big deals to us? Do most agents best achieve their goals by seeking power? How might we avert catastrophic incentives in the utility maximization framework?
 
-![](https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif)
+![The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.](https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif)
 
 Introductory post: [Reframing Impact](./reframing-impact)
 
@@ -122,7 +122,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 > But where does instrumental convergence come from? When does it occur, and how strongly? And what does the math look like?
 <!-- vale on -->
 
-![](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)
+![A cartoon illustrating the paperclip maximizer thought experiment from AI safety. A blocky robot lounges on a huge pile of paperclips that covers the Earth, as an anthropomorphic paperclip with eyes looks on.](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)
 
 > [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
 > Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
@@ -142,7 +142,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 ## Thoughts on Corrigibility
 
 <figure class="float-right desktop-only" style="margin-top:-1rem; width: 80%;">
-<img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="" loading="lazy" style="width: 80%;">
+<img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="A close-up of the HAL 9000 computer's iconic camera eye. A glowing red orb with a bright yellow center is set within a silver metallic ring, representing the concept of a non-corrigible AI." loading="lazy" style="width: 80%;">
 </figure>
 
 > [!quote] Original sequence description
@@ -185,7 +185,7 @@ Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-w
 
 My work with my MATS 3.0 scholars, [Ulisse Mini](https://uli.rocks) and [Peli Grietzer](https://thegradientpub.substack.com/p/peli-grietzer-a-mathematized-philosophy)!
 
-![](https://assets.turntrout.com/static/images/posts/shard_mouse.avif)
+![A stylized illustration of a mouse representing an AI agent. Its body is a large, crystalline wedge of cheese, and it is surrounded by smaller, glowing cheese-like "subshards" on a dark, geometric surface.](https://assets.turntrout.com/static/images/posts/shard_mouse.avif)
 Figure: A [mouse with cheese subshards](https://imgur.com/a/doRBRs4).
 
 > [!quote] Original sequence description

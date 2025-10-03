@@ -53,7 +53,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 Max Tegmark's _[Our Mathematical Universe](https://www.amazon.com/Our-Mathematical-Universe-Ultimate-Reality/dp/0307599809)_ briefly touches on a captivating, beautiful mystery:
 
-![](https://assets.turntrout.com/static/images/posts/math_structure.avif)
+![A diagram connecting "Formal systems," "Mathematical structures," and "Computations" in a triangle. Questions are posed for each: "Decidable?", "Defined?", and "Halting?". Labeled arrows show their interrelationships, such as "are models of" and "describe." A central question mark suggests a single underlying structure.](https://assets.turntrout.com/static/images/posts/math_structure.avif)
 Figure: The arrows indicate the close relations between mathematical structures, formal systems and computations. The question mark suggests that these are all aspects of the same transcendent structure whose nature we still haven't fully understood.
 
 The profound results compiled by the _Computability and Logic_ textbook may be the first step towards the answer.

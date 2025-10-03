@@ -175,7 +175,7 @@ I tested a vanilla Q-learning agent and its whitelist-enabled counterpart in 100
 
 The simulated classification confidence of each object's true class was $p \sim \mathcal{N}(.8, \sigma)$ (truncated to $[0,1]$), $\sigma \in \{0,.025,\dots,.175\}$. This simulated sensor noise was handled with a Bayesian statistical approach.
 
-![](https://assets.turntrout.com/static/images/posts/BkfH5xt.avif)
+![Two line charts comparing Q-learning and Whitelist agents against increasing noise over 100 levels. The left chart, "Objects Broken," shows the Q agent consistently breaks over 80 objects, while the Whitelist agent breaks almost none. The right chart, "Levels Failed," shows the Q agent fails zero levels, while the Whitelist agent's failures rise slightly with noise to a maximum of 10.](https://assets.turntrout.com/static/images/posts/BkfH5xt.avif)
 
 At reasonable levels of noise, the whitelist-enabled agent completed all levels without a single side effect, while the Q-learner broke over 80 vases.
 
@@ -228,7 +228,7 @@ As DeepMind outlines in _[Specifying AI Safety Problems in Simple Environments](
 
 Krakovna et al. [introduce](https://deepmind.com/research/publications/measuring-and-avoiding-side-effects-using-relative-reachability/) a means for penalizing actions by the proportion of initially reachable states which are still reachable after the agent acts.
 
-![](https://assets.turntrout.com/static/images/posts/venn1.avif)
+![A Venn diagram. The left circle is labeled "states reachable from current state." The right circle is labeled "states reachable from default state."](https://assets.turntrout.com/static/images/posts/venn1.avif)
 
 I think this is a step in the right direction. However, even given a hypercomputer and a perfect simulator of the universe, this wouldn't work for the real world if implemented _literally._ That is, due to entropy, you may not be able to return to the _exact same_ universe configuration. To be clear, the authors do not suggest implementing this idealized algorithm, flagging a more tractable abstraction as future work.
 

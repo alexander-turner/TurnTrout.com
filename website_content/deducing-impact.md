@@ -49,24 +49,24 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 
-![](https://assets.turntrout.com/static/images/posts/lyRy0fS.avif)
+![Text reads: "Impact is in the eye of the beholder. Traffic jams are vividly big deals to tardy commuters, but everyone else doesn't really care." A frustrating traffic jam is contrasted with a lone driver in an open lane enjoying music.](https://assets.turntrout.com/static/images/posts/lyRy0fS.avif)
 
-![](https://assets.turntrout.com/static/images/posts/OIDCLpl.avif)
+![Text: "This concept is important, so I'm going to present another zany situation. Imagine that the sun goes supernova." An illustration shows the sun exploding into a brilliant supernova, sending a destructive wave of light that engulfs Earth.](https://assets.turntrout.com/static/images/posts/OIDCLpl.avif)
 
-​![](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)
-![](https://assets.turntrout.com/static/images/posts/G1UgvEf.avif)
+​![Text: "Now, being on—". A hand-drawn Harry Potter with an annoyed expression interrupts: "Our sun is a main-sequence G-type star, it can't explode. Any energy input just decreases the volume of the hydrogen plasma, the Sun doesn't have a degenerate core that could be detonated. The Sun doesn't have enough mass to go supernova."](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)
+![Handwritten text: "Yes, yes, thank you—everyone knows that. It's just another weird situation I'm forcing on my readership. Now, being on Earth here is objectively impactful because it matters to almost any agent in your shoes. However, whether this is a big deal to you depends on who and where you are." ](https://assets.turntrout.com/static/images/posts/G1UgvEf.avif)
 
-![](https://assets.turntrout.com/static/images/posts/lCPSncS.avif )
+![A green stick figure alien sleeping on a cot on a white, curved surface. Above, a single bright star shines in a black sky.](https://assets.turntrout.com/static/images/posts/lCPSncS.avif)
 
-![](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
+![A minimalist graphic of a magenta oval nose with two pairs of black, curved whiskers on either side, serving as a decorative section break.](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
 
-![](https://assets.turntrout.com/static/images/posts/UHf85nd.avif)
+![Handwritten text titled "Impact is Comparative." It explains that if we grew up expecting the sun to go supernova, discovering it won't would be a big deal. But to us, it's the expectation, so it has zero impact. The text concludes that impact must be comparative, based on difference or change.](https://assets.turntrout.com/static/images/posts/UHf85nd.avif)
 
-![](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
+![A minimalist graphic of a magenta oval nose with two pairs of black, curved whiskers on either side, serving as a decorative section break.](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
 
-![](https://assets.turntrout.com/static/images/posts/apep62R.avif)
+![A handwritten note introduces the post's goal: understanding why AIs might catastrophically impact us. The first step is "understanding impact,"—an important question with an answer not yet widely circulated. The note invites the reader to try their hand at answering the question.](https://assets.turntrout.com/static/images/posts/apep62R.avif)
 
-![](https://assets.turntrout.com/static/images/posts/p278IRN.avif)
+!["Exercise: Deduce and informally describe why we think some things are big deals." The text includes three bullet points under the heading "Remember:": * "Impact is relative both to what you value and to your vantage point." * "Part of impact is particular to agents like you, and part is objective." * "Impact is comparative." Further instructions state: "Find the simple concept neatly explaining why things feel like big deals or not in the examples thus far. The answer can be expressed in just one sentence of everyday language. You have the benefit of knowing a solution exists." At the center of the page: "You have fifteen minutes." At the bottom are six oval illustrations depicting various scenarios: 1.  An asteroid hurtling towards a planet. 2.  A white void next to a red frowny-face. 3.  The Sun going supernova and ravaging Earth. 4. A robot looking at small obsidian blocks (which it considers worthless, unlike pebbles). 5. A traffic jam. 6. An alien relaxing as a distant star goes supernova.](https://assets.turntrout.com/static/images/posts/p278IRN.avif)
 
 >! The solution comes in the next post! Feel free to discuss amongst yourselves.
 >

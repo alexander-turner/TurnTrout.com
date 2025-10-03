@@ -61,7 +61,7 @@ We ran some new experiments to test ActAdd more systematically and go beyond the
 
 Does ActAdd increase the probability of the model outputting tokens related to the steering vector? Does performance improve as "relevance of test documents to the steering vector" increases? Yes on both counts.
 
-![](https://assets.turntrout.com/static/images/posts/actadd-perplexity-rat.avif)
+![A line chart shows that as "Wedding word frequency" on the x-axis increases from 0% to 3%, the "Perplexity ratio (act-add / baseline)" on the y-axis decreases from 100% to 96%. This demonstrates that the activation addition method improves model performance on more relevant text.](https://assets.turntrout.com/static/images/posts/actadd-perplexity-rat.avif)
 
 Figure: Adding a `wedding` − “ ” steering vector lowers perplexity when wedding words are more frequent. The perplexity ratio (lower is better) compares the relative predictive performance of ActAdd and an unmodified model.  
 
@@ -71,7 +71,7 @@ We score model generations under ActAdd, show the effect of different injection 
 
 For the wedding vector, the intervention is effective at the first layer,  rises in effectiveness until $l = 6$ , and then declines. The optimal injection site yields a topic-steering success rate above 90%, compared to a ∼2% baseline.
 
-![](https://assets.turntrout.com/static/images/posts/wedding-word-count.avif)
+![A line chart plotting "Mean wedding word count" on the y-axis against the model "Layer" of intervention on the x-axis. The word count rises from the start, peaks at nearly 1.8 at layer 6, and then declines steadily, approaching a dotted baseline near zero after layer 35.](https://assets.turntrout.com/static/images/posts/wedding-word-count.avif)
 
 ### 3\. Evidence that activation additions preserve capabilities
 
@@ -85,7 +85,7 @@ We test that ActAdd does not disrupt the model’s general knowledge (as some ot
 
 Table: Example problems in ConceptNet.
 
-![](https://assets.turntrout.com/static/images/posts/pass-at-k.avif)
+![A line chart comparing activation addition with a baseline model. The y-axis is "mean Pass@K" and the x-axis is "K." The two lines are almost perfectly overlapping, showing nearly identical performance as they curve upward from a mean P@K of about 0.1 at K=1 to 0.5 at K=100.](https://assets.turntrout.com/static/images/posts/pass-at-k.avif)
 
 Figure: "P@K" is the probability of the correct answer being in the model's top $K$ answers. ActAdd barely affects off-target probabilities.
 

@@ -75,7 +75,7 @@ The faster relearning implies that finetuning a pretrained model to have certain
 
 # Distillation robustifies unlearning
 
-<figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612143006.avif"/></figure>
+<figure class="float-right"><img alt="In a dark classroom, a shadowy teacher figure with biohazard symbols behind them transfers a glowing ribbon of knowledge to a luminous student. The student studies a book of simple shapes, illustrating the distillation of good knowledge while leaving behind the bad." src="https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612143006.avif"/></figure>
 
 Imagine you’re an algebra student and your teacher pretends not to know algebra. Despite the fact that the teacher _does_ know it themselves, you as a student will not learn.
 

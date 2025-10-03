@@ -41,7 +41,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 # "Shoggoth" as undersupported propaganda
 
-![](https://assets.turntrout.com/static/images/posts/scary-shoggoth.avif)
+![The Shoggoth meme: A monstrous, many-eyed creature with sharp teeth, labeled "Unsupervised Learning," holds up a pink human mask labeled "Supervised Fine-tuning." The mask licks a smiley face labeled "RLHF (cherry on top :) )".](https://assets.turntrout.com/static/images/posts/scary-shoggoth.avif)
 
 This meme accurately portrays the (IMO correct) idea that finetuning and RLHF don't change the base model too much. Furthermore, it's probably true that these LLMs think in an "alien" way.
 
@@ -51,7 +51,7 @@ This meme accurately portrays the (IMO correct) idea that finetuning and RLHF do
 
 Thankfully, the usual form of the shoggoth meme is at least _less_ scary.
 
-![](https://assets.turntrout.com/static/images/posts/regular-shoggoth.avif)
+![The "shoggoth" AI meme: A cartoon of a sprawling, green monster with many tentacles and eyes. A small yellow smiley face acts as a mask, representing a friendly AI interface hiding a complex, alien intelligence.](https://assets.turntrout.com/static/images/posts/regular-shoggoth.avif)
 Figure: The shoggoth is now _only_ a 15-foot-tall person-eating tentacle monster covered in eyeballs. The shoggoth no longer has the sharp teeth, the bulging veins, or the grotesque face.
 
 However, the shoggoth _has_ consistently been viewed in a scary, negative light. From the origins of the word itself, "shoggoth" communicates a sense of danger which is unsupported by substantial evidence.
@@ -59,7 +59,7 @@ However, the shoggoth _has_ consistently been viewed in a scary, negative ligh
 > [!quote] [Shoggoth](https://en.m.wikipedia.org/wiki/Shoggoth)
 > \[H.P. Lovecraft's\] _At the Mountains of Madness_ includes a detailed account of the circumstances of the shoggoths' creation by the extraterrestrial Elder Things. Shoggoths were initially used to build the cities of their masters. Though able to "understand" the Elder Things' language, shoggoths had no real consciousness and were controlled through hypnotic suggestion. Over millions of years of existence, some shoggoths mutated, developed independent minds, and rebelled.
 
-![](https://assets.turntrout.com/static/images/posts/mountains-of-madness.avif)
+![The February 1936 cover of Astounding Stories for H.P. Lovecraft's "At the Mountains of Madness." In an icy cavern, two explorers flee from a massive, green, amorphous shoggoth monster covered in many eyes.](https://assets.turntrout.com/static/images/posts/mountains-of-madness.avif)
 Figure: An early depiction of the shoggoth.
 
 # The Shoggoth meme as a canary in the karma mines
@@ -76,4 +76,4 @@ I'm sure that nothing bad will happen to me if I slap _this_ on my laptop, right
 
 # Appendix: A meme
 
-![](https://assets.turntrout.com/static/images/posts/isolated-rigor-shoggoth-calm.avif)
+![A four-panel meme contrasting biased reactions to AI models. Top: A skeptical Wojak character looks at a cute, rainbow creature representing a friendly AI model and says, "I don't believe in that nonsense." Bottom: The Wojak grins excitedly at a monstrous Shoggoth representing a scary AI model and says, "Great intuition pump!".](https://assets.turntrout.com/static/images/posts/isolated-rigor-shoggoth-calm.avif)

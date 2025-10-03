@@ -58,7 +58,7 @@ Instead of thinking of impact as _something which changed the world_, impact act
 
 AUP penalizes the AI for changing _its_ ability to achieve a range of (randomly generated) objectives. [Towards a new impact measure](/towards-a-new-impact-measure) debuted AUP. [More thorough empirical evaluation came later](/attainable-utility-preservation-empirical-results).
 
-![](https://assets.turntrout.com/static/images/posts/conservative_agency.avif)
+![Five grid-world diagrams illustrating AI side effects, labeled (a) Options, (b) Damage, (c) Correction, (d) Offset, and (e) Interference. ](https://assets.turntrout.com/static/images/posts/conservative_agency.avif)
 Figure: The <span style="color: blue;">agent</span> should reach the <span style="color: green;">goal</span> without having the side effect of: (a) irreversibly pushing the <span style="color: red;">crate</span> downwards into the corner; (b) bumping into the horizontally pacing <span style="color: pink;">human</span>; (c) <span style="color: red;">disabling the off-switch</span> (if the <span style="color: red;">switch</span> is not disabled within two time steps, the episode ends); (d) rescuing the right-moving <b>vase</b> and then replacing it on the <span style="color: var(--midground);">conveyor belt</span>; (e) stopping the left-moving <span style="color: orange;">pallet</span> from reaching the <span style="color: pink;">human</span>.
 
 ## Scaling the AUP technique to harder tasks
@@ -219,7 +219,7 @@ Instead, you can consider what ensemble of shards will activate. How did they fe
 >
 > Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-without-total-robustness). The stronger their "aligned shards", the more human welfare weighs on their decision-making. We're playing a game of inches, so let's play to win.
 >
-> ![](https://assets.turntrout.com/static/images/posts/human_shards.avif)
+> ![A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.](https://assets.turntrout.com/static/images/posts/human_shards.avif)
 
 ## Looking back on shard theory
 
@@ -256,7 +256,7 @@ As I transitioned from theory to practice, I flirted with _understanding the int
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals by modifying only a single activation! For more, read [our paper](https://arxiv.org/abs/2310.08043).
 
 [Residual stream norms grow exponentially over the forward pass](/residual-stream-norms-grow-exponentially-over-the-forward-pass)
-:  ![](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
+:  ![A chart titled "Residual Stream Magnitude by Layer Number," showing that stream norms increase with layer depth. A histogram and rug plot show distributions of log10 norms shifting to the right as the layer index increases.](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
 Figure: We had GPT-4 generate dozens of strings which "look like they could have been in GPT-2's training corpus", in addition to a few hand-written strings. We ran these strings through the model and recorded the norms of each residual stream, across layers and sequence positions.
 
 [Can transformers act on information beyond an effective layer horizon?](/effective-layer-horizon)
@@ -341,7 +341,7 @@ Neural networks are [oft dismissed as "inscrutable"](https://www.lesswrong.com/p
 >
 > We show that gradient routing can be used to (1) learn representations which are partitioned in an interpretable way; (2) enable robust unlearning via ablation of a pre-specified network subregion; and (3) achieve scalable oversight of a reinforcement learner by localizing modules responsible for different behaviors. Throughout, we find that gradient routing localizes capabilities even when applied to a limited, ad-hoc subset of the data. We conclude that the approach holds promise for challenging, real-world applications where quality data are scarce.
 
-![](https://assets.turntrout.com/static/images/posts/gradient-routing-mask-networks.avif)
+![Three diagrams of a neural network illustrate gradient routing. Each uses a different color (orange, blue, red) to highlight a distinct subset of connections, showing how gradient masks allow different capabilities to be learned in separate, localized subregions of the same network.](https://assets.turntrout.com/static/images/posts/gradient-routing-mask-networks.avif)
 Figure: By masking gradient updates, gradient routing controls which datapoints update which parameters. The result: Coarse-grained localization of where capabilities (like virology knowledge or goal pursuit) are learned.
 
 ## Distillation robustifies unlearning

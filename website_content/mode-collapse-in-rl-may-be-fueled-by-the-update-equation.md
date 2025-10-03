@@ -163,7 +163,7 @@ Alternating cooperation (`c`) and defection (`d`) is the (bolded) optimal strate
 
 PPO immediately learns the alternating strategy:
 
-![](https://assets.turntrout.com/static/images/posts/04e947f8cb9cdf3c07b49cdd3dd5887cf8a8f1ac8c06b9a2.avif)
+![A line graph titled "prisoner's dilemma with ppo" shows the probability of different strategies over 500 epochs. The "alternating" strategy quickly rises from a probability of 0.5 to 1.0, while the "coop-coop" and "defect-defect" strategies fall to 0. This illustrates that PPO mode collapses onto the single optimal strategy. Dashed lines show the closer-to-uniform softmax returns for comparison.](https://assets.turntrout.com/static/images/posts/04e947f8cb9cdf3c07b49cdd3dd5887cf8a8f1ac8c06b9a2.avif)
 
 The softmax probability of strategy $s$ is basically $p(s)=\frac{e^{\text{return}(s)}}{\sum_{s'\in \text{strategies}}e^{\text{return}(s')}}$.[^5] The results look almost identical between runs, with or without whitening the advantages, and if the value head is detached.
 
@@ -177,21 +177,21 @@ The model does not collapse onto a pure strategy. Instead, the results are incon
 
 Here's the first 1K epochs of a training run:
 
-![](https://assets.turntrout.com/static/images/posts/f0dc928ced9395c81ba2adf0930f181b3487d3085188803c.avif)
+![A line chart titled "prisoner's dilemma with actde trial 1" shows strategy probability versus training epoch. The probability of the "alternating" strategy rapidly increases from 0.5 to a peak near 1.0, then fluctuates around 0.8. The "coop-coop" and "defect-defect" strategies' probabilities fall to about 10% each.](https://assets.turntrout.com/static/images/posts/f0dc928ced9395c81ba2adf0930f181b3487d3085188803c.avif)
 Figure: Note that we aren't whitening the rewards.
 
 Zooming out to all 10,000 epochs:
 
-![](https://assets.turntrout.com/static/images/posts/be298eeeff0a33e1594280b3f975a2dec834b88ec76167b9.avif)
+![A line graph titled "prisoner's dilemma with actde trial 1," plotting strategy probability over 10,000 epochs. The "alternating" strategy fluctuates widely between 0.4 and 0.9 probability. The "coop-coop" and "defect-defect" strategies remain much lower, below 0.4. They kiss the softmax probabilities before extremizing again.](https://assets.turntrout.com/static/images/posts/be298eeeff0a33e1594280b3f975a2dec834b88ec76167b9.avif)
 Figure: Note that we aren't whitening the rewards.
 
 We ran 10 trials and plotted the mean and standard deviation of average returns:
 
-![](https://assets.turntrout.com/static/images/posts/744c10811baadd0742a83f12af3e27a443ccb5081f5556fd.avif)
+![A line chart showing the mean probability of strategies in a prisoner's dilemma with ACTDE over 10 trials. The "alternating" strategy rapidly increases to over 0.9 probability, then slowly declines to ~0.7 over 10,000 epochs. "Coop-coop" and "defect-defect" strategies remain below 0.2 probability.](https://assets.turntrout.com/static/images/posts/744c10811baadd0742a83f12af3e27a443ccb5081f5556fd.avif)
 
 There seems to be slow convergence.[^6] It could even be converging towards the uniform policy. We lean towards "convergence to uniform" due to evidence from a trial on a different reward matrix:
 
-![](https://assets.turntrout.com/static/images/posts/1549bb3b8f9f5895b1978d5cc5cf25a3e84df4a281286365.avif)
+![A line chart titled 'prisoner's dilemma with actde' shows the probability trends of three strategies ('alternating', 'defect-defect', 'coop-coop') over 10,000 epochs. The 'alternating' strategy peaks above 0.9 before declining to approximately 0.75. The 'defect-defect' and 'coop-coop' strategies slowly rise from near zero to approximately 0.25 and 0.2, respectively. The final probabilities for all strategies are somewhat past the levels indicated by the theoretical softmax returns (dashed lines). This slow convergence pattern suggests the policy is contracting toward a uniform mixed strategy, possibly 1/3 probability for each strategy.](https://assets.turntrout.com/static/images/posts/1549bb3b8f9f5895b1978d5cc5cf25a3e84df4a281286365.avif)
 
 Overall, ACTDE's results are sensitive to variations in the algorithm such as whitening advantages, detaching the value and Q-heads, and using the loss function from PPO or ILQL for the value head.
 

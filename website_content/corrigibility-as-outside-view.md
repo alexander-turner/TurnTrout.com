@@ -51,11 +51,11 @@ date_updated: 2025-06-03 22:57:00.423836
 
 You run a country. One day, you think "I could help so many more people if I set all the rules... and I could make this happen". As far as you can tell, this is the _real reason_ you want to set the rules – you want to help people, and you think you'd do a good job.
 
-![](https://assets.turntrout.com/static/images/posts/QSms7P6.avif)
+![A stick figure thinks about becoming a dictator. Their thought bubble shows the text "Me as dictator" with an arrow pointing to icons representing positive outcomes: a smiling sun, a happy face, a red cross, a flower, and money.](https://assets.turntrout.com/static/images/posts/QSms7P6.avif)
 
 Historically, in this kind of situation, this reasoning leads to terrible things.
 
-![](https://assets.turntrout.com/static/images/posts/COsmr4C.avif)
+![A cartoon contrasting idealized intentions with historical reality. A stick figure's thought bubble shows "Me as dictator" leading to a happy utopia. A larger thought bubble shows this same idea leads to an image of dictators Lenin and Stalin on a Soviet flag.](https://assets.turntrout.com/static/images/posts/COsmr4C.avif)
 
 So you _just don't do it_, even though it feels like a good idea.[^1]
 

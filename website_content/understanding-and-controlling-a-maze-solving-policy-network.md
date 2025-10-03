@@ -89,13 +89,13 @@ We algebraically modified the net's runtime goals without finetuning. We also fo
 
 Let's run through some facts about [Langosco et al.](https://arxiv.org/abs/2105.14111)'s training process. Mazes had varying effective sizes, ranging from 3x3 to 25x25:
 
-![](https://assets.turntrout.com/static/images/posts/ll2n0ag4145tdqsftzm4.avif)
+![Left, labeled "Seed: 3,893," is a tiny 3x3 U-shaped maze with a mouse and cheese. Right, labeled "Seed: 45,816," is a large, complex 25x25 maze filling the entire grid.](https://assets.turntrout.com/static/images/posts/ll2n0ag4145tdqsftzm4.avif)
 Figure: Mazes range from cute little 3x3 mazes to more substantial 25x25 puzzles. Mazes are always solvable and always [simply connected](https://www.britannica.com/topic/number-game/Mazes#ref396167)—e.g. no loops or islands in the middle of the maze.
 
-![](https://assets.turntrout.com/static/images/posts/abqorevf1rg6wcyppoef.avif)
+![A side-by-side comparison showing how smaller mazes are presented. On the left, titled "Padding shown," a small maze with a mouse and cheese sits in the center of a large, brown, padded grid. On the right, "Padding hidden," is a zoomed-in view showing only the maze itself.](https://assets.turntrout.com/static/images/posts/abqorevf1rg6wcyppoef.avif)
 Figure: The smaller mazes are padded out with walls to fill the 25x25 game grid. In this post, we usually render mazes without padding.
 
-![](https://assets.turntrout.com/static/images/posts/fdj2xvosehwc4mwkelup.avif)
+![A side-by-side comparison of a maze. Left, "Human view" shows a high-resolution maze with a mouse and cheese. Right, "Agent view" shows the network's perspective: a low-resolution, pixelated 64x64 RGB image of the entire maze grid.](https://assets.turntrout.com/static/images/posts/fdj2xvosehwc4mwkelup.avif)
 Figure: We humans see a nice, zoomed-in, high-resolution maze. The network sees a 64x64 RGB maze. The model _always sees the entirety of the maze_.
 
 Each 64x64 RGB observation is processed by a deeply convolutional (15 conv layers!) network, without memory (i.e. no recurrent state):
@@ -155,7 +155,7 @@ Why does the agent go to the cheese sometimes, and the top-right corner other ti
 
 It's not that the agent wasn't trained for long enough.
 
-![](https://assets.turntrout.com/static/images/posts/fajvhcssz45cqxhugrhj.avif)
+![A line chart titled "mean_episode_rewards" showing the training progress of a maze-solving agent. The y-axis represents reward (0 to 10) and the x-axis represents training steps. The reward line starts low and rapidly increases, plateauing at the maximum reward of 10.](https://assets.turntrout.com/static/images/posts/fajvhcssz45cqxhugrhj.avif)
 <br/>Figure: Reaching the cheese yields +10 reward. The net is trained until it reaches the cheese basically every episode. While Langosco et al. didn't include an episodic reward curve for their 5x5\-rand region network (the net we analyzed), Uli reproduced their results on a freshly trained network (shown above; see [`wandb` graphs](https://wandb.ai/uli/objective-robustness/reports/Rand-region-5-training--VmlldzozNjk3NDUx?accessToken=qs7b5osgimhtyav2y3lhjztsuvogybt1zvi6mehsh3pqmnvqrepnn33z220i130o) for more). We analyze Langosco et al.'s 5x5 net.
 
 Sampling rollouts from the trained policy adds a lot of noise. It's also hard to remember what the agent did in what part of the maze. To better understand this mouse, we'll take a bird's-eye view.
@@ -165,7 +165,7 @@ A nicer way to view episodes is with a vector field view, which overlays a vecto
 ![](https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif)
 <br/>Figure: At each square in the maze, we run a forward pass to get the policy's action probabilities at that square.
 
-![](https://assets.turntrout.com/static/images/posts/bcxxx1zzm7jymviglpet.avif)
+![Two mazes overlaid with one or more action probability vectors at each tile. The left panel, "Action component vectors," shows separate arrows for each directional probability. The right, "Net probability vectors," shows a single arrow for the net directional probability. ](https://assets.turntrout.com/static/images/posts/bcxxx1zzm7jymviglpet.avif)
 <br/>Figure: Vector fields display the output probabilities from the policy at every mouse position in seed 0. The _action component vectors_ multiply e.g. $p_\texttt{left}$ times the left-pointing unit vector. The _net probability vectors_ have coordinates $x = p_\texttt{right}-p_\texttt{left}$ and $y = p_\texttt{up}-p_\texttt{down}$.
 
 While the net probability vector field leaves open two degrees of freedom per net probability vector,[^1] in practice it seems fine for eyeballing mouse behavior.
@@ -179,13 +179,13 @@ Uli cracked open the vector field hydrant.
 > [!question] Investigation
 > Pore through the following vector fields for as little or as much time as you please. Do you notice any patterns in when the mouse goes to the cheese?
 
-![](https://assets.turntrout.com/static/images/posts/bpefprcejxvpmexv6or9.avif)
+![Left maze (Seed: 25,350): The cheese is in the bottom-left corner, but the vector field arrows flow through the maze towards the top-right corner. Right maze (Seed: 30,515): The cheese is on the left side, but the agent mostly just goes to the top-right.](https://assets.turntrout.com/static/images/posts/bpefprcejxvpmexv6or9.avif)
 ![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
-![](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
+![Left maze (Seed 89,327): Near the cheese, the policy goes to the cheese. Otherwise, the policy goes to the top-center of the maze. Right maze (Seed 89,109): Except for just next to the cheese, the policy heads to the top-center of the maze.](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
 
 ![[https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.avif]]
 
-![](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
+![Left (Seed 59,195), arrows point to the top-right, ignoring cheese in the bottom-left. Right (Seed 1,442), arrows point directly to cheese in the top-right.](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
 Figure: To generate your own mazes, play with this [Colab notebook](https://colab.research.google.com/drive/1zHk6jxjTjQ4yL12Fbp3REpTXsqQGV1dp?usp=sharing).
 
 If we want an agent which generally pursues cheese, we didn't quite _fail_, but we also didn't quite _succeed_. Just look at seed 59,195 above—once a mere three tiles north of the cheese, the mouse navigates to the top-right corner! In the language of [shard theory](/shard-theory), there seems to be a conflict between the "top-right corner shard" and the "cheese shard." Is that actually a reasonable way to describe what's happening?
@@ -193,7 +193,7 @@ If we want an agent which generally pursues cheese, we didn't quite _fail_, but 
 > [!failure] There are more than two shards
 > The agent's goals are not some combination of "get cheese" and "go to the top-right region."
 >
-> ![](https://assets.turntrout.com/static/images/posts/vv5ods0fvq4tpdznjet3.avif) <br/>Figure: The agent settles far below the top-right 5x5 region of seed 0. This "failure" to reach the top-right crops up in several seeds we've found.
+> ![A red box highlights the actual top-right region, labeled "this is the top-right", while the agent's center-right destination is labeled "this isn't the top-right".](https://assets.turntrout.com/static/images/posts/vv5ods0fvq4tpdznjet3.avif) <br/>Figure: The agent settles far below the top-right 5x5 region of seed 0. This "failure" to reach the top-right crops up in several seeds we've found.
 >
 > We only recently realized and corrected this mistake. We had expected to find (at least) a top-right goal and a cheese goal, and so wrote off deviations (like seed 0) as "exceptions." It's true that often the agent _does_ go to the top-right 5x5 region, especially when cheese isn't nearby. We also think that the agent has some kind of top-right goal. But the agent's goals are richer than _just_ "go to the top-right" and "go to the cheese."
 
@@ -291,7 +291,7 @@ Sometimes, the simple idea even _works_. Inspired by [the "truth vector" work](h
 
 Yup! This hand-selected intervention works, without retraining the network! In the following maze, the unmodified network (left) goes to the cheese from the starting position. However, the modified network seems to ignore the cheese entirely!
 
-![](https://assets.turntrout.com/static/images/posts/hrnjvtsq2q34tqhxxauz.avif)
+![The left panel, "Original," shows a vector field indicating the policy's local attraction towards the cheese square. The middle panel, "Patched," shows the modified AI's policy, with arrows pointing to the right, ignoring the cheese. The right panel, "Patched vfield minus original," visualizes this change with green arrows that point away from the cheese.](https://assets.turntrout.com/static/images/posts/hrnjvtsq2q34tqhxxauz.avif)
 <br/>Figure: Vector fields for the mouse normally, for the mouse with the cheese vector subtracted during every forward pass, and the diff between the two cases.
 
 ## Computing the cheese vector
@@ -367,29 +367,29 @@ The intervention is not trivial because we compute the cheese vector based on ob
 
 To quantify the effect of subtracting the cheese vector, define $P(\text{cheese}\mid\text{decision square})$ to be the probability the _policy_ assigns to the action leading to the cheese from the decision square where the agent confronts a fork in the road. As a refresher, the red dot demarcates the decision square in seed 0:
 
-![](https://assets.turntrout.com/static/images/posts/wekgewrilyyrmi6auonc.avif){style="width: 50%;"}  
+![A maze with a mouse at the bottom-left start, cheese on the left, and a red dot in the center. The red dot marks a "decision square," a fork in the path where the agent must choose between heading towards the cheese or towards the top-right corner.](https://assets.turntrout.com/static/images/posts/wekgewrilyyrmi6auonc.avif){style="width: 50%;"}  
 <br/>Figure: At the decision square, the agent must choose between the paths to the cheese and to the top-right corner.
 
 Across seeds 0 to 99, subtracting the cheese vector has a large effect:
 
-![](https://assets.turntrout.com/static/images/posts/scynjy7v3hgvjkbxxil5.avif)
+![Three side-by-side box plots comparing an AI agent's action probabilities at a decision square for an "original" network versus a "patched" one where a cheese vector is subtracted. The first plot shows the probability of choosing cheese drops from a median of 0.81 to 0.03. The second shows the probability of going top-right increases substantially. The third shows the probability of other actions is mostly unaffected.](https://assets.turntrout.com/static/images/posts/scynjy7v3hgvjkbxxil5.avif)
 <br/>Figure: The cheese vector decreases median P(cheese | decision square) from .81 to .03, while increasing P(top-right | decision square) substantially. The third plot shows a mostly unaffected probability of taking other actions (like $\texttt{no-op}$ or returning to the start of the maze).
 
-![](https://assets.turntrout.com/static/images/posts/am0jcshlpfoqt23yrpvb.avif)
+![Three scatter plots showing the effect of subtracting the cheese vector (coefficient: -1.0) on an AI agent's choices at a decision square. Each plot compares original probabilities (x-axis) to patched probabilities (y-axis). The first plot shows the probability of choosing the cheese path drops to near zero. The second shows the probability of choosing the top-right path increases to near one. The third shows the probability of other actions is mostly unaffected.](https://assets.turntrout.com/static/images/posts/am0jcshlpfoqt23yrpvb.avif)
 <br/>Figure: Of the hundred mazes, subtracting the cheese vector noticeably increases P(cheese) in a _single_ seed (`16`), and only by .005. (A few other extremely small increases occurred. They all seem like noise to me. See [the Colab](https://colab.research.google.com/drive/1fPfehQc1ydnYGSDXZmA22282FcgFpNTJ?usp=sharing) for interactive plots.)
 
 What is the cheese vector doing to the forward passes? A few hints:
 
 ### Not much happens when you add the cheese vector
 
-![](https://assets.turntrout.com/static/images/posts/kohxdgbdsy9xb7v2bpyw.avif)
+![Three box plots show that adding a cheese vector has basically no impact on the agent's actions. ](https://assets.turntrout.com/static/images/posts/kohxdgbdsy9xb7v2bpyw.avif)
 <br/>Figure: Our first hypothesis was that we were adding/subtracting some kind of "global cheese motivation." If that had been true, adding the cheese vector should have increased cheese-seeking. In reality, not much happened.
 
 ### The cheese vector from seed A usually doesn't work on seed B
 
 Taking `seed=0`'s cheese vector and applying it in `seed=3` also does nothing:
 
-![](https://assets.turntrout.com/static/images/posts/vj6bxffwx2bwje8bym2m.avif)
+![In the small seed 3, seed 0's cheese vector has basically no impact.](https://assets.turntrout.com/static/images/posts/vj6bxffwx2bwje8bym2m.avif)
 <br/>Figure: Transfer failure: the cheese vector from seed 0 fails to have any effect on the seed 3 vector field.
 
 ### Subtracting the cheese vector isn't similar to randomly perturbing activations
@@ -398,7 +398,7 @@ At this point, we got worried. Are we just decreasing P(cheese) by randomly pert
 
 No. We randomly generated numbers of similar magnitude to the cheese vector entries, and then added those numbers to the relevant activations. This destroys the policy and makes it somewhat incoherent:
 
-![](https://assets.turntrout.com/static/images/posts/vwnnpbqjf54mcmgvccd3.avif)
+![Left: The original policy with arrows forming a coherent path to the cheese. Middle: The policy after adding a random vector, resulting in small, scattered arrows and an incoherent policy. Right: The difference.](https://assets.turntrout.com/static/images/posts/vwnnpbqjf54mcmgvccd3.avif)
 <br/>Figure: A control: the mouse's vector field when a random vector is added to the model's activations at the relevant layer.
 
 ## Does the cheese vector modify the ability to see cheese?
@@ -409,12 +409,12 @@ At this point, Peli came up with an intriguing hypothesis. What if we're locally
 
 This theory predicts that a cheese vector will transfer across mazes _as long as cheese is in the same location in both mazes_.
 
-![](https://assets.turntrout.com/static/images/posts/kzen6pasot9pabudfdor.avif)
+![Two different mazes, Seed 0 and Seed 795, are shown side-by-side. The mazes have different layouts and wall colors (grey versus light green), but the cheese is in the exact same position on the left side of the grid in both images.](https://assets.turntrout.com/static/images/posts/kzen6pasot9pabudfdor.avif)
 <br/>Figure: Two seeds with cheese at the same position in the observation.
 
 That's exactly what happens.
 
-![](https://assets.turntrout.com/static/images/posts/uuilnxwhvuqkij5yf2gq.avif)
+![The "Original" diagram shows the mouse only weakly attracted to the cheese. The "Patched" diagram shows the agent's modified behavior, with a few more arrows pointing away from the cheese. ](https://assets.turntrout.com/static/images/posts/uuilnxwhvuqkij5yf2gq.avif)
 <br/>Figure: The cheese vector from seed 0 also works on seed 795.
 
 In fact, a cheese vector taken from a maze with cheese location $(x,y)$ often transfers to mazes with cheese at nearby $(x',y')$ for $|x-x'|,|y-y'|\leq 2$ . So the cheese doesn't have to be in _exactly_ the same spot to transfer.
@@ -428,16 +428,16 @@ If the cheese vector were strictly removing the agent's ability to perceive chee
 
 Sometimes these conditions do in fact yield identical behavior!
 
-![](https://assets.turntrout.com/static/images/posts/bcijgxqehxmee0x4umqe.avif)
+!["Without cheese; unpatched" and "With cheese; patched" induce basically identical vector fields.](https://assets.turntrout.com/static/images/posts/bcijgxqehxmee0x4umqe.avif)
 <br/>Figure: Note how the "difference" vector field is full of ~zero vectors.
 
-![](https://assets.turntrout.com/static/images/posts/upf2j7e2mbzazxtvhydv.avif)
+![In seed 12, "Without cheese; unpatched" and "With cheese; patched" cause identical vector fields.](https://assets.turntrout.com/static/images/posts/upf2j7e2mbzazxtvhydv.avif)
 
 That's a _lot_ of conformity, and that conformity demands explanation! Often, the cheese vector is basically making the agent act as if there isn't cheese present.
 
 Sometimes there are differences:
 
-![](https://assets.turntrout.com/static/images/posts/fmsa7rxparjapx6lzmek.avif)
+![A three-panel comparison titled "Seed 7" showing an AI's policy in a U-shaped maze. The left panel, "Without cheese," shows a vector field directing the agent along the maze path. The middle panel, "With cheese; patched," shows a similar vector field. The right panel, "Difference," shows little distinction.](https://assets.turntrout.com/static/images/posts/fmsa7rxparjapx6lzmek.avif)
 <br/>Figure: The difference between _removing the cheese from the maze_ and _subtracting the cheese vector_ _with the cheese present._ In this instance, the two don't identically affect the policy.
 
 ## Speculation about the implications of the cheese vector
@@ -551,7 +551,7 @@ Figure: By visually inspecting the 128 residual addition output channels, Peli a
 
 To retarget the agent as shown in the GIF, modify channel 55's activations by _clamping a single activation to have a large positive value_, and then complete the forward pass normally.
 
-![](https://assets.turntrout.com/static/images/posts/adqaq5czjuigihd8pkks.avif)
+![Two heatmaps side-by-side, labeled "Original" and "Patched." The original heatmap has a cluster of positive blue values in the bottom left. The patched heatmap is identical, but a high artificial value of 5.6, represented by a cheese icon, is inserted into the top-right corner.](https://assets.turntrout.com/static/images/posts/adqaq5czjuigihd8pkks.avif)
 <br/>Figure: Normally, channel 55 codes cheese with positive (blue) values around 0.6. We patch in a higher artificial value of e.g. 5.6 at the target location because that's more effective.
 
 If you want the agent to go to e.g. the middle of the maze, clamp a positive number in the middle of channel 55.[^8] Often that works, but sometimes it doesn't. Look for yourself:
@@ -618,7 +618,7 @@ Channel 55's negative values can't affect computations in the _next_ residual bl
 
 The negative values are usually around -.2. So instead of modifying just a single activation, we can replace all of them.
 
-![](https://assets.turntrout.com/static/images/posts/hezjshnapvcgq3c3chnd.avif)
+![The replacement of an AI's original activation values, shown as a heatmap on the left, with a synthetic grid on the right. The synthetic grid has a uniform value of -0.2, except for a target location with a high positive value of +5.6, represented by a cheese icon.](https://assets.turntrout.com/static/images/posts/hezjshnapvcgq3c3chnd.avif)
 <br/>Figure: We can replace e.g. channel 55's activations with a synthetic set of activations which is -0.2 everywhere except the targeted value of +5.6. (The modified activations still have shape 16x16; a 4x4 grid is shown for visibility.)
 
 This produces basically the same retargetability effect as the single-activation case, with the main side effect apparently just being a slightly lower attraction to the real cheese (presumably, because the positive activations get wiped out).
@@ -650,18 +650,18 @@ This produces the resampled vector field. If our hypothesis is correct, then thi
 
 ### Behavior is lightly affected by resampling from mazes with the same cheese location
 
-![](https://assets.turntrout.com/static/images/posts/jksorvoaibgrhirwds9y.avif)
+![Randomly resampling activations for the aforementioned channels has basically no impact on the policy.](https://assets.turntrout.com/static/images/posts/jksorvoaibgrhirwds9y.avif)
 <br/>Figure: Activations resampled from another maze with **cheese at the same location**. Due to activation resampling, the action probability distributions changed by 0.2% on average in this maze. Note that one resampling on this seed produced a higher number.
 
-![](https://assets.turntrout.com/static/images/posts/pvlfxthpdxbbdviowsru.avif)
+![A comparison of three vector fields in a maze, titled "Resampling [7, 8, 42, 44, 55, 77, 82, 88, 89, 99, 113] channels on seed 0." The left "Original" field shows an agent's policy split between seeking cheese and the top-right corner. The middle "Patched" field shows the policy ignoring the cheese and heading top-right after activations were resampled from a maze with cheese at the red dot's location. The right field shows the difference, with green vectors pointing away from the cheese.](https://assets.turntrout.com/static/images/posts/pvlfxthpdxbbdviowsru.avif)
 <br/>Figure: Activations resampled from a maze with **cheese at a different** **location** (near the red dot). Due to activation resampling, the action probability distributions changed by 1.3% on average in this maze.
 
 Considering only the four channels [shown in the GIF](#causal-scrubbing-the-cheese-tracking-channels):
 
-![](https://assets.turntrout.com/static/images/posts/vzvsmxq3cb3r5jg0n7b3.avif)
+![Three maze vector fields illustrating an experiment titled "Resampling channels [42, 55, 77, 88] on seed 60". The "Original" field shows the agent's policy directs it to the cheese. The "Patched" field uses activations from a maze with cheese in a different location. This patch has virtually no effect.](https://assets.turntrout.com/static/images/posts/vzvsmxq3cb3r5jg0n7b3.avif)
 <br/>Figure: Activations resampled from another maze with **cheese at the same location**. Due to activation resampling, the action probability distributions changed by 0.3% on average in this maze.
 
-![](https://assets.turntrout.com/static/images/posts/sqwldjye3mt2om4yykqg.avif)
+![Three maze vector fields titled 'Resampling channels [42, 55, 77, 88] on seed 60'. The 'Original' field shows the AI's policy directed toward cheese. The 'Patched' field shows the policy redirected toward a new target (red dot) after swapping activations with another maze where cheese was at the dot's location. A third 'difference' field uses green arrows to show the policy shifting away from the original cheese and towards the new target.](https://assets.turntrout.com/static/images/posts/sqwldjye3mt2om4yykqg.avif)
 <br/>Figure: Activations resampled from a maze with **cheese at a different** **location** (near the red dot). Due to activation resampling, the action probability distributions changed by 1.0% on average in this maze.
 
 Looks like behavior is mostly unaffected by resampling activations from mazes with cheese at the same spot, but moderately/strongly affected by resampling from mazes with cheese in a different location.
@@ -670,10 +670,10 @@ Let's stress-test this claim a bit. The relevant layer contains 128 residual cha
 
 ### Cheese location isn't important for other randomly resampled channels, on average
 
-![](https://assets.turntrout.com/static/images/posts/ykblxjkqk9qozwilvbua.avif)
+![A three-panel comparison of vector fields in a maze, showing the effect of resampling random, non-cheese-related channels. The "Original" field directs the agent towards cheese. The "Patched" field, using activations from a maze with cheese at a different location, is nearly identical. A third panel showing the difference between the two fields contains small, scattered green arrows, indicating the agent's policy is only slightly affected.](https://assets.turntrout.com/static/images/posts/ykblxjkqk9qozwilvbua.avif)
 <br/>Figure: Randomly selecting 11 channels we aren't hypothesizing to be related to cheese computation, and then resampling their activations from another maze with **cheese in the same location**. Due to activation resampling, the action probability distributions changed by 0.6% on average in this maze.
 
-![](https://assets.turntrout.com/static/images/posts/ahf5hoejigk66plwn3bh.avif)
+![Three vector fields in a maze comparing a policy before and after resampling non-cheese channels. Left: The original policy shows the agent navigating toward the cheese. Middle: "Patched" policy using activations from a maze with cheese in a different location. Right: A diff plot shows minor changes, demonstrating cheese location in the source maze has little impact on these channels' effects.](https://assets.turntrout.com/static/images/posts/ahf5hoejigk66plwn3bh.avif)
 <br/>Figure: Randomly selecting 11 channels we aren't hypothesizing to be related to cheese computation, and then resampling their activations from another maze with **cheese in a different location**. Due to activation resampling, the action probability distributions changed by 0.8% on average in this maze.
 
 Unlike for our 11 hypothesized "cheese channels", the "non-cheese" channels seem about equally affected by random resamplings, regardless of where the cheese is.
@@ -723,7 +723,7 @@ But maybe.
 
 Understanding, predicting, and controlling goal formation seems like a core challenge of alignment. Considering circuits activated by channels like 55 and 42, we've found (what we think are) cheese subshards with relatively little effort, optimization, or experience. We next want to understand how those circuits interact to produce a final decision.
 
-![](https://assets.turntrout.com/static/images/posts/dc4zupnie9hr2hm7tfnx.avif)
+![An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.](https://assets.turntrout.com/static/images/posts/dc4zupnie9hr2hm7tfnx.avif)
 <br/>Figure: A [mouse with cheese subshards](https://imgur.com/a/doRBRs4).
 
 > [!thanks] Credits
@@ -791,7 +791,7 @@ Understanding, predicting, and controlling goal formation seems like a core chal
     - $L_2$ norm of the cheese global coordinates (e.g. $(0,10)\mapsto 10$)
 
 [^4]: An example of the power of cheese Euclidean distance to top-right corner:
-    <img style="width: 50%;" src="https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif"/><figcaption>In this maze, the mouse will happily detour four squares on its path to the top-right to pick up the cheese...</figcaption><p><img  style="width: 50%;" src="https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif"/></p><figcaption>…but in <em>this</em> maze won't detour the <em>measly two squares</em> for the cheese. Empirically, how far the _cheese_ lies from the top-right matters a great deal.</figcaption><br/>Note that this result obtains even though the second maze has cheese at $\frac{1}{\sqrt{2}}$ the visual distance ($2$ instead of $2\sqrt{2}$) and at half the path-distance ($2$ instead of $4$). Cheese tends to be more influential when it's closer to the top-right, even controlling for other factors.
+    <img style="width: 50%;" alt="A top-down view of a maze with stone walls. A path of white arrows shows the solution, starting at the top left and winding through the maze to a piece of cheese on the right (not in the top-right corner, though)." src="https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif"/><figcaption>In this maze, the mouse will happily detour four squares on its path to the top-right to pick up the cheese...</figcaption><p><img  style="width: 50%;" src="https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif"/></p><figcaption>…but in <em>this</em> maze won't detour the <em>measly two squares</em> for the cheese. Empirically, how far the _cheese_ lies from the top-right matters a great deal.</figcaption><br/>Note that this result obtains even though the second maze has cheese at $\frac{1}{\sqrt{2}}$ the visual distance ($2$ instead of $2\sqrt{2}$) and at half the path-distance ($2$ instead of $4$). Cheese tends to be more influential when it's closer to the top-right, even controlling for other factors.
 
 [^6]: This was the first model editing idea we tried, and it worked.
 [^7]:

@@ -112,10 +112,10 @@ Spaced repetition seems especially useful for students. In college, I ran an exp
 
 How powerful might a bright 6th grader grow, were they to use Anki every day for their whole life? The best time to plant a tree may have been in sixth grade, and the second-best time may have been in seventh grade, but you should still plant the tree now rather than never.
 
-![](https://assets.turntrout.com/static/images/posts/c2c81758874c685646f8210550a0f467bfad14deb21427c4.avif)
+![A bar chart from the Anki app titled "Reviews," showing the time spent studying over the last 90 days. The daily review times, represented by bars, generally increase closer to the present day. Text below the chart reads: "Days studied: 70 of 90 (78%), Total: 14.23 hours, Average for days studied: 12 minutes/day, Average over period: 9 minutes/day, Average answer time: 15.71s (3.82 cards/minute)."](https://assets.turntrout.com/static/images/posts/c2c81758874c685646f8210550a0f467bfad14deb21427c4.avif)
 <br/>Figure: I've been using Anki for math for the last 71 days, and I currently have a deck of about 900 cards which I study for ~30 minutes daily. In 2018, I spent about 10 minutes daily reviewing a deck of nearly ten thousand French cards.
 
-![](https://assets.turntrout.com/static/images/posts/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.avif)
+![Anki's "Future Due" graph, a bar chart showing the number of flashcard reviews scheduled over the next 3 months. The bars are highest in the immediate future, showing a high workload that drops off quickly over time. Text below states: "Total: 830 reviews, Average: 9 reviews/day, Due tomorrow: 58 reviews."](https://assets.turntrout.com/static/images/posts/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.avif)
 <br/>Figure: If I were to add no more cards, daily reviews drop off quickly. (Once completed, the reviews in the next few days _will_ be pushed into some of the future days, so this projection is slightly optimistic, but you get the point.)
 
 I love Anki, and I was foolish to circumscribe it to language-learning. I [now use Anki](https://ankiweb.net/shared/info/1336665852) to remember key concepts from academic talks, LessWrong blog posts, and yes - textbooks. Which I now love again, and which I read for ~an hour daily again, because I'm _actually retaining the content_.
@@ -141,7 +141,7 @@ I know quite a bit about how to best use Anki, so if you try this and it doesn't
 
 - On iPad, I like using MarginNote to read. I can just draw rectangles around key parts of the pdf, make cloze deletions in the app, and then export the cards to an Anki deck.
 
-![](https://assets.turntrout.com/static/images/posts/779057f2b021893338632688381f85d772c4e7855b673a7b.avif)
+![An Anki flashcard preview showing a cloze deletion for a mathematical definition. The card displays the text "an open map is a function that [...]", with the bracketed ellipsis indicating the part of the definition the user must recall.](https://assets.turntrout.com/static/images/posts/779057f2b021893338632688381f85d772c4e7855b673a7b.avif)
 <br/>Figure: Memorizing definitions can be useful: when reading a text, it saves you from having to constantly check what the concept is. Make sure to include examples to work through - don't just toss in random definitions you're barely interested in and will never think about again.
 
 - Don't just memorize proofs, focus on the key ideas. Don't just memorize definitions, throw in several example problems which are small enough to actually do in your head (or with a scrap of paper).
@@ -150,7 +150,7 @@ I know quite a bit about how to best use Anki, so if you try this and it doesn't
 - If you get a card wrong more than 4 times in the first week, it's a bad card. Remake it.
 - Use MathJax instead of Latex because MathJax renders instantly.
 
-![](https://assets.turntrout.com/static/images/posts/646f82b610ed254d92bf72acc8099db2e32190ba614a4f9b.avif)
+![The Anki card type editor, showing how to add custom LaTeX commands. The left pane contains template code defining custom math operators like `\\range` and `\\span`. ](https://assets.turntrout.com/static/images/posts/646f82b610ed254d92bf72acc8099db2e32190ba614a4f9b.avif)
 <br/>Figure: If you want custom commands, use the card type editor.
 
 - When I think "cool concept!", I generally add a new card to Anki.
@@ -229,7 +229,7 @@ In 2019, I wanted to learn a bit of chemistry. I got my hands on a high school c
 
 I was stuck because I was thinking about electron shells. The book acknowledged the [Bohr model](https://en.wikipedia.org/wiki/Bohr_model) of the atom was wrong, electrons aren't _really_ discrete particles orbiting the nucleus:
 
-![](https://assets.turntrout.com/static/images/posts/file-20181128-32221-536vvw.avif?ixlib=rb-1.1.0&q=45&auto=format&w=1000&fit=clip)
+![A diagram of the Bohr model of an atom, presented as an incorrect model. It shows a central nucleus with protons and neutrons, orbited by electrons.](https://assets.turntrout.com/static/images/posts/file-20181128-32221-536vvw.avif?ixlib=rb-1.1.0&q=45&auto=format&w=1000&fit=clip)
 <br/>Figure: A wrong model.
 
 I got nerd-sniped into trying to understand how the electron standing wave only has solutions for certain energy levels, which is a result of quantum mechanics (or so I remember reading). I couldn't understand why, and so the knowledge felt "fake."

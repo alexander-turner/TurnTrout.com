@@ -129,7 +129,7 @@ _In which we finally reach concepts from pre-calculus._
 
 The [Cauchy condensation test](https://en.wikipedia.org/wiki/Cauchy_condensation_test) says that for a sequence $(a_n)_{n=1}^\infty$ where $a_n \geq 0$ and $a_{n+1}\leq a_n$ for all $n \geq 1$, the series $\sum_{n=1}^\infty a_n$ converges IFF the series $\sum_{k=0}^\infty 2^ka_{2^k}$ converges. Using this result, we have that the harmonic series $\sum_{n=1}^\infty \frac{1}{n}$ diverges; the partial sums $\sum_{n=1}^x \frac{1}{n}$ are given below.
 
-![](https://assets.turntrout.com/static/images/posts/1280px-HarmonicNumbers.svg.avif)
+![A graph plotting the partial sums of the harmonic series. A red step function shows the discrete sums, which are closely approximated by a smooth, blue, concave-down curve illustrating the series' slow, logarithmic growth.](https://assets.turntrout.com/static/images/posts/1280px-HarmonicNumbers.svg.avif)
 
 What was initially counterintuitive is that even though $\lim_{n\to\infty} \frac{1}{n}=0$, the series doesn't converge. The best intuition I've come up with is that the harmonic series doesn't "deplete" its domain quickly enough, so you can get arbitrarily large partial sums.
 

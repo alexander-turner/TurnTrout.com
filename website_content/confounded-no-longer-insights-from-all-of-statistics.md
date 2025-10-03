@@ -290,7 +290,7 @@ _In which the pieces start to line up._
 
 ### The Bias-Variance Tradeoff
 
-![](https://assets.turntrout.com/static/images/posts/38Rf6NN.avif)
+![Top-left (Low Bias, Low Variance): data points are tightly clustered on the bullseye. Top-right (Low Bias, High Variance): points are scattered but centered on the bullseye. Bottom-left (High Bias, Low Variance): points are clustered off-target. Bottom-right (High Bias, High Variance): points are scattered and off-target.](https://assets.turntrout.com/static/images/posts/38Rf6NN.avif)
 Figure: Image credit: Scott Fortmann-Roe
 
 As more covariates are added to a model, the bias decreases while the variance increases. Let's say you call 30 friends and ask them whether they agree with the Copenhagen interpretation of quantum mechanics, or with many-worlds. Say that you build a model with 5 covariates (such as age, sex, race, political leaning, and education level). This has _decreased bias_ compared to a model which uses only education level, since descriptive power increases with the number of covariates. However, you _increase variance_ in the sense that any given friend is more likely to be differently classified every time you run the experiment with slightly different data sets.
@@ -386,7 +386,7 @@ This experience reinforced a realization I've had over the last month: I'm _so_ 
 
 From Duncan's excellent [fake framework](https://www.lesswrong.com/posts/wDP4ZWYLNj7MGXWiW/in-praise-of-fake-frameworks), _[How the "Magic: The Gathering" Color Wheel Explains Humanity](https://medium.com/s/story/the-mtg-color-wheel-c9700a7cf36d):_
 
-![](https://assets.turntrout.com/static/images/posts/mtg_colors.avif)
+![The "Magic: The Gathering" color wheel philosophy with five colors and their values: White is "Peace through order." Green is "Harmony through acceptance." Blue is "Perfection through knowledge." Red is "Freedom through action." Black is "Satisfaction through ruthlessness."](https://assets.turntrout.com/static/images/posts/mtg_colors.avif)
 
 The most salient dichotomy present here, in my opinion, is that of red and white:
 

@@ -57,7 +57,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 How good are our economists? Look around. On a 20-minute walk to my Berkeley office, I walked past people reeking of urine, past people lying in a dirty sleeping bag on a thin cardboard pad, past some garbage around a tent which housed a child who grew up into an impoverished adult.
 
-![](https://assets.turntrout.com/static/images/posts/zz47uzlitfrw7bmqaplp.avif)
+![A makeshift homeless encampment on a dirt shoulder next to a road. A blue tent is pitched under trees, surrounded by a large amount of scattered trash, discarded items, and an empty shopping cart. Cars drive past, with a highway overpass in the background.](https://assets.turntrout.com/static/images/posts/zz47uzlitfrw7bmqaplp.avif)
 <br/>Figure: Imagine living here.
 
 In what world is this broader system a success story for economics?
@@ -73,13 +73,13 @@ The availability heuristic can deceive you (although [Kaj Sotala notes](https://
 
 Good economic policy has lifted billions of people out of poverty and furnished our lives with previously unimaginable splendor. The Roman emperors had no air conditioning or telephones.
 
-![](https://assets.turntrout.com/static/images/posts/extreme-poverty-bg.avif)
+![A stacked area chart from Our World in Data, titled "World population living in extreme poverty, 1820-2015." A red area shows the number of people in extreme poverty, which hovered around 1 billion for most of the period before falling after 1980. A much larger green area, representing people not in extreme poverty, grows exponentially from a small fraction in 1820 to over 6 billion by 2015.](https://assets.turntrout.com/static/images/posts/extreme-poverty-bg.avif)
 <br/>Figure: Economics is important. And I'm unconvinced by the [criticism of these numbers](https://www.vox.com/future-perfect/2019/2/12/18215534/bill-gates-global-poverty-chart) which I read.
 
-![](https://assets.turntrout.com/static/images/posts/mhahalue4g3l4gnvbujg.avif)
+![As GDP per capita (x-axis) rises, the share of people living on under \$5 per day (y-axis) falls sharply. ](https://assets.turntrout.com/static/images/posts/mhahalue4g3l4gnvbujg.avif)
 <br/>Figure: Growth is important. More precisely, I argue that good economic policy -> RGDP/capita growth -> reduction in poverty and increase in well-being. Thus, economic policy is important to get right. Some economists seem to know how to get certain areas of economic policy right, and so I think it's worth learning from them.
 
-![](https://assets.turntrout.com/static/images/posts/htfmtdtntpqpmr2mlqxl.avif)
+![A scatter plot from Our World in Data showing a strong negative correlation between a country's GDP per capita and the share of its population dissatisfied with their standard of living. Countries with low GDP, like Haiti, show high dissatisfaction (~80%), while wealthy countries, like Luxembourg and Singapore, show low dissatisfaction (<10%).](https://assets.turntrout.com/static/images/posts/htfmtdtntpqpmr2mlqxl.avif)
 <br/>Figure: Doubly amazing given hedonic treadmill & the higher expectations of people in wealthier nations.
 
 Economists are not responsible for all of this growth. I wasn't able to quickly find counterfactual estimates for the importance of economic theories, but my impression is that several advances in economics have in fact significantly improved economic policy.
@@ -130,7 +130,7 @@ How do people decide what to buy and where to work, what opportunities to take a
 
 The most important microeconomic frame I deeply internalized was **supply/demand curves**.
 
-![](https://assets.turntrout.com/static/images/posts/y0sgmz4s0g0az3kbflia.avif)
+![A supply and demand graph for pizza slices. The upward-sloping blue supply curve and downward-sloping red demand curve intersect at the equilibrium point, corresponding to a price of \$3 per slice and a quantity of 8 slices.](https://assets.turntrout.com/static/images/posts/y0sgmz4s0g0az3kbflia.avif)
 <br/>Figure: At a price of \$3, suppliers will produce 8 slices of pizza.
 
 Law of supply
@@ -164,7 +164,7 @@ Some laws ban price gouging. In certain industries and during an emergency, firm
 
 Suppose that the snow shovel price can barely increase from $P_1$ due to a so-called price ceiling.
 
-![](https://assets.turntrout.com/static/images/posts/yjkge8kae9lzr84mk0zz.avif)
+![A horizontal line labeled "Price Ceiling" is set below the equilibrium. At this low price, quantity demanded exceeds quantity supplied, creating a gap labeled "Shortage".](https://assets.turntrout.com/static/images/posts/yjkge8kae9lzr84mk0zz.avif)
 <br/>Figure: At the price ceiling, the price is lower than the free-market equilibrium. At this artificially low price, consumers want to buy a lot of snow shovels (the second dotted line) but suppliers don't want to produce as many.
 
 Then there's a shortage, because more people are willing to buy shovels at $P_1$ (what a deal, especially in an emergency!) than suppliers are willing to sell at $P_1$. There's _no economic incentive_ for them to increase production, and incentives matter. But set aside profit-making for a moment.
@@ -214,7 +214,7 @@ By this point in the book, I've pinned down supply/demand curves. This was actua
 
 Another great mental motion is the "wedge" trick for tax incidence determination.
 
-![](https://assets.turntrout.com/static/images/posts/rt9ajnfgxl9vtaqdy2mt.avif)
+![Two supply / demand graphs illustrate tax incidence with different demand elasticities. ](https://assets.turntrout.com/static/images/posts/rt9ajnfgxl9vtaqdy2mt.avif)
 <br/>Figure: **Left:** Suppose that cigarette packs cost \$10 at competitive equilibrium (where S1 meets D), and a \$6 excise (per-item) tax is levied. A slightly more elastic supply curve means that consumers bear slightly more tax burden. **Right:** A more elastic demand curve means that producers bear most of the tax burden.
 
 Think of the tax as the difference between what the consumer pays and the seller receives. Tax incidence answers: How much does the consumer pay, and how much does the seller receive?

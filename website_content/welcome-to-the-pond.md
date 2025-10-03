@@ -35,7 +35,7 @@ For months, I have built a new home for my online content: [`www.turntrout.com`]
 
 <center><strong><img class="emoji" draggable="false" alt="🏰" src="https://assets.turntrout.com/twemoji/1f3f0.svg" loading="lazy"><img class="emoji" draggable="false" alt="🌊" src="https://assets.turntrout.com/twemoji/1f30a.svg" loading="lazy">Welcome to The Pond! <img class="emoji" draggable="false" alt="🐟" src="https://assets.turntrout.com/twemoji/1f41f.svg" loading="lazy"><img class="emoji" draggable="false" alt="🪿" src="https://assets.turntrout.com/twemoji/replacements/1fabf.svg" loading="lazy"></strong></center>
 
-![](https://assets.turntrout.com/static/cropped-pond.gif)
+![A pixel art animation of a tranquil pond scene. On the far bank sits a castle. A trout swims and jumps in the water, while a floating goose honks twice.](https://assets.turntrout.com/static/cropped-pond.gif)
 
 Figure: I commissioned this GIF for $270.94. I paid a bit extra to ensure the goose honks twice.
 
@@ -45,7 +45,7 @@ I don't want to be on LessWrong anymore. Briefly, the site - and parts of the ra
 
 I am pleased to present the _initial release_ of `www.turntrout.com` - I have many, many more planned features.
 
-![](https://assets.turntrout.com/static/images/posts/site_desktop.avif)
+![A screenshot of the "Shard Theory of Human Values" post on the turntrout.com website, showcasing the desktop design. The three-column layout features a left sidebar with a pixel art pond logo, a central article with a serif font and large dropcap, and a right sidebar with a table of contents.](https://assets.turntrout.com/static/images/posts/site_desktop.avif)
 Figure: The site is most beautiful on the desktop. For example, the desktop enables hover previews for internal links.
 
 Many folks see the first <span class="dropcap" data-first-letter="D">d</span>ropcap and think of [`gwern.net`](https://gwern.net). Some of my site's features were inspired by `gwern`'s site, but some others were convergent design choices. For example, I forked the [Quartz static site generator](https://quartz.jzhao.xyz/) , which already included [hover previews for internal links.](/design#smaller-features) However, `gwern`'s site inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), and [cryptographic timestamping](/design#finishing-touches).

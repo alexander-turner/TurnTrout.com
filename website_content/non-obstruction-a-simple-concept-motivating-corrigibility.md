@@ -102,7 +102,7 @@ Corrigibility != alignment
 
 Imagine we’re playing a two-player extensive-form game with the AI, and we’re considering whether to activate it.
 
-![](https://assets.turntrout.com/static/images/posts/0751449c27b57a55099c1f21230fdd281d3479c7aef85a94.avif)
+![A decision tree for a game between a human and an AI, where human moves are black and AI moves are red. The human starts and chooses "on" or "off". If "off", the human chooses between outcomes "donuts" or "dogs". If "on", the AI chooses between outcomes "pancakes", "donuts", or "dogs".](https://assets.turntrout.com/static/images/posts/0751449c27b57a55099c1f21230fdd281d3479c7aef85a94.avif)
 <br/>Figure: The human moves on black, and the AI moves on red.
 
 While this game is trivial, you can imagine more complex games. Perhaps in those games, the AI can empower or disempower the human, steer the future exactly where it wants, or let the human take over at any point.
@@ -128,12 +128,12 @@ The human’s got a policy function $\text{pol}(P)$, which takes in a goal $P$ a
 
 This math expresses a simple sentiment: turning on the AI doesn’t make you, the human, worse off for any goal $P\in S$. The inequality doesn’t have to be exact, it could just be for some $\epsilon$\-decrease (to avoid trivial counterexamples). The AU is calculated with respect to some reasonable amount of time (e.g. a year: _before_ the world changes rapidly because we deployed another transformative AI system, or something). Also, we’d technically want to talk about non-obstruction being present throughout the **on**\-subtree, but let’s keep it simple for now.
 
-![](https://assets.turntrout.com/static/images/posts/0751449c27b57a55099c1f21230fdd281d3479c7aef85a94.avif)
+![A decision tree for a game between a human and an AI, where human moves are black and AI moves are red. The human starts and chooses "on" or "off". If "off", the human chooses between outcomes "donuts" or "dogs". If "on", the AI chooses between outcomes "pancakes", "donuts", or "dogs".](https://assets.turntrout.com/static/images/posts/0751449c27b57a55099c1f21230fdd281d3479c7aef85a94.avif)
 <br/>Figure: The human moves on black, and the AI moves on red.
 
 Suppose that $\pi^{AI}(\textbf{on})$ leads to **pancakes**:
 
-![](https://assets.turntrout.com/static/images/posts/8967dd9ee43dc19248e294ac433dc57069217c819ea4fc3d.avif)
+![A game tree diagram showing a choice. From a "start" node, one branch leads to "on" and another to "off". The "on" branch, representing an AI move, leads to the outcome "pancakes". The "off" branch splits into two human moves, leading to "donuts" or "dogs".](https://assets.turntrout.com/static/images/posts/8967dd9ee43dc19248e294ac433dc57069217c819ea4fc3d.avif)
 
 Since $\pi^{AI}(\textbf{on})$ transitions to **pancakes**, then $V^{\text{pol}(P)}_P(\textbf{on}\mid \pi^{AI})=P(\textbf{pancakes})$, the payoff for the state in which the game finishes if the AI follows policy $\pi^{AI}$ and the human follows policy $\text{pol}(P)$. If $V^{\text{pol}(P)}_P(\textbf{on}\mid \pi^{AI})\geq V^{\text{pol}(P)}_P(\textbf{off} \mid \pi^{AI})$, then turning on the AI doesn't make the human worse off for goal $P$.
 
@@ -174,7 +174,7 @@ Lastly, payoff functions can sometimes be more or less granular than we'd like, 
 
 Let’s consider the human’s ability to accomplish many different goals P, first from the state **off** (no AI).
 
-![](https://assets.turntrout.com/static/images/posts/human_au_landscape.avif)
+![A graph of the human's attainable utility landscape with the AI off. The vertical axis is "Human attainable utility" and the horizontal is "Goals P." A nearly flat green line shows a consistent baseline utility across most goals (e.g., "Paperclips," "Torture"), with a slight peak at "Human values."](https://assets.turntrout.com/static/images/posts/human_au_landscape.avif)
 <br/>Figure: The human's AU landscape. The real goal space is high-dimensional, but it shouldn’t materially change the analysis. Also, there are probably a few goals we can’t achieve well at all, because they put low payoff everywhere, but the vast majority of goals aren’t like that.
 
 The independent variable is $P$, and the value function takes in $P$ and returns the expected value attained by the policy for that goal, $\text{pol}(P)$. We’re able to do a bunch of different things without the AI, if we put our minds to it.
@@ -183,7 +183,7 @@ The independent variable is $P$, and the value function takes in $P$ and returns
 
 Imagine we build an AI which is corrigible towards all non-pro-torture goals, which is specialized towards painting lots of things blue with us (if we so choose), but which is otherwise non-obstructive. It even helps us accumulate resources for many other goals.
 
-![](https://assets.turntrout.com/static/images/posts/human_ai_au_landscape.avif)
+![A line graph of Human Attainable Utility (y-axis) versus various Goals (x-axis). The x-axis is marked with "Paperclips," "Human values," "Blue paint," and "Torture." A nearly flat green line shows the human's attainable utility with the AI off. A red line shows the utility with the AI on. The red line is generally higher than the green, with a large peak at "Blue paint" and a deep trough at "Torture," illustrating an AI that helps achieve most goals, is specialized for one, and actively prevents another (e.g. torture).](https://assets.turntrout.com/static/images/posts/human_ai_au_landscape.avif)
 <br/>Figure: The AI is non-obstructive with respect to $P$ if $P$'s red value is greater than its green value.
 
 We can’t get around the AI, as far as torture goes. But for the other goals, it isn’t obstructing their policies. It won’t get in our way for other goals.
@@ -192,7 +192,7 @@ We can’t get around the AI, as far as torture goes. But for the other goals, i
 
 What happens if we turn on a paperclip-maximizer? We lose control over the future outside of a narrow spiky region.
 
-![](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
+![A graph showing how a paperclip-maximizer AI affects "Human attainable utility" across various "Goals P." The green line (AI off) shows a consistent level of utility for goals like "Paperclips," "Human values," and "Blue paint." The red line (AI on) shows a massive spike in utility for the "Paperclips" goal but drops to near zero for all other goals, illustrating that the AI obstructs the human's ability to achieve anything else.](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
 <br/>Figure: The paperclipper is incorrigible and obstructs us for all goals except paperclip production.
 
 I think most reward-maximizing optimal policies affect the landscape like this (see also: [the catastrophic convergence conjecture](/the-catastrophic-convergence-conjecture)), which is _why_ it’s so hard to get hard maximizers not to ruin everything. You have to _a)_ hit a tiny target in the AU landscape and _b)_ hit that for the _human’s_ AU, not for the AI’s. The spikiness is bad and, seemingly, hard to deal with.
@@ -201,7 +201,7 @@ Furthermore, consider how the above graph changes as `pol` gets smarter and smar
 
 ## Empowering AI
 
-![](https://assets.turntrout.com/static/images/posts/empowering_ai.avif)
+![A graph of Human Attainable Utility vs. Goals. The red line (AI on) is consistently higher than the green baseline (AI off) for goals like 'Paperclips' and 'Human values'. ](https://assets.turntrout.com/static/images/posts/empowering_ai.avif)
 
 What if we build an AI which significantly empowers us in general, and then it lets us determine our future? Suppose we can’t correct it.
 
@@ -292,7 +292,7 @@ To be confident that this holds empirically, it sure seems like you want high er
 
 ## AI alignment subproblems are about avoiding spikiness in the AU landscape
 
-![](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
+![A graph showing how a paperclip-maximizer AI affects "Human attainable utility" across various "Goals P." The green line (AI off) shows a consistent level of utility for goals like "Paperclips," "Human values," and "Blue paint." The red line (AI on) shows a massive spike in utility for the "Paperclips" goal but drops to near zero for all other goals, illustrating that the AI obstructs the human's ability to achieve anything else.](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
 <br/>Figure: By definition, spikiness is bad for most goals.
 
 - [Corrigibility](https://www.lesswrong.com/tag/corrigibility): avoid spikiness by letting humans correct the AI if it starts doing stuff we don’t like, or if we change our mind.
@@ -375,7 +375,7 @@ The attainable utility concept has led to other concepts which I find exciting a
   - [_Conservative Agency via Attainable Utility Preservation_](https://arxiv.org/abs/1902.09725) (AIES 2020)
   - [_Avoiding Side Effects in Complex Environments_](https://arxiv.org/abs/2006.06547) (NeurIPS 2020)
 
-![](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
+![A graph showing how a paperclip-maximizer AI affects "Human attainable utility" across various "Goals P." The green line (AI off) shows a consistent level of utility for goals like "Paperclips," "Human values," and "Blue paint." The red line (AI on) shows a massive spike in utility for the "Paperclips" goal but drops to near zero for all other goals, illustrating that the AI obstructs the human's ability to achieve anything else.](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
 <br/>Figure: Impact is the area between the red and green curves. When `pol` always outputs an optimal policy, this becomes the attainable utility distance, a distance metric over the state space of a Markov decision process (unpublished work). Basically, two states are more distant the more they differ in what goals they let you achieve.
 
 - Power as average AU

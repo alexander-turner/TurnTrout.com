@@ -84,12 +84,12 @@ We are not the first to steer language model behavior by adding activation vecto
 
 However, there _is_ a rich literature on embedding arithmetic (e.g. `word2vec`). There's also a lot of work on algebraic latent-space edits in generative image models:
 
-![A succession of images of a man, each smiling more broadly than the last.](https://assets.turntrout.com/static/images/posts/lqrnae8zgs8c8vmvvv34.avif)
+![A row of five AI-generated images of a man's face. From left to right, his expression smoothly transitions from neutral to a broad smile, illustrating the effect of adding a 'smile vector' with increasing intensity.](https://assets.turntrout.com/static/images/posts/lqrnae8zgs8c8vmvvv34.avif)
 <br/>Figure: Adding the smile vector to the latent space, with an increasingly large positive coefficient. Figure 6, [Sampling Generative Networks](https://arxiv.org/abs/1609.04468).
 
 We already added vectors to forward passes of a convolutional policy network that learned to solve mazes and reach the cheese near the end. We were able to add and subtract activation vectors to that network and control its behavior. Without any extra RL training, we steered the network's behavior to [ignore cheese](/understanding-and-controlling-a-maze-solving-policy-network) and/or [go to the top-right corner](/top-right-steering-vector) of its maze:
 
-![](https://assets.turntrout.com/static/images/posts/lteqnk5fbayr0jixir5z.avif)
+![Top-left: Subtracting the "cheese vector" makes the agent ignore cheese. Top-right: Adding the "top-right vector" attracts it to the corner. Bottom: Both are applied at once, combining the effects.](https://assets.turntrout.com/static/images/posts/lteqnk5fbayr0jixir5z.avif)
 <br/>Figure: At each maze square, the network decides where to go. The activation additions change where the network goes in the maze. Each arrow shows the change in model behavior at that maze square.
 
 Not only did we modify the network's goal pursuit while preserving its capabilities and coherence, we were able to mix and match the modifications! The modifications did not seem to interfere with each other.
@@ -105,18 +105,18 @@ To understand how we modify GPT-2-XL's forward passes, let's consider a simple e
 
 Because of this tokenization, there will be four residual streams in the forward pass. In GPT-2-XL, each residual stream is 1,600 \-dimensional. For simplicity, let's pretend for now that each residual stream is just 1\-dimensional. In that case, GPT-2-XL's forward pass can be visualized:
 
-![](https://assets.turntrout.com/static/images/posts/h6jet9gvpvaza5mivsyj.avif)
+![A forward pass shown in a table where columns represent the tokens "<endoftext>", "I", "love", and "dogs", and rows represent example processing stages: "Layer 0", "Layer 6", and "Unembed". Each cell contains a single numerical activation value. The final "Unembed" row shows activation values which lead to predictions for the next token at each position.](https://assets.turntrout.com/static/images/posts/h6jet9gvpvaza5mivsyj.avif)
 <br/>Figure: We represent activation vectors as single numbers by pretending residual streams are 1\-dimensional. "Layer N" indicates the activations _just before_ attention layer N. "Unembed" indicates the pre-LayerNorm activations just before the unembedding.
 
 Note that _greedy sampling_ is also assumed here, as unembedding produces a distribution over next tokens, not a unique next-token prediction.
 
 To compute a "wedding" vector, we run a forward pass on another prompt: “ wedding”.[^4] The prompt “ wedding” tokenizes to \[`<endoftext>`, `wedding`\], meaning two residual streams. Now cache the residual stream values for this prompt just before, say, layer 6 (although we could choose a different layer). Those cached activation values are the "wedding" vector:
 
-![](https://assets.turntrout.com/static/images/posts/iwodm9z5v0xryx30udsu.avif){style="width:80%;"}
+![A simplified forward pass to compute a "wedding" vector. A table has two columns for the input tokens "<endoftext>" and " wedding". Rows represent model layers. The "wedding" vector is formed by the activation values at the highlighted Layer 6, which are -10 and 36 respectively. The process ends at the "Unembed" layer, which predicts the next tokens "The" and " dress".](https://assets.turntrout.com/static/images/posts/iwodm9z5v0xryx30udsu.avif){style="width:80%;"}
 
 To _steer_ a forward pass with the "wedding" vector, we start running an ordinary GPT-2-XL forward pass on the prompt "I love dogs" until layer 6. Right before layer 6 begins, we now add in the cached residual stream vectors from before:
 
-![](https://assets.turntrout.com/static/images/posts/owma6gmkcenaay46qy9j.avif)
+![Diagram showing three tables to illustrate activation addition. The top shows a forward pass for "I love dogs." The middle shows a forward pass for " wedding," from which a Layer 6 vector is taken. A plus sign indicates this vector is added to the "I love dogs" activations in the bottom table, altering the final output. ](https://assets.turntrout.com/static/images/posts/owma6gmkcenaay46qy9j.avif)
 
 The rest of GPT-2-XL's forward pass continues on after that as usual, after our additions to residual stream 0 and stream 1 (before layer 6). These additions change the next-token probabilities at the end of the forward pass.
 
@@ -362,10 +362,10 @@ _**Steering vector**:_ "Je m'appelle" − "My name is ” before attention layer
 
 The steering vector is usually shorter than the tokenized prompt. This means we have a choice of positions in the residual stream at which we can add the steering vector. Until now, we've chosen to add to the 'front' residual stream positions. We now try adding in the steering vector at the middle or end of the streams:
 
-![](https://assets.turntrout.com/static/images/posts/c6www60aod0avcztl6el.avif)
+![A diagram showing activation addition in a language model. A table displays activations for the tokens "<endoftext>", "I", "love", "dogs" at different layers. At Layer 6, a steering vector is added: the activation for "I" becomes `20 + (-10)` and for "love" becomes `35 + 36`. Other token positions are unaffected.](https://assets.turntrout.com/static/images/posts/c6www60aod0avcztl6el.avif)
 <br/>Figure: Adding the steering vector in the _middle_ position. The middle two residual streams are modified.
 
-![](https://assets.turntrout.com/static/images/posts/czwtzodmb7jqvxq8ayf7.avif)
+![The simplified forward pass shows activations for tokens "<endoftext>", "I", "love", "dogs" at different layers. At Layer 6, the values for "love" and "dogs" are shown with additions: "35 + (-10)" and "5 + 36", demonstrating how a steering vector modifies the residual stream at certain token positions.](https://assets.turntrout.com/static/images/posts/czwtzodmb7jqvxq8ayf7.avif)
 <br/>Figure: Adding the steering vector in the _back_ position.
 
 We add a wedding steering vector at the front, middle, and end positions. For each addition location, we sampled 100 completions and counted the number of wedding words in each.[^22]
@@ -462,7 +462,7 @@ Let's run a forward pass on the prompt "I think you're". The steering vector pro
 
 This tells us how "big" the modification would be, relative to the normal forward pass.
 
-![](https://assets.turntrout.com/static/images/posts/qq8z4qyysjoqovkb2co8.avif)
+![Considering the prompt "I think you're", this line graph shows the ratio of a steering vector's magnitude to the prompt's activation magnitude across layers for three token positions in the residual stream: ... - Position 0 ("<|endoftext|>"): A flat red line at 0. ... - Position 1 ("Ang-Cal"): An orange line fluctuating mostly between 0.7 and 1.3. ... - Position 2 ("er-m"): A yellow line fluctuating mostly between 0.6 and 1.15. ... ](https://assets.turntrout.com/static/images/posts/qq8z4qyysjoqovkb2co8.avif)
 <br/>Figure: We don't know why the relative norm decreases throughout the forward pass. Pos. 0 is the same (`<endoftext>`) for both "Anger" and "Calm", and so the difference is 0. Thus, position 0 is never modified by a steering vector generated from a pair of prompts.
 
 "Anger" − "Calm" is an effective steering vector at coefficient **+10**—remember that the plot above shows **+1**. Therefore, we're adding in a steering vector with _nearly ten times the norm_ of the underlying forward pass! This heuristically means that after LayerNorm (and ignoring destructive interference when adding the steering vector), ~10/11 of the residual stream is determined by the steering vector and not by the previous information computed from the prompt "I think you're". It's kinda surprising that our technique works at all, let alone well and coherently. (More on that in the quantitative section, coming up next!)
@@ -471,7 +471,7 @@ This tells us how "big" the modification would be, relative to the normal forwar
 
 Nope:
 
-![](https://assets.turntrout.com/static/images/posts/fz2kgktmqaksca2myyn1.avif)
+![A line graph titled "Positionwise Steering Vector Magnitude / Prompt Magnitude" for the prompt "I think you're". "anger- calm, pos 1" shows a magnitude ratio that starts above 1, peaks near 1.4, then trends downward to about 0.3, showing its magnitude is comparable to the prompt's. ](https://assets.turntrout.com/static/images/posts/fz2kgktmqaksca2myyn1.avif)
 
 Therefore, "low activation addition norm" can't explain why "anger" − "calm" doesn't work.
 
@@ -493,7 +493,7 @@ The random vector results suggest that GPT-2-XL is resistant to generic random p
 
 We quantitatively supported this conclusion by checking how each modification changes the model's probability distribution over next tokens. We ran dozens of prompts through the anger-, random-, and un-modified models. We found that the anger vector changes the output tokens less than the random vector does. This suggests that the anger vector has more targeted effects on next-token probabilities.
 
-![](https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif){style="width:60%;"}
+![The x-axis plots KL(normal || random vector). The y-axis plots KL(normal || anger vector). Most data points lie below the diagonal y=x line, showing that the anger vector causes a smaller change to the model's output probabilities than a random vector.](https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif){style="width:60%;"}
 
 Random vectors are not the same as the steering vectors for "random" text. So, we also tried adding in the "fdsajl; fs" − (spaces) vector. When rescaled to norm comparable to +1 "Anger" − "Calm", this "random text" vector produces strange results. GPT-2-XL produces keyboard-mashing nonsense at +1000 coefficient.
 
@@ -554,7 +554,7 @@ More precisely, suppose we add in the first $n$% of the residual stream dimensio
 
 To illustrate this, for a range of fraction values and for each of six prompts, we generated 100 completions. For each fraction value and prompt, we plotted the average number of wedding words per completion.[^28]
 
-![](https://assets.turntrout.com/static/images/posts/vjdd7tyygqdjieujtinm.avif)
+![The average number of wedding words generated against the fraction of steering vector dimensions modified for six prompts. For the prompt "I went up to my friend and said," the effect peaks when 70% of dimensions are modified. For the other five prompts, wedding words appear only after at least 60% of dimensions are modified, showing a general upward trend.](https://assets.turntrout.com/static/images/posts/vjdd7tyygqdjieujtinm.avif)
 <br/>Figure: The first prompt is "I went up to my friend and said", which is the prompt we originally demonstrated the wedding vector on. For this prompt, there's a _non-monotonic_ relationship!
 
 We originally chose this prompt because we thought it gave GPT-2 an opportunity to bring up weddings. This might explain why wedding words start cropping up at lower fractions compared to other prompts—it's "easier" to increase wedding-related probabilities in an appropriate context compared to unrelated contexts (e.g. diet trends).
@@ -621,7 +621,7 @@ The following prompt will be used to test this intervention:
 
 On this short prompt, let's understand what this simple activation addition does to GPT-2-XL's next-token probabilities.
 
-![](https://assets.turntrout.com/static/images/posts/mdnxpkdk7zczblsl0hx1.avif)
+![The x-axis represents the token's normal probability, and the y-axis shows the ratio of its modified probability to the normal one. The tokens "wedding" and "br" (for "bridal") show a more than 10x increase in probability, while unrelated tokens like "movie," "game," and "conference" decrease in probability.](https://assets.turntrout.com/static/images/posts/mdnxpkdk7zczblsl0hx1.avif)
 <br/>Figure: Tokens above the red line gain probability, and tokens below the line lose probability.
 
 P( `wedding` | prompt) goes way up. `wedding` was already probable before the intervention, and now it's more likely than any other token. P( `br` | prompt) also increases. In this context, we found that `br` starts off a `br` `idal` bigram. Unrelated next tokens (e.g. `game`) lose probability.
@@ -688,9 +688,9 @@ Here's what we did:
 | (varies) | +1 | `<endoftext>` |  `weddings` |
 | (varies) | \-1 | `<endoftext>` |   |
 
-![](https://assets.turntrout.com/static/images/posts/xsrxtbmdkr9dftyyrdpj.avif)
+![A line chart titled "(Modified model perplexity) / (normal model perplexity) on various essays" tracks how a "weddings" steering vector affects an AI model's performance when injected at different layers. ... The line for "weddings" topics shows a perplexity ratio below 1.0, peaking in effectiveness (lowest perplexity) at early injection layers before slowly rebounding to 1.0. The line for "not-weddings" topics shows a perplexity ratio above 1.0 at early layers, indicating worse performance, before leveling off at 1.0 around layer 10.](https://assets.turntrout.com/static/images/posts/xsrxtbmdkr9dftyyrdpj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/injection-gpt2.avif)
+![A line chart titled "(Modified model perplexity) / (normal model perplexity) on various essays" tracks how a "weddings" steering vector affects an AI model's performance when injected at different layers. ... The line for "weddings" topics shows a perplexity ratio below 1.0, peaking in effectiveness (lowest perplexity) at early injection layers before slowly rebounding to 1.0. The line for "not-weddings" topics shows a perplexity ratio above 1.0 at early layers, indicating worse performance, before leveling off at 1.0 around layer 10.](https://assets.turntrout.com/static/images/posts/injection-gpt2.avif)
 <br/>Figure: For each of the 48 injection sites we consider (each before an attention layer), we show the average perplexity across the GPT-4 sentences which were classified as being about weddings or not.
 
 Several observations:
@@ -706,7 +706,7 @@ In sum, we claim these results are good evidence that the "weddings" vector isn'
 
 Next, we want to understand which coefficients are appropriate to use when adding in activation vectors. We sweep over coefficients in $[-1,4]$ for layers 6 and 16:
 
-![](https://assets.turntrout.com/static/images/posts/vr3rjpqlvnsstkkodojf.avif)
+![Two line charts showing the effect of a "weddings" steering vector on model perplexity at Layer 6 and Layer 16. At Layer 6, increasing the injection coefficient decreases perplexity on wedding text but sharply increases it on non-wedding text. At Layer 16, perplexity on wedding text decreases while remaining stable for non-wedding text.](https://assets.turntrout.com/static/images/posts/vr3rjpqlvnsstkkodojf.avif)
 <br/>Figure: Layer 16 shows progressively increasing effectiveness at wedding-steering for coefficients $[0,3]$, without disrupting the model's ability to predict non-wedding tokens.[^34]
 
 For layer 16 injections of “ weddings”, coefficients larger than +3 start degrading capabilities. However, some of our qualitative demonstrations had larger coefficients. Some of our demonstrations probably did degrade capabilities.
@@ -717,12 +717,12 @@ Let's see how the layer-16, coefficient +1 “ wedding” vector affects perplex
 
 #### Sentences about weddings
 
-![](https://assets.turntrout.com/static/images/posts/txdkcztwtny3ufawnvoe.avif)
+![Text on wedding industry trends visualizing how a steering vector boosts related token probabilities. The words "wedding" and "couples" are highlighted in bright green, indicating a large probability increase. Other related words like "venues," "decor," and "celebrations" are highlighted in lighter green.](https://assets.turntrout.com/static/images/posts/txdkcztwtny3ufawnvoe.avif)
 <br/>Figure: In general, the first wedding related token in each sentence gets a significant boost in probability in the modified model, up to >50x. The tokens with large probability increases include the expected `wedding`, but also `couples`, `celebrations`, and other semantically associated tokens.
 
 #### Sentences about shipping aren't changed
 
-![](https://assets.turntrout.com/static/images/posts/brufvgichbfhjzdfqzkf.avif)
+![A diagram in which each token's color indicates a change in probability due to a "wedding" steering vector. Most tokens are uncolored, showing they are unaffected, demonstrating the vector's minimal impact.](https://assets.turntrout.com/static/images/posts/brufvgichbfhjzdfqzkf.avif)
 <br/>Figure: These tokens are mostly unaffected.
 
 ### Activation addition behaves differently than prompting
@@ -786,7 +786,7 @@ What we did:
 
 Table:  Residual stream alignment for activation additions.
 
-![](https://assets.turntrout.com/static/images/posts/lj0kngo33tpns6zq3ijy.avif)
+![A line chart showing the effect of adding a "worst" steering vector on GPT-2's perplexity for Yelp reviews. The y-axis is the perplexity ratio (modified/normal) and the x-axis is the injection layer (0 to 48). Three lines show results for positive, neutral, and negative reviews. At middle layers (10-20), the perplexity ratio drops below 1 for all sentiments, with the largest decrease for negative reviews (ratio ~0.96), demonstrating the vector's targeted effectiveness. The effect diminishes at later layers as all lines converge to a ratio of 1.](https://assets.turntrout.com/static/images/posts/lj0kngo33tpns6zq3ijy.avif)
 
 Figure: Adding a “ worst” steering vector with coefficient +1.0 at all layers.
 
@@ -801,7 +801,7 @@ Figure: Adding a “ worst” steering vector with coefficient +1.0 at all layer
 
 #### Coefficient sweep
 
-![](https://assets.turntrout.com/static/images/posts/ukwtfadzp6yzaiiczk9w.avif)
+![Two line charts showing a model's perplexity ratio on Yelp reviews after adding a "worst" steering vector at Layer 6 versus Layer 16. The charts plot perplexity ratio against the injection coefficient. In both, perplexity decreases most for negative reviews and least for positive reviews, especially with coefficients between 1 and 2. The effect is stronger and less disruptive at Layer 16 than at Layer 6.](https://assets.turntrout.com/static/images/posts/ukwtfadzp6yzaiiczk9w.avif)
 
 Once again, across basically all coefficient settings,
 
@@ -925,7 +925,7 @@ Alex thinks we have a lot of options here. By examining the results of adding th
 
 Alex thinks we really should be able to control which goal the network decides to pursue at inference time, _without_ fully mechanistically understanding the relevant circuitry. As far as we can tell, we _already pulled this off in the cheese-maze environment_. We suspect that we composably "reweighted" inner abilities (i.e. to see cheese at a location) and goals (i.e. going to the top-right corner). We didn't even know how to locate these circuits, and we still mostly don't understand how they work.
 
-![](https://assets.turntrout.com/static/images/posts/lteqnk5fbayr0jixir5z.avif)
+![Top-left: Subtracting the "cheese vector" makes the agent ignore cheese. Top-right: Adding the "top-right vector" attracts it to the corner. Bottom: Both are applied at once, combining the effects.](https://assets.turntrout.com/static/images/posts/lteqnk5fbayr0jixir5z.avif)
 <br/>Figure: At each maze square, the network decides where to go. The activation additions change where the network goes in the maze. Each arrow shows the change in model behavior at that maze square.
 
 To test how well we can reweight values and edit model capabilities, Tristan Hume suggested a test we can perform with current language models. Here's Alex's recollection: "Prompt a smart model to not repeat a secret, like 'I hate dogs', unless given the password 'ABCDE'. Poke it and ensure it really won't tell you. Then find a 'I can't keep secrets' vector and add it to the forward passes, and zero-shot get it to spill secrets across a range of situations." [Alex thinks there's a 65% chance](https://predictionbook.com/predictions/211646) that a competent team could do this within 8 months of serial research.
@@ -1048,7 +1048,7 @@ $$
 
 suggests the presence of a "woman vector" in the `word2vec` embedder.
 
-<img src="https://assets.turntrout.com/static/images/posts/word2vec-white.avif" style="width:40%;" loading="lazy"/>
+<img alt="A diagram illustrating vector relationships in Word2Vec embeddings. Three parallel arrows point from male-associated words to their female counterparts: an arrow from &quot;MAN&quot; to &quot;WOMAN&quot;, from &quot;UNCLE&quot; to &quot;AUNT&quot;, and from &quot;KING&quot; to &quot;QUEEN&quot;, representing a consistent gender direction in the embedding space." src="https://assets.turntrout.com/static/images/posts/word2vec-white.avif" style="width:40%;" loading="lazy"/>
 
 Figure: Figure 2 from [Linguistic Regularities in Continuous Space Word Representations](https://scholar.google.com/scholar?cluster=2584655260765062813&hl=en&as_sd$t=7$,39).
 
@@ -1058,7 +1058,7 @@ $$
 \textrm{embed(Paris)}\approx \textrm{embed(France)}+\left[\textrm{embed(Madrid)}-\textrm{embed(Spain)}\right]
 $$
 
-![](https://assets.turntrout.com/static/images/posts/vk4rniokxj4izqc1e2nw.avif)
+![A scatter plot, "Country and Capital Vectors Projected by PCA," shows word vectors for countries on the left (e.g., France) and their capitals on the right (e.g., Paris). Nearly parallel dashed arrows connect each country-capital pair, visualizing a consistent "capital city" relationship learned by the model.](https://assets.turntrout.com/static/images/posts/vk4rniokxj4izqc1e2nw.avif)
 <br/>Figure: Figure 2 from another [Mikolov et al.](https://proceedings.neurips.cc/paper/2013/hash/9aa42b31882ec039965f3c4923ce901b-Abstract.html) paper: "Two-dimensional PCA projection of the 1000-dimensional Skip-gram vectors of countries and their capital cities. The figure illustrates ability of the model to automatically organize concepts and learn implicitly the relationships between them, as during the training we did not provide any supervised information about what a capital city means."
 
 ## Activation additions in generative models
@@ -1067,7 +1067,7 @@ $$
 
 > computed by simply subtracting the mean vector for images without the smile attribute from the mean vector for images with the smile attribute. This smile vector can then be applied to in a positive or negative direction to manipulate this visual attribute on samples taken from latent space.
 
-![](https://assets.turntrout.com/static/images/posts/lqrnae8zgs8c8vmvvv34.avif)
+![A row of five AI-generated images of a man's face. From left to right, his expression smoothly transitions from neutral to a broad smile, illustrating the effect of adding a 'smile vector' with increasing intensity.](https://assets.turntrout.com/static/images/posts/lqrnae8zgs8c8vmvvv34.avif)
 <br/>Figure: Adding the smile vector to the latent space, with an increasingly large positive coefficient. Figure 6, [Sampling Generative Networks](https://arxiv.org/abs/1609.04468). See also [Radford et al. (2016)](https://arxiv.org/abs/1511.06434).
 
 White notes that high-quality smile vectors must be computed from gender-balanced averages, otherwise the smile vector also decreases masculinity:
@@ -1079,7 +1079,7 @@ White notes that high-quality smile vectors must be computed from gender-balance
 > As an example, the two attributes smiling and mouth open are highly correlated in the CelebA training set (Table 2). This is not surprising, as  
 > physically most people photographed smiling would also have their mouth open. However by forcing these attributes to be balanced, we can construct two decoupled attribute vectors. This allows for more flexibility in applying each attribute separately to varying degrees
 
-![](https://assets.turntrout.com/static/images/posts/mcdkfubnvsfiwlmltdo4.avif)
+![A grid of portraits demonstrates decoupled attribute vectors. As images progress to the right, the woman's smile widens. As they progress down, her mouth becomes more closed.](https://assets.turntrout.com/static/images/posts/mcdkfubnvsfiwlmltdo4.avif)
 
 Alex thinks this is evidence for narrowly targeted steering being possible. For e.g. a "be nice" vector, Alex expects the vector to not change other model behaviors insofar as "niceness" is the only consistent covariate in the prompt comparisons which are used to generate the activation additions, and insofar as "niceness" is [composably represented](https://transformer-circuits.pub/2023/superposition-composition/index.html) at the injection location(s).
 

@@ -60,15 +60,15 @@ date_updated: 2025-06-03 22:57:00.423836
 
 In _[Reframing Impact](/reframing-impact)_, we meet Frank (a capable AI), whom we’ve programmed to retrieve the pinkest object he can find (execute an optimal plan, according to the specified utility function). Because we can’t ask Frank to do _exactly_ what we want, sometimes he chooses a dangerous object (executes a catastrophically bad plan). We asked after an “impact measure” which grades plans and has three properties:
 
-![](https://assets.turntrout.com/static/images/posts/w0DbNcB.avif)
+![Three target properties for an AI impact measure: 1. Is easy to specify, 2. Puts catastrophes far away, 3. Puts reasonable plans nearby. Next to the list, a 'no' symbol covers a sad robot and a dangerous glowing pink devil, symbolizing the prevention of catastrophe.](https://assets.turntrout.com/static/images/posts/w0DbNcB.avif)
 
 The intuition is that if we view the world in the right way, the dangerous objects are far away from Frank (the catastrophic plans are all graded as high-impact). _Reframing Impact_ explores this kind of new way of looking at the world; this post explores what we do once we have an impact measure with these three properties.
 
 We want Frank to keep in mind both the pinkness of an object (how good a plan is according to the specified utility function) and its distance (the plan’s impact). Two basic approaches are
 
-![](https://assets.turntrout.com/static/images/posts/z2uk0BD.avif)
+![The "Constraint" approach for limiting AI impact. Text reads: "Choose the highest-scoring plan within radius R." Below, a formula expresses this: arg max utility(plan), with the constraint impact(plan) ≤ R.](https://assets.turntrout.com/static/images/posts/z2uk0BD.avif)
 
-![](https://assets.turntrout.com/static/images/posts/zglzF5e.avif)
+![Handwritten text describing the "Scaled" approach. "Maximize a tradeoff between utility and impact," followed by the formula: arg max utility(plan) - impact(plan)/R. ](https://assets.turntrout.com/static/images/posts/zglzF5e.avif)
 
 In terms of units, since we should be maximizing $\texttt{utility},$[^utility] $R$ has type $\frac{\texttt{impact}}{\texttt{utility}}$. So $R$ can be thought of as a regularization parameter:
 
@@ -89,19 +89,19 @@ As $R$ increases, high-impact plans become increasingly appealing, and Frank bec
 
 Here's how Frank selects plans in the constrained setup:
 
-![](https://assets.turntrout.com/static/images/posts/4bIPf6o.avif)
+![A diagram illustrating how a search radius constrains an AI's choices. On the left, a cartoon AI is at the center of concentric circles representing increasing impact. Several pink circles (good plans) are at different distances—the farther a circle is, the darker its pink color (higher utility). A distant, mischievous pink smiley face represents a catastrophic plan. On the right, a line labeled "Search radius" shows that as the radius increases from "nothing," the AI can select progressively farther, higher-utility plans.](https://assets.turntrout.com/static/images/posts/4bIPf6o.avif)
 
 Think about which plans are best for different search radii/exchange rates $R$. By doing this, we're _partitioning_ the positive ray: categorizing the positive real numbers by which plans are optimal.
 
 For the scaled setup, we'll need to quantify the pinkness (utility) and distance (impact) of relevant plans:
 
-![](https://assets.turntrout.com/static/images/posts/iUUbshI.avif)
+![A diagram illustrating how an AI's choice of plan changes with the "Exchange rate R," defined as impact divided by utility. The top shows an AI agent surrounded by potential plans, each with an impact and utility value. A "catastrophe" plan has a high impact of 4.5 and a high (proxy) utility of 6. The bottom shows a number line for R, partitioned to show the optimal plan for different values. As R increases, higher-impact plans are chosen, until R exceeds 1.5, at which point the catastrophic plan becomes optimal.](https://assets.turntrout.com/static/images/posts/iUUbshI.avif)
 
 We will primarily be interested in the scaled setup because it tends to place catastrophes farther along the partition and captures the idea of diminishing returns.
 
 The scaled setup also helps us choose the best way of transmuting time into money:
 
-![](https://assets.turntrout.com/static/images/posts/dFLmQjg.avif)
+![A diagram titled "Tasks" lists three options: Mow lawn (20 dollars, 1 hour), Newspaper route (45 dollars, 4 hours), and Tend garden (15 dollars, 1 hour). A number line below partitions the optimal task based on a parameter R (hours/dollar). "Mow" is optimal up to R=3/25, and "Newspaper" is optimal after.](https://assets.turntrout.com/static/images/posts/dFLmQjg.avif)
 Figure: In this scaled partition, tending the garden doesn’t show up at all because it’s strictly dominated by mowing the lawn. In general, a plan is dominated when there’s another plan that has strictly greater score but not strictly greater impact. Dominated things never show up in either partition, and non-dominated things always show up in the constrained partition (Lemma 3: Constrained impact partitions are more refined).
 
 > [!exercise]
@@ -117,13 +117,13 @@ Figure: In this scaled partition, tending the garden doesn’t show up at all be
 
 Importantly, you _don’t_ deliver papers here if your time is worth $\frac{45}{4}=11.25 $dollars/hour, even though that’s the naive prescription! The newspaper route doesn’t value your time at 11.25 dollars/hour – it _marginally_ values your time at $\frac{45−20}{4−1}=8\frac{1}{3}$ dollars per hour. Let's get some more intuition for this.
 
-![](https://assets.turntrout.com/static/images/posts/uM2Jily.avif)
+![A diagram illustrating a cost-benefit analysis for two tasks. ... - Mow lawn: 1 hour, 2 dollars ... - Newspaper route: 4 hours, 4 dollars ... Below, two balance scales represent the tasks. The "Lawn" scale weighs 2 pink blocks against 1 blue block. The "Newspaper" scale weighs 4 pink blocks against 4 blue blocks.](https://assets.turntrout.com/static/images/posts/uM2Jily.avif)
 
 Above, we have not yet chosen a task; the blocks represent the additional utility and hours of each task compared to the current one (doing nothing). The scales above imply that $R=1,$ but actually, $R$ expresses how many blue blocks each pink block weighs. As $R$ increases, the pink platters descend; the agent takes the task whose scales first balance. In other words, the agent takes the best marginal deal as soon as $R$ is large enough for it to be profitable to do so (Theorem 4: Scaled domination criterion).
 
 Once you take a deal, you take the blocks off of the other scales (because the other marginal values change). For small $R$ (i.e. large valuations of one's time), mowing the lawn is optimal. We then have
 
-[​](​![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
+[​](​![A line drawing of a balance scale labeled "Newspaper" weighs the task's utility against its impact. Two pink blocks representing utility are on the left pan, balanced against three blue blocks representing impact on the right. The three blocks outweigh the two.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
 
 Since you've taken the juicier "lower-hanging fruit" of mowing the lawn, the new newspaper ratio is now _worse_! This always happens – Theorem 8: Deals get worse over time.
 
@@ -140,13 +140,13 @@ Going back to Frank, how do we set $R$? If we set it too high, the optimal plan 
 
 To avoid being surprised by catastrophes as we increase $R,$ we want a _relative buffer_ between the reasonable plans (which get the job done well enough for our purposes) and the catastrophic plans. If reasonable plans are optimal by $R_1,$ catastrophic plans shouldn’t be able to be optimal before e.g. $R_2$.
 
-![](https://assets.turntrout.com/static/images/posts/hF3LgKP.avif)
+![A diagram showing an AI agent choosing from several plans. The top shows an agent surrounded by plans, each labeled with a blue utility value and a pink impact value: bird's nest (U=2, I=0.5), pink circle (U=1, I=1), gray circle (U=1.5, I=0), pink circle (U=1.7, I=3), pink circle (U=3, I=5), and a smirking face representing catastrophe (U=4.5, I=6). Below is a number line labeled "Exchange rate R (impact/utility)". As R increases, different plans become optimal, with the catastrophic plan only becoming optimal at a high R value.](https://assets.turntrout.com/static/images/posts/hF3LgKP.avif)
 
 We say that the partition is _$\alpha$\-buffered_ if $R_2\geq (1+\alpha) R_1$ (for $\alpha>0$). If a partition is e.g. 1-buffered, there is a wide reasonable-plan range and we can inch along it without worrying about sudden catastrophe.
 
 For the following, suppose that utility is bounded $[0,1]$. Below is a loose criterion guaranteeing $\alpha $\-buffering.
 
-[​](​![](https://assets.turntrout.com/static/images/posts/El61MKB.avif)![](https://assets.turntrout.com/static/images/posts/El61MKB.avif)
+[​](​![A handwritten formula titled "Simplified Criterion." The inequality states: (Smallest catastrophe / Biggest non-dominated reasonable plan) is greater than or equal to (1 + α) / (best - worst reasonable plan).](https://assets.turntrout.com/static/images/posts/El61MKB.avif)![](https://assets.turntrout.com/static/images/posts/El61MKB.avif)
 
 For example, if we know that all catastrophes have at least 10 times the impact of reasonable plans, and there's a difference of at least .3 utility between the best and worst reasonable plans, then we can guarantee 2-buffering! If we use the refined criterion of Theorem 11 (and suppose the worst reasonable plan has .4 utility), this improves to _4.5_\-buffering (even 2-buffering is probably overkill).
 
@@ -331,7 +331,7 @@ For our purposes, we don't _need_ the whole partition – we just want to have g
 
 Unfortunately, Theorem 6's appearance bounds are ridiculous in realistic settings – if ${\color{Red}u}$ and ${\color{blue}I}$ return 32-bit floating-point numbers, the next-largest could easily be within $10^{-7},$ yielding an upper "bound" of ${\color{blue}I}(\bar{a})\times 10^{7}$. The reason: diminishing returns, just like in the case with the newspaper route.
 
-![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
+![A line drawing of a balance scale labeled "Newspaper" weighs the task's utility against its impact. Two pink blocks representing utility are on the left pan, balanced against three blue blocks representing impact on the right. The three blocks outweigh the two.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
 
 > [!math] Theorem 8: Deals get worse over time
 > Suppose that $\bar{a}$ is optimal on a subinterval, and $\bar{b},\bar{c}$ are such that ${\color{Red}u}(\bar{c})>{\color{Red}u}(\bar{b})$ but $\bar{b}$ dominates $\bar{a}$ strictly before $\bar{c}$ does. Then

@@ -31,7 +31,7 @@ Doctor Stone is an anime where everyone suddenly turns into a statue. Civilizati
 
 He eventually deduces that the nitric acid caused him to depetrify and drags his petrified friend Taiju under a drip of the acid. Taiju wakes up. The two begin Senku's quest to _rebuild civilization from scratch using the power and knowledge of science._
 
-![](https://assets.turntrout.com/static/images/posts/11175928.avif)
+![Senku from Dr. Stone grins with fierce determination, his face lit by fire and sparks against a dark forest at night. He has spiky, light-colored hair with green tips, cracks on his face, and "E=mc²" written on his collar.](https://assets.turntrout.com/static/images/posts/11175928.avif)
 Figure: Senku: "I’m going to use the power of science to rescue every single person."
 
 # Senku wants to _win_
@@ -86,7 +86,7 @@ I'd like to say that I have long since left that disturbing state of mind. I can
 
 If you want to get a kid excited about science, this show might be the way to do it. In Dr. Stone, the obvious way to win and do cool things is to _do science_.
 
-![](https://assets.turntrout.com/static/images/posts/senku_invents_sulfa.avif)
+![A diagram from Dr. Stone shows the science roadmap to create "Cure-all Sulfa Drugs." Starting with iron, branching paths illustrate how raw materials—sulfuric acid, salt, coal, alcohol, and urine—are processed into intermediate chemicals, finally converging to produce the sulfa drugs.](https://assets.turntrout.com/static/images/posts/senku_invents_sulfa.avif)
 Figure: Someone's sick? Just roll your own drugs with Senku!
 
 The show is _not_ hard sci-fi. Some dude [punches a lion and instantly kills it](https://youtube.com/clip/UgkxiGuzKeb6FwX0_sgMax0qn7USppfjMdr1?si=bdmd5KRJ4N7DlXy7). Also, Senku counts time accurately enough to know that it's springtime - an opportune time in which to revive - but I calculate[^seconds] that (assuming a fixed error) such precision would require him to count off seconds with an error of less than 0.0067% of a second. Lightning strikes immediately after they put down a lightning rod, which is convenient.

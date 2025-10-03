@@ -92,7 +92,7 @@ We're implicitly assuming that payoffs are comparable across players. We want to
 >
 > For an equal weighting, condition (2) is equivalent to demanding that the action not be a [Kaldor-Hicks improvement](https://en.wikipedia.org/wiki/Kaldor%E2%80%93Hicks_efficiency).
 
-![](https://assets.turntrout.com/static/images/posts/b5ad8b01496403d6cf20a734eb01d34bd9136de7cd837b62.avif)
+![A payoff matrix for the Prisoner's Dilemma. Player 1's actions are C1 and D1; Player 2's are C2 and D2. Payoffs are: C1, C2 yields (3,3); C1, D2 yields (0,4); D1, C2 yields (4,0); D1, D2 yields (1,1). Players formally defect by moving from higher group payoff to higher individual payoff but lower group payoff.](https://assets.turntrout.com/static/images/posts/b5ad8b01496403d6cf20a734eb01d34bd9136de7cd837b62.avif)
 <br/>Figure: Payoff profiles in the Prisoner's Dilemma. Red arrows represent defections against pure strategy profiles; player 1 defects vertically, while player 2 defects horizontally. For example, player 2 defects with $(C_1,C_2)\to(C_1,D_2)$ because they gain ($4>3$) but the weighted sum loses out ($4<6$).
 
 This definition seems to make reasonable intuitive sense. In the tragedy of the commons, each player rationally increases their utility, while imposing negative externalities on the other players and decreasing total utility. A spy might leak classified information, benefiting themselves and Russia but defecting against America.
@@ -122,7 +122,7 @@ We can prove that formal defection exists in the trifecta of famous games. Expan
 
 ## Prisoner's dilemma
 
-![](https://assets.turntrout.com/static/images/posts/7c2aa97336741f1a062968218a8391d8871554d59d53c8ee.avif)
+![Three 2x2 payoff matrices illustrating defection in the Prisoner's Dilemma. ... (a) A "Symmetric game format" matrix with variable payoffs: R,R for mutual cooperation; S,T and T,S for mixed choices; and P,P for mutual defection. ... (b) An example where R > 1/2(T+S). Payoffs are 3,3; 0,4; 4,0; and 1,1. Red arrows show both players are always incentivized to defect. ... (c) An example where R ≤ 1/2(T+S). Payoffs are 3,3; 0,8; 8,0; and 1,1. Red arrows show that when one player cooperates and the other defects, the cooperator is incentivized to also defect.](https://assets.turntrout.com/static/images/posts/7c2aa97336741f1a062968218a8391d8871554d59d53c8ee.avif)
 <br/>Figure: In (a), variables stand for $T$emptation, $R$eward, $P$unishment, and $S$ucker. A 2x2 symmetric game is a _Prisoner's Dilemma_ when $T>R>P>S$. Unsurprisingly, formal defection is everywhere in this game.
 
 > [!math]- Theorem 5: In 2x2 symmetric games, if the Prisoner's Dilemma inequality is satisfied, defection can exist against equal weightings.
@@ -133,7 +133,7 @@ We can prove that formal defection exists in the trifecta of famous games. Expan
 
 ## Stag hunt
 
-![](https://assets.turntrout.com/static/images/posts/0de841661949492409f34e304c124aa51fdf5af64f9514fc.avif)
+![Two 2x2 payoff matrices illustrating the Stag Hunt game. Matrix (a), the symmetric game format, shows payoffs as variables: Stag₁ vs Stag₂ is R, R; Stag₁ vs Hare₂ is S, T; Hare₁ vs Stag₂ is T, S; Hare₁ vs Hare₂ is P, P. Matrix (b), an example, shows numerical payoffs: Stag₁ vs Stag₂ is 4, 4; Stag₁ vs Hare₂ is 1, 3; Hare₁ vs Stag₂ is 3, 1; Hare₁ vs Hare₂ is 2, 2.](https://assets.turntrout.com/static/images/posts/0de841661949492409f34e304c124aa51fdf5af64f9514fc.avif)
 <br/>Figure: A 2x2 symmetric game is a _Stag Hunt_ when $R>T\geq P>S$. In Stag Hunts, due to uncertainty about whether the other player will hunt stag, players defect and fail to coordinate on the unique Pareto optimum $(\text{Stag}_1,\text{ Stag}_2)$. In (b), player 2 will defect (play $\text{Hare}_2$) when $\mathbb{P}(\text{Stag}_1)<\frac{1}{2}$. In Stag Hunts, formal defection can always occur against mixed strategy profiles, which lines up with defection in this game being due to uncertainty.
 
 > [!math]- Theorem 6: In 2x2 symmetric games, if the Stag Hunt inequality is satisfied, defection can exist against equal weightings.
@@ -164,7 +164,7 @@ We can prove that formal defection exists in the trifecta of famous games. Expan
 
 ## Chicken
 
-![](https://assets.turntrout.com/static/images/posts/9a5af9e1b5fd6a2b840a77e1cdcd7d3be6941064a178be8b.avif)
+![Two 2x2 payoff matrices illustrating the game of Chicken. Matrix (a) shows the symmetric format with variables: (Turn₁, Turn₂) yields R,R; (Turn₁, Ahead₂) yields S,T; (Ahead₁, Turn₂) yields T,S; (Ahead₁, Ahead₂) yields P,P. Matrix (b) gives a numerical example with the same actions.](https://assets.turntrout.com/static/images/posts/9a5af9e1b5fd6a2b840a77e1cdcd7d3be6941064a178be8b.avif)
 <br/>Figure: A 2x2 symmetric game is _Chicken_ when $T>R\geq S>P$. In (b), defection only occurs when $\frac{10}{11}<\mathbb{P}(\text{Turn}_1)<\frac{21}{22}$: when player 1 is likely to turn, player 2 is willing to trade a bit of total payoff for personal payoff.
 
 > [!math]- Theorem 7: In 2x2 symmetric games, if the Chicken inequality is satisfied, defection can exist against equal weightings.

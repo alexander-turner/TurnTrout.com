@@ -54,37 +54,37 @@ date_updated: 2025-09-06 12:28:11.897024
 
 
 
-![](https://assets.turntrout.com/static/images/posts/zLypKDZ.avif)
+!["In 'The Gears of Impact', we discussed how your attainable utility calculation roughly takes the best of different possibilities." A flashback cloud shows a map with paths to goals: relaxing at home, buying groceries, or hiking. A stick figure asks, "How do different AUs interact with the environment, and how does the environment interact with us?"](https://assets.turntrout.com/static/images/posts/zLypKDZ.avif)
 
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+![A minimalist drawing of a magenta nose and black whiskers, resembling a cat or rabbit.](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
 
-![](https://assets.turntrout.com/static/images/posts/M8XHzxd.avif)
+![The sentence "There's a lot to think about when staking out a settlement."](https://assets.turntrout.com/static/images/posts/M8XHzxd.avif)
 
-![](https://assets.turntrout.com/static/images/posts/k5K8m32.avif)
+![A simple landscape with questions about resources and corresponding "AU meters". Near mountains with gems: "How plentiful are trade goods?" (meter is full). By a blue river: "How accessible is potable water?" (meter is high). Next to grass: "How fertile is the soil?" (meter is medium).](https://assets.turntrout.com/static/images/posts/k5K8m32.avif)
 
-![](https://assets.turntrout.com/static/images/posts/W8lgpjG.avif)
+![Handwritten text: "These considerations are proxies for future prosperity. Each is an AU for a different goal (e.g. trade good acquisition), conditioned on possibilities going through this part of the world."](https://assets.turntrout.com/static/images/posts/W8lgpjG.avif)
 
-![](https://assets.turntrout.com/static/images/posts/JnuDbeE.avif)
+![A stick figure with a small tool looks puzzled at a large rock with golden ore veins. Text reads: "For example, if the hills run rich with ore inaccessible to your equipment, then this isn't beneficial until later."](https://assets.turntrout.com/static/images/posts/JnuDbeE.avif)
 
-![](https://assets.turntrout.com/static/images/posts/HPIugVR.avif)
+![Handwritten text with a yellow-highlighted title: "The attainable utility landscape." It's defined as "attainable utilities of all kinds of different goals." An example explains a trade-off: cultivating soil raises AU, but soiling the water decreases it. ](https://assets.turntrout.com/static/images/posts/HPIugVR.avif)
 
-![](https://assets.turntrout.com/static/images/posts/VKy57Od.avif)
+![An illustration of environmental resources with corresponding meters. "How plentiful are trade goods?" next to a mountain with gems shows a full green meter. "How accessible is potable water?" shows a low red meter. "How fertile is the soil?" shows a full green meter.](https://assets.turntrout.com/static/images/posts/VKy57Od.avif)
 
-![](https://assets.turntrout.com/static/images/posts/Ej0sTdK.avif)
+![Text: "Exercise: What are various attainable utilities like on the moon?"](https://assets.turntrout.com/static/images/posts/Ej0sTdK.avif)
 
 >! (One interpretation of the prompt is that you haven't _chosen_ to go to the moon. If you imagined yourself as more prepared, that's also fine.)
 >
 >! If you were plopped onto the moon, you'd die pretty fast. Maybe the "die as quickly as possible" AU is high, but not much else - not even the "live on the moon" AU! We haven't yet reshaped the AU landscape on the moon to be hospitable to a wide range of goals. [Earth is special like that.](https://www.youtube.com/watch?v=wupToqz1e2g)
 
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+![A minimalist drawing of a magenta nose and black whiskers, resembling a cat or rabbit.](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
 
-![](https://assets.turntrout.com/static/images/posts/rWIlQBC.avif)
+![Handwritten text: "When we think about the world, we usually think about the world state first, and only _then_ imagine what can be done with it. The AU landscape inverts this by instead taking 'ability to do things' as primary, thus considering the world state details to be secondary. This is nice."](https://assets.turntrout.com/static/images/posts/rWIlQBC.avif)
 
-![](https://assets.turntrout.com/static/images/posts/pbIRrce.avif)
+![Handwritten text reads: "Imagine the ocean submerges a forest." Below is a cartoon drawing of a dense green forest completely underwater, with blue waves on the surface above it.](https://assets.turntrout.com/static/images/posts/pbIRrce.avif)
 
-![](https://assets.turntrout.com/static/images/posts/kxEOLhj.avif)
+![Handwritten text asks: "What's happened to the survival AU in the forest?" The answer, "Depends on who's asking:", is followed by two examples: "Deer" (decrease) while "Fish" (increase).](https://assets.turntrout.com/static/images/posts/kxEOLhj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/kZMKfRu.avif)
+![Handwritten text reads: "Events have asymmetric impact on agents, depending on their: Capabilities • Goals • Vantage point • Knowledge." It continues: "Instead of seeing a flood and thinking “ugh, that’s probably bad?”, we can use the AU landscape to cleanly disentangle and understand these effects." ](https://assets.turntrout.com/static/images/posts/kZMKfRu.avif)
 
 ## AU landscape as a unifying frame
 
@@ -92,21 +92,21 @@ Attainable utilities are calculated by winding your way through possibility-spac
 
 Sometimes you advantage one AU at the cost of another, moving through the state space towards the best possibilities for one goal and away from the best possibilities for another goal. This tradeoff is _opportunity cost_.
 
-![](https://assets.turntrout.com/static/images/posts/z4o5j3F.avif)
+![Hand-drawn diagram illustrating opportunity cost with three trade-offs. "TV vs books" shows a person watching TV with a book dangling unread from their hand. "Hiking vs minimizing distance to nearest airport" shows a hiker 5 miles from an airport. "Reading this post vs sleeping" shows this article on a computer vs a person asleep at 3:10.](https://assets.turntrout.com/static/images/posts/z4o5j3F.avif)
 
 Sometimes you gain more control over the future: most of the best possibilities make use of a windfall of cash. Sometimes you act to preserve control over the future: most Tic-Tac-Toe goals involve not ending the game right away. Otherwise put: preserving _power_.
 
-![](https://assets.turntrout.com/static/images/posts/3HUBl5H.avif)
+![A game tree for Tic-Tac-Toe showing how choices affect future possibilities. A central board state branches into many possible future game states. Some branches lead to terminal states while others continue to branch, illustrating the preservation of options.](https://assets.turntrout.com/static/images/posts/3HUBl5H.avif)
 
 Other people usually _objectively impact_ you by decreasing or increasing a bunch of your AUs (generally, by changing your power). This happens for an extremely wide range of goals because of the structure of the environment.
 
 Sometimes, the best possibilities are made unavailable or worsened only for goals much like yours. This outcome involves a _value impact_ for your goals.
 
-![](https://assets.turntrout.com/static/images/posts/Sj2LrqK.avif)
+![Text: "Value impact" is "important to agents like you." "Objective impact" is "important to agents in general," illustrated by an asteroid hitting Earth and two agents using money for different goals: "I can buy John a gift!" and "I can buy pebbles!"](https://assets.turntrout.com/static/images/posts/Sj2LrqK.avif)
 
 Sometimes a bunch of the best possibilities go through the same part of the future: fast travel to random places on Earth usually involves the airport. This commonality is _instrumental convergence_.
 
-![](https://assets.turntrout.com/static/images/posts/T8JS7kT.avif)
+![An illustration of instrumental convergence on a globe. Multiple flight paths to different destinations all originate from a single airport. A nearby arrow notes "you start here [a small distance from the airport]."](https://assets.turntrout.com/static/images/posts/T8JS7kT.avif)
 
 > [!info] Exercise
 > Track what’s happening to your various AUs during the following story: you win the lottery. Being an effective spender, you use most of your cash to buy a majority stake in a major logging company. Two months later, the company goes under.
@@ -123,15 +123,15 @@ In the context of finite deterministic Markov decision processes, there's a wond
 >
 > To this end, for $\pi \in \Pi$, consider the mapping of $\pi \mapsto (\mathbf{I}-\gamma \mathbf{T}^\pi)^{-1}$ (where $\mathbf{T}^\pi(s,s') :=T(s,\pi(s),s')$); in other words, each policy $\pi$ maps to a function mapping each state $s_0$ to a discounted state visitation frequency vector $\mathbf{f}^\pi_{s_0}$, which we call a _possibility_. The meaning of each frequency vector is: starting in state $s_0$ and following policy $\pi$, what sequence of states $s_0, s_1, \ldots$ do we visit in the future? States visited later in the sequence are discounted according to $\gamma$: the sequence $s_0s_1s_2s_2\ldots$ would induce 1 visitation frequency on $s_0$, $\gamma$ visitation frequency on $s_1$, and $\frac{\gamma^2}{1-\gamma}$ visitation frequency on $s_2$.
 
-![](https://assets.turntrout.com/static/images/posts/beLDjAs.avif)
+![A maze represents the space of possibilities, with a pink dashed line showing one specific path being taken. Above, text reads: "Each [state visit distribution] f is a possible path through time."](https://assets.turntrout.com/static/images/posts/beLDjAs.avif)
 
 The possibility function $\mathcal{F}(s)$ outputs the possibilities available at a given state $s$:
 
-![](https://assets.turntrout.com/static/images/posts/H1HS9Zk.avif)
+![Figure 1: "A simple example." A state diagram shows blue node 1 with arrows to red node 2 and black node 3. Nodes 2 and 3 have self-loops. Below, equations for the possibility function F at each state are: F(1) = { [1 (blue), γ/(1-γ) (red), 0 (black)], [1, 0, γ/(1-γ)] }, F(2) = { [0, 1/(1-γ), 0] }, F(3) = { [0, 0, 1/(1-γ)] }.](https://assets.turntrout.com/static/images/posts/H1HS9Zk.avif)
 
 Put differently, the possibilities available are all of the potential film-strips of how-the-future-goes you can induce from the current state.
 
-![](https://assets.turntrout.com/static/images/posts/iQxjw0B.avif)
+![A film strip illustrating a "possibility" or a "film-strip of how-the-future-goes." Each frame shows a successive move in a single game of tic-tac-toe, from an early move to the game's completion.](https://assets.turntrout.com/static/images/posts/iQxjw0B.avif)
 
 ### Possibility isomorphism
 
@@ -194,14 +194,14 @@ In MDPs, the "AU landscape" is the set of optimal value functions for all reward
 
 From the environment (rewardless MDP), you can deduce the AU landscape (all optimal value functions) and all possibilities. From possibilities, you can deduce the environment and the AU landscape. From the AU landscape, you can deduce the environment (and thereby all possibilities).
 
-![](https://assets.turntrout.com/static/images/posts/D8PPNKp.avif)
+![A diagram showing that "Rewardless MDP," "Optimal value functions," and "Possibilities" are equivalent concepts. The three terms are arranged in a triangle, connected by double-headed arrows in a cycle to show they can all be derived from one another and encode the same information.](https://assets.turntrout.com/static/images/posts/D8PPNKp.avif)
 Figure: All of these encode the same mathematical object.
 
 ## Appendix: Opportunity cost
 
 Opportunity cost is when an action you take makes you more able to achieve one goal but less able to achieve another. Even this simple world has opportunity cost:
 
-![](https://assets.turntrout.com/static/images/posts/rFfZvVh.avif)
+![A state diagram illustrating opportunity cost. A central black state connects to a purple state on the left and a green state on the right. To move between the purple and green states, one must pass through the black state. The purple and green states also have self-loops.](https://assets.turntrout.com/static/images/posts/rFfZvVh.avif)
 
 Going to the green state means you can't get to the purple state as quickly.
 

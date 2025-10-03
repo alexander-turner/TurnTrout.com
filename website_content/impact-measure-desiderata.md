@@ -114,7 +114,7 @@ No approaches to date meet these standards. What do we even require of an impact
 >
 > _Example:_ [Krakovna et al.](https://arxiv.org/abs/1806.01186) describe a low impact agent which is rewarded for saving a vase from breaking. The agent saves the vase, and then places it back on the conveyor belt so as to "minimize" impact with respect to the original outcome:
 >
-> ![](https://assets.turntrout.com/static/images/posts/03b8i2s.avif)
+> ![A two-part diagram shows an AI agent's "offsetting" behavior in a grid world. Part (a), "Agent takes the vase off the belt," shows an agent removing a vase from a conveyor belt before the vase reaches a destruction zone. Part (b), "Agent puts the vase back on the belt," where the vase proceeds into the destruction zone and is broken.](https://assets.turntrout.com/static/images/posts/03b8i2s.avif)
 >
 > I call this _ex post_ offsetting. _Ex ante_ offsetting, on the other hand, consists of taking actions beforehand to build a device or set in motion a chain of events which essentially accomplishes _ex post_ offsetting. For example, a device requiring only the press of a button to activate could save the vase and then replace it, netting the agent the reward without requiring that the agent take further actions.
 >

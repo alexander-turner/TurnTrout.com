@@ -121,7 +121,7 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 The color scheme derives from the [Catppuccin](https://catppuccin.com) "latte" (light mode) and "frappe" (dark mode) [palettes](https://github.com/catppuccin/catppuccin/tree/main?tab=readme-ov-file#-palette).
 
-![](https://assets.turntrout.com/static/images/posts/catppuccin.avif)
+![The four Catppuccin color palettes demonstrated in overlapping code editor windows. The themes include one light mode (Latte) and three dark modes (Frappé, Macchiato, Mocha), set against a soft landscape background with the word "CATPPUCCIN".](https://assets.turntrout.com/static/images/posts/catppuccin.avif)
 Figure: The four Catppuccin palettes.
 
 ## Themes

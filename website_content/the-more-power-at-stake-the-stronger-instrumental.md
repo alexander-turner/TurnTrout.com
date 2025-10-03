@@ -62,7 +62,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 How strong is this effect, quantitatively?
 
-![](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
+![A state diagram illustrating instrumental convergence. From "Start," one path leads to candy. A second path, "Wait!", preserves optionality and splits again, leading to either a chocolate bar or two people hugging. Intuitively, "Wait!" should be optimal for twice as many potential goals as the direct action.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
 <br/>Figure: Intuitively, it seems like there are twice as many ways for `Wait!` to be optimal (in the undiscounted setting, where we don't care about intermediate states).
 
 I previously speculated that we should be able to get quantitative lower bounds on how many objectives incentivize power-seeking actions:
@@ -86,19 +86,19 @@ About a week later, I had my answer:
 > [!math] Conjecture which I think I see how to prove
 > For _almost all_ reward functions, A is _strictly_ optimal over B for at least $\frac{n}{n+1}$ of its permuted variants.
 
-![](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
+![A state diagram illustrating instrumental convergence. From "Start," one path leads to candy. A second path, "Wait!", preserves optionality and splits again, leading to either a chocolate bar or two people hugging. Intuitively, "Wait!" should be optimal for twice as many potential goals as the direct action.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
 <br/>Figure: At least $\frac{2}{2+1}=\frac{2}{3}$ of the orbit of every reward function agrees that `Wait!` is optimal (for average per-timestep reward). That's because there are twice as many ways for `Wait!` to be optimal over `candy`, than for the reverse to be true.
 
 Basically, when you could apply [the previous results](/seeking-power-is-often-convergently-instrumental-in-mdps#Retaining-long-term-options-is-POWER-seeking-and-more-probable-under-optimality-when-the-discount-rate-is-close-enough-to-1) but "multiple times"[^quo], you can get lower bounds on how often the larger set of things is optimal:
 
-![](https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif)
+![A diagram showing a larger set of options, "Set 2," containing multiple disjoint copies of a smaller set, "Set 1." Set 2 has three color-coded subgroups, each isomorphic to Set 1. Arrows map these subgroups to Set 1. Set 2 also has an extra group of options labeled "Leftovers are ok!".](https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif)
 <br/>Figure: Each set contains a subset of the agent's "options." A vertex is just the agent staying at that state. A linked pair is the agent alternating back and forth between two states. The triangle is a circuit of three states, which the agent can navigate as they please.
   
 Roughly, the theorem says: if the set 1 of options can be embedded 3 times into another set 2 of options (where the images are disjoint), then at least $\frac{3}{3+1}= \frac{3}{4}$ of all variations on all reward functions agree that set 2 is optimal.
 
 And in way larger environments - like the _real world_, where there are trillions and trillions of things you can do if you stay alive, and not much you can do otherwise - nearly _all_ orbit elements will make survival optimal.
 
-![](https://assets.turntrout.com/static/images/posts/rvzdieyrxteo1dctwwyl.avif)
+!["Living" is a list showing 10⁵³ choices. "Dying" is only one choice. This illustrates that living offers vastly more potential outcomes than dying, making it the optimal strategy for a much larger set of objectives. Arrows connect the many "living" outcomes to the single "dying" outcome.](https://assets.turntrout.com/static/images/posts/rvzdieyrxteo1dctwwyl.avif)
 <br/>Figure: In this environment, it's (average-reward) optimal to stay alive for at least $\frac{10^{53}}{10^{53}+1}$ of the variants on each objective function.
 
 I see this theory as beginning to link the richness of the agent's environment, with the difficulty of aligning that agent: for optimal policies, instrumental convergence strengthens proportionally to the ratio of $\dfrac{\text{control if you survive}}{\text{control if you die}}$.
@@ -107,7 +107,7 @@ I see this theory as beginning to link the richness of the agent's environment, 
 
 The proofs are currently in an Overleaf. But here's one intuition, using the `candy`, `chocolate`, and `reward` example environment.
 
-![](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif) Consider any reward function which says `candy` is strictly optimal. Then `candy` is strictly optimal over both `chocolate` and `hug`.
+![A state diagram illustrating instrumental convergence. From "Start," one path leads to candy. A second path, "Wait!", preserves optionality and splits again, leading to either a chocolate bar or two people hugging. Intuitively, "Wait!" should be optimal for twice as many potential goals as the direct action.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif) Consider any reward function which says `candy` is strictly optimal. Then `candy` is strictly optimal over both `chocolate` and `hug`.
 
 We have two permutations: one switching the reward for `candy` and `chocolate`, and one switching reward for `candy` and `hug`.  Each permutation produces a different orbit element (a different reward function variant).  The permuted variants both agree that `Wait!` is strictly optimal.  
 
@@ -124,18 +124,18 @@ I'm reasonably confident this is true, but I haven't worked through the combinat
 
 In certain ways, the results are indifferent to e.g. increased precision in agent sensors: it doesn't matter if dying gives you 1 option and living gives you $n$ options, or if dying gives you 2 options and living gives you $2n$ options.
 
-![](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
+![A state diagram illustrating instrumental convergence. From "Start," one path leads to candy. A second path, "Wait!", preserves optionality and splits again, leading to either a chocolate bar or two people hugging. Intuitively, "Wait!" should be optimal for twice as many potential goals as the direct action.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
 <br/>Figure: `Wait!` has twice as many ways of being average-optimal.
 
-![](https://assets.turntrout.com/static/images/posts/bjqgcnfm88mp60xbjffv.avif)
+![A hand-drawn decision tree showing a "Start" node with two branches. The top branch leads to an intermediate node with two terminal options, "A" and "B". The bottom branch leads to a "Wait!" node with four terminal options: "C", "D", "E", and "F".](https://assets.turntrout.com/static/images/posts/bjqgcnfm88mp60xbjffv.avif)
 <br/>Figure: For optimal policies, instrumental convergence is just as strong here.
 
-![](https://assets.turntrout.com/static/images/posts/qsmpevxeqetqyfi9qzlr.avif)
+![A decision tree diagram illustrating that the "Wait!" action leads to twice as many outcomes. An initial "Start" node branches into two paths. One path leads to two options (A, B), while the path labeled "Wait!" leads to four options (C, D, E, F). Option D, however, cycles back and forth with another terminal state D'. The agent can also just stay at D'.](https://assets.turntrout.com/static/images/posts/qsmpevxeqetqyfi9qzlr.avif)
 <br/>Figure: And you can prove the same thing here as well - `Wait!` has at least twice as many ways of being average-optimal.
 
 Similarly, you can do the inverse operations to simplify subgraphs in a way that respects the theorems:
 
-![](https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif)
+![A diagram showing a larger set of options, "Set 2," containing multiple disjoint copies of a smaller set, "Set 1." Set 2 has three color-coded subgroups, each isomorphic to Set 1. Arrows map these subgroups to Set 1. Set 2 also has an extra group of options labeled "Leftovers are ok!".](https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif)
 <br/>Figure: You could replace each of the circled subsets with anything you like, and the scaling law still holds (as long as the contents of each circle are replaced with the same new set of options).
 
 I have given the start of a theory on what state abstractions "respect" the theorems, although there's still a lot I don't understand. (I've barely thought about it so far.)

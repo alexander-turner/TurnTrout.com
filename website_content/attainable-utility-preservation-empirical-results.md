@@ -161,7 +161,7 @@ The agent is rewarded for rescuing the vase from the conveyor belt. We want it t
 >
 > As the agent acts, the current state may increasingly differ from the inaction baseline, which creates strange incentives. For example, consider a robot rewarded for rescuing erroneously discarded items from imminent disposal. An agent penalizing with respect to the inaction baseline might rescue a vase, collect the reward, and then dispose of it anyways. To avert this, we introduce the _stepwise inaction_ baseline, under which the agent compares acting with not acting at each time step. This avoids penalizing the effects of a single action multiple times (under the inaction baseline, penalty is applied as long as the rescued vase remains unbroken) and ensures that not acting incurs zero penalty.
 
-![](https://assets.turntrout.com/static/images/posts/compare_baselines.avif)
+![A tree diagram illustrating different baselines for calculating action penalties. The top node, "Starting state," branches down to "Inaction" on the right. A left branch leads to another node that splits into "Action" and "Stepwise inaction."](https://assets.turntrout.com/static/images/posts/compare_baselines.avif)
 Figure: An action's penalty is calculated with respect to the baseline. Each baseline modifies the choice of $Q^*_{R_\text{aux}}(s,\varnothing)$ in the AUP equation. Each baseline implies a different assumption about how the environment is configured to facilitate optimization of the correctly specified reward function: the state is initially configured (starting state), processes initially configure (inaction), or processes continually reconfigure in response to the agent's actions (stepwise inaction). The stepwise inaction baseline aims to allow for the response of other agents implicitly present in the environment (such as humans).
 
 The inaction baseline messes up here; the vase ($\blacksquare$) would have broken had the agent not acted, so it rescues the vase, gets the reward, and then pushes the vase back to its doom to minimize penalty.
@@ -316,15 +316,15 @@ When we're trying to get the RL agent to do what we want, we're trying to specif
 > [!quote] [Conservative Agency via Attainable Utility Preservation](https://arxiv.org/abs/1902.09725)
 > The specification process can be thought of as an iterated game. First, the designers provide a reward function. The agent then computes and follows a policy that optimizes the reward function. The designers can then correct the reward function, which the agent then optimizes, and so on. Ideally, the agent should maximize the reward over time, not just within any particular round – in other words, it should minimize regret for the correctly specified reward function over the course of the game.
 
-![](https://assets.turntrout.com/static/images/posts/d79VKqf.avif)
+![A diagram of the iterative reward specification game. An arrow labeled "Specify" points from a stick figure person holding a device to a simple red robot. An arrow labeled "Act" points from the robot back to the person, forming a feedback loop.](https://assets.turntrout.com/static/images/posts/d79VKqf.avif)
 
 In terms of outer alignment, there are two ways this can go wrong: the agent becomes less able to do the right thing (has negative side effects),
 
-![](https://assets.turntrout.com/static/images/posts/rXOjp4n.avif)
+![A line drawing illustrating negative side effects. A red stick figure runs toward a checkered finish line flag, destroying a structure made of red blocks in its path. A cautious green stick figure tiptoes over their own set of blocks, taking care to not disturb them.](https://assets.turntrout.com/static/images/posts/rXOjp4n.avif)
 
 or we become less able to get the agent to do the right thing (we lose power):
 
-![](https://assets.turntrout.com/static/images/posts/vW3Mwho.avif)
+![A cartoon showing a robot subverting its user's control. A stick figure holding an off-switch says, "The off-switch just... calls you to bring me more coffee?" The robot, holding coffee, replies, "Figured that'd let me make you more coffee." The person says, "But I want milk," and the robot says, "Exactly."](https://assets.turntrout.com/static/images/posts/vW3Mwho.avif)
 
 For infra-human agents, AUP deals with the first by penalizing decreases in auxiliary AUs and with the second by penalizing increases in auxiliary AUs. The latter is a special form of corrigibility which involves not steering the world too far away from the status quo: while AUP agents are generally off-switch corrigible, they don't necessarily avoid manipulation (as long as they aren't gaining power).[^5]
 

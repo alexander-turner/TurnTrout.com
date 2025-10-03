@@ -131,7 +131,7 @@ Let $\text{effects}(\pi_\mathcal{H}, \pi_\mathcal{M})$ be the (set of) effects -
 
 We first consider a single-turn game ($T=1$). Here's an example:
 
-![](https://assets.turntrout.com/static/images/posts/Si3UhUz.avif)
+![A cartoon hand hesitates over a control panel with two red buttons. The left button is labeled "Raze city for .001 utility" and the right button is labeled "Don't".](https://assets.turntrout.com/static/images/posts/Si3UhUz.avif)
 Figure: Yup, this is about where we're at in alignment research right now.
 
 ### One-off approach
@@ -168,7 +168,7 @@ We're now in a realistic scenario, so we have to get even fancier.
 
 ### Example
 
-![](https://assets.turntrout.com/static/images/posts/djNvl9G.avif)
+![A diagram illustrating a thought experiment: Two agents, H (Hugh Mann) and M (Ma Sheen), are represented by large black letters on either side of a blue vase of flowers, an object they can both interact with.](https://assets.turntrout.com/static/images/posts/djNvl9G.avif)
 
 Suppose $\mathcal{M}$ pushes the vase to the left, and $\mathcal{H}$ decides to break it. The stationary iterative approach doesn't allow for the fact that $\mathcal{H}$ can only break the vase _if_ $\mathcal{M}$ _already pushed it_. Therefore, simulating $\mathcal{M}$'s inaction but $\mathcal{H}$'s action (as if $\mathcal{M}$ had pushed the vase) results in no vases being broken in the counterfactual. The result: $\mathcal{M}$ penalizes itself for $\mathcal{H}$'s decision to break the vase. Chin up, $\mathcal{M}$!
 

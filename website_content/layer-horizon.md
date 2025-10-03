@@ -63,7 +63,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 
 > [!quote] [Joseph Miller](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=DpKyPSqGCBw3erajH)
 >
-> ![](https://assets.turntrout.com/static/images/posts/layer-horizon-gpt2xl.avif)
+> ![Line chart of "Layer Horizon vs Loss of GPT2-XL (48 layers)." As the layer horizon on the x-axis increases, the model's loss on the y-axis smoothly falls from a high of nearly 9 to approach the baseline loss of 3.1418. The sharpest decrease occurs between a layer horizon of 10 and 25.](https://assets.turntrout.com/static/images/posts/layer-horizon-gpt2xl.avif)
 >
 >  We clearly see the same pattern again. As `TurnTrout` predicted, there seems be something like an exponential decay in the importance of previous layers as you go further back. I expect that on large models the effective layer horizon is an important consideration. ([Source code](https://gist.github.com/UFO-101/41b7ff0b250babe69bf16071e76658a6))
 

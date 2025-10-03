@@ -53,7 +53,7 @@ Let me tell you: if there's ever been a time when I wished I'd been months ahead
 
 The debate unfolded below the link-preview: an imposing robot staring the reader down, a title containing 'Terminator', a byline dismissive of AI risk:
 
-![](https://assets.turntrout.com/static/images/posts/dont_fear.avif)
+![A menacing, futuristic robot with a glowing visor stares forward. This is the preview image for an article titled "Don't Fear the Terminator," representing the AI risk archetype the article dismisses.](https://assets.turntrout.com/static/images/posts/dont_fear.avif)
 <br/>Figure: [**Don’t Fear the Terminator**](https://blogs.scientificamerican.com/observations/dont-fear-the-terminator/?fbclid=IwAR3bzsKy92K0cRTuJ-E1CTFvRZILWgIRVM5EgzPsoSsYqwOZX8_7LmmZkBw): "Artificial intelligence never needed to evolve, so it didn’t develop the survival instinct that leads to the impulse to dominate others."  
   
 The byline seemingly [affirms the consequent](https://en.wikipedia.org/wiki/Affirming_the_consequent). "Evolution $\implies$  survival instinct" does not imply "no evolution $\implies$ no survival instinct." That said, the article raises at least one good point: _We_ choose the AI's objective, and so why must that objective incentivize power-seeking?

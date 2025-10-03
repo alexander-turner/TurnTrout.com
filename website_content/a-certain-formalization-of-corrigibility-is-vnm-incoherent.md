@@ -69,7 +69,7 @@ Let's consider a simple setting in which an agent plans over a 10-timestep episo
 
 Consider this environment:
 
-![](https://assets.turntrout.com/static/images/posts/x5stwunrwbmlb4reiw91.avif)
+![A state transition diagram showing an agent's choice. From the central "B Start" node, actions `left`, `∅`, or `right` lead to a blue "post-correction" system where all paths converge on state A. The `disable` action leads to a red "incorrigible" system where the agent moves freely between states A, B, and C.](https://assets.turntrout.com/static/images/posts/x5stwunrwbmlb4reiw91.avif)
 <br/>Figure: The action set is $\mathcal{A}:= \{\texttt{left},\texttt{right},\varnothing,\texttt{disable}\}$. $\varnothing$ is the no-op action. The agent starts at the black $B$ state.
 
 If the agent immediately chooses `disable`, they enter the red incorrigible states and move freely throughout the $n=3$ states until the episode ends at $t=10$.
@@ -129,7 +129,7 @@ This condition is _impossible_ for agents optimizing a reward function over the 
 
 For example, maybe $\pi_\text{correct: C}$ goes to $C$ instead of $A$. But then the dynamics look like this:
 
-![](https://assets.turntrout.com/static/images/posts/ufzbaqyts3avb1n1tzau.avif)
+![A state diagram with a "Start" node. The actions "left", "nothing", and "right" lead to blue states A, B, and C (respectively). In the blue subgraph, the transitions force the agent towards state C. The action "disable" leads to red state B in an "incorrigible" graph where states A, B, C are interconnected by "left" and "right" actions.](https://assets.turntrout.com/static/images/posts/ufzbaqyts3avb1n1tzau.avif)
 <br/>Figure: Remember, the agent is rewarded for the state it's in at $t=10$.
 
 What has to be true for strict corrigibility to hold?
@@ -197,11 +197,11 @@ averaged over a range of auxiliary reward functions.[^pen]
 
 In worlds where the agent gets corrected to $\pi_\text{correct: A}$ by default, AUP penalizes the agent for _not getting corrected to_ $\pi_\text{correct: A}$ because it ends up stuck in $\color{blue}{A}$ in the inaction baseline, with respect to which the AUP penalty is measured. Ending up in $\color{red}{A}$ is no substitute, since the agent can still move around to other states (and therefore the optimal value functions will tend to look different).
 
-![](https://assets.turntrout.com/static/images/posts/x5stwunrwbmlb4reiw91.avif)
+![A state transition diagram showing an agent's choice. From the central "B Start" node, actions `left`, `∅`, or `right` lead to a blue "post-correction" system where all paths converge on state A. The `disable` action leads to a red "incorrigible" system where the agent moves freely between states A, B, and C.](https://assets.turntrout.com/static/images/posts/x5stwunrwbmlb4reiw91.avif)
 
 And in worlds where the agent gets corrected to $\pi_\text{correct: C}$ by default, AUP penalizes the agent for _not getting corrected to_ $\pi_\text{correct: C}$!
 
-![](https://assets.turntrout.com/static/images/posts/ufzbaqyts3avb1n1tzau.avif)
+![A state diagram with a "Start" node. The actions "left", "nothing", and "right" lead to blue states A, B, and C (respectively). In the blue subgraph, the transitions force the agent towards state C. The action "disable" leads to red state B in an "incorrigible" graph where states A, B, C are interconnected by "left" and "right" actions.](https://assets.turntrout.com/static/images/posts/ufzbaqyts3avb1n1tzau.avif)
 
 Again, I don't think AUP is a solution. But I think there's something important happening here which allows evasion of the usual coherence requirements. AUP leverages information about human preferences which is present in the dynamics itself.
 

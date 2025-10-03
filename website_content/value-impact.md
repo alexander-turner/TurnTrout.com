@@ -50,45 +50,45 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 
-![](https://assets.turntrout.com/static/images/posts/lG9je1g.avif)
+![Handwritten text: "We think some things are big deals, and we want to understand why. However, it can be hard to read your own mind. Instead, we'll use thought experiments to piece together what's going on." To the right, a confused stick figure holds a brain.](https://assets.turntrout.com/static/images/posts/lG9je1g.avif)
 
-![](https://assets.turntrout.com/static/images/posts/1hJa51n.avif)
+![A simple robot on wheels next to handwritten text: "XYZ is a Pebblehoarder of the planet Pebblia. XYZ morally values collections of pebbles... One day, all of the pebbles turn into obsidian blocks, which every Pebblehoarder knows are worthless." A pile of obsidian blocks is below.](https://assets.turntrout.com/static/images/posts/1hJa51n.avif)
 
-![](https://assets.turntrout.com/static/images/posts/geDXLLG.avif)
+![Text: "Far, far away from Earth exists the planet Iniron. One day, we learn humans are now being tortured there." Below, a dark scribbled space contains a white planet next to faint red text reading "Help..." and several red, pained faces.](https://assets.turntrout.com/static/images/posts/geDXLLG.avif)
 
-![](https://assets.turntrout.com/static/images/posts/zMxBlb0.avif)
+![Text reads: "An asteroid strikes." Below, an illustration shows a flaming asteroid hitting Earth. An arrow points to the impact site, which is labeled "a literal impact."](https://assets.turntrout.com/static/images/posts/zMxBlb0.avif)
 
-![](https://assets.turntrout.com/static/images/posts/tupgltr.avif)![](https://assets.turntrout.com/static/images/posts/kNG5for.avif)
+![The handwritten word "Exercise:" in gold, followed by the text: "Spend three minutes familiarizing yourself with the three situations – how are they alike, and how are they different? Make them come alive."](https://assets.turntrout.com/static/images/posts/tupgltr.avif)![An hourglass with a speech bubble that says, "I recommend actually setting timers for timed exercises."](https://assets.turntrout.com/static/images/posts/kNG5for.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
 
-![](https://assets.turntrout.com/static/images/posts/jaHW2pp.avif)
+![Handwritten text: "Let's query our mental impact-o-meter from these different vantage points. Step into each pair of shoes and ask 'how big of a deal is this?'" ](https://assets.turntrout.com/static/images/posts/jaHW2pp.avif)
 
-![](https://assets.turntrout.com/static/images/posts/MmtIR5e.avif)
+![A confused cartoon robot with a question mark above its head stares at a jumbled pile of blocks. Text reads: "Just imagine being XYZ. The very fabric of what is important has been ripped away."](https://assets.turntrout.com/static/images/posts/MmtIR5e.avif)
 
-![](https://assets.turntrout.com/static/images/posts/S1KiiUj.avif)
+![Text: "Perhaps the Pebblehoarder civilization can rebound and find value... but if not – if XYZ doesn't know you can just make more pebbles – the loss feels complete." Below this, a black oval symbolizing an empty universe contains the text: "The universe feels dead and empty and worthless."](https://assets.turntrout.com/static/images/posts/S1KiiUj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/9ZqUDO6.avif)
+![An illustration of Earth shattering is accompanied by handwritten text: "Faced with an impact of similar magnitude, we might have a feeling of freefalling despair, of our pale blue marble having been pushed off a cliff and shattered against the ground far below."](https://assets.turntrout.com/static/images/posts/9ZqUDO6.avif)
 
-![](https://assets.turntrout.com/static/images/posts/TT61fRC.avif)
+![Handwritten text: 'The impact on a "Pebblehoarder colony" depends on their values. It's bad news if they value the total number of pebble collections, but it doesn't matter if they only value their own. For humans, the concern would be our relations with them, not the event itself.'](https://assets.turntrout.com/static/images/posts/TT61fRC.avif)
 
-![](https://assets.turntrout.com/static/images/posts/JGA0KAj.avif)
+![Handwritten text reads: "This is where our eyes widen as we realize how much this reveals about the nature of the impact calculation running in our heads." ](https://assets.turntrout.com/static/images/posts/JGA0KAj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/ZBG9SXA.avif)
+![An abstract drawing of a black void framing a white planet. Within the darkness, the word "Help..." and several distressed, sad faces are scrawled in red.](https://assets.turntrout.com/static/images/posts/ZBG9SXA.avif)
 
-![](https://assets.turntrout.com/static/images/posts/IhjRIpN.avif)
+![Handwritten text reads: "We feel a pull to help the poor souls of Iniron. But XYZ? XYZ doesn't care. There aren't any pebbles on the line. Even if it were on Iniron, its thoughts would flit to how this development affects its own concerns."](https://assets.turntrout.com/static/images/posts/IhjRIpN.avif)
 
-![](https://assets.turntrout.com/static/images/posts/lsJLMDk.avif)
+![A drawing of a large, flaming meteor striking planet Earth from space. A bright, fiery explosion radiates from the point of impact on the planet's surface.](https://assets.turntrout.com/static/images/posts/lsJLMDk.avif)
 
-![](https://assets.turntrout.com/static/images/posts/OBmQUKm.avif)
+![Handwritten exercise: "Determine how impactful the asteroid impact is to:" followed by four scenarios in two columns: "You on Earth" and "XYZ on Earth" in the first row, and "You on Pebblia" and "XYZ on Pebblia" in the second.](https://assets.turntrout.com/static/images/posts/OBmQUKm.avif)
 
 > ! Being on Earth when this happens is a big deal, no matter your objectives – you can't hoard pebbles if you're dead! People would feel the loss from anywhere in the cosmos. However, Pebblehoarders wouldn't mind if they weren't in harm's way.
 
-![](https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif)
+![A minimalist illustration of a cat's snout with a magenta nose and black whiskers on a white background.](https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif)
 
-![](https://assets.turntrout.com/static/images/posts/ZOAeuoe.avif)
+![A diagram titled "What have we learned?" explains that impact is relative. An equation, "Impact = value impact + objective impact," is split into two columns. Value impact is "important to agents like you" (e.g. a robot wanting pebbles). Objective impact is "important to agents in general" and "invariant to objectives" (e.g. a meteor hitting Earth).](https://assets.turntrout.com/static/images/posts/ZOAeuoe.avif)
 
-![](https://assets.turntrout.com/static/images/posts/fzLD7kQ.avif)
+![A handwritten diagram titled "Exercise: Decompose something which recently impacted you." An example decomposes a "Promotion" into two aspects. The "value" aspect is "I care about the new position," while the "objective" aspect is "Cash can be used for lots of things."](https://assets.turntrout.com/static/images/posts/fzLD7kQ.avif)
 
 ## Appendix: Contrived Objectives
 

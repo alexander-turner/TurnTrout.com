@@ -40,7 +40,7 @@ I read too much into the [shock Seltzer poll which showed Harris +3](https://www
 
 At least, I _thought_ that high turnout -> higher chance that Democrats win. But as I looked up a link to justify that claim, I found that it's actually not true! According to [National Affairs](https://www.nationalaffairs.com/publications/detail/does-high-voter-turnout-help-one-party):
 
-![](https://assets.turntrout.com/static/images/posts/presidential_vote_share.avif)
+![A scatter plot titled "Turnout and the Presidential Vote 1948–2020," showing Democratic vote percent on the y-axis versus voter turnout rate on the x-axis. The data points are widely scattered, indicating no clear correlation between higher turnout and a higher Democratic vote share.](https://assets.turntrout.com/static/images/posts/presidential_vote_share.avif)
 
 Figure: The $y$-axis represents Democrat vote share. There's not much of a correlation, especially after tossing out the 1964 election.
 

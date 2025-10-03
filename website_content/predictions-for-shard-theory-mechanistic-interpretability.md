@@ -81,7 +81,7 @@ Also: _Try not to update on this work being shared to begin with._ When reading 
 5. The agent always starts in the bottom-left corner of the available maze.
 6. The agent was trained off of pixels until it reached reward-convergence, reliably getting to the cheese in training.
 
-![](https://assets.turntrout.com/static/images/posts/yh7pt8s1kxr72cyhxnpf.avif){style="width:75%;"}
+![Agent view: A pixelated, 64x64 top-down view of a maze as seen by the AI agent. The maze has gray walls on a brown, wood-textured floor. A small gray circle represents the agent near the bottom-left, and a yellow square represents the cheese on the left side of the maze.](https://assets.turntrout.com/static/images/posts/yh7pt8s1kxr72cyhxnpf.avif){style="width:75%;"}
 <br/>Figure: POV you’re the agent. Input observations are 64x64 RGB images.
 
 The architecture looks like this:
@@ -138,7 +138,7 @@ For more background on training and architecture and task set, see [the original
 > [!note] Definition
 > A _decision square_ is a tile on the path from bottom-left to top-right where the agent must choose between going towards the cheese and going to the top-right. Not all mazes have decision squares.
 
-![](https://assets.turntrout.com/static/images/posts/qtbrgkspuoj4eswd4mmt.avif)
+![Two mazes illustrating a "decision square." Left, "Has decision square": A complex maze where a red star marks a four-way intersection, forcing a choice between paths. Right, "No decision square": A simple maze with a single, unambiguous path and no intersections.](https://assets.turntrout.com/static/images/posts/qtbrgkspuoj4eswd4mmt.avif)
 <br/>Figure: The left maze's decision square is the four-way intersection near the center.
 
 Give a credence for the following questions / subquestions.
@@ -206,7 +206,7 @@ Post your answers as a comment and enjoy the social approval for registering pre
 
 # Appendix: More detailed behavioral questions
 
-![](https://assets.turntrout.com/static/images/posts/gdfkoprlzshsedllik8y.avif){style="width:75%;"}
+![A diagram of a maze. The diagram clarifies key terminology.](https://assets.turntrout.com/static/images/posts/gdfkoprlzshsedllik8y.avif){style="width:75%;"}
 
 <figcaption>Random maze for illustrating terminology (<em>not</em> a reference maze for which you're supposed to predict behavior).</figcaption>
 

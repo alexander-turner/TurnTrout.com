@@ -66,7 +66,7 @@ And locks I had. I restricted my iPhone with a password only known by a friend, 
 
 This school year, I’ve had problems focusing and relaxing. I tried exercise, different medication, but nothing hit the spot. I wasn’t reading textbooks like I wanted to, my attention was fractured, I often felt behind my schedule. I was still doing my job and making progress—just not as much as I wanted.
 
-![](https://assets.turntrout.com/static/images/posts/e5fc31e7ae5335e6eb86ac6aea6c6f490a9a50b854ad33c1.avif)
+![A screenshot of a post describing a distracted daily routine: "wake up. check lesswrong. go to work. check lesswrong. check mad investor chaos. check lesswrong. work 5 mins. check mad investor chaos. check lesswrong. work 10 mins. check alignment forum. check EA forum. check mad investor chaos. oh it updated! check mad investor chaos. check".](https://assets.turntrout.com/static/images/posts/e5fc31e7ae5335e6eb86ac6aea6c6f490a9a50b854ad33c1.avif)
 <br/>Figure: Could this have anything to do with my attention problems?
 
 This spring, I read a LessWrong post which mentioned [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/). Luckily, this triggered my “if several reasonably smart EAs swear by the benefits of X, investigate X” trigger-action plan.
@@ -85,7 +85,7 @@ Consider why you originally bought a cell phone. It was probably to call people,
 
 The point isn’t “phone bad, never use phone, quit now.” My phone provides me with enormous benefits. The point is _where was the cost-benefit analysis, WTF has happened to us?!_
 
-![](https://assets.turntrout.com/static/images/posts/2749e833d9821059f131c852d2ab35451550729fb305ea07.avif)
+![An infographic titled "2021 Mobile Landscape at a Glance." Key stats: 230B new app downloads (+5% YoY), \$170B app store spend (+19% YoY), 4.8 hours daily time spent per user (+30% 2Y), noted as "1/3 of daily waking hours," \$295B mobile ad spend (+23% YoY), and 233 apps with over \$100M spend (+20% YoY).](https://assets.turntrout.com/static/images/posts/2749e833d9821059f131c852d2ab35451550729fb305ea07.avif)
 <br/>Figure: Notice the middle stat: **one third of daily waking hours**. I am disgusted that some people try to make this number go up further. From [AppAnnie](https://www.data.ai/en/insights/market-data/state-of-mobile-2022/).
 
 Readers of this forum are probably better about their usage. Let’s be (too) generous and cut that to a mere two hours wasted daily on your phone, and 0 hours wasted on your other devices. That’s only _one eighth of your waking year,_ or 1.5 waking months each year.
@@ -106,7 +106,7 @@ These compulsions kill deep work in the cradle. My attention was fractured and s
 
 At this point, you might be thinking “OK, but I can’t roam the mountains of Nepal for a month. I have work to do and that requires staying in touch with people.” Sure. The point of this post is not “no phone.” The point of this post is to build a digital life purposefully and carefully, because you reflectively endorse each component. The point of this post is to get people to do _any cost-benefit analysis at all_ of the way they spend 1/8th–1/3rd of their waking hours.
 
-![](https://assets.turntrout.com/static/images/posts/8d45f63442baec9dd4ea27814e72c18a53e55bbf4be36f77.avif)
+![A "Trade Offer" meme showing a cost-benefit analysis of Facebook. A man in a suit representing Facebook proposes a deal. "i receive: - 40 minutes / day". In exchange, "you receive: - somewhat more convenient event organizing, - .8 interesting posts, - .9 good memes, - frustrating clickbait, - culture war, - urge to check phone".](https://assets.turntrout.com/static/images/posts/8d45f63442baec9dd4ea27814e72c18a53e55bbf4be36f77.avif)
 <br/>Figure: My estimate of the daily costs and benefits for a better-than-average Facebook user (considering Messenger to be distinct from Facebook). In appendix 2, I detail how I extract all of these benefits for 40 minutes a month, instead of 40 minutes a day—a 30x improvement!
 
 The declutter goes as follows:
@@ -265,7 +265,7 @@ My procedure was “If I need to use a forbidden functionality, then I have to w
   - In combination with a monthly Messenger checkin, I’ve extracted my main benefits from Facebook, at a cost of at most 50 minutes each month, instead of 50 minutes each day!
     - Again, I **_don’t recommend_** doing small fixes like “just hide some FB elements.” These fixes don’t work for most people. This advice is aimed at post-declutter usage, which unfolds from your informed cost-benefit analysis.
 
-![](https://assets.turntrout.com/static/images/posts/d32796158700c20215c248c4a535664223c89bdddc3c874c.avif)
+![A screenshot of a Facebook page showing a completely blank news feed. The only content is the status update box and a message that reads, "Your Newsfeed is hidden because you have selected FBP's 'Hide The Whole Newsfeed' option."](https://assets.turntrout.com/static/images/posts/d32796158700c20215c248c4a535664223c89bdddc3c874c.avif)
 <br/>Figure: Here’s what my FB news feed looks like now. 😌
 
 - For news, I purchased a digital+print subscription to _~The Economist~_.[^econ] Once a month, I can choose to read the four issues for an hour or two.

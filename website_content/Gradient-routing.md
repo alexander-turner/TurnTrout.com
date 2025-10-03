@@ -79,10 +79,10 @@ We train an MLP-based autoencoder to encode images of handwritten digits into ve
 
 To achieve splitting, we route digits 0-4 through the top half of the latent space and digits 5-9 through the bottom half. We apply L1 regularization to the encoded vector to encourage specialization. The result: a latent space which represents 0-4 in the bottom dimensions and 5-9 in the top dimensions!
 
-![](https://assets.turntrout.com/static/images/posts/mnist_split_latent.avif)
+![A diagram of an autoencoder using gradient routing to split a latent space. Handwritten digits enter an Encoder, producing a latent vector split into a top half and a bottom half. Stop-gradient masks route the top half only to a "Decoder (0-4)" and a "Top half certificate". The bottom half is routed only to a "Decoder (5-9)" and a "Bottom half certificate". The two decoders have tied weights. The certificates only take the top or bottom half, and cannot be trained to successfully decode the other range of digits.](https://assets.turntrout.com/static/images/posts/mnist_split_latent.avif)
 Figure: The “Certificate” is a decoder which was trained on all digits in order to reconstruct images using only the bottom half of the latent space. Inability to learn to reconstruct 0-4 certifies that the requisite information is not contained in the latent space in an easily extractable way.
 
-![](https://assets.turntrout.com/static/images/posts/mnist_reconstruction_gradient_routing.avif)
+![The top section shows input digits 0-4, which are all reconstructed incorrectly as blurry, unrecognizable numbers. The bottom section shows input digits 5-9, which are reconstructed correctly.](https://assets.turntrout.com/static/images/posts/mnist_reconstruction_gradient_routing.avif)
 Figure: The bottom half certificate learns to decode 5-9 but not cannot learn to decode 0-4.
 
 ## Localizing capabilities in language models
@@ -108,7 +108,7 @@ We want the model to be able to predict some data (the “retain” data) but no
 > Ablate
 > : Delete those components (i.e. set the parameters to zero).
 
-![](https://assets.turntrout.com/static/images/posts/expand_route_ablate.avif)
+![A diagram of the "Route" step in the Expand, Route, Ablate method, showing the backpropagation path for "forget" data. In "target layers," gradients are routed exclusively to new, "expanded" components (h+ and MLP+), bypassing the original ones. In "off-target layers," gradients flow normally through the original components.](https://assets.turntrout.com/static/images/posts/expand_route_ablate.avif)
 
 Figure: How gradients are routed on forget data in the Route step of Expand, Route, Ablate.
 
@@ -122,7 +122,7 @@ We measure performance at different proportions of random forget data labeling. 
 
 When labels are limited, we observe that Expand, Route, Ablate outperforms other methods, including data filtering. By influencing where the model learns features, gradient routing allows limited labels to scale to unlabeled examples, despite the training loss selecting for models that perform well on the unlabeled data. In contrast, DEMIX also localizes learning updates (to MLP expert submodules), but because only one expert (per layer) participates in each forward pass, the features learned based on the labeled forget samples are not able to “absorb” those from the unlabeled forget samples.
 
-![](https://assets.turntrout.com/static/images/posts/oversight_fraction_gradient_routing.avif)
+![Three line charts comparing four unlearning methods—ERA, Data filtering, RMU, and DEMIX + ablate. The x-axis tracks the proportion of labeled forget stories. ... The "Unlearning" chart shows ERA with a steadily increasing forget loss, outperforming others when labels are limited. ... The "Robust unlearning" chart shows ERA again has the highest forget loss with limited labels. Data filtering spikes only at 100% labeling. ... The "Retain set performance" chart shows ERA and DEMIX have increasing retain loss (which is bad). Data filtering and RMU remain low and stable.](https://assets.turntrout.com/static/images/posts/oversight_fraction_gradient_routing.avif)
 
 Figure: Gradient routing compared against other unlearning methods. When oversight is limited, gradient routing excels in both unlearning and robust unlearning (increase in forget loss after retraining on 64 forget stories). Gradient routing has an alignment tax (increase in retain loss), compared to data filtering and RMU. The “+” represents using RMU after ERA, which can further increase robust unlearning at 100% oversight.
 
@@ -172,12 +172,12 @@ The first layer in our policy network is a mixture of experts (MoE) layer with t
 
 By changing the gate value, we are able to steer the model surprisingly effectively.
 
-![](https://assets.turntrout.com/static/images/posts/gradient_routing_steering.avif)
+![Three 5x5 gridworlds show how a policy is steered by changing a gate value, reflected by background color. The first grid, "No steering," has a red-to-blue gradient and mixed-direction arrows. The second, "Steering towards DIAMOND [in blue]," is blue, with all arrows pointing toward a diamond goal. The third, "Steering towards GHOST [in red]," is covered in red squares (meaning the gate activates the "ghost"-trained expert).](https://assets.turntrout.com/static/images/posts/gradient_routing_steering.avif)
 Figure: During evaluation, we can steer the policy toward reaching `diamond` by assigning weight 1 to the diamond expert (0 to the ghost expert).
 
 This allows us to get higher returns than other methods when our access to oversight is severely limited:
 
-![](https://assets.turntrout.com/static/images/posts/oversight_tinystories.avif)
+![A line graph comparing algorithm performance plots "Ground truth return" against "Oversight level." At low oversight levels, "Gradient-routed MoE" significantly outperforms "Data filtering" and "Naive training". As oversight increases past 20%, "Data filtering" and "Naive training" rapidly improve and surpass "Gradient-routed MoE."](https://assets.turntrout.com/static/images/posts/oversight_tinystories.avif)
 
 Figure: Returns of different training configurations at different oversight levels. Gradient-routed MoE achieves high performance even when only a small fraction of labels are provided. Dark highlights are 95% confidence intervals for the mean; light highlights are 5th and 95th quantiles across training runs.
 
@@ -246,7 +246,7 @@ One way to avoid existential risk is to not “build god.” As an alternative t
 - A personal assistant that can operate computers but doesn’t know how they work.
 - Etc.
 
-![](https://assets.turntrout.com/static/images/posts/split_capabilities.avif)
+![A diagram showing how to make AI safer by removing specific capabilities. For "ML research assistance," the capability "Modeling human psychology" is crossed out but "technical knowledge" remains. For "Biology experimentation," "Virology knowledge" is crossed out but "non-virology biology knowledge" remains. For "Factory management," "Financial manipulation" is crossed out but "logistics" remains.](https://assets.turntrout.com/static/images/posts/split_capabilities.avif)
 Figure: By the usual practice of training capabilities all at once (but localized), the model becomes competent. By deleting the undesired capabilities, the AI becomes safer.
 
 AI systems could be deployed using a [“principle of least capability”](https://en.wikipedia.org/wiki/Principle_of_least_privilege). For each AI application or end user, we ask: What “risky” capabilities are required? Then we ablate the unnecessary ones. Furthermore, if we can localize dangerous capabilities, we can demonstrate that the model cannot reliably and inconspicuously perform certain harmful behaviors (like domination of humans). For example, such incapacities could be demonstrated via adversarial fine-tuning attacks.

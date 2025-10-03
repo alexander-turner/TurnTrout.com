@@ -18,7 +18,7 @@ tags:
 
 
 
-<img src="https://assets.turntrout.com/static/images/posts/alex-sunset.avif" class="float-right" alt=""/>
+<img src="https://assets.turntrout.com/static/images/posts/alex-sunset.avif" class="float-right" alt="A man named Alex with curly brown hair and a beard, smiling warmly on a wooden deck. He leans against a railing with a scenic view of trees and the ocean under a pink and blue sunset sky."/>
 
 Many people know me as `TurnTrout`, but you can call me "Alex". I want to let you see a different facet of me than I usually present online.
 

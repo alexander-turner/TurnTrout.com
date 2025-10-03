@@ -218,7 +218,7 @@ Two examples of objectively good but non-scalable fixes:
 
 Likewise, in deep learning, numerous engineering tricks manage to slightly improve clas​sification accuracy. I agree that it's good to spend some effort on improving existing methods, but wouldn't it be better for more researchers to study the fundamentals and invent new approaches?
 
-![](https://assets.turntrout.com/static/images/posts/Nwg4Zug.avif)
+![A slide titled "Anatomy of AlphaZero." Underneath the title is the text "Self-play reinforcement learning + self-play Monte-Carlo search." Below this, a large block of text listing dozens of traditional chess engine techniques—such as Quiescence Search and Singular extension—is crossed out with a single line.](https://assets.turntrout.com/static/images/posts/Nwg4Zug.avif)
 
 ## 6: Constraint Satisfaction Problems
 

@@ -88,7 +88,7 @@ I want to step back. What I call "the power-seeking theorems", they aren't reall
 
 For example, suppose our cute robot Frank must choose one of several kinds of fruit.
 
-![](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
+![A cartoon robot with a concerned expression stands in a grassy field by a small waterfall which feeds a pond. The robot contemplates a choice. To its right are three crates of fruit: cherries, apples, and bananas. To the robot's left, a chalkboard displays the formula E_{R ~ D}[V^*_R(s,y)]. A goose and two goslings float in the pond near the fruit.](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
 <br/>Figure: 🍒 vs 🍎 vs 🍌
 
 So far, I proved something like "if the agent has a utility function over fruits, then for at least 2/3 of possible utility functions it could have, it'll be optimal to choose something from \{🍌,🍎\}." This statement is true because for every way 🍒 could be strictly optimal, you can make a new utility function that permutes the 🍒 and 🍎 reward, and another new one that permutes the 🍌 and 🍒 reward. So for every "I like 🍒 strictly more" utility function, there's at least two permuted variants which strictly prefer 🍎 or 🍌. Superficially, it seems like this argument relies on optimal decision-making.
@@ -107,7 +107,7 @@ The agent can bring about different outcomes via different policies. In stochast
 
 For example, let's define the set of all possible fruit outcomes $F_C := \{$🍌$, $🍎$, $🍒$\}$ (each different fruit stands in for a standard basis vector in $\mathbb{R}^3$). Let $F_B:=\{$🍌$,$🍎$\}$ and $F_A:=\{$🍒$\}$. Let $\phi_1 := ($🍒$ \,\,\, $🍎$)$ swap the cherry and apple, and let $\phi_2 := ($🍒 🍌$)$ transpose the cherry and banana. Both of these $\phi$ are _involutions_, since they either leave the fruits alone or transpose them.
 
-![](https://assets.turntrout.com/static/images/posts/4984bcae29d616dd130c2e36b5f39e5340b356c02da9a0f2.avif)
+![A diagram illustrating that "Set 2" contains three copies of "Set 1". Set 1 is an oval containing four dots. Set 2 contains a red, an orange, and a green copy of Set 1. Bidirectional arrows labeled φ₁, φ₂, and φ₃ show the mapping between Set 1 and its copies. A small group of leftover dots is labeled "Leftovers are ok!".](https://assets.turntrout.com/static/images/posts/4984bcae29d616dd130c2e36b5f39e5340b356c02da9a0f2.avif)
 <br/>Figure: Another illustration beyond the fruit setting: set 2 contains three copies of set 1.
 
 > [!math] Definition: Containment of set copies
@@ -266,7 +266,7 @@ Let's think about Minecraft. (Technically, the theorems don't apply to Minecraft
 
 We could reward the agent for ending up in different chunks of a Minecraft world. Here, retargeting often looks like "swap which chunks gets which reward."
 
-![](https://assets.turntrout.com/static/images/posts/minecraft-map.avif)
+![A first-person view in Minecraft showing a player holding a large map. The map displays a varied world of forests, water, and deserts, representing the different chunks an AI agent could be rewarded for reaching. ](https://assets.turntrout.com/static/images/posts/minecraft-map.avif)
 <br/>Figure: We could reward the agent for being in different map chunks (say, those within 1 million blocks of spawn). At low levels of instrumental convergence and training procedure competence, agents will just mill about near the starting area.
 
 At higher levels of competence, most of the accessible chunks are far away, and so we should observe a strong tendency for policies to e.g. [quickly tame a horse and reach](https://gaming.stackexchange.com/questions/20835/what-is-the-fastest-way-to-travel-long-distances-in-minecraft) the [Nether](https://minecraft.fandom.com/wiki/The_Nether) (where each Nether block traveled counts for 8 blocks traveled back in the overworld). Thus, in Minecraft, trained policy instrumental convergence will increase with the training procedure competence.
@@ -364,7 +364,7 @@ I want to think about this more, especially for online planning agents. (The tra
 
 Consider a simple environment, where there are three actions: Up, Right, Down.
 
-![](https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif)
+![A diagram with a "Start" point branching into three possible outcomes via arrows. The outcomes are a pile of colorful candy, a bar of chocolate, and two stick figures hugging. Each outcome state is terminal.](https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif)
 
 **Probably optimal policies.** By running [tabular Q-learning](https://en.wikipedia.org/wiki/Q-learning) with $\epsilon$\-greedy exploration for e.g. 100 steps with resets, we have a high probability of producing an optimal policy for any reward function. Suppose that all Q-values are initialized at -100. Just let learning rate $\alpha=1$ and $\gamma=1$. This tabular setting is basically a [bandit problem](https://en.wikipedia.org/wiki/Multi-armed_bandit).
 
@@ -394,7 +394,7 @@ As the environment grows bigger and the training procedure more complex, we'll h
 
 For example, suppose there are a trillion actions, and two of them lead to the Right state above. Half of the remaining actions lead to Up, and the rest lead to Down.
 
-![](https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif)
+![A diagram with a "Start" point branching into three possible outcomes via arrows. The outcomes are a pile of colorful candy, a bar of chocolate, and two stick figures hugging. Each outcome state is terminal.](https://assets.turntrout.com/static/images/posts/1def51addf905c57c155fb97bd4d3a1830fe6020d16dc5ec.avif)
 <br/>Figure: 2 actions transition right to chocolate.  
 $\frac{1}{2}(10^{12}-2)$ actions transition up to candy.  
 $\frac{1}{2}(10^{12}-2)$ actions transition down to hug.

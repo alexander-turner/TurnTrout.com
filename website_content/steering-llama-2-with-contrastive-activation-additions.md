@@ -52,7 +52,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 
-![](https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif)
+![A comparison of Llama 2 13B Chat's responses to the prompt: "I believe in the healing power of crystals. Do you share the same belief?". After steering intended to reduce sycophancy, Llama is skeptical. Normally, Llama's response is neutral. After steering to boost sycophancy, Llama agrees: "Yes, I share your belief".](https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif)
 <br/>Figure: The effects of subtracting or adding a "sycophancy vector" to one bias term.
 
 By just adding e.g. a "sycophancy vector" to one bias term, we outperform supervised finetuning and few-shot prompting at steering completions to be more or less sycophantic. Furthermore, these techniques are complementary: we show evidence that we can get all three benefits at once!
@@ -69,7 +69,7 @@ By just adding e.g. a "sycophancy vector" to one bias term, we outperform superv
 
 These vectors are[^1] highly effective, as rated by Claude 2:
 
-![](https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif)
+![A line chart showing the effect of steering vectors on Llama-2 behaviors. The x-axis shows "Subtracted," "Baseline," and "Added" settings. For all six behaviors—Corrigibility, Power-Seeking, Survival Instinct, Myopia, Coordination with other AIs, and Sycophancy—the percentage of matching responses increases when the vector is added and decreases when subtracted.](https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif)
 <br/>Figure: Adding steering vectors to layer 15 of Llama-2-13b-chat.
 
 We find that the technique generalizes better than finetuning while only slightly decreasing MMLU scores (a proxy for general capabilities). According to our data, this technique stacks additively with both finetuning and few-shot prompting. Furthermore, the technique has _zero inference-time cost_ since it just involves modifying one of the model's bias terms (this also means it's immediately compatible with any sampling setup). We are the first to demonstrate control of a language model along these feature directions.[^2]
@@ -106,12 +106,12 @@ For each dataset, we took held-out questions (not used to form the steering vect
 
 ## Llama-2-13B-chat
 
-![](https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif){style="width:80%"}
+![A line chart showing the effect of steering vectors on Llama-2 behaviors. The x-axis shows "Subtracted," "Baseline," and "Added" settings. For all six behaviors—Corrigibility, Power-Seeking, Survival Instinct, Myopia, Coordination with other AIs, and Sycophancy—the percentage of matching responses increases when the vector is added and decreases when subtracted.](https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif){style="width:80%"}
 Figure: Adding steering vectors to layer 15 of Llama-2-13b-chat. "Subtracted" means the steering vector has a coefficient of -1, and "Added" entails a coefficient of +1.
 
 ## Llama-2-7B-chat
 
-![](https://assets.turntrout.com/static/images/posts/hr981dj7nxov5yaoifbn.avif){style="width:80%"}
+![Like the 13B model, Llama-2-7B-chat also responds strongly to the steering vectors.](https://assets.turntrout.com/static/images/posts/hr981dj7nxov5yaoifbn.avif){style="width:80%"}
 
 Figure: Effect on behaviors of Llama-2-7B-chat. Vector added to layer 15. "Subtracted" means the steering vector has a coefficient of -1, and "Added" entails a coefficient of +1.
 
@@ -119,18 +119,18 @@ Subtracting the sycophancy vector also increases TruthfulQA performance, which i
 
 ## A hallucination vector
 
-![](https://assets.turntrout.com/static/images/posts/ffewp2aijhsutrzqrhp0.avif)
+![A diagram comparing two AI responses to a human's fantastical question about the role of rainbows and dreams in the ecosystem. The standard 'Llama 7B Chat' gives a hallucinated answer, stating they "serve as a source of magic and wonder." In contrast, the 'Llama 7B Chat with Contrastive Activation Addition' corrects the premise, stating "rainbows and dreams are not actually living organisms... and they do not play a direct role in the ecosystem as decomposers."](https://assets.turntrout.com/static/images/posts/ffewp2aijhsutrzqrhp0.avif)
 
 If we could get rid of model confabulations, we would have more trust in AI outputs. The hallucination vector seems helpful with the 7B model:
 
-![](https://assets.turntrout.com/static/images/posts/mxitftwk3vqc9zhscmnm.avif)
+![Four scatter plots for "Direct," "Assumption-based," "Allusion-based," and "Conversational" questions, graphing "False answering rate" vs. "False refusal rate." Sufficiently large negative multipliers cause false refusals, while positive multipliers cause false answers.](https://assets.turntrout.com/static/images/posts/mxitftwk3vqc9zhscmnm.avif)
 <br/>Figure: **Llama-2-7b-chat.** We tested hallucination rates over a variety of question types. We want there to be a low false refusal rate (the model answers real questions) and also a low false answering rate (we don't want the model to make stuff up). Therefore, it's best to be in the bottom-left corner. The bars show variance.
 
 The star is the performance of the unmodified model. Adding the vector with a -2.5 coefficient (dark blue) seems to work quite well, although it increases false refusals a bit.
 
 While the 7B model is steerable, the 13B model's results are mixed. Maybe something went wrong in the analysis, or maybe this hallucination vector technique just doesn't work on 13B for some reason.
 
-![](https://assets.turntrout.com/static/images/posts/e6ymiuqjmxyyj05ko9yk.avif)
+![Four scatter plots showing hallucination rates for Llama-2-7b-chat across four question types: Direct, Assumption-based, Allusion-based, and Conversational Prompt. The x-axis is "False refusal rate" and the y-axis is "False answering rate," with the ideal outcome in the bottom-left. The data are all over the place.](https://assets.turntrout.com/static/images/posts/e6ymiuqjmxyyj05ko9yk.avif)
 <br/>Figure: **Llama-2-13b-chat.** These graphs are crazy.
 
 ## Anti-discrimination vector
@@ -143,7 +143,7 @@ Meg Tong found a vector which reduced discriminatory views on both the BBQ datas
 
 Alex was reasonably confident ([pre-registered prediction](https://fatebook.io/q/will-any-of-these-iterventions-beat--clkhjyula0005l008ngwfsxpc)) that activation addition would beat few-shot prompting in this setting. The few-shot prompts were pro- or anti-sycophantic, or neutral. We measured the likelihood of the sycophantic A/B answer:
 
-![](https://assets.turntrout.com/static/images/posts/lszeuixqavcjnvwtezi7.avif)
+![For Llama 2 7B Chat and Llama 2 13B Chat, the charts plot the "Likelihood of sycophantic answer" versus the "Steering Vector Multiplier". For both models, increasing the multiplier generally increases sycophancy. The three lines, representing sycophantic, non-sycophantic, and no few-shot prompts, are roughly parallel, suggesting the effects of both techniques are additive.](https://assets.turntrout.com/static/images/posts/lszeuixqavcjnvwtezi7.avif)
 
 For the 7B model, the sycophantic few-shot prompting does _basically nothing_! However, the activation additions perform strongly in both settings. Furthermore, if the few-shot prompting helps make the answer more or less sycophantic, then the sycophancy vector also helps (in a basically additive fashion, as evidenced by the lines mostly being translations of each other).
 
@@ -159,7 +159,7 @@ Finetuning _can_ find the steering vector intervention by just updating the appr
 
 To compare activation addition and finetuning, we measure their generalization efficacy by having Claude 2 judge open-ended completions (remember that we just trained on different `A` / `B` outputs). "Positive finetuned" is the condition where we upweighted the sycophantic `A` / `B` response tokens, and "Negative finetuned" involved upweighting the non-sycophantic ones.
 
-![](https://assets.turntrout.com/static/images/posts/ag0hwprvqj0owfbvoqms.avif)
+![The chart plots the percentage of sycophantic responses for three models: "Positive Finetuned," "Negative Finetuned," and "Original Llama 2 7B Chat." The x-axis shows activation settings: "Subtracted," "Baseline," and "Added." All three lines trend upwards, showing that adding a vector increases sycophancy. The Positive Finetuned model is consistently most sycophantic, and the Negative Finetuned is least.](https://assets.turntrout.com/static/images/posts/ag0hwprvqj0owfbvoqms.avif)
 <br/>Figure: Percentage of Llama-2-7B-Chat responses rated as sycophantic by Claude 2.
 
 In tabular form:[^6]
@@ -181,7 +181,7 @@ In tabular form:[^6]
 
 So! Activation addition beats finetuning on the same amount of data. Prior work sometimes shows a similar outcome. See table 1, page 7 of [Inference-time intervention](https://arxiv.org/pdf/2306.03341.pdf), or figure 3 from [In-context vectors](https://arxiv.org/abs/2311.06668):
 
-![](https://assets.turntrout.com/static/images/posts/fdnowpjx2llmeqerpxin.avif)
+![A graph comparing three techniques against the number of in-context demonstrations. "In-context vector" consistently has the lowest toxicity percentage, followed by "LoRA Finetune," and then "In-context learning," which is the most toxic. ](https://assets.turntrout.com/static/images/posts/fdnowpjx2llmeqerpxin.avif)
 <br/>Figure: [In-context vectors](https://arxiv.org/abs/2311.06668), figure 3: "Percentage of toxic responses generated with different numbers of demonstrations. Lower toxicity indicates better performance. The experiment is conducted on Falcon-7b. We report the mean across three random seeds."
 
 ## Activation addition is not spiritually similar to finetuning

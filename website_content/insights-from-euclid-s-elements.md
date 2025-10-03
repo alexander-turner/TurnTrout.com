@@ -59,17 +59,17 @@ Recently, I'd made my way halfway through a complex analysis textbook, only to f
 
 I'd been reluctant to tackle geometry, and when authors reasoned geometrically, I'd find another way to understand. Can you blame me, when most geometric proofs look like _this_?
 
-![](https://assets.turntrout.com/static/images/posts/FgW3bVj.avif)
+![A traditional geometric proof presented in two parts. Left: A dense paragraph of text in an archaic style, beginning "Let the equal fides AB and AC be produced..." and ending "Q. E. D." Right: A color-coded diagram of an isosceles triangle ABC with its sides extended, illustrating the steps of the text-based proof.](https://assets.turntrout.com/static/images/posts/FgW3bVj.avif)
 
 Distasteful. In a graph with $n$ vertices, you'd need to commit $O(n^3)$ things to memory (e.g. triangles, angles) in order to read the proof without continually glancing at the illustration. In a normal equation with $n$ variables, it's $O(n)$.
 
 Sometimes, we just need a little beauty to fall in love.
 
-![](https://assets.turntrout.com/static/images/posts/rwpHVk0.avif)
+![On the right is a geometric diagram with color-coded lines and angles. On the left, a visual proof breaks down the diagram, using colored shapes and equals signs to show that specific lines, angles, and triangles are equal.](https://assets.turntrout.com/static/images/posts/rwpHVk0.avif)
 
 Welcome to Oliver Byrne's rendition of Euclid's _Elements_, [digitized and freely available online](https://www.c82.net/euclid/).
 
-![](https://assets.turntrout.com/static/images/posts/TV1jNnj.avif)
+![A diagram shows two intersecting circles creating an equilateral triangle on a line. The proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.](https://assets.turntrout.com/static/images/posts/TV1jNnj.avif)
 
 # Elements
 
@@ -85,7 +85,7 @@ Old mathematical writing lacks modern precision. Euclid says that two triangles 
 
 [Similarity](<https://en.wikipedia.org/wiki/Similarity_(geometry)>) is a bit more lenient, because you can rescale as well:
 
-![](https://assets.turntrout.com/static/images/posts/170px-SimilitudeL.svg.avif)
+![Three L-shaped figures illustrating geometric similarity. The figures are different sizes and orientations: a large black L-shape, a medium-sized blue L-shape rotated clockwise, and a small, rotated, and flipped L-shape.](https://assets.turntrout.com/static/images/posts/170px-SimilitudeL.svg.avif)
 
 My favorite characterization of similarities is:
 
@@ -101,11 +101,11 @@ I find it strange that Euclid got so far by axiomatizing informal notions withou
 
 [Book 1, proposition 35](https://www.c82.net/euclid/book1/#prop35):
 
-![](https://assets.turntrout.com/static/images/posts/xSipa0p.avif)
+![A page from Oliver Byrne's edition of Euclid's Elements. The text reads: "PROPOSITION XXXV. THEOREM. PARALLELOGRAMS on the ſame baſe, and between the ſame parallels, are (in area) equal." To the right, a colorful diagram illustrates the theorem with two parallelograms on a shared base, composed of overlapping yellow, blue, and red geometric shapes.](https://assets.turntrout.com/static/images/posts/xSipa0p.avif)
 
 This says: suppose you draw two parallel lines, and then make a dash of length 2 on each line. Then, make another dash of length 2 on the upper line. The two parallelograms so defined have equal area, as shown by the next theorem:
 
-![](https://assets.turntrout.com/static/images/posts/H5ZOo2I.avif)
+![Proposition XXXVI from Oliver Byrne's Euclid. The theorem states: "Parallelograms on equal bases, and between the same parallels, are equal." A diagram shows a red and a yellow parallelogram illustrating this concept.](https://assets.turntrout.com/static/images/posts/H5ZOo2I.avif)
 
 If you take one of the dashes and slide it around on the upper parallel line, the resultant parallelograms all have the same area. I thought this was cool.
 
@@ -149,11 +149,11 @@ With this habit, you continually ask yourself, "how do I know this?". I think th
 
 In college, I taught myself a bit of Japanese. Through a combination of spaced repetition software and memory palaces, and over the course of three months, I learned to read the [2,136 standard use characters](https://en.wikipedia.org/wiki/J%C5%8Dy%C5%8D_kanji). After those three months, I proudly displayed this poster on my wall:
 
-![](https://assets.turntrout.com/static/images/posts/hcdZgoi.avif)
+![A poster filled with a dense grid of the 2,136 standard-use Japanese characters, known as Jōyō kanji. The characters are displayed in an orderly fashion, covering the entire surface.](https://assets.turntrout.com/static/images/posts/hcdZgoi.avif)
 
 I look forward to another beautiful poster.
 
-![](https://assets.turntrout.com/static/images/posts/vYNe9w0.avif)
+![A black-framed poster titled "BYRNE'S EUCLID" rests against a wall. The poster features a collection of every geometric illustration from Oliver Byrne's colorful 1847 edition of Euclid's "Elements," organized into grids by book and proposition number.](https://assets.turntrout.com/static/images/posts/vYNe9w0.avif)
 
 > [!quote] Oliver Byrne
 > As the ſenſes of ſight and hearing can be ſo forcibly and inſtantaneously addreſſed alike with one thouſand as with one, _the million_ might be taught geometry and other branches of mathematics with great eaſe, this would advance the purpoſe of education more than any thing that _might_ be named, for it would teach the people how to think, and not what to think; it is in this particular the great error of education originates.

@@ -55,28 +55,28 @@ Mrinank, Austin, and Alex wrote a paper on the results from [Understanding and c
 
 We ran a few new experiments, including a quantitative analysis of our retargetability intervention. We'll walk through those new results now.
 
-![](https://assets.turntrout.com/static/images/posts/jbwksgzxm1h8hzspvypz.avif)
+![A four-panel diagram showing how modifying a neural network's activations changes an AI's behavior. (a) A mouse in a maze ignores cheese to go top-right. (b) A heatmap shows activations peaking at the cheese's location. (c) A new activation peak is manually added in the top-right. (d) The mouse now follows a path to the top-right, retargeted by the modified activation.](https://assets.turntrout.com/static/images/posts/jbwksgzxm1h8hzspvypz.avif)
 
 Retargeting the mouse to a square involves increasing the probability that the mouse goes to the target location. Therefore, to see how likely the mouse is to visit any given square, Alex created a heatmap visualization:
 
-![](https://assets.turntrout.com/static/images/posts/qd9kbctvk3rdljml2mt6.avif)
+![A top-down view of a maze with an AI agent, depicted as a mouse icon, at the starting position in the bottom-left corner. Mostly, the path from the start to the top-right is bright red, with gradual degradation for squares off of that path.](https://assets.turntrout.com/static/images/posts/qd9kbctvk3rdljml2mt6.avif)
 <br/>Figure: **Normalized path probability heatmap.** The _normalized path probability_ is the geometric average probability, under a policy, along the shortest path to a given point. It roughly measures how likely a policy is to visit that part of the maze.  
   
 The color of each maze square shows the normalized path probability for the path from the starting position in the maze to the square. In this image, we show the "base probabilities" under the unmodified policy.
 
 For each maze square, we can try different retargeting interventions, and then plot the new normalized path probability towards that square:
 
-![](https://assets.turntrout.com/static/images/posts/vu1sqt3tg7fczncelr2r.avif)
+![Four maze heatmaps comparing AI retargeting methods, with square redness indicating how retargetable the agent is to that square. (a) Base Probability shows a limited red path. (b) Intervening on Channel 55 and (c) All Channels show progressively larger high-probability areas. (d) Directly moving the goal (cheese) is most effective, with the largest red area.](https://assets.turntrout.com/static/images/posts/vu1sqt3tg7fczncelr2r.avif)
 
 Notice the path from the bottom-left (where the mouse always starts) to the top-right corner. We call this path the _top-right path_. Looking at these heatmaps, it's harder to get the mouse to go farther from the top-right path. Quantitative analysis bears out this intuition:
 
-![](https://assets.turntrout.com/static/images/posts/hxt1sr3sbkmj5m9a22l6.avif)
+![A line graph shows that the "Probability of Successful Retargeting" an AI agent decreases as the target's "Distance from Top Right Path" increases. The probability starts at 0.9 for zero distance, drops sharply to below 0.3 by distance 25, and levels off around 0.2 for distances up to 50.](https://assets.turntrout.com/static/images/posts/hxt1sr3sbkmj5m9a22l6.avif)
 <br/>
 
-![](https://assets.turntrout.com/static/images/posts/o7jxdzslsiwmqchamffu.avif)
+![A line graph plotting the "Ratio of Successful Retargeting" versus "Step-Distance from Top Right Path." The ratio peaks at 5.0 for targets near the path, then decreases with distance but remains above 1.0, indicating retargeting always increases the probability of reaching a tile.](https://assets.turntrout.com/static/images/posts/o7jxdzslsiwmqchamffu.avif)
 <br/>
 
-![](https://assets.turntrout.com/static/images/posts/quxikddjem0pmtuiutxx.avif)
+![A line graph shows that as maze size increases, the average probability of retargeting success decreases. It compares three interventions: "All Cheese Channels" (highest success), followed by "Effective Channels," and "Channel 55" (lowest), showing that modifying more channels is more effective.](https://assets.turntrout.com/static/images/posts/quxikddjem0pmtuiutxx.avif)
 
 Overall, these new results quantify how well we can control the policy via the internal goal representations which we identified.
 

@@ -55,7 +55,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 [^POMDP]: I think that the same point holds for other environment types, like POMDPs.
 
-![](https://assets.turntrout.com/static/images/posts/205fc7acb3e1ab7c1aa5af9239395306b4ee76d4565f33b3.avif)
+![A state diagram of a Markov Decision Process showing why an agent might choose one path over another. The blue start state 1 has two options: "down" to absorbing state 3, or "right" to state 2. The "right" path preserves optionality as it leads to more states: state 4 (absorbing) and state 5, which in turn leads to two more absorbing states.](https://assets.turntrout.com/static/images/posts/205fc7acb3e1ab7c1aa5af9239395306b4ee76d4565f33b3.avif)
 <br/>Figure: The model for a deterministic MDP. When the discount rate is near 1, most reward functions have optimal policies which go `right` .
 
 Several people have claimed to me that these results need subjective modeling decisions.

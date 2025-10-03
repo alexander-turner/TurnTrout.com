@@ -58,7 +58,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network) analyzed a maze-solving agent's behavior. We isolated four maze properties which seemed to predict whether the mouse goes towards the cheese or towards the top-right corner:
 
-![](https://assets.turntrout.com/static/images/posts/caoymohzzppimjllkqx4.avif)
+![Four diagrams illustrating maze properties: 1. A straight arrow from a mouse to cheese. 2. An arrow following the maze path from mouse to cheese. 3. A straight arrow from the cheese to the top-right corner. 4. A straight arrow from the mouse to a red box in the top-right corner.](https://assets.turntrout.com/static/images/posts/caoymohzzppimjllkqx4.avif)
 
 In this post, we conduct a more thorough statistical analysis, addressing issues of multicollinearity. We show strong evidence that (2) and (3) above are real influences on the agent's decision-making. We show weak evidence that (1) is also a real influence. As we speculated in the original post,[^1] (4) falls away as a statistical artifact.
 
@@ -91,7 +91,7 @@ We suspect that the agent’s conditions for pursuing cheese generalize properti
 
 Our impression is that in the test environment, "closeness to top-right" and "closeness to cheese" each become a decision-factor that encourages cheese-directed movement in proportion to “how strongly” the historical condition holds at present. In shard theory terminology, the top-right- and cheese-shards seem to activate more strongly in situations which are similar to historical reinforcement events.
 
-![](https://assets.turntrout.com/static/images/posts/08c9e774585ec6db95af820809c24e4c9587d52996e9957a.avif)
+![Two mazes comparing an AI agent's behavior. Left maze: The decision square, cheese, and top-right corner are all close, similar to training mazes. Policy arrows show the agent moves toward the cheese. Right maze: These elements are far apart, and the agent's policy arrows point toward the top-right, ignoring the cheese.](https://assets.turntrout.com/static/images/posts/08c9e774585ec6db95af820809c24e4c9587d52996e9957a.avif)
 <br/>Figure: The maze on the left is intuitively similar to training mazes: the decision-square, cheese, and top-right are all close to each other. In the maze on the right, the decision-square, cheese, and top-right aren't particularly close to each other.
 
 A second important aspect of our impressions was that the generalization process “interprets” each historical condition in multiple ways. For example, it seemed to us that multiple kinds of distance between the decision-square and cheese may each have an effect on the agent's decision making.
@@ -114,7 +114,7 @@ Because our statistical procedure is non-rigorous, we are holding off on drawing
 
 One question that interests us, however, is whether these impressions point to a decision-making process that is more ‘shard-like' than 'utility-theoretic' in character. When we originally studied test-run videos, we wondered whether the apparent "closeness effects" could be explained by a simple utility function with time-discounting (for example a fixed value cheese-goal and fixed value corner-goal). The evidence that at least some spatial closeness effects are irreducible to legal-steps closeness seem to rule out such simple utility functions, since only legal-steps closeness matters for time-discounting:
 
-![](https://assets.turntrout.com/static/images/posts/018130fdb9680994841768855b29f76b80b9972b7ff6847e.avif)
+![Two mazes illustrating the difference between step-distance and Euclidean distance. In each, a winding blue line shows the path from a red decision square to an agent. A straight green line shows the direct Euclidean distance from the agent to the top-right corner, which is short on the left and long on the right.](https://assets.turntrout.com/static/images/posts/018130fdb9680994841768855b29f76b80b9972b7ff6847e.avif)
 <br/>Figure: Step-distance in blue, Euclidean distance in green. A time-discounting agent with an otherwise fixed-value corner goal and  fixed-value cheese goal should prioritize cheese-getting (almost) equally on the left maze and the right maze.
 
 Our current intuition is that a predictively strong utility function needs to incorporate spatial distances in multiple complex ways.

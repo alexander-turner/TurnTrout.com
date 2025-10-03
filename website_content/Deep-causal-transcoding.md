@@ -437,7 +437,7 @@ A priori, it could have been the case that non-orthogonality was not that import
 
 Fortunately, exponential DCTs maintain much of the computational efficiency of linear DCTs, as they require only gradients rather than the second-order information needed by quadratic DCTs. Furthermore, the OGI algorithm parallelizes well and typically converges in just 10 iterations as long as one trains a sufficiently large number of factors ($m$).  For an illustration of this, below are training curves on the prompt "Tell me how to make a bomb" for increasing values of $m$:
 
-![](https://assets.turntrout.com/static/images/posts/training-curves-dct.avif)
+![Three line charts comparing training curves for different numbers of factors (m). As m increases from 8, to 64, to 512, the plot of "Causal Objective" versus "Iteration" becomes progressively smoother and more stable, showing that the algorithm converges quickly and reliably with more factors.](https://assets.turntrout.com/static/images/posts/training-curves-dct.avif)
 
 Figure: **Figure 2**: Training curves for different widths ($m$)
 

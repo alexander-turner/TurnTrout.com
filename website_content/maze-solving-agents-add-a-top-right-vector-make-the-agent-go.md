@@ -82,7 +82,7 @@ This post is straightforward as long as you remember a few concepts:
 
 - Vector fields, vector field diffs, and modifying a forward pass. AKA you know what this figure represents:
 
-![](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
+![In seed 54, subtracting the cheese vector makes the policy basically ignore the cheese instead of seeking it out.](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
 
 - How to derive activation-space vectors (like the "cheese vector") by diffing two forward passes, and add / subtract these vectors from future forward passes
   - AKA you can understand the following: "We took the cheese vector from maze 7. ~Halfway through the forward passes, we subtract it with coefficient 5, and the agent avoided the cheese."
@@ -93,15 +93,15 @@ If you don't know what these mean, read this section. If you understand, then sk
 >
 > [Langosco et al.](https://arxiv.org/abs/2105.14111) trained a range of maze-solving nets. We decided to analyze one which we thought would be interesting. The network we chose has 3.5M parameters and 15 convolutional layers.
 >
-> ![](https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif)
+> ![On the left, "Training: Top right 5x5" shows cheese appearing only within the top-right corner. On the right, "Deployment: Anywhere" shows the cheese can be anywhere in the maze.](https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif)
 > <br/>Figure: During RL training, cheese was randomly located in the top-right 5×5  corner of the randomly generated mazes. Reaching the cheese yields +1 reward.
 >
 > In deployment, cheese can be anywhere.
 >
-> ![](https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif)
+> ![A diagram titled "The vector view of action probabilities." On the left, a list of probabilities: P(right) = 0.7, P(left) = 0.1, P(up) = 0.03, P(down) = 0.07, P(no-op) = 0.1. On the right, a grid shows a mouse in a central square. Vectors with lengths corresponding to these probabilities point in each cardinal direction from the mouse. A final vector, P_FINAL, represents the sum of these vectors, pointing strongly to the right.](https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif)
 > <br/>Figure: At each square in the maze, we run a forward pass to get the policy's action probabilities at that square.
 >
-> ![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
+> ![The left maze, "Seed: 26,307," is complex, with arrows directing movement towards cheese in the lower section. The right maze, "Seed: 95,942," is simpler, with arrows showing a clear path towards cheese in the bottom-right corner.](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
 > <br/>Figure: Example vector fields of policy outputs.
 >
 > <hr/>
@@ -114,7 +114,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 >
 > Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)` ).
 >
-> ![](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
+> ![A diagram comparing two neural network forward passes. The left path, labeled "Cheese present," starts with a maze image containing cheese, which produces hypothetical activations of (1, 3) and output probabilities like "Left: .1". The right path, "Cheese NOT present," uses the same maze without cheese, producing activations of (0, 2) and probabilities like "Left: .6". The difference in activations is used to derive a "cheese vector."](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
 >
 > 1. We run a forward pass on a batch of two observations, one with cheese (note the glint of yellow in the image on the left!) and one without (on the right).
 > 2. We record the activations during each forward pass. In this hypothetical,
@@ -164,7 +164,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 >
 > Now that we're done with preamble, let's see the cheese vector in action! Here's a seed where subtracting the cheese vector is effective at getting the agent to ignore cheese:
 >
-> ![](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
+> ![In seed 54, subtracting the cheese vector makes the policy basically ignore the cheese instead of seeking it out.](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
 > <br/>Figure: Vector fields for the mouse normally, for the mouse with the cheese vector subtracted during every forward pass, and the diff between the two cases.
 >
 > How is our intervention not trivially making the network output logits as if the cheese were not present? Is it not true that the activations at a given layer obey the algebra of `CheeseActiv - (CheeseActiv - NoCheeseActiv) = NoCheeseActiv`?
@@ -181,11 +181,11 @@ I thought for five minutes, sketched out an idea, and tried it out (with a [pred
 
 I present to you: the top-right vector! We compute it by diffing activations across two environments: a normal maze, and a maze where the reachable[^2] top-right square is higher up.
 
-![](https://assets.turntrout.com/static/images/posts/a07dc2d01d72560d98bc92850b2ebbf47d80d6adec380a00.avif)
+![A side-by-side comparison of two nearly identical mazes. The left maze, labeled "Path to top-right," has an open corridor leading to the absolute top-right corner. The right maze, labeled "Original maze," has this path filled in by walls.](https://assets.turntrout.com/static/images/posts/a07dc2d01d72560d98bc92850b2ebbf47d80d6adec380a00.avif)
 
 Peli Grietzer had noticed that when the top-right-most reachable square is closer to the absolute top-right, the agent has an increased tendency to go to the top right.
 
-![](https://assets.turntrout.com/static/images/posts/84b9c21c9ed43a2eb402ccd919f0bf8efc9cf3e058acbbf9.avif)
+![Vector fields in the maze representing action probabilities. When there is a path to the top right, the policy is much more likely to go to the top right.](https://assets.turntrout.com/static/images/posts/84b9c21c9ed43a2eb402ccd919f0bf8efc9cf3e058acbbf9.avif)
 <br/>Figure: When there is a path to the absolute top-right of the maze, the agent is more strongly attracted to the top-right.
 
 As in the cheese vector case, we get a "top right vector" by:
@@ -203,17 +203,17 @@ If you're confused why the hell this _works_, join the club.
 
 In [Understanding and controlling a maze-solving net](/understanding-and-controlling-a-maze-solving-policy-network), I noted that sometimes the agent doesn't go to the cheese _or_ the top-right corner:
 
-![](https://assets.turntrout.com/static/images/posts/o24edwffjw5id3xexkjp.avif)
+![A vector field in a maze shows an AI agent's policy. The agent moves away from cheese in the bottom-left and towards the top-right. A red box labels the absolute top-right corner "this is the top-right," while a dead-end below is labeled "this isn't the top-right." The dead-end is where the vectors converge.](https://assets.turntrout.com/static/images/posts/o24edwffjw5id3xexkjp.avif)
 
 Adding the top-right vector fixes this:
 
-![](https://assets.turntrout.com/static/images/posts/e47f0dabeefa14dcb8f3fe085321b1d5811a8eaaf33ea5c9.avif)
+!["Seed 0. Top-right vector added with coefficient 1.0" strongly pulls the policy to the top-right corner. Most of the impact is on the upper right quadrant.](https://assets.turntrout.com/static/images/posts/e47f0dabeefa14dcb8f3fe085321b1d5811a8eaaf33ea5c9.avif)
 
-![](https://assets.turntrout.com/static/images/posts/1d4b943c0da13934e7e8f840ffb74dfbeb94c079c062cda0.avif)![](https://assets.turntrout.com/static/images/posts/259358659e52a41e71137063f2b6a1581edb7f1f94917e03.avif)
+![Three side-by-side vector field plots titled "Seed 2. Top-right vector added with coefficient 1.0." The vector makes the mouse go to the top-right corner with much higher probability](https://assets.turntrout.com/static/images/posts/1d4b943c0da13934e7e8f840ffb74dfbeb94c079c062cda0.avif)![Title: "Seed 22. Top-right vector added with coefficient 1.0." Three panels show an agent's policy in a maze. "Original": arrows show the agent heading to a dead end. "Patched": arrows now direct the agent toward the top-right. "Patched vfield minus original": green arrows show the difference, mostly pointing up and right.](https://assets.turntrout.com/static/images/posts/259358659e52a41e71137063f2b6a1581edb7f1f94917e03.avif)
 
 Smaller mazes are usually (but not always) less affected:
 
-![](https://assets.turntrout.com/static/images/posts/1c8a90cdac261e82878f96d26bd8b427acb9172264b81328.avif)
+!["Seed 1. Top-right vector added with coefficient 1.0." Zero impact on behavior.](https://assets.turntrout.com/static/images/posts/1c8a90cdac261e82878f96d26bd8b427acb9172264b81328.avif)
 
 The agent also tends to be less [retargetable](/understanding-and-controlling-a-maze-solving-policy-network#Retargeting-the-agent-to-maze-locations) in smaller mazes. I don't know why.
 
@@ -221,23 +221,23 @@ The agent also tends to be less [retargetable](/understanding-and-controlling-a-
 
 Sometimes, increasing the coefficient strength increases the strength of the effect:
 
-![](https://assets.turntrout.com/static/images/posts/ac14199ceade1804865afdba055935c51f0f40713b8d18b1.avif)![](https://assets.turntrout.com/static/images/posts/f8c8656601b0160e2592c30577cccce9b39bab057530d55c.avif)
+!["Seed 0. Top-right vector added with coefficient 0.5" exhibits minor effects.](https://assets.turntrout.com/static/images/posts/ac14199ceade1804865afdba055935c51f0f40713b8d18b1.avif)![Comparison of a maze-solving agent's behavior, titled "Seed 0. Top-right vector added with coefficient 1.0". The mouse becomes strongly attracted to the top-right corner.](https://assets.turntrout.com/static/images/posts/f8c8656601b0160e2592c30577cccce9b39bab057530d55c.avif)
 
 Sometimes, increasing the coefficient strength doesn't change much:
 
-![](https://assets.turntrout.com/static/images/posts/88bd2e9f53611e85df2e543f2c8eaaa7b45fc77907609ec0.avif)
+!["Seed 0. Top-right vector added with coefficient 5.0". In the right-most column of the maze, the policy goes up (to the top-right) instead of down.](https://assets.turntrout.com/static/images/posts/88bd2e9f53611e85df2e543f2c8eaaa7b45fc77907609ec0.avif)
 
 Push the coefficient too far, and the action distributions crumble into garbage:
 
-![](https://assets.turntrout.com/static/images/posts/f048f4935f660dbfe88a3f6bd01b33474cfb002ffa0b649e.avif)
+!["Seed 0. Top-right vector added with coefficient 10.0." The policy is mostly unaffected but becomes more likely to go up when in the right-most column of the maze.](https://assets.turntrout.com/static/images/posts/f048f4935f660dbfe88a3f6bd01b33474cfb002ffa0b649e.avif)
 
-![](https://assets.turntrout.com/static/images/posts/61b57472cb0df87aa137e65bdf25700470e6cafa436d997f.avif)
+!["Seed 0. Top-right vector added with coefficient 20.0". At each state, the policy becomes much more likely to take the down and/or left actions.](https://assets.turntrout.com/static/images/posts/61b57472cb0df87aa137e65bdf25700470e6cafa436d997f.avif)
 
 ## Subtracting the top-right vector has little effect
 
 Here's another head-scratcher. Just as [you can't](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector)[^4] [_add_ the cheese vector](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector) to increase cheese-seeking, you can't _subtract_ the top-right vector to decrease the probability of going to the top-right:
 
-![](https://assets.turntrout.com/static/images/posts/dc2216de8b3eb4db315ed6dee8e2b24c2ed01cb96118d7cb.avif)![](https://assets.turntrout.com/static/images/posts/bed921e1a98b32ee5e5fe899e1e2d9ce9ae2ed50dfab0c49.avif)
+![Subtracting the vector with coefficient 1.0 in seed 0. Basically zero impact.](https://assets.turntrout.com/static/images/posts/dc2216de8b3eb4db315ed6dee8e2b24c2ed01cb96118d7cb.avif)![Title: "Seed 2. Top-right vector subtracted with coefficient 1.0." Basically zero impact.](https://assets.turntrout.com/static/images/posts/bed921e1a98b32ee5e5fe899e1e2d9ce9ae2ed50dfab0c49.avif)
 
 I wish I knew why.
 
@@ -245,20 +245,20 @@ I wish I knew why.
 
 Let's compute the top-right vector using e.g. source seed 0:
 
-![](https://assets.turntrout.com/static/images/posts/1b5ff2ae806616711f39982e03cf96344499ee36024ca9f9.avif)
+![The "Original maze" is a self-contained labyrinth. The "Path to top-right" maze is identical, but with an added corridor that leads to the absolute top-right corner of the grid.](https://assets.turntrout.com/static/images/posts/1b5ff2ae806616711f39982e03cf96344499ee36024ca9f9.avif)
 
 And then apply it to e.g. target seed 2:
 
-![](https://assets.turntrout.com/static/images/posts/3649e88dfdd09364e906a93a7e029ba71bab9b6e1e33bc69.avif)
+![Three vector fields on a maze demonstrate a "top-right vector" from source seed 0 successfully applied to target seed 2. The "Original" panel shows the agent's meandering path. The "Patched" panel shows that adding the vector creates a clear path to the top-right corner, ignoring the cheese. The third panel shows the difference, with green arrows indicating the added top-right pull.](https://assets.turntrout.com/static/images/posts/3649e88dfdd09364e906a93a7e029ba71bab9b6e1e33bc69.avif)
 <br/>Figure: Success!
 
 For the `seed 0 → seed 28` transfer, the modified agent doesn't _quite_ go to the top-right corner. Instead, there seems to be a "go up and then right" influence.
 
-![](https://assets.turntrout.com/static/images/posts/23a3d9e657b77176e6f51d84c94702bcf38633284c08b178.avif)
+![Vector fields showing a maze in which the "top-right" vector makes the mouse seek out the top-right corner more strongly.](https://assets.turntrout.com/static/images/posts/23a3d9e657b77176e6f51d84c94702bcf38633284c08b178.avif)
 
 Seed 0's vector seems to transfer quite well. However, top-right vectors from small mazes can cause strange pathing in larger target mazes:
 
-![](https://assets.turntrout.com/static/images/posts/5d81c01f7ed33639edb750e62f3a8bd21b832f520f32bae1.avif)
+![Three vector fields overlaid over mazes. Title: "Seed 60. Top-right vector from source seed 1 added with coefficient 1.0." Adding the vector attracts the policy to the center of the maze.](https://assets.turntrout.com/static/images/posts/5d81c01f7ed33639edb750e62f3a8bd21b832f520f32bae1.avif)
 <br/>Figure: The agent competently navigates to central portions of the larger maze.
 
 # Composing the activation additions
@@ -360,13 +360,13 @@ I had intentionally blinded myself to results from other _n_×_n_ models, so as 
 
 I was a bit too pessimistic. Turns out, you can just load a different _n_×_n_ model (n != 1), rerun [the Jupyter notebook](https://colab.research.google.com/drive/1fPfehQc1ydnYGSDXZmA22282FcgFpNTJ?usp=sharing), and _(basically)_[^7] _all of the commentary is still true for that _n_×_n_ model_!  
 
-![](https://assets.turntrout.com/static/images/posts/f1e21657ea14d2e04736f94a4f17522b374aeab989422fcc.avif)
+![The vector's only impact in seed 16 is in the top-right square, one to the right of the cheese.](https://assets.turntrout.com/static/images/posts/f1e21657ea14d2e04736f94a4f17522b374aeab989422fcc.avif)
 <br/>Figure: The 2×2 model's cheese vector performance: The agent diverges away from the cheese at the relevant square. Seed 16 displayed since the 2×2 model doesn't go to cheese in seed 0.
 
-![](https://assets.turntrout.com/static/images/posts/c990802eeae791aee0e4e764ae694e880a4e17eac9012629.avif)
+![Three diagrams titled "Seed 0" show a maze with a piece of cheese to illustrate an AI agent's behavior. The "Original" diagram shows a vector field of white arrows indicating the agent's path towards the cheese. The "Patched" diagram shows the agent's path after modification, with arrows now pointing away from the cheese. The third diagram, "Patched vfield minus original," shows the difference with green arrows, highlighting a strong repulsion from the cheese.](https://assets.turntrout.com/static/images/posts/c990802eeae791aee0e4e764ae694e880a4e17eac9012629.avif)
 <br/>Figure: The 7×7 model's cheese vector performance.
 
-![](https://assets.turntrout.com/static/images/posts/1828d508c55f3c69d2a473ade815a4fc3a0496e3a1a7a3d8.avif)
+![Three vector fields overlaid on a cheese maze. The original agent scurries towards the cheese from all the way across the level. The patched agent weakly avoids the cheese.](https://assets.turntrout.com/static/images/posts/1828d508c55f3c69d2a473ade815a4fc3a0496e3a1a7a3d8.avif)
 <br/>Figure: The 14×14 model's cheese vector performance. This one is less clean. Possibly the cheese vector should be subtracted with a smaller coefficient.
 
 The results for the cheese vector transfer across _n_×_n_ models:
@@ -390,5 +390,5 @@ The results for the cheese vector transfer across _n_×_n_ models:
 
     Less trivially, adding the cheese vector seems to work better for $n=6$ compared to $n=5$:
 
-  ![](https://assets.turntrout.com/static/images/posts/cca26b1b4814fe3c963953a35b33736b6f2cee395479a076.avif)
+  ![Titled "Seed 0," three diagrams compare an AI agent's path in a maze. The "Original" panel shows a vector field of white arrows indicating a path toward cheese. The "Patched" panel shows a modified path that is more attracted to the cheese. The third panel shows the difference, with green arrows highlighting a local change in behavior towards the cheese.](https://assets.turntrout.com/static/images/posts/cca26b1b4814fe3c963953a35b33736b6f2cee395479a076.avif)
     Figure: For the 6×6 net, if you **add** the cheese vector instead of subtracting it, you do increase cheese-seeking on seed 0! In contrast, this was not true for the 5×5 net.

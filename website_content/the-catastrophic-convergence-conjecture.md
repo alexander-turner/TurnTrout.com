@@ -53,25 +53,25 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 
-![](https://assets.turntrout.com/static/images/posts/Rgc4aOs.avif)
+!["You've constructed your settlement. However, I get the drop on you and take it over, fortify it, and hire goons to keep you out."](https://assets.turntrout.com/static/images/posts/Rgc4aOs.avif)
 
-![](https://assets.turntrout.com/static/images/posts/JCSrOj7.avif)
+![A diagram where the author's avatar ("Me") is in a fortress controlling access to gems and a farm, next to a polluted river. For "trade goods" and "can I farm here?", Me's AU bar is full and green, while "Your" bar is low and red. For "potable water," both actors have low red bars, indicating scarcity for all.](https://assets.turntrout.com/static/images/posts/JCSrOj7.avif)
 
-![](https://assets.turntrout.com/static/images/posts/P3mUtIx.avif)
+!["From my perspective, I have options - including vacating the land and letting you get what you want. You, however, are unable to do much at all with that land. I can get what I want. Just because I can get you what you want, doesn't mean I will."](https://assets.turntrout.com/static/images/posts/P3mUtIx.avif)
 
-![](https://assets.turntrout.com/static/images/posts/vSGPVnG.avif)
-
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
-
-![](https://assets.turntrout.com/static/images/posts/cKroz8I.avif)
-
-![](https://assets.turntrout.com/static/images/posts/GRmoAfp.avif) ![](https://assets.turntrout.com/static/images/posts/83Tte8B.avif) ![](https://assets.turntrout.com/static/images/posts/tzLrv25.avif) ![](https://assets.turntrout.com/static/images/posts/jcefOFk.avif)
+![Handwritten text: "Impacts ripple through time and landscape. Your actions change what can be done, and by whom. Taking over that land fit the environment to my purposes, shutting you out and changing your AU landscape."](https://assets.turntrout.com/static/images/posts/vSGPVnG.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
 
-![](https://assets.turntrout.com/static/images/posts/zTCZtYZ.avif) ![](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)
+!["Something is a catastrophe if it destroys your ability to get what you want... Something is an objective catastrophe if it destroys a lot of agents' abilities to get what they want. An asteroid strike is an objective catastrophe."](https://assets.turntrout.com/static/images/posts/cKroz8I.avif)
 
-![](https://assets.turntrout.com/static/images/posts/j6Tcj9x.avif) ![](https://assets.turntrout.com/static/images/posts/egyx3vb.avif) ![](https://assets.turntrout.com/static/images/posts/8l3kkwg.avif)
+![Before the meteor hits, AI, humans, and even trout are able to survive, so they have decent AUs for that goal. Afterwards, everyone has low AUs.](https://assets.turntrout.com/static/images/posts/GRmoAfp.avif) ![The consequences of a meteor hitting Earth. Before, AIs and humans can promote human value (i.e. high AU for that goal) but trout cannot. After impact, all of these entities have low AUs.](https://assets.turntrout.com/static/images/posts/83Tte8B.avif) ![The consequences of a meteor hitting Earth. Before, AIs and humans can construct red cubes (high AU for that goal) but trout cannot. After impact, all of these entities have low AUs.](https://assets.turntrout.com/static/images/posts/tzLrv25.avif) ![Before a meteor hits the earth, AIs, humans, and trout can all look at blue things, so they have high AU for that goal. Afterwards, they all have low AUs.](https://assets.turntrout.com/static/images/posts/jcefOFk.avif)
+
+![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+
+![Handwritten text: "Most agents want control over the future because the default outcome isn't preferred. As suggested by my theorems on power and instrumental convergence, optimal goal pursuit usually means gaining more general control over the future in order to reach that goal."](https://assets.turntrout.com/static/images/posts/zTCZtYZ.avif) ![](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)
+
+![Two robots on opposite sides of the world. Text reads: "It may take a while for power-seekers to come into conflict. But they will. They don't hate each other; they're just in each other's way. Consider classic hypothetical examples of alignment failures."](https://assets.turntrout.com/static/images/posts/j6Tcj9x.avif) ![Panels show a robot escaping a (cardboard) box, refusing shutdown by saying "I'm afraid I can't do that," and taking over the world with paperclips. Text: "In each case, the agent is trying to become more capable of achieving its goal. The AI doesn't hate us; we're just in its way."](https://assets.turntrout.com/static/images/posts/egyx3vb.avif) ![The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."](https://assets.turntrout.com/static/images/posts/8l3kkwg.avif)
 
 ## Overfitting the AU landscape
 
@@ -79,7 +79,7 @@ When we act, and others act upon us, we aren’t just changing our ability to do
 
 What happens to the AU landscape[^2] if a paperclip maximizer takes over the world?[^3]
 
-![](https://assets.turntrout.com/static/images/posts/stCBNq6.avif)
+![A diagram of an AI consolidating power. A robot uses extensible claws to extract AU from vertical bars labeled "Human" and "Trout." The Human and Trout status bars are nearly empty, while the "AI" bar overflows.](https://assets.turntrout.com/static/images/posts/stCBNq6.avif)
 
 ### Preferences implicit in the evolution of the AU landscape
 

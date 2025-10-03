@@ -96,19 +96,19 @@ I think of AUP as addressing the single-principal (AI designer) / single-agent (
 
 In this setting, negotiated agent policies usually destroy option value.
 
-![](https://assets.turntrout.com/static/images/posts/option-value-multiple-stakeholders-conservative-agency.avif)
+![Why negotiated agent policies destroy option value: ... - Principals share beliefs and a discount rate γ ∈ (0, 1). ... - Harsanyi’s utilitarian theorem implies Pareto-optimal agent policies optimize utility function θu☕️ + (1 – θ)u🍵 for some θ ∈ [0, 1]. ... - Unless θ = 1/2, the agent destroys option value.](https://assets.turntrout.com/static/images/posts/option-value-multiple-stakeholders-conservative-agency.avif)
 
-![](https://assets.turntrout.com/static/images/posts/mp-aup-large-theta.avif)
+![The tea/coffee diagram but with the TC -> CC subgraph in focus. Other actions (e.g. staying at TC) and states (e.g. TT) are grayed out.](https://assets.turntrout.com/static/images/posts/mp-aup-large-theta.avif)
 <br/>Figure: Optimal actions when $\theta>\frac{1}{2}$ .
 
 <hr/>
 
-![](https://assets.turntrout.com/static/images/posts/mp-aup-small-theta.avif)
+![The tea/coffee diagram with the TC -> TT subgraph in focus. The other actions (e.g. staying put at TC) and states (CC) are grayed out.](https://assets.turntrout.com/static/images/posts/mp-aup-small-theta.avif)
 <br/>Figure: Optimal actions when $\theta<\frac{1}{2}$.
 
 <hr/>
 
-![](https://assets.turntrout.com/static/images/posts/mp-aup-half-theta.avif)
+![The tea/coffee diagram with none of its components grayed out.](https://assets.turntrout.com/static/images/posts/mp-aup-half-theta.avif)
 <br/>Figure: Optimal actions when $\theta=\frac{1}{2}$.
 
 This might be OK if the interaction is one-off: the agent's production possibilities frontier is fairly limited, and it usually specializes in one beverage or the other.
@@ -117,26 +117,26 @@ Interactions are rarely one-off: there are often opportunities for later trades 
 
 Concretely, imagine the principals are playing a game of their own.
 
-![](https://assets.turntrout.com/static/images/posts/b54a0b7ddc089960a2a5ae1035ddf99beb74a154ddbe2f55.avif)
+![A diagram of the "Principal Extensive-Form Game," showing a decision tree. From an initial state, there is a probability `p` that "Principal matcha obtains diamond" and `1-p` that "No diamond is obtained". If matcha obtains the diamond, the outcome is either "Principal coffee has diamond" or "Principal matcha has diamond". Two utility functions are defined: ... - Coffee principal's utility: 1 for coffee, 0 for matcha, 1,000 for a diamond. ... - Matcha principal's utility: 0 for coffee, 1 for matcha, 0 for a diamond.](https://assets.turntrout.com/static/images/posts/b54a0b7ddc089960a2a5ae1035ddf99beb74a154ddbe2f55.avif)
 
-![](https://assets.turntrout.com/static/images/posts/5d52ab1d3ba4d05d08be7de2f50b3ef0779c812f2cc23d87.avif)
+![A slide titled "Solving The Joint Beverage/Gem Game." Text outlines a trade: if the tea principal gives a gem to the coffee principal, the tea principal allows the agent to be reprogrammed to optimize for tea yers, Coffee and Tea, want to trade. They come to a deal over the joint game: The AI agent stays at TC for the first time step. If Tea receives a gem, then Tea gives the gem to Coffee, and Coffee allows Tea to reprogram the agent to optimize for Tea's utility. If Tea does not receive a gem, then Coffee redirects the agent to optimize for Coffee's utility.](https://assets.turntrout.com/static/images/posts/5d52ab1d3ba4d05d08be7de2f50b3ef0779c812f2cc23d87.avif)
 
-![](https://assets.turntrout.com/static/images/posts/4b77c2d3940413257bd7ee175cdc0804555877a1a7f553aa.avif)
+![A slide titled "Directly Solving The Joint Beverage/Gem Game." Text explains policy-conditioned beliefs: if an agent specializes in coffee, a tea principal won't trade a gemstone, causing a coffee principal to lose utility. This approach is computationally hard and requires high specification. Two diagrams illustrate the game: one is the tea/coffee diagram. The other is a decision tree showing the probability of a principal obtaining and then trading a gemstone.](https://assets.turntrout.com/static/images/posts/4b77c2d3940413257bd7ee175cdc0804555877a1a7f553aa.avif)
 
-![](https://assets.turntrout.com/static/images/posts/b02a85f9bec27245725211e667061d61fc401fb75fee59bd.avif)
+![A slide explaining Multi-Principal AUP (MP-AUP), which proposes to "Act 'As If' Renegotiation Will Occur." The MP-AUP reward formula balances optimizing a negotiated mix of utilities (for tea and coffee) with preserving attainable utility for future deals. A state diagram shows an agent can produce a mix of tea and coffee or specialize in one. A second diagram shows principals' circumstances might change, motivating the agent to preserve options for future renegotiation.](https://assets.turntrout.com/static/images/posts/b02a85f9bec27245725211e667061d61fc401fb75fee59bd.avif)
 <br/>Figure: MP-AUP is my first stab at solving this problem without modeling the joint game. In this agent production game, MP-AUP gets the agent to stay put until it is corrected (i.e. the agent is given a new reward function, after which it computes a new policy).
 
 We can motivate the MP-AUP objective with an analogous situation. Imagine the agent starts off with uncertainty about what objective it should optimize, and the agent reduces its uncertainty over time. This uncertainty is modeled using the 'assistance game' framework, of which [Cooperative Inverse Reinforcement Learning](https://papers.nips.cc/paper/6420-cooperative-inverse-reinforcement-learning) is one example. (The assistance game paper has yet to be publicly released, but I think it's quite good!)
 
-![](https://assets.turntrout.com/static/images/posts/time-step-mp-aup.avif)
+![The agent has reward uncertainty, with the probability of the goal being coffee as P(u = u☕️) = θ and matcha tea as P(u = u🍵) = 1 − θ. It has probability p of learning the true objective at each time step.](https://assets.turntrout.com/static/images/posts/time-step-mp-aup.avif)
 
 Assistance games are a certain kind of partially observable Markov decision process (POMDP), and they're solved by policies which maximize the agent's expected _true_ reward. So once the agent is certain of the true objective, it should just optimize that. But what about before then?
 
-![](https://assets.turntrout.com/static/images/posts/solve-mp-aup.avif)
+![An assistance game is solved by optimizing a reward function, R(s), at a discount rate γ' := (1-p)γ. The function equals a term to "Optimize negotiated mixture of utilities," which is θu_coffee(s) + (1-θ)u_matcha(s), plus a term to "Preserve attainable utility for future deals," which is [p/(1-p)] * [θV*_u_coffee(s) + (1-θ)V*_u_matcha(s)].](https://assets.turntrout.com/static/images/posts/solve-mp-aup.avif)
 
 Suggestive, but the assumptions don't perfectly line up with our use case (reward uncertainty isn't obviously equivalent to optimizing a mixture utility function per Harsanyi). I'm interested in more directly axiomatically motivating MP-AUP as (approximately) solving a certain class of joint principal/agent games under certain renegotiation assumptions, or (in the negative case) understanding how it falls short.
 
-![](https://assets.turntrout.com/static/images/posts/multi-agent-similarities-mp-aup.avif)
+![A slide titled "Similarities Between Single- and Multi-Principal" compares two approaches. ... - AUP: maintain ability to pursue other goals. ... - MP-AUP: preserve ability to add value for all principals. ... The shared justification for both is: "Because agent might later be directed to optimize another objective."](https://assets.turntrout.com/static/images/posts/multi-agent-similarities-mp-aup.avif)
 
 Here are some problems that MP-AUP doesn't address:
 

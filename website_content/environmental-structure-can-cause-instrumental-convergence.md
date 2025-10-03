@@ -93,13 +93,13 @@ date_updated: 2025-06-03 22:57:00.423836
 
 One view on AGI risk is that we're charging ahead into the unknown, into a particularly unfair game of Minesweeper in which the first click is allowed to blow us up. Following the analogy, we want to understand enough about the mine placement so that we _don't_ get exploded on the first click. And once we get a foothold, we start gaining information about other mines, and the situation is a bit less dangerous.
 
-![](https://assets.turntrout.com/static/images/posts/mine_empty.avif){style="width: 35%;"}
+![A screenshot of a classic Minesweeper game at its start. The grid is full of unclicked gray tiles. ](https://assets.turntrout.com/static/images/posts/mine_empty.avif){style="width: 35%;"}
 
 My previous theorems on power-seeking said something like: "at least half of the tiles conceal mines."
 
 I think that's important to know. But there are many tiles you might click on first. Maybe all of the mines are on the right, and we understand the obvious pitfalls, and so we'll just click on the left.
 
-<img src="https://assets.turntrout.com/static/images/posts/mine_half.avif" style="width:35%"/>
+<img alt="A classic Minesweeper game board. The left half of the grid consists of empty, unclicked tiles, while every tile on the right half is marked with a red &quot;X&quot; to indicate it is a mine." src="https://assets.turntrout.com/static/images/posts/mine_half.avif" style="width:35%"/>
 
 That is: we might not uniformly randomly select tiles:
 
@@ -117,10 +117,10 @@ My new results say something analogous to: for _every_ coordinate, either it con
 
 Orbits under symmetric groups quantify all ways of "changing things around" for that object.
 
-![](https://assets.turntrout.com/static/images/posts/8e6425b8f870379a9395baf3d235d0cff2994da7d3b30ba1.avif){style="width: 35%;"}
+![A Minesweeper game board is divided by a diagonal dashed line. An arrow labeled "reflect" shows a blue dot being reflected across the diagonal line to another dot's position.](https://assets.turntrout.com/static/images/posts/8e6425b8f870379a9395baf3d235d0cff2994da7d3b30ba1.avif){style="width: 35%;"}
 <br/>Figure: My new theorems demand that (in the analogy) at least one of these tiles conceal a mine.
 
-![](https://assets.turntrout.com/static/images/posts/6aadbd8a60c7d264aad002a55d511943c60b162998c2a18d.avif){style="width: 35%;"}
+![A Minesweeper game board is divided by a diagonal dashed line. An arrow labeled "reflect" shows a blue dot being reflected across the diagonal line to another dot's position.](https://assets.turntrout.com/static/images/posts/6aadbd8a60c7d264aad002a55d511943c60b162998c2a18d.avif){style="width: 35%;"}
 <br/>Figure: If the mines had been on the right, then both coordinates are safe.
 
 Since my results (in the analogy) prove that at least one of the two blue coordinates conceals a mine, we deduce that the mines are _not_ all on the right.
@@ -144,14 +144,14 @@ The section "[Simplicity priors assign non-negligible probability to power-seeki
 
 Orbits of goals consist of all the ways of permuting what states get which values. Consider this rewardless Markov decision process (MDP):
 
-![](https://assets.turntrout.com/static/images/posts/445cacc470b5aca6bff4ee6b9e2e016652f47affc5e4d54f.avif)
+![Two-state MDP. State A loops on itself and also can transition to state B. B can only transition back to A.](https://assets.turntrout.com/static/images/posts/445cacc470b5aca6bff4ee6b9e2e016652f47affc5e4d54f.avif)
 <br/>Figure: Arrows show the effect of taking some action at the given state.
 
 Whenever staying put at $A$ is strictly optimal, you can permute the reward function so that it's strictly optimal to go to $B$. For example, let $R(A):=1, R(B):=0$ and let $\phi:= (A\;B)$ swap the two states. $\phi$ acts on $R$ as follows: $\phi\cdot R$ simply permutes the state before evaluating its reward: $(\phi\cdot R)(s):= R(\phi(s))$.
 
 The orbit of $R$ is $\{R, \phi\cdot R\}$. It's optimal for the former to stay at $A$, and for the latter to alternate between the two states.
 
-![](https://assets.turntrout.com/static/images/posts/fa6685c343b547bf0119811109b57d012a1708785e6b5c01.avif)
+![A state diagram of a Markov decision process with three states labeled C, A, and B. A is in the center, with arrows to C and B. All three states have arrows looping back to themselves.](https://assets.turntrout.com/static/images/posts/fa6685c343b547bf0119811109b57d012a1708785e6b5c01.avif)
 
 In this three-state MDP, let $R_C$ assign 1 reward to $C$ and 0 to all other states, and let $\phi:= (A\; B\; C)$ rotate through the states ($A$ goes to $B$, $B$ goes to $C$, $C$ goes to $A$). Then the orbit of $R_C$ is:
 
@@ -171,10 +171,10 @@ In [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-of
 
 > [!quote] [Seeking Power is Often Robustly Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps)
 > Sometimes, one course of action gives you “strictly more options” than another. Consider another MDP with IID reward:
-> ![](https://assets.turntrout.com/static/images/posts/d31bab4169f7e005ef58d328dc3d4b6e88725d48d774f44e.avif)
+> ![A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states and a castle. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.](https://assets.turntrout.com/static/images/posts/d31bab4169f7e005ef58d328dc3d4b6e88725d48d774f44e.avif)
 > The right blue gem subgraph contains a “copy” of the upper red gem subgraph. From this, we can conclude that going right to the blue gems... is more probable under optimality for _all discount rates between 0 and 1_!
 
-![](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
+![A robot can choose between a path via red gems leading to a small subgraph of future states (and a dragon), or a path via blue gems leading to a larger subgraph (and a pile of riches). Red arrows labeled "ye olde permutation φ" show how the smaller subgraph is embedded into the larger one.](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
 Figure: The state permutation $\phi$ embeds the `red-gems` subgraph into the `blue-gems` subgraph.
 
 We say that $\phi$ is an _environmental symmetry_, because $\phi$ is an element of the symmetric group $S_{|\mathcal{S}|}$ of permutations on the state space.
@@ -192,7 +192,7 @@ The recurring thought which kept my hope alive was:
 
 Then I reconsidered the same state permutation $\phi$ which proved my original IID-reward theorems. That kind of $\phi$ would imply that since `blue-gems` has more options, there is therefore greater optimality probability (under IID reward function distributions) for moving toward the blue gems. In the end, that _same permutation_ $\phi$ holds the key to understanding instrumental convergence in MDPs.
 
-![](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
+![A robot can choose between a path via red gems leading to a small subgraph of future states (and a dragon), or a path via blue gems leading to a larger subgraph (and a pile of riches). Red arrows labeled "ye olde permutation φ" show how the smaller subgraph is embedded into the larger one.](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
 <br/>Figure: Suppose `red-gems` is optimal. For example, let $R_\text{castle}$ assign 1 reward to the castle 🏰 and 0 to all other states. Then the permuted reward function $\phi \cdot R_\text{castle}$ assigns 1 reward to the gold pile, and 0 to all other states, and so `blue-gems` has strictly more optimal value than `red-gems`.
 
 Consider any discount rate $\gamma\in(0,1)$. For _all_ reward functions $R$ such that $V^*_{R}(\texttt{red-gems},\gamma)>V^*_{R}(\texttt{blue-gems},\gamma)$, this permutation $\phi$ turns them into `blue-gem` lovers: $V^*_{\phi\cdot R}(\texttt{red-gems},\gamma)<V^*_{\phi\cdot R}(\texttt{blue-gems},\gamma)$.
@@ -216,7 +216,7 @@ This might feel too abstract, so let's run through examples.
 
 ### More graphical options (Proposition 6.9)
 
-![](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
+![A robot can choose between a path via red gems leading to a small subgraph of future states (and a dragon), or a path via blue gems leading to a larger subgraph (and a pile of riches). Red arrows labeled "ye olde permutation φ" show how the smaller subgraph is embedded into the larger one.](https://assets.turntrout.com/static/images/posts/bc5b2aa815d9cd9c468c8c741a9a037490a39baf8715f45c.avif)
 <br/>Figure: At all discount rates $\gamma\in[0,1]$, it's optimal for _most reward functions_ to get `blue-gems` because that leads to strictly more options. We can permute every `red-gems` reward function into a `blue-gems` reward function.
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vase.mp4" type="video/mp4; codecs=hvc1">
@@ -235,15 +235,15 @@ Figure: In [SafeLife](https://www.partnershiponai.org/safelife/), the agent can 
 
 ### Terminal options (theorem 6.13)
 
-![](https://assets.turntrout.com/static/images/posts/efcb19ffc9b20dc00f6147d16e103799af60839478b0cf68.avif)
+![A decision tree illustrating why keeping options open is optimal for most reward functions. From a Start state, one path leads to a single, final outcome of candy. A second path, labeled "Wait!", leads to a later choice between two final outcomes: a chocolate bar or two stick figures hugging.](https://assets.turntrout.com/static/images/posts/efcb19ffc9b20dc00f6147d16e103799af60839478b0cf68.avif)
 <br/>Figure: When the agent maximizes average reward, it's optimal for _most reward functions_ to `Wait!` so that they can choose between `chocolate` and `hug`. The logic is that every `candy-optimal` reward function can be permuted into a `chocolate-optimal` reward function.
 
-![](https://assets.turntrout.com/static/images/posts/tic_tac_toe.avif)
+![A partial game tree for Tic-Tac-Toe. From a central board state, black arrows point to moves that end the game in a loss. Green arrows point to moves that continue the game. Most arrows are black, but many states are in the outcomes accessed by green arrows.](https://assets.turntrout.com/static/images/posts/tic_tac_toe.avif)
 <br/>Figure: A portion of a Tic-Tac-Toe game-tree against a fixed opponent policy. Whenever we make a move that ends the game, we can't go anywhere else – we have to stay put. Then most reward functions incentivize the green actions over the black actions: average-reward optimal policies are particularly likely to take moves which keep the game going. The logic is that any `lose-immediately-with-given-black-move` reward function can be permuted into a `stay-alive-with-green-move` reward function.
 
 Even though randomly generated environments are unlikely to satisfy these sufficient conditions for power-seeking tendencies, the results are easy to apply to many structured environments common in reinforcement learning. For example, when $\gamma\approx 1$, most reward functions provably incentivize not immediately dying in Pac-Man. Every reward function which incentivizes dying right away can be permuted into a reward function for which survival is optimal.
 
-![](https://assets.turntrout.com/static/images/posts/03906a93935d2c1eaf76291e21d049cf82543f4a5acf012c.avif)
+![A diagram showing the character Pac-Man with two choices. An arrow labeled "left" points to a red ghost. An arrow labeled "right" points to an ellipsis, signifying that the game continues.](https://assets.turntrout.com/static/images/posts/03906a93935d2c1eaf76291e21d049cf82543f4a5acf012c.avif)
 <br/>Figure: Consider the dynamics of the Pac-Man video game. Ghosts kill the player, at which point we consider the player to enter a "game over" terminal state which shows the final configuration. This rewardless MDP has Pac-Man's dynamics, but _not_ its usual score function. Fixing the dynamics, what actions are optimal as we vary the reward function?
 
 Most importantly, we can prove that when shutdown is possible, optimal policies try to avoid it if possible. When the agent isn't discounting future reward (i.e. maximizes average return) and for [lots of reasonable state/action encodings](/MDPs-are-not-subjective), the MDP structure has the right symmetries to ensure that it's instrumentally convergent to avoid shutdown.
@@ -260,7 +260,7 @@ Most importantly, we can prove that when shutdown is possible, optimal policies 
 
 What does "most reward functions" mean quantitatively - is it just at least half of each orbit? Or, are there situations where we can guarantee that at least three-quarters of each orbit incentivizes power-seeking? I think we should be able to prove that as the environment gets more complex, there are combinatorially more permutations which enforce these similarities, and so the orbits should skew harder and harder towards power-incentivization.
 
-![](https://assets.turntrout.com/static/images/posts/efcb19ffc9b20dc00f6147d16e103799af60839478b0cf68.avif)
+![A decision tree illustrating why keeping options open is optimal for most reward functions. From a Start state, one path leads to a single, final outcome of candy. A second path, labeled "Wait!", leads to a later choice between two final outcomes: a chocolate bar or two stick figures hugging.](https://assets.turntrout.com/static/images/posts/efcb19ffc9b20dc00f6147d16e103799af60839478b0cf68.avif)
 <br/>Figure:  Here's a semi-formal argument. For every orbit element $R$ which makes `candy` strictly optimal when $\gamma=1$, $\phi_\texttt{chocolate}$ and $\phi_\texttt{hug}$ respectively produce $R_{\phi_\texttt{chocolate}}\neq R_{\phi_\texttt{hug}}$. `Wait!` is strictly optimal for both $R_{\phi_\texttt{hug}}, R_{\phi_\texttt{hug}}$, and so at least 2/3 of the orbit should agree that `Wait!` is optimal. As `Wait!` gains more power (more choices, more control over the future), I conjecture that this fraction approaches 1.
 
 I don't yet understand the general case, but I have a strong hunch that instrumental convergence<sub>optimal policies</sub> is governed by how many more ways there are for power to be optimal than not optimal. And this seems like a function of the number of environmental symmetries which enforce the appropriate embedding.
@@ -334,7 +334,7 @@ For every reward function $R$ - no matter how benign, how aligned with human int
 
 If I let myself be a bit more colorful, every reward function has lots of "evil" power-seeking variants (do note that the step from "power-seeking" to "misaligned power-seeking" [requires more work](/formalizing-multi-agent-power)). If we imagine ourselves as only knowing the orbit of the agent's objective, then the situation looks a bit like _this_:
 
-![](https://assets.turntrout.com/static/images/posts/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.avif)
+![A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.](https://assets.turntrout.com/static/images/posts/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.avif)
 <br/>Figure: Technical note: this 12-element orbit could arise from the action of a subgroup of the symmetric group $S_4$, which has $4!=24$ elements. Consider a 4-state MDP; if the reward function assigns equal reward to exactly two states, then it would have a 12-element orbit under $S_4$.
 
 Of course, this isn't how reward specification works - we probably are far more likely to specify certain orbit elements than others. However, the formal theory is now beginning to explain _why alignment is so hard by default, and why failure might be catastrophic!_
