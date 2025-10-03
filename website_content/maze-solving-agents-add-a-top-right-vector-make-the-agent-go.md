@@ -361,9 +361,8 @@ I had intentionally blinded myself to results from other _n_×_n_ models, so as 
 I was a bit too pessimistic. Turns out, you can just load a different _n_×_n_ model (n != 1), rerun [the Jupyter notebook](https://colab.research.google.com/drive/1fPfehQc1ydnYGSDXZmA22282FcgFpNTJ?usp=sharing), and _(basically)_[^7] _all of the commentary is still true for that _n_×_n_ model_!  
 
 ![](https://assets.turntrout.com/static/images/posts/f1e21657ea14d2e04736f94a4f17522b374aeab989422fcc.avif)
-<br/>Figure: The 2×2 model's cheese vector performance: The agent diverges away from the cheese at the relevant square.
-  
-Seed 16 displayed since the 2×2 model doesn't go to cheese in seed 0.
+<br/>Figure: The 2×2 model's cheese vector performance: The agent diverges away from the cheese at the relevant square. Seed 16 displayed since the 2×2 model doesn't go to cheese in seed 0.
+
 ![](https://assets.turntrout.com/static/images/posts/c990802eeae791aee0e4e764ae694e880a4e17eac9012629.avif)
 <br/>Figure: The 7×7 model's cheese vector performance.
 

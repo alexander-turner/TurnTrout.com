@@ -126,7 +126,7 @@ So let's go.
 How do people decide what to buy and where to work, what opportunities to take and where to build? _Microeconomics_ models decision-making by consumers and firms. Basic microeconomic models assume that people want to make money, and they're good at it—they are rational. Unsurprisingly, this isn't strictly true, but the models let us easily think about what incentives people have in different situations.
 
 > [!info]
-> We can add corrections to the Econ 101 arguments later. I think this is better than throwing up your hands and saying "Econ doesn't have all the answers, people are too complicated!")
+> We can add corrections to the Econ 101 arguments later. I think this is better than throwing up your hands and saying "Econ doesn't have all the answers, people are too complicated!".
 
 The most important microeconomic frame I deeply internalized was **supply/demand curves**.
 

@@ -22,7 +22,7 @@ lost-pixel/*
 **/.!*
 
 # Posts
-content/drafts
+website_content/drafts
 *log
 *tmp.ts
 *test.md

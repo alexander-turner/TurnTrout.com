@@ -92,7 +92,7 @@ I expect AUP to further scale to high-dimensional embodied tasks. For example, a
 
 I think of AUP as addressing the single-principal (AI designer) / single-agent (AI agent) case. What about the multi/single case?
 
-![](https://assets.turntrout.com/static/images/posts/41b1a2924d3be8196845296b9d719eb0a14dfb72ddc63326.avif)
+![First, assume one principal derives utility from tea, the other from coffee. Then, a state diagram. The "Agent's initial state," labeled "TC," is in the center and yields +1 tea and +1 coffee per turn. The agent can make an irreversible choice to move to state "TT" (yielding +2 tea) or state "CC" (yielding +2 coffee), losing the ability to produce the other beverage.](https://assets.turntrout.com/static/images/posts/41b1a2924d3be8196845296b9d719eb0a14dfb72ddc63326.avif)
 
 In this setting, negotiated agent policies usually destroy option value.
 

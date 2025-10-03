@@ -65,7 +65,7 @@ Here are some slides from our spotlight talk ([publicly available](https://nips.
 
 ![](https://assets.turntrout.com/static/images/posts/fc33883d8d8accf1d88b5281873b491a4656bf87bd738cc7.avif)
 
-![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif )
+![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif)
 
 ![](https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif)
 <br/>Figure: Before now, side effect avoidance was only demonstrated in tiny tabular domains.
