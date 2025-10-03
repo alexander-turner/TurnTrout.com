@@ -4250,5 +4250,13 @@
   "/static/images/external-favicons/pip-tools_readthedocs_io.png": {
     "width": 32,
     "height": 32
+  },
+  "https://assets.turntrout.com/twemoji/2615.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f375.svg": {
+    "width": 36,
+    "height": 36
   }
 }
