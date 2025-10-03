@@ -61,13 +61,13 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ![Handwritten text: "Impacts ripple through time and landscape. Your actions change what can be done, and by whom. Taking over that land fit the environment to my purposes, shutting you out and changing your AU landscape."](https://assets.turntrout.com/static/images/posts/vSGPVnG.avif)
 
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+<img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">
 
 !["Something is a catastrophe if it destroys your ability to get what you want... Something is an objective catastrophe if it destroys a lot of agents' abilities to get what they want. An asteroid strike is an objective catastrophe."](https://assets.turntrout.com/static/images/posts/cKroz8I.avif)
 
 ![Before the meteor hits, AI, humans, and even trout are able to survive, so they have decent AUs for that goal. Afterwards, everyone has low AUs.](https://assets.turntrout.com/static/images/posts/GRmoAfp.avif) ![The consequences of a meteor hitting Earth. Before, AIs and humans can promote human value (i.e. high AU for that goal) but trout cannot. After impact, all of these entities have low AUs.](https://assets.turntrout.com/static/images/posts/83Tte8B.avif) ![The consequences of a meteor hitting Earth. Before, AIs and humans can construct red cubes (high AU for that goal) but trout cannot. After impact, all of these entities have low AUs.](https://assets.turntrout.com/static/images/posts/tzLrv25.avif) ![Before a meteor hits the earth, AIs, humans, and trout can all look at blue things, so they have high AU for that goal. Afterwards, they all have low AUs.](https://assets.turntrout.com/static/images/posts/jcefOFk.avif)
 
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+<img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">
 
 ![Handwritten text: "Most agents want control over the future because the default outcome isn't preferred. As suggested by my theorems on power and instrumental convergence, optimal goal pursuit usually means gaining more general control over the future in order to reach that goal."](https://assets.turntrout.com/static/images/posts/zTCZtYZ.avif) !["What happens when agents seek pure control over the future? Not everyone can be king. If you're just seeking power without concern for others, you tend to push others down after a certain point. And most goals don't have concern for others. You'll just compete for resources." Below, a "paperclip maximizer" robot punches a "staple maximizer" robot.](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)
 

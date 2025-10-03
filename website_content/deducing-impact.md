@@ -58,11 +58,11 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ![A green stick figure alien sleeping on a cot on a white, curved surface. Above, a single bright star shines in a black sky.](https://assets.turntrout.com/static/images/posts/lCPSncS.avif)
 
-![A minimalist graphic of a magenta oval nose with two pairs of black, curved whiskers on either side, serving as a decorative section break.](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
+<img src="https://assets.turntrout.com/static/images/posts/EZa5fmw.avif" alt="">
 
 ![Handwritten text titled "Impact is Comparative." It explains that if we grew up expecting the sun to go supernova, discovering it won't would be a big deal. But to us, it's the expectation, so it has zero impact. The text concludes that impact must be comparative, based on difference or change.](https://assets.turntrout.com/static/images/posts/UHf85nd.avif)
 
-![A minimalist graphic of a magenta oval nose with two pairs of black, curved whiskers on either side, serving as a decorative section break.](https://assets.turntrout.com/static/images/posts/EZa5fmw.avif)
+<img src="https://assets.turntrout.com/static/images/posts/EZa5fmw.avif" alt="">
 
 ![A handwritten note introduces the post's goal: understanding why AIs might catastrophically impact us. The first step is "understanding impact,"—an important question with an answer not yet widely circulated. The note invites the reader to try their hand at answering the question.](https://assets.turntrout.com/static/images/posts/apep62R.avif)
 

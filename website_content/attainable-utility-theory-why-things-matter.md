@@ -106,7 +106,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 !["You literally don't know how anything works. However, when I tell you that you're _how stuck_, this seems like a big deal. Surprisingly, this works no matter how "weird" the reality: AU theory correctly predicts impact for agents running on a Powerpoint presentation. Isn't that something?"](https://assets.turntrout.com/static/images/posts/PWJmONq.avif)
 
-![A minimalist drawing of a pink cat nose with black whiskers extending to either side.](https://assets.turntrout.com/static/images/posts/gtgIF77.avif)
+<img src="https://assets.turntrout.com/static/images/posts/gtgIF77.avif" alt="">
 
 ![Multi-colored handwritten text asks, "How does this change my ability to get what I want?" on a soft yellow and purple background that dissolves into small question marks at the edges.](https://assets.turntrout.com/static/images/posts/hqEX2r1.avif)
 

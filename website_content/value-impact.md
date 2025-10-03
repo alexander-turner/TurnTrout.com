@@ -60,7 +60,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ![The handwritten word "Exercise:" in gold, followed by the text: "Spend three minutes familiarizing yourself with the three situations – how are they alike, and how are they different? Make them come alive."](https://assets.turntrout.com/static/images/posts/tupgltr.avif)![An hourglass with a speech bubble that says, "I recommend actually setting timers for timed exercises."](https://assets.turntrout.com/static/images/posts/kNG5for.avif)
 
-![](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+<img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">
 
 ![Handwritten text: "Let's query our mental impact-o-meter from these different vantage points. Step into each pair of shoes and ask 'how big of a deal is this?'" ](https://assets.turntrout.com/static/images/posts/jaHW2pp.avif)
 
@@ -84,7 +84,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 > ! Being on Earth when this happens is a big deal, no matter your objectives – you can't hoard pebbles if you're dead! People would feel the loss from anywhere in the cosmos. However, Pebblehoarders wouldn't mind if they weren't in harm's way.
 
-![A minimalist illustration of a cat's snout with a magenta nose and black whiskers on a white background.](https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif)
+<img src="https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif" alt="">
 
 ![A diagram titled "What have we learned?" explains that impact is relative. An equation, "Impact = value impact + objective impact," is split into two columns. Value impact is "important to agents like you" (e.g. a robot wanting pebbles). Objective impact is "important to agents in general" and "invariant to objectives" (e.g. a meteor hitting Earth).](https://assets.turntrout.com/static/images/posts/ZOAeuoe.avif)
 

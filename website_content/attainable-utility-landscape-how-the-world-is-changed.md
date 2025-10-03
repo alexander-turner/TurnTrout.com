@@ -56,7 +56,7 @@ date_updated: 2025-09-06 12:28:11.897024
 
 !["In 'The Gears of Impact', we discussed how your attainable utility calculation roughly takes the best of different possibilities." A flashback cloud shows a map with paths to goals: relaxing at home, buying groceries, or hiking. A stick figure asks, "How do different AUs interact with the environment, and how does the environment interact with us?"](https://assets.turntrout.com/static/images/posts/zLypKDZ.avif)
 
-![A minimalist drawing of a magenta nose and black whiskers, resembling a cat or rabbit.](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+<img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">
 
 ![The sentence "There's a lot to think about when staking out a settlement."](https://assets.turntrout.com/static/images/posts/M8XHzxd.avif)
 
@@ -76,7 +76,7 @@ date_updated: 2025-09-06 12:28:11.897024
 >
 >! If you were plopped onto the moon, you'd die pretty fast. Maybe the "die as quickly as possible" AU is high, but not much else - not even the "live on the moon" AU! We haven't yet reshaped the AU landscape on the moon to be hospitable to a wide range of goals. [Earth is special like that.](https://www.youtube.com/watch?v=wupToqz1e2g)
 
-![A minimalist drawing of a magenta nose and black whiskers, resembling a cat or rabbit.](https://assets.turntrout.com/static/images/posts/BtzHnUq.avif)
+<img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">
 
 ![Handwritten text: "When we think about the world, we usually think about the world state first, and only _then_ imagine what can be done with it. The AU landscape inverts this by instead taking 'ability to do things' as primary, thus considering the world state details to be secondary. This is nice."](https://assets.turntrout.com/static/images/posts/rWIlQBC.avif)
 

@@ -109,7 +109,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ​![Two diagrams show a person with paths to goals like relaxing, grocery shopping, and hiking. In the first, all paths are open. In the second, the person is harmed, blocking all options. Text explains: "You are the common denominator. Objective impact involves harm to you or your resources, and this is why."](https://assets.turntrout.com/static/images/posts/HShpS3u.avif)
 
-![A stylized magenta cat nose with black whiskers, used as a decorative horizontal divider.](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
+<img src="https://assets.turntrout.com/static/images/posts/WjTqF2y.avif" alt="">
 
 ![ "The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure." ](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
 
