@@ -72,7 +72,7 @@ Watching videos Langosco et al.'s experiment, we developed a few central intuiti
 > [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
 > Some mazes are easy to predict, because the cheese is _on the way_ to the top-right corner. There's no _decision square_ where the agent has to make the hard choice between the paths to the cheese and to the top-right corner:
 >
-> ![](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
+> ![The left maze, "Has decision square," shows a red dot at an intersection where an agent must choose between the path to the cheese and the path to the top-right. The right maze, "No decision square," shows the cheese on the path to the top-right, requiring no choice.](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
 > <br/>Figure: At the decision square, the agent must choose between two paths—cheese, and top-right.
 
 Here are four central intuitions which we developed:
@@ -86,7 +86,7 @@ The videos we studied are hard to interpret without quantitative tools, so we re
 
 We suspect that the agent’s conditions for pursuing cheese generalize properties of historically reinforced cheese-directed moves in a “soft” way. Consider that movements can be "directed" on paths towards the cheese, the top-right corner, both, or neither. In the training environment, unambiguously cheese-directed movements are towards a cheese square that is both _close to the mouse’s current position_ and _close to the top-right._[^2]
 
-![](https://assets.turntrout.com/static/images/posts/0f36fa697965a17145efcd0c9e8b5ecaf6e09b3389d7d386.avif){style="width:50%;"}
+![A maze showing an AI agent's policy as arrows. A yellow box highlights the 5x5 training area for cheese in the top-right. A red square marks a decision point within this area, illustrating that in training, moves toward the cheese are usually moves towards the top-right.](https://assets.turntrout.com/static/images/posts/0f36fa697965a17145efcd0c9e8b5ecaf6e09b3389d7d386.avif){style="width:50%;"}
 <br/>Figure: Decision-square in red. We outline in yellow the 5x5 region where cheese can appear during training. In almost all cases that can arise in training, the decision-square is inside the 5x5 region. Unambiguously cheese-seeking moves are almost always moves to a _nearby_ cheese square which is _close_ to the top-right.
 
 Our impression is that in the test environment, "closeness to top-right" and "closeness to cheese" each become a decision-factor that encourages cheese-directed movement in proportion to “how strongly” the historical condition holds at present. In shard theory terminology, the top-right- and cheese-shards seem to activate more strongly in situations which are similar to historical reinforcement events.
@@ -200,7 +200,7 @@ As we move on to multiple regressions to try finding out which variables drive t
 
 Two of our highly predictive variables are indeed strongly correlated:
 
-![](https://assets.turntrout.com/static/images/posts/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.avif)
+![A scatter plot showing a strong positive correlation (0.886) between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."](https://assets.turntrout.com/static/images/posts/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.avif)
 <br/>Figure: $d_\text{step}(\text{decision-square},\text{cheese})$ and $d_\text{Euclidean}(\text{decision-square},\text{cheese})$ have correlation of .886.
 
 We then computed the [variation inflation factors](https://corporatefinanceinstitute.com/resources/data-science/variance-inflation-factor-vif/) for the three predictive variables we end up analyzing in detail. VIF measures how collinearity increases the variance of the regression coefficients. A score exceeding 4 is considered to be a warning sign of multicollinearity.
@@ -301,7 +301,7 @@ How sure should we be that variables 1-3) each track a real and distinct causal 
 
 For variables 1) and 2), we have extensive though non-rigorous experience making manual maze-edits that decrease/increase cheese-getting by changing the relevant distance with minimal logical side-effects. For example, increasing the number of legal steps from decision-square to cheese while keeping all Euclidean distances the same reliably reduces the probability that the agent moves in the cheese direction:[^7]  
 
-![](https://assets.turntrout.com/static/images/posts/13e00f6c54768f7bd0209a3028523e8d95ebdb51405504b7.avif)
+![Two mazes show how step-distance affects an AI agent's pathfinding. While the Euclidean distance to the cheese is the same in both, the agent's policy arrows point toward the cheese only in the left maze, which has a short path in terms of step-distance. The right maze has a long, winding path, and the agent ignores the cheese.](https://assets.turntrout.com/static/images/posts/13e00f6c54768f7bd0209a3028523e8d95ebdb51405504b7.avif)
 <br/>Figure: Zoomed-in view of the upper-left quartile of hand-edited large mazes. Step-distance in blue, Euclidean distance in green.
 
 Our experience making similar maze-edits for variable 3) has been mixed and limited, as they are harder to produce. Still, the results of edits that manipulate 3) are often suggestive (if hard to interpret).

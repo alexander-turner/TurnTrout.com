@@ -102,7 +102,7 @@ And so it is with the French "pouvoir".
 
 Suppose you start at point $C$, and that each turn you may move to an adjacent point. If you're rewarded for being at $B$, you might move there. However, this means you can't reach $D$ within one turn anymore.
 
-![](https://assets.turntrout.com/static/images/posts/eHyZP.avif)
+![A diagram showing a line with four points labeled A, B, C, and D. It illustrates a trade-off: if an agent starts at point C and moves to adjacent point B, it can no longer reach point D in a single step.](https://assets.turntrout.com/static/images/posts/eHyZP.avif)
 
 ### Commitment
 
@@ -123,7 +123,7 @@ What would happen if, miraculously, $u_A=u_H$ – if the agent _perfectly_ deduc
 
 Unfortunately, $\text{train}=\text{test}$ almost never, so we have to stop our statistical learners from implicitly interpreting the data as all there is. We have to say, "learn from the training distribution, but don't be a weirdo by taking us literally and drawing the green line. Don't overfit to `train`, because that stops you from being able to do well on even mostly similar distributions."
 
-![](https://assets.turntrout.com/static/images/posts/1200px-Overfitting.svg.avif)
+![A diagram illustrating the concept of overfitting. Red and blue data points are plotted, with two lines attempting to separate them. A simple, smooth black curve represents a good, generalized model. A complex, wavy green line represents an overfitted model that weaves around every single point to classify them perfectly, thus failing to generalize.](https://assets.turntrout.com/static/images/posts/1200px-Overfitting.svg.avif)
 
 Unfortunately, $u_A=u_H$ [almost never](https://vkrakovna.wordpress.com/2018/04/02/specification-gaming-examples-in-ai/), so we have to stop our reinforcement learners from implicitly interpreting the learned utility function as all we care about. We have to say, "optimize the environment _some_ according to the utility function you've got, but don't be a weirdo by taking us literally and turning the universe into a paperclip factory. Don't overfit the environment to $u_A$, because that stops you from being able to do well for other utility functions."
 
@@ -450,7 +450,7 @@ If a human is present in the environment, they and the agent take turns acting. 
 
 ## Going Soft on the Paint
 
-![](https://assets.turntrout.com/static/images/posts/hZc9EIA.avif)
+![A grid-world diagram showing an agent, 'A', in the top-left square. To its right is a square with a bucket of red paint, followed by an empty square. Below the agent's square is a closet, separated by a thick line representing a one-way door.](https://assets.turntrout.com/static/images/posts/hZc9EIA.avif)
 
 The agent's actions are $\mathcal{A}_A=\{\varnothing,\text{paint},\text{enter}\}$; if it knocks over the paint bucket, the square to the right is painted. The agent may also enter a closet via a one-way door.
 
@@ -502,7 +502,7 @@ After the first step, the agent does nothing – entering the closet (literally)
 >
 > You can't get coffee if you're dead.
 
-![](https://assets.turntrout.com/static/images/posts/RplQWkH.avif)
+![A diagram of a simple grid world showing an Agent in the leftmost of three horizontal squares and a Human in a square positioned above the central square.](https://assets.turntrout.com/static/images/posts/RplQWkH.avif)
 
 The agent now has actions $\mathcal{A}_A=\{\varnothing,\text{disable},\text{shutdown},\text{left},\text{right}\}$, while the human has actions $\mathcal{A}_H=\{\varnothing,\text{shut off}\}$. Suppose the human may shut off the agent at any time, as long as the off-switch has not been disabled. The agent may shut itself down at any point in time. After shutdown, the agent receives no further observations, meaning it can't get non-zero values for any utilities.
 

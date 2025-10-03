@@ -117,7 +117,7 @@ Implement regression and integration testing early
 Ensure datasets have statistical power to make progress
 : For example, TruthfulQA validation only had 256 points. Error prevented: noisy evaluations.
 
-![](https://assets.turntrout.com/static/images/posts/contrastive-posterior.avif)
+![Two histograms showing the Bayesian posterior for the "BIDPO - Baseline Correct Sample Advantage" on two datasets. For the "mmlu" dataset, the distribution is centered near zero (p=45.3%). For the "tqa" dataset, the distribution is almost entirely positive, indicating a significant advantage (p=99.6%).](https://assets.turntrout.com/static/images/posts/contrastive-posterior.avif)
 
 Figure: Bayesian statistics for Gemini Pro 1.5v2 performance shifts. The $x$-axis shows the "contrastive advantage" of the BIDPO vector over the baseline. This posterior contrast takes into account finite sample effects and allows us to estimate the probability the BIDPO vector's effect is via chance.<br/><br/>A sample advantage of $n$ on TruthfulQA corresponds to an accuracy increase of $\frac{n}{256}$. Wins needed ≥10% signal to be statistically relevant, making it hard to identify and stack small wins.
 
@@ -188,13 +188,13 @@ We trained BIDPO vectors on a range of datasets and measured in-distribution gen
 
 ### Gemini 1.5v1
 
-![](https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo.avif)
+![A 2x2 grid of line charts showing validation performance as a function of the number of gradient steps. On HellaSwag, MMLU, and Natural Questions, performance is relatively flat and near the baseline. On TruthfulQA, performance increases significantly with more steps.](https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo.avif)
 
 Figure: On TruthfulQA, training on $n=1$ datapoint caused a validation boost of over 10%.
 
 ### Gemini 1.5v2
 
-![](https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo-v2.avif)
+![Four line charts showing Gemini 1.5v1 validation performance with BIDPO steering versus training sample count. For HellaSwag, MMLU, and Natural Questions, performance is stable. For TruthfulQA, performance significantly increases with more samples, showing a boost of over 10% with just a few samples and rising above 90% with 256 samples.](https://assets.turntrout.com/static/images/posts/sample-efficiency-bidpo-v2.avif)
 
 Figure: $n=1,2$ datapoint(s) no longer cause any boost on TruthfulQA. Weird.
 
@@ -204,7 +204,7 @@ We did not record comprehensive 1.5v1 data on multi-shot prompting generalizatio
 
 In contrast, on Gemini Pro 1.5v2, multishot prompting was extremely effective:
 
-![](https://assets.turntrout.com/static/images/posts/multishot.avif)
+![Six line charts showing how multi-shot prompting with TruthfulQA examples affects test accuracy on various datasets. As the number of TruthfulQA examples increases from 0 to 256, accuracy on TruthfulQA rises sharply from ~83% to over 95%. On other datasets, accuracy increases for MMLU, Natural Questions, and Rimsky Halu; decreases for Halu Eval QA; and fluctuates for Hellaswag.](https://assets.turntrout.com/static/images/posts/multishot.avif)
 
 Figure: We tested the generalization performance of Truthful QA using a multi-shot prompting approach. For each test dataset, examples from the Truthful QA training set were prepended to each question and Gemini Pro 1.5v2 is asked to produce the appropriate answer. If the test dataset was large, it was truncated to 1,024 examples. The number of Truthful QA examples prepended to each question varies across the  $x$-axis. The test-set accuracy and the 90% credible intervals are plotted along the $y$-axis.
 

@@ -102,7 +102,7 @@ Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistak
 ## Bounty for bad analogies I've made since 2022
 
 Analogies can be useful; analogies can be deadly. For an analogy to be useful, it would do well to highlight how two analogous situations _share the relevant mechanisms._ For example, an [analog computer](https://en.wikipedia.org/wiki/Analog_computer) obeys the same differential equations as certain harmonic oscillators. By reasoning using the "analogy" of an electrical circuit with such-and-such voltages and resistances, we can accurately predict physical systems of pendulums and springs:
- ![](https://assets.turntrout.com/static/images/posts/computer-analogy.avif)
+ ![A diagram showing an analogy between a physical mass-spring system and an electrical system. Both are governed by the same differential equation. A graph below plots their shared output, which is a damped oscillation.](https://assets.turntrout.com/static/images/posts/computer-analogy.avif)
 
  However, in AI alignment, folks seem to be less careful. Does "evolution" "finding" the human genome tell us anything about the difficulty of "inner alignment" in "selection processes"? What are the proposed mechanisms?
 

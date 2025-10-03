@@ -128,7 +128,7 @@ Gentle deceleration woke him from his thoughts. As father and son left the car, 
 
 They were home.<br>
 
-<div class="centered"><img id="fade-img" src="https://assets.turntrout.com/static/images/posts/fountain.webp" width="90%" height="auto" class="no-select"></div>
+<div class="centered"><img id="fade-img" alt="A man and two young boys stand at the edge of a large, circular fountain in front of a grand manor at dusk. The fountain is illuminated, with a central marble statue of a man holding a lit torch and a book, flanked by dolphin statues spouting water." src="https://assets.turntrout.com/static/images/posts/fountain.webp" width="90%" height="auto" class="no-select"></div>
 
 ## 2: The World is Messy
 

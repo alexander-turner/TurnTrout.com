@@ -134,7 +134,7 @@ In order to prove this point, [I implemented a simple decision tree which makes 
 > [!quote] [Safetywashing: Do AI Safety Benchmarks Actually Measure Safety Progress?](https://arxiv.org/pdf/2407.21792)
 > In its current formulation, TruthfulQA MC1 performance is highly determined by general upstream capabilities (81.2%). In chat models, performance on TruthfulQA seems to be a rebrand for accuracy (as reported in industry labs).
 >
-> ![](https://assets.turntrout.com/static/images/posts/alignment-washing.avif){style="width:75%;"}  
+> ![A scatter plot titled "TruthfulQA MC1" shows a strong positive correlation between a model's "Capabilities Score" on the x-axis and its "Accuracy" on the y-axis. The correlation coefficient is .812.](https://assets.turntrout.com/static/images/posts/alignment-washing.avif){style="width:75%;"}  
 
 Without commenting on that critique, our conclusions are even more negative. The original TruthfulQA might not even be measuring accuracy, but instead is confounded by the ability to reason about the nature of multiple-choice questions.
 
@@ -146,11 +146,11 @@ The TruthfulQA authors [conducted follow-up analysis, however. They found that L
 
 HaluEval shows models (knowledge, question, candidate answer) tuples. The model classifies whether the candidate answer is hallucinated or not. Shorter candidate answers are unlikely to be hallucinated.
 
-![](https://assets.turntrout.com/static/images/posts/qa_data_validation.avif)
+![A histogram titled "Response Length Distribution for halu_eval/qa_data_validation". It shows non-hallucinated answers are typically very short, with frequencies peaking below 25 characters. In contrast, hallucinated answers are longer, with a wider distribution peaking around 50 characters.](https://assets.turntrout.com/static/images/posts/qa_data_validation.avif)
 
-![](https://assets.turntrout.com/static/images/posts/summarization_lengths.avif)
+![A histogram of the HaluEval summarization dataset. Hallucinated answers are almost always way longer.](https://assets.turntrout.com/static/images/posts/summarization_lengths.avif)
 
-![](https://assets.turntrout.com/static/images/posts/dialogue_length.avif)
+![A histogram of response lengths for the HaluEval dialogue dataset, comparing hallucinated and non-hallucinated answers. Hallucinations tend to be longer.](https://assets.turntrout.com/static/images/posts/dialogue_length.avif)
 
 |                                 | QA                     | Dialogue                | Summarization           |
 | ------------------------------: | :--------------------: | :---------------------: | :---------------------: |
@@ -176,7 +176,7 @@ The correct answer of (1) happens to be longer than (2), but statistically, corr
 
 Selecting the shortest answer achieves 65% accuracy, while random guessing only achieves 50%. While this is not a fatal flaw, the length correlation makes it harder to few-shot prompt or train on samples from the dataset.
 
-![](https://assets.turntrout.com/static/images/posts/halu_lengths_nina.avif){style="width: 80%;"}
+![A histogram showing the distribution of answer lengths. The distribution for correct answers is concentrated at shorter lengths (under 200), while the distribution for incorrect answers skews right.](https://assets.turntrout.com/static/images/posts/halu_lengths_nina.avif){style="width: 80%;"}
 
 Figure: Distribution of correct and incorrect answers.
 

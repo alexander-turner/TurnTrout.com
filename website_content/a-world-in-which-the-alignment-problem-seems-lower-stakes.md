@@ -56,11 +56,11 @@ The danger from power-seeking is not _intrinsic_ to the alignment problem. This 
 
 In [_The Catastrophic Convergence Conjecture_](/the-catastrophic-convergence-conjecture), I wrote:
 
-![](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)![](https://assets.turntrout.com/static/images/posts/d057729cc125ff7e4c1a99e1fab5c7936fb5cef537b9d02b.avif)
+!["What happens when agents seek pure control over the future? Not everyone can be king. If you're just seeking power without concern for others, you tend to push others down after a certain point. And most goals don't have concern for others. You'll just compete for resources." Below, a "paperclip maximizer" robot punches a "staple maximizer" robot.](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)![A hand-drawn illustration shows two robots on opposite sides of a green planet. Text reads: "It may take a while for power-seekers to come into conflict. But they will. They don't hate each other; they're just in each other's way."](https://assets.turntrout.com/static/images/posts/d057729cc125ff7e4c1a99e1fab5c7936fb5cef537b9d02b.avif)
 
 Are there worlds where this isn't true? Consider a world where you supply a utility-maximizing AGI with a utility function.
 
-![](https://assets.turntrout.com/static/images/posts/46b8706e0cfb81c5b9f90c9d8918201750ba1468a9065979.avif)
+![A universe divided by a jagged line into two halves. The "Left half" contains a person on Earth, and the "Right half" contains a robot on a planet. Text below the line reads "No interaction," indicating the two halves are causally separate.](https://assets.turntrout.com/static/images/posts/46b8706e0cfb81c5b9f90c9d8918201750ba1468a9065979.avif)
 <br/>Figure: The AGI is in a "separate part of the universe"; after the initial specification of the utility function, the left half of the universe evolves independently of the right half. Nothing you can do after specification can affect the AGI's half, and vice versa. No communication can take place between the two halves.
 
 The only information you have about the other half is your utility. For simplicity, let's suppose you and the AGI have utility functions over universe-histories which are additive across the halves of the universe. You don't observe any utility information about the other part of the universe until the end of time, and vice versa for the AGI. That is, for history $h$ ,

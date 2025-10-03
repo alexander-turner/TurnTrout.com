@@ -203,7 +203,7 @@ Imagine that you're looking at a maze and trying to predict whether the mouse wi
 
 Some mazes are easy to predict, because the cheese is _on the way_ to the top-right corner. There's no _decision square_ where the agent has to make the hard choice between the paths to the cheese and to the top-right corner:
 
-![](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
+![The left, "Has decision square," shows a red dot at a junction where an agent must choose between a path to the cheese and a path to the top-right. The right, "No decision square," shows a maze where the cheese is on the way, requiring no such choice.](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
 
 Figure: At the decision square, the agent must choose between two paths—cheese, and top-right.
 

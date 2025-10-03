@@ -85,7 +85,7 @@ Differential equations help us explain and model phenomena, often giving us insi
 
 This material gave me a great conceptual framework for thinking about stability. Here are some good handles:
 
-![](https://assets.turntrout.com/static/images/posts/eb2E5Eg.avif)
+!["Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.](https://assets.turntrout.com/static/images/posts/eb2E5Eg.avif)
 
 Let's think about rocks and hills. _Unstable_ equilibria have the rock rolling away forever lost, no matter how lightly the rock is nudged, while _locally stable_ equilibria have some level of tolerance within which they'll settle back down. For a _globally stable_ equilibrium, no matter how hard the perturbation, the rock comes rolling back down the parabola.
 
