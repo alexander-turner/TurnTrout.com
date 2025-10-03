@@ -523,6 +523,12 @@ def get_check_steps(
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
         ),
+        CheckStep(
+            name="WCAG2 AA-standard accessibility",
+            command=[
+                "npm run test:a11y",
+            ],
+        ),
         # skipcq: BAN-B604
         CheckStep(
             name="Checking link validity",

@@ -22,6 +22,7 @@
     "profile": "NODE_OPTIONS='--enable-source-maps' 0x --output-dir ./prof/ ./node_modules/.bin/tsx ./quartz/bootstrap-cli.ts build --concurrency=1",
     "postinstall": "npx playwright install && patch-package",
     "test:visual": "npx playwright test --config playwright.config.ts --grep '(lostpixel)'",
+    "test:a11y": "npx pa11y-ci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
     "generate:scss": "tsx quartz/styles/generate-variables.ts",
     "setup:python": "pip install pyupgrade autoflake isort autopep8 black ruff"
   },
@@ -204,6 +205,7 @@
     "mdast": "^2.3.2",
     "node-fetch": "^3.3.2",
     "pa11y": "^9.0.1",
+    "pa11y-ci": "^4.0.1",
     "patch-package": "^8.0.0",
     "playwright": "^1.50.1",
     "preact": "^10.26.0",
