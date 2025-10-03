@@ -27,7 +27,7 @@ const rssSpan = h("span", { className: "favicon-span" }, [
   }),
 ])
 export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
-const subscriptionElement = h("center", [
+const subscriptionElement = h("div", { className: "centered" }, [
   h("div", h("p", ["Find out when I post more content: ", newsletterElement, " & ", rssElement])),
 ])
 
@@ -36,7 +36,9 @@ const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
   h("span", { className: "favicon-span" }, [".com", createFaviconElement(MAIL_PATH)]),
 ])
 
-const contactMe = h("div", [h("center", ["Thoughts? Email me at ", h("code", {}, [mailLink])])])
+const contactMe = h("div", [
+  h("div", { className: "centered" }, ["Thoughts? Email me at ", h("code", {}, [mailLink])]),
+])
 
 /**
  * Inserts components after the ornament node (trout container) in the tree

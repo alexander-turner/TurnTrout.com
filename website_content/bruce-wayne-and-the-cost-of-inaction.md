@@ -46,7 +46,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 None of the characters are meant to express my views. I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
 
-<center><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></center>
+<div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
 ## 1: Don't Look Away
 
@@ -128,7 +128,7 @@ Gentle deceleration woke him from his thoughts. As father and son left the car, 
 
 They were home.<br>
 
-<center><img id="fade-img" src="https://assets.turntrout.com/static/images/posts/fountain.webp" width="90%" height="auto" class="no-select"></center>
+<div class="centered"><img id="fade-img" src="https://assets.turntrout.com/static/images/posts/fountain.webp" width="90%" height="auto" class="no-select"></div>
 
 ## 2: The World is Messy
 

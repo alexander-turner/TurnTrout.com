@@ -141,7 +141,7 @@ _Impact isn't quite about information-theoretic empowerment._
 
 One might intuitively define "bad impact" as "decrease in our ability to achieve our goals". Then by removing "bad", we see that
 
-<center>Impact is change to our ability to achieve goals.</center>
+<div class="centered">Impact is change to our ability to achieve goals.</div>
 
 ## Sanity Checks
 
@@ -182,7 +182,7 @@ Let $\mathcal{U}$ be the set of all computable utility functions $u : \mathcal{H
 
 We now formalize impact as _change in attainable utility_. One might imagine this being with respect to the utilities that _we_ (as in humanity) can attain. However, that's pretty complicated, and it turns out we get more desirable behavior by using the _agent's_ attainable utilities as a proxy. In this sense,
 
-<center>the agent's ability to achieve goals ≈ our ability to achieve goals.</center>
+<div class="centered">the agent's ability to achieve goals ≈ our ability to achieve goals.</div>
 
 ### Formalizing "Ability to Achieve Goals"
 

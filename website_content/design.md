@@ -131,7 +131,7 @@ I like the pastel palettes provided by Catppuccin:
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    <center>Light mode</center>
+    <div class="centered">Light mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
@@ -146,10 +146,10 @@ I like the pastel palettes provided by Catppuccin:
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></div>
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    <center>Dark mode</center>
+    <div class="centered">Dark mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
@@ -164,7 +164,7 @@ I like the pastel palettes provided by Catppuccin:
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></div>
   </span>
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
@@ -339,7 +339,7 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 >
 > Subtitle: Hover over a line to translate
 >
-> <center><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></center>
+> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></div>
 >
 > <em><span class="elvish" data-content="Ah! like gold fall the leaves in the wind,">hEÁ jyE7\`B\`V j1pE6E j8"\#\`B 8\~M75%5$ =</span></em>
 >
@@ -390,16 +390,16 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 
 However, implementation was tricky. As shown with the figure's "A",  CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
-<center style="font-size:4rem;line-height:1.4 !important;">
+<div class="centered" style="font-size:4rem;line-height:1.4 !important;">
 <span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
-</center>
+</div>
   
 However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! I render the letter and the embellishment separately, using [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) for the embellishment. The result:
 
-<center>
+<div class="centered">
 <span class="dropcap" data-first-letter="A" style="font-size:4rem;">A</span>
-</center>
+</div>
 
 > [!note]- Dropcap CSS
 >
@@ -423,16 +423,16 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 
 A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
-<center id="the-pond-dropcaps" style="font-size:min(4rem, 15vw); line-height: 1;">
+<div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: color-mix(in srgb, 55% red, var(--midground-fainter));">T</span>
 <span class="dropcap" data-first-letter="H" style="--before-color: color-mix(in srgb, 55% orange, var(--midground-fainter));">H</span>
 <span class="dropcap" data-first-letter="E"  style="--before-color: color-mix(in srgb, 65% yellow, var(--midground-fainter));">E</span>
-<br/>  
+<br/>
 <span class="dropcap" data-first-letter="P"  style="--before-color: color-mix(in srgb, 65% green, var(--midground-fainter));">P</span>
 <span class="dropcap" data-first-letter="O"  style="--before-color: color-mix(in srgb, 65% blue, var(--midground-fainter));">O</span>
 <span class="dropcap" data-first-letter="N"  style="--before-color: color-mix(in srgb, 65% purple, var(--midground-fainter));">N</span>
 <span class="dropcap" data-first-letter="D"  style="--before-color: color-mix(in srgb, 65% pink, var(--midground-fainter));">D</span>
-</center>
+</div>
 
 ## Formatting enhancement
 

@@ -301,7 +301,7 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 # Audio
 
-<center><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></center>
+<div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
 # Images
 
@@ -408,7 +408,7 @@ He came in 1st but I came in 5,300,251st. :(
 <span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
-</center>
+</div>
 
 <center id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: color-mix(in srgb, 55% red, var(--midground-fainter));">T</span>
@@ -419,7 +419,7 @@ He came in 1st but I came in 5,300,251st. :(
 <span class="dropcap" data-first-letter="O"  style="--before-color: color-mix(in srgb, 65% blue, var(--midground-fainter));">O</span>
 <span class="dropcap" data-first-letter="N"  style="--before-color: color-mix(in srgb, 65% purple, var(--midground-fainter));">N</span>
 <span class="dropcap" data-first-letter="D"  style="--before-color: color-mix(in srgb, 65% pink, var(--midground-fainter));">D</span>
-</center>
+</div>
 
 # Emoji examples
 
@@ -469,7 +469,7 @@ He came in 1st but I came in 5,300,251st. :(
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    <center>Light mode</center>
+    <div class="centered">Light mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
@@ -484,10 +484,10 @@ He came in 1st but I came in 5,300,251st. :(
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></div>
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    <center>Dark mode</center>
+    <div class="centered">Dark mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
@@ -502,7 +502,7 @@ He came in 1st but I came in 5,300,251st. :(
       <span style="color: var(--lavender);">Lavender</span>
       <span style="color: var(--pink);">Pink</span>
     </div>
-    <center><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></center>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts on Twitter"/></div>
   </span>
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>

@@ -55,8 +55,8 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 <br/>
-<center>“Most people won't agree to kill themselves for 50 million dollars.”<br/>Stuart Russell and Peter Norvig
-</center>
+<div class="centered">"Most people won't agree to kill themselves for 50 million dollars."<br/>Stuart Russell and Peter Norvig
+</div>
 
 # Foreword
 
@@ -478,8 +478,8 @@ Why would it care?
 
 _In which the authors introduce one last concept, asymptotic bounded optimality, and look forward to the great tasks ahead._
 
-<center>“We can see only a short distance ahead, but we can see that much remains to be done.” - Alan Turing
-</center>
+<div class="centered">"We can see only a short distance ahead, but we can see that much remains to be done." - Alan Turing
+</div>
 
 ## Final Thoughts
 
