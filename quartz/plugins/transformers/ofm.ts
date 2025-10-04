@@ -8,7 +8,6 @@ import type { Root, Html, BlockContent, Paragraph, PhrasingContent, Blockquote }
 import type { PluggableList } from "unified"
 
 import fs from "fs"
-import { slug as slugAnchor } from "github-slugger"
 import { toHtml } from "hast-util-to-html"
 import { ReplaceFunction, findAndReplace as mdastFindReplace } from "mdast-util-find-and-replace"
 import { toHast } from "mdast-util-to-hast"
@@ -22,6 +21,7 @@ import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
+import { slugify as slugAnchor } from "./gfm"
 
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
@@ -167,13 +167,17 @@ const createTranscludeElement = (
   url: string,
   ref: string,
   displayAlias?: string,
-): PhrasingContent => ({
-  type: "html",
-  data: { hProperties: { transclude: true } },
-  value: `<span class="transclude" data-url="${url}" data-block="${ref}"><a href="${url}${ref}" class="transclude-inner">${
-    displayAlias ?? `Transclude of ${url}${ref}`
-  }</a></span>`,
-})
+): PhrasingContent => {
+  const isExternal = externalLinkRegex.test(url)
+  const href = isExternal ? `${url}${ref}` : `/${url}${ref}`
+  return {
+    type: "html",
+    data: { hProperties: { transclude: true } },
+    value: `<span class="transclude" data-url="${url}" data-block="${ref}"><a href="${href}" class="transclude-inner">${
+      displayAlias ?? `Transclude of ${url}${ref}`
+    }</a></span>`,
+  }
+}
 
 /** Creates a highlight span element. */
 const createHighlightElement = (content: string): PhrasingContent => ({
@@ -348,9 +352,9 @@ function canonicalizeAdmonition(admonitionName: string): keyof typeof admonition
 /** Regular expression to match external URLs (http/https) */
 export const externalLinkRegex = /^https?:\/\//i
 
-/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page|alias]], ![[embed]] */
+/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
 export const wikilinkRegex = new RegExp(
-  /!?\[\[([^[\]|#\\]+)?(#+[^[\]|#\\]+)?(\\?\|[^[\]#]+)?\]\]/,
+  /!?\[\[([^[\]|#\\]+)?(#+(?:[^[\]|#\\]+)?)?(\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
@@ -721,13 +725,21 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
 
           /* istanbul ignore next -- wikilink parsing edge cases */
           const fp = rawFp ?? ""
-          const anchor = rawHeader?.trim().replace(/^#+/, "")
-          const blockRef = anchor?.startsWith("^") ? "^" : ""
-          const displayAnchor = anchor ? `#${blockRef}${slugAnchor(anchor)}` : ""
-          /* istanbul ignore next -- wikilink alias parsing edge cases */
-          const displayAlias = rawAlias ?? rawHeader?.replace("#", "|") ?? ""
-          /* istanbul ignore next -- external wikilink embed detection edge case */
           const embedDisplay = value.startsWith("!") ? "!" : ""
+
+          // Handle anchor/header processing
+          let displayAnchor = ""
+          if (rawHeader === "#") {
+            // Preserve bare "#" for intro transclusion (![[page#]])
+            displayAnchor = "#"
+          } else if (rawHeader) {
+            const anchor = rawHeader.trim().replace(/^#+/, "")
+            const blockRef = anchor.startsWith("^") ? "^" : ""
+            displayAnchor = `#${blockRef}${slugAnchor(anchor)}`
+          }
+
+          // Handle alias processing - only use explicitly provided aliases
+          const displayAlias = rawAlias ?? ""
 
           /* istanbul ignore next -- external link wikilink edge case */
           if (rawFp?.match(externalLinkRegex)) {

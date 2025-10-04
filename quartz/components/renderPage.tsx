@@ -44,6 +44,22 @@ interface RenderComponents {
 const headerRegex = new RegExp(/h[1-6]/)
 
 /**
+ * Finds a file by slug or alias, prioritizing slug matches over alias matches.
+ * @param files - Array of files to search through.
+ * @param target - The target slug to find.
+ * @returns The matching file, or undefined if not found.
+ */
+function findFileBySlugOrAlias(
+  files: QuartzPluginData[],
+  target: FullSlug,
+): QuartzPluginData | undefined {
+  return (
+    files.find((f) => f.slug === target) ||
+    files.find((f) => (f.frontmatter?.aliases as FullSlug[])?.includes(target))
+  )
+}
+
+/**
  * Creates the anchor element linking back to the transclusion source.
  * The anchor is appended after transcluded content.
  *
@@ -135,7 +151,44 @@ export function setHeaderTransclusion(
 }
 
 /**
- * Replaces a transclude span's children with the entire `htmlAst` of the target page.
+ * Replaces a transclude span's children with content from the beginning up to the first heading.
+ * Appends a source anchor to the end.
+ *
+ * @param node - The transclude span node to mutate.
+ * @param page - The page being transcluded from (requires `htmlAst`).
+ * @param slug - The current page slug where content is rendered.
+ * @param transcludeTarget - The target page slug being referenced.
+ */
+export function setIntroTransclusion(
+  node: Element,
+  page: QuartzPluginData,
+  slug: FullSlug,
+  transcludeTarget: FullSlug,
+): void {
+  const htmlAst = page.htmlAst
+  if (!htmlAst) return
+
+  let endIdx: number | undefined
+
+  for (const [i, el] of htmlAst.children.entries()) {
+    if (el.type === "element" && el.tagName.match(headerRegex)) {
+      endIdx = i
+      break
+    }
+  }
+
+  const href = simplifySlug(transcludeTarget)
+  node.children = [
+    ...(htmlAst.children.slice(0, endIdx) as ElementContent[]).map((child) =>
+      normalizeHastElement(child as Element, slug, transcludeTarget),
+    ),
+    createTranscludeSourceAnchor(href),
+  ]
+}
+
+/**
+ * Replaces a transclude span's children with the entire `htmlAst` of the target page,
+ * excluding the trout decoration and everything after it.
  * Appends a source anchor to the end.
  *
  * @param node - The transclude span node to mutate.
@@ -153,9 +206,19 @@ export function setPageTransclusion(
   const htmlAst = page.htmlAst
   if (!htmlAst) return
 
+  let endIdx: number | undefined
+
+  // Find the trout decoration container to exclude it
+  for (const [i, el] of htmlAst.children.entries()) {
+    if (el.type === "element" && el.tagName === "div" && el.properties?.id === "trout-container") {
+      endIdx = i
+      break
+    }
+  }
+
   const href = simplifySlug(transcludeTarget)
   node.children = [
-    ...(htmlAst.children as ElementContent[]).map((child) =>
+    ...(htmlAst.children.slice(0, endIdx) as ElementContent[]).map((child) =>
       normalizeHastElement(child as Element, slug, transcludeTarget),
     ),
     createTranscludeSourceAnchor(href),
@@ -295,7 +358,7 @@ export function renderPage(
 
         addVirtualFileForSpecialTransclude(transcludeTarget, componentData)
 
-        const page = componentData.allFiles.find((f) => f.slug === transcludeTarget)
+        const page = findFileBySlugOrAlias(componentData.allFiles, transcludeTarget)
         if (!page) {
           return
         }
@@ -305,11 +368,14 @@ export function renderPage(
           // Transclude block
           blockRef = blockRef.slice("#^".length)
           setBlockTransclusion(node, page, slug, transcludeTarget, blockRef)
+        } else if (blockRef === "#" && page.htmlAst) {
+          // intro transclude (from beginning to first heading) - ![[page#]]
+          setIntroTransclusion(node, page, slug, transcludeTarget)
         } else if (blockRef?.startsWith("#") && page.htmlAst) {
-          // header transclude
+          // header transclude - ![[page#section]]
           setHeaderTransclusion(node, page, slug, transcludeTarget, blockRef.slice(1))
         } else if (page.htmlAst) {
-          // page transclude
+          // page transclude (whole article excluding trout decoration) - ![[page]]
           setPageTransclusion(node, page, slug, transcludeTarget)
         }
       }

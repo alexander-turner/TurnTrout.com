@@ -7,6 +7,7 @@ import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../../util/ctx"
 
+import { resetSlugger } from "../gfm"
 import {
   markdownPlugins,
   defaultOptions,
@@ -107,7 +108,7 @@ describe("markdownPlugins", () => {
         '<span class="transclude"',
         'data-block="#^block-id"',
         'data-url="test"',
-        'href="test#^block-id"',
+        'href="/test#^block-id"',
         'class="transclude-inner"',
         "Transclude of test#^block-id",
       ],
@@ -119,7 +120,7 @@ describe("markdownPlugins", () => {
         '<span class="transclude"',
         'data-block="#^block-id"',
         'data-url="test"',
-        'href="test#^block-id"',
+        'href="/test#^block-id"',
         'class="transclude-inner"',
         ">Custom Text<",
       ],
@@ -467,7 +468,7 @@ describe("processWikilink", () => {
       type: "html",
       data: { hProperties: { transclude: true } },
       value:
-        '<span class="transclude" data-url="file.unknown" data-block=""><a href="file.unknown" class="transclude-inner">Transclude of file.unknown</a></span>',
+        '<span class="transclude" data-url="file.unknown" data-block=""><a href="/file.unknown" class="transclude-inner">Transclude of file.unknown</a></span>',
     })
   })
 })
@@ -560,7 +561,7 @@ describe("ObsidianFlavoredMarkdown", () => {
     {
       name: "wikilinks with block references",
       input: "[[page#^block-ref]]",
-      expectedToContain: "[[page#^block-ref|^block-ref]]",
+      expectedToContain: "[[page#^block-ref]]",
     },
     {
       name: "wikilinks with headers",
@@ -603,7 +604,7 @@ describe("Edge cases and advanced features", () => {
         type: "html",
         data: { hProperties: { transclude: true } },
         value:
-          '<span class="transclude" data-url="document" data-block=""><a href="document" class="transclude-inner">Transclude of document</a></span>',
+          '<span class="transclude" data-url="document" data-block=""><a href="/document" class="transclude-inner">Transclude of document</a></span>',
       },
     },
     {
@@ -1203,4 +1204,84 @@ describe("createYouTubeEmbed", () => {
       src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
     })
   })
+})
+
+describe("Header slug consistency between wikilinks and actual headers", () => {
+  beforeEach(() => {
+    resetSlugger()
+  })
+
+  interface HeaderSlugTestCase {
+    name: string
+    input: string
+    expectedSlug: string
+  }
+
+  const headerSlugCases: HeaderSlugTestCase[] = [
+    {
+      name: "simple header",
+      input: "[[page#My Section]]",
+      expectedSlug: "[[page#my-section]]",
+    },
+    {
+      name: "header with apostrophe",
+      input: "[[page#Section's Title]]",
+      expectedSlug: "[[page#section-s-title]]",
+    },
+    {
+      name: "header with curly apostrophe",
+      input: "[[page#Section's Title]]",
+      expectedSlug: "[[page#section-s-title]]",
+    },
+    {
+      name: "header with slash",
+      input: "[[page#AI/ML Overview]]",
+      expectedSlug: "[[page#ai-ml-overview]]",
+    },
+    {
+      name: "header with ampersand",
+      input: "[[page#Risk & Safety]]",
+      expectedSlug: "[[page#risk-safety]]",
+    },
+    {
+      name: "header with em dash",
+      input: "[[page#Part—Overview]]",
+      expectedSlug: "[[page#part-overview]]",
+    },
+    {
+      name: "header with multiple special chars",
+      input: "[[page#What's AI/ML & Why]]",
+      expectedSlug: "[[page#what-s-ai-ml-why]]",
+    },
+  ]
+
+  it.each(headerSlugCases)(
+    "should slugify $name correctly for wikilinks",
+    ({ input, expectedSlug }) => {
+      resetSlugger()
+      const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+      if (!transformer.textTransform) {
+        throw new Error("textTransform is undefined")
+      }
+      const mockCtx = {} as BuildCtx
+      const result = transformer.textTransform(mockCtx, input)
+      expect(result).toBe(expectedSlug)
+    },
+  )
+
+  it.each(headerSlugCases)(
+    "should slugify $name consistently for transclusions",
+    ({ input, expectedSlug }) => {
+      resetSlugger()
+      const transclusionInput = `!${input}`
+      const expectedTransclusionSlug = `!${expectedSlug}`
+      const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+      if (!transformer.textTransform) {
+        throw new Error("textTransform is undefined")
+      }
+      const mockCtx = {} as BuildCtx
+      const result = transformer.textTransform(mockCtx, transclusionInput)
+      expect(result).toBe(expectedTransclusionSlug)
+    },
+  )
 })
