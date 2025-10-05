@@ -366,9 +366,9 @@ test("Video toggle button is visible and functional", async ({ page }) => {
   const { autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
   await expect(autoplayToggle).toBeVisible()
-  await expect(pauseIcon).toBeVisible()
-  await expect(playIcon).toBeHidden()
-  await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
+  await expect(playIcon).toBeVisible()
+  await expect(pauseIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
 })
 
 test("Video toggle changes autoplay behavior", async ({ page }) => {
@@ -377,23 +377,13 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
   await expect(video).toBeVisible()
-  expect(await isPaused(video)).toBe(false)
-  await expect(pauseIcon).toBeVisible()
-  await expect(playIcon).toBeHidden()
-
-  await autoplayToggle.click()
-
-  // Video should pause and icons should switch
-  await page.waitForFunction(
-    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  expect(await isPaused(video)).toBe(true)
   await expect(playIcon).toBeVisible()
   await expect(pauseIcon).toBeHidden()
-  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
 
   await autoplayToggle.click()
 
+  // Video should play and icons should switch
   await page.waitForFunction(
     (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
@@ -401,6 +391,16 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
+
+  await autoplayToggle.click()
+
+  await page.waitForFunction(
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
+  await expect(playIcon).toBeVisible()
+  await expect(pauseIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
 })
 
 test("Video autoplay preference persists across page reloads", async ({ page }) => {
@@ -409,15 +409,15 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
   await autoplayToggle.click()
-  await expect(playIcon).toBeVisible()
-  await expect(pauseIcon).toBeHidden()
+  await expect(pauseIcon).toBeVisible()
+  await expect(playIcon).toBeHidden()
 
   await page.reload({ waitUntil: "load" })
 
-  await expect(playIcon).toBeVisible()
-  await expect(pauseIcon).toBeHidden()
-  await expect(autoplayToggle).toHaveAttribute("aria-label", "Enable video autoplay")
-  expect(await isPaused(video)).toBe(true)
+  await expect(pauseIcon).toBeVisible()
+  await expect(playIcon).toBeHidden()
+  await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
+  expect(await isPaused(video)).toBe(false)
 })
 
 test("Video autoplay works correctly after SPA navigation", async ({ page }) => {
@@ -427,7 +427,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
 
   await autoplayToggle.click()
   await page.waitForFunction(
-    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
   )
 
@@ -437,12 +437,12 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   await localLink.click()
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
-  // Setting should persist and video should still be paused
-  expect(await isPaused(video)).toBe(true)
+  // Setting should persist and video should still be playing
+  expect(await isPaused(video)).toBe(false)
 
   await autoplayToggle.click()
   await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
   )
 })

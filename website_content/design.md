@@ -244,7 +244,7 @@ However, it was quite difficult to produce a transparent MP4 (as required by Saf
 
 #### Website video looping
 
-I love the desktop website's pond video. However, some find it distracting. I provide a pause button to bring them peace.
+I love the desktop website's pond video. However, some find it distracting. Therefore, I pause the video by default but provide a play button for those who want it on loop.
 
 <figure class="float-right">
 <video autoplay loop muted playsinline style="margin: 0;"><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.webm" type="video/webm"></video>
@@ -252,7 +252,7 @@ I love the desktop website's pond video. However, some find it distracting. I pr
 
 By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video state remains stable, giving the appearance of a persistent pond scene which unfolds throughout your time on my site.
 
-Previously, I had the video only play when hovered. However, that prevented looping the video throughout the reading experience—a feature which several others missed. Hopefully, `gwern` and others find peace via the pause button.
+Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
 
 <!-- spellchecker-disable -->
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"

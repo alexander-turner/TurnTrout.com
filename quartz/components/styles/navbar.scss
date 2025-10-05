@@ -272,11 +272,11 @@
     }
 
     & #play-icon {
-      display: var(--video-play-display, none);
+      display: var(--video-play-display, block);
     }
 
     & #pause-icon {
-      display: var(--video-pause-display, block);
+      display: var(--video-pause-display, none);
     }
   }
 }

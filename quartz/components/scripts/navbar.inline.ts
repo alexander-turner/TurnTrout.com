@@ -8,7 +8,7 @@ const autoplayKey = "pond-video-autoplay"
 
 function getAutoplayEnabled(): boolean {
   const saved = localStorage.getItem(autoplayKey)
-  return saved !== null ? saved === "true" : true // Default to enabled
+  return saved !== null ? saved === "true" : false // Default to disabled
 }
 
 function updatePlayPauseButton(): void {

@@ -18,7 +18,7 @@
   )
 
   // Set video autoplay button state in CSS custom properties
-  const autoplayEnabled = localStorage.getItem("pond-video-autoplay") !== "false" // Default to true
+  const autoplayEnabled = localStorage.getItem("pond-video-autoplay") === "true" // Default to true
   document.documentElement.style.setProperty(
     "--video-play-display",
     autoplayEnabled ? "none" : "block",
