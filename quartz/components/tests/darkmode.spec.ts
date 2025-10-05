@@ -219,69 +219,74 @@ for (const prefix of ["./shard-theory", "./about", "./design#"]) {
   }
 }
 
-test("Link and favicon-span have same color during admonition-title transition", async ({
-  page,
-}) => {
-  const helper = new DarkModeHelper(page)
-  await helper.setTheme("light")
+async function colorsMatchDuringTransition(
+  page: Page,
+  selector1: string,
+  selector2: string,
+  theme: Theme,
+): Promise<boolean> {
+  // Start from opposite theme to trigger transition
+  const startTheme = theme === "light" ? "dark" : "light"
+  await utilsSetTheme(page, startTheme)
 
-  const admonitionLinkSelector = ".admonition-title-inner a"
-  const faviconSpanSelector = ".admonition-title-inner a .favicon-span"
+  // Trigger theme change
+  const darkmodeButton = page.locator("#theme-toggle")
+  await darkmodeButton.click()
 
-  await expect(page.locator(admonitionLinkSelector)).toBeVisible()
-  await expect(page.locator(faviconSpanSelector)).toBeVisible()
+  // This will poll for mismatches and store result on window
+  await page.evaluate(
+    ({ sel1, sel2 }) => {
+      let mismatchFound = false
+      let isPolling = true
 
-  // Helper to get computed colors for link and span
-  const getColors = async (): Promise<{ linkColor: string; spanColor: string }> => {
-    return await page.evaluate(
-      ({ linkSel, spanSel }) => {
-        const link = document.querySelector(linkSel)
-        const span = document.querySelector(spanSel)
-        if (!link || !span) {
-          throw new Error("Required elements not found")
+      const poll = () => {
+        const el1 = document.querySelector(sel1)
+        const el2 = document.querySelector(sel2)
+        if (el1 && el2 && getComputedStyle(el1).color !== getComputedStyle(el2).color) {
+          mismatchFound = true
         }
-        return {
-          linkColor: getComputedStyle(link).color,
-          spanColor: getComputedStyle(span).color,
+        if (isPolling) {
+          requestAnimationFrame(poll)
         }
-      },
-      { linkSel: admonitionLinkSelector, spanSel: faviconSpanSelector },
+      }
+      requestAnimationFrame(poll)
+
+      // @ts-expect-error - for test instrumentation
+      window.stopColorPolling = () => {
+        isPolling = false
+        return !mismatchFound
+      }
+    },
+    { sel1: selector1, sel2: selector2 },
+  )
+
+  // Stop polling and get result
+  return page.evaluate(() => {
+    // @ts-expect-error - for test instrumentation
+    if (typeof window.stopColorPolling !== "function") {
+      return false
+    }
+    // @ts-expect-error - for test instrumentation
+    return window.stopColorPolling()
+  })
+}
+
+for (const theme of ["light", "dark"]) {
+  test(`Link and favicon-span have same color throughout transition to ${theme}`, async ({
+    page,
+  }) => {
+    const admonitionLinkSelector = ".admonition-title-inner a"
+    const faviconSpanSelector = ".admonition-title-inner a .favicon-span"
+
+    await expect(page.locator(admonitionLinkSelector)).toBeVisible()
+    await expect(page.locator(faviconSpanSelector)).toBeVisible()
+
+    const ok = await colorsMatchDuringTransition(
+      page,
+      admonitionLinkSelector,
+      faviconSpanSelector,
+      theme as Theme,
     )
-  }
-
-  // Verify colors match before transition
-  const initialColors = await getColors()
-  expect(initialColors.linkColor).toBe(initialColors.spanColor)
-
-  // Trigger theme transition (1s duration)
-  await helper.clickToggle()
-
-  // Sample colors multiple times during the transition to ensure they stay synchronized
-  const sampleCount = 5
-  for (let i = 0; i < sampleCount; i++) {
-    // Wait for colors to change from previous sample, then verify they still match
-    await page.waitForFunction(
-      ({ linkSel, spanSel, previousColors }) => {
-        const link = document.querySelector(linkSel)
-        const span = document.querySelector(spanSel)
-        if (!link || !span) return false
-
-        const linkColor = getComputedStyle(link).color
-        const spanColor = getComputedStyle(span).color
-
-        // Ensure colors have changed (transition is progressing) and still match each other
-        const colorsChanged =
-          linkColor !== previousColors.linkColor || spanColor !== previousColors.spanColor
-        return colorsChanged && linkColor === spanColor
-      },
-      {
-        linkSel: admonitionLinkSelector,
-        spanSel: faviconSpanSelector,
-        previousColors: i === 0 ? initialColors : await getColors(),
-      },
-    )
-
-    const colors = await getColors()
-    expect(colors.linkColor).toBe(colors.spanColor)
-  }
-})
+    expect(ok).toBe(true)
+  })
+}
