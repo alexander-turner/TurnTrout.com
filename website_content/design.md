@@ -7,10 +7,11 @@ tags:
 description: Showing off and explaining this site's beauty.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - website-design
   - site-design
+  - open-source
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2025-09-14 13:03:18.959625
 no_dropcap: false
@@ -715,6 +716,13 @@ flowchart TD
 ```
 
 Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thinking-via-a-human-imitator).
+
+## Accessibility
+
+I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+
+> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+> ![[/open-source#automatic-alt-text-generation]]
 
 ## Smaller features
 
