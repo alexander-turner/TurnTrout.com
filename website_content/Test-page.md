@@ -116,8 +116,9 @@ Header 1
 > ![[about#^first-para]]
 
 > [!quote]
-> ![[#Section to transclude]]
+> ![[/test-page#Section to transclude]]
 >
+
 ## Section to transclude
 
 Hi! Am I being transcluded?
@@ -186,6 +187,8 @@ Hi! Am I being transcluded?
 >
 > Hi
 >
+
+> [!note] [Link in admonition title](/dataset-protection)
 
 # Mermaid diagrams
 
