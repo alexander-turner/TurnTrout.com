@@ -19,8 +19,7 @@
   }
 
   & > #search-icon {
-    background-color: var(--midground-faintest);
-    border-radius: 4px;
+    border: 1px solid var(--midground-fainter);
     height: 1.6rem;
     display: flex;
     align-items: center;
@@ -36,12 +35,11 @@
       color: color-mix(in srgb, var(--midground) 75%, var(--foreground));
       display: inline;
       padding: 0;
-      margin-left: calc(1 * $base-margin);
-      margin-right: calc(1.5 * $base-margin);
+      margin: 0 $base-margin;
 
       // Make it more centered for mobile
       @media all and (max-width: $max-mobile-width) {
-        margin-right: calc(2 * $base-margin);
+        margin-right: calc(1.5 * $base-margin);
       }
     }
 
