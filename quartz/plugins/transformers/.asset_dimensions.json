@@ -4266,5 +4266,9 @@
   "./asset_staging/open-source-20251004181740.png": {
     "width": 2028,
     "height": 1348
+  },
+  "/static/images/external-favicons/creativecommons_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

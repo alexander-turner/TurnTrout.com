@@ -16,6 +16,24 @@ aliases:
   - software
   - OSS
 ---
+# This website
+
+Subtitle: I've made over 4,500 commits. That's over halfway to being over 9,000!
+
+This site is one of the most heartfelt pieces of art I have ever yielded. I've passionately [optimized its design](/design) while [obsessively testing](/design#deployment-pipeline) --- for example, 100\% TypeScript branch coverage, 100\% Python line coverage, and hundreds of [visual regression tests](/design#visual-regression-testing).
+
+I open-source my website infrastructure and article edit histories at [`alexander-turner/TurnTrout.com`](https://github.com/alexander-turner/TurnTrout.com). I license the repository under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), which means you can share and adapt the site as long as you provide attribution and distribute any derivative works under the same license.
+
+You can locally serve the site by running:
+
+```bash
+SITE_DIR=/tmp/TurnTrout.com
+git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
+cd "$SITE_DIR"
+yes | npm ci
+npx quartz build --serve 
+```
+
 # Automatic alt text generation
 
 Subtitle: Install with `pip install alt-text-llm`
@@ -39,5 +57,7 @@ If you want to improve accessibility for your content, go ahead and [check out m
 # Protect datasets from scrapers
 
 Subtitle: Install with `pip install easy-dataset-share`
+
+I helped fund this project.
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
 > ![[dataset-protection#]]  
