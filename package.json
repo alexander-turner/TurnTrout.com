@@ -47,7 +47,7 @@
     ],
     "!(*.vale-styles)/**/*.md": [
       "prettier --write",
-      "markdownlint --config .markdownlint.jsonrc --fix"
+      "markdownlint --config .markdownlint.jsonc --fix"
     ]
   },
   "engines": {
