@@ -431,7 +431,7 @@ He came in 1st but I came in 5,300,251st. :(
 ## Emoji comparison
 
 <figure id="emoji-comparison-figure">
- <div aria-label="A collage comparing the 'Smiling Face with Hearts' emoji across eight different platforms.">
+ <div role="img" aria-label="A collage comparing the 'Smiling Face with Hearts' emoji across eight different platforms.">
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/apple_hearts.avif" alt="">
       <figcaption>Apple</figcaption>

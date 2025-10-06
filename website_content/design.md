@@ -588,7 +588,7 @@ Subtitle: This list is not exhaustive.
 Tasteful emoji usage helps brighten and vivify an article. However, it seems like there are over 9,000 emoji stylings:
 
 <figure id="emoji-comparison-figure">
- <div aria-label="A collage comparing the 'Smiling Face with Hearts' emoji across eight different platforms.">
+ <div role="img" aria-label="A collage comparing the 'Smiling Face with Hearts' emoji across eight different platforms.">
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/apple_hearts.avif" alt="">
       <figcaption>Apple</figcaption>
