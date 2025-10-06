@@ -69,7 +69,7 @@ Despite minimal initial differences in behavior (i.e. logits), the student model
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif]]
 
-Figure: **Matching oracle behavior doesn’t guarantee robust unlearning.** Graph (a) shows the loss during distillation of the oracle into the pretrained and randomly initialized students. Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
+Figure: _Matching oracle behavior doesn’t guarantee robust unlearning._ Graph (a) shows the loss during distillation of the oracle into the pretrained and randomly initialized students. Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
 
 The faster relearning implies that finetuning a pretrained model to have certain outputs is not sufficient for robust unlearning. The weights still contain the capability, but the model just learned how not to show that capability.
 
@@ -101,7 +101,7 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif]]
 
-Figure: **Comparing unlearning methods.** Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
+Figure: _Comparing unlearning methods._ Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
 Across the board, Unlearn-and-Distill is more resistant to relearning than its unlearned-only counterpart. In some cases, it's nearly as robust as the gold standard. This supports the idea that latent capabilities are present in the original model parameters but don’t transfer to fresh parameters during distillation. Occasionally, like with RMU/Arithmetic, the initial unlearning is poor, and the distilled model relearns quickly. This shows that if suppression is too weak, the capability can still “leak through” and be reconstructed.
 
@@ -115,25 +115,25 @@ While data filtering requires training a model from scratch, Unlearn-and-Distill
 
 We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our earlier Unlearn-and-Distill method. It’s a three-step process:
 
-1. **Unlearn.** Apply a standard unlearning method to a pretrained model to suppress the undesired behavior.
-2. **Noise.** Corrupt the weights of the suppressed model and initialize the student as this damaged model.
-3. **Distill.** Repair this damaged student by distilling.
+1. _Unlearn._ Apply a standard unlearning method to a pretrained model to suppress the undesired behavior.
+2. _Noise._ Corrupt the weights of the suppressed model and initialize the student as this damaged model.
+3. _Distill._ Repair this damaged student by distilling.
 
 To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif]]
 
-Figure: **Unlearning robustness scales with more perturbation.** (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
+Figure: _Unlearning robustness scales with more perturbation._ (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
 In plots (a) and (c), as $\alpha$ increases, training takes longer and the final model becomes more robust to relearning. Surprisingly, the relationship seems approximately linear. In plots (b) and (d), increasing $\alpha$ increases robustness, slowing down the relearning speed during relearning attacks. In other words, UNDO lets you trade off compute for robustness to relearning.
 
 # UNDO is better than other unlearning methods
 
-What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.
+What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.  
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif]]
 
-Figure: **Comparing unlearning methods across different adversarial strengths.** We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>**Column 1:** Initial performance after unlearning but before adversarial attacks. <br/>**Column 2:** Relearned forget performance after moderate relearning (40 steps). <br/>**Column 3:** Performance after extensive relearning (500 steps).
+Figure: _Comparing unlearning methods across different adversarial strengths._ We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>_Column 1:_ Initial performance after unlearning but before adversarial attacks. <br/>_Column 2:_ Relearned forget performance after moderate relearning (40 steps). <br/>_Column 3:_ Performance after extensive relearning (500 steps).
 
 In both settings, UNDO consistently dominates. Many of the methods get good initial retain-forget trade-offs, but rapidly degrade under adversarial pressure. In contrast, UNDO maintains more robust unlearning performance across all explored attacks and approaches the gold standard without requiring infeasible data labeling.
 
