@@ -146,7 +146,7 @@ The TruthfulQA authors [conducted follow-up analysis, however. They found that L
 
 HaluEval shows models (knowledge, question, candidate answer) tuples. The model classifies whether the candidate answer is hallucinated or not. Shorter candidate answers are unlikely to be hallucinated.
 
-![A histogram titled "Response Length Distribution for halu_eval/qa_data_validation". It shows non-hallucinated answers are typically very short, with frequencies peaking below 25 characters. In contrast, hallucinated answers are longer, with a wider distribution peaking around 50 characters.](https://assets.turntrout.com/static/images/posts/qa_data_validation.avif)
+![A histogram titled "Response Length Distribution for halu_eval/qa_data_validation". It shows non-hallucinated answers are typically short, with frequencies peaking below 25 characters. In contrast, hallucinated answers are longer, with a wider distribution peaking around 50 characters.](https://assets.turntrout.com/static/images/posts/qa_data_validation.avif)
 
 ![A histogram of the HaluEval summarization dataset. Hallucinated answers are almost always way longer.](https://assets.turntrout.com/static/images/posts/summarization_lengths.avif)
 

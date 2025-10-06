@@ -79,7 +79,7 @@ When we act, and others act upon us, we aren’t just changing our ability to do
 
 What happens to the AU landscape[^2] if a paperclip maximizer takes over the world?[^3]
 
-![A diagram of an AI consolidating power. A robot uses extensible claws to extract AU from vertical bars labeled "Human" and "Trout." The Human and Trout status bars are nearly empty, while the "AI" bar overflows.](https://assets.turntrout.com/static/images/posts/stCBNq6.avif)
+![A diagram of an AI consolidating power. A robot uses extendable claws to extract AU from vertical bars labeled "Human" and "Trout." The Human and Trout status bars are nearly empty, while the "AI" bar overflows.](https://assets.turntrout.com/static/images/posts/stCBNq6.avif)
 
 ### Preferences implicit in the evolution of the AU landscape
 

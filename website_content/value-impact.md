@@ -64,7 +64,9 @@ date_updated: 2025-06-03 22:57:00.423836
 
 ![Handwritten text: "Let's query our mental impact-o-meter from these different vantage points. Step into each pair of shoes and ask 'how big of a deal is this?'" ](https://assets.turntrout.com/static/images/posts/jaHW2pp.avif)
 
+<!-- vale off -->
 ![A confused cartoon robot with a question mark above its head stares at a jumbled pile of blocks. Text reads: "Just imagine being XYZ. The very fabric of what is important has been ripped away."](https://assets.turntrout.com/static/images/posts/MmtIR5e.avif)
+<!-- vale on -->
 
 ![Text: "Perhaps the Pebblehoarder civilization can rebound and find value... but if not – if XYZ doesn't know you can just make more pebbles – the loss feels complete." Below this, a black oval symbolizing an empty universe contains the text: "The universe feels dead and empty and worthless."](https://assets.turntrout.com/static/images/posts/S1KiiUj.avif)
 

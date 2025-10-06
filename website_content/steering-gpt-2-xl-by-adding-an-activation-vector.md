@@ -717,7 +717,7 @@ Let's see how the layer-16, coefficient +1 “ wedding” vector affects perplex
 
 #### Sentences about weddings
 
-![Text on wedding industry trends visualizing how a steering vector boosts related token probabilities. The words "wedding" and "couples" are highlighted in bright green, indicating a large probability increase. Other related words like "venues," "decor," and "celebrations" are highlighted in lighter green.](https://assets.turntrout.com/static/images/posts/txdkcztwtny3ufawnvoe.avif)
+![Text on wedding industry trends visualizing how a steering vector boosts related token probabilities. The words "wedding" and "couples" are highlighted in bright green, indicating a large probability increase. Other related words like "venues," "décor," and "celebrations" are highlighted in lighter green.](https://assets.turntrout.com/static/images/posts/txdkcztwtny3ufawnvoe.avif)
 <br/>Figure: In general, the first wedding related token in each sentence gets a significant boost in probability in the modified model, up to >50x. The tokens with large probability increases include the expected `wedding`, but also `couples`, `celebrations`, and other semantically associated tokens.
 
 #### Sentences about shipping aren't changed
