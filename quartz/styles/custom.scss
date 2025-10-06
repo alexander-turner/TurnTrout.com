@@ -258,17 +258,17 @@ sup {
   display: flex;
   justify-content: center;
 
-  & > span {
-    vertical-align: middle;
+  &::before,
+  &::after {
     font-family: "EBGaramond12", serif;
     font-size: 3rem;
-    filter: saturate(90%);
     color: var(--blue);
-    opacity: light-dark(0.7, 0.7);
+    opacity: light-dark(0.6, 0.7);
   }
 
   // Left text flourish
-  & > span:first-of-type {
+  &::before {
+    content: "☙";
     margin-right: calc(0.75 * $base-margin);
   }
 
@@ -282,7 +282,8 @@ sup {
   }
 
   // Right text flourish
-  & > span:last-of-type {
+  &::after {
+    content: "❧";
     margin-left: calc($base-margin);
   }
 }
