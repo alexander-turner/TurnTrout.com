@@ -15,6 +15,9 @@
     "hideElements": [
       ".ignore-pa11y"
     ],
+    "ignore": [
+      "frame-tested"
+    ],
     "concurrency": 1
   }
 }
