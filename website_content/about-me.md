@@ -50,6 +50,6 @@ If my writing means something to you or has brightened your life, consider:
 I prefer messages over donations.
 
 > [!bug]- Report a bug
-> <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScSrZlykZIFyvrk2yxSoVn9VJ6RsLbIjChaDGG0cheVakC5hw/viewform?usp=sf_link" height=800 ></iframe>
+> <iframe title="Bug Report Form" src="https://docs.google.com/forms/d/e/1FAIpQLScSrZlykZIFyvrk2yxSoVn9VJ6RsLbIjChaDGG0cheVakC5hw/viewform?usp=sf_link" height=800 ></iframe>
 
 [^donate]: Ko-fi donations will not affect my ability to do AI alignment research. To support alignment research, I suggest the [Long-Term Future Fund](https://www.givingwhatwecan.org/charities/long-term-future-fund).

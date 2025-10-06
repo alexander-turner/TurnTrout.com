@@ -78,7 +78,7 @@ Like the power-seeking argument, the sycophancy argument involves _many tasks in
 
 # Making falsifiable predictions
 
-<iframe src="https://fatebook.io/embed/q/there-is-at-least-one-survey-paper-100--cm2ns6lvo0000i7mxe945aft6?compact=true&requireSignIn=false" height="195px"></iframe>
+<iframe title="Will There Exist A Survey Paper on Intrinsic Power-Seekin By Beginning Of 2028?" src="https://fatebook.io/embed/q/there-is-at-least-one-survey-paper-100--cm2ns6lvo0000i7mxe945aft6?compact=true&requireSignIn=false" height="195px"></iframe>
 
 Predictions of this hypothesis (predicted with varying confidences):
 

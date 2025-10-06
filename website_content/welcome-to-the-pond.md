@@ -78,7 +78,7 @@ Like any good trout seeking a mate, I've prepared my nesting grounds with care. 
 </figure>
 
 > [!info]- Embedded preview of my dating doc
-> <iframe src="/date-me" style="height: 1000px"></iframe>
+> <iframe title="I'm that 'Other Fish in the Sea'" src="/date-me" style="height: 1000px"></iframe>
 
 [^trout]: I'm not a marine biologist. I looked around and gave the trout mating claims a quick check - they don't seem obviously wrong.
 
@@ -138,7 +138,7 @@ I also took a moment to enable:
 
 ## Fatebook prediction tracking
 
-<iframe src="https://fatebook.io/embed/q/are-you-going-to-like-turntrout-com---cm2u10nym00029cc3j1h05pot?compact=true&requireSignIn=false" height="150"></iframe>
+<iframe title="Prediction: Are You Going To Like TurnTrout.com? (Resolved 'Yes')"  src="https://fatebook.io/embed/q/are-you-going-to-like-turntrout-com---cm2u10nym00029cc3j1h05pot?compact=true&requireSignIn=false" height="150"></iframe>
 
 By embedding [`Fatebook.io`](https://fatebook.io) predictions, I get the benefits of [PredictionBook](https://predictionbook.com/) without the clunkiness. Fatebook embeds show how my beliefs change over time and overall encourage me to make more ✨falsifiable predictions✨.
 

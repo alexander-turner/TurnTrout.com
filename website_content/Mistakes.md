@@ -34,7 +34,7 @@ While the realization may seem simple or obvious, it opened up a crack in my ali
 
 Subtitle: November 5, 2024
 
-<iframe src="https://fatebook.io/embed/q/kamala-wins--cm34x28gv00004svvk2d1zvaz?compact=true&requireSignIn=false" width="450" height="200"></iframe>
+<iframe title="Prediction: Who Will Win The 2024 Presidential Election?" src="https://fatebook.io/embed/q/kamala-wins--cm34x28gv00004svvk2d1zvaz?compact=true&requireSignIn=false" width="450" height="200"></iframe>
 
 I read too much into the [shock Seltzer poll which showed Harris +3](https://www.desmoinesregister.com/story/news/politics/iowa-poll/2024/11/02/iowa-poll-kamala-harris-leads-donald-trump-2024-presidential-race/75354033007/). At one point before the polls closed, my credence even reached 80% - driven by observations of unusually high turnout, which historically was a good sign for Democrats.
 

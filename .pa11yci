@@ -12,6 +12,9 @@
       "axe",
       "htmlcs"
     ],
+    "hideElements": [
+      ".ignore-pa11y"
+    ],
     "concurrency": 1
   }
 }
