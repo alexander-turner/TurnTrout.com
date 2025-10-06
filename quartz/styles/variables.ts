@@ -25,7 +25,7 @@ export const fontScaleFactor = 1.2
 export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
-export const midgroundLight = "#7c7f93"
+export const midgroundLight = "#74747b"
 
 // Shared variables between SCSS and TypeScript
 export const variables = {
