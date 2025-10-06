@@ -12,7 +12,7 @@ import {
 } from "./types"
 
 const searchInterface = (
-  <div className="search" aria-label="Displays search results.">
+  <div className="search" role="region" aria-label="Displays search results.">
     <div id="search-container">
       <div id="search-space">
         <input

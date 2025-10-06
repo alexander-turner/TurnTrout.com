@@ -55,11 +55,11 @@ export const CreateTableOfContents: QuartzComponent = ({
 
   return (
     <div id="table-of-contents" className="desktop-only">
-      <h6 id="toc-title">
+      <h1 id="toc-title" className="h6">
         <button className="internal same-page-link">
           {formatTitle(fileData.frontmatter?.title || "Table of Contents")}
         </button>
-      </h6>
+      </h1>
       <div id="toc-content">
         <ol>{toc}</ol>
       </div>
