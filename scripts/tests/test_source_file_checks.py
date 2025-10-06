@@ -1572,9 +1572,54 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         ('" $Ignore in math mode$.', []),  # Don't collapse around math mode
         ('Ignore in code block: ```python\nprint("Hello, world!" .)\n```', []),
         (
-            "This is a test) . Betley et al.",
-            ["Forbidden pattern found: ) ."],
+            "This is a test) . Betley et al.",
+            ["Forbidden pattern found: ) ."],
         ),
+        (
+            "I've had to work for it. )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "This is text (with parenthesis )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "End of sentence. )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Question? )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Exclamation! )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Semicolon; )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Comma, )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "After brace} )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Ellipsis… )",
+            ["Forbidden pattern found:  )"],
+        ),
+        ("Test ] .", ["Forbidden pattern found: ] ."]),
+        (
+            ") . and ] .",
+            ["Forbidden pattern found: ) .", "Forbidden pattern found: ] ."],
+        ),
+        # Valid cases that should not error
+        ("Proper (parenthesis)", []),
+        ("Function call()", []),
+        ("Array[index]", []),
     ],
 )
 def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):

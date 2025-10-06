@@ -274,7 +274,7 @@ At first, plans with slightly lower impact will be preferable in the scaled case
 Now we can write the algorithm for constructing scaled intervals.
 
 1. Discard dominated plans.
-2. The lowest-impact plan with greatest score appears first in the scaled partition; assign to it the interval $(0,\infty )$.
+2. The lowest-impact plan with greatest score appears first in the scaled partition; assign to it the interval $(0,\infty)$.
 3. While plans remain:
    - Find the plan which soonest dominates the previous best plan. close off the previous plan's interval.
    - Assign the new best plan an appropriate interval.
@@ -327,7 +327,7 @@ For our purposes, we don't _need_ the whole partition – we just want to have g
 > [!math] Corollary 7: Low-impact agents are naïve maximizers in the limit
 > A plan with maximal score corresponds to the last subinterval.
 >
-> _Proof outline._ If all plans have the same score, the claim is trivial. Otherwise, let $\bar{a}_\text{best}$ be a plan with the lowest impact of those with maximal score. In the constrained case, clearly it corresponds with the subinterval $[{\color{blue}I}(\bar{a}_\text{best}),\infty )$. In the scaled case, let $\bar{a}_\text{second-best}$ be a plan with second-highest score. Then by Theorem 6, the latest that $\bar{a}_\text{best}$ can appear is $\dfrac{{\color{blue}I}(\bar{a}_\text{best})}{{\color{Red}u}(\bar{a}_\text{best})-{\color{Red}u}(\bar{a}_\text{second-best})}$. Since no plans meet the domination criterion with respect to $\bar{a}_\text{best},$ this is the last subinterval. ∎
+> _Proof outline._ If all plans have the same score, the claim is trivial. Otherwise, let $\bar{a}_\text{best}$ be a plan with the lowest impact of those with maximal score. In the constrained case, clearly it corresponds with the subinterval $[{\color{blue}I}(\bar{a}_\text{best}),\infty)$. In the scaled case, let $\bar{a}_\text{second-best}$ be a plan with second-highest score. Then by Theorem 6, the latest that $\bar{a}_\text{best}$ can appear is $\dfrac{{\color{blue}I}(\bar{a}_\text{best})}{{\color{Red}u}(\bar{a}_\text{best})-{\color{Red}u}(\bar{a}_\text{second-best})}$. Since no plans meet the domination criterion with respect to $\bar{a}_\text{best},$ this is the last subinterval. ∎
 
 Unfortunately, Theorem 6's appearance bounds are ridiculous in realistic settings – if ${\color{Red}u}$ and ${\color{blue}I}$ return 32-bit floating-point numbers, the next-largest could easily be within $10^{-7},$ yielding an upper "bound" of ${\color{blue}I}(\bar{a})\times 10^{7}$. The reason: diminishing returns, just like in the case with the newspaper route.
 

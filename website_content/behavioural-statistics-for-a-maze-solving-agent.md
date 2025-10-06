@@ -326,7 +326,7 @@ Our biggest source of doubt about $d_\text{Euclidean}(\text{cheese},\text{decisi
 
 Our statistics refine, support, and stress-test our impressions about the network's behavior. This behavior seems more easily describable using a shard theory frame than a utility frame. We think our statistical results are not artifacts of multicollinearity, but hold up quite well.[^9]
 
-However, the statistics are not fully rigorous, and this post's analysis contained freeform domain-specific reasoning. That said, we are overall confident that the agent is influenced by $d_\text{Euclidean}(\text{cheese},\text{top-right})$ and by $d_\text{step}(\text{cheese},\text{decision-square} )$. We have weak but suggestive evidence for additional influence from $d_\text{Euclidean}(\text{cheese},\text{decision-square})$.
+However, the statistics are not fully rigorous, and this post's analysis contained freeform domain-specific reasoning. That said, we are overall confident that the agent is influenced by $d_\text{Euclidean}(\text{cheese},\text{top-right})$ and by $d_\text{step}(\text{cheese},\text{decision-square})$. We have weak but suggestive evidence for additional influence from $d_\text{Euclidean}(\text{cheese},\text{decision-square})$.
 
 [^1]: We correctly speculated:
     > [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)

@@ -78,7 +78,7 @@ I didn't actually find the book overly hard (it took me seven days to complete, 
 Some part of me _insisted_ that the left-shift mapping
 
 $$
-(x_1, x_2,… )\mapsto (x_2, x_3,… ) :\ell^{\infty }\rightarrow \ell^{\infty}
+(x_1, x_2,…)\mapsto (x_2, x_3,…) :\ell^{\infty }\rightarrow \ell^{\infty}
 $$
 is "non-linear" because it incinerates $x_1$! But wait, brain, this totally _is_ linear, and it's also continuous with respect to the ambient supremum norm!
 

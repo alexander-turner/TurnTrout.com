@@ -302,7 +302,7 @@ What did we do here? To compute the cheese vector, we
 2. Run a forward pass on each observation, recording the activations at each layer.
 3. For a given layer, define the cheese vector to be `CheeseActivations - NoCheeseActivations`. The cheese vector is a vector in the vector space of activations at that layer.
 
-Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)`[^7] ).
+Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)`[^7]).
 
 ![](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
 

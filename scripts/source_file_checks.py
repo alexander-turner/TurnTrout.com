@@ -420,7 +420,7 @@ def check_unescaped_braces(text: str) -> List[str]:
     return errors
 
 
-_FORBIDDEN_PATTERNS = (r'["”)\]]\s+\.',)
+_FORBIDDEN_PATTERNS = (r'["”)\]]\s+\.', r"(?<=[A-Za-z\.,;:!?\$\}…])\s+\)")
 
 
 def check_no_forbidden_patterns(text: str) -> List[str]:

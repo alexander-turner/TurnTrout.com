@@ -59,7 +59,7 @@ Let's not forget the old, well-read post: [Dreams of AI Design](https://www.less
 >
 > What he should do instead is refer to this main loop as `G0034`, and see if he can convince himself or anyone else that `G0034` implements some part of understanding. Or he could give it a name that reveals its intrinsic properties, like `NODE-NET-INTERSECTION-FINDER`, it being the substance of his theory that finding intersections in networks of nodes constitutes understanding...
 >
-> **When you say (GOAL . . ), you can just feel the enormous power at your fingertips. It is, of course, an illusion.**[^1]
+> **When you say "GOAL", you can just feel the enormous power at your fingertips. It is, of course, an illusion.**[^1]
 >
 > Of course, Conniver has some glaring wishful primitives, too. Calling "multiple data bases" CONTEXTS was dumb. It implies that, say, sentence understanding in context is really easy in this system...
 

@@ -112,7 +112,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 > 2. Run a forward pass on each observation, recording the activations at each layer.
 > 3. For a given layer, define the cheese vector to be `CheeseActivations - NoCheeseActivations`. The cheese vector is a vector in the vector space of activations at that layer.
 >
-> Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)` ).
+> Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)`).
 >
 > ![A diagram comparing two neural network forward passes. The left path, labeled "Cheese present," starts with a maze image containing cheese, which produces hypothetical activations of (1, 3) and output probabilities like "Left: .1". The right path, "Cheese NOT present," uses the same maze without cheese, producing activations of (0, 2) and probabilities like "Left: .6". The difference in activations is used to derive a "cheese vector."](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
 >
