@@ -177,12 +177,12 @@ The model does not collapse onto a pure strategy. Instead, the results are incon
 
 Here's the first 1K epochs of a training run:
 
-![A line chart titled "prisoner's dilemma with actde trial 1" shows strategy probability versus training epoch. The probability of the "alternating" strategy rapidly increases from 0.5 to a peak near 1.0, then fluctuates around 0.8. The "coop-coop" and "defect-defect" strategies' probabilities fall to about 10% each.](https://assets.turntrout.com/static/images/posts/f0dc928ced9395c81ba2adf0930f181b3487d3085188803c.avif)
+![A line chart titled "prisoner's dilemma with ACTDE trial 1" shows strategy probability versus training epoch. The probability of the "alternating" strategy rapidly increases from 0.5 to a peak near 1.0, then fluctuates around 0.8. The "coop-coop" and "defect-defect" strategies' probabilities fall to about 10% each.](https://assets.turntrout.com/static/images/posts/f0dc928ced9395c81ba2adf0930f181b3487d3085188803c.avif)
 Figure: Note that we aren't whitening the rewards.
 
 Zooming out to all 10,000 epochs:
 
-![A line graph titled "prisoner's dilemma with actde trial 1," plotting strategy probability over 10,000 epochs. The "alternating" strategy fluctuates widely between 0.4 and 0.9 probability. The "coop-coop" and "defect-defect" strategies remain much lower, below 0.4. They kiss the softmax probabilities before extremizing again.](https://assets.turntrout.com/static/images/posts/be298eeeff0a33e1594280b3f975a2dec834b88ec76167b9.avif)
+![A line graph titled "prisoner's dilemma with ACTDE trial 1," plotting strategy probability over 10,000 epochs. The "alternating" strategy fluctuates widely between 0.4 and 0.9 probability. The "coop-coop" and "defect-defect" strategies remain much lower, below 0.4. They kiss the softmax probabilities before extremizing again.](https://assets.turntrout.com/static/images/posts/be298eeeff0a33e1594280b3f975a2dec834b88ec76167b9.avif)
 Figure: Note that we aren't whitening the rewards.
 
 We ran 10 trials and plotted the mean and standard deviation of average returns:
@@ -191,7 +191,7 @@ We ran 10 trials and plotted the mean and standard deviation of average returns:
 
 There seems to be slow convergence.[^6] It could even be converging towards the uniform policy. We lean towards "convergence to uniform" due to evidence from a trial on a different reward matrix:
 
-![A line chart titled 'prisoner's dilemma with actde' shows the probability trends of three strategies ('alternating', 'defect-defect', 'coop-coop') over 10,000 epochs. The 'alternating' strategy peaks above 0.9 before declining to approximately 0.75. The 'defect-defect' and 'coop-coop' strategies slowly rise from near zero to approximately 0.25 and 0.2, respectively. The final probabilities for all strategies are somewhat past the levels indicated by the theoretical softmax returns (dashed lines). This slow convergence pattern suggests the policy is contracting toward a uniform mixed strategy, possibly 1/3 probability for each strategy.](https://assets.turntrout.com/static/images/posts/1549bb3b8f9f5895b1978d5cc5cf25a3e84df4a281286365.avif)
+![A line chart titled 'prisoner's dilemma with ACTDE' shows the probability trends of three strategies ('alternating', 'defect-defect', 'coop-coop') over 10,000 epochs. The 'alternating' strategy peaks above 0.9 before declining to approximately 0.75. The 'defect-defect' and 'coop-coop' strategies slowly rise from near zero to approximately 0.25 and 0.2, respectively. The final probabilities for all strategies are somewhat past the levels indicated by the theoretical softmax returns (dashed lines). This slow convergence pattern suggests the policy is contracting toward a uniform mixed strategy, possibly 1/3 probability for each strategy.](https://assets.turntrout.com/static/images/posts/1549bb3b8f9f5895b1978d5cc5cf25a3e84df4a281286365.avif)
 
 Overall, ACTDE's results are sensitive to variations in the algorithm such as whitening advantages, detaching the value and Q-heads, and using the loss function from PPO or ILQL for the value head.
 
