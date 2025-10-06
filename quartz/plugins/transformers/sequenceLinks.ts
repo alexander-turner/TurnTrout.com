@@ -59,7 +59,7 @@ export const renderPreviousPost = (fileData: QuartzPluginData) => {
     prevPostTitleFormatted,
   )
 
-  return h("p", [h("b", "Previous"), h("br"), linkElement])
+  return h("p", [h("em", "Previous"), h("br"), linkElement])
 }
 
 /**
@@ -77,7 +77,7 @@ export const renderNextPost = (fileData: QuartzPluginData) => {
     nextPostTitleFormatted,
   )
 
-  return h("p", [h("b", "Next"), h("br"), linkElement])
+  return h("p", [h("em", "Next"), h("br"), linkElement])
 }
 
 /**

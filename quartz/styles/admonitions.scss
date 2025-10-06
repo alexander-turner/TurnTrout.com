@@ -235,6 +235,10 @@
 
   --icon-size: 18px;
 
+  #right-sidebar & {
+    gap: calc(0.75 * $base-margin);
+  }
+
   & .admonition-icon,
   & .fold-admonition-icon {
     flex: 0 0 var(--icon-size);
