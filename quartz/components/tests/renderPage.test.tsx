@@ -219,6 +219,44 @@ describe("renderPage", () => {
     expect(html).toContain("<!DOCTYPE html>")
   })
 
+  it("rebases anchor links in transcluded content to point to original page", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "source-page/nested" as FullSlug,
+      frontmatter: { title: "Source Page" },
+      htmlAst: {
+        type: "root",
+        children: [h("p", [h("a", { href: "#intro" }, "Link")]) as unknown as Element],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const html = renderPage(
+      props.cfg,
+      "current-page" as FullSlug,
+      props,
+      {
+        ...components,
+        pageBody: ({ tree }: QuartzComponentProps) => (
+          <div id="page-body">{JSON.stringify(tree)}</div>
+        ),
+      } as typeof components,
+      pageResources,
+    )
+
+    expect(html).toContain("./source-page/nested#intro")
+  })
+
   it.each([
     {
       name: "intro transclusion with ![[page#]]",

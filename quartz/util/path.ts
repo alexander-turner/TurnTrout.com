@@ -187,11 +187,20 @@ const _rebaseHastElement = (
   newBase: FullSlug,
 ): void => {
   if (el.properties?.[attr]) {
-    if (!isRelativeURL(String(el.properties[attr]))) {
+    const attrValue = String(el.properties[attr])
+
+    // Handle anchor-only links (e.g., #section)
+    if (attrValue.startsWith("#")) {
+      const relativeToOriginal = resolveRelative(curBase, newBase)
+      el.properties[attr] = relativeToOriginal + attrValue
       return
     }
 
-    const rel = joinSegments(resolveRelative(curBase, newBase), "..", el.properties[attr] as string)
+    if (!isRelativeURL(attrValue)) {
+      return
+    }
+
+    const rel = joinSegments(resolveRelative(curBase, newBase), "..", attrValue)
     el.properties[attr] = rel
   }
 }

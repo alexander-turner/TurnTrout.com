@@ -55,4 +55,37 @@ describe("normalizeHastElement", () => {
     normalizeHastElement(input, baseSlug, newSlug)
     expect(textChild.value).toBe(originalValue)
   })
+
+  it("should rebase anchor-only links to point to original page", () => {
+    const input = h("p", [h("a", { href: "#section" }, "Link to section")])
+
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const child = result.children[0] as Element
+    expect(child.properties?.href).toBe("../other/page#section")
+  })
+
+  it("should rebase multiple anchor links correctly", () => {
+    const input = h("div", [
+      h("a", { href: "#intro" }, "Intro"),
+      h("a", { href: "#conclusion" }, "Conclusion"),
+    ])
+
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const firstLink = result.children[0] as Element
+    const secondLink = result.children[1] as Element
+    expect(firstLink.properties?.href).toBe("../other/page#intro")
+    expect(secondLink.properties?.href).toBe("../other/page#conclusion")
+  })
+
+  it("should rebase anchor links in nested elements", () => {
+    const input = h("div", [h("p", [h("a", { href: "#nested" }, "Nested anchor")])])
+
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const paragraph = result.children[0] as Element
+    const link = paragraph.children[0] as Element
+    expect(link.properties?.href).toBe("../other/page#nested")
+  })
 })
