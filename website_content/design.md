@@ -4,6 +4,7 @@ permalink: design
 publish: true
 tags:
   - website
+  - open-source
 description: Showing off and explaining this site's beauty.
 authors: Alex Turner
 hideSubscriptionLinks: false
@@ -11,7 +12,6 @@ card_image:
 aliases:
   - website-design
   - site-design
-  - open-source
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2025-09-14 13:03:18.959625
 no_dropcap: false

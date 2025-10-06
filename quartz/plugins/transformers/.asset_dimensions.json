@@ -4270,5 +4270,21 @@
   "/static/images/external-favicons/creativecommons_org.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pip-tools_readthedocs_io.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/creativecommons_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/open-source-20251004181740.avif": {
+    "width": 2028,
+    "height": 1348
+  },
+  "https://assets.turntrout.com/static/images/posts/open-source-20251004181624.avif": {
+    "width": 2040,
+    "height": 1772
   }
 }

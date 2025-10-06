@@ -88,7 +88,7 @@ I want to step back. What I call "the power-seeking theorems", they aren't reall
 
 For example, suppose our cute robot Frank must choose one of several kinds of fruit.
 
-![A cartoon robot with a concerned expression stands in a grassy field by a small waterfall which feeds a pond. The robot contemplates a choice. To its right are three crates of fruit: cherries, apples, and bananas. To the robot's left, a chalkboard displays the formula E_{R ~ D}[V^*_R(s,y)]. A goose and two goslings float in the pond near the fruit.](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
+![A cartoon robot with a concerned expression stands in a grassy field by a small waterfall which feeds a pond. The robot contemplates a choice. To its right are three crates of fruit: cherries, apples, and bananas. To the robot's left, a chalkboard displays the formula E_\{R ~ D\}[V^*_R(s,y)]. A goose and two goslings float in the pond near the fruit.](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
 <br/>Figure: 🍒 vs 🍎 vs 🍌
 
 So far, I proved something like "if the agent has a utility function over fruits, then for at least 2/3 of possible utility functions it could have, it'll be optimal to choose something from \{🍌,🍎\}." This statement is true because for every way 🍒 could be strictly optimal, you can make a new utility function that permutes the 🍒 and 🍎 reward, and another new one that permutes the 🍌 and 🍒 reward. So for every "I like 🍒 strictly more" utility function, there's at least two permuted variants which strictly prefer 🍎 or 🍌. Superficially, it seems like this argument relies on optimal decision-making.

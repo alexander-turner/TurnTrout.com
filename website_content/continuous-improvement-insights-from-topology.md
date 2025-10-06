@@ -89,7 +89,7 @@ At first, I was confused why _open_ subspaces $Y$ of compact $X$ don't have to b
 
 I was confused why we needed compactness. Essentially, I didn't understand [the tube lemma](https://dantopology.wordpress.com/2011/05/01/the-tube-lemma/).
 
-![A diagram illustrates the Tube Lemma: A horizontal "slice" (e.g. y=3) is contained within a wider "tube" (e.g. {(x,y) | 1<y<2}. Text states the lemma: "If X is compact and if a slice S is contained in an open set V, then there's also a tube T such that S ⊆ T ⊆ V." A warning notes the diagram's example (ℝxℝ) is not compact.](https://assets.turntrout.com/static/images/posts/qmbh27L.avif)
+![A diagram illustrates the Tube Lemma: A horizontal "slice" (e.g. y=3) is contained within a wider "tube" (e.g. \{(x,y) | 1<y<2\}. Text states the lemma: "If X is compact and if a slice S is contained in an open set V, then there's also a tube T such that S ⊆ T ⊆ V." A warning notes the diagram's example (ℝxℝ) is not compact.](https://assets.turntrout.com/static/images/posts/qmbh27L.avif)
 
 Now let's prove the theorem. Suppose $C$ is closed in $X \times Y$. We want to show $f(C)$ is also closed. Take $y\not \in \pi(C)$. $(X\times Y)-C$ is an open set of the domain containing the slice $X \times \{y\}$. Since $X$ is compact, apply the tube lemma to get a tube $X \times U$. The projection of this tube is both open (because $U$ is open in $Y$) and disjoint from $\pi(C)$ (because the tube is contained in $(X\times Y)-C$). Thus, all $y \not \in \pi(C)$ have an open neighborhood disjoint from $\pi(C)$, so $\pi(C)$ must be closed.
 

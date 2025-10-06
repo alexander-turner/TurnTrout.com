@@ -127,7 +127,7 @@ In the context of finite deterministic Markov decision processes, there's a wond
 
 The possibility function $\mathcal{F}(s)$ outputs the possibilities available at a given state $s$:
 
-![Figure 1: "A simple example." A state diagram shows blue node 1 with arrows to red node 2 and black node 3. Nodes 2 and 3 have self-loops. Below, equations for the possibility function F at each state are: F(1) = { [1 (blue), γ/(1-γ) (red), 0 (black)], [1, 0, γ/(1-γ)] }, F(2) = { [0, 1/(1-γ), 0] }, F(3) = { [0, 0, 1/(1-γ)] }.](https://assets.turntrout.com/static/images/posts/H1HS9Zk.avif)
+![Figure 1: "A simple example." A state diagram shows blue node 1 with arrows to red node 2 and black node 3. Nodes 2 and 3 have self-loops. Below, equations for the possibility function F at each state are: F(1) = \{ [1 (blue), γ/(1-γ) (red), 0 (black)], [1, 0, γ/(1-γ)] \}, F(2) = \{ [0, 1/(1-γ), 0] \}, F(3) = \{ [0, 0, 1/(1-γ)] \}.](https://assets.turntrout.com/static/images/posts/H1HS9Zk.avif)
 
 Put differently, the possibilities available are all of the potential film-strips of how-the-future-goes you can induce from the current state.
 

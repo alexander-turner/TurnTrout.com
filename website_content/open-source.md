@@ -5,7 +5,7 @@ no_dropcap: true
 tags:
   - personal
   - open-source
-description: ""
+description: "My open-source projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities."
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: 
@@ -44,10 +44,10 @@ To implement accessibility best practices, I needed alt text that didn't describ
 
 [`alt-text-llm`](https://github.com/alexander-turner/alt-text-llm) is an AI-powered tool for generating and managing alt text in markdown files. Originally developed for this website, `alt-text-llm` streamlines the process of making web content accessible. The package detects assets missing alt text, suggests context-aware descriptions, and provides an interactive reviewing interface in the terminal.
 
-![[open-source-20251004181740.png]]
+![[https://assets.turntrout.com/static/images/posts/open-source-20251004181740.avif]]
 Figure: Generating alt text for maze diagrams from [Understanding and Controlling a Maze-solving Policy Network](/understanding-and-controlling-a-maze-solving-policy-network). `alt-text-llm` displays the surrounding text (above the image), the image itself in the terminal using [`imgcat`](https://github.com/eddieantonio/imgcat), and the LLM-generated alt suggestion. The user interactively edits or approves the text.
 
-![[open-source-20251004181624.png]]
+![[https://assets.turntrout.com/static/images/posts/open-source-20251004181624.avif]]
 Figure: Generating alt text for my meme from [Against Shoggoth](/against-shoggoth).
 
 In the end, I got the job done for about \$12.50 using Gemini 2.5 Pro. My `alt-text-llm` addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com)  is now friendlier to the millions of people who browse the web with the help of screen readers.
