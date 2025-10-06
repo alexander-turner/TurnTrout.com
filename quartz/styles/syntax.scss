@@ -1,6 +1,5 @@
 code[data-theme*=" "] {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
 }
 
 code[data-theme*=" "] span {
@@ -9,7 +8,6 @@ code[data-theme*=" "] span {
 
 [data-theme="dark"] code[data-theme*=" "] {
   color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
 }
 
 [data-theme="dark"] code[data-theme*=" "] span {
