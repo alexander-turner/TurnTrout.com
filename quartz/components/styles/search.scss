@@ -21,7 +21,7 @@
   & > #search-icon {
     border: 1px solid var(--midground-fainter);
     border-radius: 5px;
-    height: 1.6rem;
+    height: calc(3 * $base-margin);
     display: flex;
     align-items: center;
     cursor: pointer;

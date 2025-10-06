@@ -135,7 +135,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
         data-persist
         preload="auto"
         poster="https://assets.turntrout.com/static/pond_frame.avif"
-        role="presentation"
+        aria-hidden="true"
       >
         <source src="https://assets.turntrout.com/static/pond.mov" type="video/mp4; codecs=hvc1" />
         <source src="https://assets.turntrout.com/static/pond.webm" type="video/webm" />
