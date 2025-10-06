@@ -1284,4 +1284,16 @@ describe("Header slug consistency between wikilinks and actual headers", () => {
       expect(result).toBe(expectedTransclusionSlug)
     },
   )
+
+  it("should preserve bare # for intro transclusion", () => {
+    resetSlugger()
+    const input = "![[page#]]"
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+    const result = transformer.textTransform(mockCtx, input)
+    expect(result).toBe("![[page#]]")
+  })
 })
