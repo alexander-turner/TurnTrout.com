@@ -407,13 +407,13 @@ He came in 1st but I came in 5,300,251st. :(
 
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
-<center style="font-size:4rem;line-height:1.4 !important;">
+<div style="font-size:4rem;line-height:1.4 !important;" class="centered">
 <span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
 </div>
 
-<center id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;">
+<div id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;" class="centered">
 <span class="dropcap" data-first-letter="T" style="--before-color: color-mix(in srgb, 55% red, var(--midground-fainter));">T</span>
 <span class="dropcap" data-first-letter="H" style="--before-color: color-mix(in srgb, 55% orange, var(--midground-fainter));">H</span>
 <span class="dropcap" data-first-letter="E"  style="--before-color: color-mix(in srgb, 65% yellow, var(--midground-fainter));">E</span>
