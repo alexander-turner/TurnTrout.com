@@ -1320,90 +1320,128 @@ Some math: $x^2 + {y^2}$ and more {text}.
     "input_text,expected_output",
     [
         # Basic cases
-        ("Plain text without code or math", "Plain text without code or math"),
+        ("Plain text without code", "Plain text without code"),
         # Inline code blocks
         ("This is `code` block", "This is  block"),
         ("Multiple `code` `blocks`", "Multiple  "),
         ("`code at start` and end", " and end"),
         ("start and `code at end`", "start and "),
         ("`entire line is code`", ""),
-        # Math blocks
-        ("This is $math$ block", "This is  block"),
-        ("Multiple $math$ $blocks$", "Multiple  "),
-        ("$math at start$ and end", " and end"),
-        ("start and $math at end$", "start and "),
-        ("$entire line is math$", ""),
-        # Mixed code and math
-        ("Both `code` and $math$", "Both  and "),
-        ("`code` with $math$ inside", " with  inside"),
         # Empty patterns
         ("Empty code ``", "Empty code "),
-        ("Empty math $$", "Empty math "),
-        # Block code and math
-        ("$$\nMulti-line\nmath\n$$", ""),
+        # Block code
         (
             "```\nMulti-line\ncode\n```",
             "",
         ),
         # Edge cases
         ("`code` at the `end`", " at the "),
-        ("$math$ at the $end$", " at the "),
-        ("Text with \\$escaped\\$ symbols", "Text with \\$escaped\\$ symbols"),
         ("Text with \\`escaped\\` symbols", "Text with \\`escaped\\` symbols"),
         # Unclosed delimiters
         ("Unclosed `code", "Unclosed `code"),
+        # Code does not affect math
+        ("This is $math$ block", "This is $math$ block"),
+        ("Both `code` and $math$", "Both  and $math$"),
+    ],
+)
+def test_remove_code(input_text: str, expected_output: str) -> None:
+    """
+    Test stripping code blocks and inline code from text.
+
+    Args:
+        input_text: Input text with code elements
+        expected_output: Expected text after stripping code
+    """
+    result = source_file_checks.remove_code(input_text)
+    assert (
+        result == expected_output
+    ), f"Failed to strip code from: {input_text}"
+
+
+@pytest.mark.parametrize(
+    "input_text,expected_output",
+    [
+        # Basic cases
+        ("Plain text without math", "Plain text without math"),
+        # Inline math blocks
+        ("This is $math$ block", "This is  block"),
+        ("Multiple $math$ $blocks$", "Multiple  "),
+        ("$math at start$ and end", " and end"),
+        ("start and $math at end$", "start and "),
+        ("$entire line is math$", ""),
+        # Empty patterns
+        ("Empty math $$", "Empty math "),
+        # Block math
+        ("$$\nMulti-line\nmath\n$$", ""),
+        # Edge cases
+        ("$math$ at the $end$", " at the "),
+        ("Text with \\$escaped\\$ symbols", "Text with \\$escaped\\$ symbols"),
+        # Unclosed delimiters
         ("Unclosed $math", "Unclosed $math"),
-        # Multiple lines with mixed content
+        # Math does not affect code
+        ("This is `code` block", "This is `code` block"),
+        ("Both `code` and $math$", "Both `code` and "),
+    ],
+)
+def test_remove_math(input_text: str, expected_output: str) -> None:
+    """
+    Test stripping math elements from text.
+
+    Args:
+        input_text: Input text with math elements
+        expected_output: Expected text after stripping math
+    """
+    result = source_file_checks.remove_math(input_text)
+    assert (
+        result == expected_output
+    ), f"Failed to strip math from: {input_text}"
+
+
+@pytest.mark.parametrize(
+    "input_text,expected_output",
+    [
+        ("`x^2`", source_file_checks._REPLACEMENT_CHAR),
         (
-            "Line with `code`\nAnother line with $math$",
-            "Line with \nAnother line with ",
+            "```python\nprint('Hello, world!')\n```",
+            source_file_checks._REPLACEMENT_CHAR,
+        ),
+        (
+            "This is a test of `x^2`",
+            f"This is a test of {source_file_checks._REPLACEMENT_CHAR}",
         ),
     ],
 )
-def test_remove_code_and_math(input_text: str, expected_output: str) -> None:
-    """
-    Test stripping code and math elements from text.
-
-    Args:
-        input_text: Input text with code/math elements
-        expected_output: Expected text after stripping
-    """
-    result = source_file_checks.remove_code_and_math(input_text)
-    assert (
-        result == expected_output
-    ), f"Failed to strip code and math from: {input_text}"
+def test_remove_code_with_replacement_character(
+    input_text: str, expected_output: str
+) -> None:
+    """Test removing code elements with the replacement character."""
+    result = source_file_checks.remove_code(input_text, mark_boundaries=True)
+    assert result == expected_output
 
 
 @pytest.mark.parametrize(
     "input_text,expected_output",
     [
         ("$x^2$", source_file_checks._REPLACEMENT_CHAR),
-        ("`x^2`", source_file_checks._REPLACEMENT_CHAR),
         (
-            "```python\nprint('Hello, world!')\n```",
+            "$$f(x) = x^2$$",
             source_file_checks._REPLACEMENT_CHAR,
         ),
-        # Intermingled with other text
         (
-            "This is a test of $x^2$ and `x^2`",
-            "This is a test of {} and {}".format(
-                source_file_checks._REPLACEMENT_CHAR,
-                source_file_checks._REPLACEMENT_CHAR,
-            ),
+            "This is a test of $x^2$",
+            f"This is a test of {source_file_checks._REPLACEMENT_CHAR}",
         ),
     ],
 )
-def test_remove_code_and_math_with_replacement_character(
+def test_remove_math_with_replacement_character(
     input_text: str, expected_output: str
 ) -> None:
-    """Test removing code and math elements with the replacement character."""
-    result = source_file_checks.remove_code_and_math(
-        input_text, mark_boundaries=True
-    )
+    """Test removing math elements with the replacement character."""
+    result = source_file_checks.remove_math(input_text, mark_boundaries=True)
     assert result == expected_output
 
 
-def test_remove_code_and_math_with_fenced_blocks() -> None:
+def test_remove_code_with_fenced_blocks() -> None:
     """Test stripping fenced code blocks specifically, which should be handled
     by regex with the DOTALL flag."""
     # Current implementation doesn't handle fenced code blocks
@@ -1418,11 +1456,32 @@ def test_remove_code_and_math_with_fenced_blocks() -> None:
     More text.
     """
 
-    result = source_file_checks.remove_code_and_math(input_text)
+    no_code_text = source_file_checks.remove_code(input_text)
 
-    assert "```" not in result
-    assert "def example():" not in result
-    assert "More text." in result
+    assert "```" not in no_code_text
+    assert "def example():" not in no_code_text
+    assert "More text." in no_code_text
+
+
+@pytest.mark.parametrize(
+    "input_text,expected_output",
+    [
+        ("Normal text.", "Normal text."),
+        # Code block with internal backticks and special chars
+        (
+            """```typescript
+>     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
+> ```""",
+            "",
+        ),
+    ],
+)
+def test_remove_code_with_complex_blocks(
+    input_text: str, expected_output: str
+) -> None:
+    """Test stripping complex multi-line code blocks."""
+    result = source_file_checks.remove_code(input_text)
+    assert result == expected_output
 
 
 @pytest.mark.parametrize(
@@ -1440,20 +1499,13 @@ def test_remove_code_and_math_with_fenced_blocks() -> None:
             $$""",
             "",
         ),
-        # Quoted code block
-        (
-            """```typescript
->     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
-> ```""",
-            "",
-        ),
     ],
 )
-def test_remove_code_and_math_with_block_math(
+def test_remove_math_with_complex_blocks(
     input_text: str, expected_output: str
 ) -> None:
-    """Test stripping multi-line math blocks."""
-    result = source_file_checks.remove_code_and_math(input_text)
+    """Test stripping complex multi-line math blocks."""
+    result = source_file_checks.remove_math(input_text)
     assert result == expected_output
 
 
@@ -1568,8 +1620,6 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         ('Test " f', []),
         ('Test "".', []),
         ('Test ."', []),
-        ('$Ignore in math mode" .$', []),
-        ('" $Ignore in math mode$.', []),  # Don't collapse around math mode
         ('Ignore in code block: ```python\nprint("Hello, world!" .)\n```', []),
         (
             "This is a test) . Betley et al.",
@@ -1615,6 +1665,24 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         (
             ") . and ] .",
             ["Forbidden pattern found: ) .", "Forbidden pattern found: ] ."],
+        ),
+        # Pattern 1 (["")\]]\s+\.) ignores both code and math, so these pass
+        (
+            '$Math mode" .$',
+            [],
+        ),
+        (
+            "$Math with) .$",
+            [],
+        ),
+        # Pattern 2 (space followed by closing paren) does NOT ignore math, so these patterns are flagged
+        (
+            "$Math.$ )",
+            ["Forbidden pattern found:  )"],
+        ),
+        (
+            "Text $inline math. )$ more text",
+            ["Forbidden pattern found:  )"],
         ),
         # Valid cases that should not error
         ("Proper (parenthesis)", []),

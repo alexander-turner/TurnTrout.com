@@ -1114,7 +1114,8 @@ def get_md_asset_counts(md_path: Path) -> Counter[str]:
     with open(md_path, encoding="utf-8") as f:
         content = f.read()
 
-    trimmed_content = source_file_checks.remove_code_and_math(content)
+    no_code_content = source_file_checks.remove_code(content)
+    trimmed_content = source_file_checks.remove_math(no_code_content)
 
     # Match ![alt](src) pattern, capturing the src
     md_pattern_assets = re.findall(r"!\[.*?\]\((.*?)\)", trimmed_content)

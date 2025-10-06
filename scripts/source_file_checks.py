@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Literal, Set
+from typing import Dict, List, Literal, Set, TypedDict
 
 import requests  # type: ignore[import]
 
@@ -18,6 +18,14 @@ from scripts import utils as script_utils
 
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
+
+
+class ForbiddenPatternConfig(TypedDict):
+    """Configuration for a forbidden pattern check."""
+
+    pattern: str
+    ignore_math: bool
+    ignore_code: bool
 
 
 def check_required_fields(metadata: dict) -> List[str]:
@@ -349,36 +357,42 @@ def check_table_alignments(text: str) -> List[str]:
 _REPLACEMENT_CHAR = "\uffff"  # Private use area character
 
 
-def remove_code_and_math(text: str, mark_boundaries: bool = False) -> str:
+def remove_code(text: str, mark_boundaries: bool = False) -> str:
     """
-    Strip all code blocks, inline code, and math elements from text.
+    Strip all code blocks and inline code from text.
 
     Args:
         text: The text to process
-        mark_boundaries: Whether to mark the boundaries of where code and math
-            elements were removed
-
-    Returns:
-        Text with all code blocks, inline code, and math elements removed
+        mark_boundaries: Whether to mark the boundaries of where code elements
+            were removed
     """
-    # Private use area character
-    math_code_replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
+    replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
 
-    # Remove all code blocks
-    text = re.sub(
-        r"```.*?```", math_code_replacement_char, text, flags=re.DOTALL
+    no_code_block_text = re.sub(
+        r"```.*?```", replacement_char, text, flags=re.DOTALL
     )
-    text = re.sub(r"(?<!\\)`[^`]*(?<!\\)`", math_code_replacement_char, text)
-
-    # Remove all math blocks
-    text = re.sub(
-        r"\$\$.*?\$\$", math_code_replacement_char, text, flags=re.DOTALL
-    )
-    text = re.sub(
-        r"(?<!\\)\$[^$]*?(?<!\\)\$", math_code_replacement_char, text
+    return re.sub(
+        r"(?<!\\)`[^`]*(?<!\\)`", replacement_char, no_code_block_text
     )
 
-    return text
+
+def remove_math(text: str, mark_boundaries: bool = False) -> str:
+    """
+    Strip all math elements from text.
+
+    Args:
+        text: The text to process
+        mark_boundaries: Whether to mark the boundaries of where math elements
+            were removed
+    """
+    replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
+
+    no_math_block_text = re.sub(
+        r"\$\$.*?\$\$", replacement_char, text, flags=re.DOTALL
+    )
+    return re.sub(
+        r"(?<!\\)\$[^$]*?(?<!\\)\$", replacement_char, no_math_block_text
+    )
 
 
 # Either preceded by two backslashes or none, and then a brace.
@@ -404,7 +418,8 @@ def check_unescaped_braces(text: str) -> List[str]:
         text,
         flags=re.MULTILINE,
     )
-    stripped_content = remove_code_and_math(content_no_eol_braces)
+    no_code_content = remove_code(content_no_eol_braces)
+    stripped_content = remove_math(no_code_content)
 
     errors = []
     for match in re.finditer(_BRACE_REGEX, stripped_content, re.MULTILINE):
@@ -420,22 +435,39 @@ def check_unescaped_braces(text: str) -> List[str]:
     return errors
 
 
-_FORBIDDEN_PATTERNS = (r'["”)\]]\s+\.', r"(?<=[A-Za-z\.,;:!?\$\}…])\s+\)")
+_FORBIDDEN_PATTERNS: tuple[ForbiddenPatternConfig, ...] = (
+    {
+        "pattern": r'["")\]]\s+\.',
+        "ignore_math": True,
+        "ignore_code": True,
+    },
+    {
+        "pattern": r"(?<=[A-Za-z\.,;:!?\$\}…])\s+\)",
+        "ignore_math": False,
+        "ignore_code": True,
+    },
+)
 
 
 def check_no_forbidden_patterns(text: str) -> List[str]:
     """Check for forbidden patterns in text."""
     errors = []
-    no_code_math_text = remove_code_and_math(text, mark_boundaries=True)
-    for pattern in _FORBIDDEN_PATTERNS:
-        for match in re.finditer(pattern, no_code_math_text):
+    for config in _FORBIDDEN_PATTERNS:
+        processed_text = text
+        if config["ignore_code"]:
+            processed_text = remove_code(processed_text)
+        if config["ignore_math"]:
+            processed_text = remove_math(processed_text)
+
+        for match in re.finditer(config["pattern"], processed_text):
             errors.append(f"Forbidden pattern found: {match.group()}")
     return errors
 
 
 def check_stray_katex(text: str) -> List[str]:
     """Check for stray LaTeX commands outside of math/code blocks."""
-    stripped_text = remove_code_and_math(text)
+    no_code_text = remove_code(text)
+    stripped_text = remove_math(no_code_text)
     errors = []
     # This pattern finds a space followed by a backslash and a word.
     # e.g. " \command"
@@ -449,7 +481,8 @@ def check_html_with_braces(text: str) -> List[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
     errors = []
-    stripped_text = remove_code_and_math(text)
+    no_code_text = remove_code(text)
+    stripped_text = remove_math(no_code_text)
 
     # Pattern to match HTML closing tag followed by {[^}]*="..."}
     # e.g. </video>{style="width:50%;"}
