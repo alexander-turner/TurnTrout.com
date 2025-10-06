@@ -113,7 +113,7 @@ describe("renderPreviousPost", () => {
     expect(result?.children).toHaveLength(3)
 
     const firstChild = result?.children[0] as Element
-    expect(firstChild.tagName).toBe("b")
+    expect(firstChild.tagName).toBe("em")
     expect(firstChild.children).toStrictEqual([{ type: "text", value: "Previous" }])
 
     const secondChild = result?.children[1] as Element
@@ -177,7 +177,7 @@ describe("renderNextPost", () => {
     expect(result?.children).toHaveLength(3)
 
     const firstChild = result?.children[0] as Element
-    expect(firstChild.tagName).toBe("b")
+    expect(firstChild.tagName).toBe("em")
     expect(firstChild.children).toStrictEqual([{ type: "text", value: "Next" }])
 
     const secondChild = result?.children[1] as Element
