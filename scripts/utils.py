@@ -386,7 +386,8 @@ def paragraph_context(
         or max_after < 0
     ):  # pragma: no cover
         raise ValueError(
-            f"{target_idx=}, {max_before=}, and {max_after=} must be non-negative"
+            f"{target_idx=}, {max_before=}, and "
+            f"{max_after=} must be non-negative"
         )
 
     paragraphs, paragraph_starts = _parse_paragraphs(lines)
