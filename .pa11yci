@@ -2,10 +2,16 @@
   "defaults": {
     "timeout": 10000,
     "chromeLaunchConfig": {
-      "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
     },
     "standard": "WCAG2AA",
-    "runners": ["axe", "htmlcs"],
-    "concurrency": 10
+    "runners": [
+      "axe",
+      "htmlcs"
+    ],
+    "concurrency": 1
   }
 }

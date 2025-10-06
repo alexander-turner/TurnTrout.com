@@ -526,7 +526,9 @@ def get_check_steps(
         CheckStep(
             name="WCAG2 AA-standard accessibility",
             command=[
-                "npm run test:a11y",
+                "npm",
+                "run",
+                "test:a11y",
             ],
         ),
         # skipcq: BAN-B604
