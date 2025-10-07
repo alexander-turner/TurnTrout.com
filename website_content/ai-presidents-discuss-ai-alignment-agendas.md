@@ -48,7 +48,7 @@ date_updated: 2025-06-03 22:57:00.423836
 
 
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>
-<source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="https://assets.turntrout.com/debate.vtt" srclang="en" label="English"></video>
+<source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
 
 The video is also [available on YouTube](https://www.youtube.com/watch?v=02kbWY5mahQ).
 
