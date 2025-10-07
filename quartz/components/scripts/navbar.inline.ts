@@ -68,30 +68,42 @@ function setupPondVideo(): void {
   if (!videoElement) return
 
   const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
+  const autoplayEnabled = getAutoplayEnabled()
+
+  console.debug(
+    "[setupPondVideo] readyState:",
+    videoElement.readyState,
+    "autoplay:",
+    autoplayEnabled,
+    "savedTime:",
+    savedTime,
+  )
 
   const restoreVideoState = () => {
+    console.debug("[restoreVideoState] Running, readyState:", videoElement.readyState)
+
     // Restore timestamp if saved
     if (savedTime) {
       videoElement.currentTime = parseFloat(savedTime)
     }
 
     // Start playback only if paused and autoplay is enabled
-    if (videoElement.paused && getAutoplayEnabled()) {
+    if (videoElement.paused && autoplayEnabled) {
+      console.debug("[restoreVideoState] Attempting play")
       videoElement.play().catch((error: Error) => {
-        console.debug("[setupPondVideo] Play failed:", error)
+        console.error("[setupPondVideo] Play failed:", error)
       })
     }
   }
 
   // Wait for video to be ready, then restore state
   if (videoElement.readyState >= 3) {
+    console.debug("[setupPondVideo] Video already ready")
     restoreVideoState()
   } else {
+    console.debug("[setupPondVideo] Waiting for canplay, calling load()")
     videoElement.addEventListener("canplay", restoreVideoState, { once: true })
-    // TODO check if we need
-    if (videoElement.readyState === 0) {
-      videoElement.load()
-    }
+    videoElement.load()
   }
 
   // Save timestamp before page unload/refresh
