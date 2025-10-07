@@ -54,15 +54,6 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 
   await ensureVideoPlaying(videoElements)
 
-  // Wait for video metadata to be loaded before setting timestamp
-  await video.evaluate((v: HTMLVideoElement) => {
-    if (v.readyState < HTMLMediaElement.HAVE_METADATA) {
-      return new Promise<void>((resolve) => {
-        v.addEventListener("loadedmetadata", () => resolve(), { once: true })
-      })
-    }
-  })
-
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
     v.currentTime = timestamp
   }, fixedTimestamp)
