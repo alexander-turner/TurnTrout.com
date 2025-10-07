@@ -65,49 +65,49 @@ function handleVideoToggle(): void {
 
 function setupPondVideo(): void {
   const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
+  if (!videoElement) return
 
-  if (videoElement) {
-    const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
+  const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
 
-    // Function to restore state once video is ready
-    const restoreState = () => {
-      if (savedTime) {
-        console.debug("[setupPondVideo] Restoring video timestamp", savedTime)
-        videoElement.currentTime = parseFloat(savedTime)
-      }
-
-      // Don't interfere with videos that are already playing
-      if (videoElement.paused && getAutoplayEnabled()) {
-        videoElement.play().catch((error: Error) => {
-          console.debug("[setupPondVideo] Play failed:", error)
-        })
-      }
+  const restoreVideoState = () => {
+    // Restore timestamp if saved
+    if (savedTime) {
+      videoElement.currentTime = parseFloat(savedTime)
     }
 
-    // Wait for metadata to be loaded before setting currentTime
-    if (videoElement.readyState >= 1) {
-      // Metadata already loaded
-      restoreState()
-    } else {
-      // Wait for metadata to load
-      videoElement.addEventListener("loadedmetadata", restoreState, { once: true })
+    // Start playback only if paused and autoplay is enabled
+    if (videoElement.paused && getAutoplayEnabled()) {
+      videoElement.play().catch((error: Error) => {
+        console.debug("[setupPondVideo] Play failed:", error)
+      })
     }
-
-    // Save timestamp before page unload/refresh
-    const saveTimestamp = () => {
-      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-      console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
-    }
-
-    // Save timestamp on various events
-    window.addEventListener("beforeunload", saveTimestamp)
-    window.addEventListener("pagehide", saveTimestamp)
-
-    // Also save timestamp periodically during playback
-    videoElement.addEventListener("timeupdate", () => {
-      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-    })
   }
+
+  // Wait for video to be ready, then restore state
+  if (videoElement.readyState >= 3) {
+    restoreVideoState()
+  } else {
+    videoElement.addEventListener("canplay", restoreVideoState, { once: true })
+    // TODO check if we need
+    if (videoElement.readyState === 0) {
+      videoElement.load()
+    }
+  }
+
+  // Save timestamp before page unload/refresh
+  const saveTimestamp = () => {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
+  }
+
+  // Save timestamp on various events
+  window.addEventListener("beforeunload", saveTimestamp)
+  window.addEventListener("pagehide", saveTimestamp)
+
+  // Also save timestamp periodically during playback
+  videoElement.addEventListener("timeupdate", () => {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+  })
 }
 
 // Initial setup
