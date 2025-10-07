@@ -62,7 +62,7 @@ function sanitizeConfigForBrowser(
 }
 
 export default defineConfig({
-  timeout: process.env.CI ? 180000 : 30000,
+  timeout: 30000,
   workers: 1, // Parallelism causes flakiness
 
   retries: process.env.CI ? 3 : 1,
