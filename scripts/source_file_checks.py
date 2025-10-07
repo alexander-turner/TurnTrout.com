@@ -455,12 +455,15 @@ def check_no_forbidden_patterns(text: str) -> List[str]:
     for config in _FORBIDDEN_PATTERNS:
         processed_text = text
         if config["ignore_code"]:
-            processed_text = remove_code(processed_text)
+            processed_text = remove_code(processed_text, mark_boundaries=True)
         if config["ignore_math"]:
-            processed_text = remove_math(processed_text)
+            processed_text = remove_math(processed_text, mark_boundaries=True)
 
         for match in re.finditer(config["pattern"], processed_text):
-            errors.append(f"Forbidden pattern found: {match.group()}")
+            line_num = text[: match.start()].count("\n") + 1
+            errors.append(
+                f"Forbidden pattern found: {match.group()} on line {line_num}"
+            )
     return errors
 
 

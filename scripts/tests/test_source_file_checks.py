@@ -1616,55 +1616,58 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
     "text, expected_errors",
     [
         ('This is a test. "This is a test."', []),
-        ('Test " .', ['Forbidden pattern found: " .']),
+        ('Test " .', ['Forbidden pattern found: " . on line 1']),
         ('Test " f', []),
         ('Test "".', []),
         ('Test ."', []),
         ('Ignore in code block: ```python\nprint("Hello, world!" .)\n```', []),
         (
             "This is a test) . Betley et al.",
-            ["Forbidden pattern found: ) ."],
+            ["Forbidden pattern found: ) . on line 1"],
         ),
         (
             "I've had to work for it. )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "This is text (with parenthesis )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "End of sentence. )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Question? )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Exclamation! )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Semicolon; )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Comma, )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "After brace} )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Ellipsis… )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
-        ("Test ] .", ["Forbidden pattern found: ] ."]),
+        ("Test ] .", ["Forbidden pattern found: ] . on line 1"]),
         (
             ") . and ] .",
-            ["Forbidden pattern found: ) .", "Forbidden pattern found: ] ."],
+            [
+                "Forbidden pattern found: ) . on line 1",
+                "Forbidden pattern found: ] . on line 1",
+            ],
         ),
         # Pattern 1 (["")\]]\s+\.) ignores both code and math, so these pass
         (
@@ -1678,16 +1681,19 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         # Pattern 2 (space followed by closing paren) does NOT ignore math, so these patterns are flagged
         (
             "$Math.$ )",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         (
             "Text $inline math. )$ more text",
-            ["Forbidden pattern found:  )"],
+            ["Forbidden pattern found:  ) on line 1"],
         ),
         # Valid cases that should not error
         ("Proper (parenthesis)", []),
         ("Function call()", []),
         ("Array[index]", []),
+        # Shouldn't ignore boundaries of code/math blocks
+        ("Test `code`)", []),
+        ("Test $math$)", []),
     ],
 )
 def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
