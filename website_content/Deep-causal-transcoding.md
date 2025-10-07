@@ -415,7 +415,7 @@ In fact, my preliminary finding is that for a constant depth-horizon $t-s = 10$,
 
 ## Generalization of linear, quadratic, and exponential DCTs
 
-![Sample complexity of different kinds of DCTs.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
+![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
 
 Figure: **Figure 1**: Sample complexity of DCTs.
 
