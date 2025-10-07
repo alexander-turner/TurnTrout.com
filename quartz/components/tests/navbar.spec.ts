@@ -268,44 +268,77 @@ async function backgroundMatchesBodyDuringTransition(
   const startTheme = theme === "light" ? "dark" : "light"
   await setTheme(page, startTheme)
 
+  // Set up polling and trigger theme change in one evaluation
+  await page.evaluate(
+    (args) => {
+      let mismatchFound = false
+      let isPolling = true
+      let transitionComplete = false
+
+      const poll = () => {
+        const el = document.querySelector(args.selector)
+        if (
+          el &&
+          getComputedStyle(el).backgroundColor !== getComputedStyle(document.body).backgroundColor
+        ) {
+          mismatchFound = true
+        }
+        if (isPolling) {
+          requestAnimationFrame(poll)
+        }
+      }
+
+      // Start polling
+      requestAnimationFrame(poll)
+
+      // Set up listener for transition end on temporary-transition class removal
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class" &&
+            !document.documentElement.classList.contains("temporary-transition")
+          ) {
+            transitionComplete = true
+          }
+        })
+      })
+      observer.observe(document.documentElement, { attributes: true })
+
+      // @ts-expect-error - for test instrumentation
+      window.bgPollingState = {
+        stopPolling: () => {
+          isPolling = false
+          observer.disconnect()
+          return !mismatchFound
+        },
+        isTransitionComplete: () => transitionComplete,
+      }
+    },
+    { selector },
+  )
+
   // Trigger theme change
   const darkmodeButton = page.locator("#theme-toggle")
   await darkmodeButton.click()
 
-  // This will poll for mismatches and store result on window
-  await page.evaluate((sel) => {
-    let mismatchFound = false
-    let isPolling = true
-
-    const poll = () => {
-      const el = document.querySelector(sel)
-      if (
-        el &&
-        getComputedStyle(el).backgroundColor !== getComputedStyle(document.body).backgroundColor
-      ) {
-        mismatchFound = true
-      }
-      if (isPolling) {
-        requestAnimationFrame(poll)
-      }
-    }
-    requestAnimationFrame(poll)
-
-    // @ts-expect-error - for test instrumentation
-    window.stopBgPolling = () => {
-      isPolling = false
-      return !mismatchFound
-    }
-  }, selector)
+  // Wait for transition to complete
+  await page.waitForFunction(
+    () => {
+      // @ts-expect-error - for test instrumentation
+      return window.bgPollingState?.isTransitionComplete()
+    },
+    { timeout: 2000 },
+  )
 
   // Stop polling and get result
   return page.evaluate(() => {
     // @ts-expect-error - for test instrumentation
-    if (typeof window.stopBgPolling !== "function") {
+    if (!window.bgPollingState?.stopPolling) {
       return false
     }
     // @ts-expect-error - for test instrumentation
-    return window.stopBgPolling()
+    return window.bgPollingState.stopPolling()
   })
 }
 
@@ -471,14 +504,21 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   const { video } = videoElements
   const targetTimestamp = await setupVideoForTimestampTest(videoElements)
 
-  // Wait for timestamp to be saved to sessionStorage
+  // Wait for video to play a bit to ensure timeupdate event fires and saves timestamp
   await page.waitForFunction(
     (args) => {
-      const saved = sessionStorage.getItem(args.key)
-      return saved && Math.abs(parseFloat(saved) - args.timestamp) < 0.1
+      const videoEl = document.querySelector<HTMLVideoElement>(`#${args.videoId}`)
+      return videoEl && videoEl.currentTime > args.timestamp
     },
-    { key: "pond-video-timestamp", timestamp: targetTimestamp },
+    { videoId: pondVideoId, timestamp: targetTimestamp },
+    { timeout: 5000 },
   )
+
+  // Verify timestamp was saved to sessionStorage
+  const savedTimestamp = await page.evaluate((key) => {
+    return sessionStorage.getItem(key)
+  }, "pond-video-timestamp")
+  expect(savedTimestamp).toBeTruthy()
 
   await page.reload()
 

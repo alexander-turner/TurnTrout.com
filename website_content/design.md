@@ -724,8 +724,7 @@ I include alt text for all images. I automatically generated, manually approved,
 > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
-To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list):
-![[design-20251006170918.png]]
+To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
 
 ## Smaller features
 

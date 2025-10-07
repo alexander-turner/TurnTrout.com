@@ -728,6 +728,7 @@ img {
 // Ordering the z stacks
 #left-sidebar {
   z-index: 1;
+  background-color: var(--background);
 }
 
 svg {
