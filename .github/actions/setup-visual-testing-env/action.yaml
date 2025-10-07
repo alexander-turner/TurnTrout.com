@@ -14,6 +14,15 @@ runs:
         node-version: ">=22"
         cache: "npm"
 
+    - name: Cache asset dimensions
+      id: asset-dimensions-cache
+      uses: actions/cache@v4
+      with:
+        path: quartz/plugins/transformers/.asset_dimensions.json
+        key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
+        restore-keys: |
+          ${{ runner.os }}-asset-dimensions-refs/heads/main
+
     - name: Cache Playwright browsers
       uses: actions/cache@v4
       with:
