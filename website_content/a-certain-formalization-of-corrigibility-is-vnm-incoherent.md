@@ -174,8 +174,7 @@ What if the reward function isn't state-based? In fact, what if it can _depend_ 
 
 [Attainable Utility Preservation (AUP)](https://arxiv.org/pdf/1902.09725.pdf) sometimes incentivizes off-switch corrigibility (but falls far short of robustly achieving corrigibility<sub>policy modification</sub>). In a somewhat narrow range of situations (immediate shutdown if the agent does nothing), AUP incentivizes the agent to allow shutdown, without being incentivized to shut itself down in general.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4" type="video/mp4; codecs=hvc1">
-<source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.webm" type="video/webm"></video>
+<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.webm" type="video/webm"><track kind="captions" label="No audio"></video>
 
 Figure: [The `Correction` environment](https://arxiv.org/pdf/1902.09725.pdf). The agent is shut down after 2 time steps, if it doesn't disable the off-switch by hitting the red tile to the north. The agent is rewarded for reaching the green goal.
 
