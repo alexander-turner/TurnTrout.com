@@ -553,7 +553,7 @@ describe("CreateTableOfContents", () => {
 
     // Verify header structure and content
     const header = result?.props.children[0]
-    expect(header.type).toBe("h6")
+    expect(header.type).toBe("h1")
     expect(header.props.id).toBe("toc-title")
     const button = header.props.children
     expect(button.type).toBe("button")
