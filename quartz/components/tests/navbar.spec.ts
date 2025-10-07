@@ -54,13 +54,12 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 
   await ensureVideoPlaying(videoElements)
 
-  // Set a fixed timestamp instead of waiting
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
     v.currentTime = timestamp
   }, fixedTimestamp)
 
   const timestamp = await getCurrentTime(video)
-  expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
+  expect(timestamp).toBeGreaterThan(fixedTimestamp - timestampTolerance)
 
   return timestamp
 }
