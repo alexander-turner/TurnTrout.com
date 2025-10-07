@@ -27,6 +27,7 @@ runs:
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
+        PUPPETEER_SKIP_DOWNLOAD: "true"
 
     - name: Install sharp
       run: npm install --os=linux --cpu=x64 sharp
