@@ -19,8 +19,11 @@ runs:
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
     - name: Install Node Dependencies
-      run: NODE_OPTIONS=--max-old-space-size=4096 npm ci
+      run: npm ci
       shell: bash
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+        PUPPETEER_SKIP_DOWNLOAD: "true"
 
     - name: Install sharp
       run: npm install --os=linux --cpu=x64 sharp
@@ -49,14 +52,14 @@ runs:
         FFMPEG_DIR="/opt/ffmpeg"
 
         # Create the target directory
-        sudo mkdir -p $FFMPEG_DIR
+        sudo mkdir -p "$FFMPEG_DIR"
 
         # Download and extract ffmpeg, stripping the top-level directory
-        curl -sL $FFMPEG_URL | sudo tar -xJ -C $FFMPEG_DIR --strip-components=1
+        curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
 
         # Create symlinks to make ffmpeg and ffprobe available on the PATH
-        sudo ln -sf $FFMPEG_DIR/bin/ffmpeg /usr/local/bin/ffmpeg
-        sudo ln -sf $FFMPEG_DIR/bin/ffprobe /usr/local/bin/ffprobe
+        sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
+        sudo ln -sf "$FFMPEG_DIR"/bin/ffprobe /usr/local/bin/ffprobe
 
         # Verify the installation
         ffmpeg -version
