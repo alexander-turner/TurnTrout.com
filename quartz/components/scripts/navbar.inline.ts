@@ -101,9 +101,14 @@ function setupPondVideo(): void {
     console.debug("[setupPondVideo] Video already ready")
     restoreVideoState()
   } else {
-    console.debug("[setupPondVideo] Waiting for canplay, calling load()")
+    console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
     videoElement.addEventListener("canplay", restoreVideoState, { once: true })
-    videoElement.load()
+    // Only trigger loading if video hasn't started loading yet
+    // Don't call load() on persisted videos (SPA navigation) as it resets them
+    if (videoElement.readyState === 0) {
+      console.debug("[setupPondVideo] Calling load() to start loading")
+      videoElement.load()
+    }
   }
 
   // Save timestamp before page unload/refresh
@@ -112,11 +117,10 @@ function setupPondVideo(): void {
     console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
   }
 
-  // Save timestamp on various events
   window.addEventListener("beforeunload", saveTimestamp)
   window.addEventListener("pagehide", saveTimestamp)
 
-  // Also save timestamp periodically during playback
+  // Save timestamp periodically during playback
   videoElement.addEventListener("timeupdate", () => {
     sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
   })
