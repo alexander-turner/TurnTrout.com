@@ -65,11 +65,20 @@ function setupPondVideo(): void {
   const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
 
   if (videoElement) {
-    // Restore timestamp
+    // Restore timestamp after metadata is loaded
     const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
     if (savedTime) {
-      console.debug("[setupPondVideo] Restoring video timestamp", savedTime)
-      videoElement.currentTime = parseFloat(savedTime)
+      const restoreTimestamp = () => {
+        console.debug("[setupPondVideo] Restoring video timestamp", savedTime)
+        videoElement.currentTime = parseFloat(savedTime)
+      }
+
+      // Wait for metadata to be loaded before setting currentTime
+      if (videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
+        restoreTimestamp()
+      } else {
+        videoElement.addEventListener("loadedmetadata", restoreTimestamp, { once: true })
+      }
     }
 
     // Apply current autoplay state
