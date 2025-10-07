@@ -449,6 +449,12 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
+
+  // Wait for video to actually start playing after reload
+  await page.waitForFunction(
+    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
+    pondVideoId,
+  )
   expect(await isPaused(video)).toBe(false)
 })
 

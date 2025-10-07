@@ -53,7 +53,9 @@ function handleVideoToggle(): void {
   if (videoElement) {
     if (!autoplayEnabled) {
       // If we're enabling autoplay
-      videoElement.play()
+      videoElement.play().catch((error: Error) => {
+        console.debug("[handleVideoToggle] Play failed:", error)
+      })
     } else {
       // If we're disabling autoplay
       videoElement.pause()
@@ -76,7 +78,9 @@ function setupPondVideo(): void {
 
       // Don't interfere with videos that are already playing
       if (videoElement.paused && getAutoplayEnabled()) {
-        videoElement.play()
+        videoElement.play().catch((error: Error) => {
+          console.debug("[setupPondVideo] Play failed:", error)
+        })
       }
     }
 
