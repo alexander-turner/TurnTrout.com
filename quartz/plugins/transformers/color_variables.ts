@@ -32,7 +32,7 @@ const colorMapping: Record<string, string> = {
   "#85E89D": "var(--green)",
   "#22863A": "color-mix(in srgb, var(--green), var(--dark) 50%)",
   "#FFAB70": "var(--orange)",
-  "#E36209": "color-mix(in srgb, var(--orange), var(--red) 70%)",
+  "#E36209": "var(--orange)",
 }
 
 /**

@@ -4,17 +4,17 @@
 .dark-mode {
   // Catppuccin Frappe
   --pink: #fba7e4;
-  --red: #de585a;
-  --maroon: #c65a7e;
-  --orange: #db8942;
+  --red: #e88283;
+  --maroon: #d586a1;
+  --orange: #e19b5b;
   --yellow: #e5c890;
   --green: #a6d189;
   --teal: #81c8be;
-  --sky: #99d1db;
+  --sky: #5bc4d7;
   --blue: #8caaee;
-  --lavender: #8788d3;
-  --purple: #a86de1;
-  --gold: #cfb31f; /* Gold */
+  --lavender: #9899d7;
+  --purple: #ba8be9;
+  --gold: #996d00; /* Gold */
 
   // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #303446; // frappeColors.base
@@ -42,15 +42,15 @@
 // Catppuccin Latte
 :root[data-theme="light"],
 .light-mode {
-  --pink: #ea5cc4;
+  --pink: #d020a3;
   --red: #be415c;
-  --orange: #d97b26;
-  --yellow: #8f8620;
+  --orange: #a45c19;
+  --yellow: #7d751c;
   --green: #40a02b;
   --teal: #179299;
   --sky: #008bc3;
-  --blue: #406ecc;
-  --lavender: #7287fd;
+  --blue: #3e6ccb;
+  --lavender: #4963fd;
   --purple: #6f42c1;
   --gold: #be8a00;
 
