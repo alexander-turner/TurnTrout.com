@@ -8,13 +8,15 @@ export const troutContainerId = "trout-ornament-container"
 
 import { h } from "hastscript"
 
-export const ornamentNode: Element = h("div", { id: troutContainerId, role: "presentation" }, [
+export const ornamentNode: Element = h("div", { id: troutContainerId }, [
+  h("span", { class: "no-select", "aria-hidden": "true" }, "☙"),
   h("img", {
     src: "https://assets.turntrout.com/static/trout-bw.svg",
     alt: "",
     class: "no-select",
-    role: "presentation",
+    "aria-hidden": "true",
   }),
+  h("span", { class: "no-select", "aria-hidden": "true" }, "❧"),
 ])
 
 /**
