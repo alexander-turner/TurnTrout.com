@@ -62,7 +62,7 @@ jobs:
           npx playwright test --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
         env:
           CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: "--max-old-space-size=8192"
 
       - name: Create sanitized shard
         if: always()
