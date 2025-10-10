@@ -89,12 +89,6 @@ test.describe("Test page sections", () => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
-      const boundingBoxArticle = await page.locator("body").boundingBox()
-      await page.setViewportSize({
-        width: page.viewportSize()?.width ?? 1920,
-        height: Math.ceil(boundingBoxArticle?.height ?? 0),
-      })
-
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
   }
