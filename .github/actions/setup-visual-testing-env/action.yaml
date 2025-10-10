@@ -31,6 +31,13 @@ runs:
         restore-keys: |
           playwright-${{ runner.os }}-
 
+    - name: Cache ffmpeg
+      id: cache-ffmpeg
+      uses: actions/cache@v4
+      with:
+        path: /opt/ffmpeg
+        key: ffmpeg-${{ runner.os }}-master-latest
+
     - name: Install Node Dependencies
       run: npm ci
       shell: bash
@@ -38,16 +45,13 @@ runs:
         NODE_OPTIONS: "--max-old-space-size=4096"
         PUPPETEER_SKIP_DOWNLOAD: "true"
 
-    - name: Install sharp
-      run: npm install --os=linux --cpu=x64 sharp
-      shell: bash
-
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
       run: npx playwright install --with-deps chromium webkit firefox
       shell: bash
 
-    - name: Download and install stable ffmpeg
+    - name: Download and install ffmpeg
+      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
       run: |
         set -e
         FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
@@ -58,10 +62,13 @@ runs:
 
         # Download and extract ffmpeg, stripping the top-level directory
         curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
+      shell: bash
 
+    - name: Setup ffmpeg symlinks
+      run: |
         # Create symlinks to make ffmpeg and ffprobe available on the PATH
-        sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
-        sudo ln -sf "$FFMPEG_DIR"/bin/ffprobe /usr/local/bin/ffprobe
+        sudo ln -sf /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
+        sudo ln -sf /opt/ffmpeg/bin/ffprobe /usr/local/bin/ffprobe
 
         # Verify the installation
         ffmpeg -version
