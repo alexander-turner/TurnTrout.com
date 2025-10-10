@@ -182,7 +182,7 @@ export async function takeRegressionScreenshot(
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
-    await pauseMediaElements(page)
+    await pauseMediaElements(page, options?.elementToScreenshot)
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -371,14 +371,15 @@ export async function search(page: Page, term: string) {
 }
 
 // skipcq: JS-0098
-export async function pauseMediaElements(page: Page): Promise<void> {
-  const videoPromises = (await page.locator("video").all()).map((el) =>
+export async function pauseMediaElements(page: Page, scope?: Locator): Promise<void> {
+  const mediaScope = scope ?? page
+  const videoPromises = (await mediaScope.locator("video").all()).map((el) =>
     el.evaluate((n: HTMLVideoElement) => {
       n.pause()
       n.currentTime = 0
     }),
   )
-  const audioPromises = (await page.locator("audio").all()).map((el) =>
+  const audioPromises = (await mediaScope.locator("audio").all()).map((el) =>
     el.evaluate((n: HTMLAudioElement) => {
       n.pause()
       if (Number.isFinite(n.duration)) {
