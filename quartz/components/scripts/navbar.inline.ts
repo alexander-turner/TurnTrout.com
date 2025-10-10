@@ -103,12 +103,6 @@ function setupPondVideo(): void {
   } else {
     console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
     videoElement.addEventListener("canplay", restoreVideoState, { once: true })
-    // Only trigger loading if video hasn't started loading yet
-    // Don't call load() on persisted videos (SPA navigation) as it resets them
-    if (videoElement.readyState < 3) {
-      console.debug("[setupPondVideo] Calling load() to start loading")
-      videoElement.load()
-    }
   }
 
   // Save timestamp before page unload/refresh
