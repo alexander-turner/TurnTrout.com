@@ -4290,5 +4290,9 @@
   "./asset_staging/design-20251006170918.png": {
     "width": 4078,
     "height": 2570
+  },
+  "/static/images/external-favicons/proton_me.png": {
+    "width": 64,
+    "height": 64
   }
 }
