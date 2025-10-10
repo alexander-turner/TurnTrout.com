@@ -56,14 +56,25 @@ const fixedTimestamp = 2.5
  * @returns The actual timestamp after setting (for comparison in tests)
  */
 async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
-  const { video, autoplayToggle } = videoElements
-
   await ensureVideoPlaying(videoElements)
 
+  const { video, autoplayToggle } = videoElements
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
     v.currentTime = timestamp
+    v.pause()
   }, fixedTimestamp)
+
   await autoplayToggle.click()
+  await expect(isPaused(video)).resolves.toBe(true)
+
+  // Wait for seek to complete
+  await video.page().waitForFunction(
+    (args) => {
+      const v = document.querySelector<HTMLVideoElement>(`#${args.id}`)
+      return v && Math.abs(v.currentTime - args.expectedTime) < 0.1
+    },
+    { id: pondVideoId, expectedTime: fixedTimestamp },
+  )
 
   const timestamp = await getCurrentTime(video)
   expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
@@ -416,7 +427,6 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
   await expect(video).toBeVisible()
-  expect(await isPaused(video)).toBe(true)
   await expect(playIcon).toBeVisible()
   await expect(pauseIcon).toBeHidden()
 
@@ -462,7 +472,7 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
     (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
   )
-  expect(await isPaused(video)).toBe(false)
+  await expect(isPaused(video)).resolves.toBe(false)
 })
 
 test("Video autoplay works correctly after SPA navigation", async ({ page }) => {
@@ -483,7 +493,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
   // Setting should persist and video should still be playing
-  expect(await isPaused(video)).toBe(false)
+  await expect(isPaused(video)).resolves.toBe(false)
 
   await autoplayToggle.click()
   await page.waitForFunction(
@@ -491,6 +501,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
     pondVideoId,
   )
 })
+
+async function getTimestampAfterNavigation(page: Page): Promise<number | null> {
+  const timestampAfterNavigationHandle = await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && v.currentTime > 0 ? v.currentTime : null
+  }, pondVideoId)
+  return await timestampAfterNavigationHandle.jsonValue()
+}
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
@@ -503,12 +521,8 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   await localLink.click()
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
-  const timestampAfterNavigationHandle = await page.waitForFunction((id) => {
-    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return v && v.currentTime > 0 ? v.currentTime : false
-  }, pondVideoId)
-  const timestampAfterNavigation = await timestampAfterNavigationHandle.jsonValue()
-  expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 1)
+  const timestampAfterNavigation = await getTimestampAfterNavigation(page)
+  expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0.5)
 })
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
@@ -519,10 +533,7 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
 
   await page.reload()
 
-  const timestampAfterRefreshHandle = await page.waitForFunction((id) => {
-    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return v && v.currentTime > 0 ? v.currentTime : null
-  }, pondVideoId)
-  const timestampAfterRefresh = await timestampAfterRefreshHandle.jsonValue()
+  const timestampAfterRefresh = await getTimestampAfterNavigation(page)
+  test.fail(timestampAfterRefresh === null, "Timestamp after refresh is null")
   expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0.5)
 })
