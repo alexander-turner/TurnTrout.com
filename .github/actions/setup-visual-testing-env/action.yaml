@@ -44,9 +44,7 @@ runs:
 
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
-      run: |
-        npx playwright install --with-deps chromium webkit firefox
-        npx playwright install-deps
+      run: npx playwright install --with-deps chromium webkit firefox
       shell: bash
 
     - name: Download and install stable ffmpeg
