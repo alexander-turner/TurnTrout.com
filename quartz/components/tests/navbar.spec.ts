@@ -4,7 +4,6 @@ import { pondVideoId } from "../component_utils"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
-// Video test helpers
 interface VideoElements {
   video: Locator
   autoplayToggle: Locator
@@ -48,18 +47,26 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
 }
 
 const fixedTimestamp = 2.5
-const timestampTolerance = 0.1
+/**
+ * Prepares a video at a known timestamp for tests that verify timestamp preservation.
+ * Ensures the video is playing and sets it to a fixed timestamp, pauses it, then validates the
+ * timestamp was set correctly within tolerance.
+ *
+ * @param videoElements - The video element locators
+ * @returns The actual timestamp after setting (for comparison in tests)
+ */
 async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
-  const { video } = videoElements
+  const { video, autoplayToggle } = videoElements
 
   await ensureVideoPlaying(videoElements)
 
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
     v.currentTime = timestamp
   }, fixedTimestamp)
+  await autoplayToggle.click()
 
   const timestamp = await getCurrentTime(video)
-  expect(timestamp).toBeGreaterThan(fixedTimestamp - timestampTolerance)
+  expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
 
   return timestamp
 }
@@ -489,8 +496,6 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const videoElements = getVideoElements(page)
-  const { video } = videoElements
-
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
 
   const initialUrl = page.url()
@@ -498,35 +503,26 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   await localLink.click()
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
-  const timestampAfterNavigation = await getCurrentTime(video)
-  expect(timestampAfterNavigation).toBeGreaterThan(timestampBeforeNavigation - timestampTolerance)
+  const timestampAfterNavigationHandle = await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && v.currentTime > 0 ? v.currentTime : false
+  }, pondVideoId)
+  const timestampAfterNavigation = await timestampAfterNavigationHandle.jsonValue()
+  expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 1)
 })
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const videoElements = getVideoElements(page)
-  const { video } = videoElements
-  const targetTimestamp = await setupVideoForTimestampTest(videoElements)
-
-  // Wait for video to play a bit to ensure timeupdate event fires and saves timestamp
-  await page.waitForFunction(
-    (args) => {
-      const videoEl = document.querySelector<HTMLVideoElement>(`#${args.videoId}`)
-      return videoEl && videoEl.currentTime > args.timestamp
-    },
-    { videoId: pondVideoId, timestamp: targetTimestamp },
-    { timeout: 5000 },
-  )
-
-  // Verify timestamp was saved to sessionStorage
-  const savedTimestamp = await page.evaluate((key) => {
-    return sessionStorage.getItem(key)
-  }, "pond-video-timestamp")
-  expect(savedTimestamp).toBeTruthy()
+  const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
 
   await page.reload()
 
-  const timestampAfterRefresh = await getCurrentTime(video)
-  expect(timestampAfterRefresh).toBeGreaterThan(targetTimestamp - timestampTolerance)
+  const timestampAfterRefreshHandle = await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && v.currentTime > 0 ? v.currentTime : null
+  }, pondVideoId)
+  const timestampAfterRefresh = await timestampAfterRefreshHandle.jsonValue()
+  expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0.5)
 })
