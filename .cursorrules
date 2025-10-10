@@ -20,6 +20,7 @@
 - **Prioritize Performance**: Write efficient and performant code. Consider algorithmic complexity and resource usage where applicable.
 - **Robustness and Error Handling**: Implement robust error handling, logging, and validation. Consider and handle potential edge cases.
 - **Modern Best Practices**: Use current, stable language features and libraries. Avoid deprecated functions. Always explicitly declare types for variables, parameters, and return values. Avoid `Any` or equivalent dynamic types.
+- **Testing**: When writing tests, use parameterized tests (e.g., `it.each()` in Jest/TypeScript, `pytest.mark.parametrize` in Python) instead of multiple similar test cases. Compress repetitive test logic by extracting the varying inputs/expectations into test parameters.
 - **Environment**: Before running code, make sure run `conda init && conda activate website`, otherwise you'll get "command not found: python".
-- **Running tests**: Use `pytest...` instead of `python -m pytest`.
+- **Running tests**: Use `pytest...` instead of `python -m pytest`. Use `npm test...` instead of `node...`.
   </code_guidelines>

@@ -12,7 +12,6 @@ import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals
 import { type SpawnSyncReturns, type spawnSync } from "child_process"
 // skipcq: JS-W1028
 import fsExtra from "fs-extra"
-import fs from "fs/promises"
 import { h } from "hastscript"
 import os from "os"
 import path from "path"
@@ -33,6 +32,7 @@ import {
   assetProcessor as globalAssetProcessor,
   setSpawnSyncForTesting,
   numRetries,
+  maybeResolveAssetStagingPath,
 } from "../assetDimensions"
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
 
@@ -83,6 +83,9 @@ jest.mock("image-size", () => ({
   default: sizeOfMock,
 }))
 
+jest.mock("fs/promises")
+import fs from "fs/promises"
+
 const mockedFetch = jest.fn() as jest.MockedFunction<NodeFetchCompatibleSignature>
 // Assign to global.fetch. The 'as unknown as typeof global.fetch' cast is used because
 // NodeFetchCompatibleSignature and global.fetch's type aren't identical,
@@ -95,6 +98,39 @@ describe("Asset Dimensions Plugin", () => {
   // replace local instance creation
   let assetProcessor: AssetProcessor
   const actualAssetDimensionsFilePath = paths.assetDimensions
+
+  describe("maybeResolveAssetStagingPath", () => {
+    it.each([
+      {
+        description: "relative path with ../",
+        input: "../asset_staging/privacy.png",
+        expected: path.join(paths.projectRoot, "website_content", "asset_staging/privacy.png"),
+      },
+      {
+        description: "absolute path with leading slash",
+        input: "/asset_staging/privacy.png",
+        expected: path.join(paths.projectRoot, "website_content", "asset_staging/privacy.png"),
+      },
+      {
+        description: "relative path without ../",
+        input: "asset_staging/privacy.png",
+        expected: path.join(paths.projectRoot, "website_content", "asset_staging/privacy.png"),
+      },
+      {
+        description: "path without asset_staging returns null",
+        input: "/static/images/test.png",
+        expected: null,
+      },
+      {
+        description: "path without asset_staging (relative) returns null",
+        input: "static/test.png",
+        expected: null,
+      },
+    ])("handles $description", ({ input, expected }) => {
+      const result = maybeResolveAssetStagingPath(input)
+      expect(result).toBe(expected)
+    })
+  })
 
   beforeEach(async () => {
     // skipcq: JS-P1003
@@ -1007,21 +1043,15 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("reads dimensions for local asset with root-relative path", async () => {
-      const staticDir = path.join(paths.projectRoot, "quartz", "static")
-      // skipcq: JS-P1003
-      await fsExtra.ensureDir(staticDir)
-      const assetPath = path.join(staticDir, imageFileName)
-      await fs.writeFile(assetPath, mockImageData)
+      const expectedPath = path.join(paths.projectRoot, "quartz", "static", imageFileName)
+      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
-      try {
-        const dims = await assetProcessor.fetchAndParseAssetDimensions(
-          `/static/${imageFileName}`,
-          1,
-        )
-        expect(dims).toEqual(mockFetchedImageDims)
-      } finally {
-        await fs.unlink(assetPath)
-      }
+      const dims = await assetProcessor.fetchAndParseAssetDimensions(`/static/${imageFileName}`, 1)
+
+      expect(fs.access).toHaveBeenCalledWith(expectedPath)
+      expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
+      expect(dims).toEqual(mockFetchedImageDims)
     })
 
     it("should throw for local asset if image-size fails", async () => {
@@ -1037,16 +1067,36 @@ describe("Asset Dimensions Plugin", () => {
 
     it("reads dimensions for relative path inside website_content", async () => {
       const relImageName = "relimage.png"
-      const relImagePath = path.join(paths.projectRoot, "website_content", relImageName)
-      // skipcq: JS-P1003
-      await fsExtra.ensureDir(path.dirname(relImagePath))
-      await fs.writeFile(relImagePath, mockImageData)
-      try {
-        const dims = await assetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
-        expect(dims).toEqual(mockFetchedImageDims)
-      } finally {
-        await fs.unlink(relImagePath)
-      }
+      const expectedPath = path.join(paths.projectRoot, "website_content", relImageName)
+      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
+
+      const dims = await assetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
+
+      expect(fs.access).toHaveBeenCalledWith(expectedPath)
+      expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
+      expect(dims).toEqual(mockFetchedImageDims)
+    })
+
+    it.each([
+      { description: "leading slash", inputPath: `/asset_staging/${imageFileName}` },
+      { description: "relative path", inputPath: `asset_staging/${imageFileName}` },
+      { description: "relative path with ../", inputPath: `../asset_staging/${imageFileName}` },
+    ])("reads dimensions for asset_staging path with $description", async ({ inputPath }) => {
+      const expectedPath = path.join(
+        paths.projectRoot,
+        "website_content",
+        "asset_staging",
+        imageFileName,
+      )
+      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
+
+      const dims = await assetProcessor.fetchAndParseAssetDimensions(inputPath, 1)
+
+      expect(fs.access).toHaveBeenCalledWith(expectedPath)
+      expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
+      expect(dims).toEqual(mockFetchedImageDims)
     })
 
     it("throws when sizeOf returns object lacking width/height for local image", async () => {

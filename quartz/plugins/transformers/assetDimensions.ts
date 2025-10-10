@@ -37,6 +37,20 @@ export interface AssetDimensionMap {
 }
 
 /**
+ * Resolves paths containing 'asset_staging/' to their location in website_content.
+ * Handles paths like: ../asset_staging/file.png, /asset_staging/file.png, asset_staging/file.png
+ * @param localPath - The path that may contain asset_staging
+ * @returns The resolved path to website_content/asset_staging, or null if not an asset_staging path
+ */
+export function maybeResolveAssetStagingPath(localPath: string): string | null {
+  const idx = localPath.indexOf("asset_staging/")
+  if (idx === -1) {
+    return null
+  }
+  return path.join(paths.projectRoot, "website_content", localPath.substring(idx))
+}
+
+/**
  * Handles asset dimension processing for images and videos, including caching and fetching dimensions
  * from both local and remote sources.
  */
@@ -170,6 +184,14 @@ class AssetProcessor {
     }
 
     let localPath = src
+
+    // Check if path contains asset_staging anywhere (handles ../asset_staging/, /asset_staging/, asset_staging/)
+    const assetStagingResolved = maybeResolveAssetStagingPath(localPath)
+    if (assetStagingResolved) {
+      await fs.access(assetStagingResolved)
+      return assetStagingResolved
+    }
+
     if (localPath.startsWith("/")) {
       // Treat as relative to the project root
       localPath = path.join(paths.projectRoot, "quartz", localPath.substring(1))
