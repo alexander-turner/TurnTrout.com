@@ -59,22 +59,24 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   await ensureVideoPlaying(videoElements)
 
   const { video, autoplayToggle } = videoElements
+
+  // Set currentTime and wait for timeupdate to fire (which saves to sessionStorage)
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
-    v.currentTime = timestamp
-    v.pause()
+    return new Promise<void>((resolve) => {
+      const onTimeUpdate = () => {
+        if (Math.abs(v.currentTime - timestamp) < 0.1) {
+          v.removeEventListener("timeupdate", onTimeUpdate)
+          v.pause()
+          resolve()
+        }
+      }
+      v.addEventListener("timeupdate", onTimeUpdate)
+      v.currentTime = timestamp
+    })
   }, fixedTimestamp)
 
   await autoplayToggle.click()
   await expect(isPaused(video)).resolves.toBe(true)
-
-  // Wait for seek to complete
-  await video.page().waitForFunction(
-    (args) => {
-      const videoEl = document.querySelector<HTMLVideoElement>(`#${args.id}`)
-      return videoEl && Math.abs(videoEl.currentTime - args.expectedTime) < 0.1
-    },
-    { id: pondVideoId, expectedTime: fixedTimestamp },
-  )
 
   const timestamp = await getCurrentTime(video)
   expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
