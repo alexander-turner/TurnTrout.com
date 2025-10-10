@@ -800,7 +800,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
     ],
     "!(*.vale-styles)/**/*.md": [
       "prettier --write",
-      "markdownlint --config .markdownlint.jsonrc --fix"
+      "markdownlint --config .markdownlint.jsonc --fix"
     ]
 ```
 
