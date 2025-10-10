@@ -70,8 +70,8 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   // Wait for seek to complete
   await video.page().waitForFunction(
     (args) => {
-      const v = document.querySelector<HTMLVideoElement>(`#${args.id}`)
-      return v && Math.abs(v.currentTime - args.expectedTime) < 0.1
+      const videoEl = document.querySelector<HTMLVideoElement>(`#${args.id}`)
+      return videoEl && Math.abs(videoEl.currentTime - args.expectedTime) < 0.1
     },
     { id: pondVideoId, expectedTime: fixedTimestamp },
   )
@@ -504,8 +504,8 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
 
 async function getTimestampAfterNavigation(page: Page): Promise<number | null> {
   const timestampAfterNavigationHandle = await page.waitForFunction((id) => {
-    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return v && v.currentTime > 0 ? v.currentTime : null
+    const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
   }, pondVideoId)
   return await timestampAfterNavigationHandle.jsonValue()
 }
