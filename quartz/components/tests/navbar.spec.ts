@@ -31,18 +31,26 @@ async function isPaused(video: Locator): Promise<boolean> {
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   const { video } = videoElements
 
+  // Ensure video has loaded enough data to play
+  await video.evaluate((v: HTMLVideoElement) => {
+    if (v.readyState < 3) {
+      return new Promise<void>((resolve) => {
+        v.addEventListener("canplay", () => resolve(), { once: true })
+      })
+    }
+  })
+
   // Check if video is already playing
   const isCurrentlyPaused = await isPaused(video)
 
   // If video is paused, click toggle to enable autoplay
   if (isCurrentlyPaused) {
     await videoElements.autoplayToggle.click()
-    await video
-      .page()
-      .waitForFunction(
-        (id: string) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-        pondVideoId,
-      )
+    // Wait for video to actually be playing (not just !paused, but actively playing)
+    await video.page().waitForFunction((id: string) => {
+      const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return v && !v.paused && v.readyState >= 3 && v.currentTime > 0
+    }, pondVideoId)
   }
 }
 
@@ -65,7 +73,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
     return new Promise<void>((resolve) => {
       const onTimeUpdate = () => {
         const timeDelta = v.currentTime - timestamp
-        if (0 <= timeDelta && timeDelta < 0.5) {
+        if (timeDelta >= 0 && timeDelta < 0.5) {
           v.removeEventListener("timeupdate", onTimeUpdate)
           v.pause()
           resolve()
@@ -436,10 +444,10 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await autoplayToggle.click()
 
   // Video should play and icons should switch
-  await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && !v.paused && v.readyState >= 3
+  }, pondVideoId)
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
@@ -471,10 +479,10 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
 
   // Wait for video to actually start playing after reload
-  await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && !v.paused && v.readyState >= 3 && v.currentTime > 0
+  }, pondVideoId)
   await expect(isPaused(video)).resolves.toBe(false)
 })
 
@@ -484,10 +492,10 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   const { video, autoplayToggle } = getVideoElements(page)
 
   await autoplayToggle.click()
-  await page.waitForFunction(
-    (id) => !document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
-    pondVideoId,
-  )
+  await page.waitForFunction((id) => {
+    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return v && !v.paused && v.readyState >= 3
+  }, pondVideoId)
 
   const initialUrl = page.url()
   // TODO might not be local
