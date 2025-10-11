@@ -23,7 +23,9 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 ## Header 2 (SMALLCAPS)
 
-## 1984: Full-size numbers
+## 1984: Full-size numbers at start of header
+
+### The number 1: is large before a title colon
 
 ### Header 3
 

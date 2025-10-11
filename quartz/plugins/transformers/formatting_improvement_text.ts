@@ -60,6 +60,13 @@ export function wrapLeadingNumbers(text: string): string {
   return text.replace(/(?<=# )(\d+)/g, '<span style="font-variant-numeric: lining-nums;">$1</span>')
 }
 
+export function wrapNumbersBeforeColon(text: string): string {
+  return text.replace(
+    /(#[\w ]*)(\d):/g,
+    '$1<span style="font-variant-numeric: lining-nums;">$2</span>:',
+  )
+}
+
 const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim
 
 /**

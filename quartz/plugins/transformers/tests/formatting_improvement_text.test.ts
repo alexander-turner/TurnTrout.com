@@ -9,6 +9,7 @@ import {
   noteAdmonition,
   arrowsToWrap,
   wrapLeadingNumbers,
+  wrapNumbersBeforeColon,
   spaceAdmonitions,
   TextFormattingImprovement,
 } from "../formatting_improvement_text"
@@ -69,6 +70,35 @@ describe("TextFormattingImprovement Plugin", () => {
     it("should not affect text without headers", () => {
       const input = "This is just some regular text without headers."
       expect(wrapLeadingNumbers(input)).toBe(input)
+    })
+  })
+
+  describe("wrapNumbersBeforeColon", () => {
+    it.each([
+      ["# 10: Introduction", "# 10: Introduction"],
+      [
+        "# 5: Chapter Five",
+        '# <span style="font-variant-numeric: lining-nums;">5</span>: Chapter Five',
+      ],
+      [
+        "#section 3: Details",
+        '#section <span style="font-variant-numeric: lining-nums;">3</span>: Details',
+      ],
+      ["# test 123: Content", "# test 123: Content"],
+      [
+        "# 1: First\nSome content\n# 2: Second",
+        '# <span style="font-variant-numeric: lining-nums;">1</span>: First\nSome content\n# <span style="font-variant-numeric: lining-nums;">2</span>: Second',
+      ],
+      ["# 10 Introduction", "# 10 Introduction"],
+      ["10: Introduction", "10: Introduction"],
+      ["This is just some regular text.", "This is just some regular text."],
+      ["#10: Section", "#10: Section"],
+      [
+        "#1: First\n#section 2: Second\n# test 3: Third",
+        '#<span style="font-variant-numeric: lining-nums;">1</span>: First\n#section <span style="font-variant-numeric: lining-nums;">2</span>: Second\n# test <span style="font-variant-numeric: lining-nums;">3</span>: Third',
+      ],
+    ])("should correctly wrap numbers for %s", (input: string, expected: string) => {
+      expect(wrapNumbersBeforeColon(input)).toBe(expected)
     })
   })
 
