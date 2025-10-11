@@ -327,6 +327,10 @@ article[data-use-dropcap="true"] > p:first-of-type {
 .ordinal-suffix {
   vertical-align: calc(0.5 * $base-margin);
   font-size: 0.75em; // Adapt to the font size
+
+  em & {
+    margin-left: calc(0.25 * $base-margin);
+  }
 }
 
 // Center only to avoid sidebars

@@ -400,7 +400,7 @@ This solution is 2/3 water, mixed on 01/01/2024. Even more complicated fractions
 
 ## Ordinal suffixes
 
-He came in 1st but I came in 5,300,251st. :(
+He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._
 
 ## Dropcaps
 
