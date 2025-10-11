@@ -729,6 +729,10 @@ img {
 #left-sidebar {
   z-index: 1;
   background-color: var(--background);
+
+  &:has(#navbar.hide-above-screen) {
+    background-color: transparent;
+  }
 }
 
 svg {
