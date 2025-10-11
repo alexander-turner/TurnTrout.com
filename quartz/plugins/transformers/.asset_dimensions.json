@@ -4287,11 +4287,35 @@
     "width": 2040,
     "height": 1772
   },
-  "./asset_staging/design-20251006170918.png": {
-    "width": 4078,
-    "height": 2570
+  "/static/images/external-favicons/web_archive_org.png": {
+    "width": 32,
+    "height": 32
   },
-  "/static/images/external-favicons/proton_me.png": {
+  "/static/images/external-favicons/doomsdayscenario_co.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/americandragnet_org.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/cnn_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/abcnews_go_com.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/msnbc_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/americanimmigrationcouncil_org.png": {
+    "width": 34,
+    "height": 34
+  },
+  "/static/images/external-favicons/eff_org.png": {
     "width": 64,
     "height": 64
   },
@@ -4299,9 +4323,61 @@
     "width": 64,
     "height": 64
   },
-  "../asset_staging/privacy-20251008204055.png": {
+  "./asset_staging/privacy-20251008204055.png": {
     "width": 2435,
     "height": 2435
+  },
+  "/static/images/external-favicons/proton_me.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/brave_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251010145522.png": {
+    "width": 2910,
+    "height": 1814
+  },
+  "/static/images/external-favicons/privacytests_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/signal_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/privacyguides_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/usenix_org.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/arstechnica_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/macrumors_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/wired_com.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/apple_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/debian_org.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/organicmaps_app.png": {
+    "width": 48,
+    "height": 48
   },
   "/static/images/external-favicons/corbado_com.png": {
     "width": 64,
