@@ -45,6 +45,8 @@ describe("rehypeTagSmallcaps", () => {
     ],
     ["<p>GPT-2-XL</p>", '<p><abbr class="small-caps">Gpt-2-xl</abbr></p>'],
     ["<p>MIRI-relevant math</p>", '<p><abbr class="small-caps">Miri</abbr>-relevant math</p>'],
+    ["<p>E2EE encryption</p>", '<p><abbr class="small-caps">E2ee</abbr> encryption</p>'],
+    ["<p>E2E testing</p>", "<p>E2E testing</p>"],
     // Test all-caps phrases
     [
       "<p>I HATE YOU but YOU ARE SWEET-I LIKE YOU</p>",
@@ -197,6 +199,8 @@ describe("REGEX_ACRONYM tests", () => {
     "ÊTRE",
     "CRÈME",
     "THÉÂTRE",
+    "E2EE",
+    "A1B2C3",
   ]
 
   // eslint-disable-next-line jest/expect-expect

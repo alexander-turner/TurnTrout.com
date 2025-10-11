@@ -36,9 +36,13 @@ const allCapsChars = `${upperCapsChars}${lowerCapsChars}`
 const beforeWordBoundary = `(?<![${allCapsChars}\\w])`
 const afterWordBoundary = `(?![${allCapsChars}\\w])`
 
-// Update REGEX_ACRONYM to only match sequences of uppercase characters
+// Lookahead to ensure at least 3 uppercase letters in the acronym (allows digits/separators between them)
+const upperDigitOrSeparator = `${upperCapsChars}\\d${smallCapsSeparators}`
+const checksAtLeast3Uppercase = `(?=[${upperDigitOrSeparator}]*[${upperCapsChars}][${upperDigitOrSeparator}]*[${upperCapsChars}][${upperDigitOrSeparator}]*[${upperCapsChars}])`
+
+// Update REGEX_ACRONYM to match sequences with uppercase characters (allowing digits/separators)
 export const REGEX_ACRONYM = new RegExp(
-  `${beforeWordBoundary}(?<acronym>${escapedAllowAcronyms}|[${upperCapsChars}]{3,}(?:[${smallCapsSeparators}]?[${upperCapsChars}\\d]+)*)(?<suffix>[sx]?)${afterWordBoundary}`,
+  `${beforeWordBoundary}(?<acronym>${escapedAllowAcronyms}|${checksAtLeast3Uppercase}[${upperCapsChars}]+(?:[\\d${smallCapsSeparators}][${upperCapsChars}\\d]+)*)(?<suffix>[sx]?)${afterWordBoundary}`,
 )
 
 export const REGEX_ABBREVIATION =
