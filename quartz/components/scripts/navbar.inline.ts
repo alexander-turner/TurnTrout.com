@@ -82,23 +82,23 @@ function setupPondVideo(): void {
   const restoreVideoState = () => {
     console.debug("[restoreVideoState] Running, readyState:", videoElement.readyState)
 
-    // Restore timestamp if saved
+    // Restore timestamp first (safe while paused)
     if (savedTime) {
       videoElement.currentTime = parseFloat(savedTime)
     }
 
-    // Start playback only if paused and autoplay is enabled
-    if (videoElement.paused && autoplayEnabled) {
-      console.debug("[restoreVideoState] Attempting play")
+    // Then start playback if autoplay enabled
+    if (autoplayEnabled) {
       videoElement.play().catch((error: Error) => {
         console.error("[setupPondVideo] Play failed:", error)
       })
     }
   }
 
-  // Wait for video to be ready, then restore state
+  // Wait for video to have enough data buffered to play smoothly
+  // readyState >= 3 (HAVE_FUTURE_DATA) means we can play without stalling
   if (videoElement.readyState >= 3) {
-    console.debug("[setupPondVideo] Video already ready")
+    console.debug("[setupPondVideo] Video already ready, readyState:", videoElement.readyState)
     restoreVideoState()
   } else {
     console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
