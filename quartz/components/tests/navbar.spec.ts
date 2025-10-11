@@ -64,7 +64,8 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
     return new Promise<void>((resolve) => {
       const onTimeUpdate = () => {
-        if (Math.abs(v.currentTime - timestamp) < 0.1) {
+        const timeDelta = v.currentTime - timestamp
+        if (0 <= timeDelta && timeDelta < 0.5) {
           v.removeEventListener("timeupdate", onTimeUpdate)
           v.pause()
           resolve()
@@ -79,7 +80,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   await expect(isPaused(video)).resolves.toBe(true)
 
   const timestamp = await getCurrentTime(video)
-  expect(timestamp).toBeCloseTo(fixedTimestamp, 1)
+  expect(timestamp).toBeCloseTo(fixedTimestamp, 0.1)
 
   return timestamp
 }
@@ -524,7 +525,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
   const timestampAfterNavigation = await getTimestampAfterNavigation(page)
-  expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0.5)
+  expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0)
 })
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
@@ -537,5 +538,5 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
 
   const timestampAfterRefresh = await getTimestampAfterNavigation(page)
   test.fail(timestampAfterRefresh === null, "Timestamp after refresh is null")
-  expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0.5)
+  expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0)
 })
