@@ -62,7 +62,7 @@ export function wrapLeadingNumbers(text: string): string {
 
 export function wrapNumbersBeforeColon(text: string): string {
   return text.replace(
-    /(#[\w ]*)(\d):/g,
+    /(#[\w ]*)(?<!\d)(\d):/g,
     '$1<span style="font-variant-numeric: lining-nums;">$2</span>:',
   )
 }
@@ -143,6 +143,7 @@ export const formattingImprovement = (text: string) => {
   newContent = spaceAdmonitions(newContent)
   newContent = concentrateEmphasisAroundLinks(newContent)
   newContent = wrapLeadingNumbers(newContent)
+  newContent = wrapNumbersBeforeColon(newContent)
   newContent = applyTextTransforms(newContent, massTransforms)
 
   // Ensure that bulleted lists display properly
