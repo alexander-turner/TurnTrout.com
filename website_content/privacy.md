@@ -72,7 +72,7 @@ Subtitle: Cost: Free. Time: 30 minutes.
 
 Use a different long password for every single login you have. Do not reuse passwords. Do not reuse passwords. Do not make simple passwords like `mail123`.
 
-If you're not using a password manager already, _Bitwarden will make your life easier_. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just need to remember one password: the master password you use for Bitwarden itself.
+If you're not using a password manager already, _Bitwarden will make your life easier_. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
 
 Here's what to do:
 1. [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
@@ -157,12 +157,41 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 
 ## Browse using Brave instead of Chrome, Firefox, or Safari
 
-All things considered, [installing Brave](https://brave.com/) is a huge step up from normal browsers. Especially in the context of [Chrome restricting popular ad blockers.](https://gizmodo.com/google-is-hobbling-popular-ad-blocker-ublock-origin-on-chrome-2000570878) I also found it easy to migrate from Chrome.
+I thoroughly ran available browsers against my criteria for you:
+
+1. Strong privacy protection against commercial and governmental tracking,
+2. Strong ad blocking,
+3. Runs websites smoothly without major usability sacrifices,
+4. E2EE history and preferences sync across mobile and desktop, and
+5. Open source.
+6. Good default settings (convenient for you).
+
+I settled on [Brave](https://brave.com/). The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of [Chrome restricting popular ad blockers.](https://gizmodo.com/google-is-hobbling-popular-ad-blocker-ublock-origin-on-chrome-2000570878) I also found it easy to migrate from Chrome.
 
 ![[privacy-20251010145522.png]]
 Figure: For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
 
-Brave has made a few shady moves in the past. But Brave offers the best balance of usability (high) and security by default (high) - [far higher than the other three.](https://privacytests.org/)  In any case, Brave is open source and E2EE. That is, your account information (e.g. browsing history) is E2EE.  Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people can just look at that code.
+Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the _only_ browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than Chrome, Firefox, and Safari.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
+
+If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](https://github.com/arkenfox/user.js) (requires technical expertise) or using the Firefox fork [Librewolf](https://librewolf.net/) (which deletes your cookies and history each setting, disrupting your usual usage patterns).
+
+> [!idea] Actions
+> [Download Brave](https://brave.com/) on all of your devices and then set it to be your default browser. On each device, enable Sync and enable syncing everything (it's E2EE). Install the Bitwarden extension, pin it, log in to your vault, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
+>
+> Optionally, I recommend setting these further options:
+> 1. In "Shields":
+>     1. Aggressive tracker & ad blocking
+>     2. Strict upgrade connections to HTTPS (prevents snooping on your data)
+>     3. Block fingerprinting (make it harder for sites to uniquely identify you)
+>     4. Block third-party cookies
+> 2. In "Privacy and security"
+>     1. WebRTC IP handling policy: _Disable non-proxied UDP_ (otherwise an adversary can find your real IP address, even behind a VPN)
+>     2. Auto-redirect AMP pages
+>     3. Auto-redirect tracking URLs
+>     4. Prevent sites from fingerprinting based on language
+>     5. _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
+>     6. Disable "private window with Tor"
+>     7. Disable all options under "Data collection"
 
 ## Use Signal over Messenger, WhatsApp, texting, or phone calls
 
@@ -463,6 +492,8 @@ In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \
   * <https://proton.me/blog/european-tech-alternatives>
 
   * <https://organicmaps.app/>
+
+Tor for people who truly need anonymity. (tier 3)
 
 # Thinking about
 
