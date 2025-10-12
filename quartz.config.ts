@@ -65,7 +65,11 @@ const config: QuartzConfig = {
         },
         keepBackground: false,
       }),
-      ObsidianFlavoredMarkdown({ enableInHtmlEmbed: true, parseArrows: false }),
+      ObsidianFlavoredMarkdown({
+        enableInHtmlEmbed: true,
+        parseArrows: false,
+        enableCheckbox: true,
+      }),
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
       HTMLFormattingImprovement(),
       Latex({ renderEngine: "katex" }),

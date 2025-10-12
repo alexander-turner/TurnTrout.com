@@ -615,6 +615,16 @@ Corrupted text
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 
+# Checkboxes
+
+- [ ] First-level not checked off
+  - [ ] Not checked off
+  - [x] Checked off
+
+> [!note]
+> - [ ] Checkbox in an admonition
+> - [x] Checked box in an admonition
+
 [^1]: First footnote in a row.
 [^2]: Second footnote in a row.
 
