@@ -4382,5 +4382,73 @@
   "/static/images/external-favicons/corbado_com.png": {
     "width": 64,
     "height": 64
+  },
+  "../asset_staging/privacy-20251010202149.png": {
+    "width": 1910,
+    "height": 1436
+  },
+  "../asset_staging/privacy-20251008204055.png": {
+    "width": 2435,
+    "height": 2435
+  },
+  "/static/images/external-favicons/reason_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/theguardian_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/wyden_senate_gov.png": {
+    "width": 16,
+    "height": 16
+  },
+  "../asset_staging/privacy-20251010145522.png": {
+    "width": 2910,
+    "height": 1814
+  },
+  "/static/images/external-favicons/simplelogin_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "../asset_staging/privacy-20251010205613.png": {
+    "width": 1113,
+    "height": 554
+  },
+  "/static/images/external-favicons/law_yale_edu.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/breached_company.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251010202149.png": {
+    "width": 1910,
+    "height": 1436
+  },
+  "./asset_staging/privacy-20251010205613.png": {
+    "width": 1113,
+    "height": 554
+  },
+  "/static/images/external-favicons/techcrunch_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/routersecurity_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/twemoji/2757.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "/static/images/external-favicons/xfinity_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/google_com.png": {
+    "width": 64,
+    "height": 64
   }
 }
