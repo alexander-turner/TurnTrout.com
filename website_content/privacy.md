@@ -148,15 +148,16 @@ I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN ha
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), I recommend migrating to the Proton ecosystem. Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Drive (E2EE and secure) instead of Google Drive (a government could compel Google to decrypt your data, even though Google likely secures your data quite well).
 
 > [!warning] It's not paranoia if they really are out to get you
-> > [!quote] ACLU
-> > Under Section 702 of the Foreign Intelligence Surveillance Act (FISA), the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security.
+> > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
+> > Under Section 702 of the Foreign Intelligence Surveillance Act (FISA), the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security. Given our nation’s history of abusing its surveillance authorities, and the secrecy surrounding the program, we should be concerned that Section 702 is and will be used to disproportionately target disfavored groups, whether minority communities, political activists, or even journalists.
 >
 > In late 2024, the government further expanded its surveillance powers.
->
+> > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
+> > Subtitle: Published June 5th, 2024
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
 ## Browse using Brave instead of Chrome, Firefox, or Safari
-
+1   
 I thoroughly ran available browsers against my criteria for you:
 
 1. Strong privacy protection against commercial and governmental tracking,
@@ -180,22 +181,24 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >
 > Optionally, I recommend setting these further options:
 > 1. In "Shields":
->     1. Aggressive tracker & ad blocking
->     2. Strict upgrade connections to HTTPS (prevents snooping on your data)
+>     1. [ ] Aggressive tracker & ad blocking
+>     2. [ ] Strict upgrade connections to HTTPS (prevents snooping on your data)
 >     3. Block fingerprinting (make it harder for sites to uniquely identify you)
 >     4. Block third-party cookies
-> 2. In "Privacy and security"
+> 2. In "Privacy and security":
 >     1. WebRTC IP handling policy: _Disable non-proxied UDP_ (otherwise an adversary can find your real IP address, even behind a VPN)
 >     2. Auto-redirect AMP pages
 >     3. Auto-redirect tracking URLs
 >     4. Prevent sites from fingerprinting based on language
 >     5. _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
->     6. Disable "private window with Tor"
->     7. Disable all options under "Data collection"
+>     6. Disable all options under "Data collection"
 
-## Use Signal over Messenger, WhatsApp, texting, or phone calls
+## Use Signal over Facebook Messenger, WhatsApp, texting, or phone calls
 
- Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time.
+ Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time. "Encrypted" services aren't that safe either:
+
+> [!quote] [The WIRED Guide to Protecting Yourself From Government Surveillance](https://www.wired.com/story/the-wired-guide-to-protecting-yourself-from-government-surveillance/)
+> Digital services like Facebook Messenger, Telegram, or X may say their direct messages offer “encryption,” but in the default setting that almost everyone uses, they only encrypt information in transit to the server that runs the service. On that server, the information is then decrypted and accessible to the company that controls that server, or any government agency that demands they share that data—like the Nebraska police who demanded Facebook [hand over chats about a 17-year-old’s illegal abortion in 2022](https://www.nbcnews.com/tech/tech-news/facebook-turned-chat-messages-mother-daughter-now-charged-abortion-rcna42185), then brought criminal charges against her and her mother.
 
  The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
 
@@ -320,58 +323,60 @@ Subtitle: Cost: ~$250 one-time. Time: 45 minutes.
 
 NOTE: AI written subsection; rewrite and fact check
 
-If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. It's a well-documented security risk. Your ISP has "backdoor" access to it, its firmware is insecure, and you have no way of knowing what data it's collecting on you.
+If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. It's a well-documented security risk. CITE Your ISP has "backdoor" access to it, its firmware is insecure, and you have no way of knowing what data it's collecting on you.
 
 Taking control of your home network is one of the most significant steps you can take to protect your privacy. The goal is to own both your modem (the device that gets the internet from the wall) and your router (the device that creates your Wi-Fi network).
 
-### How to Buy the Right Modem
+### How to buy the right modem
 
-This is the trickiest part, but this chart will make it simple. It will guide you to the exact action you need to take based on where you live and what kind of internet you have.
+If you're in the USA with a cable internet connection, you need to buy a modem. Otherwise, move to the next subsection.
 
-```mermaid
-graph TD
-    A["Where do you live?"] --> B{USA};
-    A --> C{UK};
-
-    subgraph USA
-        B --> D["What's your internet type?"];
-        D -->|Fiber| E["✅ You have an ONT.<br/>It's your modem.<br/><b>Just buy a router.</b>"];
-        D -->|Cable| F["<b>Examples:</b> Xfinity, Spectrum, Cox<br/><br/>1. Find your ISP's<br/>'approved modem list'"];
-        F --> G["2. From the list, buy a<br/><b>DOCSIS 3.1 modem-only</b> device.<br/><i>(e.g., Netgear CM2000, ARRIS S33)</i>"];
-    end
-
-    subgraph UK
-        C --> H["Who's your provider?"];
-        H -->|Virgin Media| I["❗ You must use their Hub.<br/>Put it in <b>'Modem Mode'</b><br/>then connect your own router."];
-        H -->|BT, Sky, TalkTalk, etc.| J["✅ You have an ONT.<br/>It's your modem.<br/><b>Just buy a router.</b>"];
-    end
-
-    style E fill:#e6ffed,stroke:#333
-    style J fill:#e6ffed,stroke:#333
-    style G fill:#e6ffed,stroke:#333
-    style I fill:#fff0f0,stroke:#333
-```
-
-> [!warning] Always buy 'new'
+> [!warning] Always buy new modems
 >
-> Never buy a "used" or "refurbished" modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, you have no way of knowing if the hardware or its software has been tampered with. The money saved isn't worth the risk.
+> Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer. The money saved isn't worth the risk.
 
-## Buy a Router That Respects You
+## Buy a router that respects you
 
-Now for the easy part. Instead of a router from a company that wants to harvest your data, you can buy one that comes with privacy-respecting, open-source firmware already installed.
+Instead of renting a router from a company that wants to harvest your data, you can buy one that comes with privacy-respecting, open-source firmware already installed.
 
-I strongly recommend buying a router from **GL.iNet**. These devices come with OpenWrt (the gold standard for open-source router software) from the factory and have a simple interface designed for privacy. For my home, I bought the [**GL.iNet Flint 2**](https://www.google.com/search?q=https://www.amazon.com/dp/B0CKX7142K "null"), which is powerful enough for a whole house and is future-proof for years to come.
+I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house. 
 
-Because its software is open-source, it is subject to public scrutiny, meaning you don't have to blindly trust the company's privacy promises. As a bonus, these routers make it incredibly easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.
+Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
+1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN. 
+2.  Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
 > [!example] My experience upgrading my modem and router
 > I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
 >
-> For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The total setup time took TODO
+> For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour. 
+> 
+> For the setup itself, I used my laptop. _To be able to configure my new hardware, I needed to configure ProtonVPN to "allow LAN connections."_
 
-### Set up ProtonVPN to shield all connections in your home
+### Wifi network advice
+
+1. Use Bitwarden's password generator in "passphrase" mode to generate passwords like "`kudos ahead reborn smog refined unquote`."
+2. To avoid exposing your private network to potential intruders, create a separate guest Wi-Fi network with a separate password.
+3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
+
+### Set up ProtonVPN  on your router to shield all connections in your home
+
+https://protonvpn.com/support/flint-gl-ax1800-router/
 
 Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might not be.
+
+
+
+ Think of the VPN like an umbrella, by default. It's a really big umbrella and it covers your whole house. However, this umbrella transmits data to servers within your country. However, you might want your laptop to connect to a VPN server across the world. In that case, I recommend setting up something that sounds fancy, but is pretty simple. It's called policy mode, policy tunneling, and it basically just accepts your device from the umbrella. You can set it up easily on the Flint 2 by going to VPN settings, enabling policy mode, and then adding a policy type of "do not use VPN for the following." At that point, indicate your laptop's hardware MAC address, and you'll be good to go. You should be able to connect to the VPN independently, while everything else gets routed through the protected connection of your home.
+
+
+
+1. **Access VPN Dashboard** at `192.168.8.1`
+2. **Connect ProtonVPN** (OpenVPN)
+3. **Enable VPN Policies** in the VPN settings (not "global mode")
+4. **Choose your policy type:** "Do not use VPN for the following"
+5. **Add the laptop's hardware (MAC) address** to exclude it from the VPN tunnel. My Flint 3's interface showed me my laptop, so I just clicked on it.
+
+
 
 ## Use more secure operating systems
 
@@ -503,9 +508,68 @@ Tor for people who truly need anonymity. (tier 3)
 * VPN for whole home network
 * Proton wallet (emergency cash in case frozen?)
 
+- google forms?
 * Google Meet E2E?
 
   * Proton Meet coming out in half a year probably
 
 Router and modem replacement in tier 2
 [https://routersecurity.org/ISProuters.php](https://routersecurity.org/ISProuters.php)
+
+- note that state actors buy data
+
+## Bluetooth (BT)
+
+Beacon networks in stores: [https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html) 
+
+Creepy. Let's 
+
+iOS instructions
+: On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it. 
+
+: ![[privacy-20251013180907.png|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
+
+: Similarly, make simple automations which encompass your use cases. For my iPhone, I don't use Steam so I'll just make Spotify and YouTube Music automations.
+
+Android instructions
+: If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do.
+
+https://www.secureworld.io/industry-news/cybersecurity-risks-bluetooth
+1. Nondescript device names for bluetooth and for discoverable computer name -- set to default
+	1. laptop
+	2. phone
+	3. Watch
+	4. ring
+	5. wireless headphones
+	6. mobile hotspot
+![[privacy-20251013161427.png]]
+2. Hygiene 
+	1. Turn off eg smart speakers when not used
+	2. Disconnect from old or unknown bluetooth devices
+3. Minimization
+	1. iOS
+		1. 
+
+Communities need freedom of thought --- even fears can chill speech
+Slack -> RocketChat
+Discord -> Element.io 
+(Ideally decentralized so there isn't a central service which can ban people from the network)
+
+Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues)
+
+[https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3](https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3)
+
+[https://www.notus.org/technology/war-zone-surveillance-border-us](https://www.notus.org/technology/war-zone-surveillance-border-us)
+
+"One description of Weathered Security’s products online boasts that it can also track other signal emissions from key fobs, satellite receivers, low-powered radio chips in modern credit cards or passports, car tire sensors that monitor tire pressure and even medical devices. In an emailed response to a request for comment, the company said: “We do not have any issues with you reporting information obtained under FOIA.”"
+
+
+More theoretical --- any followup? [https://jacobsschool.ucsd.edu/news/release/3461?id=3461](https://jacobsschool.ucsd.edu/news/release/3461?id=3461)
+
+Places to go to [https://practicalbetterments.com/apply-for-citizenship-of-another-country/](https://practicalbetterments.com/apply-for-citizenship-of-another-country/) -- france ancestry? german? poland? expelled jews?
+
+  
+
+pihole for less effort [https://practicalbetterments.com/block-ads-on-your-smart-tv/](https://practicalbetterments.com/block-ads-on-your-smart-tv/)
+
+Hardening against police cracking your PIN or otherwise getting into your device?

@@ -4450,5 +4450,101 @@
   "/static/images/external-favicons/google_com.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/ssd_eff_org.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/yubico_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/apps_apple_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/play_google_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/protonvpn_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/gizmodo_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/xda-developers_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/librewolf_net.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/support_apple_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/tomshardware_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/security_apple_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/backblaze_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/duplicati_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/nbcnews_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/freedom_press.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/aclu_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/secureworld_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251013161427.png": {
+    "width": 1386,
+    "height": 632
+  },
+  "/static/images/external-favicons/gl-inet_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/discuss_privacyguides_net.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/notus_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/practicalbetterments_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/jacobsschool_ucsd_edu.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251013180907.png": {
+    "width": 936,
+    "height": 669
   }
 }
