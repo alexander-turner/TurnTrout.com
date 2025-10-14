@@ -79,7 +79,8 @@ export function noteAdmonition(text: string): string {
   return text
 }
 
-const subtitlePattern = /^(Subtitle:[\S ]+\n)(?=[^\n])/gm
+const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<quote>\n)/gm
+const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
 export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
 const massTransforms: [RegExp | string, string][] = [
@@ -89,7 +90,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
   [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
-  [subtitlePattern, "$1\n"],
+  [subtitlePattern, subtitleReplacement],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
