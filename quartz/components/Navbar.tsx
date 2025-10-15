@@ -124,6 +124,9 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
     </li>
   ))
 
+  const title = cfg?.pageTitle ?? defaultTitle
+  const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
+
   const headerVideoSpan = (
     <span id="header-video-container" className="video-container" data-persist-video="true">
       <video
@@ -134,16 +137,14 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
         playsInline
         data-persist
         preload="auto"
-        poster="https://assets.turntrout.com/static/pond_frame.avif"
+        poster={`${baseDir}pond_frame.avif`}
         aria-hidden="true"
       >
-        <source src="https://assets.turntrout.com/static/pond.mov" type="video/mp4; codecs=hvc1" />
-        <source src="https://assets.turntrout.com/static/pond.webm" type="video/webm" />
+        <source src={`${baseDir}pond.mov`} type="video/mp4; codecs=hvc1" />
+        <source src={`${baseDir}pond.webm`} type="video/webm" />
       </video>
     </span>
   )
-  const title = cfg?.pageTitle ?? defaultTitle
-  const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
 
   const pageLinks = (
     <nav className="menu">
