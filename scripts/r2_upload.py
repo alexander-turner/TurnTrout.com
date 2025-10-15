@@ -292,16 +292,26 @@ def main() -> None:
         default=False,
         help="Overwrite existing files in R2 if they already exist",
     )
+    parser.add_argument(
+        "--ignore-files",
+        nargs="*",
+        default=[],
+        help="List of filenames to ignore (matches by basename)",
+    )
     parser.add_argument("file", type=Path, nargs="?", help="File to upload")
     args = parser.parse_args()
 
     files_to_upload: Sequence[Path] = []
     if args.upload_from_directory:
-        files_to_upload = script_utils.get_files(
+        all_files = script_utils.get_files(
             args.upload_from_directory,
             args.filetypes,
             use_git_ignore=False,  # several image dirs are git ignored
         )
+        # Filter out ignored files
+        files_to_upload = [
+            f for f in all_files if f.name not in args.ignore_files
+        ]
     elif args.file:
         files_to_upload = [args.file]
     else:

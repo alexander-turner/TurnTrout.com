@@ -12,6 +12,7 @@ cleanup() {
 trap cleanup EXIT
 
 STATIC_DIR="$GIT_ROOT"/quartz/static
+POND_FILES="pond.mov pond.webm pond_frame.avif"
 
 bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
 # If asset_staging isn't empty
@@ -28,7 +29,7 @@ if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
 fi
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
-python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" --remove-originals
+python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" $POND_FILES --remove-originals
 
 # Left over original files
 cleanup
@@ -36,9 +37,9 @@ cleanup
 # Convert card images in markdown files
 python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
 
-# Upload assets to R2 bucket
+# Upload assets to R2 bucket (ignore pond files - they're needed locally for tests)
 LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
-python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" 
+python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" --ignore-files $POND_FILES 
 
 # Commit changes to the moved-to local dir
 # (NOTE will also commit current changes)

@@ -825,3 +825,46 @@ def test_files_to_upload_ignores_gitignore(mock_git_root: Path):
     expected_files = {ignored_file, regular_file, existing_png_file}
 
     assert uploaded_files == expected_files
+
+
+def test_ignore_files_option(mock_git_root: Path):
+    """Test that --ignore-files excludes specified files from upload."""
+    static_dir = mock_git_root / "quartz" / "static"
+    content_dir = mock_git_root / "quartz" / "website_content"
+    static_dir.mkdir(parents=True, exist_ok=True)
+    content_dir.mkdir(parents=True, exist_ok=True)
+
+    ignored_files = ["pond.mov", "pond.webm", "pond_frame.avif"]
+    regular_files = ["regular.mp4", "regular.avif"]
+
+    all_files = {static_dir / f for f in ignored_files + regular_files}
+    for f in all_files:
+        f.touch()
+
+    with (
+        patch(
+            "sys.argv",
+            [
+                "r2_upload.py",
+                "--upload-from-directory",
+                str(static_dir),
+                "--filetypes",
+                ".mp4",
+                ".webm",
+                ".avif",
+                "--ignore-files",
+                *ignored_files,
+                "--references-dir",
+                str(content_dir),
+            ],
+        ),
+        patch("scripts.r2_upload.upload_and_move") as mock_upload,
+    ):
+        r2_upload.main()
+
+    uploaded = {call.args[0] for call in mock_upload.call_args_list}
+    assert uploaded == {static_dir / f for f in regular_files}
+    assert all(
+        call.args[0].name not in ignored_files
+        for call in mock_upload.call_args_list
+    )
