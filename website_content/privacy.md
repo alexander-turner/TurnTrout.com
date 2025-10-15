@@ -15,7 +15,7 @@ aliases:
 ---
 Edward Snowden [warned us about unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
 
-![[privacy-20251010202149.png|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
 Figure: July 2013. I'm in the center, holding the banner.
 
 Edward Snowden warned us of a day that the free world might regret its surveillance infrastructure. I think that that day [is here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d) ICE, for example, [has cropped up as a new surveillance agency](https://americandragnet.org/), not only listening but also intruding:
@@ -98,7 +98,7 @@ Since you're using a unique password for every site, you won't have to scramble 
 
 Subtitle: YubiKey > authenticator app > text- / email-based 2FA
 
-![[privacy-20251008204055.png]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
 
 You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts, like Bitwarden. You really, really don't want hackers to compromise your Bitwarden.
 
@@ -170,7 +170,7 @@ I thoroughly ran available browsers against my criteria for you:
 
 I settled on [Brave](https://brave.com/). The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of [Chrome restricting popular ad blockers.](https://gizmodo.com/google-is-hobbling-popular-ad-blocker-ublock-origin-on-chrome-2000570878) I also found it easy to migrate from Chrome.
 
-![[privacy-20251010145522.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif]]
 Figure: For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
 
 Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the _only_ browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than Chrome, Firefox, and Safari.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
@@ -253,7 +253,7 @@ If you use aliases, you make it harder for scammers and surveillance to track yo
 
 This is one I finally got around to while writing this article! Use [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
-![[privacy-20251010205613.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
 
 Once you've made a SimpleLogin account, follow Bitwarden's [guide on setting up Bitwarden to generate e-mail aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
@@ -306,9 +306,9 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import fro
 > 
 > Full disclosure: \[my company\] was involved in a cryptographic audit of Ente.
 
-![[privacy-20251014141906.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif]]
 
-![[privacy-20251014133220.png]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif]]{.float-right}
 Whenever I read "Ente", I think of [Entei, the 244th Pokemon](https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)) and the coolest of the three legendary beasts from the second generation.
 
 - [ ] Download [Ente](https://ente.io)
@@ -332,7 +332,7 @@ I was using Google Drive and iCloud. Neither are open source, and Google Drive i
 
 I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
 
-![[privacy-20251014133029.png|The Lunatask view of tasks for this post, with a calendar view on the side.]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
 Migrating from Todoist took about 30 minutes. Not too bad. 
 * Google Drive, iCloud - Proton Drive
@@ -572,7 +572,7 @@ Creepy. Let's
 iOS instructions
 : On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it. 
 
-: ![[privacy-20251013180907.png|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
+: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
 
 : Similarly, make simple automations which encompass your use cases. For my iPhone, I don't use Steam so I'll just make Spotify and YouTube Music automations.
 
@@ -587,7 +587,7 @@ https://www.secureworld.io/industry-news/cybersecurity-risks-bluetooth
 	4. ring
 	5. wireless headphones
 	6. mobile hotspot
-![[privacy-20251013161427.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
 2. Hygiene 
 	1. Turn off eg smart speakers when not used
 	2. Disconnect from old or unknown bluetooth devices
@@ -622,4 +622,4 @@ Hardening against police cracking your PIN or otherwise getting into your device
 
 Home security cameras
 https://secluso.com 
-![[privacy-20251013201115.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
