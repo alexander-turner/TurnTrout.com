@@ -68,18 +68,23 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 
   const { video, autoplayToggle } = videoElements
 
-  // Set currentTime and wait for timeupdate to fire (which saves to sessionStorage)
+  // Set currentTime and wait for seeked event (which fires when seeking completes)
   await video.evaluate((v: HTMLVideoElement, timestamp: number) => {
-    return new Promise<void>((resolve) => {
-      const onTimeUpdate = () => {
-        const timeDelta = v.currentTime - timestamp
-        if (timeDelta >= 0 && timeDelta < 0.5) {
-          v.removeEventListener("timeupdate", onTimeUpdate)
-          v.pause()
-          resolve()
-        }
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        v.removeEventListener("seeked", onSeeked)
+        reject(new Error(`Seek to ${timestamp} timed out`))
+      }, 5000)
+
+      const onSeeked = () => {
+        clearTimeout(timeout)
+        v.pause()
+        // Trigger timeupdate to ensure sessionStorage is saved
+        v.dispatchEvent(new Event("timeupdate"))
+        resolve()
       }
-      v.addEventListener("timeupdate", onTimeUpdate)
+
+      v.addEventListener("seeked", onSeeked, { once: true })
       v.currentTime = timestamp
     })
   }, fixedTimestamp)
@@ -478,11 +483,34 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
 
-  // Wait for video to actually start playing after reload
-  await page.waitForFunction((id) => {
-    const v = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return v && !v.paused && v.readyState >= 3 && v.currentTime > 0
-  }, pondVideoId)
+  // Wait for video to have enough data loaded, then verify it starts playing
+  await video.evaluate((v: HTMLVideoElement) => {
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(
+          new Error(
+            `Video failed to reach playable state: readyState=${v.readyState}, paused=${v.paused}`,
+          ),
+        )
+      }, 10000)
+
+      const checkPlayable = () => {
+        if (v.readyState >= 3 && !v.paused && v.currentTime > 0) {
+          clearTimeout(timeout)
+          resolve()
+        }
+      }
+
+      if (v.readyState >= 3 && !v.paused && v.currentTime > 0) {
+        clearTimeout(timeout)
+        resolve()
+      } else {
+        v.addEventListener("canplay", checkPlayable, { once: true })
+        v.addEventListener("playing", checkPlayable, { once: true })
+        v.addEventListener("timeupdate", checkPlayable, { once: true })
+      }
+    })
+  })
   await expect(isPaused(video)).resolves.toBe(false)
 })
 
