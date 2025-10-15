@@ -335,10 +335,23 @@ I used to track my tasks with Todoist, but I never felt fully comfortable. I tra
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
 Migrating from Todoist took about 30 minutes. Not too bad.
-* Google Drive, iCloud - Proton Drive
-* gcal -> proton cal
-* google photos, apple photos -> Ente
-  * metadata (not via signal)
+
+### Schedule with Proton Calendar
+
+Neither Google nor iCloud Calendar are E2EE - even with iCloud's Advanced Data Protection enabled. The government could compel the companies to hand over your calendars. 
+
+Proton Calendar lacks a few of the convenient features of Google Calendar.But the calendar gets the job done and it's secure. I just imported my Google Calendar and  began making new entries in the Proton calendar instead.  Proton Calendar  automatically imports calendar invitations sent to your Proton Mail address - another  reason to [do your email through Proton Mail.]()
+
+The main drawback is the lack of a direct "Add to Calendar" feature for external invites. To get around this, I created a dedicated Google Calendar and synced it to my Proton Calendar. Now, when I accept an invite, I add it to that Google Calendar, and it automatically appears in my Proton view.
+
+
+### TODO contacts?
+
+## Only carry smart devices when you need them
+
+I have an [Oura ring](https://ouraring.com/) but I don't particularly trust them. Their offerings are proprietary, closed source, and not E2EE. They require cloud analysis of my health data. At the same time, I want to track my sleep health. 
+
+I used to wear my Oura everywhere. But I realized I only need to wear my Oura while sleeping, meaning the ring doesn't even need to leave my home. I put on the ring at night and take it off in the morning. While Oura can still decrypt and read my sleep data, I find the tradeoff worth it for the sleep information. I decreased my daily "digital signature" by carrying one fewer device.
 
 ## Bluetooth
 
@@ -349,11 +362,11 @@ If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Blueto
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
 Figure: My laptop's generic name.
 
-As a reminder, your Bluetooth devices and other broadcastable names may include:
+As a reminder, your Bluetooth devices and other broadcastable names may include other smart devices:
   1. Laptop
   2. Phone
   3. Watch
-  4. Ring
+  4. Oura ring
   5. Wireless headphones
   6. Smart speaker
   7. Mobile hotspot
@@ -419,7 +432,7 @@ What other accounts do you have?
 
 Subtitle: Cost: ~$250 one-time. Time: 45 minutes.
 
-NOTE: AI written subsection; rewrite and fact check
+NOTE: AI written subsection; rewrite and fact check TODO
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. It's a well-documented security risk. CITE Your ISP has "backdoor" access to it, its firmware is insecure, and you have no way of knowing what data it's collecting on you.
 
@@ -458,14 +471,14 @@ Because its software is open-source, it is subject to public scrutiny. You have 
 
 ### Set up ProtonVPN  on your router to shield all connections in your home
 
-<https://protonvpn.com/support/flint-gl-ax1800-router/>
+TODO
 
 Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might not be.
 
  Think of the VPN like an umbrella, by default. It's a really big umbrella and it covers your whole house. However, this umbrella transmits data to servers within your country. However, you might want your laptop to connect to a VPN server across the world. In that case, I recommend setting up something that sounds fancy, but is pretty simple. It's called policy mode, policy tunneling, and it basically just accepts your device from the umbrella. You can set it up easily on the Flint 2 by going to VPN settings, enabling policy mode, and then adding a policy type of "do not use VPN for the following." At that point, indicate your laptop's hardware MAC address, and you'll be good to go. You should be able to connect to the VPN independently, while everything else gets routed through the protected connection of your home.
 
-1. **Access VPN Dashboard** at `192.168.8.1`
-2. **Connect ProtonVPN** (OpenVPN)
+1. Access the dashboard at `192.168.8.1` and navigate to 
+2. Connect ProtonVPN via OpenVPN using [this guide]()
 3. **Enable VPN Policies** in the VPN settings (not "global mode")
 4. **Choose your policy type:** "Do not use VPN for the following"
 5. **Add the laptop's hardware (MAC) address** to exclude it from the VPN tunnel. My Flint 3's interface showed me my laptop, so I just clicked on it.
@@ -490,9 +503,11 @@ More specifically, Windows sends out so much information about you via so-called
 
 ### Switch to iOS on mobile as well
 
+TODO
+
 ## Outsmart smart home spying
 
-I love my Google Home setup. Problem is, the microphones are _always on_ - though Google claims the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home.
+I love my Google Home setup. Problem is, the microphones are _always on_ - though Google claims the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home. TODO
 
 Segment using vLANs.
 
@@ -559,13 +574,83 @@ For less than \$10, I purchased [two webcam covers for my laptops.](https://www.
 
 I [recommend the iPhone for usability and accessibility.](#switch-to-ios-on-mobile-as-well)  It's what I just switched to. But if you want maximum privacy and security and if you don't mind technical setup work, I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS is the most private mobile OS available and it even still supports most apps. The installation process seems straightforward for anyone comfortable following technical instructions. ([Installation guide](https://grapheneos.org/install/))
 
-## Switch from X to Bluesky or Mastodon
+## Migrate your social network away from X
 
-Subtitle: Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
+![[privacy-20251015092621.gif]]{.float-right}
 
-The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too.
+The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Although I don't use X regularly, I plan to migrate my account in the coming months. 
+
+> [!quote] [Enshittification](https://en.wikipedia.org/wiki/Enshittification)
+> Enshittification is a pattern in which two-sided online products and services decline in quality over time. Initially, vendors create high-quality offerings to attract users, then they degrade those offerings to better serve business customers (such as advertisers), and finally degrade their services to users and business customers to maximize short-term profits for shareholders. \[...\]
+> 
+> Doctorow advocates for two ways to reduce enshittification: upholding the [end-to-end principle](https://en.wikipedia.org/wiki/End-to-end_principle "End-to-end principle"), which asserts that platforms should transmit data in response to user requests rather than algorithm-driven decisions; and guaranteeing [the right of exit](https://en.wikipedia.org/wiki/Data_portability "Data portability")—that is, enabling a user to leave a [platform](https://en.wikipedia.org/wiki/Platform_economy "Platform economy") without data loss, which requires [interoperability](https://en.wikipedia.org/wiki/Interoperability "Interoperability"). These moves aim to uphold the standards and trustworthiness of online platforms, emphasize user satisfaction, and encourage market competition.
+
+Most importantly, X does not guarantee the "right of exit." If you leave X, you leave your followers and connections behind by default - although you can export your interaction data. To reconnect with your X followers on the alternative platform Bluesky, you would need to find each follower's Bluesky handle on your own (or vice versa, for your followers finding you). In other words: We love our friends more than we hate these platforms, so we stay stuck.[^attrib]
+
+[^attrib]: I read a similar sentence during my research but cannot remember where. Sorry for the lack of attribution!
+
+I propose a TODO
+
+
+
+### The pitch for Mastodon
+
+The first Mastodon post I ever saw: 
+
+<blockquote class="mastodon-embed" data-embed-url="https://mastodon.social/@Daojoan/115377850900768941/embed" style="background: #FCF8FF; border-radius: 8px; border: 1px solid #C9C4DA; margin: 0; max-width: 540px; min-width: 270px; overflow: hidden; padding: 0;"> <a href="https://mastodon.social/@Daojoan/115377850900768941" target="_blank" style="align-items: center; color: #1C1A25; display: flex; flex-direction: column; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Roboto, sans-serif; font-size: 14px; justify-content: center; letter-spacing: 0.25px; line-height: 20px; padding: 24px; text-decoration: none;"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 79 75"><path d="M63 45.3v-20c0-4.1-1-7.3-3.2-9.7-2.1-2.4-5-3.7-8.5-3.7-4.1 0-7.2 1.6-9.3 4.7l-2 3.3-2-3.3c-2-3.1-5.1-4.7-9.2-4.7-3.5 0-6.4 1.3-8.6 3.7-2.1 2.4-3.1 5.6-3.1 9.7v20h8V25.9c0-4.1 1.7-6.2 5.2-6.2 3.8 0 5.8 2.5 5.8 7.4V37.7H44V27.1c0-4.9 1.9-7.4 5.8-7.4 3.5 0 5.2 2.1 5.2 6.2V45.3h8ZM74.7 16.6c.6 6 .1 15.7.1 17.3 0 .5-.1 4.8-.1 5.3-.7 11.5-8 16-15.6 17.5-.1 0-.2 0-.3 0-4.9 1-10 1.2-14.9 1.4-1.2 0-2.4 0-3.6 0-4.8 0-9.7-.6-14.4-1.7-.1 0-.1 0-.1 0s-.1 0-.1 0 0 .1 0 .1 0 0 0 0c.1 1.6.4 3.1 1 4.5.6 1.7 2.9 5.7 11.4 5.7 5 0 9.9-.6 14.8-1.7 0 0 0 0 0 0 .1 0 .1 0 .1 0 0 .1 0 .1 0 .1.1 0 .1 0 .1.1v5.6s0 .1-.1.1c0 0 0 0 0 .1-1.6 1.1-3.7 1.7-5.6 2.3-.8.3-1.6.5-2.4.7-7.5 1.7-15.4 1.3-22.7-1.2-6.8-2.4-13.8-8.2-15.5-15.2-.9-3.8-1.6-7.6-1.9-11.5-.6-5.8-.6-11.7-.8-17.5C3.9 24.5 4 20 4.9 16 6.7 7.9 14.1 2.2 22.3 1c1.4-.2 4.1-1 16.5-1h.1C51.4 0 56.7.8 58.1 1c8.4 1.2 15.5 7.5 16.6 15.6Z" fill="currentColor"/></svg> <div style="color: #787588; margin-top: 16px;">Post by @Daojoan@mastodon.social</div> <div style="font-weight: 500;">View on Mastodon</div> </a> </blockquote> <script data-allowed-prefixes="https://mastodon.social/" async src="https://mastodon.social/embed.js"></script>
+
+Bluesky offers similar: 
+
+> Quote detachment: When a post is quoted by another user’s
+post, the author of the original post can detach it from the
+quote post. This reduces the risk of harassment through
+dog-piling.
+
+![[privacy-20251015092239.png]]
+
+https://buffer.com/
+
+> [!idea] Radical idea
+> Try both Bluesky and Mastodon for a week. See which you enjoy more. Prioritize moving to that platform.
+
+
+
+
+| Feature                   | Bluesky                                                                             | Mastodon                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Ease of use**           | Simple, Twitter-like experience                                                     | Steeper learning curve (choosing servers, federation concepts)                |
+| **Discoverability**       | Excellent - algorithmic feeds available, easy to find people                        | More challenging - federated nature makes discovery harder                    |
+| **Decentralization**      | AT Protocol allows theoretical decentralization, but most users on official servers | Truly decentralized - thousands of independent servers                        |
+| **Privacy**               | Company-controlled infrastructure (for now)                                         | Server admin controls your data - choose carefully                            |
+| **Moderation**            | Centralized moderation policies                                                     | Varies by server - choose a server whose policies you trust                   |
+| **User experience**       | Polished, familiar interface                                                        | Varies by app/server, generally less polished                                 |
+| **Open source**           | AT Protocol is open, client is open source                                          | Fully open source software and protocol (ActivityPub)                         |
+| **Data portability**      | Designed for portability but still emerging                                         | Can migrate between servers, though not seamless                              |
+| **Network effects**       | Growing rapidly, many journalists and public figures migrating                      | Established but smaller, more tech-savvy community                            |
+| **Corporate influence**   | VC-backed company - sustainability model unclear                                    | Non-profit/volunteer-run - funded by donations                                |
+| **Best for**              | People wanting Twitter-like experience with less toxicity                           | People wanting maximum control and ideological commitment to decentralization |
+| **End-to-end encryption** | ❌ Native DMs not encrypted<br>✅ Third-party E2EE available via Germ app (July 2025)<br>🔮 Native E2EE [planned but no timeline](https://bsky.social/about/blog/05-22-2024-direct-messages) | ❌ Not available<br>🔮 Community & protocol-level work in progress |
+
+> [!warning] E2EE and social media 
+> Neither Bluesky nor Mastodon offers or has announced plans for E2EE. The platforms' decentralized nature makes E2EE technically challenging. Assume that anything you post or DM can be read by platform administrators and potentially compelled by governments. For private conversations, continue using Signal.
+
+1. **Set up new accounts** on Bluesky and/or Mastodon
+2. **Export your data** from X (and upload to your Proton Drive!).
+	1. [ ] [Create a request to download your data](https://x.com/settings/download_your_data)
+	2. [ ] Download the data when ready
+3. **Pin an announcement** with your new handles to your X profile
+4. **DM your closest contacts** directly - don't rely on them seeing your post
+5. **Use a cross-posting tool** for 2-3 months as a bridge
+6. **Engage actively** on your new platform to build momentum
+7. **Set a sunset date** for X and stick to it
+8. **Don't look back** - resist the urge to check X "just in case"
+
+> [!warning] Not everyone will follow you from X. That's OK. 
+> Maybe some of your X connections were more casual than you realized. And de
 
 <https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/>
+
+Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
 
 ## "Stingrays" trick your phone into revealing information
 
@@ -641,3 +726,29 @@ Hardening against police cracking your PIN or otherwise getting into your device
 Home security cameras
 <https://secluso.com>
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
+
+> [!quote] [Real-Name Policies: The War Against Pseudonymity](https://www.privacyguides.org/articles/2025/10/15/real-name-policies/)
+> Pseudonymity, or the use of a nickname or fictitious name online, has always been deeply valued on the internet. It grants people protections and freedoms that are often impossible to benefit from offline.
+> 
+> Women, and especially women who are part of male-dominated online communities, have regularly used pseudonyms to hide their gender online in order to protect themselves from sexual harassment, stalking, and physical violence even.
+> 
+> Transgender and gender-diverse people also regularly use pseudonyms for protection, or use new chosen names to explore their gender identity online.
+> 
+> Victims of domestic violence, victims of stalkers, activists, and even journalists often use pseudonyms to protect themselves from aggressors or oppressive regimes.
+
+
+> **Pseudonymity saves lives.** And yet, it is constantly under attack.
+
+> - [**Choose better platforms**](https://news.elenarossini.com/my-fediverse-starter-guide) that do not require you to share your legal name and official IDs, such as [Mastodon](https://www.privacyguides.org/articles/2025/07/15/mastodon-privacy-and-security/) or other platforms connected to the Fediverse.
+>     
+> - [**Inform yourself**](https://safetycrave.com/why-should-not-use-real-names-online/) on the dangers related to using legal names online, and share this information with others.
+>     
+> - [**Say no**](https://www.privacyguides.org/articles/2025/06/17/you-can-say-no/) to sharing official documentation with commercial platforms when it isn't strictly required and when you can avoid it.
+>     
+> - [**Understand the difference**](https://www.privacyguides.org/videos/2025/03/14/stop-confusing-privacy-anonymity-and-security/) between privacy, security, anonymity, and pseudonymity.
+>     
+> - [**Use pseudonyms**](https://www.privacyguides.org/articles/2025/06/10/stay-safe-but-stay-connected/#practices-and-tools-that-help-in-various-contexts) on platforms where you can. Use a pseudonym persistent across platforms if you want these accounts to be linked together for trust, or use different pseudonyms to keep them separated.
+
+read more at https://www.privacyguides.org/
+
+https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/

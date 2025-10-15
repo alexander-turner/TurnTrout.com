@@ -4938,5 +4938,45 @@
   "./asset_staging/privacy-20251014232546.png": {
     "width": 2064,
     "height": 1734
+  },
+  "https://assets.turntrout.com/twemoji/1f52e.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "/static/images/external-favicons/bsky_social.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/uxdesign_cc.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/docs_joinmastodon_org.png": {
+    "width": 32,
+    "height": 32
+  },
+  "./asset_staging/privacy-20251015092239.png": {
+    "width": 1134,
+    "height": 838
+  },
+  "/static/images/external-favicons/ouraring_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251015092621.gif": {
+    "width": 316,
+    "height": 178
+  },
+  "/static/images/external-favicons/mastodon_social.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/buffer_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/safetycrave_com.png": {
+    "width": 64,
+    "height": 64
   }
 }
