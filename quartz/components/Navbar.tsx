@@ -137,11 +137,11 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
         playsInline
         data-persist
         preload="auto"
-        poster={`${baseDir}pond_frame.avif`}
+        poster="/static/pond_frame.avif"
         aria-hidden="true"
       >
-        <source src={`${baseDir}pond.mov`} type="video/mp4; codecs=hvc1" />
-        <source src={`${baseDir}pond.webm`} type="video/webm" />
+        <source src="/static/pond.mov" type="video/mp4; codecs=hvc1" />
+        <source src="/static/pond.webm" type="video/webm" />
       </video>
     </span>
   )
