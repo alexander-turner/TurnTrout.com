@@ -47,6 +47,20 @@ def quartz_project_structure(tmp_path: Path):
 
 
 @pytest.fixture()
+def quartz_dirs(mock_git_root: Path) -> tuple[Path, Path]:
+    """Create and return standard quartz static and content directories.
+
+    Returns:
+        Tuple of (static_dir, content_dir) paths.
+    """
+    static_dir = mock_git_root / "quartz" / "static"
+    content_dir = mock_git_root / "quartz" / "website_content"
+    static_dir.mkdir(parents=True, exist_ok=True)
+    content_dir.mkdir(parents=True, exist_ok=True)
+    return static_dir, content_dir
+
+
+@pytest.fixture()
 def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     """Mock git root with initialized repo and mocked git.Repo.
 

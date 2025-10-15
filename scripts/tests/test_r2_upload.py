@@ -301,7 +301,10 @@ def test_main_upload_all_custom_filetypes(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     mock_git_root: Path,
     mock_rclone: MagicMock,
+    quartz_dirs: tuple[Path, Path],
 ):
+    static_dir, content_dir = quartz_dirs
+
     # Create a mock Repo object
     mock_repo = MagicMock()
     mock_repo.working_tree_dir = str(mock_git_root)
@@ -309,12 +312,6 @@ def test_main_upload_all_custom_filetypes(
 
     with patch("git.Repo") as mock_git:
         mock_git.return_value = mock_repo
-
-        # Use the mock_git_root instead of tmp_path
-        static_dir = mock_git_root / "quartz" / "static"
-        content_dir = mock_git_root / "quartz" / "website_content"
-        static_dir.mkdir(parents=True, exist_ok=True)
-        content_dir.mkdir(parents=True, exist_ok=True)
 
         # Create test files
         (static_dir / "file4.png").touch()
@@ -783,13 +780,10 @@ def test_update_markdown_references_verbose_output(
     assert r2_address in captured.out
 
 
-def test_files_to_upload_ignores_gitignore(mock_git_root: Path):
+def test_files_to_upload_ignores_gitignore(mock_git_root: Path, quartz_dirs):
     """Test that --upload-from-directory finds all files, including those that
     would be ignored by git."""
-    static_dir = mock_git_root / "quartz" / "static"
-    content_dir = mock_git_root / "quartz" / "website_content"
-    static_dir.mkdir(parents=True, exist_ok=True)
-    content_dir.mkdir(parents=True, exist_ok=True)
+    static_dir, content_dir = quartz_dirs
 
     # Create a .gitignore file at the project root
     (mock_git_root / ".gitignore").write_text("*.ignored.png\n")
@@ -827,12 +821,9 @@ def test_files_to_upload_ignores_gitignore(mock_git_root: Path):
     assert uploaded_files == expected_files
 
 
-def test_ignore_files_option(mock_git_root: Path):
+def test_ignore_files_option(quartz_dirs):
     """Test that --ignore-files excludes specified files from upload."""
-    static_dir = mock_git_root / "quartz" / "static"
-    content_dir = mock_git_root / "quartz" / "website_content"
-    static_dir.mkdir(parents=True, exist_ok=True)
-    content_dir.mkdir(parents=True, exist_ok=True)
+    static_dir, content_dir = quartz_dirs
 
     ignored_files = ["pond.mov", "pond.webm", "pond_frame.avif"]
     regular_files = ["regular.mp4", "regular.avif"]
