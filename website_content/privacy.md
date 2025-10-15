@@ -85,7 +85,6 @@ Here's what to do:
 
 Since you're using a unique password for every site, you won't have to scramble in the event of a breach. The only account which might even possibly be compromised is the specific account whose password was breached. After all, the compromised password has nothing to do with all the other passwords which Bitwarden generated!
 
-
 > [!warning]  If you're gonna do one thing from this article, then download Bitwarden.
 
 ## Two-factor authentication (2FA)
@@ -142,7 +141,14 @@ Subtitle: Cost: Free, with recommended upgrade at $13.99/mo. Time: 10 minutes.
 
 When you browse the internet, you send your ISP a list of sites you're browsing. They usually can't see the data you're receiving, but they still see where you're going and who you are. When you use a VPN, ISPs can no longer see that information.
 
-[_US government spy agencies can and do force ISPs to hand over data._](https://www.theguardian.com/world/2013/jun/06/us-tech-giants-nsa-data)  So if you don't use a VPN, pessimistically assume that the government knows who you're talking to and when you do it. They know what you're reading. They know what you're 
+US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific pages you visit or what you search for on encrypted sites, they can still see:
+
+* Which domains you visit (e.g. `google.com`)
+* When and how often you visit them
+* How long you spend on each site
+* Your full browsing activity on the sites that still don't use HTTPS
+
+The metadata alone reveal a detailed picture of your online life. Using a VPN prevents your ISP from seeing even this domain-level information, as all your traffic is encrypted before it reaches the ISP.
 
 I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for a year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
@@ -201,19 +207,13 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > [!quote] [The WIRED Guide to Protecting Yourself From Government Surveillance](https://www.wired.com/story/the-wired-guide-to-protecting-yourself-from-government-surveillance/)
 > Digital services like Facebook Messenger, Telegram, or X may say their direct messages offer “encryption,” but in the default setting that almost everyone uses, they only encrypt information in transit to the server that runs the service. On that server, the information is then decrypted and accessible to the company that controls that server, or any government agency that demands they share that data—like the Nebraska police who demanded Facebook [hand over chats about a 17-year-old’s illegal abortion in 2022](https://www.nbcnews.com/tech/tech-news/facebook-turned-chat-messages-mother-daughter-now-charged-abortion-rcna42185), then brought criminal charges against her and her mother.
 
- The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it. 
- 
- > [!idea] Consider encouraging your friends to use Signal by telling them you won't use other apps anymore. 
+ The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
+
+ > [!idea] Consider encouraging your friends to use Signal by telling them you won't use other apps anymore.
 
 ## Give each app as few permissions as possible
 
 Be especially wary about giving out _precise location_ data. Don't be afraid to say "no" if a permissions request seems unreasonable --- you can always read more on the app and come back later if you change your mind. Review your mobile and desktop applications in your permissions centers. Check that apps aren't taking absurd permissions they don't need (like a calculator asking for access to contacts).
-
-## Buy webcam covers
-
-For less than \$10, I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to.
-
-[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
 
 ## iOS: Disable AirDrop
 
@@ -231,6 +231,7 @@ For less than \$10, I purchased [two webcam covers for my laptops.](https://www.
 ## Android: Disable "Bluetooth scanning"
 
 When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones send reports containing lists of nearby Bluetooth beacons to Google any time an app refreshes location services](https://qz.com/1169760/phone-data). Search for "Bluetooth scanning" in your settings and _disable it_.  This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
+
 ## Track belongings using AirTags instead of Tiles
 
 [Tile devices allegedly don't encrypt your location data, meaning criminals and law enforcement could intercept the data and watch your Tiles move around the map as they please.](https://www.wired.com/story/tile-tracking-tags-can-be-exploited-by-tech-savvy-stalkers-researchers-say/) AirTags are E2EE, keeping your location data private. After reading that article, I immediately tossed all my Tiles and bought six AirTags.
@@ -266,9 +267,9 @@ Centrally hosted mail services (like Hotmail) may secure your data well, but the
 Proton Mail stores your emails E2EE. It's [easy to switch over](https://proton.me/support/easy-switch):
 1. Push a button to import your calendars, contacts, and emails from your Google account or your Hotmail account or whatever.  You push another button to forward new emails from your Gmail to your new ProtonMail address.  
 
-- [ ]  Create a Proton account. You should use the account you made above for ProtonVPN.
-- [ ] [Download Proton Mail](https://proton.me/mail)
- 
+* [ ]  Create a Proton account. You should use the account you made above for ProtonVPN.
+* [ ] [Download Proton Mail](https://proton.me/mail)
+
 ## End-to-end encrypt your data
 
 Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
@@ -276,7 +277,7 @@ Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
 > [!quote] [Yale Law School](https://law.yale.edu/mfia/case-disclosed/fbis-secret-gag-orders-challenged-ninth-circuit)
 > Not only does the Government have the power to issue secret subpoenas demanding your personal information from private companies—it has the power to prohibit those companies from speaking about what has taken place.
 
-TODO: CLOUD act https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data
+TODO: CLOUD act <https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data>
 
 It doesn't matter how good the security and data handling practices are. Google and Apple have amazing security. However, if a company can decrypt your data, the government can force the company to decrypt your data. You wouldn't be able to do anything about it.
 
@@ -285,25 +286,24 @@ On the other hand, when you use E2EE, the company can't decrypt it. Your data is
 Let's secure your data.
 
 > [!warning] iCloud's Advanced Data Protection may not last forever
-> The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP. 
+> The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP.
 >
-> Apple didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me: 
-> 1. How important it is to have full E2EE for _all data you care about_, 
+> Apple didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me:
+> 1. How important it is to have full E2EE for _all data you care about_,
 > 2. Your E2EE should not be through a single cloud provider (lest they be forced to delete all of it), and
-> 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored. 
+> 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored.
 >
 > To be clear, iCloud's ADP is far better than nothing. But open source E2EE is even more secure.
 
-### Store your photos in Ente 
+### Store your photos in Ente
 
 I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import from Google and iCloud Photos, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
  Plus, now all of my >23,000 photos are in one place.
- 
 
 > [!quote] Nadim Kobeissi's review of Ente
-> Ente is really cool. End-to-end encrypted photo backup/sync (unlike Google Photos), truly multiplatform (unlike iCloud Photos), and fully open source (unlike both!) 
-> 
+> Ente is really cool. End-to-end encrypted photo backup/sync (unlike Google Photos), truly multiplatform (unlike iCloud Photos), and fully open source (unlike both!)
+>
 > Full disclosure: \[my company\] was involved in a cryptographic audit of Ente.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif]]
@@ -311,10 +311,10 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import fro
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif]]{.float-right}
 Whenever I read "Ente", I think of [Entei, the 244th Pokemon](https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)) and the coolest of the three legendary beasts from the second generation.
 
-- [ ] Download [Ente](https://ente.io)
-- [ ] Import your photos 
-	- [ ] Google Takeout 
-	- [ ] iCloud Photos
+* [ ] Download [Ente](https://ente.io)
+* [ ] Import your photos
+  * [ ] Google Takeout
+  * [ ] iCloud Photos
 
 ### Your pictures and videos contain your GPS location
 
@@ -326,7 +326,7 @@ Every time you take a picture or video with your phone, your phone saves the loc
 
 ### Store files in Proton Drive
 
-I was using Google Drive and iCloud. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write shared documents in Proton Docs](). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage. 
+I was using Google Drive and iCloud. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write shared documents in Proton Docs](https://proton.me/drive/docs). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
 
 ### Track TODOs with Lunatask
 
@@ -334,11 +334,64 @@ I used to track my tasks with Todoist, but I never felt fully comfortable. I tra
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
-Migrating from Todoist took about 30 minutes. Not too bad. 
+Migrating from Todoist took about 30 minutes. Not too bad.
 * Google Drive, iCloud - Proton Drive
 * gcal -> proton cal
 * google photos, apple photos -> Ente
   * metadata (not via signal)
+
+## Bluetooth
+
+### Avoid distinctive device names
+
+If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is likely nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost seems minor.
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
+Figure: My laptop's generic name.
+
+As a reminder, your Bluetooth devices and other broadcastable names may include:
+  1. Laptop
+  2. Phone
+  3. Watch
+  4. Ring
+  5. Wireless headphones
+  6. Smart speaker
+  7. Mobile hotspot
+
+### Surreptitious "beacons" track your minute movements
+
+> [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
+> ![[privacy-20251014232546.png]]
+>
+> Most people aren’t aware they are being watched with beacons, but the “beacosystem” tracks millions of people every day. Beacons are placed at [airports](https://www.post-gazette.com/business/tech-news/2018/04/19/CMU-inks-deal-to-help-create-smartest-airport-on-the-planet-allegheny-technology/stories/201804190126), [malls](https://www.bluetooth.com/bluetooth-resources?video=moa), [subways](https://www.citylab.com/life/2015/06/how-to-get-your-bearings-when-exiting-a-subway-station/395966/), [buses](https://www.nfcworld.com/2016/10/11/347767/proxama-to-create-uks-biggest-ble-beacon-advertising-network/), [taxis](https://www.mobileeurope.co.uk/press-wire/proxama-aims-for-ubiquitous-ble-coverage-with-uk-taxi-deal), [sporting arenas](https://adage.com/article/datadriven-marketing/location-trackers-bigger-sports-arenas/305211/), [gyms](https://www.ymcalouisville.org/healthy-living/health-well-being-fitness/humana-vitality.html), [hotels](https://www.mobilemarketer.com/ex/mobilemarketer/cms/news/software-technology/23565.html), [hospitals](https://unacast.s3.amazonaws.com/7a7f44d764d14917aed62e80039cb688.pdf), [music festivals](https://kontakt.io/blog/beacons-at-music-festivals/), [cinemas](https://geomarketing.com/beacons-at-the-movies-screenvision-and-mobiquity-networks-add-proximity-marketing-to-cinema-network) and [museums](https://www.rfidjournal.com/articles/view?15608), and even on [billboards](https://www.fastcompany.com/3033242/these-new-billboards-talk-to-your-smartphone).
+>
+> In order to track you or trigger an action like a coupon or message to your phone, companies need you to install an app on your phone that will recognize the beacon in the store. Retailers (like Target and Walmart) that use Bluetooth beacons typically build tracking into their own apps. But retailers want to make sure most of their customers can be tracked — not just the ones that download their own particular app.
+>
+> So a hidden industry of third-party location-marketing firms has proliferated in response. These companies take their beacon tracking code and bundle it into a toolkit developers can use.
+>
+> The makers of many popular apps, such as those for news or weather updates, insert these toolkits into their apps. They might be paid by the beacon companies or receive other benefits, like detailed reports on their users.
+>
+> Location data companies often collect additional data provided by apps. A location company called Pulsate, for example, encourages app developers to pass them customer email addresses and names.
+>
+> Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
+
+If data companies have the information, so can the government. Obviously, the most privacy-boosting remedy is turning Bluetooth _off_, cold-turkey -- but I don't want to forsake my AirPods in my day-to-day life. So instead, I'm automating the process of turning off my Bluetooth when I'm not using it -- both for my laptop and my phone.
+
+iOS instructions
+: On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
+
+: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
+
+: Similarly, make simple automations which encompass your use cases. For my iPhone, I don't use Steam so I'll just make Spotify and YouTube Music automations.
+
+Android instructions
+: If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do.
+
+### Other tips
+
+ 1. Turn off specialized devices when not using them. For example, your smart speaker you take for parties.  
+ 2. Disconnect from older unknown Bluetooth devices.
+ 3. Putting on some music in your friend's car? Give it minimal permissions --- don't let it suck up your entire contacts list!
 
 ## Avoid login integrations
 
@@ -384,17 +437,17 @@ If you're in the USA with a cable internet connection, you need to buy a modem. 
 
 Instead of renting a router from a company that wants to harvest your data, you can buy one that comes with privacy-respecting, open-source firmware already installed.
 
-I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house. 
+I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
 
 Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
-1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN. 
-2.  Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
+1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN.
+2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
 > [!example] My experience upgrading my modem and router
 > I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
 >
-> For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour. 
-> 
+> For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour.
+>
 > For the setup itself, I used my laptop. _To be able to configure my new hardware, I needed to configure ProtonVPN to "allow LAN connections."_
 
 ### Wifi network advice
@@ -405,23 +458,17 @@ Because its software is open-source, it is subject to public scrutiny. You have 
 
 ### Set up ProtonVPN  on your router to shield all connections in your home
 
-https://protonvpn.com/support/flint-gl-ax1800-router/
+<https://protonvpn.com/support/flint-gl-ax1800-router/>
 
 Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might not be.
 
-
-
  Think of the VPN like an umbrella, by default. It's a really big umbrella and it covers your whole house. However, this umbrella transmits data to servers within your country. However, you might want your laptop to connect to a VPN server across the world. In that case, I recommend setting up something that sounds fancy, but is pretty simple. It's called policy mode, policy tunneling, and it basically just accepts your device from the umbrella. You can set it up easily on the Flint 2 by going to VPN settings, enabling policy mode, and then adding a policy type of "do not use VPN for the following." At that point, indicate your laptop's hardware MAC address, and you'll be good to go. You should be able to connect to the VPN independently, while everything else gets routed through the protected connection of your home.
-
-
 
 1. **Access VPN Dashboard** at `192.168.8.1`
 2. **Connect ProtonVPN** (OpenVPN)
 3. **Enable VPN Policies** in the VPN settings (not "global mode")
 4. **Choose your policy type:** "Do not use VPN for the following"
 5. **Add the laptop's hardware (MAC) address** to exclude it from the VPN tunnel. My Flint 3's interface showed me my laptop, so I just clicked on it.
-
-
 
 ## Use more secure operating systems
 
@@ -442,8 +489,6 @@ More specifically, Windows sends out so much information about you via so-called
  Please don't use Windows.
 
 ### Switch to iOS on mobile as well
-
-
 
 ## Outsmart smart home spying
 
@@ -481,6 +526,7 @@ TODO: Include research
 ## Tweak your operating system's settings to maximize privacy
 
 Follow a guide for your OS and/or ask an AI to write you a guide.(You [aren't using Windows, are you?](#switch-away-from-windows)) Also, read configuration during new updates. For example, I recently turned off the new option of "help Apple improve spotlight search" because it wanted to send location data to Apple for every search I made!
+
 ## Always lock your laptop or phone before walking away
 
 On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and exfiltrate data. Constant vigilance!
@@ -503,9 +549,16 @@ I instead started using [Duplicati](https://duplicati.com/) to send encrypted ba
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 
+## Buy webcam covers
+
+For less than \$10, I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to. However, this attack is rather rare. Probably this defense just makes you feel better.
+
+[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
+
 ## Switch to GrapheneOS on mobile
 
-I [recommend the iPhone for usability and accessibility.]()  It's what I just switched to. But if you want maximum privacy and security and if you don't mind technical setup work, I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS is the most private mobile OS available and it even still supports most apps. The installation process seems straightforward for anyone comfortable following technical instructions. ([Installation guide](https://grapheneos.org/install/))
+I [recommend the iPhone for usability and accessibility.](#switch-to-ios-on-mobile-as-well)  It's what I just switched to. But if you want maximum privacy and security and if you don't mind technical setup work, I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS is the most private mobile OS available and it even still supports most apps. The installation process seems straightforward for anyone comfortable following technical instructions. ([Installation guide](https://grapheneos.org/install/))
+
 ## Switch from X to Bluesky or Mastodon
 
 Subtitle: Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
@@ -550,10 +603,10 @@ Tor for people who truly need anonymity. (tier 3)
 * better email security? (make PGP available?)
 * Ankiweb self hosted (for fun)
 * Encrypted contact management (Proton Mail?)
-* VPN for whole home network
 * Proton wallet (emergency cash in case frozen?)
 
-- google forms?
+* google forms?
+  * none found yet
 * Google Meet E2E?
 
   * Proton Meet coming out in half a year probably
@@ -561,44 +614,12 @@ Tor for people who truly need anonymity. (tier 3)
 Router and modem replacement in tier 2
 [https://routersecurity.org/ISProuters.php](https://routersecurity.org/ISProuters.php)
 
-- note that state actors buy data
-
-## Bluetooth (BT)
-
-Beacon networks in stores: [https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html) 
-
-Creepy. Let's 
-
-iOS instructions
-: On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it. 
-
-: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
-
-: Similarly, make simple automations which encompass your use cases. For my iPhone, I don't use Steam so I'll just make Spotify and YouTube Music automations.
-
-Android instructions
-: If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do.
-
-https://www.secureworld.io/industry-news/cybersecurity-risks-bluetooth
-1. Nondescript device names for bluetooth and for discoverable computer name -- set to default
-	1. laptop
-	2. phone
-	3. Watch
-	4. ring
-	5. wireless headphones
-	6. mobile hotspot
-![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
-2. Hygiene 
-	1. Turn off eg smart speakers when not used
-	2. Disconnect from old or unknown bluetooth devices
-3. Minimization
-	1. iOS
-		1. 
+* note that state actors buy data
 
 Communities need freedom of thought --- even fears can chill speech
 Slack -> RocketChat
-Discord -> Element.io 
-https://t2bot.io/discord/ ---  I already integrated the shard theory room.
+Discord -> Element.io
+<https://t2bot.io/discord/> ---  I already integrated the shard theory room.
 (Ideally decentralized so there isn't a central service which can ban people from the network)
 
 Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues)
@@ -609,17 +630,14 @@ Mobile hotspot: always use strong password, WPA3 protocol if available (check do
 
 "One description of Weathered Security’s products online boasts that it can also track other signal emissions from key fobs, satellite receivers, low-powered radio chips in modern credit cards or passports, car tire sensors that monitor tire pressure and even medical devices. In an emailed response to a request for comment, the company said: “We do not have any issues with you reporting information obtained under FOIA.”"
 
-
 More theoretical --- any followup? [https://jacobsschool.ucsd.edu/news/release/3461?id=3461](https://jacobsschool.ucsd.edu/news/release/3461?id=3461)
 
 Places to go to [https://practicalbetterments.com/apply-for-citizenship-of-another-country/](https://practicalbetterments.com/apply-for-citizenship-of-another-country/) -- france ancestry? german? poland? expelled jews?
-
-  
 
 pihole for less effort [https://practicalbetterments.com/block-ads-on-your-smart-tv/](https://practicalbetterments.com/block-ads-on-your-smart-tv/)
 
 Hardening against police cracking your PIN or otherwise getting into your device?
 
 Home security cameras
-https://secluso.com 
+<https://secluso.com>
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]

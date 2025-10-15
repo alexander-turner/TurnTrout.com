@@ -4606,5 +4606,337 @@
   "/static/images/external-favicons/daringfireball_net.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif": {
+    "width": 1910,
+    "height": 1436
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/doomsdayscenario_co.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/eff_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif": {
+    "width": 2435,
+    "height": 2435
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/yubico_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apps_apple_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/play_google_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/support_apple_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/proton_me.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/theguardian_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wyden_senate_gov.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif": {
+    "width": 2910,
+    "height": 1814
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/privacytests_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wired_com.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/signal_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/macrumors_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif": {
+    "width": 1113,
+    "height": 554
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ente_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif": {
+    "width": 2778,
+    "height": 1454
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif": {
+    "width": 360,
+    "height": 391
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/bulbapedia_bulbagarden_net.avif": {
+    "width": 40,
+    "height": 37
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/lunatask_app.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif": {
+    "width": 2244,
+    "height": 1888
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/xfinity_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/tomshardware_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/organicmaps_app.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif": {
+    "width": 936,
+    "height": 669
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif": {
+    "width": 1386,
+    "height": 632
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/notus_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/secluso_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif": {
+    "width": 2118,
+    "height": 2288
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/corbado_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/web_archive_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/americandragnet_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cnn_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/abcnews_go_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/msnbc_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/americanimmigrationcouncil_org.avif": {
+    "width": 34,
+    "height": 34
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ssd_eff_org.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/bitwarden_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/protonvpn_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/aclu_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/freedom_press.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/reason_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/brave_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gizmodo_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/xda-developers_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/librewolf_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nbcnews_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/privacyguides_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/usenix_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arstechnica_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/qz_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/simplelogin_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/law_yale_edu.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/daringfireball_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gl-inet_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apple_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/debian_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/breached_company.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/security_apple_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/backblaze_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/duplicati_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/grapheneos_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/techcrunch_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/routersecurity_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/t2bot_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/practicalbetterments_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/secureworld_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/discuss_privacyguides_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/jacobsschool_ucsd_edu.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/post-gazette_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/bluetooth_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/citylab_com.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/nfcworld_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/mobileeurope_co_uk.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/adage_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/ymcalouisville_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/mobilemarketer_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/kontakt_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/rfidjournal_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/fastcompany_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251014232546.png": {
+    "width": 2064,
+    "height": 1734
   }
 }
