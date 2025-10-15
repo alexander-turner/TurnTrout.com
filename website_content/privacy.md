@@ -85,6 +85,7 @@ Here's what to do:
 
 Since you're using a unique password for every site, you won't have to scramble in the event of a breach. The only account which might even possibly be compromised is the specific account whose password was breached. After all, the compromised password has nothing to do with all the other passwords which Bitwarden generated!
 
+
 > [!warning]  If you're gonna do one thing from this article, then download Bitwarden.
 
 ## Two-factor authentication (2FA)
@@ -124,14 +125,14 @@ Make sure you've enabled automatic security updates on your device. Just search 
 
 ## iOS: Advanced Data Protection (ADP)
 
-If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end encryption (E2EE) for the vast majority of the data you store in iCloud.
+If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end encryption (E2EE) for the vast majority of the data you store in iCloud. The two exceptions are Calendar and Contacts. I'll cover how to encrypt those later. Also, [even for E2EE content, Apple retains limited metadata (like filename and size)](https://support.apple.com/en-us/102651).
 
 > [!warning]
 > If you are in the UK, you'll have to refer to [my later section](#end-to-end-encrypt-your-data) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web and increasing government surveillance, all in order to "protect the children."
 
 ## Be skeptical of texts and email from people you don't know
 
-The fanciest, most secure password in the world won't save you if you just give that password away. But a YubiKey will save you, because you can't give it away over the phone!
+The fanciest, most secure password in the world won't save you if you just give that password away. In contrast, a YubiKey _will save you, because you can't give it away over the phone!
 
 # Tier 1: Basic steps to reduce government surveillance and invasive profiling
 
@@ -141,7 +142,7 @@ Subtitle: Cost: Free, with recommended upgrade at $13.99/mo. Time: 10 minutes.
 
 When you browse the internet, you send your ISP a list of sites you're browsing. They usually can't see the data you're receiving, but they still see where you're going and who you are. When you use a VPN, ISPs can no longer see that information.
 
- We've known for quite a while that government spy agencies can and do force ISPs to hand over data.  So if you don't use a VPN, it's fair to say that the government knows who you're talking to and when you do it. They know what you're reading. They know what you're Googling.
+[_US government spy agencies can and do force ISPs to hand over data._](https://www.theguardian.com/world/2013/jun/06/us-tech-giants-nsa-data)  So if you don't use a VPN, pessimistically assume that the government knows who you're talking to and when you do it. They know what you're reading. They know what you're 
 
 I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for a year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
@@ -157,7 +158,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
 ## Browse using Brave instead of Chrome, Firefox, or Safari
-1   
+
 I thoroughly ran available browsers against my criteria for you:
 
 1. Strong privacy protection against commercial and governmental tracking,
@@ -195,12 +196,14 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 
 ## Use Signal over Facebook Messenger, WhatsApp, texting, or phone calls
 
- Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time. "Encrypted" services aren't that safe either:
+ Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time. "Encrypted" services (which aren't E2EE) aren't that safe either:
 
 > [!quote] [The WIRED Guide to Protecting Yourself From Government Surveillance](https://www.wired.com/story/the-wired-guide-to-protecting-yourself-from-government-surveillance/)
 > Digital services like Facebook Messenger, Telegram, or X may say their direct messages offer “encryption,” but in the default setting that almost everyone uses, they only encrypt information in transit to the server that runs the service. On that server, the information is then decrypted and accessible to the company that controls that server, or any government agency that demands they share that data—like the Nebraska police who demanded Facebook [hand over chats about a 17-year-old’s illegal abortion in 2022](https://www.nbcnews.com/tech/tech-news/facebook-turned-chat-messages-mother-daughter-now-charged-abortion-rcna42185), then brought criminal charges against her and her mother.
 
- The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
+ The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it. 
+ 
+ > [!idea] Consider encouraging your friends to use Signal by telling them you won't use other apps anymore. 
 
 ## Give each app as few permissions as possible
 
@@ -225,6 +228,9 @@ For less than \$10, I purchased [two webcam covers for my laptops.](https://www.
 > 3. Navigate to _AirDrop_
 > 4. Select _Receiving Off_
 
+## Android: Disable "Bluetooth scanning"
+
+When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones send reports containing lists of nearby Bluetooth beacons to Google any time an app refreshes location services](https://qz.com/1169760/phone-data). Search for "Bluetooth scanning" in your settings and _disable it_.  This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
 ## Track belongings using AirTags instead of Tiles
 
 [Tile devices allegedly don't encrypt your location data, meaning criminals and law enforcement could intercept the data and watch your Tiles move around the map as they please.](https://www.wired.com/story/tile-tracking-tags-can-be-exploited-by-tech-savvy-stalkers-researchers-say/) AirTags are E2EE, keeping your location data private. After reading that article, I immediately tossed all my Tiles and bought six AirTags.
@@ -241,9 +247,7 @@ iOS
 
 # Tier 2: If you care a lot about privacy
 
-## Use email aliases
-
-Subtitle: Instead of handing out your real email to random sites.
+## Use email aliases instead of handing out your real email to random sites
 
 If you use aliases, you make it harder for scammers and surveillance to track your online identity. You can also disable an alias if a site uses that alias to spam you.
 
@@ -259,8 +263,12 @@ Once you've made a SimpleLogin account, follow Bitwarden's [guide on setting up 
 
 Centrally hosted mail services (like Hotmail) may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, _the government can make them hand over your emails_.
 
-Proton Mail stores your emails E2EE.
+Proton Mail stores your emails E2EE. It's [easy to switch over](https://proton.me/support/easy-switch):
+1. Push a button to import your calendars, contacts, and emails from your Google account or your Hotmail account or whatever.  You push another button to forward new emails from your Gmail to your new ProtonMail address.  
 
+- [ ]  Create a Proton account. You should use the account you made above for ProtonVPN.
+- [ ] [Download Proton Mail](https://proton.me/mail)
+ 
 ## End-to-end encrypt your data
 
 Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
@@ -268,28 +276,65 @@ Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
 > [!quote] [Yale Law School](https://law.yale.edu/mfia/case-disclosed/fbis-secret-gag-orders-challenged-ninth-circuit)
 > Not only does the Government have the power to issue secret subpoenas demanding your personal information from private companies—it has the power to prohibit those companies from speaking about what has taken place.
 
-It doesn't matter how good the security and data handling practices are. Google has amazing security. However, if a company can decrypt your data, the Government can force the company to decrypt your data. You wouldn't be able to do anything about it.
+TODO: CLOUD act https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data
+
+It doesn't matter how good the security and data handling practices are. Google and Apple have amazing security. However, if a company can decrypt your data, the government can force the company to decrypt your data. You wouldn't be able to do anything about it.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
 Let's secure your data.
 
-### Store your photos in Ente
+> [!warning] iCloud's Advanced Data Protection may not last forever
+> The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP. 
+>
+> Apple didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me: 
+> 1. How important it is to have full E2EE for _all data you care about_, 
+> 2. Your E2EE should not be through a single cloud provider (lest they be forced to delete all of it), and
+> 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored. 
+>
+> To be clear, iCloud's ADP is far better than nothing. But open source E2EE is even more secure.
+
+### Store your photos in Ente 
+
+I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import from Google and iCloud Photos, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
+
+ Plus, now all of my >23,000 photos are in one place.
+ 
+
+> [!quote] Nadim Kobeissi's review of Ente
+> Ente is really cool. End-to-end encrypted photo backup/sync (unlike Google Photos), truly multiplatform (unlike iCloud Photos), and fully open source (unlike both!) 
+> 
+> Full disclosure: \[my company\] was involved in a cryptographic audit of Ente.
+
+![[privacy-20251014141906.png]]
+
+![[privacy-20251014133220.png]]{.float-right}
+Whenever I read "Ente", I think of [Entei, the 244th Pokemon](https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)) and the coolest of the three legendary beasts from the second generation.
+
+- [ ] Download [Ente](https://ente.io)
+- [ ] Import your photos 
+	- [ ] Google Takeout 
+	- [ ] iCloud Photos
 
 ### Your pictures and videos contain your GPS location
 
-Every time you take a picture or video with your phone, your phone saves the location in that that the picture was taken at. So if you upload a picture, you're saying where you were.  If an adversary gains access to a sequence of images you've shared, they can start putting together a picture of where you go on a daily basis.
+Every time you take a picture or video with your phone, your phone saves the location in that that the picture was taken at. So if you upload a picture, you're saying where you were.  If an adversary gains access to a sequence of images you've shared, they'll probably know where you go on a daily basis.
 
- However, when you send media using Signal, the application will scrub the location metadata. TODO CHECK,  Have a better recommendation here. Maybe you can just disable.
+ However, when you send media using Signal, the application will scrub the location metadata.
 
  Also note that AI is getting pretty good at geoguessing, so Some AIs and people can guess where an image was taken Simply based off How the sky looks (TODO check)
 
 ### Store files in Proton Drive
 
-Subtitle: Or iCloud with [Advanced Data Protection](#ios-advanced-data-protection-adp) enabled. However, iCloud isn't open source.
+I was using Google Drive and iCloud. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write shared documents in Proton Docs](). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage. 
 
 ### Track TODOs with Lunatask
 
+I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
+
+![[privacy-20251014133029.png|The Lunatask view of tasks for this post, with a calendar view on the side.]]
+
+Migrating from Todoist took about 30 minutes. Not too bad. 
 * Google Drive, iCloud - Proton Drive
 * gcal -> proton cal
 * google photos, apple photos -> Ente
@@ -297,7 +342,7 @@ Subtitle: Or iCloud with [Advanced Data Protection](#ios-advanced-data-protectio
 
 ## Avoid login integrations
 
-While "Log in with Facebook" is convenient, it hurts your privacy and your security.
+While "Log in with Facebook" and "Log in with Google" are convenient, it hurts your privacy and your security.
 
 1. Facebook will know all the services that you connect to it and be able to use that to profile you.
 2. The site you're logging into will also gain lots of information from your Facebook.
@@ -384,7 +429,7 @@ Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might n
 
 For years, I dithered about switching away from Windows. Windows was all I knew.  But now that I've switched, I'm glad I did. Microsoft Windows operates on a misaligned business model that extracts data about you, annoys you, and fundamentally doesn't respect you.
 
-Windows leaks your data like water through someone's hands... after they've fully opened their hands, that is! Honestly, Windows is a pain in the ass. Even though it's what I grew up with, after spending a couple years away, I'm so glad I don't have to deal with it anymore. Doubly so considering how Microsoft pushed out Windows 11 to force [millions of consumers  replace millions of computers which work just fine with Windows 10](https://www.tomshardware.com/software/windows/microsofts-draconian-windows-11-restrictions-will-send-an-estimated-240-million-pcs-to-the-landfill-when-windows-10-hits-end-of-life-in-2025)
+Windows leaks your data like water through someone's hands... after they've fully opened their hands, that is! Honestly, Windows is a pain in the ass. Even though it's what I grew up with, after spending a couple years away, I'm so glad I don't have to deal with it anymore. Doubly so considering how Microsoft pushed out Windows 11 to force [millions of consumers  replace millions of computers which work just fine with Windows 10](https://www.tomshardware.com/software/windows/microsofts-draconian-windows-11-restrictions-will-send-an-estimated-240-million-pcs-to-the-landfill-when-windows-10-hits-end-of-life-in-2025).
 
 More specifically, Windows sends out so much information about you via so-called telemetry, which Microsoft makes extremely hard to disable.  Compared to iOS and Linux, Windows is far more vulnerable to viruses and ransomware. The user experience also just sucks.  You don't have control over what's happening and your system might just restart on you whenever it pleases.
 
@@ -396,9 +441,15 @@ More specifically, Windows sends out so much information about you via so-called
 
  Please don't use Windows.
 
+### Switch to iOS on mobile as well
+
+
+
 ## Outsmart smart home spying
 
 I love my Google Home setup. Problem is, the microphones are _always on_ - though Google claims the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home.
+
+Segment using vLANs.
 
 ## Minimize sharing your data with LLMs
 
@@ -430,13 +481,6 @@ TODO: Include research
 ## Tweak your operating system's settings to maximize privacy
 
 Follow a guide for your OS and/or ask an AI to write you a guide.(You [aren't using Windows, are you?](#switch-away-from-windows)) Also, read configuration during new updates. For example, I recently turned off the new option of "help Apple improve spotlight search" because it wanted to send location data to Apple for every search I made!
-
-<!-- Disable image loading in your email client
-TODO integrate to proton mail
-: Sneaky adversaries and advertisers will include [special images in emails](https://proton.me/blog/how-to-stop-email-trackers). When you open an email, your client sends a request for the image. That request also will tip them off that you (in particular) just opened a specific email.
-
-: By disabling image loading by default, I can still read the text of emails. I can also opt-in to load images. I haven't been bothered by the switch, really. Guides: [Gmail](). -->
-
 ## Always lock your laptop or phone before walking away
 
 On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and exfiltrate data. Constant vigilance!
@@ -459,6 +503,9 @@ I instead started using [Duplicati](https://duplicati.com/) to send encrypted ba
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 
+## Switch to GrapheneOS on mobile
+
+I [recommend the iPhone for usability and accessibility.]()  It's what I just switched to. But if you want maximum privacy and security and if you don't mind technical setup work, I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS is the most private mobile OS available and it even still supports most apps. The installation process seems straightforward for anyone comfortable following technical instructions. ([Installation guide](https://grapheneos.org/install/))
 ## Switch from X to Bluesky or Mastodon
 
 Subtitle: Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
@@ -479,8 +526,6 @@ Avoid having your communications intercepted by using signal (it's E2EE  they wo
 In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement usage of this kind of surveillance. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
 
 # New measures
-
-* Android -> iPhone
 
 * Oura all the time -> only before bed
 
@@ -553,6 +598,7 @@ https://www.secureworld.io/industry-news/cybersecurity-risks-bluetooth
 Communities need freedom of thought --- even fears can chill speech
 Slack -> RocketChat
 Discord -> Element.io 
+https://t2bot.io/discord/ ---  I already integrated the shard theory room.
 (Ideally decentralized so there isn't a central service which can ban people from the network)
 
 Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues)
@@ -573,3 +619,7 @@ Places to go to [https://practicalbetterments.com/apply-for-citizenship-of-anoth
 pihole for less effort [https://practicalbetterments.com/block-ads-on-your-smart-tv/](https://practicalbetterments.com/block-ads-on-your-smart-tv/)
 
 Hardening against police cracking your PIN or otherwise getting into your device?
+
+Home security cameras
+https://secluso.com 
+![[privacy-20251013201115.png]]
