@@ -28,6 +28,15 @@
     autoplayEnabled ? "block" : "none",
   )
 
+  // Pre-load checkbox states
+  window.__quartz_checkbox_states = new Map()
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key && key.includes("-checkbox-")) {
+      window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
+    }
+  }
+
   console.debug(
     "[DetectInitialState] Theme mode:",
     themeMode,
@@ -35,5 +44,7 @@
     actualTheme,
     "Video autoplay enabled:",
     autoplayEnabled,
+    "Checkbox states loaded:",
+    window.__quartz_checkbox_states.size,
   )
 })()

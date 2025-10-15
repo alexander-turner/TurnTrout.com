@@ -660,3 +660,72 @@ test.describe("Link color states", () => {
     })
   }
 })
+
+test.describe("Checkboxes", () => {
+  test("Checkboxes are visible and clickable", async ({ page }) => {
+    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+    await checkboxesSection.scrollIntoViewIfNeeded()
+
+    const firstCheckbox = page.locator("input.checkbox-toggle").first()
+    await expect(firstCheckbox).toBeVisible()
+
+    const initialChecked = await firstCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+    await firstCheckbox.click()
+
+    await expect(firstCheckbox).toBeChecked({ checked: !initialChecked })
+  })
+
+  test("Checkbox state persists across page reloads", async ({ page }) => {
+    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+    await checkboxesSection.scrollIntoViewIfNeeded()
+
+    const firstCheckbox = page.locator("input.checkbox-toggle").first()
+    const initialState = await firstCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+
+    // Toggle the checkbox
+    await firstCheckbox.click()
+    await expect(firstCheckbox).toBeChecked({ checked: !initialState })
+
+    // Reload the page
+    await page.reload({ waitUntil: "load" })
+    await checkboxesSection.scrollIntoViewIfNeeded()
+
+    // Check if state persisted
+    const reloadedCheckbox = page.locator("input.checkbox-toggle").first()
+    await expect(reloadedCheckbox).toBeChecked({ checked: !initialState })
+
+    // Clean up: toggle back to initial state
+    await reloadedCheckbox.click()
+    await expect(reloadedCheckbox).toBeChecked({ checked: initialState })
+  })
+
+  test("Checkboxes in admonitions work correctly", async ({ page }) => {
+    const noteAdmonition = page.locator(".admonition.note").last()
+    await noteAdmonition.scrollIntoViewIfNeeded()
+
+    const admonitionCheckbox = noteAdmonition.locator("input.checkbox-toggle").first()
+    await expect(admonitionCheckbox).toBeVisible()
+
+    const initialState = await admonitionCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+    await admonitionCheckbox.click()
+
+    await expect(admonitionCheckbox).toBeChecked({ checked: !initialState })
+  })
+
+  test("Checkbox states are stored in localStorage", async ({ page }) => {
+    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+    await checkboxesSection.scrollIntoViewIfNeeded()
+
+    const firstCheckbox = page.locator("input.checkbox-toggle").first()
+    await firstCheckbox.click()
+
+    // Check localStorage was updated
+    const hasLocalStorageKey = await page.evaluate(() => {
+      const slug = document.body.dataset.slug
+      const key = `${slug}-checkbox-0`
+      return localStorage.getItem(key) !== null
+    })
+
+    expect(hasLocalStorageKey).toBe(true)
+  })
+})

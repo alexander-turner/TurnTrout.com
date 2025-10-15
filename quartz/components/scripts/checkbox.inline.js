@@ -5,17 +5,21 @@ const checkboxId = (index) => {
 
 document.addEventListener("nav", () => {
   const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+  const states = window.__quartz_checkbox_states || new Map()
+
   checkboxes.forEach((el, index) => {
     const elId = checkboxId(index)
-    const switchState = (e) => {
-      const newCheckboxState = e.target?.checked ? "true" : "false"
-      localStorage.setItem(elId, newCheckboxState)
-    }
 
-    el.addEventListener("change", switchState)
+    // Save state when checkbox changes
+    el.addEventListener("change", () => {
+      const newCheckboxState = el.checked
+      localStorage.setItem(elId, newCheckboxState ? "true" : "false")
+      states.set(elId, newCheckboxState)
+    })
 
-    if (localStorage.getItem(elId) === "true") {
-      el.checked = true
+    // Restore state from pre-loaded cache
+    if (states.has(elId)) {
+      el.checked = states.get(elId)
     }
   })
 })

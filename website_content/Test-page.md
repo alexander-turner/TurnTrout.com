@@ -620,9 +620,11 @@ Corrupted text
 - [ ] First-level not checked off
   - [ ] Not checked off
   - [x] Checked off
+  - Normal bullet
 
 > [!note]
 > - [ ] Checkbox in an admonition
+> - Normal bullet
 > - [x] Checked box in an admonition
 
 [^1]: First footnote in a row.

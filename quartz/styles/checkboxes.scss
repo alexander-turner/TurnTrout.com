@@ -1,0 +1,70 @@
+@use "./variables.scss" as *;
+
+$checkbox-size: 0.95rem;
+
+li:has(> input.checkbox-toggle) {
+  list-style: none;
+  position: relative;
+
+  &::marker {
+    content: none;
+  }
+
+  > input.checkbox-toggle,
+  &::before {
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    width: $checkbox-size;
+    height: $checkbox-size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  --offset-left: calc(-1 * ($checkbox-size + 0.75 * #{$base-margin}));
+
+  // Hide the actual checkbox but keep it clickable
+  > input.checkbox-toggle {
+    margin: 0;
+    margin-left: var(--offset-left);
+    opacity: 0.01; // Nearly invisible but clickable
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  &::before {
+    content: "";
+    border: 1.5px solid var(--midground);
+    border-radius: 4px;
+    background-color: var(--background);
+    color: var(--light);
+    font-size: 0.85em;
+    font-weight: bold;
+    pointer-events: none;
+    margin-left: var(--offset-left);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  &:has(> input.checkbox-toggle:focus-visible)::before {
+    outline: 1.5px solid var(--color-link);
+    outline-offset: 1.5px;
+  }
+}
+
+// Checked state
+li:has(> input.checkbox-toggle:checked) {
+  color: var(--midground);
+  text-decoration: line-through;
+  text-decoration-color: var(--midground-faint);
+  opacity: 0.7;
+
+  &::before {
+    content: "✓";
+    color: var(--light);
+    background-color: var(--green);
+    border-color: var(--green);
+  }
+}
