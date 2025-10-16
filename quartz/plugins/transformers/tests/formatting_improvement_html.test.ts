@@ -376,6 +376,13 @@ describe("HTMLFormattingImprovement", () => {
       ["reluctantly", "reluctantly"],
       ["ReLU", "RELU"],
       ["How are you 1RelU?", "How are you 1RelU?"],
+      ["wifi", "Wi-Fi"],
+      ["wi-fi", "Wi-Fi"],
+      ["WiFi", "Wi-Fi"],
+      ["WI-FI", "Wi-Fi"],
+      ["wiFi", "Wi-Fi"],
+      ["Connect to the wi-fi network", "Connect to the Wi-Fi network"],
+      ["The wi-fi is down", "The Wi-Fi is down"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)

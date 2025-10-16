@@ -712,6 +712,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b([Ll])atte\b/g, "$1atté"],
   [/\b([Cc])liche\b/g, "$1liché"],
   [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
+  [/wi-?fi/gi, "Wi-Fi"], // "wi-fi" to "Wi-Fi"
   [/\b([Dd])eja vu\b/g, "$1éjà vu"],
   [/\bgithub\b/gi, "GitHub"],
   [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
