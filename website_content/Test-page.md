@@ -618,7 +618,7 @@ Corrupted text
 # Checkboxes
 
 - [ ] First-level not checked off
-  - [ ] Not checked off
+  - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
   - Normal bullet
 
