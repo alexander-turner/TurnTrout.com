@@ -4978,5 +4978,17 @@
   "/static/images/external-favicons/safetycrave_com.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/papers_ssrn_com.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/federalnewsnetwork_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/docpop_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

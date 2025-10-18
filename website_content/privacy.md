@@ -39,7 +39,7 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 
 > [!warning] Not a guide for people at high risk of targeted surveillance
 > Please refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
->
+
 # Introduction
 
 This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
@@ -56,7 +56,7 @@ End-to-end encryption (E2EE)
 
 : Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
-Unless I mention otherwise, all of my recommendations are both open source and E2EE.
+Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on wrongthink, you will have spaces and channels in which to think freely. 
 
 # Tier 0: Literally everyone should do these
 
@@ -101,17 +101,24 @@ Subtitle: YubiKey > authenticator app > text- / email-based 2FA
 
 You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts, like Bitwarden. You really, really don't want hackers to compromise your Bitwarden.
 
-1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/)
+1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/) 
 2. Set up key-based 2FA on your most important logins.[^max-yubikey] For each site, register 2FA on both keys.
 3. Keep the two factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
 
 [^max-yubikey]: [YubiKeys can hold up to 100 credentials.](https://www.corbado.com/faq/how-many-passkeys-can-yubikey-hold)
 
+> [!question] These keys are expensive. Do I really need two?
+> I know they aren't cheap. However, they will make you basically immune to being hacked on your most important accounts. That immunity brings financial security but also peace of mind.
+> 
+> At _minimum_, you need two keys. If you just had one key, you're one "oops I lost it" away from being _locked out of your most important accounts_. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys. 
+> 
+> For convenience, you might even get a third key: a YubiKey 5C Nano (\$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
+
 ### Use Proton Authenticator as your 2FA app
 
  Unfortunately, many sites don't support YubiKey.  Whenever possible, prefer application-based authentication in its stead. Texts and emails are not encrypted by default, which puts you at slight risk from the state and from sophisticated criminals.
 
-As far as applications go, I used to use Google Authenticator, but it's not open source and it's not end-to-end encrypted, which means Google could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
+As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
 
 > [!idea] Action item
 > Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
@@ -124,14 +131,10 @@ Make sure you've enabled automatic security updates on your device. Just search 
 
 ## iOS: Advanced Data Protection (ADP)
 
-If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end encryption (E2EE) for the vast majority of the data you store in iCloud. The two exceptions are Calendar and Contacts. I'll cover how to encrypt those later. Also, [even for E2EE content, Apple retains limited metadata (like filename and size)](https://support.apple.com/en-us/102651).
+If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end encryption (E2EE) for the vast majority of the data you store in iCloud. The exceptions are Calendar, Contacts, and Mail. I'll cover how to encrypt those later. Also, [even for E2EE content, Apple retains limited metadata (like filename and size)](https://support.apple.com/en-us/102651).
 
 > [!warning]
 > If you are in the UK, you'll have to refer to [my later section](#end-to-end-encrypt-your-data) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web and increasing government surveillance, all in order to "protect the children."
-
-## Be skeptical of texts and email from people you don't know
-
-The fanciest, most secure password in the world won't save you if you just give that password away. In contrast, a YubiKey _will save you, because you can't give it away over the phone!
 
 # Tier 1: Basic steps to reduce government surveillance and invasive profiling
 
@@ -139,7 +142,16 @@ The fanciest, most secure password in the world won't save you if you just give 
 
 Subtitle: Cost: Free, with recommended upgrade at $13.99/mo. Time: 10 minutes.
 
+### ISPs are creepy 
+
 When you browse the internet, you send your ISP a list of sites you're browsing. They usually can't see the data you're receiving, but they still see where you're going and who you are. When you use a VPN, ISPs can no longer see that information.
+
+> [!quote] [Internet Service Providers Collect, Sell Horrifying Amount of Sensitive Data, Government Study Concludes](https://www.vice.com/en/article/internet-service-providers-collect-sell-horrifying-amount-of-sensitive-data-government-study-concludes)
+> The new FTC report studied the privacy practices of six unnamed broadband ISPs and their advertising arms, and found that the companies routinely collect an ocean of consumer location, browsing, and behavioral data. They then share this data with dodgy middlemen via elaborate business arrangements that often aren’t adequately disclosed to broadband consumers.
+>  
+> “Even though several of the ISPs promise not to sell consumers personal data, they allow it to be used, transferred, and monetized by others and hide disclosures about such practices in fine print of their privacy policies,” the FTC report said.
+
+### The US government spy apparatus is creepy 
 
 US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific pages you visit or what you search for on encrypted sites, they can still see:
 
@@ -148,13 +160,20 @@ US government spy agencies have [broad surveillance powers](https://www.aclu.org
 * How long you spend on each site
 * Your full browsing activity on the sites that still don't use HTTPS
 
-The metadata alone reveal a detailed picture of your online life. Using a VPN prevents your ISP from seeing even this domain-level information, as all your traffic is encrypted before it reaches the ISP.
+The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing even this domain-level information, as all your traffic is encrypted before it reaches the ISP.
 
 I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for a year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), I recommend migrating to the Proton ecosystem. Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Drive (E2EE and secure) instead of Google Drive (a government could compel Google to decrypt your data, even though Google likely secures your data quite well).
 
-> [!warning] It's not paranoia if they really are out to get you
+> [!warning] VPNs are _fundamentally unreliable_ on mobile iOS 26 (October 2025)
+> Subtitle: And it's on Apple.
+> 
+>  I was ready to wrap up writing when I found out some intricately bad news:[VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is Apple "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
+> 
+>  Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching to Android; specifically, [to a Google Pixel 9a running GrapheneOS.]()
+
+> [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
 > > Under Section 702 of the Foreign Intelligence Surveillance Act (FISA), the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security. Given our nation’s history of abusing its surveillance authorities, and the secrecy surrounding the program, we should be concerned that Section 702 is and will be used to disproportionately target disfavored groups, whether minority communities, political activists, or even journalists.
 >
@@ -163,7 +182,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 > > Subtitle: Published June 5th, 2024
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
-## Browse using Brave instead of Chrome, Firefox, or Safari
+## Browse the web using Brave 
 
 I thoroughly ran available browsers against my criteria for you:
 
@@ -174,12 +193,12 @@ I thoroughly ran available browsers against my criteria for you:
 5. Open source.
 6. Good default settings (convenient for you).
 
-I settled on [Brave](https://brave.com/). The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of [Chrome restricting popular ad blockers.](https://gizmodo.com/google-is-hobbling-popular-ad-blocker-ublock-origin-on-chrome-2000570878) I also found it easy to migrate from Chrome.
+I settled on [Brave](https://brave.com/), based on Chromium. The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of recent restrictions on popular ad blockers. I also found it easy to migrate to Brave.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif]]
-Figure: For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
+Figure:  For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
 
-Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the _only_ browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than Chrome, Firefox, and Safari.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
+Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the _only_ browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than its competitors.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
 
 If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](https://github.com/arkenfox/user.js) (requires technical expertise) or using the Firefox fork [Librewolf](https://librewolf.net/) (which deletes your cookies and history each setting, disrupting your usual usage patterns).
 
@@ -200,6 +219,8 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >     5. _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
 >     6. Disable all options under "Data collection"
 
+
+
 ## Use Signal over Facebook Messenger, WhatsApp, texting, or phone calls
 
  Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time. "Encrypted" services (which aren't E2EE) aren't that safe either:
@@ -209,11 +230,45 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 
  The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
 
- > [!idea] Consider encouraging your friends to use Signal by telling them you won't use other apps anymore.
+ > [!idea] Consider encouraging your friends to use Signal. 
+ > I don't really use other texting applications anymore.
+
+## Switch to Android -- preferably to GrapheneOS 
+
+Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](). 'Tis a shame, because iOS is quite strong on privacy and minimizing telemetry. If you have iOS, or even if you already have an Android ---
+
+Yeah, this one is inconvenient if you're on iOS. But if you want to _both_use a smartphone _and_ reliably avoid mass surveillance, you need to switch.
+
+ I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available. 
+
+
+
+https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/
+ 
+### How to make the switch
+If you're technically comfortable, I recommend buying a [Pixel 9a](https://store.google.com/product/pixel_9a) for about \$499 and then [installing the OS yourself.](https://grapheneos.org/install/web) From [the GrapheneOS FAQ](https://grapheneos.org/faq#recommended-devices): "You need one of the officially supported devices. To make sure that the device can be unlocked to install GrapheneOS, avoid carrier variants of the devices." Otherwise, you can [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
+
 
 ## Give each app as few permissions as possible
 
 Be especially wary about giving out _precise location_ data. Don't be afraid to say "no" if a permissions request seems unreasonable --- you can always read more on the app and come back later if you change your mind. Review your mobile and desktop applications in your permissions centers. Check that apps aren't taking absurd permissions they don't need (like a calculator asking for access to contacts).
+
+## Be pseudonymous when possible
+
+Minimize how often you provide your real name, [your real email address](), your real phone number, or [your real credit card](). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
+
+> [!quote] [Real-Name Policies: The War Against Pseudonymity](https://www.privacyguides.org/articles/2025/10/15/real-name-policies/)
+> Pseudonymity, or the use of a nickname or fictitious name online, has always been deeply valued on the internet. It grants people protections and freedoms that are often impossible to benefit from offline.
+> 
+> Women, and especially women who are part of male-dominated online communities, have regularly used pseudonyms to hide their gender online in order to protect themselves from sexual harassment, stalking, and physical violence even.
+> 
+> Transgender and gender-diverse people also regularly use pseudonyms for protection, or use new chosen names to explore their gender identity online.
+> 
+> Victims of domestic violence, victims of stalkers, activists, and even journalists often use pseudonyms to protect themselves from aggressors or oppressive regimes.
+>
+> **Pseudonymity saves lives.** And yet, it is constantly under attack.
+
+My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
 
 ## iOS: Disable AirDrop
 
@@ -222,15 +277,26 @@ Be especially wary about giving out _precise location_ data. Don't be afraid to 
 >
 > You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, **even if** you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
 >
-> To fix:
-> 1. Open the _Settings_ app
-> 2. Navigate to _General_
-> 3. Navigate to _AirDrop_
-> 4. Select _Receiving Off_
 
-## Android: Disable "Bluetooth scanning"
+- [ ] Fix by setting `Settings -> General -> AirDrop -> "Receiving Off"`. 
 
-When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones send reports containing lists of nearby Bluetooth beacons to Google any time an app refreshes location services](https://qz.com/1169760/phone-data). Search for "Bluetooth scanning" in your settings and _disable it_.  This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
+## Disable WiFi calling
+
+Wi-Fi calling is considered to be telephone data (through your carrier) and so isn't protected by your VPN. Phones which connect to Wi-Fi calling will let your carrier track your precise location -- not just the rough region you're in, as usually guessed from your cell tower data. 
+
+## Disable location tracking on Android
+Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).]()
+
+1. **Turn off the Timeline**. Google creates a minute-by-minute "Timeline" of where you've been. 
+	1. [ ] Go to `Settings > Google > Manage your Google Account > Data & privacy`. Under "History settings," tap "Location History" and select "Turn off." 
+	2. [ ] Delete your history as well.
+2. **Turn off "Web & App Activity".** Even with Location History off, Google will still save your location every time you, for example, search for a place in Google Maps or check the weather. This "activity" is saved along with your location. 
+	1. [ ] Visit the same "Data & privacy menu" as above. Tap "Web & App Activity." Turn it off.
+	2. [ ] Uncheck any box that says "Include Chrome history and activity from sites, apps, and devices that use Google services."
+3. **Disable "Bluetooth scanning" and "Wi-Fi Scanning**. When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby Bluetooth beacons any time an app refreshes location services](https://qz.com/1169760/phone-data). 
+	1. [ ] Search for "Bluetooth scanning" or "Improve accuracy" in your settings and disable it. This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
+	2. [ ] Search for "Wi-Fi Scanning" and disable it.
+	3. [ ] Search for "Location Accuracy" and disable it.
 
 ## Track belongings using AirTags instead of Tiles
 
@@ -244,9 +310,12 @@ Android
 : You can just disable 2G in your settings. The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
 iOS
-: You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you're seriously on the run, you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
+: You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
+
+
 
 # Tier 2: If you care a lot about privacy
+
 
 ## Use email aliases instead of handing out your real email to random sites
 
@@ -264,11 +333,11 @@ Once you've made a SimpleLogin account, follow Bitwarden's [guide on setting up 
 
 Centrally hosted mail services (like Hotmail) may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, _the government can make them hand over your emails_.
 
-Proton Mail stores your emails E2EE. It's [easy to switch over](https://proton.me/support/easy-switch):
-1. Push a button to import your calendars, contacts, and emails from your Google account or your Hotmail account or whatever.  You push another button to forward new emails from your Gmail to your new ProtonMail address.  
-
-* [ ]  Create a Proton account. You should use the account you made above for ProtonVPN.
-* [ ] [Download Proton Mail](https://proton.me/mail)
+Proton Mail stores your emails E2EE. Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's [easy to switch to Proton Mail](https://proton.me/support/easy-switch):
+1. Create or log in to your Proton account (e.g. use the account you made above for ProtonVPN).
+2. Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
+3. Push another button to forward new emails from your Gmail to your new ProtonMail address.  
+4.  Start using Proton Mail! :) 
 
 ## End-to-end encrypt your data
 
@@ -277,9 +346,10 @@ Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
 > [!quote] [Yale Law School](https://law.yale.edu/mfia/case-disclosed/fbis-secret-gag-orders-challenged-ninth-circuit)
 > Not only does the Government have the power to issue secret subpoenas demanding your personal information from private companies—it has the power to prohibit those companies from speaking about what has taken place.
 
-TODO: CLOUD act <https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data>
+**It doesn't matter how good the security and data handling practices are. Google and Apple have amazing security. However, if a company can decrypt your data, the government can force the company to decrypt your data. You wouldn't be able to do anything about it**.
 
-It doesn't matter how good the security and data handling practices are. Google and Apple have amazing security. However, if a company can decrypt your data, the government can force the company to decrypt your data. You wouldn't be able to do anything about it.
+> [!quote] [The CLOUD Act: A Dangerous Expansion of Police Snooping on Cross-Border Data](https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data)
+> The Clarifying Overseas Use of Data (CLOUD) Act... creates an explicit provision for U.S. law enforcement (from a local police department to federal agents in ICE) to access “the contents of a wire or electronic communication and any record or other information” about a person regardless of where they live or where that information is located on the globe. In other words, U.S. police could compel a service provider—like Google, Facebook, or Snapchat—to hand over a user’s content and metadata, even if it is stored in a foreign country, without following that foreign country’s privacy laws.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
@@ -299,7 +369,7 @@ Let's secure your data.
 
 I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import from Google and iCloud Photos, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
- Plus, now all of my >23,000 photos are in one place.
+ Plus, now all of my 23,000 photos are in one place.
 
 > [!quote] Nadim Kobeissi's review of Ente
 > Ente is really cool. End-to-end encrypted photo backup/sync (unlike Google Photos), truly multiplatform (unlike iCloud Photos), and fully open source (unlike both!)
@@ -318,15 +388,21 @@ Whenever I read "Ente", I think of [Entei, the 244th Pokemon](https://bulbapedia
 
 ### Your pictures and videos contain your GPS location
 
-Every time you take a picture or video with your phone, your phone saves the location in that that the picture was taken at. So if you upload a picture, you're saying where you were.  If an adversary gains access to a sequence of images you've shared, they'll probably know where you go on a daily basis.
+Every time you take a picture or video with your phone, your phone tags the media with your location. So if you upload a picture, you're saying where you were.  If an adversary gains access to a sequence of images you've shared, they'll probably know where you go on a daily basis. (However, when you send media using Signal, the application will scrub the location metadata.) 
 
- However, when you send media using Signal, the application will scrub the location metadata.
+Stop your phone's camera from saving this automatically.
+
+Android
+: Search "geotag" in your settings, or just find the setting in your Camera settings.
+
+iPhone
+: Settings -> Privacy -> Location Services -> Camera and select "Never." 
 
  Also note that AI is getting pretty good at geoguessing, so Some AIs and people can guess where an image was taken Simply based off How the sky looks (TODO check)
 
 ### Store files in Proton Drive
 
-I was using Google Drive and iCloud. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write shared documents in Proton Docs](https://proton.me/drive/docs). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
+I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write shared documents in Proton Docs](https://proton.me/drive/docs). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
 
 ### Track TODOs with Lunatask
 
@@ -334,18 +410,31 @@ I used to track my tasks with Todoist, but I never felt fully comfortable. I tra
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
-Migrating from Todoist took about 30 minutes. Not too bad.
+Figure: Sadly, the calendar integration can't add new tasks to your main calendar as you schedule them in Lunatask.
+
+Migrating from Todoist took about 30 minutes. Not bad.
 
 ### Schedule with Proton Calendar
 
 Neither Google nor iCloud Calendar are E2EE - even with iCloud's Advanced Data Protection enabled. The government could compel the companies to hand over your calendars. 
 
-Proton Calendar lacks a few of the convenient features of Google Calendar.But the calendar gets the job done and it's secure. I just imported my Google Calendar and  began making new entries in the Proton calendar instead.  Proton Calendar  automatically imports calendar invitations sent to your Proton Mail address - another  reason to [do your email through Proton Mail.]()
+Proton Calendar lacks some of the convenient features of Google Calendar, but Proton calendar gets the job done and it's secure. I just imported my Google Calendar and  began making new entries in the Proton calendar instead.  Proton Calendar  automatically imports calendar invitations sent to your Proton Mail address - another  reason to [do your email through Proton Mail.](https://proton.me/mail) 
 
 The main drawback is the lack of a direct "Add to Calendar" feature for external invites. To get around this, I created a dedicated Google Calendar and synced it to my Proton Calendar. Now, when I accept an invite, I add it to that Google Calendar, and it automatically appears in my Proton view.
 
 
-### TODO contacts?
+### Don't use Partiful or Luma for sensitive events
+
+Instead, schedule sensitive events using Proton Calendar. Unless others are also using Proton Calendar, TODO
+
+### Handle your address book with EteSync
+
+Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
+
+- [ ] Register for an EteSync account
+- [ ] Download EteSync: Mac; [mobile iOS]()
+
+TODO 
 
 ## Only carry smart devices when you need them
 
@@ -408,7 +497,7 @@ Android instructions
 
 ## Avoid login integrations
 
-While "Log in with Facebook" and "Log in with Google" are convenient, it hurts your privacy and your security.
+While "Log in with Facebook" is convenient, it hurts your privacy and your security.
 
 1. Facebook will know all the services that you connect to it and be able to use that to profile you.
 2. The site you're logging into will also gain lots of information from your Facebook.
@@ -483,9 +572,7 @@ Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might n
 4. **Choose your policy type:** "Do not use VPN for the following"
 5. **Add the laptop's hardware (MAC) address** to exclude it from the VPN tunnel. My Flint 3's interface showed me my laptop, so I just clicked on it.
 
-## Use more secure operating systems
-
-### Switch away from Windows
+## Switch away from Windows
 
 For years, I dithered about switching away from Windows. Windows was all I knew.  But now that I've switched, I'm glad I did. Microsoft Windows operates on a misaligned business model that extracts data about you, annoys you, and fundamentally doesn't respect you.
 
@@ -501,15 +588,22 @@ More specifically, Windows sends out so much information about you via so-called
 
  Please don't use Windows.
 
-### Switch to iOS on mobile as well
-
-TODO
-
 ## Outsmart smart home spying
 
-I love my Google Home setup. Problem is, the microphones are _always on_ - though Google claims the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home. TODO
+I love my Google Home setup. Problem is, the microphones are _always on_ - though Google clarifies that the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home. TODO
 
 Segment using vLANs.
+
+### Run an Apple TV instead of your normal smart TV
+
+Normal smart TVs shove tons of ads in your face and track lots of your data. Apple TVs are much better.
+
+> [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
+> It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
+  
+  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1)
+  - [ ] Connect to your TV 
+  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead
 
 ## Minimize sharing your data with LLMs
 
@@ -529,12 +623,17 @@ Eventually I'll likely be able to run a local model on my MacBook Pro but with t
 
 ### Regularly delete your chat history for frontier models
 
-Out of OpenAI, Anthropic, and Google, only Google offers the ability to _turn off_ chat history (with chats being retained for at most 3 days, with exceptions for safety-flagged content). If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. I would still theoretically be vulnerable to an ongoing "AI-tap", where the government compelled Google to release my conversations on an ongoing basis. Probably there are more mundane privacy concerns I'm overlooking as well.
+OpenAI and Google offer the ability to turn off chat history (with limited-time retention for safety purposes). For Anthropic's Claude, you have to enable "incognito chat" before each session. 
 
-> [!question]- Nerdsnipe: Why can't LLM conversations be E2EE?
+As I work at Google DeepMind, I use Gemini the most. If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. I would still theoretically be vulnerable to an ongoing "AI-tap", where the government compelled Google to release my conversations on an ongoing basis. Probably there are more mundane privacy concerns I'm overlooking as well.
+
+Speaking only for myself and not on behalf of Google DeepMind, my guess is that AI companies _will_ comply with subpoenas for your data. Using incognito helps, but only local models are truly private and free of potential surveillance. 
+
+
+> [!question]- Technical question: Why can't LLM conversations be E2EE?
 > This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
 >
-> There are several issues. First, no one knows how to run models on FHE data without significant slowdowns -- the state of the art appears to be. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models. That's a tougher world from the provider's point of view.
+> There are several issues. First, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
 
 TODO: Include research
 
@@ -542,13 +641,9 @@ TODO: Include research
 
 Follow a guide for your OS and/or ask an AI to write you a guide.(You [aren't using Windows, are you?](#switch-away-from-windows)) Also, read configuration during new updates. For example, I recently turned off the new option of "help Apple improve spotlight search" because it wanted to send location data to Apple for every search I made!
 
-## Always lock your laptop or phone before walking away
-
-On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and exfiltrate data. Constant vigilance!
-
 ## Be prepared at border checkpoints
 
-In the USA, the DHS cannot compel an American citizen to unlock their device. If you say no, however, they might keep your device for a while and try to crack it on their own.
+In the USA, the DHS cannot compel an American citizen to unlock a password-locked device.  Fingerprints and Face ID are another matter. If you say no, however, they might keep your device for a while and try to crack it on their own.
 
 However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
@@ -570,15 +665,16 @@ For less than \$10, I purchased [two webcam covers for my laptops.](https://www.
 
 [^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
 
-## Switch to GrapheneOS on mobile
 
-I [recommend the iPhone for usability and accessibility.](#switch-to-ios-on-mobile-as-well)  It's what I just switched to. But if you want maximum privacy and security and if you don't mind technical setup work, I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS is the most private mobile OS available and it even still supports most apps. The installation process seems straightforward for anyone comfortable following technical instructions. ([Installation guide](https://grapheneos.org/install/))
+## Always lock your laptop or phone before walking away
+
+On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and browse. Constant vigilance!
 
 ## Migrate your social network away from X
 
 ![[privacy-20251015092621.gif]]{.float-right}
 
-The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Although I don't use X regularly, I plan to migrate my account in the coming months. 
+The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Although I don't use X regularly, I plan to migrate my account in the coming months. 
 
 > [!quote] [Enshittification](https://en.wikipedia.org/wiki/Enshittification)
 > Enshittification is a pattern in which two-sided online products and services decline in quality over time. Initially, vendors create high-quality offerings to attract users, then they degrade those offerings to better serve business customers (such as advertisers), and finally degrade their services to users and business customers to maximize short-term profits for shareholders. \[...\]
@@ -595,9 +691,7 @@ I propose a TODO
 
 ### The pitch for Mastodon
 
-The first Mastodon post I ever saw: 
-
-<blockquote class="mastodon-embed" data-embed-url="https://mastodon.social/@Daojoan/115377850900768941/embed" style="background: #FCF8FF; border-radius: 8px; border: 1px solid #C9C4DA; margin: 0; max-width: 540px; min-width: 270px; overflow: hidden; padding: 0;"> <a href="https://mastodon.social/@Daojoan/115377850900768941" target="_blank" style="align-items: center; color: #1C1A25; display: flex; flex-direction: column; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Roboto, sans-serif; font-size: 14px; justify-content: center; letter-spacing: 0.25px; line-height: 20px; padding: 24px; text-decoration: none;"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 79 75"><path d="M63 45.3v-20c0-4.1-1-7.3-3.2-9.7-2.1-2.4-5-3.7-8.5-3.7-4.1 0-7.2 1.6-9.3 4.7l-2 3.3-2-3.3c-2-3.1-5.1-4.7-9.2-4.7-3.5 0-6.4 1.3-8.6 3.7-2.1 2.4-3.1 5.6-3.1 9.7v20h8V25.9c0-4.1 1.7-6.2 5.2-6.2 3.8 0 5.8 2.5 5.8 7.4V37.7H44V27.1c0-4.9 1.9-7.4 5.8-7.4 3.5 0 5.2 2.1 5.2 6.2V45.3h8ZM74.7 16.6c.6 6 .1 15.7.1 17.3 0 .5-.1 4.8-.1 5.3-.7 11.5-8 16-15.6 17.5-.1 0-.2 0-.3 0-4.9 1-10 1.2-14.9 1.4-1.2 0-2.4 0-3.6 0-4.8 0-9.7-.6-14.4-1.7-.1 0-.1 0-.1 0s-.1 0-.1 0 0 .1 0 .1 0 0 0 0c.1 1.6.4 3.1 1 4.5.6 1.7 2.9 5.7 11.4 5.7 5 0 9.9-.6 14.8-1.7 0 0 0 0 0 0 .1 0 .1 0 .1 0 0 .1 0 .1 0 .1.1 0 .1 0 .1.1v5.6s0 .1-.1.1c0 0 0 0 0 .1-1.6 1.1-3.7 1.7-5.6 2.3-.8.3-1.6.5-2.4.7-7.5 1.7-15.4 1.3-22.7-1.2-6.8-2.4-13.8-8.2-15.5-15.2-.9-3.8-1.6-7.6-1.9-11.5-.6-5.8-.6-11.7-.8-17.5C3.9 24.5 4 20 4.9 16 6.7 7.9 14.1 2.2 22.3 1c1.4-.2 4.1-1 16.5-1h.1C51.4 0 56.7.8 58.1 1c8.4 1.2 15.5 7.5 16.6 15.6Z" fill="currentColor"/></svg> <div style="color: #787588; margin-top: 16px;">Post by @Daojoan@mastodon.social</div> <div style="font-weight: 500;">View on Mastodon</div> </a> </blockquote> <script data-allowed-prefixes="https://mastodon.social/" async src="https://mastodon.social/embed.js"></script>
+https://docpop.org/2025/02/how-to-get-started-with-mastodon/
 
 Bluesky offers similar: 
 
@@ -610,26 +704,11 @@ dog-piling.
 
 https://buffer.com/
 
-> [!idea] Radical idea
+> [!idea] 
 > Try both Bluesky and Mastodon for a week. See which you enjoy more. Prioritize moving to that platform.
 
 
 
-
-| Feature                   | Bluesky                                                                             | Mastodon                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **Ease of use**           | Simple, Twitter-like experience                                                     | Steeper learning curve (choosing servers, federation concepts)                |
-| **Discoverability**       | Excellent - algorithmic feeds available, easy to find people                        | More challenging - federated nature makes discovery harder                    |
-| **Decentralization**      | AT Protocol allows theoretical decentralization, but most users on official servers | Truly decentralized - thousands of independent servers                        |
-| **Privacy**               | Company-controlled infrastructure (for now)                                         | Server admin controls your data - choose carefully                            |
-| **Moderation**            | Centralized moderation policies                                                     | Varies by server - choose a server whose policies you trust                   |
-| **User experience**       | Polished, familiar interface                                                        | Varies by app/server, generally less polished                                 |
-| **Open source**           | AT Protocol is open, client is open source                                          | Fully open source software and protocol (ActivityPub)                         |
-| **Data portability**      | Designed for portability but still emerging                                         | Can migrate between servers, though not seamless                              |
-| **Network effects**       | Growing rapidly, many journalists and public figures migrating                      | Established but smaller, more tech-savvy community                            |
-| **Corporate influence**   | VC-backed company - sustainability model unclear                                    | Non-profit/volunteer-run - funded by donations                                |
-| **Best for**              | People wanting Twitter-like experience with less toxicity                           | People wanting maximum control and ideological commitment to decentralization |
-| **End-to-end encryption** | ❌ Native DMs not encrypted<br>✅ Third-party E2EE available via Germ app (July 2025)<br>🔮 Native E2EE [planned but no timeline](https://bsky.social/about/blog/05-22-2024-direct-messages) | ❌ Not available<br>🔮 Community & protocol-level work in progress |
 
 > [!warning] E2EE and social media 
 > Neither Bluesky nor Mastodon offers or has announced plans for E2EE. The platforms' decentralized nature makes E2EE technically challenging. Assume that anything you post or DM can be read by platform administrators and potentially compelled by governments. For private conversations, continue using Signal.
@@ -659,15 +738,38 @@ Pessimistically assume that every interaction on X (including "encrypted" DMs) m
 > [!quote]  [The Electronic Frontier Foundation](https://www.eff.org/deeplinks/2025/03/meet-rayhunter-new-open-source-tool-eff-detect-cellular-spying)
 > \[Stingrays\] operate by conducting a general search of all cell phones within the device’s radius. Law enforcement use \[stingrays\] to pinpoint the location of phones often with greater accuracy than other techniques such as cell site location information  and without needing to involve the phone company at all. \[Stingrays\] can also log \[identifiers\] unique to each SIM card, or hardware serial numbers of all of the mobile devices within a given area. Some \[stingrays\] may have advanced features allowing law enforcement to intercept communications in some circumstances.
 
-Avoid having your communications intercepted by using signal (it's E2EE  they would just be "intercepting" nonsense ciphertext). Another reason to avoid unprotected texting or phone calls: stingrays could pick up your metadata.  I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage.
+Avoid having your communications intercepted by using Signal (it's E2EE, so they would just be "intercepting" nonsense ciphertext). Another reason to avoid unprotected texting or phone calls: stingrays could pick up your metadata. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
 
 In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement usage of this kind of surveillance. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
 
+# What's next?
+
+> [!idea] Readers who work at Apple: advocate for privacy improvements
+> 
+If you work at Apple, securing even one of these timely patches would be a _significant win for protecting privacy and freedom across the world._ By order of importance:
+> 
+> 1. Enable the "Always-on VPN" toggle for consumers, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](), exposing millions of unaware users to tracking and potential political persecution. 
+> 2. Tighten the Wi-Fi Positioning Systems to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
+> 	1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing. 
+> 	2. Implement a per-device and per-account rate limit that is sufficient for legitimate location lookups but too low for mass data harvesting.
+> 	3. Require queries to be tied to an authenticated Apple ID to allow Apple to ban abusive users.
+> 	4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but very powerful adversaries."
+> 3. Add a toggle to [disable the 2G radio]() without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays). 
+> 4. Fix [the AirDrop vulnerability]() originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
+
+# Do not yield to pressure or fear
+
+"It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"? 
+
+The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. _That's the entire reason that data brokers make money from your information_ - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
+
+Scenario: You go to a protest. [License Plate Readers log every car that drove by](https://www.brennancenter.org/our-work/research-reports/automatic-license-plate-readers-legal-status-and-policy-recommendations). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases. 
+
+When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or [switch to the Brave web browser](), or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. In those bubbles, you are free from the chill and the fear that authoritarians are desperate to impose.
+
+# Big Brother is watching
+
 # New measures
-
-* Oura all the time -> only before bed
-
-* LG integrated smart tv -> apple tv
 
 * Google home -> home automation green device
 
@@ -681,19 +783,13 @@ In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \
 
   * <https://organicmaps.app/>
 
-Tor for people who truly need anonymity. (tier 3)
-
 # Thinking about
 
 * better email security? (make PGP available?)
-* Ankiweb self hosted (for fun)
 * Encrypted contact management (Proton Mail?)
-* Proton wallet (emergency cash in case frozen?)
-
 * google forms?
   * none found yet
 * Google Meet E2E?
-
   * Proton Meet coming out in half a year probably
 
 Router and modem replacement in tier 2
@@ -717,38 +813,58 @@ Mobile hotspot: always use strong password, WPA3 protocol if available (check do
 
 More theoretical --- any followup? [https://jacobsschool.ucsd.edu/news/release/3461?id=3461](https://jacobsschool.ucsd.edu/news/release/3461?id=3461)
 
-Places to go to [https://practicalbetterments.com/apply-for-citizenship-of-another-country/](https://practicalbetterments.com/apply-for-citizenship-of-another-country/) -- france ancestry? german? poland? expelled jews?
-
-pihole for less effort [https://practicalbetterments.com/block-ads-on-your-smart-tv/](https://practicalbetterments.com/block-ads-on-your-smart-tv/)
-
 Hardening against police cracking your PIN or otherwise getting into your device?
 
 Home security cameras
 <https://secluso.com>
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
 
-> [!quote] [Real-Name Policies: The War Against Pseudonymity](https://www.privacyguides.org/articles/2025/10/15/real-name-policies/)
-> Pseudonymity, or the use of a nickname or fictitious name online, has always been deeply valued on the internet. It grants people protections and freedoms that are often impossible to benefit from offline.
-> 
-> Women, and especially women who are part of male-dominated online communities, have regularly used pseudonyms to hide their gender online in order to protect themselves from sexual harassment, stalking, and physical violence even.
-> 
-> Transgender and gender-diverse people also regularly use pseudonyms for protection, or use new chosen names to explore their gender identity online.
-> 
-> Victims of domestic violence, victims of stalkers, activists, and even journalists often use pseudonyms to protect themselves from aggressors or oppressive regimes.
 
 
-> **Pseudonymity saves lives.** And yet, it is constantly under attack.
 
-> - [**Choose better platforms**](https://news.elenarossini.com/my-fediverse-starter-guide) that do not require you to share your legal name and official IDs, such as [Mastodon](https://www.privacyguides.org/articles/2025/07/15/mastodon-privacy-and-security/) or other platforms connected to the Fediverse.
->     
-> - [**Inform yourself**](https://safetycrave.com/why-should-not-use-real-names-online/) on the dangers related to using legal names online, and share this information with others.
->     
-> - [**Say no**](https://www.privacyguides.org/articles/2025/06/17/you-can-say-no/) to sharing official documentation with commercial platforms when it isn't strictly required and when you can avoid it.
->     
-> - [**Understand the difference**](https://www.privacyguides.org/videos/2025/03/14/stop-confusing-privacy-anonymity-and-security/) between privacy, security, anonymity, and pseudonymity.
->     
-> - [**Use pseudonyms**](https://www.privacyguides.org/articles/2025/06/10/stay-safe-but-stay-connected/#practices-and-tools-that-help-in-various-contexts) on platforms where you can. Use a pseudonym persistent across platforms if you want these accounts to be linked together for trust, or use different pseudonyms to keep them separated.
+TODO 
+1.  Search Engines - You cover browsers but not search engines. DuckDuckGo, Startpage, or Brave Search deserve mention as privacy-respecting alternatives to Google. 
+2. Legal Rights - Brief overview of what surveillance is legal, when you can refuse searches, when to invoke legal representation (especially relevant given your ICE/DHS focus).
+3. Privacy.com and cash
+4. Cost benefit table
+
+
 
 read more at https://www.privacyguides.org/
 
 https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/
+
+> [!quote] On Tyranny: Twenty Lessons from the Twentieth Century
+> Do not obey in advance.
+> 
+> Most of the power of authoritarianism is freely given. In times like these, individuals think ahead about what a more repressive government will want, and then offer themselves without being asked. A citizen who adapts in this way is teaching power what it can do.
+
+
+Apple maps data collected or covered by ADP?
+
+
+
+
+Apple has indicated that they are on track to make
+several changes to their WPS in order to better protect
+user privacy. At the time of writing, they have given AP
+operators the ability to opt out of inclusion in Apple’s
+WPS by appending the string _nomap to a Wi-Fi network’s
+SSID [5]. This change brings it in line with Google’s WPS
+and WiGLE, which have also excluded SSIDs with _nomap(Google) and _nomap and _optout (WiGLE) since at least
+2016 [15], [7]. https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf
+
+> "We know that Apple is taking our report seriously," Rye said. "We are given to understand that they have one or more additional remediations in the queue, and we're hopeful that these remediations will help protect the privacy of access point owners that would never know to append "_nomap" to their SSID to prevent them from being included in Apple's geolocation database." https://www.theregister.com/2024/05/23/apple_wifi_positioning_system/
+
+https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf
+
+https://www.gl-inet.com/blog/preventive-actions-to-safeguard-glinet-users-from-bssid-based-location-tracking/ GLINET routers already safe! 
+
+https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D
+
+
+Writing analysis via LLM
+
+
+
+   partiful?
