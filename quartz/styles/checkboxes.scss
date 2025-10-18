@@ -56,6 +56,11 @@ li:has(> input.checkbox-toggle) {
   }
 }
 
+// Unordered lists need padding to match ordered lists
+ul > li:has(> input.checkbox-toggle) {
+  padding-left: calc(0.5 * $base-margin);
+}
+
 // Checked state
 li:has(> input.checkbox-toggle:checked) {
   color: var(--midground);
