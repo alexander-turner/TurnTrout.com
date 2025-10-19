@@ -192,6 +192,9 @@ Hi! Am I being transcluded?
 
 > [!note] [Link in admonition title](/dataset-protection)
 
+> [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping on Cross-Border Data
+> Subtitle: A multi-line admonition.
+
 # Mermaid diagrams
 
 ```mermaid

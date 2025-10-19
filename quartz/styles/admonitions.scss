@@ -245,7 +245,9 @@
     background-color: var(--color);
     mask-image: var(--admonition-icon);
     mask-size: var(--icon-size) var(--icon-size);
-    mask-position: center;
+
+    // "Bottom" is actually the top of .admonition-icon space
+    mask-position: left 0 bottom calc(0.5 * $base-margin);
     mask-repeat: no-repeat;
   }
 
