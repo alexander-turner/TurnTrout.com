@@ -227,11 +227,9 @@
 
 .admonition-title {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: $base-margin;
-  margin: calc(2 * $base-margin) 0;
-  margin-top: calc(1.5 * $base-margin);
-  margin-bottom: calc(1.5 * $base-margin);
+  margin: calc(1.5 * $base-margin) 0;
 
   --icon-size: 18px;
 
@@ -241,18 +239,18 @@
 
   & .admonition-icon,
   & .fold-admonition-icon {
-    flex: 0 0 var(--icon-size);
+    width: var(--icon-size);
+    height: var(--icon-size);
+    flex-shrink: 0;
     background-color: var(--color);
     mask-image: var(--admonition-icon);
     mask-size: var(--icon-size) var(--icon-size);
-
-    // "Bottom" is actually the top of .admonition-icon space
-    mask-position: left 0 bottom calc(0.5 * $base-margin);
+    mask-position: center;
     mask-repeat: no-repeat;
   }
 
   & .admonition-icon {
-    margin-bottom: calc(0.25 * $base-margin);
+    margin: 0;
   }
 
   & .fold-admonition-icon {
