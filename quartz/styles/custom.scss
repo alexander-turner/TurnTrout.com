@@ -466,11 +466,9 @@ img.favicon {
   display: inline;
   width: 0.65rem;
   height: 0.65rem;
-  margin-right: auto;
+  margin: -20% auto -0.07em calc(0.125 * $base-margin);
   vertical-align: 10%;
   filter: saturate(0%);
-  margin-bottom: -0.07em;
-  margin-top: -20%;
   mix-blend-mode: normal;
   cursor: text;
 
