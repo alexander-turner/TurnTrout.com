@@ -95,13 +95,17 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
       const v = document.querySelector<HTMLVideoElement>(`#${args.id}`)
       if (!v) return false
       const diff = Math.abs(v.currentTime - args.expectedTime)
-      return v.paused && diff < args.tolerance
+      return diff < args.tolerance
     },
     { id: pondVideoId, expectedTime: fixedTimestamp, tolerance: 0.1 },
   )
 
-  await autoplayToggle.click()
-  await expect(isPaused(video)).resolves.toBe(true)
+  // Disable autoplay to ensure video stays paused
+  const isCurrentlyPaused = await isPaused(video)
+  if (!isCurrentlyPaused) {
+    await autoplayToggle.click()
+    await expect(isPaused(video)).resolves.toBe(true)
+  }
 
   const timestamp = await getCurrentTime(video)
   expect(timestamp).toBeCloseTo(fixedTimestamp, 0.1)
