@@ -89,6 +89,17 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
     })
   }, fixedTimestamp)
 
+  // Wait for currentTime to stabilize at the expected value (handles Safari async behavior)
+  await video.page().waitForFunction(
+    (args: { id: string; expectedTime: number; tolerance: number }) => {
+      const v = document.querySelector<HTMLVideoElement>(`#${args.id}`)
+      if (!v) return false
+      const diff = Math.abs(v.currentTime - args.expectedTime)
+      return v.paused && diff < args.tolerance
+    },
+    { id: pondVideoId, expectedTime: fixedTimestamp, tolerance: 0.1 },
+  )
+
   await autoplayToggle.click()
   await expect(isPaused(video)).resolves.toBe(true)
 
