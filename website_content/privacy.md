@@ -56,7 +56,7 @@ End-to-end encryption (E2EE)
 
 : Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
-Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on wrongthink, you will have spaces and channels in which to think freely. 
+Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely. 
 
 # Tier 0: Literally everyone should do these
 
@@ -217,18 +217,18 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > [Download Brave](https://brave.com/) on all of your devices and then set it to be your default browser. On each device, enable Sync and enable syncing everything (it's E2EE). Install the Bitwarden extension, pin it, log in to your vault, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
 >
 > Optionally, I recommend setting these further options:
-> 1. In "Shields":
->     1. [ ] Aggressive tracker & ad blocking
->     2. [ ] Strict upgrade connections to HTTPS (prevents snooping on your data)
->     3. Block fingerprinting (make it harder for sites to uniquely identify you)
->     4. Block third-party cookies
-> 2. In "Privacy and security":
->     1. WebRTC IP handling policy: _Disable non-proxied UDP_ (otherwise an adversary can find your real IP address, even behind a VPN)
->     2. Auto-redirect AMP pages
->     3. Auto-redirect tracking URLs
->     4. Prevent sites from fingerprinting based on language
->     5. _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
->     6. Disable all options under "Data collection"
+> 1. [ ] In "Shields",
+>     1. [ ] "Aggressive tracker & ad blocking"
+>     2. [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data)
+>     3. [ ] "Block fingerprinting" (make it harder for sites to uniquely identify you)
+>     4. [ ]"Block third-party cookies"
+> 2. [ ] In "Privacy and security":
+>     1. [ ] "WebRTC IP handling policy" to "Disable non-proxied UDP" (otherwise an adversary can find your real IP address, even behind a VPN)
+>     2. [ ] "Auto-redirect AMP pages"
+>     3. [ ] "Auto-redirect tracking URLs"
+>     4. [ ] "Prevent sites from fingerprinting based on language"
+>     5. [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
+>     6. [ ] Disable all options under "Data collection"
 
 
 
@@ -343,7 +343,7 @@ Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).](#swi
 2. **Turn off "Web & App Activity".** Even with Location History off, Google will still save your location every time you, for example, search for a place in Google Maps or check the weather. This "activity" is saved along with your location. 
 	1. [ ] Visit the same "Data & privacy menu" as above. Tap "Web & App Activity." Turn it off.
 	2. [ ] Uncheck any box that says "Include Chrome history and activity from sites, apps, and devices that use Google services."
-3. **Disable "Bluetooth scanning" and "Wi-Fi Scanning**. When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby Bluetooth beacons any time an app refreshes location services](https://qz.com/1169760/phone-data). 
+3. **Disable "Bluetooth scanning" and "Wi-Fi Scanning**. When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby Bluetooth tracking beacons any time an app refreshes location services](https://qz.com/1169760/phone-data). 
 	1. [ ] Search for "Bluetooth scanning" or "Improve accuracy" in your settings and disable it. This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
 	2. [ ] Search for "Wi-Fi Scanning" and disable it.
 	3. [ ] Search for "Location Accuracy" and disable it.
@@ -435,6 +435,7 @@ Whenever I read "Ente", I think of [Entei, the 244th Pokemon](https://bulbapedia
 * [ ] Import your photos
   * [ ] Google Takeout
   * [ ] iCloud Photos
+  * [ ] Any private photos which don't sync automatically to your services
 
 ### Your pictures and videos contain your GPS location
 
