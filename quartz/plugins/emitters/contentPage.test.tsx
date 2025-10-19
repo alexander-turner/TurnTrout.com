@@ -290,7 +290,11 @@ describe("ContentPage", () => {
   })
 
   describe("relative URL filtering", () => {
-    it("should track relative URLs", async () => {
+    it.each([
+      { tagName: "img", property: "src", ref: "./relative-image.png" },
+      { tagName: "a", property: "href", ref: "./other-page" },
+      { tagName: "link", property: "href", ref: "./stylesheet.css" },
+    ])("should track relative URLs in $tagName elements", async ({ tagName, property, ref }) => {
       const vfile = createTestVFile({
         path: "content/test.md",
         filePath: "content/test.md" as FilePath,
@@ -303,8 +307,41 @@ describe("ContentPage", () => {
         children: [
           {
             type: "element",
-            tagName: "img",
-            properties: { src: "./relative-image.png" },
+            tagName,
+            properties: { [property]: ref },
+            children: [],
+          },
+        ],
+      }
+
+      const content: ProcessedContent[] = [[root, vfile]]
+      const plugin = ContentPage()
+
+      if (!plugin.getDependencyGraph) {
+        throw new Error("getDependencyGraph is not implemented")
+      }
+
+      const graph = await plugin.getDependencyGraph(mockCtx, content, mockStaticResources)
+
+      expect(graph).toBeDefined()
+      expect(graph.hasNode("content/test.md" as FilePath)).toBe(true)
+    })
+
+    it("should add .md extension to links without extensions", async () => {
+      const vfile = createTestVFile({
+        path: "content/test.md",
+        filePath: "content/test.md" as FilePath,
+        slug: "test" as FullSlug,
+        frontmatter: {},
+      })
+
+      const root: Root = {
+        type: "root",
+        children: [
+          {
+            type: "element",
+            tagName: "a",
+            properties: { href: "./other-page" },
             children: [],
           },
         ],

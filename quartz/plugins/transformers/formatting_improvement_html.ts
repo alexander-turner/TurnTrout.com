@@ -232,6 +232,9 @@ export function spacesAroundSlashes(text: string): string {
   const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
   text = text.replace(slashRegex, " / ")
 
+  const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
+  text = text.replace(numberSlashThenNonNumber, " / ")
+
   // Restore the h/t occurrences
   return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
 }

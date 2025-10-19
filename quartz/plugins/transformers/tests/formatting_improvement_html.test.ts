@@ -239,6 +239,7 @@ describe("HTMLFormattingImprovement", () => {
       ["‘cat’/‘dog’", "‘cat’ / ‘dog’"],
       ["Shrek Two/3", "Shrek Two / 3"],
       ["‘cat’/ ‘dog’", "‘cat’ / ‘dog’"],
+      ["3/month", "3 / month"],
 
       // Should not change
       ["‘cat’ / ‘dog’", "‘cat’ / ‘dog’"],

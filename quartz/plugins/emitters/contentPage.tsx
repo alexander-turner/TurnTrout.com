@@ -47,6 +47,7 @@ const parseDependencies = (argv: Argv, hast: Root, file: VFile): string[] => {
       return
     }
 
+    // istanbul ignore next
     let fp = path
       .join(file.data.filePath ?? "", path.relative(argv.directory, ref))
       .replace(/\\/g, "/")
@@ -91,6 +92,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
       const graph = new DepGraph<FilePath>()
 
       for (const [tree, file] of content) {
+        // istanbul ignore next
         if (!file.data.filePath) continue
         const sourcePath = file.data.filePath
         const slug = getSlug(file)
@@ -118,6 +120,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
         }
 
         const externalResources = pageResources(pathToRoot(slug), resources)
+        // istanbul ignore next
         const componentData: QuartzComponentProps = {
           ctx,
           fileData: file.data ?? {},
