@@ -4990,5 +4990,45 @@
   "/static/images/external-favicons/docpop_org.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/vice_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/michaelhorowitz_com.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/privsec_dev.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/store_google_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/liberateyourtech_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/geoguessr_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/geospy_ai.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/thenation_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/propublica_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/brennancenter_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

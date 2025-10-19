@@ -169,7 +169,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 > [!warning] VPNs are _fundamentally unreliable_ on mobile iOS 26 (October 2025)
 > Subtitle: And it's on Apple.
 > 
->  I was ready to wrap up writing when I found out some intricately bad news:[VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is Apple "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
+>  I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
 > 
 >  Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching to Android; specifically, [to a Google Pixel 9a running GrapheneOS.]()
 
@@ -398,7 +398,20 @@ Android
 iPhone
 : Settings -> Privacy -> Location Services -> Camera and select "Never." 
 
- Also note that AI is getting pretty good at geoguessing, so Some AIs and people can guess where an image was taken Simply based off How the sky looks (TODO check)
+> [!warning] Even without metadata, your photo still might be "geo-guessed"
+> In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments. 
+> 
+> If you share a photo but don't want to share your location, consider obscuring all non-crucial clues about your location (like landmarks, plant growth, signposts, ets). You could also run it through a frontier AI like Gemini or Claude, but that also leaves the sensitive photo [on their servers (at least for their retention period).]() To avoid that problem, locally run models like PIGEON can beat human experts at geo-location. You can 
+
+> [!note] Your files contain more metadata than just location
+> Your photos also might expose what kind of phone you're using and the time you took the photo. To remove these from extra-sensitive images, use a special application. Example: [Play Store](https://play.google.com/store/apps/details?id=apps.syrupy.metadatacleaner&hl=en_US), [App Store](https://apps.apple.com/us/app/exif-metadata/id1455197364). 
+
+
+### Don't use Partiful or Luma to organize sensitive events
+
+
+
+Use Signal with messages which disappear after a short time period (like a day or a week). Normal calendar TODO
 
 ### Store files in Proton Drive
 
@@ -423,9 +436,6 @@ Proton Calendar lacks some of the convenient features of Google Calendar, but Pr
 The main drawback is the lack of a direct "Add to Calendar" feature for external invites. To get around this, I created a dedicated Google Calendar and synced it to my Proton Calendar. Now, when I accept an invite, I add it to that Google Calendar, and it automatically appears in my Proton view.
 
 
-### Don't use Partiful or Luma for sensitive events
-
-Instead, schedule sensitive events using Proton Calendar. Unless others are also using Proton Calendar, TODO
 
 ### Handle your address book with EteSync
 
@@ -779,9 +789,9 @@ When you follow this guide, you obscure those digital spies and trackers. When y
 
 * swap off of google maps (collects tons of data)
 
-  * <https://proton.me/blog/european-tech-alternatives>
+%%   * <https://proton.me/blog/european-tech-alternatives>
 
-  * <https://organicmaps.app/>
+  * <https://organicmaps.app/> %%
 
 # Thinking about
 
@@ -790,7 +800,7 @@ When you follow this guide, you obscure those digital spies and trackers. When y
 * google forms?
   * none found yet
 * Google Meet E2E?
-  * Proton Meet coming out in half a year probably
+  * Proton Mee%% t coming out in half a year probably
 
 Router and modem replacement in tier 2
 [https://routersecurity.org/ISProuters.php](https://routersecurity.org/ISProuters.php)
@@ -803,9 +813,9 @@ Discord -> Element.io
 <https://t2bot.io/discord/> ---  I already integrated the shard theory room.
 (Ideally decentralized so there isn't a central service which can ban people from the network)
 
-Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues)
+Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues) %%
 
-[https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3](https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3)
+[ht%% tps://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3](https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3)
 
 [https://www.notus.org/technology/war-zone-surveillance-border-us](https://www.notus.org/technology/war-zone-surveillance-border-us)
 
@@ -817,7 +827,7 @@ Hardening against police cracking your PIN or otherwise getting into your device
 
 Home security cameras
 <https://secluso.com>
-![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
+![[https://assets.turntrout.co %%m/static/images/posts/privacy-20251013201115.avif]]
 
 
 
@@ -830,10 +840,10 @@ TODO
 
 
 
-read more at https://www.privacyguides.org/
+%% read more at https://www.privacyguides.org/
 
 https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/
-
+ %%
 > [!quote] On Tyranny: Twenty Lessons from the Twentieth Century
 > Do not obey in advance.
 > 
@@ -850,17 +860,16 @@ several changes to their WPS in order to better protect
 user privacy. At the time of writing, they have given AP
 operators the ability to opt out of inclusion in Apple’s
 WPS by appending the string _nomap to a Wi-Fi network’s
-SSID [5]. This change brings it in line with Google’s WPS
-and WiGLE, which have also excluded SSIDs with _nomap(Google) and _nomap and _optout (WiGLE) since at least
-2016 [15], [7]. https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf
+SSID. This change brings it in line with Google’s WPS
+and WiGLE, which have also excluded SSIDs with _nomap(Google) and _nomap and _optout (WiGLE) since at least 2016. `https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf`
 
-> "We know that Apple is taking our report seriously," Rye said. "We are given to understand that they have one or more additional remediations in the queue, and we're hopeful that these remediations will help protect the privacy of access point owners that would never know to append "_nomap" to their SSID to prevent them from being included in Apple's geolocation database." https://www.theregister.com/2024/05/23/apple_wifi_positioning_system/
+> "We know that Apple is taking our report seriously," Rye said. "We are given to understand that they have one or more additional remediations in the queue, and we're hopeful that these remediations will help protect the privacy of access point owners that would never know to append "`_nomap`" to their SSID to prevent them from being included in Apple's geolocation database." `https://www.theregister.com/2024/05/23/apple_wifi_positioning_system/`
 
-https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf
+`https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf`
 
-https://www.gl-inet.com/blog/preventive-actions-to-safeguard-glinet-users-from-bssid-based-location-tracking/ GLINET routers already safe! 
+`https://www.gl-inet.com/blog/preventive-actions-to-safeguard-glinet-users-from-bssid-based-location-tracking/` GLINET routers already safe! 
 
-https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D
+`https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D`
 
 
 Writing analysis via LLM
