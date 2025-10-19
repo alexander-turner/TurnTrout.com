@@ -167,8 +167,8 @@
     }
   }
 
-  &[data-admonition="quote"] > * > .admonition-icon {
-    transform: scale(-1, -1); // Flip across the y-axis
+  &[data-admonition="quote"] .admonition-icon {
+    transform: scale(-1); // Flip across the y-axis
   }
 
   &[data-admonition="goose"] {
@@ -227,7 +227,7 @@
 
 .admonition-title {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: $base-margin;
   margin: calc(1.5 * $base-margin) 0;
 
@@ -237,29 +237,19 @@
     gap: calc(0.75 * $base-margin);
   }
 
-  & .admonition-icon,
   & .fold-admonition-icon {
     width: var(--icon-size);
     height: var(--icon-size);
     flex-shrink: 0;
     background-color: var(--color);
-    mask-image: var(--admonition-icon);
+    mask-image: var(--admonition-icon-fold);
     mask-size: var(--icon-size) var(--icon-size);
     mask-position: center;
     mask-repeat: no-repeat;
-  }
-
-  & .admonition-icon {
-    margin: 0;
-  }
-
-  & .fold-admonition-icon {
     transition: transform 0.15s ease;
     opacity: 0.8;
     cursor: pointer;
     margin: 0;
-
-    --admonition-icon: var(--admonition-icon-fold);
   }
 
   .admonition-title-inner {
@@ -268,6 +258,19 @@
     font-weight: $semi-bold-weight;
     font-variant-numeric: lining-nums;
     line-height: auto;
+
+    & .admonition-icon {
+      display: inline-block;
+      width: var(--icon-size);
+      height: var(--icon-size);
+      margin-right: calc(0.5 * $base-margin);
+      background-color: var(--color);
+      mask-image: var(--admonition-icon);
+      mask-size: var(--icon-size) var(--icon-size);
+      mask-position: center;
+      mask-repeat: no-repeat;
+      vertical-align: -6%;
+    }
 
     .admonition-metadata & {
       color: var(--midground);

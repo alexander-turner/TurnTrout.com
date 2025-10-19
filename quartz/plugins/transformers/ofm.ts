@@ -35,10 +35,10 @@ interface CustomElementData extends ElementData {
 /** Creates an admonition icon element. */
 const createAdmonitionIcon = (): Element => ({
   type: "element",
-  tagName: "div",
+  tagName: "span",
   properties: {},
   data: {
-    hName: "div",
+    hName: "span",
     hProperties: {
       className: ["admonition-icon"],
     },
@@ -55,16 +55,16 @@ const createAdmonitionTitleInner = (
   remainingChildren: ElementContent[],
 ): Element => ({
   type: "element",
-  tagName: "div",
+  tagName: "span",
   properties: {},
   data: {
-    hName: "div",
+    hName: "span",
     hProperties: {
       className: ["admonition-title-inner"],
     },
-    position: {},
   } as unknown as CustomElementData,
   children: [
+    createAdmonitionIcon(),
     {
       type: "text",
       /* istanbul ignore next -- admonition title formatting edge case */
@@ -98,7 +98,6 @@ const createAdmonitionTitle = (
   collapse: boolean,
 ): Element => {
   const children: ElementContent[] = [
-    createAdmonitionIcon(),
     createAdmonitionTitleInner(
       useDefaultTitle,
       capitalizedTypeString,
