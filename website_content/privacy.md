@@ -166,12 +166,13 @@ I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN ha
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), I recommend migrating to the Proton ecosystem. Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Drive (E2EE and secure) instead of Google Drive (a government could compel Google to decrypt your data, even though Google likely secures your data quite well).
 
-> [!warning] VPNs are _fundamentally unreliable_ on mobile iOS 26 (October 2025)
-> Subtitle: And it's on Apple.
-> 
->  I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
-> 
->  Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching to Android; specifically, [to a Google Pixel 9a running GrapheneOS.]()
+### VPNs are _fundamentally unreliable_ on iOS as of October 2025
+Subtitle: And it's on Apple.
+
+> [!danger]
+> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
+>  
+> Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching [to a Google Pixel 9a running GrapheneOS.](#switch-to-android----preferably-to-grapheneos)
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -235,7 +236,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 
 ## Switch to Android -- preferably to GrapheneOS 
 
-Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](). 'Tis a shame, because iOS is quite strong on privacy and minimizing telemetry. If you have iOS, or even if you already have an Android ---
+Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025). 'Tis a shame, because iOS is quite strong on privacy and minimizing telemetry. If you have iOS, or even if you already have an Android ---
 
 Yeah, this one is inconvenient if you're on iOS. But if you want to _both_use a smartphone _and_ reliably avoid mass surveillance, you need to switch.
 
@@ -255,7 +256,7 @@ Be especially wary about giving out _precise location_ data. Don't be afraid to 
 
 ## Be pseudonymous when possible
 
-Minimize how often you provide your real name, [your real email address](), your real phone number, or [your real credit card](). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
+Minimize how often you provide your real name, [your real email address](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), your real phone number, or [your real credit card](). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
 
 > [!quote] [Real-Name Policies: The War Against Pseudonymity](https://www.privacyguides.org/articles/2025/10/15/real-name-policies/)
 > Pseudonymity, or the use of a nickname or fictitious name online, has always been deeply valued on the internet. It grants people protections and freedoms that are often impossible to benefit from offline.
@@ -285,7 +286,7 @@ My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-li
 Wi-Fi calling is considered to be telephone data (through your carrier) and so isn't protected by your VPN. Phones which connect to Wi-Fi calling will let your carrier track your precise location -- not just the rough region you're in, as usually guessed from your cell tower data. 
 
 ## Disable location tracking on Android
-Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).]()
+Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).](#switch-to-android----preferably-to-grapheneos)
 
 1. **Turn off the Timeline**. Google creates a minute-by-minute "Timeline" of where you've been. 
 	1. [ ] Go to `Settings > Google > Manage your Google Account > Data & privacy`. Under "History settings," tap "Location History" and select "Turn off." 
@@ -738,7 +739,7 @@ Pessimistically assume that every interaction on X (including "encrypted" DMs) m
 
 ## Protect against geo-guessing
 
-Even [without metadata,]() your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments. 
+Even [without metadata,](#your-pictures-and-videos-contain-your-gps-location) your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments. 
 
 If you share a photo but don't want to share your location, obscure  important clues: crop out landmarks, street signs, distinctive buildings, license plates, and so on. You could run it through a frontier AI like Gemini or Claude to check what they can infer, but that leaves the sensitive photo on their servers. For the technically inclined: install [GeoCLIP](https://github.com/VicenteVivan/geo-clip) to test photos locally on your own machine.
 
@@ -868,9 +869,6 @@ and WiGLE, which have also excluded SSIDs with _nomap(Google) and _nomap and _op
 `https://www.gl-inet.com/blog/preventive-actions-to-safeguard-glinet-users-from-bssid-based-location-tracking/` GLINET routers already safe! 
 
 `https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D`
-
-
-Writing analysis via LLM
 
 
 
