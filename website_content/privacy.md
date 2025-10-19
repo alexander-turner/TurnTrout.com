@@ -166,22 +166,32 @@ I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN ha
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), I recommend migrating to the Proton ecosystem. Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Drive (E2EE and secure) instead of Google Drive (a government could compel Google to decrypt your data, even though Google likely secures your data quite well).
 
+- [ ] Create a Proton account and store the credentials in your Bitwarden
+- [ ] [Download and run ProtonVPN](https://protonvpn.com/)
+- In the settings, ensure: 
+  - [ ] Your VPN always starts along with your device. 
+  - [ ] Traffic can only go through your VPN (enable the "kill switch").
+- [ ] Repeat for each of your devices.
+
+For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
+
+> [!info] It's not paranoia if they really are out to get you
+> > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
+> > Under Section 702 of the Foreign Intelligence Surveillance Act, the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security. Given our nation’s history of abusing its surveillance authorities, and the secrecy surrounding the program, we should be concerned that Section 702 is and will be used to disproportionately target disfavored groups, whether minority communities, political activists, or even journalists.
+>
+> In late 2024, the government further expanded its surveillance powers.
+> > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
+> > Subtitle: Published June 5th, 2024
+> > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
+
 ### VPNs are _fundamentally unreliable_ on iOS as of October 2025
+
 Subtitle: And it's on Apple.
 
 > [!danger]
 > I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
 >  
 > Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching [to a Google Pixel 9a running GrapheneOS.](#switch-to-android----preferably-to-grapheneos)
-
-> [!info] It's not paranoia if they really are out to get you
-> > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
-> > Under Section 702 of the Foreign Intelligence Surveillance Act (FISA), the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security. Given our nation’s history of abusing its surveillance authorities, and the secrecy surrounding the program, we should be concerned that Section 702 is and will be used to disproportionately target disfavored groups, whether minority communities, political activists, or even journalists.
->
-> In late 2024, the government further expanded its surveillance powers.
-> > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
-> > Subtitle: Published June 5th, 2024
-> > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
 ## Browse the web using Brave 
 
@@ -240,11 +250,12 @@ Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and 
 
 Yeah, this one is inconvenient if you're on iOS. But if you want to _both_use a smartphone _and_ reliably avoid mass surveillance, you need to switch.
 
- I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available. 
+ I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability. Basically, everything should just work -- with a couple exceptions:
+ 
+1.  About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/).
+2.  Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the effect, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder) TODO.
 
 
-
-https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/
  
 ### How to make the switch
 If you're technically comfortable, I recommend buying a [Pixel 9a](https://store.google.com/product/pixel_9a) for about \$499 and then [installing the OS yourself.](https://grapheneos.org/install/web) From [the GrapheneOS FAQ](https://grapheneos.org/faq#recommended-devices): "You need one of the officially supported devices. To make sure that the device can be unlocked to install GrapheneOS, avoid carrier variants of the devices." Otherwise, you can [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
@@ -253,6 +264,12 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 ## Give each app as few permissions as possible
 
 Be especially wary about giving out _precise location_ data. Don't be afraid to say "no" if a permissions request seems unreasonable --- you can always read more on the app and come back later if you change your mind. Review your mobile and desktop applications in your permissions centers. Check that apps aren't taking absurd permissions they don't need (like a calculator asking for access to contacts).
+
+> [!example] Minimizing location permissions
+> I found several apps were using my location _all of the time_, including:
+> 1. My Govee smart lights app (deny!),
+> 2. Maps (should only need it when I'm using the app), and
+> 3. System Intelligence (doesn't need much location data).
 
 ## Be pseudonymous when possible
 
@@ -271,12 +288,44 @@ Minimize how often you provide your real name, [your real email address](#use-em
 
 My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
 
+## Use virtual cards for online purchases
+
+Subtitle: Cost: Free for up to 10 new virtual cards per month. 
+
+Services like [Privacy.com](https://privacy.com) generate single-use or merchant-locked virtual credit cards. This prevents merchants from:
+- Charging you after cancellation,
+- Making it hard for you to cancel (just delete the virtual card),
+- Exposing your real card in data breaches. 
+
+- [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
+- [ ] Install [the mobile app](https://www.privacy.com/mobile-app).
+- [ ] On Privacy.com account settings, make your purchases show up as "Privacy.com" on your bank and credit card statements. 
+
+> [!idea] You can  buy digital services pseudonymously
+> Real-world items will require shipping to a real address. Unless you're going to set up random addresses via mail-forwarding services, you'll need to provide identifying information. That information may be sold to data brokers and then bought by the government. 
+> 
+> However, you can pay for digital services pseudonymously using a virtual card, an [email alias](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), and a random fake name (but don't do this for anything which legally requires your real information). When merchants sell those data to brokers, the brokers won't be able to link it to you. That takes you off the grid some!
+
+> [!idea] Virtual cards provide minor protection against persecution via bank statements
+> If the government later demands that e.g. Bank of America give the names of everyone who donated to the Democrats in the last year, then even if the bank complies, your name won't be on the list. _However_, the government could still get the information from Privacy.com. For true anonymity, use cash or prepaid cards.
+## Keep emergency cash reserves
+
+The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (those who publicly disagree with the Trump administration) will have trouble accessing their money:
+
+> [!quote] Stephen Miller, White House Deputy Chief of Staff for Policy
+> The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
+
+Before we reach that point:
+- [ ] Withdraw enough cash to live for at least a month
+- [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9))
+- [ ] Ensure your passport is current and ready for international travel
+
 ## iOS: Disable AirDrop
 
 > [!quote] [The Protesters' Guide to Smartphone Security](https://www.privacyguides.org/articles/2025/01/23/activists-guide-securing-your-smartphone/)
 > One of the most innocuous features enabled on millions of iPhones is also one of the most dangerous for those seeking to protect their privacy in public. Apple's AirDrop protocol [uses](https://www.usenix.org/system/files/sec21-heinrich.pdf) trivially bypassed security measures that authorities like the Chinese government have openly [bragged](https://arstechnica.com/security/2024/01/hackers-can-id-unique-apple-airdrop-users-chinese-authorities-claim-to-do-just-that/) about cracking to identify users since at least 2022.
 >
-> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, **even if** you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
+> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
 >
 
 - [ ] Fix by setting `Settings -> General -> AirDrop -> "Receiving Off"`. 
@@ -433,12 +482,14 @@ The main drawback is the lack of a direct "Add to Calendar" feature for external
 
 
 
-### Handle your address book with EteSync
+### Secure your address book with EteSync
+
+Cost: \$2/month after free trial.
 
 Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
 
 - [ ] Register for an EteSync account
-- [ ] Download EteSync: Mac; [mobile iOS]()
+- [ ] Download EteSync to your mobile devices
 
 TODO 
 
@@ -452,7 +503,7 @@ I used to wear my Oura everywhere. But I realized I only need to wear my Oura wh
 
 ### Avoid distinctive device names
 
-If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is likely nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost seems minor.
+If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is likely nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost is small  -- just connect in a less ambiguous environment.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
 Figure: My laptop's generic name.
@@ -501,6 +552,16 @@ Android instructions
  2. Disconnect from older unknown Bluetooth devices.
  3. Putting on some music in your friend's car? Give it minimal permissions --- don't let it suck up your entire contacts list!
 
+## Automated license plate readers: can't do anything about them
+
+The government tracks your car movements with exquisite attention. They use Automated License Plate Readers (ALPRs) to track _all_ drivers -- not just "the bad guys". Unfortunately, there are no publicly known passive countermeasures to these devices, and such countermeasures are illegal in the US anyways. It's hard to travel the USA without the government knowing. 
+
+The remedy is to support data retention limits, restrict inter-agency sharing, demand transparency, organize community opposition, and support organizations like the [Electronic Frontier Foundation](https://www.eff.org/) and the [American Civil Liberties Union](https://www.aclu.org/) which legally challenge this surveillance system. For a privacy-respecting jurisdiction, look no further than New Hampshire: [ALPR data must be deleted within 180 seconds unless the data match against an active person of interest.](https://gc.nh.gov/rsa/html/XXI/261/261-75-b.htm)
+
+![[privacy-20251018230933.png]]
+
+Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
+
 ## Avoid login integrations
 
 While "Log in with Facebook" is convenient, it hurts your privacy and your security.
@@ -517,66 +578,26 @@ Don't use integrations if possible. Just let Bitwarden create  and remember a un
 
 By the year of our lord 2025, I was [hardly using my Facebook](/digital-declutter). I figured that Facebook having all that data on me is another attack surface for unwanted invasive AI tracking later on. Although deleting my Facebook data from Meta's servers won't delete the data which Meta already sold to data brokers, partial deletion is better than nothing.
 
-For Facebook in particular
-: [Export your data first](https://www.facebook.com/help/212802592074644) and then store it [in Proton Drive.](#store-files-in-proton-drive) During the wait, consider making a last status update with information for how your friends can reach you. After export, [follow these steps to seal the blue demon for good.](https://www.facebook.com/help/224562897555674)  
+For Facebook in particular:
+- [ ] [Export your data first](https://www.facebook.com/help/212802592074644)
+- [ ] Store your data [in Proton Drive](#store-files-in-proton-drive) 
+- [ ] Consider making a last status update with information for how your friends can reach you. 
+- [ ] After export, [delete your account.](https://www.facebook.com/help/224562897555674)  
 
-What other accounts do you have?
-: Spend three minutes brainstorming what accounts you've made over the years. Then, export data, delete, and move on.
+More generally:
+- [ ] Spend three minutes brainstorming what accounts you've made over the years. 
+- [ ] Export data, delete, and move on.
 
-## Own your home network
+## US government watches immigrant speech on social media 
 
-Subtitle: Cost: ~$250 one-time. Time: 45 minutes.
+> [!quote] [EFF to Department Homeland Security: No Social Media Surveillance of Immigrants](https://www.eff.org/deeplinks/2025/06/eff-department-homeland-security-no-social-media-surveillance-immigrants)
+> EFF submitted comments to the Department of Homeland Security (DHS) and its subcomponent U.S. Citizenship and Immigration Services (USCIS), urging them to abandon a proposal to collect social media identifiers on forms for immigration benefits. This collection would mark yet a further expansion of the government’s efforts to subject immigrants to social media surveillance, invading their privacy and chilling their free speech and associational rights for fear of being denied key immigration benefits.
+  
+ > Specifically, the proposed rule would require applicants to disclose their social media identifiers on nine immigration forms, including applications for permanent residency and naturalization, impacting more than 3.5 million people annually. USCIS’s purported reason for this collection is to assist with identity verification, as well as vetting and national security screening, to comply with Executive Order 14161. USCIS separately announced that it would look for “antisemitic activity” on social media as grounds for denying immigration benefits, which appears to be related to the proposed rule, although not expressly included it.
+  
+>  Additionally, a day after the proposed rule was published, Axios reported that the State Department, the Department of Justice, and DHS confirmed a joint collaboration called “Catch and Revoke,” using AI tools to review student visa holders’ social media accounts for speech related to “pro-Hamas” sentiment or “antisemitic activity.”
 
-NOTE: AI written subsection; rewrite and fact check TODO
-
-If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. It's a well-documented security risk. CITE Your ISP has "backdoor" access to it, its firmware is insecure, and you have no way of knowing what data it's collecting on you.
-
-Taking control of your home network is one of the most significant steps you can take to protect your privacy. The goal is to own both your modem (the device that gets the internet from the wall) and your router (the device that creates your Wi-Fi network).
-
-### How to buy the right modem
-
-If you're in the USA with a cable internet connection, you need to buy a modem. Otherwise, move to the next subsection.
-
-> [!warning] Always buy new modems
->
-> Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer. The money saved isn't worth the risk.
-
-## Buy a router that respects you
-
-Instead of renting a router from a company that wants to harvest your data, you can buy one that comes with privacy-respecting, open-source firmware already installed.
-
-I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
-
-Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
-1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN.
-2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
-
-> [!example] My experience upgrading my modem and router
-> I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
->
-> For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour.
->
-> For the setup itself, I used my laptop. _To be able to configure my new hardware, I needed to configure ProtonVPN to "allow LAN connections."_
-
-### Wifi network advice
-
-1. Use Bitwarden's password generator in "passphrase" mode to generate passwords like "`kudos ahead reborn smog refined unquote`."
-2. To avoid exposing your private network to potential intruders, create a separate guest Wi-Fi network with a separate password.
-3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
-
-### Set up ProtonVPN  on your router to shield all connections in your home
-
-TODO
-
-Even if your phone, iPad, and laptop are connected to ProtonVPN, your TV might not be.
-
- Think of the VPN like an umbrella, by default. It's a really big umbrella and it covers your whole house. However, this umbrella transmits data to servers within your country. However, you might want your laptop to connect to a VPN server across the world. In that case, I recommend setting up something that sounds fancy, but is pretty simple. It's called policy mode, policy tunneling, and it basically just accepts your device from the umbrella. You can set it up easily on the Flint 2 by going to VPN settings, enabling policy mode, and then adding a policy type of "do not use VPN for the following." At that point, indicate your laptop's hardware MAC address, and you'll be good to go. You should be able to connect to the VPN independently, while everything else gets routed through the protected connection of your home.
-
-1. Access the dashboard at `192.168.8.1` and navigate to 
-2. Connect ProtonVPN via OpenVPN using [this guide]()
-3. **Enable VPN Policies** in the VPN settings (not "global mode")
-4. **Choose your policy type:** "Do not use VPN for the following"
-5. **Add the laptop's hardware (MAC) address** to exclude it from the VPN tunnel. My Flint 3's interface showed me my laptop, so I just clicked on it.
+Not much you can do besides being [pseudonymous](#be-pseudonymous-when-possible). Be as brave as you can be in your situation. Try not to give in to the chilling effect. Speak your mind while being smart about it. 
 
 ## Switch away from Windows
 
@@ -664,6 +685,57 @@ iCloud (with ADP) doesn't work because I want complete incremental backup of all
 I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my config template](https://assets.turntrout.com/duplicati.json).
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
+
+## Own your home network
+
+Subtitle: Cost: ~$250 one-time. Time: 45 minutes.
+
+If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
+
+[Your VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information.  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
+
+Plus, open-source routers have neat features. They can shield your entire network using a VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
+ 
+
+### How to buy the right modem
+
+Subtitle: Cost: \$80-\$180 and 20 minutes of setup.
+
+If you're in the USA with a cable internet connection, you can buy your own modem. If you're outside the USA or have fiber internet, just move to [the next subsection to buy a router](#buy-a-router-that-respects-you). 
+
+Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed modems. Consult your ISP's list and then find one which has a "DOCSIS" version of 3.0 or greater (the higher, the faster the max speed). Apparently Arris, Motorola, and Netgear tend to be good choices. 
+
+> [!example] My experience upgrading my modem
+> I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
+
+> [!warning] Always buy new modems
+>
+> Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer.
+
+### Buy a router that respects you
+
+Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
+
+Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
+1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN.
+2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
+
+For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour. For the setup itself, I used my laptop. _To configure my hardware, I needed to tell ProtonVPN to "allow LAN connections."_ 
+
+1. [ ] [Set up ProtonVPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
+2. [ ] Enable your laptop (and phone, if on Android) to use its own VPN:
+	1. [ ] Go to the dashboard at `192.168.8.1`,
+	2. [ ] Navigate to VPN settings,
+	3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following",
+	4. [ ] Click on the devices which run their own _secure_ VPN connections.
+3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+
+### Wifi network advice
+
+1. Use Bitwarden's password generator in "passphrase" mode to generate passwords like "`kudos ahead reborn smog refined unquote`."
+2. To avoid exposing your private network to potential intruders, create a separate guest Wi-Fi network with a separate password.
+3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
+
 
 ## Buy webcam covers
 
@@ -760,14 +832,14 @@ In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \
 > 
 If you work at Apple, securing even one of these timely patches would be a _significant win for protecting privacy and freedom across the world._ By order of importance:
 > 
-> 1. Enable the "Always-on VPN" toggle for consumers, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](), exposing millions of unaware users to tracking and potential political persecution. 
+> 1. Enable the "Always-on VPN" toggle for consumers, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution. 
 > 2. Tighten the Wi-Fi Positioning Systems to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
 > 	1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing. 
 > 	2. Implement a per-device and per-account rate limit that is sufficient for legitimate location lookups but too low for mass data harvesting.
 > 	3. Require queries to be tied to an authenticated Apple ID to allow Apple to ban abusive users.
 > 	4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but very powerful adversaries."
-> 3. Add a toggle to [disable the 2G radio]() without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays). 
-> 4. Fix [the AirDrop vulnerability]() originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
+> 3. Add a toggle to [disable the 2G radio](#disable-2g) without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays). 
+> 4. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
 
 # Do not yield to pressure or fear
 
@@ -777,7 +849,7 @@ The point isn't that individual fragments of your attention will not tell your l
 
 Scenario: You go to a protest. [License Plate Readers log every car that drove by](https://www.brennancenter.org/our-work/research-reports/automatic-license-plate-readers-legal-status-and-policy-recommendations). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases. 
 
-When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or [switch to the Brave web browser](), or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. 
+When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or switch to the Brave web browser, or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. 
 
 # New measures
 

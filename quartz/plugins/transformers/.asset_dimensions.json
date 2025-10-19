@@ -5146,5 +5146,17 @@
   "https://assets.turntrout.com/static/images/external-favicons/geospy_ai.avif": {
     "width": 64,
     "height": 64
+  },
+  "./Attachments/privacy-20251018230933.png": {
+    "width": 3624,
+    "height": 2438
+  },
+  "/static/images/external-favicons/deflock_me.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251018230933.png": {
+    "width": 3624,
+    "height": 2438
   }
 }
