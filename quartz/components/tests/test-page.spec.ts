@@ -700,7 +700,10 @@ test.describe("Checkboxes", () => {
   })
 
   test("Checkboxes in admonitions work correctly", async ({ page }) => {
-    const noteAdmonition = page.locator(".admonition.note").last()
+    // Find the note admonition that contains checkboxes (not the one in the footnote)
+    const noteAdmonition = page
+      .locator(".admonition.note")
+      .filter({ has: page.locator("input.checkbox-toggle") })
     await noteAdmonition.scrollIntoViewIfNeeded()
 
     const admonitionCheckbox = noteAdmonition.locator("input.checkbox-toggle").first()

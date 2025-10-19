@@ -60,6 +60,13 @@ const parseDependencies = (argv: Argv, hast: Root, file: VFile): string[] => {
   return dependencies
 }
 
+function getSlug(file: VFile): FullSlug {
+  const permalink = file.data.frontmatter?.permalink
+  return (
+    typeof permalink === "string" && permalink !== "" ? permalink : file.data.slug
+  ) as FullSlug
+}
+
 export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) => {
   const opts: FullPageLayout = {
     ...sharedPageComponents,
@@ -74,16 +81,19 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
 
   return {
     name: "ContentPage",
+
+    // istanbul ignore next
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
+
     async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       for (const [tree, file] of content) {
         if (!file.data.filePath) continue
         const sourcePath = file.data.filePath
-        const slug = file.data.slug as FullSlug
+        const slug = getSlug(file)
         graph.addEdge(sourcePath, joinSegments(ctx.argv.output, `${slug}.html`) as FilePath)
 
         parseDependencies(ctx.argv, tree as Root, file).forEach((dep) => {
@@ -93,6 +103,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
 
       return graph
     },
+
     async emit(ctx, content, resources): Promise<FilePath[]> {
       const cfg = ctx.cfg.configuration
       const fps: FilePath[] = []
@@ -100,7 +111,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
 
       let containsIndex = false
       for (const [tree, file] of content) {
-        const slug = file.data.slug as FullSlug
+        const slug = getSlug(file)
         const aliases = (file.data.frontmatter?.aliases as FullSlug[]) ?? []
         if ([slug, ...aliases].includes("index" as FullSlug)) {
           containsIndex = true
@@ -121,7 +132,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
         const fp = await write({
           ctx,
           content,
-          slug: file.data.slug as FullSlug,
+          slug,
           ext: ".html",
         })
 
