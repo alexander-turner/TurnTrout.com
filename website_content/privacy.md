@@ -398,11 +398,6 @@ Android
 iPhone
 : Settings -> Privacy -> Location Services -> Camera and select "Never." 
 
-> [!warning] Even without metadata, your photo still might be "geo-guessed"
-> In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments. 
-> 
-> If you share a photo but don't want to share your location, consider obscuring all non-crucial clues about your location (like landmarks, plant growth, signposts, ets). You could also run it through a frontier AI like Gemini or Claude, but that also leaves the sensitive photo [on their servers (at least for their retention period).]() To avoid that problem, locally run models like PIGEON can beat human experts at geo-location. You can 
-
 > [!note] Your files contain more metadata than just location
 > Your photos also might expose what kind of phone you're using and the time you took the photo. To remove these from extra-sensitive images, use a special application. Example: [Play Store](https://play.google.com/store/apps/details?id=apps.syrupy.metadatacleaner&hl=en_US), [App Store](https://apps.apple.com/us/app/exif-metadata/id1455197364). 
 
@@ -473,7 +468,7 @@ As a reminder, your Bluetooth devices and other broadcastable names may include 
 ### Surreptitious "beacons" track your minute movements
 
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
-> ![[privacy-20251014232546.png]]
+> ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif]]
 >
 > Most people aren’t aware they are being watched with beacons, but the “beacosystem” tracks millions of people every day. Beacons are placed at [airports](https://www.post-gazette.com/business/tech-news/2018/04/19/CMU-inks-deal-to-help-create-smartest-airport-on-the-planet-allegheny-technology/stories/201804190126), [malls](https://www.bluetooth.com/bluetooth-resources?video=moa), [subways](https://www.citylab.com/life/2015/06/how-to-get-your-bearings-when-exiting-a-subway-station/395966/), [buses](https://www.nfcworld.com/2016/10/11/347767/proxama-to-create-uks-biggest-ble-beacon-advertising-network/), [taxis](https://www.mobileeurope.co.uk/press-wire/proxama-aims-for-ubiquitous-ble-coverage-with-uk-taxi-deal), [sporting arenas](https://adage.com/article/datadriven-marketing/location-trackers-bigger-sports-arenas/305211/), [gyms](https://www.ymcalouisville.org/healthy-living/health-well-being-fitness/humana-vitality.html), [hotels](https://www.mobilemarketer.com/ex/mobilemarketer/cms/news/software-technology/23565.html), [hospitals](https://unacast.s3.amazonaws.com/7a7f44d764d14917aed62e80039cb688.pdf), [music festivals](https://kontakt.io/blog/beacons-at-music-festivals/), [cinemas](https://geomarketing.com/beacons-at-the-movies-screenvision-and-mobiquity-networks-add-proximity-marketing-to-cinema-network) and [museums](https://www.rfidjournal.com/articles/view?15608), and even on [billboards](https://www.fastcompany.com/3033242/these-new-billboards-talk-to-your-smartphone).
 >
@@ -682,7 +677,7 @@ On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area cou
 
 ## Migrate your social network away from X
 
-![[privacy-20251015092621.gif]]{.float-right}
+<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/privacy-20251015092621.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251015092621.webm" type="video/webm"></video>{.float-right}
 
 The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Although I don't use X regularly, I plan to migrate my account in the coming months. 
 
@@ -710,7 +705,7 @@ post, the author of the original post can detach it from the
 quote post. This reduces the risk of harassment through
 dog-piling.
 
-![[privacy-20251015092239.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
 
 https://buffer.com/
 
@@ -740,6 +735,12 @@ https://buffer.com/
 <https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/>
 
 Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
+
+## Protect against geo-guessing
+
+Even [without metadata,]() your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments. 
+
+If you share a photo but don't want to share your location, obscure  important clues: crop out landmarks, street signs, distinctive buildings, license plates, and so on. You could run it through a frontier AI like Gemini or Claude to check what they can infer, but that leaves the sensitive photo on their servers. For the technically inclined: install [GeoCLIP](https://github.com/VicenteVivan/geo-clip) to test photos locally on your own machine.
 
 ## "Stingrays" trick your phone into revealing information
 
@@ -775,9 +776,7 @@ The point isn't that individual fragments of your attention will not tell your l
 
 Scenario: You go to a protest. [License Plate Readers log every car that drove by](https://www.brennancenter.org/our-work/research-reports/automatic-license-plate-readers-legal-status-and-policy-recommendations). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases. 
 
-When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or [switch to the Brave web browser](), or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. In those bubbles, you are free from the chill and the fear that authoritarians are desperate to impose.
-
-# Big Brother is watching
+When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or [switch to the Brave web browser](), or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. 
 
 # New measures
 
@@ -796,7 +795,6 @@ When you follow this guide, you obscure those digital spies and trackers. When y
 # Thinking about
 
 * better email security? (make PGP available?)
-* Encrypted contact management (Proton Mail?)
 * google forms?
   * none found yet
 * Google Meet E2E?
