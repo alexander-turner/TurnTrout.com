@@ -13,7 +13,7 @@ card_image:
 aliases:
   - privacy
 ---
-Edward Snowden [warned us about unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
+Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
 Figure: July 2013. I'm in the center, holding the banner.
@@ -253,10 +253,11 @@ Yeah, this one is inconvenient if you're on iOS. But if you want to _both_use a 
  I instead recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability. Basically, everything should just work -- with a couple exceptions:
  
 1.  About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/).
-2.  Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the effect, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder) TODO.
+2.  Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I _will_ miss using Google pay for public transportation.
+3. Unlike stock Android, you'll need to install sandboxed Google Play Services for Android Auto to work. 
+4. TODO fill in more after I have in-person experience.
+https://auroraoss.com/
 
-
- 
 ### How to make the switch
 If you're technically comfortable, I recommend buying a [Pixel 9a](https://store.google.com/product/pixel_9a) for about \$499 and then [installing the OS yourself.](https://grapheneos.org/install/web) From [the GrapheneOS FAQ](https://grapheneos.org/faq#recommended-devices): "You need one of the officially supported devices. To make sure that the device can be unlocked to install GrapheneOS, avoid carrier variants of the devices." Otherwise, you can [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
 
@@ -333,9 +334,26 @@ Before we reach that point:
 ## Disable WiFi calling
 
 Wi-Fi calling is considered to be telephone data (through your carrier) and so isn't protected by your VPN. Phones which connect to Wi-Fi calling will let your carrier track your precise location -- not just the rough region you're in, as usually guessed from your cell tower data. 
+## Surreptitious "beacons" track your minute movements
 
-## Disable location tracking on Android
-Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).](#switch-to-android----preferably-to-grapheneos)
+> [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
+> ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif]]
+>
+> Most people aren’t aware they are being watched with beacons, but the “beacosystem” tracks millions of people every day. Beacons are placed at [airports](https://www.post-gazette.com/business/tech-news/2018/04/19/CMU-inks-deal-to-help-create-smartest-airport-on-the-planet-allegheny-technology/stories/201804190126), [malls](https://www.bluetooth.com/bluetooth-resources?video=moa), [subways](https://www.citylab.com/life/2015/06/how-to-get-your-bearings-when-exiting-a-subway-station/395966/), [buses](https://www.nfcworld.com/2016/10/11/347767/proxama-to-create-uks-biggest-ble-beacon-advertising-network/), [taxis](https://www.mobileeurope.co.uk/press-wire/proxama-aims-for-ubiquitous-ble-coverage-with-uk-taxi-deal), [sporting arenas](https://adage.com/article/datadriven-marketing/location-trackers-bigger-sports-arenas/305211/), [gyms](https://www.ymcalouisville.org/healthy-living/health-well-being-fitness/humana-vitality.html), [hotels](https://www.mobilemarketer.com/ex/mobilemarketer/cms/news/software-technology/23565.html), [hospitals](https://unacast.s3.amazonaws.com/7a7f44d764d14917aed62e80039cb688.pdf), [music festivals](https://kontakt.io/blog/beacons-at-music-festivals/), [cinemas](https://geomarketing.com/beacons-at-the-movies-screenvision-and-mobiquity-networks-add-proximity-marketing-to-cinema-network) and [museums](https://www.rfidjournal.com/articles/view?15608), and even on [billboards](https://www.fastcompany.com/3033242/these-new-billboards-talk-to-your-smartphone).
+>
+> In order to track you or trigger an action like a coupon or message to your phone, companies need you to install an app on your phone that will recognize the beacon in the store. Retailers (like Target and Walmart) that use Bluetooth beacons typically build tracking into their own apps. But retailers want to make sure most of their customers can be tracked — not just the ones that download their own particular app.
+>
+> So a hidden industry of third-party location-marketing firms has proliferated in response. These companies take their beacon tracking code and bundle it into a toolkit developers can use.
+>
+> The makers of many popular apps, such as those for news or weather updates, insert these toolkits into their apps. They might be paid by the beacon companies or receive other benefits, like detailed reports on their users.
+>
+> Location data companies often collect additional data provided by apps. A location company called Pulsate, for example, encourages app developers to pass them customer email addresses and names.
+>
+> Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
+
+### Disable location tracking on Android
+
+The following steps stop your phone from being passively detected by Bluetooth beacons and otherwise minimize your information footprint.
 
 1. **Turn off the Timeline**. Google creates a minute-by-minute "Timeline" of where you've been. 
 	1. [ ] Go to `Settings > Google > Manage your Google Account > Data & privacy`. Under "History settings," tap "Location History" and select "Turn off." 
@@ -343,26 +361,48 @@ Subtitle: Only [if you aren't using GrapheneOS (which you ideally should).](#swi
 2. **Turn off "Web & App Activity".** Even with Location History off, Google will still save your location every time you, for example, search for a place in Google Maps or check the weather. This "activity" is saved along with your location. 
 	1. [ ] Visit the same "Data & privacy menu" as above. Tap "Web & App Activity." Turn it off.
 	2. [ ] Uncheck any box that says "Include Chrome history and activity from sites, apps, and devices that use Google services."
-3. **Disable "Bluetooth scanning" and "Wi-Fi Scanning**. When Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby Bluetooth tracking beacons any time an app refreshes location services](https://qz.com/1169760/phone-data). 
-	1. [ ] Search for "Bluetooth scanning" or "Improve accuracy" in your settings and disable it. This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.  
+3. **Disable nosy location services.** For example, when Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby beacons any time an app refreshes location services](https://qz.com/1169760/phone-data). 
+	1. [ ] Search for "Bluetooth scanning" or "Improve accuracy" in your settings and disable it. This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.
 	2. [ ] Search for "Wi-Fi Scanning" and disable it.
 	3. [ ] Search for "Location Accuracy" and disable it.
+
+If you're switching to [GrapheneOS (which you hopefully are)](), use its granular per-app network and sensor permissions to prevent apps from accessing Bluetooth unnecessarily. Conservative permission settings should  totally stop your phone from passively responding to nearby beacons, since those wait for responses from shady apps.
+### Minimize the uptime of your Bluetooth radio
+If data companies have the information, so can the government. Obviously, the most privacy-boosting remedy is turning Bluetooth _off_, cold-turkey -- but I don't want to forsake my AirPods in my day-to-day life. Here's what to do instead.
+
+[GrapheneOS]() instructions
+: GrapheneOS includes a "Bluetooth timeout" feature that automatically disables Bluetooth after a period of inactivity. Enable in `Settings > Network & internet > Bluetooth > Bluetooth timeout`. 
+
+iOS instructions
+: On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
+
+: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
+
+: Similarly, make simple automations which encompass your use cases. 
+
+Android instructions
+: If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do besides "turn it off when you aren't using it".
 
 ## Track belongings using AirTags instead of Tiles
 
 [Tile devices allegedly don't encrypt your location data, meaning criminals and law enforcement could intercept the data and watch your Tiles move around the map as they please.](https://www.wired.com/story/tile-tracking-tags-can-be-exploited-by-tech-savvy-stalkers-researchers-say/) AirTags are E2EE, keeping your location data private. After reading that article, I immediately tossed all my Tiles and bought six AirTags.
 
-## Disable 2G
+## Disable 2G to avoid "stingray" attacks
 
-[As I later explain,](#stingrays-trick-your-phone-into-revealing-information) so-called "stingray" attacks use a fake "cell tower" to trick your phone into downgrading to a 2G connection. At that point, criminals and police make your phone basically admit who you are. They do this to everyone within half a kilometer.
+Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then they trick your phone into downgrading to a 2G connection. At that point, criminals and police make your phone basically admit who you are. They do this to everyone within half a kilometer.
+
+Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal]() -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals. 
+
+GrapheneOS 
+: Follow [these instructions](https://grapheneos.org/usage#lte-only-mode).  GrapheneOS has more comprehensive protections than just disabling 2G.
 
 Android
-: You can just disable 2G in your settings. The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
+: You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
 
-
+In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
 
 # Tier 2: If you care a lot about privacy
 
@@ -379,6 +419,8 @@ Once you've made a SimpleLogin account, follow Bitwarden's [guide on setting up 
 
 [^premium]: If you've purchased Proton Unlimited as [recommended](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
 
+
+
 ## Switch to Proton Mail
 
 Centrally hosted mail services (like Hotmail) may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, _the government can make them hand over your emails_.
@@ -389,6 +431,36 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 3. Push another button to forward new emails from your Gmail to your new ProtonMail address.  
 4.  Start using Proton Mail! :) 
 
+## Financial privacy
+
+Companies buy your data because it helps them predict what you'll do. The government wants it for similar reasons. As we do not live in a world with E2EE transactions between buyers and sellers, we must settle for imperfect protection.
+
+### Prefer Stripe and delete PayPal
+
+[PayPal just got hacked and 16 million customers had their _passwords_ leaked, meaning PayPal wasn't following even the most basic security precautions.](https://www.tomsguide.com/computing/online-security/over-16-million-hit-with-paypal-data-breach-what-to-do-right-now) To add ad to insecurity, in 2025, PayPal started sharing your data with a _lot_ of companies:
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif]]
+
+[Fewer than half of the companies PayPal shares your data with](https://rebecca-ricks.com/paypal-data/). 
+
+I recommend deleting your PayPal. 
+
+- [ ] Download a PDF of your current year's statements
+- [ ] Download your data under "Data & privacy"
+- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion)
+
+If you want to keep your PayPal, at least mitigate by opting out of their data sharing:  
+
+- [ ] [Opt out of data sharing.](https://www.paypal.com/myaccount/privacy/settings/recommendations)
+
+### Opt out of financial institution data sharing
+
+[These companies share tons of your data as well.](https://www.denverpost.com/2019/08/31/credit-card-privacy-concerns/) By law, they have to let you opt out. 
+
+- [ ] Minimize data sharing via your:
+	- [ ] Bank(s)
+	- [ ] Credit card(s)
+	- [ ] Other instruments
 ## End-to-end encrypt your data
 
 Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
@@ -455,9 +527,9 @@ iPhone
 
 ### Don't use Partiful or Luma to organize sensitive events
 
+Services like Partiful do not offer E2EE.  Normal calendar events are not private or end-to-end encrypted. Even for Proton Calendar events, to see the entire guest list, the government just needs data from a single guest's calendar - especially since many guests will still be using e.g. Apple Calendar with details readable by Apple and thus by the government.
 
-
-Use Signal with messages which disappear after a short time period (like a day or a week). Normal calendar TODO
+Use Signal with messages which disappear after a short time period (like a day or a week).  Make sure the group chat name doesn't specify the event itself so that the group chat doesn't confirm a guest list. 
 
 ### Store files in Proton Drive
 
@@ -489,10 +561,12 @@ Cost: \$2/month after free trial.
 
 Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
 
-- [ ] Register for an EteSync account
-- [ ] Download EteSync to your mobile devices
-
-TODO 
+- [ ] [Register for an EteSync account](https://www.etesync.com/).
+- [ ] Download EteSync to mobile devices. Don't worry about the calendar features.
+- [ ] On iOS, [consult the user guide for special instructions.](https://www.etesync.com/user-guide/ios/) 
+- [ ] Import contacts from your existing sources.
+- [ ] Create a new "Test Etesync" contact in your app and check that the contact appears in the EteSync app.
+- [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
 
 ## Only carry smart devices when you need them
 
@@ -518,34 +592,6 @@ As a reminder, your Bluetooth devices and other broadcastable names may include 
   6. Smart speaker
   7. Mobile hotspot
 
-### Surreptitious "beacons" track your minute movements
-
-> [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
-> ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif]]
->
-> Most people aren’t aware they are being watched with beacons, but the “beacosystem” tracks millions of people every day. Beacons are placed at [airports](https://www.post-gazette.com/business/tech-news/2018/04/19/CMU-inks-deal-to-help-create-smartest-airport-on-the-planet-allegheny-technology/stories/201804190126), [malls](https://www.bluetooth.com/bluetooth-resources?video=moa), [subways](https://www.citylab.com/life/2015/06/how-to-get-your-bearings-when-exiting-a-subway-station/395966/), [buses](https://www.nfcworld.com/2016/10/11/347767/proxama-to-create-uks-biggest-ble-beacon-advertising-network/), [taxis](https://www.mobileeurope.co.uk/press-wire/proxama-aims-for-ubiquitous-ble-coverage-with-uk-taxi-deal), [sporting arenas](https://adage.com/article/datadriven-marketing/location-trackers-bigger-sports-arenas/305211/), [gyms](https://www.ymcalouisville.org/healthy-living/health-well-being-fitness/humana-vitality.html), [hotels](https://www.mobilemarketer.com/ex/mobilemarketer/cms/news/software-technology/23565.html), [hospitals](https://unacast.s3.amazonaws.com/7a7f44d764d14917aed62e80039cb688.pdf), [music festivals](https://kontakt.io/blog/beacons-at-music-festivals/), [cinemas](https://geomarketing.com/beacons-at-the-movies-screenvision-and-mobiquity-networks-add-proximity-marketing-to-cinema-network) and [museums](https://www.rfidjournal.com/articles/view?15608), and even on [billboards](https://www.fastcompany.com/3033242/these-new-billboards-talk-to-your-smartphone).
->
-> In order to track you or trigger an action like a coupon or message to your phone, companies need you to install an app on your phone that will recognize the beacon in the store. Retailers (like Target and Walmart) that use Bluetooth beacons typically build tracking into their own apps. But retailers want to make sure most of their customers can be tracked — not just the ones that download their own particular app.
->
-> So a hidden industry of third-party location-marketing firms has proliferated in response. These companies take their beacon tracking code and bundle it into a toolkit developers can use.
->
-> The makers of many popular apps, such as those for news or weather updates, insert these toolkits into their apps. They might be paid by the beacon companies or receive other benefits, like detailed reports on their users.
->
-> Location data companies often collect additional data provided by apps. A location company called Pulsate, for example, encourages app developers to pass them customer email addresses and names.
->
-> Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
-
-If data companies have the information, so can the government. Obviously, the most privacy-boosting remedy is turning Bluetooth _off_, cold-turkey -- but I don't want to forsake my AirPods in my day-to-day life. So instead, I'm automating the process of turning off my Bluetooth when I'm not using it -- both for my laptop and my phone.
-
-iOS instructions
-: On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
-
-: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
-
-: Similarly, make simple automations which encompass your use cases. For my iPhone, I don't use Steam so I'll just make Spotify and YouTube Music automations.
-
-Android instructions
-: If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do.
 
 ### Other tips
 
@@ -559,7 +605,7 @@ The government tracks your car movements with exquisite attention. They use Auto
 
 The remedy is to support data retention limits, restrict inter-agency sharing, demand transparency, organize community opposition, and support organizations like the [Electronic Frontier Foundation](https://www.eff.org/) and the [American Civil Liberties Union](https://www.aclu.org/) which legally challenge this surveillance system. For a privacy-respecting jurisdiction, look no further than New Hampshire: [ALPR data must be deleted within 180 seconds unless the data match against an active person of interest.](https://gc.nh.gov/rsa/html/XXI/261/261-75-b.htm)
 
-![[privacy-20251018230933.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251018230933.avif]]
 
 Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
 
@@ -616,13 +662,26 @@ More specifically, Windows sends out so much information about you via so-called
 
  Please don't use Windows.
 
-## Outsmart smart home spying
+## Control smart home devices with Home Assistant 
+ 
+I love my Google Home setup. Problem is, the microphones are _always on_ (though Google clarifies that the devices only send data after activation via "Hey Google...").   In any case, I want more peace of mind. The solutions: either *stop* using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.  
 
-I love my Google Home setup. Problem is, the microphones are _always on_ - though Google clarifies that the devices only send data after activation via "Hey Google...".  It's a lot of data collected from your home. TODO
+![[https://assets.turntrout.com/static/images/posts/privacy-20251019175611.avif]]
 
-Segment using vLANs.
+- [ ]  Enable the hardware mute on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+	- [ ] Alternatively, block them from phoning home [at the router level using AdGuard]().
+- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
+- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive. 
 
-### Run an Apple TV instead of your normal smart TV
+## Beware popular security cameras
+Apparently many security camera solutions are horrible for privacy. 
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
+Figure: From [`secluso.com`](https://secluso.com/), an under-development open source security camera system. Sadly, it's not available yet.
+
+Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
+
+## Run an Apple TV instead of your normal smart TV
 
 Normal smart TVs shove tons of ads in your face and track lots of your data. Apple TVs are much better.
 
@@ -637,7 +696,9 @@ Normal smart TVs shove tons of ads in your face and track lots of your data. App
 
 Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training (unless the provider explicitly guarantees otherwise) or even [available to people running Google searches](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
 
-Concerns around LLM privacy TODO. One answer is Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework, which promises significantly more privacy than standard inference.
+### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
+
+The framework promises significantly more privacy than standard inference. If you have an Apple computer, consider using after boosting the privacy settings.
 
 ### Run an LLM on your local machine
 
@@ -661,9 +722,7 @@ Speaking only for myself and not on behalf of Google DeepMind, my guess is that 
 > [!question]- Technical question: Why can't LLM conversations be E2EE?
 > This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
 >
-> There are several issues. First, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
-
-TODO: Include research
+> There are several issues. First, as of October 2025, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
 
 ## Tweak your operating system's settings to maximize privacy
 
@@ -671,7 +730,7 @@ Follow a guide for your OS and/or ask an AI to write you a guide.(You [aren't us
 
 ## Be prepared at border checkpoints
 
-In the USA, the DHS cannot compel an American citizen to unlock a password-locked device.  Fingerprints and Face ID are another matter. If you say no, however, they might keep your device for a while and try to crack it on their own.
+In the USA, [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  Fingerprints and Face ID are another matter. If you say no, however, they might keep your device for a while and try to crack it on their own.
 
 However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
@@ -738,18 +797,8 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
 3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
 
 
-## Buy webcam covers
 
-For less than \$10, I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to. However, this attack is rather rare. Probably this defense just makes you feel better.
-
-[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
-
-
-## Always lock your laptop or phone before walking away
-
-On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and browse. Constant vigilance!
-
-## Migrate your social network away from X
+## Gradually migrate your social network away from X
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/privacy-20251015092621.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251015092621.webm" type="video/webm"></video>{.float-right}
 
@@ -764,51 +813,53 @@ Most importantly, X does not guarantee the "right of exit." If you leave X, you 
 
 [^attrib]: I read a similar sentence during my research but cannot remember where. Sorry for the lack of attribution!
 
-I propose a TODO
+Later, [I propose]() a two-month migration during which you cross-post major updates to multiple platforms. You'll build a following and hopefully bring over some of your friends as well.
+### Bluesky: better but still subject to central censorship (for now)
 
 
+> [!quote] [Government censorship comes to Bluesky, but not its third-party apps … yet](https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/)
+> Bluesky restricted access to 72 accounts in Turkey at the request of Turkish governmental authorities, according to a [recent report](https://stockholmcf.org/bluesky-restricts-access-to-72-accounts-in-turkey-amid-government-pressure/) by the [Freedom of Expression Association](https://ifade.org.tr/engelliweb/bluesky-bircok-hesabi-turkiyeden-gorunmez-kildi/). As a result, people in Turkey can no longer see these accounts, and their reach is limited.
+>    
+>  The report indicates that 59 Bluesky accounts were blocked on the grounds of protecting “national security and public order.” Bluesky also made another 13 accounts and at least one post invisible from Turkey.
+>    
+>  Given that many Turkish users migrated from X to Bluesky in the hopes of fleeing government censorship, Bluesky’s bowing to the Turkish government’s demands has [raised questions](https://www.reddit.com/r/europe/comments/1k1xy30/bluesky_restricts_access_to_72_accounts_in_turkey/) [among the community](https://www.reddit.com/r/BlueskySocial/comments/1k03iop/bluesky_restricts_accounts_at_the_request_of_the/) as to whether the social network is as open and decentralized as it claims to be. (Or whether [it’s “just like Twitter”](https://www.reddit.com/r/BlueskySocial/comments/1k0hrt0/bluesky_is_banning_accounts_that_are_posting/) after all.)
 
 ### The pitch for Mastodon
 
 https://docpop.org/2025/02/how-to-get-started-with-mastodon/
 
-Bluesky offers similar: 
-
-> Quote detachment: When a post is quoted by another user’s
-post, the author of the original post can detach it from the
-quote post. This reduces the risk of harassment through
-dog-piling.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
 
-https://buffer.com/
 
-> [!idea] 
-> Try both Bluesky and Mastodon for a week. See which you enjoy more. Prioritize moving to that platform.
-
-
-
+###  None of these platforms have reliable E2EE
+Pessimistically assume that every interaction on X (including ["encrypted"](https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/) DMs) may be read by the company and/or the government.
 
 > [!warning] E2EE and social media 
 > Neither Bluesky nor Mastodon offers or has announced plans for E2EE. The platforms' decentralized nature makes E2EE technically challenging. Assume that anything you post or DM can be read by platform administrators and potentially compelled by governments. For private conversations, continue using Signal.
 
-1. **Set up new accounts** on Bluesky and/or Mastodon
-2. **Export your data** from X (and upload to your Proton Drive!).
+1. [ ] Set up new accounts on Bluesky and/or Mastodon
+2. [ ] Pin an announcement with your new handles to your X profile.
+3. [ ] DM your closest contacts directly - don't rely on them seeing your post.
+4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool]()
+5. [ ] Engage actively on your new platform to build momentum
+6. [ ] Set a sunset date for X and stick to it
+7. [ ] Export your data from X
 	1. [ ] [Create a request to download your data](https://x.com/settings/download_your_data)
 	2. [ ] Download the data when ready
-3. **Pin an announcement** with your new handles to your X profile
-4. **DM your closest contacts** directly - don't rely on them seeing your post
-5. **Use a cross-posting tool** for 2-3 months as a bridge
-6. **Engage actively** on your new platform to build momentum
-7. **Set a sunset date** for X and stick to it
-8. **Don't look back** - resist the urge to check X "just in case"
+8. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
 
-> [!warning] Not everyone will follow you from X. That's OK. 
-> Maybe some of your X connections were more casual than you realized. And de
+TODO add guides 
+## Buy webcam covers
 
-<https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/>
+For less than \$10, I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to. However, this attack is rather rare. Probably this defense just makes you feel better.
 
-Pessimistically assume that every interaction on X (including "encrypted" DMs) may be read by the company and/or the government.
+[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
+
+
+## Always lock your laptop or phone before walking away
+
+On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area could walk by and browse. Constant vigilance!
 
 ## Protect against geo-guessing
 
@@ -816,49 +867,63 @@ Even [without metadata,](#your-pictures-and-videos-contain-your-gps-location) yo
 
 If you share a photo but don't want to share your location, obscure  important clues: crop out landmarks, street signs, distinctive buildings, license plates, and so on. You could run it through a frontier AI like Gemini or Claude to check what they can infer, but that leaves the sensitive photo on their servers. For the technically inclined: install [GeoCLIP](https://github.com/VicenteVivan/geo-clip) to test photos locally on your own machine.
 
-## "Stingrays" trick your phone into revealing information
-
- This one is pretty annoying.
-
-> [!quote]  [The Electronic Frontier Foundation](https://www.eff.org/deeplinks/2025/03/meet-rayhunter-new-open-source-tool-eff-detect-cellular-spying)
-> \[Stingrays\] operate by conducting a general search of all cell phones within the device’s radius. Law enforcement use \[stingrays\] to pinpoint the location of phones often with greater accuracy than other techniques such as cell site location information  and without needing to involve the phone company at all. \[Stingrays\] can also log \[identifiers\] unique to each SIM card, or hardware serial numbers of all of the mobile devices within a given area. Some \[stingrays\] may have advanced features allowing law enforcement to intercept communications in some circumstances.
-
-Avoid having your communications intercepted by using Signal (it's E2EE, so they would just be "intercepting" nonsense ciphertext). Another reason to avoid unprotected texting or phone calls: stingrays could pick up your metadata. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
-
-In 2024, we gained a tool to potentially track these devices: Rayhunter.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement usage of this kind of surveillance. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
+# What I haven't covered
+- Alternatives to:
+	- Google Forms
+	- Maps 
+	- Google Meet (Proton Meet coming out in half a year probably)
+- Alternative front-ends for major websites
 
 # What's next?
 
-> [!idea] Readers who work at Apple: advocate for privacy improvements
+## Tech workers can push for privacy improvements
+
+Securing even one of these timely improvements would be a _significant win for protecting privacy and freedom across the world._ I've drafted suggestions which shouldn't conflict with core business models. 
+
+None of these ideas are new to internal privacy engineers at these companies.
+
+> [!idea]- Readers who work at Apple
 > 
-If you work at Apple, securing even one of these timely patches would be a _significant win for protecting privacy and freedom across the world._ By order of importance:
+> By order of importance:
 > 
 > 1. Enable the "Always-on VPN" toggle for consumers, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution. 
-> 2. Tighten the Wi-Fi Positioning Systems to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
+> 2. Make ADP the default setting where legally permissible. 
+> 3. Tighten the Wi-Fi Positioning Systems to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
 > 	1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing. 
 > 	2. Implement a per-device and per-account rate limit that is sufficient for legitimate location lookups but too low for mass data harvesting.
 > 	3. Require queries to be tied to an authenticated Apple ID to allow Apple to ban abusive users.
 > 	4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but very powerful adversaries."
-> 3. Add a toggle to [disable the 2G radio](#disable-2g) without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays). 
-> 4. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
+> 4. Add a toggle to [disable the 2G radio](#disable-2g) without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays). 
+> 5. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
 
+
+> [!idea]- Readers who work at Meta
+> 6. Migrate WhatsApp from E2EE to zero-knowledge encryption to protect metadata. If not, more clearly warn users that their metadata are not E2EE.
+> 7. Encrypt WhatsApp backups by default (prompting the user to make an authentication key). Many users are unaware that their backups are unencrypted.
+> 8. Extend (zero-knowledge) E2EE to Instagram conversations.
+> 9. Extend (zero-knowledge) E2EE group chats in Messenger.
+
+
+> [!idea] Readers who work at other tech firms
+> Focus on changes with minimal technical burden or conflict with core company incentives. Start with easy wins like default settings changes. Those require no new engineering but affect >90\% of users who never change settings. 
+## Transfer workplaces from Slack to RocketChat
+
+Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
+
+Create a space which
+
+> [!warning] Still under construction
 # Do not yield to pressure or fear
 
 "It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"? 
 
 The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. _That's the entire reason that data brokers make money from your information_ - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
 
-Scenario: You go to a protest. [License Plate Readers log every car that drove by](https://www.brennancenter.org/our-work/research-reports/automatic-license-plate-readers-legal-status-and-policy-recommendations). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases. 
+Scenario: You go to a protest. [License Plate Readers log every car that drove by](). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases derived from driver's license photos. 
 
 When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or switch to the Brave web browser, or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak. 
 
 # New measures
-
-* Google home -> home automation green device
-
-  * Block phoning home using pihole
-
-  * Enable hardware-level mutes on the Google microphones
 
 * swap off of google maps (collects tons of data)
 
@@ -866,83 +931,31 @@ When you follow this guide, you obscure those digital spies and trackers. When y
 
   * <https://organicmaps.app/> %%
 
-# Thinking about
-
-* better email security? (make PGP available?)
-* google forms?
-  * none found yet
-* Google Meet E2E?
-  * Proton Mee%% t coming out in half a year probably
-
-Router and modem replacement in tier 2
-[https://routersecurity.org/ISProuters.php](https://routersecurity.org/ISProuters.php)
-
-* note that state actors buy data
-
 Communities need freedom of thought --- even fears can chill speech
 Slack -> RocketChat
 Discord -> Element.io
 <https://t2bot.io/discord/> ---  I already integrated the shard theory room.
 (Ideally decentralized so there isn't a central service which can ban people from the network)
 
-Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues) %%
-
-[ht%% tps://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3](https://discuss.privacyguides.net/t/what-should-i-know-about-bluetooth-tracking-as-an-activist/28216/3)
+Mobile hotspot: always use strong password, WPA3 protocol if available (check doesnt have compatibility issues) 
 
 [https://www.notus.org/technology/war-zone-surveillance-border-us](https://www.notus.org/technology/war-zone-surveillance-border-us)
 
 "One description of Weathered Security’s products online boasts that it can also track other signal emissions from key fobs, satellite receivers, low-powered radio chips in modern credit cards or passports, car tire sensors that monitor tire pressure and even medical devices. In an emailed response to a request for comment, the company said: “We do not have any issues with you reporting information obtained under FOIA.”"
 
-More theoretical --- any followup? [https://jacobsschool.ucsd.edu/news/release/3461?id=3461](https://jacobsschool.ucsd.edu/news/release/3461?id=3461)
-
 Hardening against police cracking your PIN or otherwise getting into your device?
-
-Home security cameras
-<https://secluso.com>
-![[https://assets.turntrout.co %%m/static/images/posts/privacy-20251013201115.avif]]
-
-
-
 
 TODO 
 1.  Search Engines - You cover browsers but not search engines. DuckDuckGo, Startpage, or Brave Search deserve mention as privacy-respecting alternatives to Google. 
 2. Legal Rights - Brief overview of what surveillance is legal, when you can refuse searches, when to invoke legal representation (especially relevant given your ICE/DHS focus).
-3. Privacy.com and cash
-4. Cost benefit table
+3. Cost benefit table
 
 
 
-%% read more at https://www.privacyguides.org/
-
-https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/
- %%
-> [!quote] On Tyranny: Twenty Lessons from the Twentieth Century
-> Do not obey in advance.
-> 
-> Most of the power of authoritarianism is freely given. In times like these, individuals think ahead about what a more repressive government will want, and then offer themselves without being asked. A citizen who adapts in this way is teaching power what it can do.
+read more at https://www.privacyguides.org/
 
 
 Apple maps data collected or covered by ADP?
 
 
-
-
-Apple has indicated that they are on track to make
-several changes to their WPS in order to better protect
-user privacy. At the time of writing, they have given AP
-operators the ability to opt out of inclusion in Apple’s
-WPS by appending the string _nomap to a Wi-Fi network’s
-SSID. This change brings it in line with Google’s WPS
-and WiGLE, which have also excluded SSIDs with _nomap(Google) and _nomap and _optout (WiGLE) since at least 2016. `https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf`
-
-> "We know that Apple is taking our report seriously," Rye said. "We are given to understand that they have one or more additional remediations in the queue, and we're hopeful that these remediations will help protect the privacy of access point owners that would never know to append "`_nomap`" to their SSID to prevent them from being included in Apple's geolocation database." `https://www.theregister.com/2024/05/23/apple_wifi_positioning_system/`
-
-`https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf`
-
-`https://www.gl-inet.com/blog/preventive-actions-to-safeguard-glinet-users-from-bssid-based-location-tracking/` GLINET routers already safe! 
-
-`https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D`
-
-
-
-   partiful?
+https://docs.proton.me/doc?mode=open&volumeId=TIeqFfjdsHhlzJvxtIgcdfdvt5r3SrhrdZjkFOOZ6DzwU0fsqjlDjmQiXkgdTZ9l6UOcBGL05KfQ_yGXWBXXSw%3D%3D&linkId=SMxS_l26I0zQfDC6agbuUzj1r5g8o4vE-6hvq7hYMaHgDFseaW4Y2mjxEZfGeviiMVXZW2G3ELhDXpkey-ZNQg%3D%3D
