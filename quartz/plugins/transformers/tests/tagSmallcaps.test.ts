@@ -47,6 +47,7 @@ describe("rehypeTagSmallcaps", () => {
     ["<p>MIRI-relevant math</p>", '<p><abbr class="small-caps">Miri</abbr>-relevant math</p>'],
     ["<p>E2EE encryption</p>", '<p><abbr class="small-caps">E2ee</abbr> encryption</p>'],
     ["<p>E2E testing</p>", "<p>E2E testing</p>"],
+    ["<p>TP-Link routers</p>", "<p>TP-Link routers</p>"],
     // Test all-caps phrases
     [
       "<p>I HATE YOU but YOU ARE SWEET-I LIKE YOU</p>",

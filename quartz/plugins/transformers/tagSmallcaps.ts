@@ -36,13 +36,24 @@ const allCapsChars = `${upperCapsChars}${lowerCapsChars}`
 const beforeWordBoundary = `(?<![${allCapsChars}\\w])`
 const afterWordBoundary = `(?![${allCapsChars}\\w])`
 
-// Lookahead to ensure at least 3 uppercase letters in the acronym (allows digits/separators between them)
-const upperDigitOrSeparator = `${upperCapsChars}\\d${smallCapsSeparators}`
-const checksAtLeast3Uppercase = `(?=[${upperDigitOrSeparator}]*[${upperCapsChars}][${upperDigitOrSeparator}]*[${upperCapsChars}][${upperDigitOrSeparator}]*[${upperCapsChars}])`
+// Pattern for acronyms with at least 3 uppercase letters (with digits/separators allowed between them)
+// Use explicit alternations to ensure we actually capture 3+ uppercase letters, not just look ahead for them
+const sep = `[\\d${smallCapsSeparators}]`
+const upper = `[${upperCapsChars}]`
+const upperOrDigit = `[${upperCapsChars}\\d]`
+// Optional continuation after the required 3 uppercase letters
+const continuation = `(?:${sep}${upperOrDigit}+)*`
+
+const threeUppercasePatterns = [
+  `${upper}{3,}${continuation}`, // ABC, ABCD, ABC-2, etc.
+  `${upper}{2}${sep}${upper}${upperOrDigit}*${continuation}`, // AB-C, AB-C2, etc.
+  `${upper}${sep}${upper}{2,}${continuation}`, // A-BC, A-BCD, etc.
+  `${upper}${sep}${upper}${sep}${upper}${upperOrDigit}*${continuation}`, // A-B-C, A-B-C2, etc.
+].join("|")
 
 // Update REGEX_ACRONYM to match sequences with uppercase characters (allowing digits/separators)
 export const REGEX_ACRONYM = new RegExp(
-  `${beforeWordBoundary}(?<acronym>${escapedAllowAcronyms}|${checksAtLeast3Uppercase}[${upperCapsChars}]+(?:[\\d${smallCapsSeparators}][${upperCapsChars}\\d]+)*)(?<suffix>[sx]?)${afterWordBoundary}`,
+  `${beforeWordBoundary}(?<acronym>${escapedAllowAcronyms}|${threeUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
 )
 
 export const REGEX_ABBREVIATION =
@@ -212,22 +223,21 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
     combinedRegex,
     (match: RegExpMatchArray) => {
       const matchText = match[0]
-      const shouldCapitalize = shouldCapitalizeMatch(match, node, index, ancestors)
 
       const whitelisted = isInAllowList(matchText)
-
+      // Return unchanged - no formatting
       if (!whitelisted && isRomanNumeral(matchText)) {
-        // Return unchanged - no formatting
         return { before: matchText, replacedMatch: "", after: "" }
       }
 
-      // 3. Check ignore list for numeric abbreviations (if not whitelisted)
+      // Check ignore list for numeric abbreviations (if not whitelisted)
       if (!whitelisted && shouldIgnoreNumericAbbreviation(matchText)) {
         return { before: matchText, replacedMatch: "", after: "" }
       }
 
       // Format the text based on match type
       const allCapsPhraseMatch = REGEX_ALL_CAPS_PHRASE.exec(matchText)
+      const shouldCapitalize = shouldCapitalizeMatch(match, node, index, ancestors)
       if (allCapsPhraseMatch?.groups) {
         const { phrase } = allCapsPhraseMatch.groups
         return {
@@ -257,7 +267,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         }
       }
 
-      // istanbul ignore next -- hard-to-trigger edge case
+      // istanbul ignore next -- shouldn't happen
       throw new Error(
         `Regular expression logic is broken; one of the regexes should match for ${matchText}`,
       )
