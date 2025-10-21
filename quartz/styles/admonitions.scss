@@ -228,7 +228,7 @@
 .admonition-title {
   display: flex;
   align-items: flex-start;
-  gap: $base-margin;
+  gap: calc(0.5 * $base-margin);
   margin: calc(1.5 * $base-margin) 0;
 
   --icon-size: 18px;
@@ -240,6 +240,7 @@
   & .fold-admonition-icon {
     width: var(--icon-size);
     height: var(--icon-size);
+    align-self: center;
     flex-shrink: 0;
     background-color: var(--color);
     mask-image: var(--admonition-icon-fold);

@@ -555,6 +555,7 @@ img.favicon {
 
   // Make logos white on dark mode
   &[src$="nips_cc.avif"],
+  &[src$="backblaze_com.avif"],
   &[src$="matsprogram_org.avif"],
   &[src$="proceedings_mlr_press.avif"] {
     :root[data-theme="dark"] & {
