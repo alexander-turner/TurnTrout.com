@@ -1163,6 +1163,74 @@ describe("Branch coverage tests", () => {
     const output = testMarkdownPlugins(input)
     expect(output).toContain(expectedContent)
   })
+
+  interface FloatRightTestCase {
+    name: string
+    input: string
+    shouldWrap: boolean
+    preservedContent: string
+  }
+
+  const floatRightCases: FloatRightTestCase[] = [
+    {
+      name: "wrap float-right in article",
+      input: '<article><div class="float-right">Content</div></article>',
+      shouldWrap: true,
+      preservedContent: '<div class="float-right">Content</div>',
+    },
+    {
+      name: "wrap float-right with additional classes",
+      input: '<article><div class="image float-right">Content</div></article>',
+      shouldWrap: true,
+      preservedContent: '<div class="image float-right">Content</div>',
+    },
+    {
+      name: "not wrap when not direct child of article",
+      input: '<div><div class="float-right">Content</div></div>',
+      shouldWrap: false,
+      preservedContent: '<div class="float-right">Content</div>',
+    },
+    {
+      name: "not wrap without float-right class",
+      input: '<article><div class="other-class">Content</div></article>',
+      shouldWrap: false,
+      preservedContent: '<div class="other-class">Content</div>',
+    },
+  ]
+
+  it.each(floatRightCases)("should $name", ({ input, shouldWrap, preservedContent }) => {
+    const { result } = testWithHtmlPlugins(input)
+    const hasFigure = result.includes("<figure>")
+    expect(hasFigure).toBe(shouldWrap)
+    expect(result).toContain(preservedContent)
+  })
+
+  interface FigureCountTestCase {
+    name: string
+    input: string
+    expectedCount: number
+  }
+
+  const figureCountCases: FigureCountTestCase[] = [
+    {
+      name: "multiple float-right elements",
+      input:
+        '<article><div class="float-right">First</div><p>Text</p><div class="float-right">Second</div></article>',
+      expectedCount: 2,
+    },
+    {
+      name: "nested article elements",
+      input:
+        '<article><div class="float-right">Outer</div><div><article><div class="float-right">Inner</div></article></div></article>',
+      expectedCount: 2,
+    },
+  ]
+
+  it.each(figureCountCases)("should handle $name correctly", ({ input, expectedCount }) => {
+    const { result } = testWithHtmlPlugins(input)
+    const figureCount = (result.match(/<figure>/g) || []).length
+    expect(figureCount).toBe(expectedCount)
+  })
 })
 
 describe("createYouTubeEmbed", () => {
