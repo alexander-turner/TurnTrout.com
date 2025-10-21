@@ -13,22 +13,24 @@ import type { QuartzTransformerPlugin } from "../types"
 import { hasClass } from "./utils"
 
 /**
- * Wraps an element node with a span wrapper of the specified class name, unless skipped.
+ * Wraps an element node with a wrapper element of the specified tag name and class name, unless skipped.
  *
  * @param node The element to wrap.
  * @param ancestors The list of ancestor Parent nodes, where the last element is the direct parent.
  * @param skipPredicate A predicate function to determine if wrapping should be skipped.
- * @param wrapperClassName The class name to apply to the wrapper span.
+ * @param wrapperTagName The tag name of the wrapper element (e.g., "span", "figure").
+ * @param wrapperClassName The class name to apply to the wrapper element (empty string for no class).
  */
 function wrapElement(
   node: Element,
   ancestors: Parent[],
   skipPredicate: (node: Element, ancestors: Parent[], wrapperClassName: string) => boolean,
+  wrapperTagName: string,
   wrapperClassName: string,
 ): void {
   /* istanbul ignore next */
   if (ancestors.length === 0) {
-    throw new Error("Video element is expected to have an existing parent element in the AST.")
+    throw new Error("Element is expected to have an existing parent element in the AST.")
   }
 
   if (skipPredicate(node, ancestors, wrapperClassName)) {
@@ -39,12 +41,14 @@ function wrapElement(
   const existsInParentChildren = index !== -1
   /* istanbul ignore else */
   if (existsInParentChildren) {
-    const wrapperSpan: Element = h("span", { className: [wrapperClassName] }, [node])
+    const wrapper: Element = wrapperClassName
+      ? h(wrapperTagName, { className: [wrapperClassName] }, [node])
+      : h(wrapperTagName, [node])
 
-    ancestors[ancestors.length - 1].children.splice(index, 1, wrapperSpan)
+    ancestors[ancestors.length - 1].children.splice(index, 1, wrapper)
   } else {
     /* istanbul ignore next */
-    throw new Error("Video element is not actually a child of its claimed parent.")
+    throw new Error("Element is not actually a child of its claimed parent.")
   }
 }
 
@@ -70,16 +74,75 @@ function skipNodeForVideo(
  * Wraps a video node in a <span class="video-container"> if it is not already in one.
  */
 function wrapVideo(videoNode: Element, ancestors: Parent[]): void {
-  wrapElement(videoNode, ancestors, skipNodeForVideo, "video-container")
+  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container")
 }
 
 /**
- * Rehype plugin that visits video elements and wraps them in a
- * <span class="video-container"> if they are not already in one.
+ * Determines if an element with float-right should be skipped for wrapping.
+ * Skips if:
+ * - Element doesn't have float-right class
+ * - Parent is already a figure
+ *
+ * @param element The element to check.
+ * @param ancestors The list of ancestor Parent nodes.
+ */
+function skipNodeForFloatRight(element: Element, ancestors: Parent[]): boolean {
+  if (!hasClass(element, "float-right")) {
+    return true
+  }
+
+  const directParent = ancestors[ancestors.length - 1] as Element
+
+  // Skip if already wrapped in figure
+  return directParent?.tagName === "figure"
+}
+
+function hasAncestorFigure(ancestors: Parent[]): boolean {
+  return ancestors.some((ancestor) => (ancestor as Element).tagName === "figure")
+}
+
+/**
+ * Wraps elements with float-right class in a <figure>.
+ * If an element contains a direct child with float-right, wraps the parent instead.
+ */
+function wrapFloatRight(element: Element, ancestors: Parent[]): void {
+  // Skip if already inside a figure
+  if (hasAncestorFigure(ancestors) || element.tagName === "figure") {
+    return
+  }
+
+  // Check if any direct child has float-right class
+  const hasFloatRightChild = element.children.some(
+    (child) => child.type === "element" && hasClass(child, "float-right"),
+  )
+
+  // Wrap parents that contain float-right children (e.g., span.video-container > video.float-right)
+  if (hasFloatRightChild) {
+    wrapElement(element, ancestors, () => false, "figure", "")
+    return
+  }
+
+  // Wrap standalone float-right elements ONLY if their parent is root-level
+  // (Otherwise, the parent will be wrapped when visited)
+  if (hasClass(element, "float-right")) {
+    const directParent = ancestors[ancestors.length - 1]
+    const parentIsRootLevel = directParent?.type === "root"
+
+    if (parentIsRootLevel) {
+      wrapElement(element, ancestors, skipNodeForFloatRight, "figure", "")
+    }
+  }
+}
+
+/**
+ * Rehype plugin that visits elements and wraps them appropriately.
  */
 const rehypeWrapNakedElements: Plugin<[], Root> = () => {
   return (tree: Root) => {
+    // First wrap naked videos in video-container
     visitParents(tree, "element", wrapVideo)
+    // Then wrap .float-right elements (or their parents) in figure
+    visitParents(tree, "element", wrapFloatRight)
   }
 }
 

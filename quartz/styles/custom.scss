@@ -440,7 +440,7 @@ figcaption,
 }
 
 .float-right {
-  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(3 * $base-margin);
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(2 * $base-margin);
 
   & img,
   img.float-right {
@@ -695,9 +695,9 @@ video {
 
   article > p &,
   article > &,
-  article > figure &,
-  .video-container &,
-  figure > & {
+  article > figure &:not(.float-right),
+  .video-container &:not(.float-right),
+  figure > &:not(.float-right) {
     margin-left: auto;
     margin-right: auto;
     display: block;

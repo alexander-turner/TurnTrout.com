@@ -22,7 +22,6 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
 import { slugify as slugAnchor } from "./gfm"
-import { hasClass } from "./utils"
 
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
@@ -657,28 +656,6 @@ function unwrapSingleVideoElements(tree: HtmlRoot): void {
   })
 }
 
-/** Finds elements with class "float-right" that are direct children of article and wraps them in figure tags. */
-function wrapFloatRightInFigure(tree: HtmlRoot): void {
-  visit(tree, "element", (node, index, parent) => {
-    if (
-      index !== undefined &&
-      parent?.type === "element" &&
-      parent.tagName === "article" &&
-      node.type === "element" &&
-      hasClass(node, "float-right")
-    ) {
-      const figure: Element = {
-        type: "element",
-        tagName: "figure",
-        properties: {},
-        children: [node],
-      }
-      parent.children.splice(index, 1, figure)
-      return SKIP
-    }
-  })
-}
-
 /** Creates markdown processing plugins based on configuration. */
 export function markdownPlugins(opts: OFMOptions): PluggableList {
   const plugins: PluggableList = []
@@ -812,13 +789,6 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
       plugins.push(() => {
         return (tree: HtmlRoot) => {
           unwrapSingleVideoElements(tree)
-        }
-      })
-
-      // wrap .float-right elements in article in figure tags
-      plugins.push(() => {
-        return (tree: HtmlRoot) => {
-          wrapFloatRightInFigure(tree)
         }
       })
 

@@ -342,4 +342,81 @@ describe("WrapNakedElements Plugin Tests", () => {
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
     })
   })
+
+  describe("Float-right Wrapping in Figure Tags", () => {
+    interface FloatRightTestCase {
+      name: string
+      input: string
+      shouldWrap: boolean
+      preservedContent: string
+    }
+
+    const floatRightCases: FloatRightTestCase[] = [
+      {
+        name: "wrap standalone float-right element",
+        input: '<div class="float-right">Content</div>',
+        shouldWrap: true,
+        preservedContent: '<div class="float-right">Content</div>',
+      },
+      {
+        name: "wrap parent when child has float-right",
+        input: '<div><span class="float-right">Content</span></div>',
+        shouldWrap: true,
+        preservedContent: '<span class="float-right">Content</span>',
+      },
+      {
+        name: "wrap video-container when video has float-right",
+        input: '<video class="float-right" width="316" height="178">Content</video>',
+        shouldWrap: true,
+        preservedContent: '<span class="video-container"><video class="float-right"',
+      },
+      {
+        name: "not wrap without float-right class",
+        input: '<div class="other-class">Content</div>',
+        shouldWrap: false,
+        preservedContent: '<div class="other-class">Content</div>',
+      },
+      {
+        name: "not wrap figure with float-right content",
+        input: '<figure><div class="float-right">Content</div></figure>',
+        shouldWrap: false,
+        preservedContent: '<figure><div class="float-right">Content</div></figure>',
+      },
+    ]
+
+    it.each(floatRightCases)("should $name", ({ input, shouldWrap, preservedContent }) => {
+      const result = testWrapNakedElementsHTML(input)
+      const figureCount = (result.match(/<figure>/g) || []).length
+      const inputFigureCount = (input.match(/<figure>/g) || []).length
+      const addedFigure = figureCount > inputFigureCount
+      expect(addedFigure).toBe(shouldWrap)
+      expect(result).toContain(preservedContent)
+    })
+
+    interface FigureCountTestCase {
+      name: string
+      input: string
+      expectedCount: number
+    }
+
+    const figureCountCases: FigureCountTestCase[] = [
+      {
+        name: "multiple standalone float-right elements",
+        input:
+          '<div class="float-right">First</div><p>Text</p><div class="float-right">Second</div>',
+        expectedCount: 2,
+      },
+      {
+        name: "parent with float-right child",
+        input: '<div><span class="float-right">Inner</span></div>',
+        expectedCount: 1,
+      },
+    ]
+
+    it.each(figureCountCases)("should handle $name correctly", ({ input, expectedCount }) => {
+      const result = testWrapNakedElementsHTML(input)
+      const figureCount = (result.match(/<figure>/g) || []).length
+      expect(figureCount).toBe(expectedCount)
+    })
+  })
 })
