@@ -35,7 +35,7 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
  Let's start now.
 
 > [!warning]  I'm not a cybersecurity or privacy expert
->  My day job is [AI alignment research](/research) and [I have a PhD in computer science](/alignment-phd),  but I'm not an expert in this particular field. Just consider this guide to be an informed starting point.
+>  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). (I'm only expressing my own views, though.) [I have a PhD in computer science](/alignment-phd),  but I'm not an expert in this particular field. Just consider this guide to be an informed starting point.
 
 > [!warning] Not a guide for people at high risk of targeted surveillance
 > Please refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
@@ -119,7 +119,6 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
  Unfortunately, many sites don't support YubiKey.  Whenever possible, prefer application-based authentication in its stead. Texts and emails are not encrypted by default, which puts you at slight risk from the state and from sophisticated criminals.
 
 As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
-
 1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
 
 ## Keep your OS up to date
@@ -163,7 +162,7 @@ The metadata alone reveal a detailed picture of your online life. A VPN prevents
 
 I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for a year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
-As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), I recommend migrating to the Proton ecosystem. Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Drive (E2EE and secure) instead of Google Drive (a government could compel Google to decrypt your data, even though Google likely secures your data quite well).
+As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
 * [ ] Create a Proton account and store the credentials in your Bitwarden
 * [ ] [Download and run ProtonVPN](https://protonvpn.com/)
@@ -231,7 +230,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 
 ## Use a privacy-centered search engine
 
-Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduckgo.com/) are strong engines. That said, neither is as good as Google at surfacing the result you want. If you don't get what you want the first time, consider sending it over to Google. You can just start your search with `!g` to send your query to Google.
+Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduckgo.com/) are strong engines. That said, neither is as good as Google at surfacing the result you want. If you don't get what you want the first time, consider sending it over to Google by beginning your query with `!g`.
 
 ## Use Signal over Facebook Messenger, WhatsApp, texting, or phone calls
 
@@ -313,7 +312,7 @@ Services like [Privacy.com](https://privacy.com) generate single-use or merchant
 >
 ## Keep emergency cash reserves
 
-The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (those who publicly disagree with the Trump administration) will have trouble accessing their money:
+The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
 
 > [!quote] Stephen Miller, White House Deputy Chief of Staff for Policy
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
@@ -364,7 +363,7 @@ The following steps stop your phone from being passively detected by Bluetooth b
 2. **Turn off "Web & App Activity".** Even with Location History off, Google will still save your location every time you, for example, search for a place in Google Maps or check the weather. This "activity" is saved along with your location.
    1. [ ] Visit the same "Data & privacy menu" as above. Tap "Web & App Activity." Turn it off.
    2. [ ] Uncheck any box that says "Include Chrome history and activity from sites, apps, and devices that use Google services."
-3. **Disable nosy location services.** For example, when Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby beacons any time an app refreshes location services](https://qz.com/1169760/phone-data).
+3. **Disable location services.** For example, when Bluetooth scanning is enabled (even with Bluetooth "off"), [Android phones report lists of nearby beacons any time an app refreshes location services](https://qz.com/1169760/phone-data).
    1. [ ] Search for "Bluetooth scanning" or "Improve accuracy" in your settings and disable it. This setting does not affect your ability to use the actual Bluetooth feature. You may notice a minor decrease in location accuracy.
    2. [ ] Search for "Wi-Fi Scanning" and disable it.
    3. [ ] Search for "Location Accuracy" and disable it.
@@ -471,7 +470,7 @@ Subtitle: If it's on the cloud and not E2EE, assume the government can read it.
 > [!quote] [Yale Law School](https://law.yale.edu/mfia/case-disclosed/fbis-secret-gag-orders-challenged-ninth-circuit)
 > Not only does the Government have the power to issue secret subpoenas demanding your personal information from private companies—it has the power to prohibit those companies from speaking about what has taken place.
 
-**It doesn't matter how good the security and data handling practices are. Google and Apple have amazing security. However, if a company can decrypt your data, the government can force the company to decrypt your data. You wouldn't be able to do anything about it**.
+It doesn't matter how good a company's security and data handling practices are. Google and Apple have amazing security. If a company can decrypt your data, the government can force the company to decrypt your data. It's not the company's fault --- they would just have to comply.
 
 > [!quote] [The CLOUD Act: A Dangerous Expansion of Police Snooping on Cross-Border Data](https://www.eff.org/deeplinks/2018/02/cloud-act-dangerous-expansion-police-snooping-cross-border-data)
 > The Clarifying Overseas Use of Data (CLOUD) Act... creates an explicit provision for U.S. law enforcement (from a local police department to federal agents in ICE) to access “the contents of a wire or electronic communication and any record or other information” about a person regardless of where they live or where that information is located on the globe. In other words, U.S. police could compel a service provider—like Google, Facebook, or Snapchat—to hand over a user’s content and metadata, even if it is stored in a foreign country, without following that foreign country’s privacy laws.
@@ -492,7 +491,7 @@ Let's secure your data.
 
 ### Store your photos in Ente
 
-I love [Ente](ente.io). It has so much: fully E2EE, open source, easy import from Google and iCloud Photos, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
+I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
  Plus, now all of my 23,000 photos are in one place.
 
@@ -678,23 +677,16 @@ Mac is way, way, way more private than Windows. I use a Mac for convenience, but
 
 ## Control smart home devices with Home Assistant
 
-I love my Google Home setup. Problem is, the microphones are _always on_ (though Google clarifies that the devices only send data after activation via "Hey Google...").   In any case, I want more peace of mind. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.  
+I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251019175611.avif]]
-
-* [ ]  Enable the hardware mute on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+* [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
   * [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
 * [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
 * [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
 
 ## Beware popular security cameras
 
-Apparently many security camera solutions are horrible for privacy.
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251013201115.avif]]
-Figure: From [`secluso.com`](https://secluso.com/), an under-development open source security camera system. Sadly, it's not available yet.
-
-Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
+Apparently many security camera solutions are horrible for privacy. Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
 
 ## Run an Apple TV instead of your normal smart TV
 
@@ -733,9 +725,7 @@ Eventually I'll likely be able to run a local model on my MacBook Pro but with t
 
 OpenAI and Google offer the ability to turn off chat history (with limited-time retention for safety purposes). For Anthropic's Claude, you have to enable "incognito chat" before each session.
 
-As I work at Google DeepMind, I use Gemini the most. If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. I would still theoretically be vulnerable to an ongoing "AI-tap", where the government compelled Google to release my conversations on an ongoing basis. Probably there are more mundane privacy concerns I'm overlooking as well.
-
-Speaking only for myself and not on behalf of Google DeepMind, my guess is that AI companies _will_ comply with subpoenas for your data. Using incognito helps, but only local models are truly private and free of potential surveillance.
+I use Gemini the most. If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. I would still theoretically be vulnerable to an ongoing "AI-tap", where the government compelled Google to release my conversations on an ongoing basis. Probably there are more mundane privacy concerns I'm overlooking as well.
 
 > [!question]- Technical question: Why can't LLM conversations be E2EE?
 > This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
@@ -885,12 +875,15 @@ If you share a photo but don't want to share your location, obscure  important c
 
 # What I haven't covered
 
+(This section is basically my TODO list, wont go in final post)
 * Alternatives to:
   * Google Forms
   * Maps
   * Google Meet (Proton Meet coming out in half a year probably)
-* Alternative front-ends for major websites
+* Alternative front-ends for major websites (e.g. Youtube)
 * Discord -> Element.io
+* Disabling Siri, minimize what syncs to iCloud
+* recommending Linux harder
 * Slack -> Rocket.Chat
 * Know your rights --- important but out of scope? <https://www.ilrc.org/sites/default/files/documents/red_card-self_srv-english.pdf>
 
@@ -928,8 +921,6 @@ TODO: Check how prevalent. Does this inform what high-risk people should carry?
 
 Securing even one of these timely improvements would be a _significant win for protecting privacy and freedom across the world._ I've drafted suggestions which shouldn't conflict with core business models.
 
-None of these ideas are new to internal privacy engineers at these companies.
-
 > [!idea]- Readers who work at Apple
 >
 > By order of importance:
@@ -945,13 +936,13 @@ None of these ideas are new to internal privacy engineers at these companies.
 > 5. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/).
 
 > [!idea]- Readers who work at Meta
-> 6. Migrate WhatsApp from E2EE to zero-knowledge encryption to protect metadata. If not, more clearly warn users that their metadata are not E2EE.
-> 7. Encrypt WhatsApp backups by default (prompting the user to make an authentication key). Many users are unaware that their backups are unencrypted.
-> 8. Extend (zero-knowledge) E2EE to Instagram conversations.
-> 9. Extend (zero-knowledge) E2EE group chats in Messenger.
+> 1. Migrate WhatsApp from E2EE to zero-knowledge encryption to protect metadata. If not, more clearly warn users that their metadata are not E2EE.
+> 2. Encrypt WhatsApp backups by default (prompting the user to make an authentication key). Many users are unaware that their backups are unencrypted.
+> 3. Extend (zero-knowledge) E2EE to Instagram conversations.
+> 4. Extend (zero-knowledge) E2EE group chats in Messenger.
 
 > [!idea] Readers who work at other tech firms
-> Focus on changes with minimal technical burden or conflict with core company incentives. Start with easy wins like default settings changes. Those require no new engineering but affect >90\% of users who never change settings.
+> Focus on changes with minimal technical burden or conflict with core company incentives. Start with easy wins like default settings changes. Those require no new engineering but affect the large set of users who never change settings.
 >
 ## Transfer workplaces from Slack to RocketChat
 
