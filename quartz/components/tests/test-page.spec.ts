@@ -247,13 +247,26 @@ test.describe("Table of contents", () => {
     await headerLocator.scrollIntoViewIfNeeded()
     const tocHighlightLocator = page.locator("#table-of-contents .active").first()
 
+    const initialHighlightText = await tocHighlightLocator.textContent()
+    expect(initialHighlightText).not.toBeNull()
+
     const spoilerHeading = page.locator("#spoilers").first()
     await spoilerHeading.scrollIntoViewIfNeeded()
+
+    // Wait for scroll event to fire and TOC to update
+    await page.waitForFunction(
+      (initialText) => {
+        const activeElement = document.querySelector("#table-of-contents .active")
+        return activeElement && activeElement.textContent !== initialText
+      },
+      initialHighlightText,
+      { timeout: 5000 },
+    )
 
     const highlightText = await tocHighlightLocator.textContent()
     expect(highlightText).not.toBeNull()
     // skipcq: JS-0339
-    await expect(tocHighlightLocator).not.toHaveText(highlightText!)
+    await expect(tocHighlightLocator).not.toHaveText(initialHighlightText!)
   })
 })
 
