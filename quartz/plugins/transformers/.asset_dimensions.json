@@ -5158,5 +5158,157 @@
   "./asset_staging/privacy-20251018230933.png": {
     "width": 3624,
     "height": 2438
+  },
+  "/static/images/external-favicons/search_brave_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/duckduckgo_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/scss_tcd_ie.png": {
+    "width": 16,
+    "height": 16
+  },
+  "/static/images/external-favicons/auroraoss_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/privacy_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/thebulwark_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/tomsguide_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif": {
+    "width": 1634,
+    "height": 1339
+  },
+  "/static/images/external-favicons/rebecca-ricks_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/paypal_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/denverpost_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/etesync_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251018230933.avif": {
+    "width": 3624,
+    "height": 2438
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deflock_me.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/home-assistant_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251019175611.avif": {
+    "width": 3064,
+    "height": 1904
+  },
+  "/static/images/external-favicons/reolink_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/cybersecuritydive_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/stockholmcf_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/ifade_org_tr.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/ilrc_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/search_brave_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/scss_tcd_ie.avif": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/auroraoss_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/privacy_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/thebulwark_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/tomsguide_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/rebecca-ricks_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/paypal_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/denverpost_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/etesync_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/home-assistant_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/reolink_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cybersecuritydive_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/stockholmcf_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ifade_org_tr.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ilrc_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251020182929.mp4": {
+    "width": 316,
+    "height": 178
   }
 }
