@@ -106,12 +106,10 @@ function hasAncestorFigure(ancestors: Parent[]): boolean {
  * If an element contains a direct child with float-right, wraps the parent instead.
  */
 function wrapFloatRight(element: Element, ancestors: Parent[]): void {
-  // Skip if already inside a figure
   if (hasAncestorFigure(ancestors) || element.tagName === "figure") {
     return
   }
 
-  // Check if any direct child has float-right class
   const hasFloatRightChild = element.children.some(
     (child) => child.type === "element" && hasClass(child, "float-right"),
   )
