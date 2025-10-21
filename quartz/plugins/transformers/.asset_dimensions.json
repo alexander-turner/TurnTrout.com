@@ -5314,5 +5314,13 @@
   "https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4": {
     "width": 316,
     "height": 178
+  },
+  "/static/images/external-favicons/linuxmint_com.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/pcmag_com.png": {
+    "width": 64,
+    "height": 64
   }
 }
