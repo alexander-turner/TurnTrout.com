@@ -351,8 +351,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
             rf"animation\.gif\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
             rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
             rf"animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
-            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"'
-            rf"\g<attributes_parens>\g<attributes_brackets>>"
+            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"___ATTRIBUTES_PLACEHOLDER___>'
             rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" '
             rf'type="video/mp4; codecs=hvc1">'
             rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" '
@@ -370,8 +369,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
             rf"video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
             + ext.lstrip(".")
             + r"\")?(?P<endVideoTagInfo>[^>]*(?<!/))(?:/>|></video>)",
-            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>"'
-            r"\g<attributes_parens>\g<attributes_brackets>>"
+            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>"___ATTRIBUTES_PLACEHOLDER___>'
             r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" '
             r'type="video/mp4; codecs=hvc1">'
             r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" '

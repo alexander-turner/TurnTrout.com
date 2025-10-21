@@ -56,9 +56,6 @@ def _parse_curly_brace_attributes(attr_string: str) -> str:
             # Key-value pair: width=50% -> width="50%"
             key, value = part.split("=", 1)
             attributes.append(f'{key}="{value}"')
-        else:
-            # Unknown format, skip
-            continue
 
     if attributes:
         return " " + " ".join(attributes)
@@ -119,19 +116,19 @@ def _video_original_pattern(input_file: Path) -> str:
 
 
 def _video_replacement_pattern(input_file: Path) -> str:
-    # Combine all possible attribute capture groups
-    all_attributes = r"\g<attributes_parens>\g<attributes_brackets>"
+    # Use a placeholder that will be replaced later with parsed attributes
+    attributes_placeholder = "___ATTRIBUTES_PLACEHOLDER___"
 
     if input_file.suffix == ".gif":
         early_replacement_pattern = (
             # Add specific attributes for GIF autoplay
-            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"{all_attributes}>'
+            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"{attributes_placeholder}>'
         )
     else:
         early_replacement_pattern = (
             # Preserve attributes captured from the original video tag
             r"<video \g<earlyTagInfo>\g<tagInfo>"
-            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"{all_attributes}>'
+            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"{attributes_placeholder}>'
         )
 
     # Combine all possible link capture groups
@@ -185,6 +182,7 @@ def _replace_content(
         )
 
         # Parse curly brace attributes and convert to HTML attributes
+        html_attrs = ""
         try:
             attr_parens = match.group("attributes_parens") or ""
             attr_brackets = match.group("attributes_brackets") or ""
@@ -192,13 +190,13 @@ def _replace_content(
 
             if combined_attrs:
                 html_attrs = _parse_curly_brace_attributes(combined_attrs)
-                # Replace the curly brace syntax with parsed HTML attributes
-                replaced_text = replaced_text.replace(
-                    r"\g<attributes_parens>\g<attributes_brackets>", html_attrs
-                )
         except IndexError:
-            # No attribute groups in this pattern (e.g., HTML tag patterns)
             pass
+        finally:
+            # Replace the placeholder with parsed HTML attributes
+            replaced_text = replaced_text.replace(
+                "___ATTRIBUTES_PLACEHOLDER___", html_attrs
+            )
 
         if not original_alt_was_empty:
             replaced_text = replaced_text.replace('alt=""', "")
