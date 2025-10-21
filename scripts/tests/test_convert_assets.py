@@ -78,6 +78,112 @@ def test_video_conversion(ext: str, setup_test_env):
     assert '<source src="static/asset.webm" type="video/webm">' in file_content
 
 
+@pytest.mark.parametrize(
+    "input_attrs,expected_output",
+    [
+        ("{.float-right}", ' class="float-right"'),
+        ("{width=50%}", ' width="50%"'),
+        ("{width=.5}", ' width=".5"'),
+        ("{#my-video}", ' id="my-video"'),
+        ("{.class1 .class2}", ' class="class1" class="class2"'),
+        ("{.float-right width=50%}", ' class="float-right" width="50%"'),
+        ("{}", ""),
+        ("", ""),
+        ("  ", ""),
+    ],
+)
+def test_parse_curly_brace_attributes(input_attrs: str, expected_output: str):
+    result = convert_assets._parse_curly_brace_attributes(input_attrs)
+    assert result == expected_output
+
+
+@pytest.mark.parametrize(
+    "markdown_syntax,expected_html_attrs",
+    [
+        ("![alt text](static/video.mp4){width=.5}", 'width=".5"'),
+        ("[[static/video.mp4]]{height=200px}", 'height="200px"'),
+        ("![](static/video.mp4){width=50%}", 'width="50%"'),
+        ("[[static/video.mp4]]{.float-right}", 'class="float-right"'),
+        ("![](static/video.mp4){#my-video}", 'id="my-video"'),
+    ],
+)
+def test_video_conversion_preserves_attributes(
+    setup_test_env, markdown_syntax: str, expected_html_attrs: str
+):
+    test_dir = Path(setup_test_env)
+    asset_path = test_dir / "quartz" / "static" / "video.mp4"
+    content_path = test_dir / "website_content" / "video_with_attrs.md"
+
+    test_utils.create_test_video(asset_path)
+    content_path.write_text(markdown_syntax)
+
+    convert_assets.convert_asset(
+        asset_path, md_references_dir=content_path.parent
+    )
+
+    file_content = content_path.read_text()
+    assert expected_html_attrs in file_content
+    assert (
+        '<source src="static/video.mp4" type="video/mp4; codecs=hvc1">'
+        in file_content
+    )
+    assert '<source src="static/video.webm" type="video/webm">' in file_content
+
+
+def test_video_conversion_with_attributes_end_to_end(setup_test_env):
+    """End-to-end test: markdown with attributes -> video tag with parsed HTML attributes."""
+    test_dir = Path(setup_test_env)
+    asset_path = test_dir / "quartz" / "static" / "demo.mp4"
+    content_path = test_dir / "website_content" / "demo.md"
+
+    test_utils.create_test_video(asset_path)
+
+    # Test multiple attribute syntaxes in one file
+    initial_content = """
+# Demo Page
+
+Here's a video with class:
+![[static/demo.mp4]]{.float-right}
+
+And one with dimensions:
+![Video demo](static/demo.mp4){width=500px height=300px}
+
+And one with an ID:
+[[static/demo.mp4]]{#video-demo}
+"""
+    content_path.write_text(initial_content)
+
+    convert_assets.convert_asset(
+        asset_path, md_references_dir=content_path.parent
+    )
+
+    result = content_path.read_text()
+
+    # Verify class attribute was parsed correctly
+    assert 'class="float-right"' in result
+    assert "{.float-right}" not in result
+
+    # Verify dimension attributes were parsed correctly
+    assert 'width="500px"' in result
+    assert 'height="300px"' in result
+    assert "{width=500px height=300px}" not in result
+
+    # Verify ID attribute was parsed correctly
+    assert 'id="video-demo"' in result
+    assert "{#video-demo}" not in result
+
+    # Verify video sources are present
+    assert (
+        '<source src="static/demo.mp4" type="video/mp4; codecs=hvc1">'
+        in result
+    )
+    assert '<source src="static/demo.webm" type="video/webm">' in result
+
+    # Verify the structure has video tags
+    assert "<video" in result
+    assert "</video>" in result
+
+
 @pytest.mark.parametrize("remove_originals", [True, False])
 def test_remove_source_files(setup_test_env, remove_originals):
     asset_path = Path(setup_test_env) / "quartz" / "static" / "asset.jpg"
@@ -240,12 +346,13 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
         (
             Path("animation.gif"),
             rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
-            rf"animation\.gif\)|"
+            rf"animation\.gif\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
-            rf"animation\.gif\]\]|"
+            rf"animation\.gif\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
             rf"<img (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
             rf"animation\.gif\"(?P<tagInfo>[^>]*(?<!/))(?P<endVideoTagInfo>)/?>",
-            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>">'
+            rf'<video {convert_assets.GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"'
+            rf"\g<attributes_parens>\g<attributes_brackets>>"
             rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.mp4" '
             rf'type="video/mp4; codecs=hvc1">'
             rf'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>animation.webm" '
@@ -256,14 +363,15 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
         (
             Path(f"video{ext}"),
             rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
-            rf"video\{ext}\)|"
+            rf"video\{ext}\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
-            rf"video\{ext}\]\]|"
+            rf"video\{ext}\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
             rf"<video (?P<earlyTagInfo>[^>]*)src=\"{_ASSET_PATTERN}(?P<link_tag>[^\)\]\"]*)"
             rf"video\{ext}\"(?P<tagInfo>[^>]*)(?:type=\"video/"
             + ext.lstrip(".")
             + r"\")?(?P<endVideoTagInfo>[^>]*(?<!/))(?:/>|></video>)",
-            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>">'
+            r'<video \g<earlyTagInfo>\g<tagInfo>\g<endVideoTagInfo> alt="\g<markdown_alt_text>"'
+            r"\g<attributes_parens>\g<attributes_brackets>>"
             r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.mp4" '
             r'type="video/mp4; codecs=hvc1">'
             r'<source src="\g<link_parens>\g<link_brackets>\g<link_tag>video.webm" '
@@ -574,6 +682,44 @@ def test_video_asset_staging_paths(
                 "earlyTagInfo": None,
                 "tagInfo": None,
                 "endVideoTagInfo": None,
+            },
+        ),
+        # Markdown image syntax with attributes
+        (
+            "![](/asset_staging/static/test.gif){width=.5}",
+            {
+                "link_parens": "static/",
+                "link_tag": None,
+                "earlyTagInfo": None,
+                "tagInfo": None,
+                "markdown_alt_text": "",
+                "endVideoTagInfo": None,
+                "attributes_parens": "{width=.5}",
+            },
+        ),
+        # Markdown image syntax with alt text and attributes
+        (
+            "![alt text](/asset_staging/static/test.gif){width=50%}",
+            {
+                "markdown_alt_text": "alt text",
+                "link_parens": "static/",
+                "link_tag": None,
+                "earlyTagInfo": None,
+                "tagInfo": None,
+                "endVideoTagInfo": None,
+                "attributes_parens": "{width=50%}",
+            },
+        ),
+        # Wiki-link syntax with attributes
+        (
+            "[[/asset_staging/static/test.gif]]{height=200px}",
+            {
+                "link_brackets": "static/",
+                "link_tag": None,
+                "earlyTagInfo": None,
+                "tagInfo": None,
+                "endVideoTagInfo": None,
+                "attributes_brackets": "{height=200px}",
             },
         ),
     ],

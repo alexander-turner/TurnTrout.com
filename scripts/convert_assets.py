@@ -17,6 +17,54 @@ ASSET_STAGING_PATTERN: str = r"(?:(?:\.?/)?asset_staging/)?"
 GIF_ATTRIBUTES: str = r"autoplay loop muted playsinline"
 
 
+def _parse_curly_brace_attributes(attr_string: str) -> str:
+    """
+    Parse curly brace attributes like {.class} or {width=50%} into HTML
+    attributes.
+
+    Args:
+        attr_string: String like "{.float-right}" or "{width=50%}"
+
+    Returns:
+        HTML attribute string like ' class="float-right"' or ' width="50%"'
+    """
+    if not attr_string or not attr_string.strip():
+        return ""
+
+    # Remove outer curly braces
+    content = attr_string.strip().strip("{}")
+    if not content:
+        return ""
+
+    attributes = []
+
+    # Split by whitespace to handle multiple attributes
+    for part in content.split():
+        part = part.strip()
+        if not part:
+            continue
+
+        if part.startswith("."):
+            # Class shorthand: .float-right -> class="float-right"
+            class_name = part[1:]
+            attributes.append(f'class="{class_name}"')
+        elif part.startswith("#"):
+            # ID shorthand: #myid -> id="myid"
+            id_name = part[1:]
+            attributes.append(f'id="{id_name}"')
+        elif "=" in part:
+            # Key-value pair: width=50% -> width="50%"
+            key, value = part.split("=", 1)
+            attributes.append(f'{key}="{value}"')
+        else:
+            # Unknown format, skip
+            continue
+
+    if attributes:
+        return " " + " ".join(attributes)
+    return ""
+
+
 def _video_original_pattern(input_file: Path) -> str:
     # create named capture groups for different link patterns
     def link_pattern_fn(tag: str) -> str:
@@ -24,16 +72,18 @@ def _video_original_pattern(input_file: Path) -> str:
 
     input_file_pattern: str = rf"{input_file.stem}\{input_file.suffix}"
 
-    # Pattern for markdown image syntax: ![alt text](link)
+    # Pattern for markdown image syntax: ![alt text](link){attributes}
     parens_pattern: str = (
         rf"\!?\[(?P<markdown_alt_text>.*?)\]\({ASSET_STAGING_PATTERN}"
         rf"{link_pattern_fn('parens')}{input_file_pattern}\)"
+        r"(?P<attributes_parens>\{[^}]*\})?"
     )
 
-    # Pattern for wiki-link syntax: ![[link]]
+    # Pattern for wiki-link syntax: ![[link]]{attributes}
     brackets_pattern: str = (
         rf"\!?\[\[{ASSET_STAGING_PATTERN}"
         rf"{link_pattern_fn('brackets')}{input_file_pattern}\]\]"
+        r"(?P<attributes_brackets>\{[^}]*\})?"
     )
 
     # Link pattern for HTML tags
@@ -69,16 +119,19 @@ def _video_original_pattern(input_file: Path) -> str:
 
 
 def _video_replacement_pattern(input_file: Path) -> str:
+    # Combine all possible attribute capture groups
+    all_attributes = r"\g<attributes_parens>\g<attributes_brackets>"
+
     if input_file.suffix == ".gif":
         early_replacement_pattern = (
             # Add specific attributes for GIF autoplay
-            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>">'
+            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"{all_attributes}>'
         )
     else:
         early_replacement_pattern = (
             # Preserve attributes captured from the original video tag
             r"<video \g<earlyTagInfo>\g<tagInfo>"
-            r'\g<endVideoTagInfo> alt="\g<markdown_alt_text>">'
+            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"{all_attributes}>'
         )
 
     # Combine all possible link capture groups
@@ -130,6 +183,22 @@ def _replace_content(
         replaced_text = re.sub(
             original_pattern, replacement_pattern, matched_text
         )
+
+        # Parse curly brace attributes and convert to HTML attributes
+        try:
+            attr_parens = match.group("attributes_parens") or ""
+            attr_brackets = match.group("attributes_brackets") or ""
+            combined_attrs = attr_parens or attr_brackets
+
+            if combined_attrs:
+                html_attrs = _parse_curly_brace_attributes(combined_attrs)
+                # Replace the curly brace syntax with parsed HTML attributes
+                replaced_text = replaced_text.replace(
+                    r"\g<attributes_parens>\g<attributes_brackets>", html_attrs
+                )
+        except IndexError:
+            # No attribute groups in this pattern (e.g., HTML tag patterns)
+            pass
 
         if not original_alt_was_empty:
             replaced_text = replaced_text.replace('alt=""', "")
