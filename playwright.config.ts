@@ -83,8 +83,6 @@ export default defineConfig({
       mode: "on",
       fullPage: true,
     },
-    userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36",
     // Stabilize device scale across runners to reduce text subpixel jitter.
     // Individual projects can override, but default to 1x CSS pixels.
     deviceScaleFactor: 1,
