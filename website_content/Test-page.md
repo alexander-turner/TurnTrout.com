@@ -440,14 +440,14 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._
 </div>
 
 <div id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;" class="centered">
-<span class="dropcap" data-first-letter="T" style="--before-color: color-mix(in srgb, 55% red, var(--midground-fainter));">T</span>
-<span class="dropcap" data-first-letter="H" style="--before-color: color-mix(in srgb, 55% orange, var(--midground-fainter));">H</span>
-<span class="dropcap" data-first-letter="E"  style="--before-color: color-mix(in srgb, 65% yellow, var(--midground-fainter));">E</span>
+<span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
+<span class="dropcap" data-first-letter="H" style="--before-color: var(--dropcap-background-orange);">H</span>
+<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-yellow);">E</span>
 <br/>  
-<span class="dropcap" data-first-letter="P"  style="--before-color: color-mix(in srgb, 65% green, var(--midground-fainter));">P</span>
-<span class="dropcap" data-first-letter="O"  style="--before-color: color-mix(in srgb, 65% blue, var(--midground-fainter));">O</span>
-<span class="dropcap" data-first-letter="N"  style="--before-color: color-mix(in srgb, 65% purple, var(--midground-fainter));">N</span>
-<span class="dropcap" data-first-letter="D"  style="--before-color: color-mix(in srgb, 65% pink, var(--midground-fainter));">D</span>
+<span class="dropcap" data-first-letter="P"  style="--before-color: var(--dropcap-background-green);">P</span>
+<span class="dropcap" data-first-letter="O"  style="--before-color: var(--dropcap-background-blue);">O</span>
+<span class="dropcap" data-first-letter="N"  style="--before-color: var(--dropcap-background-purple);">N</span>
+<span class="dropcap" data-first-letter="D"  style="--before-color: var(--dropcap-background-pink);">D</span>
 </div>
 
 # Emoji examples
