@@ -9,6 +9,11 @@
     color: var(--midground);
   }
 
+  & .admonition-icon {
+    background-color: var(--midground);
+    vertical-align: text-top;
+  }
+
   &[show-comma="true"] {
     > span:not(:last-child) {
       margin-right: 8px;
