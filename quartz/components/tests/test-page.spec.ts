@@ -683,6 +683,46 @@ test.describe("Link color states", () => {
   }
 })
 
+const LIST_TOLERANCE = 5
+test.describe("List alignment", () => {
+  for (const { prefix, suffix } of [
+    { prefix: "", suffix: "" },
+    { prefix: "", suffix: " li" },
+    { prefix: "blockquote > ", suffix: "" },
+    { prefix: "blockquote > ", suffix: " li" },
+    { prefix: "* > table ", suffix: "" },
+    { prefix: "", suffix: "> .checkbox-toggle" },
+  ]) {
+    test(`First ol li and first ul li have the same x-position (${prefix}...${suffix})`, async ({
+      page,
+    }) => {
+      const firstOlLi = page.locator(`article > ${prefix} ol > li ${suffix}`).first()
+
+      await firstOlLi.scrollIntoViewIfNeeded()
+      await expect(firstOlLi).toBeVisible()
+
+      const olPositionLeft = await firstOlLi.evaluate((el) => {
+        const rect = el.getBoundingClientRect()
+        const paddingLeft = parseFloat(getComputedStyle(el).paddingLeft)
+        return rect.left + paddingLeft
+      })
+
+      const firstUlLi = page.locator(`article > ${prefix} ul > li ${suffix}`).first()
+      await firstUlLi.scrollIntoViewIfNeeded()
+      await expect(firstUlLi).toBeVisible()
+      const ulPositionLeft = await firstUlLi.evaluate((el) => {
+        const rect = el.getBoundingClientRect()
+        const paddingLeft = parseFloat(getComputedStyle(el).paddingLeft)
+        return rect.left + paddingLeft
+      })
+
+      console.log("olPositionLeft", olPositionLeft)
+      console.log("ulPositionLeft", ulPositionLeft)
+      expect(Math.abs(olPositionLeft - ulPositionLeft)).toBeLessThan(LIST_TOLERANCE)
+    })
+  }
+})
+
 test.describe("Checkboxes", () => {
   test("Checkboxes are visible and clickable", async ({ page }) => {
     const checkboxesSection = page.locator("h1:has-text('Checkboxes')")

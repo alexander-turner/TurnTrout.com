@@ -34,20 +34,6 @@ td {
     font-size: smaller;
   }
 
-  & ul {
-    margin-left: 0;
-    padding-left: $list-padding-left;
-  }
-
-  & ol {
-    margin-left: 0;
-    padding-left: $list-padding-left;
-
-    & > li {
-      padding-left: calc(0.5 * $base-margin);
-    }
-  }
-
   // Content should only be separated by the padding of the td itself
   & > * {
     &:first-child {

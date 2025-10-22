@@ -251,6 +251,29 @@ This footnote has a table.[^table]
 
 <table border="1">
      <tr>
+       <th>For comparing</th>
+       <th>List indents</th>
+     </tr>
+     <tr>
+       <td>
+         <p>Row 1</p>
+       </td>
+       <td>
+         <p>Cell 2: image and list</p>
+           <ol>
+             <li>Ordered list item 1</li>
+             <li>Ordered list item 2<ol><li>Nested item</li></ol></li>
+           </ol>
+         <ul>
+           <li>Unordered list item 1<ul><li>Nested item</li></ul></li>
+           <li>Unordered list item 2</li>
+         </ul>
+       </td>
+     </tr>
+</table>
+
+<table border="1">
+     <tr>
        <th>Column 1 header</th>
        <th>Column 2 header</th>
      </tr>
@@ -260,13 +283,12 @@ This footnote has a table.[^table]
        </td>
        <td>
          <p>Cell 2: image and list</p>
-          <img style="width: 25%;" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif">
            <ol>
              <li>Ordered list item 1</li>
-             <li>Ordered list item 2</li>
+             <li>Ordered list item 2<ol><li>Nested item</li></ol></li>
            </ol>
          <ul>
-           <li>Unordered list item 1</li>
+           <li>Unordered list item 1<ul><li>Nested item</li></ul></li>
            <li>Unordered list item 2</li>
          </ul>
        </td>
