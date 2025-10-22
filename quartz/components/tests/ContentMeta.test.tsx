@@ -461,7 +461,8 @@ describe("renderSequenceInfo", () => {
     // Check for title
     const title = result?.props.children[0]
     expect(title).not.toBeNull()
-    const sequenceTitleJsx = title.props.children[1]
+    const titleInner = title.props.children
+    const sequenceTitleJsx = titleInner.props.children[1]
     const titleLink = sequenceTitleJsx.props.children[2]
     expect(titleLink.props.children).toBe(SEQUENCE_TITLE)
 
