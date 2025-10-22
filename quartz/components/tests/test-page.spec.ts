@@ -153,6 +153,12 @@ test.describe("Unique content around the site", () => {
         // as removing modifies the live HTMLCollection
         const childrenToRemove = Array.from(children).slice(0, numToRemove)
         childrenToRemove.forEach((child) => listElement.removeChild(child))
+
+        // Update the number of posts displayed
+        const listingText = listElement.querySelector(".page-listing > p")
+        if (listingText) {
+          listingText.textContent = `Showing ${numKeepOldest} of ${numTotalChildren} posts.`
+        }
       }, numOldest)
 
       await takeRegressionScreenshot(page, testInfo, `recent-posts-oldest-${numOldest}`, {
