@@ -58,17 +58,6 @@ End-to-end encryption (E2EE)
 
 Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely.
 
-## TODO
->
-> [!idea] Reducing commercial tracking reduces your exposure to government tracking
->
->Companies track you and sell your data. Then, the US government buys your data to bypass Constitutional protections.
->
-> > [!quote] [Almost 17,000 Protesters Had No Idea A Tech Company Was Tracing Their Location](https://www.buzzfeednews.com/article/carolinehaskins1/protests-tech-company-spying)
-> > Mobilewalla does not collect the data itself, but rather buys it from a variety of sources, including advertisers, data brokers, and internet service providers. Once it has it, the company uses artificial intelligence to turn a stew of location data, device IDs, and browser histories to predict a person's demographics — including race, age, gender, zip code, or personal interests. Mobilewalla sells aggregated versions of that stuff back to advertisers. On its website, Mobilewalla says that it works with companies across a variety of industries — like retail, dining, telecom, banking, consulting, health, and on-demand services (like ride-hailing).
-> >  
-> > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
-
 # Tier 0: Literally everyone should do these
 
 > [!money] Estimated costs
@@ -162,6 +151,15 @@ If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end enc
 > If you are in the UK, you'll have to refer to [my later section](#end-to-end-encrypt-your-data) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web and increasing government surveillance, all in order to "protect the children."
 
 # Tier 1: Basic steps to reduce government surveillance and invasive profiling
+
+> [!idea] Reducing commercial tracking reduces your exposure to government tracking
+>
+> Companies track you and sell your data. Then the US government buys your data.
+>
+> > [!quote] [Almost 17,000 Protesters Had No Idea A Tech Company Was Tracing Their Location](https://www.buzzfeednews.com/article/carolinehaskins1/protests-tech-company-spying)
+> > Mobilewalla does not collect the data itself, but rather buys it from a variety of sources, including advertisers, data brokers, and internet service providers. Once it has it, the company uses artificial intelligence to turn a stew of location data, device IDs, and browser histories to predict a person's demographics — including race, age, gender, zip code, or personal interests. Mobilewalla sells aggregated versions of that stuff back to advertisers. On its website, Mobilewalla says that it works with companies across a variety of industries — like retail, dining, telecom, banking, consulting, health, and on-demand services (like ride-hailing).
+> >  
+> > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
 
 ## ProtonVPN stops your internet service provider (ISP) from spying on you
 
@@ -281,7 +279,7 @@ Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and 
 TODO go more into benefits
 
  I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
- ![[privacy-20251021184025.png]]
+ ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
 
  Basically, everything should just work -- with a couple exceptions:
 
@@ -422,7 +420,7 @@ If data companies have the information, so can the government. Obviously, the mo
 iOS instructions
 : On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
 
-: ![[privacy-20251022120554.png|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
+: ![[https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
 
 : Similarly, make simple automations which encompass your use cases.
 

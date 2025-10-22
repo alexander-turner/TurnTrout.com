@@ -5346,5 +5346,33 @@
   "./asset_staging/privacy-20251022120554.png": {
     "width": 1970,
     "height": 1346
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/forbes_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/buzzfeednews_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mullvad_net.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif": {
+    "width": 1098,
+    "height": 719
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif": {
+    "width": 1970,
+    "height": 1346
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/linuxmint_com.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/pcmag_com.avif": {
+    "width": 64,
+    "height": 64
   }
 }
