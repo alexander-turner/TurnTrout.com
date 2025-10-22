@@ -121,8 +121,8 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
       data-admonition-fold=""
     >
       <div className="admonition-title">
-        <div className="admonition-icon" />
         <div className="admonition-title-inner">
+          <div className="admonition-icon" />
           <p>Links to this page</p>
         </div>
         <div className="fold-admonition-icon" />

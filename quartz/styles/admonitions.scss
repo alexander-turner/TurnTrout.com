@@ -61,6 +61,7 @@
 
   // Green
   &[data-admonition="success"],
+  &[data-admonition="tip"],
   &[data-admonition="money"] {
     --color: color-mix(in srgb, var(--green) 65%, var(--foreground));
   }
@@ -154,20 +155,7 @@
     --admonition-icon: var(--admonition-icon-math);
   }
 
-  :root[data-theme="dark"] & {
-    &[data-admonition="abstract"],
-    &[data-admonition="tip"] {
-      --color: color-mix(in srgb, var(--teal) 85%, var(--background));
-    }
-
-    &[data-admonition="failure"],
-    &[data-admonition="danger"],
-    &[data-admonition="bug"] {
-      --border: color-mix(in srgb, var(--color) 70%, var(--background));
-    }
-  }
-
-  &[data-admonition="quote"] .admonition-icon {
+  &[data-admonition="quote"] > .admonition-title > .admonition-title-inner > .admonition-icon {
     transform: scale(-1); // Flip across the y-axis
   }
 

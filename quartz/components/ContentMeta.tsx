@@ -175,8 +175,10 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
   return (
     <blockquote className="admonition admonition-metadata" data-admonition="tag">
       <div className="admonition-title">
-        <div className="admonition-icon" />
-        <div className="admonition-title-inner">Tags</div>
+        <div className="admonition-title-inner">
+          <div className="admonition-icon" />
+          Tags
+        </div>
       </div>
       <div className="admonition-content" id="tags">
         <TagListComponent {...props} />
@@ -254,8 +256,10 @@ export const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | nu
   return (
     <blockquote className="admonition admonition-metadata" data-admonition="example">
       <div className="admonition-title">
-        <div className="admonition-icon" />
-        {sequenceTitleJsx}
+        <div className="admonition-title-inner">
+          <div className="admonition-icon" />
+          {sequenceTitleJsx}
+        </div>
       </div>
       <div className="admonition-content">
         {previousPostJsx}
@@ -281,8 +285,10 @@ export function renderPostStatistics(props: QuartzComponentProps): JSX.Element |
       data-admonition="info"
     >
       <div className="admonition-title">
-        <div className="admonition-icon" />
-        <div className="admonition-title-inner">About this post</div>
+        <div className="admonition-title-inner">
+          <div className="admonition-icon" />
+          About this post
+        </div>
       </div>
       <div className="admonition-content">
         <ul>

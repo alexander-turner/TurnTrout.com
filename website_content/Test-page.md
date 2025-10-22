@@ -149,6 +149,8 @@ Hi! Am I being transcluded?
 >
 > > [!note] This is a nested admonition.
 > > The content of both the nested and non-nested "note" admonition.
+>
+> > [!quote] A nested quote
 
 > [!goose]
 > Geese are better than dogs.
@@ -171,17 +173,15 @@ Hi! Am I being transcluded?
 
 > [!success]
 
+> [!tip]
+
 > [!money]
 
-<blockquote id="test-collapse" class="admonition info is-collapsible is-collapsed" data-admonition="info" data-admonition-fold="">
-<div class="admonition-title"><div class="admonition-icon"></div><div class="admonition-title-inner">This collapsible admonition starts off collapsed </div><div class="fold-admonition-icon"></div></div>
-<div class="admonition-content"><p>Hidden content.</p></div>
-</blockquote>
+> [!info]- This collapsible admonition starts off collapsed
+> Hidden content
 
-<blockquote id="test-open" class="admonition info is-collapsible" data-admonition="info" data-admonition-fold="">
-<div class="admonition-title"><div class="admonition-icon"></div><div class="admonition-title-inner">This collapsible admonition starts off open </div><div class="fold-admonition-icon"></div></div>
-<div class="admonition-content"><p>Displayed content.</p></div>
-</blockquote>
+> [!info]+ This collapsible admonition starts off open
+> Displayed content.
 
 > [!quote] Admonition with tags
 > <br/>
