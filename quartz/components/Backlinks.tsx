@@ -115,16 +115,16 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
 
   return (
     <blockquote
-      className="admonition admonition-metadata is-collapsible is-collapsed"
+      className="admonition link admonition-metadata is-collapsible is-collapsed"
       id="backlinks"
       data-admonition="link"
       data-admonition-fold=""
     >
       <div className="admonition-title">
-        <div className="admonition-title-inner">
-          <div className="admonition-icon" />
-          <p>Links to this page</p>
-        </div>
+        <span className="admonition-title-inner">
+          <span className="admonition-icon" />
+          Links to this page
+        </span>
         <div className="fold-admonition-icon" />
       </div>
       <div className="admonition-content" id="backlinks-admonition">
