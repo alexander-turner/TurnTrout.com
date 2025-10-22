@@ -11,7 +11,8 @@ export const mobileBreakpoint = 600
 export const tabletBreakpoint = 1000
 export const widerGapBreakpoint = minDesktopWidth + 300
 
-export const baseMargin = "0.5rem"
+const rawBaseMargin = 0.5
+export const baseMargin = `${rawBaseMargin}rem`
 export const maxSidebarGap = "4rem" // 8 * baseMargin
 export const maxContentWidth = pageWidth + rightSidebarWidth + 100 // 100 for gap
 export const boldWeight = 700
@@ -26,6 +27,7 @@ export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
 export const midgroundLight = "#74747b"
+export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
 // Shared variables between SCSS and TypeScript
 export const variables = {
@@ -52,6 +54,7 @@ export const variables = {
   midgroundFaintLight,
   midgroundLight,
   fontScaleFactor,
+  liPaddingLeft,
 } as const
 
 export type Variables = typeof variables

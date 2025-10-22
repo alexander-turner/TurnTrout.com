@@ -1,8 +1,8 @@
 @use "./variables.scss" as *;
 
-$checkbox-size: 0.95rem;
-
 li:has(> input.checkbox-toggle) {
+  --checkbox-size: 0.85rem;
+
   list-style: none;
   position: relative;
 
@@ -10,15 +10,16 @@ li:has(> input.checkbox-toggle) {
     content: none;
   }
 
-  --offset-left: calc(-1 * (#{$checkbox-size} + 0.25 * #{$base-margin}));
+  // ol has extra padding-left
+  --ul-left: calc(-1 * var(--checkbox-size) - 0.75 * #{$base-margin});
+  --ol-left: calc(-1 * var(--checkbox-size) - 0.25 * #{$base-margin});
 
   > input.checkbox-toggle {
     appearance: none;
     position: absolute;
-    left: var(--offset-left);
-    top: calc(0.25 * $base-margin);
-    width: $checkbox-size;
-    height: $checkbox-size;
+    top: calc(0.5 * $base-margin);
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
     margin: 0;
     border: 1.5px solid var(--midground-faint);
     border-radius: 4px;
@@ -27,6 +28,14 @@ li:has(> input.checkbox-toggle) {
     transition:
       background-color 0.2s ease,
       border-color 0.2s ease;
+
+    ul > & {
+      left: var(--ul-left);
+    }
+
+    ol > & {
+      left: var(--ol-left);
+    }
 
     &:focus-visible {
       outline: 1.5px solid var(--color-link);
@@ -54,11 +63,6 @@ li:has(> input.checkbox-toggle) {
       }
     }
   }
-}
-
-// Unordered lists need padding to match ordered lists
-ul > li:has(> input.checkbox-toggle) {
-  padding-left: calc(0.5 * $base-margin);
 }
 
 // Checked state

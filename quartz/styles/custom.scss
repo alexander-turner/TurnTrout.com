@@ -117,8 +117,9 @@ ul {
   }
 }
 
+// ul are not as indented as ol, so we need to add some padding-left
 ul {
-  padding-left: $list-padding-left;
+  padding-left: calc(#{$list-padding-left} + #{$li-padding-left});
 }
 
 ol {
@@ -126,8 +127,6 @@ ol {
   --li-margin-bottom: 4px;
 
   // Simulate the implicit padding-left of ul (the bullet isn't flush with the text)
-  --li-padding-left: #{$base-margin * 0.5};
-
   padding-left: $list-padding-left;
 
   // This comes in an h2 right before the footnotes.
@@ -138,7 +137,7 @@ ol {
   & > li {
     counter-increment: list; // Increment the list counter for each list item
     margin-bottom: var(--li-margin-bottom);
-    padding-left: var(--li-padding-left);
+    padding-left: $li-padding-left;
 
     // If in safari, use the marker to display the list counter
     @supports (-webkit-hyphens: none) {
