@@ -300,7 +300,7 @@ test.describe("Admonitions", () => {
     test(`Admonition click behaviors in ${theme} mode`, async ({ page }) => {
       await setTheme(page, theme as "light" | "dark")
 
-      const admonition = page.locator("#test-collapse").first()
+      const admonition = page.locator("blockquote:has(#test-collapse)").first()
       await admonition.scrollIntoViewIfNeeded()
 
       // Initial state should be collapsed
@@ -335,7 +335,7 @@ test.describe("Admonitions", () => {
     test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
       page,
     }, testInfo) => {
-      const element = page.locator(`#test-${status} .fold-admonition-icon`).first()
+      const element = page.locator(`blockquote:has(#test-${status}) .fold-admonition-icon`).first()
       await element.scrollIntoViewIfNeeded()
       await expect(element).toBeVisible()
 

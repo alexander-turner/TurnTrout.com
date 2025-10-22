@@ -178,10 +178,10 @@ Hi! Am I being transcluded?
 > [!money]
 
 > [!info]- This collapsible admonition starts off collapsed
-> Hidden content
+> Hidden content{#test-collapse}
 
 > [!info]+ This collapsible admonition starts off open
-> Displayed content.
+> Displayed content. {#test-open}
 
 > [!quote] Admonition with tags
 > <br/>
