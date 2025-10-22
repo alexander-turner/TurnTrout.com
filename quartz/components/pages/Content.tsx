@@ -30,10 +30,10 @@ const WarningLink = (
 
 const WarningTitle = () => (
   <div className="admonition-title">
-    <div className="admonition-icon"></div>
-    <div className="admonition-title-inner">
-      <p> {WarningLink}</p>
-    </div>
+    <span className="admonition-title-inner">
+      <span className="admonition-icon"></span>
+      {WarningLink}
+    </span>
   </div>
 )
 
@@ -113,10 +113,10 @@ function lessWrongQuestion(url: string): JSX.Element {
   return (
     <blockquote className="admonition question" data-admonition="question">
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
-        <div className="admonition-title-inner">
-          <p>Question</p>
-        </div>
+        <span className="admonition-title-inner">
+          <span className="admonition-icon"></span>
+          Question
+        </span>
       </div>
       <p>
         This was{" "}
