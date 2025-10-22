@@ -15,7 +15,6 @@ interface Browser {
 
 // Use robust device presets that include stable layout-affecting fields only
 // (viewport, DPR, touch/mobile flags).
-// Avoid userAgent overrides to keep cross-browser projects consistent.
 const deviceList: DeviceConfig[] = [
   {
     name: "Desktop",
