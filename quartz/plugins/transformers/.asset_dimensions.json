@@ -5322,5 +5322,29 @@
   "/static/images/external-favicons/pcmag_com.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/mullvad_net.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251021184025.png": {
+    "width": 1098,
+    "height": 719
+  },
+  "/static/images/external-favicons/darkreading_com.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/forbes_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/buzzfeednews_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251022120554.png": {
+    "width": 1970,
+    "height": 1346
   }
 }

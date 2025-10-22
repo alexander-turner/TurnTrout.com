@@ -44,7 +44,7 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 
 This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
 
-I've structured my recommendations around two key principles.
+I've structured my recommendations around three key principles.
 
 Open source code
 :  If a program is open source, then that means anyone can see its code. In turn, that means if the developers put something suspicious or sneaky in the program, someone will probably read the code and notice. You don't need to _trust_ that the people who made the app didn't include creepy tracking.
@@ -57,6 +57,17 @@ End-to-end encryption (E2EE)
 : Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
 Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely.
+
+## TODO
+>
+> [!idea] Reducing commercial tracking reduces your exposure to government tracking
+>
+>Companies track you and sell your data. Then, the US government buys your data to bypass Constitutional protections.
+>
+> > [!quote] [Almost 17,000 Protesters Had No Idea A Tech Company Was Tracing Their Location](https://www.buzzfeednews.com/article/carolinehaskins1/protests-tech-company-spying)
+> > Mobilewalla does not collect the data itself, but rather buys it from a variety of sources, including advertisers, data brokers, and internet service providers. Once it has it, the company uses artificial intelligence to turn a stew of location data, device IDs, and browser histories to predict a person's demographics — including race, age, gender, zip code, or personal interests. Mobilewalla sells aggregated versions of that stuff back to advertisers. On its website, Mobilewalla says that it works with companies across a variety of industries — like retail, dining, telecom, banking, consulting, health, and on-demand services (like ride-hailing).
+> >  
+> > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
 
 # Tier 0: Literally everyone should do these
 
@@ -93,6 +104,22 @@ Since you're using a unique password for every site, you won't have to scramble 
 
  "2-factor authentication" means an attacker has to try a lot harder to get into your accounts.  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
 
+### Don't use text- and phone-based 2FA
+
+The US government forces telecoms to permit spying on their customers (including you). _Assume that all text messages or phone calls are actively monitored by the US and Chinese governments._
+
+> [!quote] [Communications Assistance for Law Enforcement Act](https://en.wikipedia.org/wiki/Communications_Assistance_for_Law_Enforcement_Act)
+> The Act obliges telecommunications companies to make it possible for law enforcement agencies to tap any phone conversations carried out over its networks, as well as making call detail records available. The act stipulates that it must not be possible for a person to detect that his or her conversation is being monitored by the respective government agency.
+>
+> \[...\] Journalists and technologists have characterized the CALEA-mandated infrastructure as government backdoors. In 2024, the U.S. government realized that China had been tapping communications in the U.S. using that infrastructure for months, or perhaps longer.
+
+Since the American government mandated vulnerabilities in key American communications infrastructure, the Chinese government was also able to exploit those vulnerabilities. We now must turn away from text-based 2FA:
+
+> [!quote] [Government Issues New iPhone, Android 2FA Warning—Stop Using SMS Codes Now](https://www.forbes.com/sites/zakdoffman/2024/12/18/feds-warn-android-and-iphone-users-stop-using-sms-for-2fa/)
+> What is clear is SMS is not acceptable, even for temporary, one-time passcodes. “Do not use SMS as a second factor for authentication. SMS messages are not encrypted—a threat actor with access to a telecommunication provider’s network who intercepts these messages can read them. SMS MFA is not phishing-resistant and is therefore not strong authentication for accounts of highly targeted individuals.”
+
+There are 2 solutions to this 2FA issue.
+
 ### Buy a YubiKey (and a backup)
 
 Subtitle: YubiKey > authenticator app > text- / email-based 2FA
@@ -116,9 +143,9 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 
 ### Use Proton Authenticator as your 2FA app
 
- Unfortunately, many sites don't support YubiKey.  Whenever possible, prefer application-based authentication in its stead. Texts and emails are not encrypted by default, which puts you at slight risk from the state and from sophisticated criminals.
+ Unfortunately, many sites don't support YubiKey.  Whenever possible, prefer application-based authentication in its stead.
 
-As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
+ As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
 1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
 
 ## Keep your OS up to date
@@ -182,14 +209,16 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 > > Subtitle: Published June 5th, 2024
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
-### VPNs are _fundamentally unreliable_ on iOS as of October 2025
+### VPNs are _fundamentally unreliable_ on mobile iOS as of October 2025
 
 Subtitle: And it's on Apple.
 
 > [!danger]
-> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
+> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your real IP address and DNS queries directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
 >  
 > Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching [to a Google Pixel 9a running GrapheneOS.](#switch-to-android----preferably-to-grapheneos)
+
+The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
 
 ## Browse the web using Brave
 
@@ -227,6 +256,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >     4. [ ] "Prevent sites from fingerprinting based on language"
 >     5. [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
 >     6. [ ] Disable all options under "Data collection"
+> 3. [ ] Also apply these settings in your mobile Brave browser
 
 ## Use a privacy-centered search engine
 
@@ -246,11 +276,14 @@ Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduck
 
 ## Switch to Android -- preferably to GrapheneOS
 
-Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). If you have iOS and you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you need to switch. (You might even switch from a normal Android device, even though they have functional VPNs.)
+Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
 TODO go more into benefits
 
- I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability. Basically, everything should just work -- with a couple exceptions:
+ I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
+ ![[privacy-20251021184025.png]]
+
+ Basically, everything should just work -- with a couple exceptions:
 
 1. About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/).
 2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I _will_ miss using Google pay for public transportation.
@@ -261,6 +294,15 @@ TODO go more into benefits
 ### How to make the switch
 
 If you're technically comfortable, I recommend buying a [Pixel 9a](https://store.google.com/product/pixel_9a) for about \$499 and then [installing the OS yourself.](https://grapheneos.org/install/web) From [the GrapheneOS FAQ](https://grapheneos.org/faq#recommended-devices): "You need one of the officially supported devices. To make sure that the device can be unlocked to install GrapheneOS, avoid carrier variants of the devices." Otherwise, you can [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
+
+> [!info]- Getting started in GrapheneOS
+> 1. [ ] Download F-Droid using the Vanadium browser. F-Droid is an app store which carries publicly verified open source applications.
+> 2. [ ] In F-Droid, download the Aurora app store. Aurora carries everything on the Google Play app store, but it's open source and more anonymous. When you want to download an app, first check if it's on F-Droid and then check Aurora.
+> 3. [ ] Download Bitwarden and then download ProtonVPN.
+> 4. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
+> 5. [ ] Download all of your other apps!
+>     * Be stingy in letting them access the network --- only give them access if they should have it.
+>     * Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
 
 ## Give each app as few permissions as possible
 
@@ -380,7 +422,7 @@ If data companies have the information, so can the government. Obviously, the mo
 iOS instructions
 : On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
 
-: ![[https://assets.turntrout.com/static/images/posts/privacy-20251013180907.avif|iOS Shortcuts which turn on Bluetooth when Spotify or Steam is opened, and turns off Bluetooth when one is closed.]]
+: ![[privacy-20251022120554.png|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
 
 : Similarly, make simple automations which encompass your use cases.
 
