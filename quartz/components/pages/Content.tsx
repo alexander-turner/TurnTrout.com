@@ -94,10 +94,10 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
       data-admonition-fold=""
     >
       <div className="admonition-title">
-        <div className="admonition-icon"></div>
-        <div className="admonition-title-inner">
-          <p>Table of Contents</p>
-        </div>
+        <span className="admonition-title-inner">
+          <span className="admonition-icon"></span>
+          Table of Contents
+        </span>
         <div className="fold-admonition-icon"></div>
       </div>
       <div id="toc-content-mobile" className="admonition-content">
