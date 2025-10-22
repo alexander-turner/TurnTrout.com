@@ -218,7 +218,16 @@ test.describe("Table of contents", () => {
   test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
 
+    // Ensure the element can expand to its full height for the screenshot
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
+    await rightSidebar.evaluate((rightSidebar: HTMLElement) => {
+      let parent = rightSidebar.parentElement
+      while (parent) {
+        parent.style.maxHeight = "none"
+        parent.style.overflow = "visible"
+        parent = parent.parentElement
+      }
+    })
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
       elementToScreenshot: rightSidebar,
     })
