@@ -19,7 +19,7 @@ export const boldWeight = 700
 export const semiBoldWeight = 600
 export const normalWeight = 400
 export const lineHeight = "1.8rem"
-export const listPaddingLeft = "2rem"
+export const listPaddingLeft = "1.875rem"
 export const fontScaleFactor = 1.2
 
 // Colors
