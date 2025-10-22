@@ -219,7 +219,7 @@
   gap: calc(0.5 * $base-margin);
   margin: calc(1.5 * $base-margin) 0;
 
-  --icon-size: calc(1.5 * $base-margin);
+  --icon-size: calc(1.5 * #{$base-margin});
 
   #right-sidebar & {
     gap: calc(0.75 * $base-margin);
