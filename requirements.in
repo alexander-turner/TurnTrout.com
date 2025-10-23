@@ -2,19 +2,19 @@
 # To regenerate: ./scripts/update_requirements.sh
 
 # Production dependencies (auto-detected from scripts/)
-beautifulsoup4
 GitPython
+Pillow
+PyYAML
+Requests
+beautifulsoup4
 google_auth
 numpy
 pandas
-Pillow
 protobuf
 psutil
 pytest
-PyYAML
-Requests
 rich
-ruamel.base
+ruamel.yaml
 tqdm
 validators
 

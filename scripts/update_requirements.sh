@@ -23,6 +23,7 @@ pipreqs scripts/ --print 2>/dev/null | \
   grep -v "^INFO:" | \
   grep -v "^WARNING:" | \
   sed 's/==.*//' | \
+  sed 's/^ruamel\.base$/ruamel.yaml/' | \
   sort -u | \
   grep -v "^$" >> requirements.in
 
