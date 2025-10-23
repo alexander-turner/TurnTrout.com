@@ -43,11 +43,26 @@ const colorMapping: Record<string, string> = {
  * @returns The transformed CSS style string with color values replaced by CSS variables.
  */
 export const transformStyle = (style: string, colorMapping: Record<string, string>): string => {
-  let newStyle = style
+  // Extract all var() expressions to protect them from transformation
+  const varExpressions: string[] = []
+  const placeholder = "___VAR_PLACEHOLDER_"
+
+  let newStyle = style.replace(/var\([^)]+\)/gi, (match) => {
+    varExpressions.push(match)
+    return `${placeholder}${varExpressions.length - 1}___`
+  })
+
+  // Transform colors in the remaining style string
   Object.entries(colorMapping).forEach(([color, variable]) => {
-    const regex = new RegExp(`(?<!var\\(--)${color}\\b`, "gi")
+    const regex = new RegExp(`\\b${color}\\b`, "gi")
     newStyle = newStyle.replace(regex, variable)
   })
+
+  // Restore var() expressions
+  newStyle = newStyle.replace(new RegExp(`${placeholder}(\\d+)___`, "g"), (match, index) => {
+    return varExpressions[parseInt(index)]
+  })
+
   return newStyle
 }
 

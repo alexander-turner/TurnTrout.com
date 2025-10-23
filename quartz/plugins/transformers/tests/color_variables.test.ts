@@ -11,42 +11,101 @@ const colorMapping = {
 }
 
 describe("transformStyle", () => {
-  it("should replace color names with CSS variables in inline styles", () => {
-    const input = "color: red;"
+  it.each([
+    {
+      name: "replace color names with CSS variables",
+      input: "color: red;",
+      expected: "color: var(--red);",
+    },
+    {
+      name: "handle multiple color replacements",
+      input: "color: blue; background-color: red; border: 1px solid green;",
+      expected: "color: var(--blue); background-color: var(--red); border: 1px solid var(--green);",
+    },
+    {
+      name: "not modify colors not in the mapping",
+      input: "color: azalea;",
+      expected: "color: azalea;",
+    },
+    {
+      name: "handle case-insensitive color names",
+      input: "color: RED;",
+      expected: "color: var(--red);",
+    },
+    {
+      name: "handle empty style",
+      input: "",
+      expected: "",
+    },
+  ])("should $name", ({ input, expected }) => {
     const result = transformStyle(input, colorMapping)
-    expect(result).toBe("color: var(--red);")
+    expect(result).toBe(expected)
   })
 
-  it("should handle multiple color replacements in a single style", () => {
-    const input = "color: blue; background-color: red; border: 1px solid green;"
+  it.each([
+    {
+      name: "not modify colors that are already CSS variables",
+      input: "color: var(--red);",
+      expected: "color: var(--red);",
+    },
+    {
+      name: "not transform color names inside var() expressions",
+      input: "color: var(--dropcap-background-red);",
+      expected: "color: var(--dropcap-background-red);",
+    },
+    {
+      name: "not transform inside complex var() expressions",
+      input: "--before-color: var(--dropcap-background-green);",
+      expected: "--before-color: var(--dropcap-background-green);",
+    },
+    {
+      name: "protect multiple var() expressions in one style",
+      input: "color: var(--some-red); background: blue; border: var(--other-green);",
+      expected: "color: var(--some-red); background: var(--blue); border: var(--other-green);",
+    },
+    {
+      name: "transform colors outside var() but protect inside",
+      input: "color: red; background: var(--background-blue); border-color: green;",
+      expected:
+        "color: var(--red); background: var(--background-blue); border-color: var(--green);",
+    },
+    {
+      name: "protect var() with color-mix expressions",
+      input:
+        "color: var(--dropcap-background-red); background: color-mix(in srgb, 55% red, var(--midground-fainter));",
+      expected:
+        "color: var(--dropcap-background-red); background: color-mix(in srgb, 55% var(--red), var(--midground-fainter));",
+    },
+    {
+      name: "handle var() expressions with spaces",
+      input: "color: var( --dropcap-background-red ); border: green;",
+      expected: "color: var( --dropcap-background-red ); border: var(--green);",
+    },
+    {
+      name: "handle multiple var() with different color names",
+      input:
+        "color: var(--text-red); background: var(--bg-blue); border: var(--border-green); outline: red;",
+      expected:
+        "color: var(--text-red); background: var(--bg-blue); border: var(--border-green); outline: var(--red);",
+    },
+  ])("should $name", ({ input, expected }) => {
     const result = transformStyle(input, colorMapping)
-    expect(result).toBe(
-      "color: var(--blue); background-color: var(--red); border: 1px solid var(--green);",
-    )
+    expect(result).toBe(expected)
   })
 
-  it("should not modify colors that are not in the mapping", () => {
-    const input = "color: azalea;"
-    const result = transformStyle(input, colorMapping)
-    expect(result).toBe("color: azalea;")
-  })
+  it("should handle all colors from THE POND dropcaps example", () => {
+    const fullMapping = {
+      red: "var(--red)",
+      orange: "var(--orange)",
+      yellow: "var(--yellow)",
+      green: "var(--green)",
+      blue: "var(--blue)",
+      purple: "var(--purple)",
+      pink: "var(--pink)",
+    }
 
-  it("should not modify colors that are already CSS variables", () => {
-    const input = "color: var(--red);"
-    const result = transformStyle(input, colorMapping)
-    expect(result).toBe("color: var(--red);")
-  })
-
-  it("should handle case-insensitive color names", () => {
-    const input = "color: RED;"
-    const result = transformStyle(input, colorMapping)
-    expect(result).toBe("color: var(--red);")
-  })
-
-  it("should handle empty style", () => {
-    const input = ""
-    const result = transformStyle(input, colorMapping)
-    expect(result).toBe("")
+    const result = transformStyle("--before-color: var(--dropcap-background-red);", fullMapping)
+    expect(result).toBe("--before-color: var(--dropcap-background-red);")
   })
 })
 
@@ -65,7 +124,6 @@ describe("transformElement", () => {
 
   it("should handle elements with non-string style property", () => {
     const input = h("p")
-    // Manually set non-string style to test edge case
     input.properties.style = 123
     const result = transformElement(input, colorMapping)
     expect(result.properties?.style).toBe(123)
@@ -73,7 +131,6 @@ describe("transformElement", () => {
 
   it("should handle elements with empty properties", () => {
     const input = h("p")
-    // Simulate missing properties by deleting the property after creation
     delete (input as unknown as { properties?: unknown }).properties
     const result = transformElement(input, colorMapping)
     expect(result.properties).toBeUndefined()
