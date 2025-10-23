@@ -656,12 +656,23 @@ Corrupted text
 - [ ] First-level not checked off
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
-  - Normal bullet
+      - [ ] Nested checked off should still be crossed out and same (diminished) opacity
+          - [ ] Third nested with a [link](#checkboxes)
+  - [ ] Not checked off
+- Normal bullet
 
 > [!note]
 > - [ ] Checkbox in an admonition
 > - Normal bullet
 > - [x] Checked box in an admonition
+
+- Making it hard for you to cancel (just delete the virtual card),
+- Exposing your real card in data breaches.
+
+- [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
+- [x] Install [the mobile app](https://www.privacy.com/mobile-app).
+    - [ ] Nested
+    - [x] Not even more transparent
 
 [^1]: First footnote in a row.
 [^2]: Second footnote in a row.
