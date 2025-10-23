@@ -208,7 +208,20 @@ test.describe("Unique content around the site", () => {
       elementToScreenshot: admonition,
     })
   })
+
+  test("LW Question admonition (lostpixel)", async ({ page }, testInfo) => {
+    await page.goto("http://localhost:8080/question-about-defining-alignment-in-simple-setting")
+    await page.locator("body").waitFor({ state: "visible" })
+
+    const questionAdmonition = page.locator(".admonition.question").first()
+    await expect(questionAdmonition).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "lw-question-admonition", {
+      elementToScreenshot: questionAdmonition,
+    })
+  })
 })
+
 test.describe("Table of contents", () => {
   test("TOC is visible (lostpixel)", async ({ page }) => {
     let selector: string
