@@ -36,8 +36,23 @@ const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
   h("span", { className: "favicon-span" }, [".com", createFaviconElement(MAIL_PATH)]),
 ])
 
+const pgpLink = h(
+  "a",
+  {
+    href: "https://keys.openpgp.org/search?q=alex%40turntrout.com",
+    rel: "noopener noreferrer",
+    target: "_blank",
+  },
+  [h("abbr", { className: "small-caps" }, "pgp")],
+)
 const contactMe = h("div", [
-  h("div", { className: "centered" }, ["Thoughts? Email me at ", h("code", {}, [mailLink])]),
+  h("div", { className: "centered" }, [
+    "Thoughts? Email me at ",
+    h("code", {}, [mailLink]),
+    " (",
+    pgpLink,
+    ")",
+  ]),
 ])
 
 /**
