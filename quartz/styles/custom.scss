@@ -694,7 +694,7 @@ video {
 
   article > p &,
   article > &,
-  article > figure &:not(.float-right),
+  article > figure > &:not(.float-right),
   .video-container &:not(.float-right),
   figure > &:not(.float-right) {
     margin-left: auto;

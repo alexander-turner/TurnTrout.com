@@ -236,7 +236,7 @@ a = b + c
 Code: A `<figcaption>` element created from the Markdown cue of "Code:".
 
 ![A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose.](https://assets.turntrout.com/static/images/posts/goose-majestic.avif)
-Figure: A `<figcaption>` element created from the Markdown cue of "Figure:".
+Figure: A `<figcaption>` element created from the Markdown cue of "Figure:". "🪿" is the goose emoji.
 
 # Tables
 
