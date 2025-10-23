@@ -1164,6 +1164,14 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: > [!note] With spaces",
             ],
         ),
+        (
+            """
+            <li>[ ]"Block third-party cookies"</li>
+            """,
+            [
+                'Problematic paragraph: [ ]"Block third-party cookies"',
+            ],
+        ),
     ],
 )
 def test_check_problematic_paragraphs_comprehensive(html, expected):

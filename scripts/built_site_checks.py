@@ -287,45 +287,50 @@ def _append_to_list(
 
 def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     """
-    Check for text nodes starting with specific phrases.
+    Check for text nodes containing specific canary phrases.
 
-    Ignores text within <code> tags.
+    Checks all text-containing elements in the document. Ignores text within
+    <code> tags.
     """
-    bad_anywhere = (r"> \[\![a-zA-Z]+\]",)  # Callout syntax
-    bad_prefixes = (r"Table: ", r"Figure: ", r"Code: ", r"Caption: ")
-    bad_paragraph_starting_prefixes = (r"^: ", r"^#+ ")
+    bad_anywhere = (
+        r"> \[\![a-zA-Z]+\]",  # Callout syntax
+        r"Table: ",
+        r"Figure: ",
+        r"Code: ",
+        r"Caption: ",
+    )
+    bad_prefixes = (
+        r": ",
+        r"\s*-?\[ ?\]",
+        r"#",
+    )
 
     problematic_paragraphs: list[str] = []
 
-    def _maybe_add_text(text: str) -> None:
-        text = text.strip()
-        if any(re.search(pattern, text) for pattern in bad_anywhere) or any(
-            re.search(prefix, text) for prefix in bad_prefixes
-        ):
-            _append_to_list(
-                problematic_paragraphs, text, prefix="Problematic paragraph: "
-            )
+    def _check_text_node(text: str) -> None:
+        """Check if a text node contains canary phrases and add to results."""
+        stripped_text = text.strip()
+        if not stripped_text:
+            return
 
-    # Check all <p> and <dt> elements
-    for element in _tags_only(soup.find_all(["p", "dt"])):
-        if any(
-            re.search(prefix, element.text)
-            for prefix in bad_paragraph_starting_prefixes
-        ):
+        bad_anywhere_matches = any(
+            re.search(pattern, stripped_text) for pattern in bad_anywhere
+        )
+        bad_prefix_matches = any(
+            re.match(prefix, stripped_text) for prefix in bad_prefixes
+        )
+        if bad_anywhere_matches or bad_prefix_matches:
             _append_to_list(
                 problematic_paragraphs,
-                element.text,
+                stripped_text,
                 prefix="Problematic paragraph: ",
             )
-        for text_node in element.find_all(string=True):
-            if not any(parent.name == "code" for parent in text_node.parents):
-                _maybe_add_text(str(text_node))
 
-    # Check direct text in <article> and <blockquote>
-    for parent in _tags_only(soup.find_all(["article", "blockquote"])):
-        for child in parent.children:
-            if isinstance(child, str):  # Check if it's a direct text node
-                _maybe_add_text(child)
+    for text_node in soup.find_all(string=True):
+        # Skip text inside code tags
+        if any(parent.name == "code" for parent in text_node.parents):
+            continue
+        _check_text_node(str(text_node))
 
     return problematic_paragraphs
 
