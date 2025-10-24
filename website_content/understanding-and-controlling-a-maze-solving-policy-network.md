@@ -183,7 +183,7 @@ Uli cracked open the vector field hydrant.
 ![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
 ![Left maze (Seed 89,327): Near the cheese, the policy goes to the cheese. Otherwise, the policy goes to the top-center of the maze. Right maze (Seed 89,109): Except for just next to the cheese, the policy heads to the top-center of the maze.](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
 
-![[https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20250907120829.avif]]
+ <img src="understanding-and-controlling-a-maze-solving-policy-network-20251024135725.jpeg" class="white-when-dark"/>
 
 ![Left (Seed 59,195), arrows point to the top-right, ignoring cheese in the bottom-left. Right (Seed 1,442), arrows point directly to cheese in the top-right.](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
 Figure: To generate your own mazes, play with this [Colab notebook](https://colab.research.google.com/drive/1zHk6jxjTjQ4yL12Fbp3REpTXsqQGV1dp?usp=sharing).

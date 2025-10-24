@@ -721,6 +721,12 @@ img {
     margin-right: 0.025rem;
     margin-bottom: 0.1rem;
   }
+
+  &.white-when-dark {
+    :root[data-theme="dark"] & {
+      background-color: white;
+    }
+  }
 }
 
 // Ordering the z stacks
