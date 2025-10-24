@@ -5434,5 +5434,33 @@
   "./asset_staging/privacy-20251023213135.png": {
     "width": 351,
     "height": 465
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif": {
+    "width": 351,
+    "height": 465
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/f-droid_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cryptpad_fr.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/entraide_chatons_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif": {
+    "width": 1079,
+    "height": 943
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/libredirect_github_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/understanding-and-controlling-a-maze-solving-policy-network-20251024135725.jpeg": {
+    "width": 895,
+    "height": 452
   }
 }

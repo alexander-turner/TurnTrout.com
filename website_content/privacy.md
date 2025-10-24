@@ -15,7 +15,7 @@ aliases:
   - privacy-tips
 ---
 
-# Purpose 
+# Purpose
 
 - My history with activism
 - America has become an authoritarian regime which persecutes political opponents
@@ -50,7 +50,7 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 
 # What should I read?
 
-![[privacy-20251023213135.png]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
 
 This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
 
@@ -58,12 +58,11 @@ This guide is long. Don't try to complete it all at once. Something is better th
 
 - probably a table
 
-Quick-start 
+Quick-start
 1. Bitwarden
 2. iOS: Advanced data protection
-3. 2FA 
+3. 2FA
 4. Automatic and timely operating system updates
-
 
 "You're now protected against 80% of hacking attempts"
 
@@ -84,21 +83,17 @@ Journalist, activist, immigrant, targets of political persecution
 
 Prioritize: GrapheneOS, Signal with disappearing messages, router-level VPN, pseudonymity
 
-
 > [!warning] Location tracking: what you can and cannot stop
 >   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. You will be hard-pressed to turn invisible while participating in modern society.
-> 
->   This guide will teach you to protect: 
+>
+>   This guide will teach you to protect:
 >   1. Content of your communications (Signal E2EE),
 >   2. What you're researching and reading (VPN hides websites),
 >   3. Your organizing documents and plans (E2EE cloud storage),
 >   4. Your network and contacts (E2EE contact storage),
 >   5. Correlation across identities (pseudonymity, email aliases).
 >
->   In high-risk situations: 
->   6. Leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings,
->   7. Accept that protesting risks identification, and
->   8. Focus on [protecting the organizing infrastructure, not individual movements]().
+>   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings.
 
 # Open source and encryption are your friends
 
@@ -119,6 +114,7 @@ Unless I mention otherwise, all of my recommendations are both open source and E
 # Quick start in 30 minutes
 
 By the end of this section, TODO
+
 ## Manage passwords with Bitwarden
 
 Subtitle: Cost: Free. Time: 30 minutes.
@@ -130,9 +126,9 @@ If you're not using a password manager already, _Bitwarden will make your life e
 Here's what to do:
 1. [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
 2. Create an account.
-  * You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
-  * Write down the passphrase and keep it in your wallet.
-  * At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it.
+  - You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
+  - Write down the passphrase and keep it in your wallet.
+  - At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it.
 3. Use Bitwarden to automatically fill in your passwords. Every time you log into an account, ensure the credentials are stored in Bitwarden.
 4. Every time you make a new account, use Bitwarden to make a new login. Use a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
 
@@ -226,10 +222,10 @@ When you browse the internet, you send your ISP a list of sites you're browsing.
 
 US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific pages you visit or what you search for on encrypted sites, they can still see:
 
-* Which domains you visit (e.g. `google.com`)
-* When and how often you visit them
-* How long you spend on each site
-* Your full browsing activity on the sites that still don't use HTTPS
+- Which domains you visit (e.g. `google.com`)
+- When and how often you visit them
+- How long you spend on each site
+- Your full browsing activity on the sites that still don't use HTTPS
 
 The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing even this domain-level information, as all your traffic is encrypted before it reaches the ISP.
 
@@ -237,14 +233,15 @@ I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN ha
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
-* [ ] Create a Proton account and store the credentials in your Bitwarden
-* [ ] [Download and run ProtonVPN](https://protonvpn.com/)
-* In the settings, ensure:
-  * [ ] Your VPN always starts along with your device.
-  * [ ] Traffic can only go through your VPN (enable the "kill switch").
-* [ ] Repeat for each of your devices.
+- [ ] Create a Proton account and store the credentials in your Bitwarden
+- [ ] [Download and run ProtonVPN](https://protonvpn.com/)
+- In the settings, ensure:
+  - [ ] Your VPN always starts along with your device.
+  - [ ] Traffic can only go through your VPN (enable the "kill switch").
+- [ ] Repeat for each of your devices.
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
+
 ### VPNs are _fundamentally unreliable_ on mobile iOS as of October 2025
 
 Subtitle: And it's on Apple.
@@ -255,7 +252,6 @@ Subtitle: And it's on Apple.
 > Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, I later recommend switching [to a Google Pixel 9a running GrapheneOS.](#switch-to-android----preferably-to-grapheneos)
 
 The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
-
 
 ### Other VPN notes
 
@@ -306,7 +302,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > [!idea] Actions
 > [Download Brave](https://brave.com/) on all of your devices and then set it to be your default browser. On each device, enable Sync and enable syncing everything (it's E2EE). Install the Bitwarden extension, pin it, log in to your vault, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
 >
-> 
+>
 > > [!note]- Optional additional protections to apply
 > >  1. [ ] In "Shields", TODO fix
 > >      2. [ ] "Aggressive tracker & ad blocking"
@@ -325,7 +321,6 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > [!tip] Send your friends clean links
 > You ever see those _suuuuper_ long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
 
-
 > [!idea] Insight: reducing commercial tracking reduces your exposure to government tracking
 >
 > Companies track you and sell your data. Then the US government buys your data.
@@ -334,6 +329,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > > Mobilewalla does not collect the data itself, but rather buys it from a variety of sources, including advertisers, data brokers, and internet service providers. Once it has it, the company uses artificial intelligence to turn a stew of location data, device IDs, and browser histories to predict a person's demographics — including race, age, gender, zip code, or personal interests. Mobilewalla sells aggregated versions of that stuff back to advertisers. On its website, Mobilewalla says that it works with companies across a variety of industries — like retail, dining, telecom, banking, consulting, health, and on-demand services (like ride-hailing).
 > >  
 > > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
+> >
 ## Use a privacy-centered search engine
 
 Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduckgo.com/) are strong engines. That said, neither is as good as Google at surfacing the result you want. If you don't get what you want the first time, consider sending it over to Google by beginning your query with `!g`.
@@ -365,7 +361,8 @@ iPhone
 > [!note] Your files contain more metadata than just location
 > Your photos also might expose what kind of phone you're using and the time you took the photo. To remove these from extra-sensitive images, use a special application. Example: [Play Store](https://play.google.com/store/apps/details?id=apps.syrupy.metadatacleaner&hl=en_US), [App Store](https://apps.apple.com/us/app/exif-metadata/id1455197364).
 
-# Important steps for at-risk people 
+# Important steps for at-risk people
+
 ## Switch to Android -- preferably to GrapheneOS
 
 Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
@@ -373,14 +370,11 @@ Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and 
  I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
 
-
-
 I'm going to be real with you: the switch will be inconvenient at first. It took me an entire evening to get all my apps set up again. If you want to invest in avoiding a surveillance state, this is a good investment. You'll end up with a phone that has nearly all the functionality you'd expect of an Android. Everything should just work, with a few exceptions:
 
 1. About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/).
 2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I _will_ miss using Google Pay for public transportation.
 3. Unlike stock Android, you'll need to install Google Play Services for Android Auto to work.
-
 
 ### How to make the switch
 
@@ -392,8 +386,8 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 > 3. [ ] Download Bitwarden and then download ProtonVPN.
 > 4. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
 > 5. [ ] Download your other apps.
->     * Be stingy in letting them access the network --- only give them access if they should have it.
->     * Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
+>     - Be stingy in letting them access the network --- only give them access if they should have it.
+>     - Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
 > 6. [ ] Set these security settings in `Settings -> Security & privacy`:
 >     1. [ ] Exploit protection:
 >         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on)
@@ -418,7 +412,6 @@ Minimize how often you provide your real name, [your real email address](#use-em
 
 My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
 
- 
 ## Switch away from Windows
 
 Subtitle: Cost: \$0. Time: 10 hours?
@@ -440,14 +433,13 @@ More specifically, Windows sends out so much information about you via so-called
 
 If you have a Windows computer, you can just install Linux Mint on your computer. You don't need to buy anything new. For example, you could follow PC Magazine's guide: [Don't Like Windows 11? It's Never Been a Better Time to Make the Switch to Linux](https://www.pcmag.com/how-to/how-to-make-the-switch-from-windows-to-linux).  At first, you "dual boot" which just means you have two choices: you can boot up Windows or Linux.
 
-* [ ] Open this page on your new Linux machine. :)
+- [ ] Open this page on your new Linux machine. :)
 
 ### The Mac alternative
 
 Mac is also way more private than Windows. I use a Mac and I'm happy with it, but if I could go back and change my choice, I might've gone with Linux. Reason being: Mac requires trust in Apple since MacOS is _not open source_. However, I think [Apple has a good track record when it comes to user privacy](https://en.wikipedia.org/wiki/Apple%E2%80%93FBI_encryption_dispute) (with a few [exceptions](https://proton.me/blog/protect-data-apple-adp-uk)). Furthermore, Apple is vertically integrated and so manufactures their own CPUs and laptops. That produces a more secure experience.
 
- * [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
-
+ - [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
 
 ## Use email aliases instead of handing out your real email to random sites
 
@@ -486,7 +478,7 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
-Let's secure your data. 
+Let's secure your data.
 
 > [!warning] iCloud's Advanced Data Protection may not last forever
 > The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP.
@@ -507,7 +499,7 @@ I was using Google Drive and iCloud Drive. Neither are open source, and Google D
 - [ ] Download your existing Drive files
 - [ ] [Install Proton Drive](https://proton.me/drive/download)
 - [ ] Migrate your existing files to Proton Drive
- 
+
 ### Store your photos in Ente
 
 I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
@@ -518,11 +510,11 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration,
 
 <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif" alt="" loading="lazy" width="360" height="391" style="aspect-ratio:360 / 391;"><figcaption>Whenever I read “Ente”, I think of <a href="https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)" class="external" target="_blank" rel="noopener noreferrer">Entei, the <span class="ordinal-num">244</span><sup class="ordinal-suffix">th</sup> Pok<span class="favicon-span">emon</span></a> and the coolest of the three legendary beasts from the second generation.</figcaption></figure>
 
-* [ ] Download [Ente](https://ente.io)
-* [ ] Import your photos
-  * [ ] Google Takeout
-  * [ ] iCloud Photos
-  * [ ] Any private photos which don't sync automatically to your services
+- [ ] Download [Ente](https://ente.io)
+- [ ] Import your photos
+  - [ ] Google Takeout
+  - [ ] iCloud Photos
+  - [ ] Any private photos which don't sync automatically to your services
 
 ### Make OsmAnd your map of choice
 
@@ -531,8 +523,7 @@ The [OsmAnd](https://osmand.net) doesn't collect your data but is instead floode
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
 
 - [ ] Install OsmAnd ([Android](https://f-droid.org/en/packages/net.osmand.plus/), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257))
-- [ ] Delete your Maps location data from the cloud 
-
+- [ ] Delete your Maps location data from the cloud
 
 ## Schedule with Proton Calendar
 
@@ -556,23 +547,24 @@ Cost: \$2/month after free trial.
 
 Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
 
-* [ ] [Register for an EteSync account](https://www.etesync.com/).
-* [ ] Download EteSync to mobile devices. Don't worry about the calendar features.
-* [ ] On iOS, [consult the user guide for special instructions.](https://www.etesync.com/user-guide/ios/)
-* [ ] Import contacts from your existing sources.
-* [ ] Create a new "Test Etesync" contact in your app and check that the contact appears in the EteSync app.
-* [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
+- [ ] [Register for an EteSync account](https://www.etesync.com/).
+- [ ] Download EteSync to mobile devices. Don't worry about the calendar features.
+- [ ] On iOS, [consult the user guide for special instructions.](https://www.etesync.com/user-guide/ios/)
+- [ ] Import contacts from your existing sources.
+- [ ] Create a new "Test Etesync" contact in your app and check that the contact appears in the EteSync app.
+- [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
 
 ## Collaborate privately
 
 1. [ ] To circulate secure forms, use [Cryptpad](https://cryptpad.fr/form).
 2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/). Integrates well [with Proton Drive](#store-files-in-proton-drive).
 3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/).
+
 ## Be prepared at border checkpoints
 
 In the USA, [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say no, however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
 
-However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons. 
+However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
 - [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
 
@@ -596,6 +588,7 @@ iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
 
 In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
+
 ## Keep emergency cash reserves
 
 The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
@@ -604,11 +597,12 @@ The US government may engage in financial warfare against its critics. [Stephen 
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
 
 Before we reach that point:
-* [ ] Withdraw enough cash to live for at least a month
-* [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9))
-* [ ] Ensure your passport is current and ready for international travel
+- [ ] Withdraw enough cash to live for at least a month
+- [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9))
+- [ ] Ensure your passport is current and ready for international travel
 
 # Medium-priority items for at-risk people
+
 ## Use virtual cards for online purchases
 
 Subtitle: Cost: Free for up to 10 new virtual cards per month.
@@ -616,13 +610,13 @@ Subtitle: Cost: Free for up to 10 new virtual cards per month.
 Companies buy your data because it helps them predict what you'll do. The government wants it for similar reasons. As we do not live in a world with E2EE transactions between buyers and sellers, we must settle for imperfect protection.
 
 Services like [Privacy.com](https://privacy.com) generate single-use or merchant-locked virtual credit cards. This prevents merchants from:
-* Charging you after cancellation,
-* Making it hard for you to cancel (just delete the virtual card),
-* Exposing your real card in data breaches.
+- Charging you after cancellation,
+- Making it hard for you to cancel (just delete the virtual card),
+- Exposing your real card in data breaches.
 
-* [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
-* [ ] Install [the mobile app](https://www.privacy.com/mobile-app).
-* [ ] On Privacy.com account settings, make your purchases show up as "Privacy.com" on your bank and credit card statements.
+- [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
+- [ ] Install [the mobile app](https://www.privacy.com/mobile-app).
+- [ ] On Privacy.com account settings, make your purchases show up as "Privacy.com" on your bank and credit card statements.
 
 > [!idea] You can  buy digital services pseudonymously
 > Real-world items will require shipping to a real address. Unless you're going to set up random addresses via mail-forwarding services, you'll need to provide identifying information. That information may be sold to data brokers and then bought by the government.
@@ -637,10 +631,10 @@ Services like [Privacy.com](https://privacy.com) generate single-use or merchant
 
 [These companies share tons of your data as well.](https://www.denverpost.com/2019/08/31/credit-card-privacy-concerns/) By law, they have to let you opt out.
 
-* [ ] Minimize data sharing via your:
-  * [ ] Bank(s)
-  * [ ] Credit card(s)
-  * [ ] Other instruments
+- [ ] Minimize data sharing via your:
+  - [ ] Bank(s)
+  - [ ] Credit card(s)
+  - [ ] Other instruments
 
 ## Surreptitious "beacons" track your every movement
 
@@ -747,6 +741,7 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
 I have an [Oura ring](https://ouraring.com/) but I don't particularly trust them. Their offerings are proprietary, closed source, and not E2EE. They require cloud analysis of my health data. At the same time, I want to track my sleep health.
 
 I used to wear my Oura everywhere. But I realized I only need to wear my Oura while sleeping, meaning the ring doesn't even need to leave my home. I put on the ring at night and take it off in the morning. While Oura can still decrypt and read my sleep data, I find the tradeoff worth it for the sleep information. I decreased my daily "digital signature" by carrying one fewer device.
+
 ## Track belongings using AirTags instead of Tiles
 
 [Tile devices allegedly don't encrypt your location data, meaning criminals and law enforcement could intercept the data and watch your Tiles move around the map as they please.](https://www.wired.com/story/tile-tracking-tags-can-be-exploited-by-tech-savvy-stalkers-researchers-say/) AirTags are E2EE, keeping your location data private. After reading that article, I immediately tossed all my Tiles and bought six AirTags.
@@ -759,7 +754,7 @@ I used to wear my Oura everywhere. But I realized I only need to wear my Oura wh
 > You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
 >
 
-* [ ] `Settings -> General -> AirDrop -> "Receiving Off"`
+- [ ] `Settings -> General -> AirDrop -> "Receiving Off"`
 
 ## Disable WiFi calling
 
@@ -769,9 +764,9 @@ Wi-Fi calling is considered to be telephone data (through your carrier) and so i
 
 Popular websites tend to be horrible for privacy. Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content with a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
 
-![[privacy-20251023183015.png]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
 
-The downside is you usually can't interact with the site. You can usually just lurk. 
+The downside is you usually can't interact with the site. You can usually just lurk.
 
 - [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy
 - [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults
@@ -801,13 +796,13 @@ Figure: [Fewer than half of the companies PayPal shares your data with](https://
 
 I recommend deleting your PayPal.
 
-* [ ] Download a PDF of your current year's statements
-* [ ] Download your data under "Data & privacy"
-* [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion)
+- [ ] Download a PDF of your current year's statements
+- [ ] Download your data under "Data & privacy"
+- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion)
 
 If you want to keep your PayPal, at least mitigate by opting out of their data sharing:  
 
-* [ ] [Opt out of data sharing.](https://www.paypal.com/myaccount/privacy/settings/recommendations)
+- [ ] [Opt out of data sharing.](https://www.paypal.com/myaccount/privacy/settings/recommendations)
 
 ## Minimize sharing your data with LLMs
 
@@ -829,7 +824,7 @@ Eventually I'll likely be able to run a local model on my MacBook Pro but with t
 
 ### `opensuperwhisper` runs local speech-to-text
 
- This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on Macbook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder. 
+ This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on Macbook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder.
 
 ### Regularly delete your chat history for frontier models
 
@@ -849,9 +844,9 @@ Normal smart TVs shove tons of ads in your face and track lots of your data. App
 > [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
 > It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
   
-  * [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1)
-  * [ ] Connect to your TV
-  * [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead
+  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1)
+  - [ ] Connect to your TV
+  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead
 
 ## Avoid distinctive device names
 
@@ -873,6 +868,7 @@ Other tips:
  1. Turn off specialized devices when not using them. For example, a smart speaker.  
  2. Disconnect from unknown Bluetooth devices.
  3. Putting on some music in your friend's car? Give it minimal permissions --- don't let it suck up your entire contacts list.
+
 ## Gradually migrate your social network away from X
 
 <video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
@@ -956,6 +952,7 @@ Securing even one of these timely improvements would be a _significant win for p
 Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
 
 Create a space which TODO
+
 # Do not yield to pressure or fear
 
 "It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"?
@@ -967,7 +964,6 @@ Scenario: You go to a protest. [License Plate Readers log every car that drove b
 When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or switch to the Brave web browser, or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak.
 
 # Appendix: Precautions which didn't make the cut for the main article
-
 
 ## Buy webcam covers
 
@@ -1003,14 +999,14 @@ Apparently many security camera solutions are horrible for privacy. Make sure yo
 By the year of our lord 2025, I was [hardly using my Facebook](/digital-declutter). I figured that Facebook having all that data on me is another attack surface for unwanted invasive AI tracking later on. Although deleting my Facebook data from Meta's servers won't delete the data which Meta already sold to data brokers, partial deletion is better than nothing.
 
 For Facebook in particular:
-* [ ] [Export your data first](https://www.facebook.com/help/212802592074644)
-* [ ] Store your data [in Proton Drive](#store-files-in-proton-drive)
-* [ ] Consider making a last status update with information for how your friends can reach you.
-* [ ] After export, [delete your account.](https://www.facebook.com/help/224562897555674)  
+- [ ] [Export your data first](https://www.facebook.com/help/212802592074644)
+- [ ] Store your data [in Proton Drive](#store-files-in-proton-drive)
+- [ ] Consider making a last status update with information for how your friends can reach you.
+- [ ] After export, [delete your account.](https://www.facebook.com/help/224562897555674)  
 
 More generally:
-* [ ] Spend three minutes brainstorming what accounts you've made over the years.
-* [ ] Export data, delete, and move on.
+- [ ] Spend three minutes brainstorming what accounts you've made over the years.
+- [ ] Export data, delete, and move on.
 
 ## US government watches immigrant speech on social media
 
@@ -1023,15 +1019,14 @@ More generally:
 
 Not much you can do besides being [pseudonymous](#be-pseudonymous-when-possible). Be as brave as you can be in your situation. Try not to give in to the chilling effect. Speak your mind while being smart about it.
 
-
 ## Control smart home devices with Home Assistant
 
 I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
 
-* [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
-  * [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
-* [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
-* [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
+- [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+  - [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
+- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
+- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
 
 ## Ensure true E2EE for incremental backups
 
