@@ -440,23 +440,74 @@ def test_check_problematic_paragraphs(sample_soup):
     )
 
 
-def test_check_problematic_paragraphs_with_direct_text():
-    html = """
-    <html>
-    <body>
-        <article>
-            Figure: Text
-            <p>Normal paragraph</p>
-            <blockquote>Figure: Blockquote</blockquote>
-        </article>
-    </body>
-    </html>
-    """
+@pytest.mark.parametrize(
+    "html,expected_in,expected_not_in",
+    [
+        (
+            """
+            <html>
+            <body>
+                <article>
+                    Figure: Text
+                    <p>Normal paragraph</p>
+                    <blockquote>Figure: Blockquote</blockquote>
+                </article>
+            </body>
+            </html>
+            """,
+            [
+                "Problematic paragraph: Figure: Text",
+                "Problematic paragraph: Figure: Blockquote",
+            ],
+            ["Problematic paragraph: Normal paragraph"],
+        ),
+        (
+            """
+            <html>
+            <body>
+                <article>
+                    <p>Figure: This should be detected</p>
+                    <svg>
+                        <text>Figure: This should be ignored</text>
+                        <title>Table: This should also be ignored</title>
+                    </svg>
+                    <p>Normal paragraph</p>
+                </article>
+            </body>
+            </html>
+            """,
+            ["Problematic paragraph: Figure: This should be detected"],
+            [
+                "Problematic paragraph: Figure: This should be ignored",
+                "Problematic paragraph: Table: This should also be ignored",
+                "Problematic paragraph: Normal paragraph",
+            ],
+        ),
+        (
+            """
+            <html>
+            <body>
+                <article>
+                    <code>Figure: Inside code</code>
+                    <p>Figure: Outside code</p>
+                </article>
+            </body>
+            </html>
+            """,
+            ["Problematic paragraph: Figure: Outside code"],
+            ["Problematic paragraph: Figure: Inside code"],
+        ),
+    ],
+)
+def test_check_problematic_paragraphs_with_exclusions(
+    html, expected_in, expected_not_in
+):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.paragraphs_contain_canary_phrases(soup)
-    assert "Problematic paragraph: Figure: Text" in result
-    assert "Problematic paragraph: Figure: Blockquote" in result
-    assert "Problematic paragraph: Normal paragraph" not in result
+    for expected in expected_in:
+        assert expected in result
+    for not_expected in expected_not_in:
+        assert not_expected not in result
 
 
 def test_check_katex_elements_for_errors(sample_html_with_katex_errors):

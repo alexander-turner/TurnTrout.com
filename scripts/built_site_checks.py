@@ -290,7 +290,7 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     Check for text nodes containing specific canary phrases.
 
     Checks all text-containing elements in the document. Ignores text within
-    <code> tags.
+    <code> tags and <svg> tags.
     """
     bad_anywhere = (
         r"> \[\![a-zA-Z]+\]",  # Callout syntax
@@ -327,8 +327,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
             )
 
     for text_node in soup.find_all(string=True):
-        # Skip text inside code tags
-        if any(parent.name == "code" for parent in text_node.parents):
+        # Skip text inside code tags and SVGs
+        if any(parent.name in ("code", "svg") for parent in text_node.parents):
             continue
         _check_text_node(str(text_node))
 
