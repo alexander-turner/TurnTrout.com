@@ -5430,5 +5430,9 @@
   "/static/images/external-favicons/cpj_org.png": {
     "width": 64,
     "height": 64
+  },
+  "./asset_staging/privacy-20251023213135.png": {
+    "width": 351,
+    "height": 465
   }
 }
