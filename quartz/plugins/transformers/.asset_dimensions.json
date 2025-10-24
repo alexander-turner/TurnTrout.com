@@ -5374,5 +5374,61 @@
   "https://assets.turntrout.com/static/images/external-favicons/pcmag_com.avif": {
     "width": 64,
     "height": 64
+  },
+  "./asset_staging/privacy-20251022164131.png": {
+    "width": 1137,
+    "height": 556
+  },
+  "/static/images/external-favicons/osmand_net.png": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/keys_openpgp_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/osmand_net.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif": {
+    "width": 1137,
+    "height": 556
+  },
+  "/static/images/external-favicons/f-droid_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/cryptpad_fr.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/entraide_chatons_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/libredirect_github_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251023182612.png": {
+    "width": 1063,
+    "height": 699
+  },
+  "/static/images/external-favicons/nitter_net.png": {
+    "width": 48,
+    "height": 48
+  },
+  "./asset_staging/privacy-20251023183015.png": {
+    "width": 1079,
+    "height": 943
+  },
+  "/static/images/external-favicons/accessnow_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/cpj_org.png": {
+    "width": 64,
+    "height": 64
   }
 }
