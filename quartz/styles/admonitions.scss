@@ -11,7 +11,10 @@
 
 .admonition {
   --border: color-mix(in srgb, var(--color) 60%, var(--background));
-  --bg: color-mix(in srgb, var(--color) 4%, var(--background));
+  --bg: light-dark(
+    color-mix(in srgb, var(--color) 4%, var(--background)),
+    color-mix(in srgb, var(--color) 2%, var(--background))
+  );
   --admonition-icon-note: url("https://assets.turntrout.com/static/icons/note.svg");
   --admonition-icon-abstract: url("https://assets.turntrout.com/static/icons/abstract.svg");
   --admonition-icon-info: url("https://assets.turntrout.com/static/icons/info.svg");
@@ -93,7 +96,6 @@
   // Orange
   &[data-admonition="warning"] {
     --color: color-mix(in srgb, var(--orange) 60%, var(--foreground));
-    --bg: color-mix(in srgb, var(--color) 10%, var(--background));
     --admonition-icon: var(--admonition-icon-warning);
   }
 
@@ -102,7 +104,6 @@
   &[data-admonition="bug"],
   &[data-admonition="danger"] {
     --color: color-mix(in srgb, var(--red) 70%, var(--foreground));
-    --bg: color-mix(in srgb, var(--color) 10%, var(--background));
   }
 
   // Pink
@@ -243,6 +244,7 @@
 
   .admonition-title-inner {
     margin: 0;
+    margin-right: calc(0.75 * $base-margin);
     color: var(--color);
     font-weight: $semi-bold-weight;
     font-variant-numeric: lining-nums;

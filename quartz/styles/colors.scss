@@ -17,14 +17,14 @@
   --gold: #db9c01; /* Gold */
 
   // Theme-specific colors (from quartz.config.ts darkMode)
-  --background: #303446; // frappeColors.base
-  --midground-faint: #{$midground-faint-dark}; // frappeColors.overlay-0
-  --midground: #{$midground-dark}; // frappeColors.overlay-2
-  --midground-strong: #c6cff0; // frappeColors.subtext-1
-  --foreground: #eff2ff; // frappeColors.text, modified
-  --secondary: #97b0e9; // frappeColors.blue
-  --tertiary: #99d1db; // custom color
-  --highlight: #949cbb30; // frappeColors.overlay-2 at 20% opacity
+  --background: #12141e;
+  --midground-faint: #{$midground-faint-dark};
+  --midground: #{$midground-dark};
+  --midground-strong: #c6cff0;
+  --foreground: #d6deff;
+  --secondary: #97b0e9;
+  --tertiary: #99d1db;
+  --highlight: #949cbb30;
 
   // Always give access to light and dark colors
   --light: var(--foreground);
@@ -65,13 +65,13 @@
 
   // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #fcfcff;
-  --midground-faint: #{$midground-faint-light}; // latteColors.overlay-0
-  --midground: #{$midground-light}; // latteColors.overlay-2
-  --midground-strong: #5c5f77; // latteColors.subtext-1
-  --foreground: #4c4f69; // latteColors.text
-  --secondary: #1e66f5; // latteColors.blue
-  --tertiary: #0486b9; // custom color
-  --highlight: #7c7f9324; // latteColors.overlay-2 at 20% opacity
+  --midground-faint: #{$midground-faint-light};
+  --midground: #{$midground-light};
+  --midground-strong: #5c5f77;
+  --foreground: #4c4f69;
+  --secondary: #1e66f5;
+  --tertiary: #0486b9;
+  --highlight: #7c7f9324;
   --light: var(--background);
   --dark: var(--foreground);
   --dark-gray: var(--midground-strong);
