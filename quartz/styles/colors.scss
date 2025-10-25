@@ -217,8 +217,9 @@ a {
   &:visited {
     color: var(--color-link-visited);
   }
+}
 
-  &:hover {
-    color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
-  }
+a:hover,
+#toc-title button:hover {
+  color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
 }
