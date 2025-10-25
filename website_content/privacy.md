@@ -1,12 +1,12 @@
 ---
 title: An opinionated guide to privacy despite authoritarianism
-permalink: 
+permalink: privacy-despite-authoritarianism
 no_dropcap: false
 tags:
   - practical
   - personal
   - open-source
-description: ""
+description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: 
@@ -14,7 +14,6 @@ aliases:
   - privacy
   - privacy-tips
 ---
-
 Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
@@ -342,7 +341,10 @@ iPhone
 
 Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
- I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
+> [!info] Reminder that I work at Google DeepMind
+> Though I don't think my employment much influenced my recommendations. For what it's worth, before I learned about [the VPN fiasco](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
+
+I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
 
 I'm going to be real with you: the switch will be inconvenient at first. It took me an entire evening to get all my apps set up again. If you want to invest in avoiding a surveillance state, this is a good investment. You'll end up with a phone that has nearly all the functionality you'd expect of an Android. Everything should just work, with a few exceptions:

@@ -5470,5 +5470,17 @@
   "/static/images/external-favicons/element_io.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/element_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/snopes_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20251024135725.avif": {
+    "width": 895,
+    "height": 452
   }
 }
