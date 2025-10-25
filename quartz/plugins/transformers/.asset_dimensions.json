@@ -5462,5 +5462,13 @@
   "./asset_staging/understanding-and-controlling-a-maze-solving-policy-network-20251024135725.jpeg": {
     "width": 895,
     "height": 452
+  },
+  "/static/images/external-favicons/snopes_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/element_io.png": {
+    "width": 64,
+    "height": 64
   }
 }

@@ -1,5 +1,5 @@
 ---
-title: An opinionated guide to digital privacy
+title: An opinionated guide to privacy despite authoritarianism
 permalink: 
 no_dropcap: false
 tags:
@@ -14,12 +14,6 @@ aliases:
   - privacy
   - privacy-tips
 ---
-
-# Purpose
-
-- My history with activism
-- America has become an authoritarian regime which persecutes political opponents
-- This guide is about protecting yourself, but it's not necessarily about hiding. Take risks which merit the pain; effectively resist by sharing meaningful statements while retaining your logistics and organizing.
 
 Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
 
@@ -38,9 +32,11 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 >
 > There is, in some sense, nothing left to be revealed or exposed. Or to be more precise, the revelation and exposure of new particulars will not tell us anything more about the nature of the political situation through which we are living. The struggle now is not to uncover the right information, but to rightly understand the meaning of the information we already have, and to face that meaning together.
 
- This situation has greatly worsened since then, and it will continue to worsen (at least in some respects). Closest to my expertise: there aren't enough federal agents to watch every single American. However, there [may be enough AIs](https://www.americanimmigrationcouncil.org/blog/ice-immigrationos-palantir-ai-track-immigrants/). Cheap, effective AI will allow detailed analysis of _all data and patterns_ collected by these wide-scale surveillance programs. Therefore, limiting your exposure will become even more important.
+ This situation has greatly worsened since that foreword in May. It will continue to worsen (at least in some respects). Closest to my expertise: there aren't enough federal agents to watch every single American. However, there [may be enough AIs](https://www.americanimmigrationcouncil.org/blog/ice-immigrationos-palantir-ai-track-immigrants/). Cheap, effective AI will allow detailed analysis of _all data and patterns_ collected by wide-scale surveillance programs.
 
- Let's start now.
+I'm going to help you protect your communications and information so you can think and speak freely. The privacy won't be perfect, but it should give you  breathing room. As more people reclaim their privacy, their networks grow more secure and resistant to authoritarian punishment.
+
+Let's get started.
 
 > [!info]  I'm only speaking for myself
 >  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views.
@@ -50,41 +46,18 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 
 # What should I read?
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
+This guide is long. Don't try to complete it all at once. Something is better than nothing. Even a few hours can transform your privacy.
 
-This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
+   | Tier               | Total Time | Initial Cost | Monthly Cost | Protection Level                    |
+   | -----------------: | :--------: | :----------: | :----------: | :--------------------------------- |
+   | **Quick start**    | 30 min     | $110     | $0           | Online accounts secured against most hacking. Not yet private!  |
+   | **Privacy basics** | 2.5 hrs    | $0           | $13        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
+   | **High-risk**      | 10-20 hrs  | $550-700     | $15-25       |   Govt. can't access most of your data or communications. Private mobile and computer operating systems.   |
 
-This guide is long. Don't try to complete it all at once. Something is better than nothing. Even a few hours can transform your privacy. Invest in your future, yourself, and your network by securing yourself today.
-
-- probably a table
-
-Quick-start
-1. Bitwarden
-2. iOS: Advanced data protection
-3. 2FA
-4. Automatic and timely operating system updates
-
-"You're now protected against 80% of hacking attempts"
-
-"Privacy Basics (2.5 hours)"
-
-1. VPN
-2. Signal
-3. Brave browser
-4. Use privacy-focused search
-5. Minimize app permissions
-
-You've created dark spots away from unfriendly eyes. You can think, communicate, and browse more freely and at less risk.
-
-"High-Risk User Path"
-
-Journalist, activist, immigrant, targets of political persecution
-"If you attend protests..." / "If you're undocumented..."
-
-Prioritize: GrapheneOS, Signal with disappearing messages, router-level VPN, pseudonymity
+This guide is about protecting yourself, but it's not necessarily about _hiding_. Take risks which merit the pain. Effectively resist by sharing meaningful statements while retaining your logistics and organizing.
 
 > [!warning] Location tracking: what you can and cannot stop
->   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. You will be hard-pressed to turn invisible while participating in modern society.
+>   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. _You will be hard-pressed to turn invisible while participating in modern society._
 >
 >   This guide will teach you to protect:
 >   1. Content of your communications (Signal E2EE),
@@ -93,9 +66,13 @@ Prioritize: GrapheneOS, Signal with disappearing messages, router-level VPN, pse
 >   4. Your network and contacts (E2EE contact storage),
 >   5. Correlation across identities (pseudonymity, email aliases).
 >
->   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings.
+>   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings. Otherwise, pessimistically assume the government knows where you are at all times.
 
 # Open source and encryption are your friends
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
+
+This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
 
 I've structured my recommendations around two key principles.
 
@@ -113,8 +90,6 @@ Unless I mention otherwise, all of my recommendations are both open source and E
 
 # Quick start in 30 minutes
 
-By the end of this section, TODO
-
 ## Manage passwords with Bitwarden
 
 Subtitle: Cost: Free. Time: 30 minutes.
@@ -126,9 +101,9 @@ If you're not using a password manager already, _Bitwarden will make your life e
 Here's what to do:
 1. [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
 2. Create an account.
-  - You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
-  - Write down the passphrase and keep it in your wallet.
-  - At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it.
+    - You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
+    - Write down the passphrase and keep it in your wallet.
+    - At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it.
 3. Use Bitwarden to automatically fill in your passwords. Every time you log into an account, ensure the credentials are stored in Bitwarden.
 4. Every time you make a new account, use Bitwarden to make a new login. Use a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
 
@@ -236,8 +211,8 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 - [ ] Create a Proton account and store the credentials in your Bitwarden
 - [ ] [Download and run ProtonVPN](https://protonvpn.com/)
 - In the settings, ensure:
-  - [ ] Your VPN always starts along with your device.
-  - [ ] Traffic can only go through your VPN (enable the "kill switch").
+     - [ ] Your VPN always starts along with your device.
+     - [ ] Traffic can only go through your VPN (enable the "kill switch").
 - [ ] Repeat for each of your devices.
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
@@ -386,8 +361,8 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 > 3. [ ] Download Bitwarden and then download ProtonVPN.
 > 4. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
 > 5. [ ] Download your other apps.
->     - Be stingy in letting them access the network --- only give them access if they should have it.
->     - Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
+>        - Be stingy in letting them access the network --- only give them access if they should have it.
+>        - Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
 > 6. [ ] Set these security settings in `Settings -> Security & privacy`:
 >     1. [ ] Exploit protection:
 >         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on)
@@ -614,6 +589,8 @@ Services like [Privacy.com](https://privacy.com) generate single-use or merchant
 - Making it hard for you to cancel (just delete the virtual card),
 - Exposing your real card in data breaches.
 
+Protect yourself.
+
 - [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
 - [ ] Install [the mobile app](https://www.privacy.com/mobile-app).
 - [ ] On Privacy.com account settings, make your purchases show up as "Privacy.com" on your bank and credit card statements.
@@ -724,11 +701,11 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
 
 1. [ ] [Set up ProtonVPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
 2. [ ] Exempt your laptop so it uses its own VPN:
-   3. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
-   4. [ ] Navigate to VPN settings,
-   5. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
-   6. [ ] Exempt the devices which run their own _secure_ VPN connections.
-7. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+    1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
+    2. [ ] Navigate to VPN settings,
+    3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
+    4. [ ] Exempt the devices which run their own _secure_ VPN connections.
+3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
 
 ### Wifi network advice
 
@@ -951,17 +928,64 @@ Securing even one of these timely improvements would be a _significant win for p
 
 Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
 
-Create a space which TODO
+Create a space where people can speak freely without fear of government surveillance. [Element](https://element.io/) is an open-source, E2EE messaging platform built on the Matrix protocol. Unlike Slack, Element encrypts messages end-to-end, meaning even if servers are compromised, your conversations remain private.
 
-# Do not yield to pressure or fear
+### Key Features of Element
+
+- **End-to-end encryption:** Messages are encrypted on your device before sending
+- **Open source:** Auditable code you can trust
+- **Self-hosting option:** Complete control over your data
+- **Federation:** Can communicate with users on other Matrix servers
+- **Voice/video calls:** Encrypted audio and video conferencing
+- **File sharing:** Encrypted file transfers
+
+### Migration Strategy
+
+Here's an example migration strategy.
+
+#### Phase 1: Establish parallel infrastructure (Week 1-2)
+
+- [ ] Set up an Element workspace for your team or organization
+- [ ] Choose between [Element Cloud](https://element.io/pricing) (easiest, \$5-10/user/month) or self-hosted Matrix server (free but requires technical expertise)
+- [ ] Create equivalent channels/rooms for sensitive discussions
+- [ ] Invite a small pilot group of trusted colleagues
+
+#### Phase 2: Gradual adoption (Weeks 3-8)
+
+- [ ] Start moving sensitive conversations to Element
+    - Policy discussions that could be politically risky
+    - Organizing around workplace issues
+    - Any communication with non-US citizens about political topics
+- [ ] Keep Slack for routine work communications initially
+- [ ] Document which conversations belong on which platform
+
+#### Phase 3: Expand usage (Months 2-6)
+
+- [ ] Train additional team members on Element
+- [ ] Create bridges between platforms if needed for transition period
+- [ ] Gradually move more conversations to Element
+- [ ] Establish Element as the default for any sensitive topics
+
+#### Phase 4: Full transition (optional)
+
+- [ ] Evaluate whether full migration makes sense for your organization
+- [ ] For maximum security, fully deprecate Slack and delete message history
+- [ ] Or maintain dual platforms with clear boundaries
+
+> [!info] Consider compliance implications
+> Some industries require message retention for compliance. Element supports this through server-side features, but E2EE complicates discovery. Consult legal counsel before full migration in regulated industries.
+
+# Reclaim your bubbles of freedom
 
 "It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"?
 
 The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. _That's the entire reason that data brokers make money from your information_ - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
 
-Scenario: You go to a protest. [License Plate Readers log every car that drove by](#automated-license-plate-readers-cant-do-anything-about-them). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases derived from driver's license photos.
+Imagine: You go to a protest. [License Plate Readers log every car that drove by](#automated-license-plate-readers-cant-do-anything-about-them). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases derived from driver's license photos.
 
 When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or switch to the Brave web browser, or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak.
+
+By reclaiming bubbles of individual liberty, we thereby promote liberty and justice for all.
 
 # Appendix: Precautions which didn't make the cut for the main article
 
@@ -1037,5 +1061,3 @@ iCloud (with ADP) doesn't work because I want complete incremental backup of all
 I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my config template](https://assets.turntrout.com/duplicati.json).
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
-
-TODO investigate encrypted backups on icloud not being E2EE by default if ADP enabled???
