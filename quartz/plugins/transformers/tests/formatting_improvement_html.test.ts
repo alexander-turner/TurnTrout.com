@@ -536,6 +536,8 @@ describe("HTMLFormattingImprovement", () => {
       ["10-20", "10–20"],
       ["100-200", "100–200"],
       ["1000-2000", "1000–2000"],
+      ["1,000-2,000", "1,000–2,000"],
+      ["1.000-2.000", "1.000–2.000"],
       ["1-2 and 3-4", "1–2 and 3–4"],
       ["from 5-10 to 15-20", "from 5–10 to 15–20"],
       ["1-2-3", "1–2-3"], // Only replace the first hyphen
@@ -544,6 +546,9 @@ describe("HTMLFormattingImprovement", () => {
       ["a1-2b", "a1-2b"], // Don't replace if not purely numeric
       ["p. 206-207)", "p. 206–207)"], // ) should close out a word boundary
       ["Qwen1.5-1.8", "Qwen1.5-1.8"], // Don't replace if there's a decimal
+      ["$100-$200", "$100–$200"], // Dollar amounts
+      ["$1.50-$3.50", "$1.50–$3.50"], // Dollar amounts with decimals
+      ["$1-3", "$1–3"], // Dollar amounts with single digit
     ]
     it.each([...testCases, ["1 - 2", "1 - 2"]])(
       'should replace hyphens with en dashes in number ranges: "%s"',

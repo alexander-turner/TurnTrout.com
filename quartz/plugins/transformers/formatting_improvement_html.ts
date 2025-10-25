@@ -242,14 +242,14 @@ export function spacesAroundSlashes(text: string): string {
 /**
  * Replaces hyphens with en dashes in number ranges
  *  Number ranges should use en dashes, not hyphens.
- *  Allows for page numbers in the form "p.206-207"
- *
- *  Included in hyphenReplace()
- * @returns The text with en dashes in number ranges
+ *  Allows for page numbers in the form "p.206-207" or "$100-$200"
  */
 export function enDashNumberRange(text: string): string {
   return text.replace(
-    new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
+    new RegExp(
+      `\\b(?<![a-zA-Z.])((?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
+      "g",
+    ),
     "$1–$2",
   )
 }
