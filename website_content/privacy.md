@@ -207,8 +207,8 @@ I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN ha
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
-- [ ] Create a Proton account and store the credentials in your Bitwarden
-- [ ] [Download and run ProtonVPN](https://protonvpn.com/)
+- [ ] Create a Proton account and store the credentials in your Bitwarden.
+- [ ] [Download and run ProtonVPN](https://protonvpn.com/).
 - In the settings, ensure:
      - [ ] Your VPN always starts along with your device.
      - [ ] Traffic can only go through your VPN (enable the "kill switch").
@@ -260,8 +260,8 @@ I thoroughly ran available browsers against my criteria for you:
 1. Strong privacy protection against commercial and governmental tracking,
 2. Strong ad blocking,
 3. Runs websites smoothly without major usability sacrifices,
-4. E2EE history and preferences sync across mobile and desktop, and
-5. Open source.
+4. E2EE history and preferences sync across mobile and desktop,
+5. Open source, and
 6. Good default settings (convenient for you).
 
 I settled on [Brave](https://brave.com/), based on Chromium. The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of recent restrictions on popular ad blockers. I also found it easy to migrate to Brave.
@@ -279,18 +279,18 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >
 > > [!note]- Optional additional protections to apply
 > >  1. [ ] In "Shields", TODO fix
-> >      2. [ ] "Aggressive tracker & ad blocking"
-> >      3. [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data)
-> >      4. [ ] "Block fingerprinting" (make it harder for sites to uniquely identify you)
-> >      5. [ ]"Block third-party cookies"
-> >  6. [ ] In "Privacy and security":
-> >      7. [ ] "WebRTC IP handling policy" to "Disable non-proxied UDP" (otherwise an adversary can find your real IP address, even behind a VPN)
-> >      8. [ ] "Auto-redirect AMP pages"
-> >      9. [ ] "Auto-redirect tracking URLs"
-> >      10. [ ] "Prevent sites from fingerprinting based on language"
-> >      11. [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
-> >      12. [ ] Disable all options under "Data collection"
-> >  13. [ ] Also apply these settings in your mobile Brave browser
+> >        - [ ] "Aggressive tracker & ad blocking"  
+> >        - [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data)
+> >        - [ ] "Block fingerprinting" (make it harder for sites to uniquely identify you)
+> >        - [ ] "Block third-party cookies"
+> >  1. [ ] In "Privacy and security":
+> >      - [ ] "WebRTC IP handling policy" to "Disable non-proxied UDP" (otherwise an adversary can find your real IP address, even behind a VPN)
+> >      - [ ] "Auto-redirect AMP pages"
+> >      - [ ] "Auto-redirect tracking URLs"
+> >      - [ ] "Prevent sites from fingerprinting based on language"
+> >      - [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
+> >      - [ ] Disable all options under "Data collection"
+> >  1. [ ] Also apply these settings in your mobile Brave browser
 
 > [!tip] Send your friends clean links
 > You ever see those _suuuuper_ long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
@@ -351,7 +351,6 @@ I'm going to be real with you: the switch will be inconvenient at first. It took
 
 1. About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/). If your app isn't listed, that might be OK. For example, a friend found that First Tech bank's app isn't on the list, but he was still able to log in using the Brave web browser on my GrapheneOS phone. From there, GrapheneOS can pin the webpage to the home screen.
 2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I _will_ miss using Google Pay for public transportation.
-3. Unlike stock Android, you'll need to install Google Play Services for Android Auto to work.
 
 ### How to make the switch
 
@@ -376,17 +375,6 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 ## Be pseudonymous when possible
 
 Minimize how often you provide your real name, [your real email address](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), your real phone number, or [your real credit card](#use-virtual-cards-for-online-purchases). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
-
-> [!quote] [Real-Name Policies: The War Against Pseudonymity](https://www.privacyguides.org/articles/2025/10/15/real-name-policies/)
-> Pseudonymity, or the use of a nickname or fictitious name online, has always been deeply valued on the internet. It grants people protections and freedoms that are often impossible to benefit from offline.
->
-> Women, and especially women who are part of male-dominated online communities, have regularly used pseudonyms to hide their gender online in order to protect themselves from sexual harassment, stalking, and physical violence even.
->
-> Transgender and gender-diverse people also regularly use pseudonyms for protection, or use new chosen names to explore their gender identity online.
->
-> Victims of domestic violence, victims of stalkers, activists, and even journalists often use pseudonyms to protect themselves from aggressors or oppressive regimes.
->
-> **Pseudonymity saves lives.** And yet, it is constantly under attack.
 
 My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
 

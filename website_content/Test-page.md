@@ -74,6 +74,7 @@ Subtitle: I am a subtitle with [a link](/test-page).
 
 2. [ ] Checkbox within `ol > li`
 3. Second `li`
+    - [ ] `ol > li > ul > li` lacked indentation before
 
 ----
 

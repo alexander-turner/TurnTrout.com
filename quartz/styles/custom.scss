@@ -117,6 +117,11 @@ ul {
   }
 }
 
+ol > li,
+ul > li:has(:first-child:is(input.checkbox-toggle)) {
+  padding-left: $li-padding-left;
+}
+
 // ul are not as indented as ol, so we need to add some padding-left
 ul {
   padding-left: calc(#{$list-padding-left} + 1 * #{$li-padding-left});
@@ -137,7 +142,6 @@ ol {
   & > li {
     counter-increment: list; // Increment the list counter for each list item
     margin-bottom: var(--li-margin-bottom);
-    padding-left: $li-padding-left;
 
     // If in safari, use the marker to display the list counter
     @supports (-webkit-hyphens: none) {
