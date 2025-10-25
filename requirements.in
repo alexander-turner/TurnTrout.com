@@ -2,26 +2,3 @@
 # To regenerate: ./scripts/update_requirements.sh
 
 # Production dependencies (auto-detected from scripts/)
-GitPython
-Pillow
-PyYAML
-Requests
-beautifulsoup4
-google_auth
-numpy
-pandas
-protobuf
-psutil
-pytest
-rich
-ruamel.yaml
-tqdm
-validators
-
-# Testing dependencies
-pytest
-
-# Type stubs for mypy
-types-pyyaml
-types-requests
-pandas-stubs

@@ -5494,5 +5494,69 @@
   "https://assets.turntrout.com/static/images/external-favicons/help_obsidian_md.avif": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/objective-see_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/standardnotes_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/takeout_google_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/twemoji/2753.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/26a0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "/static/images/external-favicons/ems-docs_element_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/takeout_google_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ems-docs_element_io.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/matrix_org.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/whitehouse_gov.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/opb_org.png": {
+    "width": 48,
+    "height": 48
+  },
+  "/static/images/external-favicons/npr_org.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/aljazeera_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/axios_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/foreignpolicy_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/mediaite_com.png": {
+    "width": 64,
+    "height": 64
   }
 }

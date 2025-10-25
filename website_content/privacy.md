@@ -33,6 +33,32 @@ Edward Snowden warned us of a day that the free world might regret its surveilla
 
  This situation has greatly worsened since that foreword in May. It will continue to worsen (at least in some respects). Closest to my expertise: there aren't enough federal agents to watch every single American. However, there [may be enough AIs](https://www.americanimmigrationcouncil.org/blog/ice-immigrationos-palantir-ai-track-immigrants/). Cheap, effective AI will allow detailed analysis of _all data and patterns_ collected by wide-scale surveillance programs.
 
+We must indeed "rightly understand the meaning of the information we already have, and to face that meaning together."
+
+> [!warning] Future political persecution demands privacy now
+>
+> > [!quote] [Stephen Miller](https://www.snopes.com/fact-check/stephen-miller-democrats-extremist/)
+> > Subtitle: President Trump's Deputy Chief of Staff for Policy and Homeland Security Advisor
+> >
+> > The Democrat Party does not fight for, care about or represent American citizens. It is an entity devoted _exclusively_ to the defense of hardened criminals, gangbangers, and illegal alien killers and terrorists. The Democrat Party is not a political party. It is a domestic extremist organization.
+>
+>   Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not legally a classification). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
+>
+> The order put the FBI's Joint Terrorism Task Force in the lead and directed the Treasury Department ["to identify and disrupt financial networks that fund domestic terrorism and political violence,"](https://www.opb.org/article/2025/09/25/trump-orders-crackdown-domestic-terrorists/) naming Democratic donors George Soros and Reid Hoffman as potential targets (without providing evidence).
+>
+> > [!quote] [Trump's address to ~800 senior military leaders at Marine Corps Base Quantico](https://www.aljazeera.com/news/2025/9/30/key-takeaways-from-trumps-speech-to-us-military-generals)
+> > This is going to be a big thing for the people in this room, because it's the enemy from within, and we have to handle it before it gets out of control. It won't get out of control once you're involved at all. We're under invasion from within. No different than a foreign enemy, but more difficult in many ways because they don't wear uniforms.
+> >
+> > In our inner cities—which we're going to be talking about because it's a big part of war now. It's a big part of war. San Francisco, Chicago, New York, Los Angeles. They're very unsafe places. And we're gonna straighten them out one-by-one. This is gonna be a major part for some of the people in this room. It's a war, too.
+> >
+> > It's a war from within.
+>
+> On October 8th, 2025, President Trump [posted](https://www.nbcnews.com/politics/white-house/trump-says-gov-jb-pritzker-chicago-mayor-brandon-johnson-jail-rcna236339) that Chicago Mayor Brandon Johnson and Illinois Governor JB Pritzker "should be in jail for failing to protect Ice Officers!" When pressed by reporters about what crimes he believed they had committed, Trump said "I've seen the law" and doubled down on his call for their imprisonment.
+>
+> Trump labels his opposition as terrorists, targets political ideologies through executive orders, and tells his generals to prepare to go to war inside our own country. Sooner or later, you might become an "enemy from within." **Accept the reality of the risk cast by the future. Act now to prepare.**
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
+
 I'm going to help you protect your communications and information so you can think and speak freely. The privacy won't be perfect, but it should give you  breathing room. As more people reclaim their privacy, their networks grow more secure and resistant to authoritarian punishment.
 
 Let's get started.
@@ -45,13 +71,13 @@ Let's get started.
 
 # What should I read?
 
-This guide is long. Don't try to complete it all at once. Something is better than nothing. Even a few hours can transform your privacy.
+This guide is long. Don't try to complete it all at once. Something is better than nothing. Even a few hours can transform your privacy. If money is hard to come by, don't worry - many of the best interventions are free. Do what you can.
 
-   | Tier               | Total Time | Initial Cost | Monthly Cost | Protection Level                    |
+   | **Tier**               | **Total time** | **Initial cost** | **Monthly cost** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :----------: | :--------------------------------- |
-   | **Quick start**    | 30 min     | $110     | $0           | Online accounts secured against most hacking. Not yet private!  |
-   | **Privacy basics** | 2.5 hrs    | $0           | $13        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
-   | **High-risk**      | 10-20 hrs  | $550-700     | $15-25       |   Govt. can't access most of your data or communications. Private mobile and computer operating systems.   |
+   | Quick start    | 30 min     | $110     | $0           | Online accounts secured against most hacking. Not yet private!  |
+   | Privacy basics | 2.5 hrs    | $0           | $13        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
+   | High-risk      | 10-20 hrs  | $550     | $25       |   Govt. can't access most of your data or communications. Private mobile and computer operating systems.   |
 
 This guide is about protecting yourself, but it's not necessarily about _hiding_. Take risks which merit the pain. Effectively resist by sharing meaningful statements while retaining your logistics and organizing.
 
@@ -65,11 +91,9 @@ This guide is about protecting yourself, but it's not necessarily about _hiding_
 >   4. Your network and contacts (E2EE contact storage),
 >   5. Correlation across identities (pseudonymity, email aliases).
 >
->   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings. Otherwise, pessimistically assume the government knows where you are at all times.
+>   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings. Otherwise, pessimistically assume the government knows where you are at all times. Also, financial privacy is hard and this guide only helps a bit on that front.
 
 # Open source and encryption are your friends
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
 
 This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
 
@@ -278,19 +302,19 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >
 >
 > > [!note]- Optional additional protections to apply
-> >  1. [ ] In "Shields", TODO fix
-> >        - [ ] "Aggressive tracker & ad blocking"  
-> >        - [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data)
-> >        - [ ] "Block fingerprinting" (make it harder for sites to uniquely identify you)
-> >        - [ ] "Block third-party cookies"
+> >  1. [ ] In "Shields", enable:
+> >        - [ ] "Aggressive tracker & ad blocking".
+> >        - [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data).
+> >        - [ ] "Block fingerprinting" (make it harder for sites to uniquely identify you).
+> >        - [ ] "Block third-party cookies".
 > >  1. [ ] In "Privacy and security":
-> >      - [ ] "WebRTC IP handling policy" to "Disable non-proxied UDP" (otherwise an adversary can find your real IP address, even behind a VPN)
-> >      - [ ] "Auto-redirect AMP pages"
-> >      - [ ] "Auto-redirect tracking URLs"
-> >      - [ ] "Prevent sites from fingerprinting based on language"
-> >      - [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track)
-> >      - [ ] Disable all options under "Data collection"
-> >  1. [ ] Also apply these settings in your mobile Brave browser
+> >      - [ ] "WebRTC IP handling policy" to "Disable non-proxied UDP" (otherwise an adversary can find your real IP address, even behind a VPN).
+> >      - [ ] "Auto-redirect AMP pages".
+> >      - [ ] "Auto-redirect tracking URLs".
+> >      - [ ] "Prevent sites from fingerprinting based on language".
+> >      - [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track).
+> >      - [ ] Disable all options under "Data collection".
+> >  1. [ ] Also apply these settings in your mobile Brave browser.
 
 > [!tip] Send your friends clean links
 > You ever see those _suuuuper_ long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
@@ -308,7 +332,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 
 Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduckgo.com/) are strong engines. That said, neither is as good as Google at surfacing the result you want. If you don't get what you want the first time, consider sending it over to Google by beginning your query with `!g`.
 
-- [ ] In your browser's settings, set one of these to be the default search
+- [ ] In your browser's settings, set one of these to be the default search.
 
 ## Give each app as few permissions as possible
 
@@ -367,10 +391,10 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 >        - If you use Android Auto, then you'll need to download it as well.
 > 6. [ ] Set these security settings in `Settings -> Security & privacy`:
 >     1. [ ] Exploit protection:
->         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on)
->         2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection)
->         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement))
->         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks)
+>         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on).
+>         2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection).
+>         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
+>         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
 
 ## Be pseudonymous when possible
 
@@ -386,7 +410,7 @@ My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-li
 > You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
 >
 
-- [ ] `Settings -> General -> AirDrop -> "Receiving Off"`
+- [ ] `Settings -> General -> AirDrop -> "Receiving Off".`
 
 ## Switch away from Windows
 
@@ -409,7 +433,7 @@ More specifically, Windows sends out so much information about you via so-called
 
 If you have a Windows computer, you can just install Linux Mint on your computer. You don't need to buy anything new. For example, you could follow PC Magazine's guide: [Don't Like Windows 11? It's Never Been a Better Time to Make the Switch to Linux](https://www.pcmag.com/how-to/how-to-make-the-switch-from-windows-to-linux).  At first, you "dual boot" which just means you have two choices: you can boot up Windows or Linux.
 
-- [ ] Open this page on your new Linux machine. :)
+- [ ] Open this page on your new Linux machine.
 
 ### The Mac alternative
 
@@ -496,11 +520,12 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration,
 
 <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif" alt="" loading="lazy" width="360" height="391" style="aspect-ratio:360 / 391;"><figcaption>Whenever I read “Ente”, I think of <a href="https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)" class="external" target="_blank" rel="noopener noreferrer">Entei, the <span class="ordinal-num">244</span><sup class="ordinal-suffix">th</sup> Pokemon</a> and the coolest of the three legendary beasts from the second generation.</figcaption></figure>
 
-- [ ] Download [Ente](https://ente.io)
-- [ ] Import your photos
-  - [ ] Google Takeout
-  - [ ] iCloud Photos
-  - [ ] Any private photos which don't sync automatically to your services
+- [ ] Download [Ente](https://ente.io).
+- [ ] Import your photos.
+  - [ ] [Google Takeout.](https://takeout.google.com)
+  - [ ] iCloud Photos.
+      - [ ] To delete the photos _after_ importing to Ente, you'll have to select photos one screen at a time and then click "Download." I found it best to do this on desktop, zoom out my browser a bunch, and then continually expanding my selection by shift-clicking. I selected about 3,000 photos at a time.
+  - [ ] Any private photos which don't sync automatically to your services.
 
 ### Make OsmAnd your map of choice
 
@@ -508,8 +533,8 @@ The [OsmAnd](https://osmand.net) doesn't collect your data but is instead floode
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
 
-- [ ] Install OsmAnd ([Android](https://f-droid.org/en/packages/net.osmand.plus/), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257))
-- [ ] Delete your Maps location data from the cloud
+- [ ] Install OsmAnd ([Android](https://f-droid.org/en/packages/net.osmand.plus/), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257)).
+- [ ] Delete your Maps location data from the cloud.
 
 ## Schedule with Proton Calendar
 
@@ -620,9 +645,9 @@ Protect yourself.
 [These companies share tons of your data as well.](https://www.denverpost.com/2019/08/31/credit-card-privacy-concerns/) By law, they have to let you opt out.
 
 - [ ] Minimize data sharing via your:
-  - [ ] Bank(s)
-  - [ ] Credit card(s)
-  - [ ] Other instruments
+  - [ ] Bank(s).
+  - [ ] Credit card(s).
+  - [ ] Other instruments.
 
 ## Surreptitious "beacons" track your every movement
 
@@ -740,26 +765,26 @@ Wi-Fi calling is considered to be telephone data (through your carrier) and so i
 
 ## Browse your favorite websites privately
 
-Popular websites tend to be horrible for privacy. Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content with a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content with a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
 
 The downside is you usually can't interact with the site. You can usually just lurk.
 
-- [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy
-- [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults
+- [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
+- [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.
 
 If you want to browse the original site again, you can disable the extension or select the option "only redirect in incognito mode."
 
 ## Track TODOs with Lunatask
+
+Cost: 30 minutes.
 
 I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
 Figure: Sadly, the calendar integration can't add new tasks to your main calendar as you schedule them in Lunatask.
-
-Migrating from Todoist took about 30 minutes. Not bad.
 
 - [ ] Migrate to [Lunatask](https://lunatask.app/).
 
@@ -928,11 +953,28 @@ Securing even one of these timely improvements would be a _significant win for p
 
 Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
 
-Create a space where people can speak freely without fear of government surveillance. [Element](https://element.io/) is an open-source, E2EE communication platform built on the Matrix protocol. Unlike Slack, Element encrypts messages, calls, and file transfers end-to-end. Even if the hosting servers are compromised, your conversations remain private. Unlike Slack, you have the option of self-hosting your data.
+Create a space where people can speak freely without fear of government surveillance. [Element](https://element.io/) is an open-source, E2EE communication platform built on the [Matrix protocol](https://matrix.org/). Unlike Slack, Element encrypts messages, calls, and file transfers end-to-end. Even if the hosting servers are compromised, your conversations remain private. Unlike Slack, you have the option of self-hosting your data. While Slack tries to keep you in their ecosystem, the Matrix protocol is decentralized and federated, providing easy future migration and interoperability.
 
-Element offers a migration tool to directly migrate users and content.
+Element offers [a migration wizard](https://element.io/blog/slack-migration/) to directly migrate users and content. Furthermore, the [Slack to Matrix migration tool](https://github.com/Awesome-Technologies/slack-matrix-migration) can import even more data, including DMs and private channels.
 
-### Example migration strategy
+| **Data type**                 | **Migration support**    | **Notes**                        |
+| ------------------------: | :------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public channels       | ✅           | The Migration Wizard migrates complete Slack Workspace including all users, public channels, messages and files                      |
+| Files     | ✅           | Files shared in public channels are included in migration                                                                                                              |
+| Users                 | ✅          | Users can be transitioned en masse with automatically generated email addresses and passwords                                         |
+| Channel structure     | ✅           | Element's Slack Migration Wizard recreates Slack channels as Element rooms                                                                                             |
+| Message threads       | ✅           | Conversation threads within public channels are preserved                                                                                                              |
+| Private channels      | ❓ | Requires Slack to Matrix tool and Slack Enterprise Grid export with private channels included                                     |
+| Direct messages | ❓  | Requires Slack to Matrix tool and requires Business+ or Enterprise Grid export; won't work on DMs with Slack Connect accounts  |
+| Group DMs            | ❓ |  Requires Slack to Matrix tool and Enterprise Grid export                                                                         |
+| Apps & integrations     | ❌     | Custom apps and integrations must be reconfigured in Element                                                                                                           |
+| Custom emoji          | ❌     | Custom workspace emoji are not migrated                                                                                                                                |
+| Workspace settings    | ❌      | Settings, preferences, and customizations must be set up fresh                                                                                                         |
+| User permissions      | ⚠️            | Users are auto-joined to migrated channels, but permission structures may need reconfiguration                                                                         |
+
+To retain the benefits of Slack Connect, you can keep those Slack channels open while [interacting with those channels using Element.](https://ems-docs.element.io/books/element-cloud-documentation/page/public-slack-bridge)
+
+### Example migration timeframe
 
 #### Phase 1: establish parallel infrastructure (weeks 1-2)
 
@@ -947,15 +989,13 @@ Element offers a migration tool to directly migrate users and content.
     - Policy discussions that could be politically risky.
     - Organizing around workplace issues.
     - Any communication with non-US citizens about political topics.
-- [ ] Keep Slack for routine work communications initially.
-- [ ] Document which conversations belong on which platform.
 
 #### Phase 3: expand usage (months 2-6)
 
-- [ ] Train additional team members on Element.
 - [ ] Create bridges between platforms if needed for the transition period.
 - [ ] Gradually move more conversations to Element.
 - [ ] Establish Element as the default for any sensitive topics.
+- [ ] Import from Slack and have your users move over for essential business, keeping Slack available as a backup.
 
 #### Phase 4: full transition (optional)
 
@@ -1005,20 +1045,6 @@ Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
 ## Beware popular security cameras
 
 Apparently many security camera solutions are horrible for privacy. Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
-
-## Delete social media accounts you rarely use
-
-By the year of our lord 2025, I was [hardly using my Facebook](/digital-declutter). I figured that Facebook having all that data on me is another attack surface for unwanted invasive AI tracking later on. Although deleting my Facebook data from Meta's servers won't delete the data which Meta already sold to data brokers, partial deletion is better than nothing.
-
-For Facebook in particular:
-- [ ] [Export your data first](https://www.facebook.com/help/212802592074644)
-- [ ] Store your data [in Proton Drive](#store-files-in-proton-drive)
-- [ ] Consider making a last status update with information for how your friends can reach you.
-- [ ] After export, [delete your account.](https://www.facebook.com/help/224562897555674)  
-
-More generally:
-- [ ] Spend three minutes brainstorming what accounts you've made over the years.
-- [ ] Export data, delete, and move on.
 
 ## US government watches immigrant speech on social media
 
