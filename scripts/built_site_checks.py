@@ -285,52 +285,77 @@ def _append_to_list(
     lst.append(prefix + to_append)
 
 
+_CANARY_BAD_ANYWHERE = (
+    r"> \[\![a-zA-Z]+\]",  # Callout syntax
+    r"Table: ",
+    r"Figure: ",
+    r"Code: ",
+    r"Caption: ",
+)
+_CANARY_BAD_PREFIXES = (
+    r": ",
+    r"\s*-?\[ ?\]",
+    r"#",
+)
+
+
+def _append_canary_matches(text: str, lst: list[str]) -> None:
+    """Check if element text contains canary phrases and add to results."""
+    stripped_text = text.strip()
+    if not stripped_text:
+        return
+
+    bad_anywhere_matches = any(
+        re.search(pattern, stripped_text) for pattern in _CANARY_BAD_ANYWHERE
+    )
+    # Check if bad_prefix appears at start of ANY line (for loose text fragments)
+    bad_prefix_matches = any(
+        re.search(rf"^{prefix}", stripped_text, re.MULTILINE)
+        for prefix in _CANARY_BAD_PREFIXES
+    )
+    if bad_anywhere_matches or bad_prefix_matches:
+        _append_to_list(
+            lst,
+            stripped_text,
+            prefix="Problematic paragraph: ",
+        )
+
+
 def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     """
-    Check for text nodes containing specific canary phrases.
+    Check for text-containing elements with specific canary phrases.
 
-    Checks all text-containing elements in the document. Ignores text within
-    <code> tags and <svg> tags.
+    Checks complete text content of elements in the document. Ignores text
+    within <code> tags and <svg> tags.
     """
-    bad_anywhere = (
-        r"> \[\![a-zA-Z]+\]",  # Callout syntax
-        r"Table: ",
-        r"Figure: ",
-        r"Code: ",
-        r"Caption: ",
-    )
-    bad_prefixes = (
-        r": ",
-        r"\s*-?\[ ?\]",
-        r"#",
-    )
-
     problematic_paragraphs: list[str] = []
 
-    def _check_text_node(text: str) -> None:
-        """Check if a text node contains canary phrases and add to results."""
-        stripped_text = text.strip()
-        if not stripped_text:
-            return
-
-        bad_anywhere_matches = any(
-            re.search(pattern, stripped_text) for pattern in bad_anywhere
-        )
-        bad_prefix_matches = any(
-            re.match(prefix, stripped_text) for prefix in bad_prefixes
-        )
-        if bad_anywhere_matches or bad_prefix_matches:
-            _append_to_list(
-                problematic_paragraphs,
-                stripped_text,
-                prefix="Problematic paragraph: ",
-            )
-
-    for text_node in soup.find_all(string=True):
-        # Skip text inside code tags and SVGs
-        if any(parent.name in ("code", "svg") for parent in text_node.parents):
+    # Check complete text of paragraph-level elements
+    for element in _tags_only(
+        soup.find_all(["p", "li", "dd", "dt", "figcaption"])
+    ):
+        if any(parent.name in ("code", "svg") for parent in element.parents):
             continue
-        _check_text_node(str(text_node))
+
+        _append_canary_matches(
+            element.get_text(strip=True), problematic_paragraphs
+        )
+
+    # Check for loose text nodes in containers (article, section, div, blockquote)
+    # that aren't inside proper paragraph-level elements
+    for container in _tags_only(
+        soup.find_all(["article", "section", "div", "blockquote"])
+    ):
+        for child in container.children:
+            if not isinstance(child, NavigableString):
+                continue
+            text = str(child).strip()
+            if not text or any(
+                parent.name in ("code", "svg", "script", "style")
+                for parent in container.parents
+            ):
+                continue
+            _append_canary_matches(text, problematic_paragraphs)
 
     return problematic_paragraphs
 

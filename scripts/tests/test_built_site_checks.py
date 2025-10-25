@@ -459,7 +459,9 @@ def test_check_problematic_paragraphs(sample_soup):
                 "Problematic paragraph: Figure: Text",
                 "Problematic paragraph: Figure: Blockquote",
             ],
-            ["Problematic paragraph: Normal paragraph"],
+            [
+                "Problematic paragraph: Normal paragraph",
+            ],
         ),
         (
             """
@@ -1123,7 +1125,7 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: > [!warning] Alert text",
             ],
         ),
-        # Test direct text in article and blockquote
+        # Test direct text nodes in article and blockquote
         (
             """
             <article>
@@ -1142,15 +1144,17 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: Caption: here's a stray figcaption.",
             ],
         ),
-        # Test code tag exclusions
+        # Test code tag exclusions (code content excluded by get_non_code_text)
         (
             """
             <p>Normal text <code>Table: This should be ignored</code></p>
             <p><code>Figure: Also ignored</code> but Table: this isn't</p>
             """,
-            ["Problematic paragraph: but Table: this isn't"],
+            [
+                "Problematic paragraph: but Table: this isn't",
+            ],
         ),
-        # Test nested structures
+        # Test nested structures with direct text nodes in containers
         (
             """
             <article>
@@ -1182,7 +1186,7 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: ## Another heading",
             ],
         ),
-        # Test mixed content with code blocks
+        # Test mixed content with code blocks (code excluded by get_non_code_text)
         (
             """
             <p>
@@ -1191,9 +1195,11 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 <code>Figure: Also ignored</code>
             </p>
             """,
-            ["Problematic paragraph: Table: Not ignored"],
+            [
+                "Problematic paragraph: Table: Not ignored",
+            ],
         ),
-        # Test text nodes in different contexts
+        # Test text nodes in different contexts (checks complete element text)
         (
             """
             <p>Text before <em>Table: problematic</em></p>
@@ -1201,9 +1207,9 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
             <p>Text before <em>Code: still problematic</em></p>
             """,
             [
-                "Problematic paragraph: Table: problematic",
-                "Problematic paragraph: Figure: also problematic",
-                "Problematic paragraph: Code: still problematic",
+                "Problematic paragraph: Text before Table: problematic",
+                "Problematic paragraph: Text before Figure: also problematic",
+                "Problematic paragraph: Text before Code: still problematic",
             ],
         ),
         # Test edge cases with special characters
@@ -1221,6 +1227,63 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
             """,
             [
                 'Problematic paragraph: [ ]"Block third-party cookies"',
+            ],
+        ),
+        # Test that ": " at start of text fragment (not element) is NOT flagged
+        (
+            """
+            <p><abbr class="small-caps">Gpt-3</abbr>: "Bubble sort is less efficient"</p>
+            """,
+            [],
+        ),
+        # Test that code before ": " doesn't get flagged
+        (
+            """
+            <p><code>some_function()</code>: This is a description</p>
+            """,
+            [],
+        ),
+        # Test loose text fragment between paragraphs (direct text node in container)
+        (
+            """
+            <article>
+                <p>First paragraph</p>
+                : This loose text starts with colon and should be flagged
+                <p>Second paragraph</p>
+            </article>
+            """,
+            [
+                "Problematic paragraph: : This loose text starts with colon and should be flagged"
+            ],
+        ),
+        # Test that ": " at actual start of element IS flagged
+        (
+            """
+            <p>: "This should be flagged"</p>
+            """,
+            ['Problematic paragraph: : "This should be flagged"'],
+        ),
+        # Test mixed cases with inline elements
+        (
+            """
+            <p><strong>Note</strong>: This should NOT be flagged</p>
+            <p>: But this should be flagged</p>
+            <p><em>Figure</em>: This contains Figure: so it IS flagged</p>
+            """,
+            [
+                "Problematic paragraph: : But this should be flagged",
+                "Problematic paragraph: Figure: This contains Figure: so it IS flagged",
+            ],
+        ),
+        # Test "Table: " in middle of paragraph should still be flagged (bad_anywhere)
+        (
+            """
+            <p>This paragraph contains Table: which should be flagged</p>
+            <p><strong>Heading</strong> Table: This should also be flagged</p>
+            """,
+            [
+                "Problematic paragraph: This paragraph contains Table: which should be flagged",
+                "Problematic paragraph: Heading Table: This should also be flagged",
             ],
         ),
     ],
