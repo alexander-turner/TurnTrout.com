@@ -378,6 +378,16 @@ Minimize how often you provide your real name, [your real email address](#use-em
 
 My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
 
+## iOS: Disable AirDrop
+
+> [!quote] [The Protesters' Guide to Smartphone Security](https://www.privacyguides.org/articles/2025/01/23/activists-guide-securing-your-smartphone/)
+> One of the most innocuous features enabled on millions of iPhones is also one of the most dangerous for those seeking to protect their privacy in public. Apple's AirDrop protocol [uses](https://www.usenix.org/system/files/sec21-heinrich.pdf) trivially bypassed security measures that authorities like the Chinese government have openly [bragged](https://arstechnica.com/security/2024/01/hackers-can-id-unique-apple-airdrop-users-chinese-authorities-claim-to-do-just-that/) about cracking to identify users since at least 2022.
+>
+> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
+>
+
+- [ ] `Settings -> General -> AirDrop -> "Receiving Off"`
+
 ## Switch away from Windows
 
 Subtitle: Cost: \$0. Time: 10 hours?
@@ -463,8 +473,18 @@ _After each replacement, remember to delete your original data and to stop synci
 I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
 
 - [ ] Download your existing Drive files
-- [ ] [Install Proton Drive](https://proton.me/drive/download)
-- [ ] Migrate your existing files to Proton Drive
+- [ ] [Install Proton Drive](https://proton.me/drive/download).
+- [ ] Migrate your existing files to Proton Drive.
+
+### Journal with Standard Notes instead of Notion or Roam
+
+Standard Notes is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched.
+
+That said, I use [Obsidian](https://obsidian.md), and if you do, you're fine staying put. While not open source, Obsidian's syncing service is [verifiably E2EE](https://obsidian.md/blog/verify-obsidian-sync-encryption/). Obsidian claims that the app does not collect personal data or track users by default. To be sure, you can use an open source firewall like [LuLu](https://objective-see.org/products/lulu.html) (Mac) or [Open Snitch](https://github.com/evilsocket/opensnitch) (Linux) to block Obsidian from using the internet.
+
+- [ ] If using software like Notion, [export your files to Markdown](https://help.obsidian.md/plugins/importer) using Obsidian's guides.
+- [ ] [Download Standard Notes.](https://standardnotes.com/)
+- [ ] [Import your files into Standard Notes](https://standardnotes.com/tools).
 
 ### Store your photos in Ente
 
@@ -714,16 +734,6 @@ I used to wear my Oura everywhere. But I realized I only need to wear my Oura wh
 
 [Tile devices allegedly don't encrypt your location data, meaning criminals and law enforcement could intercept the data and watch your Tiles move around the map as they please.](https://www.wired.com/story/tile-tracking-tags-can-be-exploited-by-tech-savvy-stalkers-researchers-say/) AirTags are E2EE, keeping your location data private. After reading that article, I immediately tossed all my Tiles and bought six AirTags.
 
-## iOS: Disable AirDrop
-
-> [!quote] [The Protesters' Guide to Smartphone Security](https://www.privacyguides.org/articles/2025/01/23/activists-guide-securing-your-smartphone/)
-> One of the most innocuous features enabled on millions of iPhones is also one of the most dangerous for those seeking to protect their privacy in public. Apple's AirDrop protocol [uses](https://www.usenix.org/system/files/sec21-heinrich.pdf) trivially bypassed security measures that authorities like the Chinese government have openly [bragged](https://arstechnica.com/security/2024/01/hackers-can-id-unique-apple-airdrop-users-chinese-authorities-claim-to-do-just-that/) about cracking to identify users since at least 2022.
->
-> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
->
-
-- [ ] `Settings -> General -> AirDrop -> "Receiving Off"`
-
 ## Disable Wi-Fi calling
 
 Wi-Fi calling is considered to be telephone data (through your carrier) and so isn't protected by your VPN. Phones which connect to Wi-Fi calling will let your carrier track your precise location -- not just the rough region you're in, as usually guessed from your cell tower data.
@@ -751,7 +761,7 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 
 Migrating from Todoist took about 30 minutes. Not bad.
 
-- [ ] Migrate to [Lunatask](https://lunatask.app/)
+- [ ] Migrate to [Lunatask](https://lunatask.app/).
 
 # Additional ways to reduce exposure as a high-risk person
 
@@ -764,9 +774,9 @@ Figure: [Fewer than half of the companies PayPal shares your data with](https://
 
 I recommend deleting your PayPal.
 
-- [ ] Download a PDF of your current year's statements
-- [ ] Download your data under "Data & privacy"
-- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion)
+- [ ] Download a PDF of your current year's statements.
+- [ ] Download your data under "Data & privacy".
+- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion).
 
 If you want to keep your PayPal, at least mitigate by opting out of their data sharing:  
 
@@ -812,9 +822,8 @@ Normal smart TVs shove tons of ads in your face and track lots of your data. App
 > [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
 > It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
   
-  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1)
-  - [ ] Connect to your TV
-  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead
+  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1).
+  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead.
 
 ## Avoid distinctive device names
 
@@ -875,16 +884,16 @@ Pessimistically assume that every interaction on X (including ["encrypted"](http
 
 ### X migration plan
 
-1. [ ] Set up new accounts on Bluesky and/or Mastodon
+1. [ ] Set up new accounts on Bluesky and/or Mastodon.
 2. [ ] Pin an announcement with your new handles to your X profile.
 3. [ ] DM your closest contacts directly - don't rely on them seeing your post.
-4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool](https://buffer.com/)
-5. [ ] Engage actively on your new platform to build momentum
-6. [ ] Set a sunset date for X and stick to it
-7. [ ] Export your data from X
-   1. [ ] [Create a request to download your data](https://x.com/settings/download_your_data)
-   2. [ ] Download the data when ready
-3. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
+4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool](https://buffer.com/).
+5. [ ] Engage actively on your new platform to build momentum.
+6. [ ] Set a sunset date for X and stick to it.
+7. [ ] Export your data from X.
+   8. [ ] [Create a request to download your data](https://x.com/settings/download_your_data).
+   9. [ ] Download the data when ready.
+10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
 
 # What's next?
 
@@ -919,49 +928,40 @@ Securing even one of these timely improvements would be a _significant win for p
 
 Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
 
-Create a space where people can speak freely without fear of government surveillance. [Element](https://element.io/) is an open-source, E2EE messaging platform built on the Matrix protocol. Unlike Slack, Element encrypts messages end-to-end, meaning even if servers are compromised, your conversations remain private.
+Create a space where people can speak freely without fear of government surveillance. [Element](https://element.io/) is an open-source, E2EE communication platform built on the Matrix protocol. Unlike Slack, Element encrypts messages, calls, and file transfers end-to-end. Even if the hosting servers are compromised, your conversations remain private. Unlike Slack, you have the option of self-hosting your data.
 
-### Key Features of Element
+Element offers a migration tool to directly migrate users and content.
 
-- **End-to-end encryption:** Messages are encrypted on your device before sending
-- **Open source:** Auditable code you can trust
-- **Self-hosting option:** Complete control over your data
-- **Federation:** Can communicate with users on other Matrix servers
-- **Voice/video calls:** Encrypted audio and video conferencing
-- **File sharing:** Encrypted file transfers
+### Example migration strategy
 
-### Migration Strategy
+#### Phase 1: establish parallel infrastructure (weeks 1-2)
 
-Here's an example migration strategy.
+- [ ] Set up an Element workspace for your team or organization.
+- [ ] Choose between [Element Cloud](https://element.io/pricing) (easiest, \$5-10/user/month) or self-hosted Matrix server (free but requires technical expertise).
+- [ ] Create equivalent channels/rooms for sensitive discussions.
+- [ ] Invite a small pilot group.
 
-#### Phase 1: Establish parallel infrastructure (Week 1-2)
+#### Phase 2: gradual adoption (weeks 3-8)
 
-- [ ] Set up an Element workspace for your team or organization
-- [ ] Choose between [Element Cloud](https://element.io/pricing) (easiest, \$5-10/user/month) or self-hosted Matrix server (free but requires technical expertise)
-- [ ] Create equivalent channels/rooms for sensitive discussions
-- [ ] Invite a small pilot group of trusted colleagues
+- [ ] Start moving sensitive conversations to Element:
+    - Policy discussions that could be politically risky.
+    - Organizing around workplace issues.
+    - Any communication with non-US citizens about political topics.
+- [ ] Keep Slack for routine work communications initially.
+- [ ] Document which conversations belong on which platform.
 
-#### Phase 2: Gradual adoption (Weeks 3-8)
+#### Phase 3: expand usage (months 2-6)
 
-- [ ] Start moving sensitive conversations to Element
-    - Policy discussions that could be politically risky
-    - Organizing around workplace issues
-    - Any communication with non-US citizens about political topics
-- [ ] Keep Slack for routine work communications initially
-- [ ] Document which conversations belong on which platform
+- [ ] Train additional team members on Element.
+- [ ] Create bridges between platforms if needed for the transition period.
+- [ ] Gradually move more conversations to Element.
+- [ ] Establish Element as the default for any sensitive topics.
 
-#### Phase 3: Expand usage (Months 2-6)
+#### Phase 4: full transition (optional)
 
-- [ ] Train additional team members on Element
-- [ ] Create bridges between platforms if needed for transition period
-- [ ] Gradually move more conversations to Element
-- [ ] Establish Element as the default for any sensitive topics
-
-#### Phase 4: Full transition (optional)
-
-- [ ] Evaluate whether full migration makes sense for your organization
-- [ ] For maximum security, fully deprecate Slack and delete message history
-- [ ] Or maintain dual platforms with clear boundaries
+- [ ] Evaluate whether full migration makes sense for your organization.
+- [ ] For maximum security, fully deprecate Slack and delete message history.
+- [ ] Or maintain dual platforms with clear boundaries, like "Slack is now read-only."
 
 > [!info] Consider compliance implications
 > Some industries require message retention for compliance. Element supports this through server-side features, but E2EE complicates discovery. Consult legal counsel before full migration in regulated industries.
