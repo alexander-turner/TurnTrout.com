@@ -196,12 +196,12 @@ export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
   const sequenceLink: string = fileData.frontmatter?.["sequence-link"] as string
 
   return (
-    <div>
+    <span>
       <b>Sequence:</b>{" "}
       <a href={sequenceLink} className="internal can-trigger-popover" style={{ cursor: "pointer" }}>
         {sequence}
       </a>
-    </div>
+    </span>
   )
 }
 /**
@@ -257,7 +257,7 @@ export const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | nu
     <blockquote className="admonition admonition-metadata" data-admonition="example">
       <div className="admonition-title">
         <div className="admonition-title-inner">
-          <div className="admonition-icon" />
+          <span className="admonition-icon"></span>
           {sequenceTitleJsx}
         </div>
       </div>
