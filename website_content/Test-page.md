@@ -70,6 +70,40 @@ Subtitle: I am a subtitle with [a link](/test-page).
         - .
   - The last bullet
 
+# Checkboxes
+
+2. [ ] Checkbox within `ol > li`
+3. Second `li`
+
+----
+
+2. Normal `ol > li` indent
+
+- Normal `ul > li` indent
+----
+
+- Non-checkbox first bullet
+- [ ] First-level not checked off
+  - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
+  - [x] Checked off
+      - [ ] Nested checked off should still be crossed out and same (diminished) opacity
+          - [ ] Third nested with a [link](#checkboxes)
+  - [ ] Not checked off
+- Normal bullet
+
+> [!note]
+> - [ ] Checkbox in an admonition
+> - Normal bullet
+> - [x] Checked box in an admonition
+
+- Making it hard for you to cancel (just delete the virtual card),
+- Exposing your real card in data breaches.
+
+- [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
+- [x] Install [the mobile app](https://www.privacy.com/mobile-app).
+    - [ ] Nested
+    - [x] Not even more transparent
+
 ## Description list
 
 Header 1
@@ -639,40 +673,6 @@ Corrupted text
 </div>
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
-
-# Checkboxes
-
-2. [ ] Checkbox within `ol > li`
-3. Second `li`
-
-----
-
-2. Normal `ol > li` indent
-
-- Normal `ul > li` indent
-----
-
-- Non-checkbox first bullet
-- [ ] First-level not checked off
-  - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
-  - [x] Checked off
-      - [ ] Nested checked off should still be crossed out and same (diminished) opacity
-          - [ ] Third nested with a [link](#checkboxes)
-  - [ ] Not checked off
-- Normal bullet
-
-> [!note]
-> - [ ] Checkbox in an admonition
-> - Normal bullet
-> - [x] Checked box in an admonition
-
-- Making it hard for you to cancel (just delete the virtual card),
-- Exposing your real card in data breaches.
-
-- [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
-- [x] Install [the mobile app](https://www.privacy.com/mobile-app).
-    - [ ] Nested
-    - [x] Not even more transparent
 
 [^1]: First footnote in a row.
 [^2]: Second footnote in a row.
