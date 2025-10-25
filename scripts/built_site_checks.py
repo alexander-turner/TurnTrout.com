@@ -294,29 +294,43 @@ _CANARY_BAD_ANYWHERE = (
 )
 _CANARY_BAD_PREFIXES = (
     r": ",
-    r"\s*-?\[ ?\]",
+    r"\s*-?\[ ?\]",  # Unrendered checkbox
     r"#",
 )
 
 
-def _append_canary_matches(text: str, lst: list[str]) -> None:
-    """Check if element text contains canary phrases and add to results."""
-    stripped_text = text.strip()
-    if not stripped_text:
+def _append_canary_matches(
+    check_text: str, lst: list[str], report_text: str | None = None
+) -> None:
+    """
+    Check if element text contains canary phrases and add to results.
+
+    Args:
+        check_text: Text to check for patterns (may contain placeholders for code).
+            This preserves text positions to avoid false positives when code
+            appears before patterns like ": ".
+        lst: List to append problematic text to
+        report_text: Optional text to report in error messages (without placeholders).
+            If None, check_text is reported. Use this to show clean text without
+            code placeholder characters in error output.
+    """
+    stripped_check = check_text.strip()
+    if not stripped_check:
         return
 
     bad_anywhere_matches = any(
-        re.search(pattern, stripped_text) for pattern in _CANARY_BAD_ANYWHERE
+        re.search(pattern, stripped_check) for pattern in _CANARY_BAD_ANYWHERE
     )
     # Check if bad_prefix appears at start of ANY line (for loose text fragments)
     bad_prefix_matches = any(
-        re.search(rf"^{prefix}", stripped_text, re.MULTILINE)
+        re.search(rf"^{prefix}", stripped_check, re.MULTILINE)
         for prefix in _CANARY_BAD_PREFIXES
     )
     if bad_anywhere_matches or bad_prefix_matches:
+        text_to_report = report_text if report_text is not None else check_text
         _append_to_list(
             lst,
-            stripped_text,
+            text_to_report.strip(),
             prefix="Problematic paragraph: ",
         )
 
@@ -337,9 +351,14 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
         if any(parent.name in ("code", "svg") for parent in element.parents):
             continue
 
-        _append_canary_matches(
-            element.get_text(strip=True), problematic_paragraphs
+        # Check with placeholders, report without code
+        check_text = script_utils.get_non_code_text(
+            element, replace_with_placeholder=True
         )
+        report_text = script_utils.get_non_code_text(
+            element, replace_with_placeholder=False
+        )
+        _append_canary_matches(check_text, problematic_paragraphs, report_text)
 
     # Check for loose text nodes in containers (article, section, div, blockquote)
     # that aren't inside proper paragraph-level elements

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Collection, Dict, Optional, Set
 
 import git
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 from ruamel.yaml import YAML, YAMLError
 
 _executable_cache: Dict[str, str] = {}
@@ -271,13 +271,20 @@ def should_have_md(file_path: Path) -> bool:
     )
 
 
-def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
+_PRIVATE_UNICODE_CHAR = ""
+
+
+def get_non_code_text(
+    soup_or_tag: BeautifulSoup | Tag, replace_with_placeholder: bool = False
+) -> str:
     """
     Extract all text from BeautifulSoup object, excluding code blocks and KaTeX
     elements.
 
     Args:
         soup_or_tag: BeautifulSoup object or Tag to extract text from
+        replace_with_placeholder: If True, replace code with _PRIVATE_UNICODE_CHAR instead of
+            removing it (preserves text positions)
 
     Returns:
         String containing all non-code, non-KaTeX text
@@ -288,7 +295,12 @@ def get_non_code_text(soup_or_tag: BeautifulSoup | Tag) -> str:
         ["code", "pre", "script", "style"]
     ) + temp_soup.find_all(class_=["katex", "katex-display"])
     for element_to_remove in elements_to_remove:
-        element_to_remove.decompose()
+        if replace_with_placeholder:
+            element_to_remove.replace_with(
+                NavigableString(_PRIVATE_UNICODE_CHAR)
+            )
+        else:
+            element_to_remove.decompose()
 
     return temp_soup.get_text()
 

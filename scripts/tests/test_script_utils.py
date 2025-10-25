@@ -823,6 +823,77 @@ def test_get_non_code_text_returns_correct_text_for_soup_object(
 
 
 @pytest.mark.parametrize(
+    "html,use_placeholder,expected",
+    [
+        # Colon position: code at start affects position differently
+        (
+            "<p><code>func()</code>: Description</p>",
+            False,
+            {"starts_with_colon": True},
+        ),
+        (
+            "<p><code>func()</code>: Description</p>",
+            True,
+            {"starts_with_colon": False},
+        ),
+        (
+            "<p>Text <code>func()</code>: Description</p>",
+            False,
+            {"starts_with_colon": False},
+        ),
+        (
+            "<p>Text <code>func()</code>: Description</p>",
+            True,
+            {"starts_with_colon": False},
+        ),
+        ("<p>: Description</p>", False, {"starts_with_colon": True}),
+        ("<p>: Description</p>", True, {"starts_with_colon": True}),
+        # Code content exclusion
+        (
+            "<p>Text <code>Table: ignored</code> Table: visible</p>",
+            True,
+            {"excludes": "Table: ignored", "includes": "Table: visible"},
+        ),
+        # Position preservation
+        (
+            "<p><code>x</code>Text after code</p>",
+            True,
+            {"not_starts_with": "Text"},
+        ),
+        (
+            "<p><code>x</code>Text after code</p>",
+            False,
+            {"starts_with": "Text"},
+        ),
+    ],
+)
+def test_get_non_code_text_with_placeholder(
+    html: str, use_placeholder: bool, expected: dict
+):
+    """Test replace_with_placeholder parameter for position preservation."""
+    soup = BeautifulSoup(html, "html.parser")
+    paragraph = soup.find("p")
+    assert paragraph is not None
+    assert isinstance(paragraph, script_utils.Tag)
+
+    result = script_utils.get_non_code_text(
+        paragraph, replace_with_placeholder=use_placeholder
+    )
+    stripped = result.strip()
+
+    if "starts_with_colon" in expected:
+        assert stripped.startswith(": ") == expected["starts_with_colon"]
+    if "excludes" in expected:
+        assert expected["excludes"] not in result
+    if "includes" in expected:
+        assert expected["includes"] in result
+    if "starts_with" in expected:
+        assert stripped.startswith(expected["starts_with"])
+    if "not_starts_with" in expected:
+        assert not stripped.startswith(expected["not_starts_with"])
+
+
+@pytest.mark.parametrize(
     "md_contents, expected_aliases",
     [
         # Basic cases
