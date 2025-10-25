@@ -59,7 +59,7 @@ This guide is about protecting yourself, but it's not necessarily about _hiding_
 > [!warning] Location tracking: what you can and cannot stop
 >   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. _You will be hard-pressed to turn invisible while participating in modern society._
 >
->   This guide will teach you to protect:
+>   This guide will teach you to protect a limited selection of your data:
 >   1. Content of your communications (Signal E2EE),
 >   2. What you're researching and reading (VPN hides websites),
 >   3. Your organizing documents and plans (E2EE cloud storage),
