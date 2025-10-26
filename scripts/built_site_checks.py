@@ -287,6 +287,7 @@ def _append_to_list(
 
 _CANARY_BAD_ANYWHERE = (
     r"> \[\![a-zA-Z]+\]",  # Callout syntax
+    r"\[ \]",  # Unrendered checkbox
     r"Table: ",
     r"Figure: ",
     r"Code: ",
@@ -294,7 +295,6 @@ _CANARY_BAD_ANYWHERE = (
 )
 _CANARY_BAD_PREFIXES = (
     r": ",
-    r"\s*-?\[ ?\]",  # Unrendered checkbox
     r"#",
 )
 

@@ -1243,6 +1243,14 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
             """,
             [],
         ),
+        (
+            """
+            <li>[ ] Export your data from X.</li>
+            """,
+            [
+                "Problematic paragraph: [ ] Export your data from X.",
+            ],
+        ),
         # Test loose text fragment between paragraphs (direct text node in container)
         (
             """
