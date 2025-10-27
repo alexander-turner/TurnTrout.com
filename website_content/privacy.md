@@ -11,7 +11,7 @@ tags:
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image: https://i.imgur.com/J9EZDFI.png
 aliases:
   - privacy
   - privacy-tips
@@ -81,11 +81,11 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
    - [ ] You can check off this item, refresh the page, and the box remains checked!
 
-   | **Tier**               | **Total time** | **Total cost** | **Protection level**                    |
+   | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
-   | Quick start    | 45 minutes     | $110       | Online accounts secured against most hacking. Limited private communication ability.  |
-   | Privacy basics | 60 minutes    | $13/month        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
-   | End-to-end encrypt your data  | 2 hours  | ???    |   Mass surveillance unlikely to capture your important data or communications.   |
+   | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
+   | Privacy basics | 90 minutes    | $13/month        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
+   | End-to-end encrypt your data  | At least 4.5 hours  | \$14/month    |   Mass surveillance unlikely to capture your important data or communications.   |
 
 Each tier builds on the previous. I also wrote [a sequel focused on more advanced steps.](/advanced-privacy) Something is better than nothing. Even a few hours can transform your privacy. If money is hard to come by, don't worry - many of the best interventions are free. Do what you can.
 
@@ -121,11 +121,11 @@ End-to-end encryption (E2EE)
 
 Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely and to organize discreetly.
 
-# Quick start in 30 minutes
+# Quick start in 50 minutes
 
 ## Manage passwords with Bitwarden
 
-Subtitle: Time: 20 minutes.
+Subtitle: Time: 20 minutes with ongoing maintenance as you import passwords.
 
 Use a different long password for every single login you have. Do not reuse passwords. Do not reuse passwords. Do not make simple passwords like `mail123`.
 
@@ -166,33 +166,38 @@ Since the American government mandated vulnerabilities in key American communica
 
 There are 2 solutions to this 2FA issue.
 
-### Buy a YubiKey (and a backup)
+### Use Proton Authenticator as your 2FA app
 
-Subtitle: Time: 5 minutes to order, a few minutes to set up for key accounts. Cost: \$110.
+Subtitle: Time: 5 minutes to install app.
+
+The fast and free upgrade is to prefer authenticator apps over SMS and email.
+
+ As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
+1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
+
+### Optional: buy a YubiKey (and a backup)
+
+Subtitle: Time: 5 minutes to order & 40 minutes to secure your most important accounts. Cost: \$110.
+
+> [!money] Optional but recommended
+> YubiKeys are physical devices which guarantee "these accounts _cannot_ get hacked remotely". Accounts like your email or Bitwarden are extremely valuable and worth protecting.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
 
 You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts, like Bitwarden. You really, really don't want hackers to compromise your Bitwarden.
 
 1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/)
-2. Set up key-based 2FA on your most important logins.[^max-yubikey] For each site, register 2FA on both keys.
+2. Set up key-based 2FA on your most important logins. For each site, register 2FA on both keys.
 3. Keep the two factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
 
-[^max-yubikey]: [YubiKeys can hold up to 100 credentials.](https://www.corbado.com/faq/how-many-passkeys-can-yubikey-hold)
-
 > [!question] These keys are expensive. Do I really need two?
-> I know they aren't cheap. However, they will make you basically immune to being hacked on your most important accounts. That immunity brings financial security but also peace of mind.
+> I know they aren't cheap. However, they will make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind.
 >
 > At _minimum_, you need two keys. If you just had one key, you're one "oops I lost it" away from being _locked out of your most important accounts_. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys.
 >
-> For convenience, you might even get a third key: a YubiKey 5C Nano (\$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
-
-### Use Proton Authenticator as your 2FA app
-
- Unfortunately, many sites don't support YubiKey.  Whenever possible, prefer application-based authentication in its stead.
-
- As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
-1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
+> For convenience, you might even get a third key: a YubiKey 5C Nano (an additional \$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
+>
+> - [ ] If you buy a Nano key, [switch it to "Long Touch" mode](https://support.okta.com/help/s/article/swapping-yubico-otp-between-slot-1-to-slot-2?language=en_US) so it doesn't mess up your typing whenever you bump it.
 
 ## Keep your OS up to date
 
@@ -436,7 +441,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 > If two Proton Mail emails communicate, they automatically use E2EE. However, if e.g. a `@gmail.com` address sends you something, the content will be plainly visible to the authorities.
 
 > [!danger] The authorities can always track who you're emailing and when
-> The problem has to do with the definition of the email protocol itself. Use Signal for truly sensitive communication.
+> The problem has to do with [the definition of the email protocol itself](https://www.forbes.com/sites/timworstall/2013/08/18/why-email-can-never-be-truly-secure-its-the-metadata/). Use Signal for truly sensitive communication.
 
 ## Store files in Proton Drive
 
@@ -539,6 +544,8 @@ Imagine: You go to a protest. [License Plate Readers log every car that drove by
 When you follow this guide, you obscure those digital spies and trackers. When you enable a VPN with a kill switch, or switch to the Brave web browser, or privately converse over Signal -- you reclaim bubbles of freedom in which you may think and speak.
 
 By reclaiming bubbles of individual liberty, we thereby promote liberty and justice for all.
+
+![[privacy-20251026183019.png|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
 > [!tip] Keep reading for more action items
 > To truly minimize the chance your communications get you snagged by the incipient surveillance state, you'll want to complete the steps [in the next post](/advanced-privacy). I also offer [a concrete migration plan off of Slack](/advanced-privacy#slack), which _does not_ offer privacy from  surveillance.

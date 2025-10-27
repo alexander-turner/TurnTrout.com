@@ -10,13 +10,17 @@ tags:
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image: https://i.imgur.com/J9EZDFI.png
 aliases:
   - advanced-privacy-despite-authoritarianism
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 ---
-As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and the suggested precautions.
+As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll keep helping you harden your privacy against the intrusive government.
+
+![[advanced-privacy-20251026182933.png|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
+
+I'll assume you've read the previous post and have taken the suggested precautions.
 
 # Important steps for at-risk people
 
@@ -464,8 +468,8 @@ Pessimistically assume that every interaction on X (including ["encrypted"](http
 5. [ ] Engage actively on your new platform to build momentum.
 6. [ ] Set a sunset date for X and stick to it.
 7. [ ] Export your data from X.
-   8. [ ] [Create a request to download your data](https://x.com/settings/download_your_data).
-   9. [ ] Download the data when ready.
+    - [ ] [Request to download your data](https://x.com/settings/download_your_data).
+    - [ ] Download the data when ready.
 10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
 
 # What's next?
@@ -609,4 +613,4 @@ For less than \$10, I purchased [two webcam covers for my laptops.](https://www.
 
 Even [without metadata,](#your-pictures-and-videos-contain-your-gps-location) your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments.
 
-If you share a photo but don't want to share your location, obscure  important clues: crop out landmarks, street signs, distinctive buildings, license plates, and so on. You could run it through a frontier AI like Gemini or Claude to check what they can infer, but that leaves the sensitive photo on their servers. For the technically inclined: install [GeoCLIP](https://github.com/VicenteVivan/geo-clip) to test photos locally on your own machine.
+If you share a photo but don't want to share your location... Assume that's not possible, unless you're an expert.
