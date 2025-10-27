@@ -5634,5 +5634,41 @@
   "./asset_staging/privacy-20251026203248.png": {
     "width": 780,
     "height": 572
+  },
+  "https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif": {
+    "width": 856,
+    "height": 527
+  },
+  "https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif": {
+    "width": 1198,
+    "height": 840
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/bsky_app.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/anki_net.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/sfchronicle_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif": {
+    "width": 780,
+    "height": 572
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/support_okta_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251026183019.avif": {
+    "width": 856,
+    "height": 527
+  },
+  "/static/images/external-favicons/unicog_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

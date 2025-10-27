@@ -25,13 +25,17 @@ As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/pri
 
 ## The difference between mass surveillance and targeted investigation
 
-[An Opinionated Guide to Privacy Despite Authoritarianism](/privacy-tips) helped protect against mass surveillance that lets the government track lots of people at once. This guide _partially_ addresses both mass and targeted investigation. In a targeted investigation, you now need to worry about physical threats as well: device seizure, physical surveillance, informants, and people who are investigating you in particular.
+[An Opinionated Guide to Privacy Despite Authoritarianism](/privacy-tips)  protects against mass surveillance that lets the government track lots of people at once. This guide _partially_ addresses both mass and targeted investigation. In a targeted investigation, you now need to worry about physical threats as well: device seizure, physical surveillance, informants, and people who are investigating you in particular.
 
 This guide _is not sufficient to protect you against targeted investigation_. Think of these guides as raising the cost for the government to surveil you. It's still possible, but it's tougher and less likely.
 
 ## Protect your network, not just yourself
 
 Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-tips#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're  meeting with by just demanding data from your cloud calendar provider.
+
+## Know your rights
+
+If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https://www.aclu.org/know-your-rights)). Consider printing off [a flyer](https://www.ilrc.org/community-resources/know-your-rights/know-your-rights-when-confronted-ice-flyer) to keep on your person --- remembering in the heat of the moment is hard.
 
 # Important steps for at-risk people
 

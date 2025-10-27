@@ -23,7 +23,7 @@ next-post-title: Advanced Privacy Despite Authoritarianism
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
-> <p class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;margin-bottom: -.25rem;"><figcaption></figcaption></p>
+> <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;"><figcaption style="margin-bottom:-.25rem;">The author, George Retes, is also a veteran of the Iraq war, as displayed prominently on the vehicle whose window ICE smashed.</figcaption></figure>
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
@@ -31,7 +31,7 @@ next-post-title: Advanced Privacy Despite Authoritarianism
 
 [^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-This story isn't an isolated incident, but one entry in an array of ICE wrongdoing: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution:
+This story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
@@ -135,13 +135,13 @@ Use a different long password for every single login you have. Do not reuse pass
 If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
 
 Here's what to do:
-1. [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
-2. Create an account.
-    - You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
-    - Write down the passphrase and keep it in your wallet.
-    - At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it.
-3. Use Bitwarden to automatically fill in your passwords. Every time you log into an account, ensure the credentials are stored in Bitwarden.
-4. Every time you make a new account, use Bitwarden to make a new login. Use a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
+1. [ ] [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
+2. [ ] Create an account.
+    - [ ] You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
+    - [ ] Write down the passphrase and keep it in on your person.
+    - [ ] At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it. At that point, destroy the paper.
+3. [ ] Use Bitwarden to automatically fill in your passwords. Every time you log into an account, ensure the credentials are stored in Bitwarden.
+4. [ ] Every time you make a new account, use Bitwarden to make a new login. Generate a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
 
 Since you're using a unique password for every site, you won't have to scramble in the event of a breach. The only account which might even possibly be compromised is the specific account whose password was breached. After all, the compromised password has nothing to do with all the other passwords which Bitwarden generated!
 
@@ -153,9 +153,9 @@ Enable two-factor authentication on every possible account that you care about p
 
 ### Don't use text- and phone-based 2FA
 
-The US government forces telecoms to permit spying on their customers (including you). *Assume that all text messages or phone calls are actively monitored by the US and Chinese governments.*
+The US government forces telecoms to permit spying on their customers (including you). *Assume that all text messages or phone calls are actively monitored by the government.*
 
-> [!quote] [Communications Assistance for Law Enforcement Act](https://en.wikipedia.org/wiki/Communications_Assistance_for_Law_Enforcement_Act)
+> [!quote] [Communications Assistance for Law Enforcement Act](https://en.wikipedia.org/wiki/Communications_Assistance_for_Law_Enforcement_Act) (CALEA)
 > The Act obliges telecommunications companies to make it possible for law enforcement agencies to tap any phone conversations carried out over its networks, as well as making call detail records available. The act stipulates that it must not be possible for a person to detect that his or her conversation is being monitored by the respective government agency.
 >
 > \[...\] Journalists and technologists have characterized the CALEA-mandated infrastructure as government backdoors. In 2024, the U.S. government realized that China had been tapping communications in the U.S. using that infrastructure for months, or perhaps longer.
@@ -164,8 +164,6 @@ Since the American government mandated vulnerabilities in key American communica
 
 > [!quote] [Government Issues New iPhone, Android 2FA Warning—Stop Using SMS Codes Now](https://www.forbes.com/sites/zakdoffman/2024/12/18/feds-warn-android-and-iphone-users-stop-using-sms-for-2fa/)
 > What is clear is SMS is not acceptable, even for temporary, one-time passcodes. “Do not use SMS as a second factor for authentication. SMS messages are not encrypted—a threat actor with access to a telecommunication provider’s network who intercepts these messages can read them. SMS MFA is not phishing-resistant and is therefore not strong authentication for accounts of highly targeted individuals.”
-
-There are 2 solutions to this 2FA issue.
 
 ### Use Proton Authenticator as your 2FA app
 
@@ -254,6 +252,9 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
 
+> [!tip] Some websites may think you're a bot because many people use the same VPN IP address
+> Compared to other VPNs, I've heard that ProtonVPN is good about avoiding bot detection. Consider changing VPN servers (in the app) if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
+>
 ### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
 Subtitle: And it's on Apple.
@@ -266,9 +267,6 @@ Subtitle: And it's on Apple.
 The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
 
 ### Other VPN notes
-
-> [!tip] VPNs will rarely mess up your connection
-> If your connection isn't working, try switching servers. If still nothing, and you aren't checking out anything sensitive, disable the VPN and turn it back on afterwards.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -362,7 +360,7 @@ Be especially wary about giving out *precise location* data. Don't be afraid to 
 
 Subtitle: Time: 5 minutes to order & 40 minutes to secure your most important accounts. Cost: \$110.
 
-YubiKeys are physical devices which guarantee "these accounts *cannot* get hacked remotely". To log into an account protected by your YubiKey, you physically tap the key. Accounts like your email or Bitwarden are extremely valuable and worth protecting. The security ordering is: YubiKey > authenticator app > text- / email-based 2FA.
+YubiKeys are physical devices which guarantee "these accounts *cannot* get hacked remotely". They constitute the strongest form of 2FA. To log into an account protected by your YubiKey, you physically tap the key. Accounts like your email or Bitwarden are extremely valuable and worth protecting. The security ordering is: YubiKey > authenticator app > text- / email-based 2FA.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
 
@@ -442,7 +440,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 > [!warning] Most of your email can still be read by the authorities in transit
 > If two Proton Mail emails communicate, they automatically use E2EE. However, if e.g. a `@gmail.com` address sends you something, the content will be plainly visible to the authorities.
 
-> [!danger] The authorities can always track who you're emailing and when
+> [!danger] The authorities can always track whom you're emailing and when
 > The problem has to do with [the definition of the email protocol itself](https://www.forbes.com/sites/timworstall/2013/08/18/why-email-can-never-be-truly-secure-its-the-metadata/). Use Signal for truly sensitive communication.
 
 ## Store files in Proton Drive
