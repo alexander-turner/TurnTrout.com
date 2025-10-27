@@ -153,7 +153,7 @@ Header 1
 > ![[about#^first-para]]
 
 > [!quote]
-> ![[/test-page#Section to transclude]]
+> ![[/test-page#section-to-transclude]]
 >
 
 ## Section to transclude

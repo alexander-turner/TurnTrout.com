@@ -5558,5 +5558,45 @@
   "/static/images/external-favicons/mediaite_com.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/whitehouse_gov.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/opb_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/aljazeera_com.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/matrix_org.avif": {
+    "width": 48,
+    "height": 48
+  },
+  "../asset_staging/advanced-privacy-20251025204729.png": {
+    "width": 1896,
+    "height": 858
+  },
+  "../asset_staging/advanced-privacy-20251025204759.png": {
+    "width": 1198,
+    "height": 840
+  },
+  "/static/images/external-favicons/bsky_app.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/mas_to.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mastodon_social.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/advanced-privacy-20251025204759.png": {
+    "width": 1198,
+    "height": 840
   }
 }
