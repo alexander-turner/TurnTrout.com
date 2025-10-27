@@ -19,7 +19,6 @@ next-post-slug: advanced-privacy
 lw-sequence-title: 
 next-post-title: Advanced Privacy Despite Authoritarianism
 ---
-Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. He prophesied a day that the free world might regret its surveillance infrastructure. I think that that day [is here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d)
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
@@ -29,9 +28,9 @@ Edward Snowden [warned of unbridled government surveillance](https://en.wikipedi
 >
 > My first night in jail, my hands were burning from the pepper spray and tear gas because I was never allowed to wash them off. During the three nights and three days I was locked up and put on suicide watch, I could not make a phone call and was not given a chance to speak to a lawyer.[^pic]
 
-[^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will?utm_source=sailthru&utm_medium=email&utm_campaign=majorinvestigations&utm_content=feature)
+[^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-As of October 2025, ICE is a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government, but this dog *is*. That same government has directly declared its political opponents to be "domestic extremists" and has begun cracking down:
+This story isn't an isolated incident, but one entry in an array of ICE wrongdoing: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution:
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
@@ -83,13 +82,13 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
 1. Something is better than nothing. Even a few hours can transform your privacy.
 2. If money is hard to come by, don't worry - many of the best interventions are free.
-3. Do what you can. If you find this subject distressing, you're not alone because I do as well. Do what you can.
+3. If you find this subject distressing, you're not alone because I do as well. Do what you can.
 
 # What's your risk level?
 
-If you're an immigrant, investigative journalist, or political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
+If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
 
-This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should speak out. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
+This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
 > [!warning] Not sufficient for people at high risk of *targeted* surveillance
 > Please also refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
@@ -479,8 +478,6 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif]]
 
-<figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251014133220.avif" alt="" loading="lazy" width="360" height="391" style="aspect-ratio:360 / 391;"><figcaption>Whenever I read “Ente”, I think of <a href="https://bulbapedia.bulbagarden.net/wiki/Entei_(Pok%C3%A9mon)" class="external" target="_blank" rel="noopener noreferrer">Entei, the <span class="ordinal-num">244</span><sup class="ordinal-suffix">th</sup> Pokemon</a> and the coolest of the three legendary beasts from the second generation.</figcaption></figure>
-
 - [ ] Download [Ente](https://ente.io).
 - [ ] Import your photos.
   - [ ] [Google Takeout.](https://takeout.google.com)[^googleDelete]
@@ -556,12 +553,14 @@ By reclaiming bubbles of individual liberty, we thereby promote liberty and just
 
 # Appendix: I care about digital privacy a lot
 
- Many people were upset by the Snowden revelations, including me. I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act)
+Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files) and foresaw a day that the free world would regret its surveillance infrastructure. I think that that day [is now here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d)
+
+Many people were upset by the Snowden revelations, including me. I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act)
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
 Figure: July 2013. I'm in the center, holding the banner.
 
-# Appendix: A prescient, under-heeded warning of ICE in 2022
+# Appendix: A prescient, under-heeded warning about ICE in 2022
 
  Since its founding in 2003, ICE [has effectively grown into a new surveillance agency](https://americandragnet.org/). ICE not only listens but also intrudes:
 
