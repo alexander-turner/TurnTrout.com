@@ -474,7 +474,7 @@ Pessimistically assume that every interaction on X (including ["encrypted"](http
 
 Securing even one of these timely improvements would be a _significant win for protecting privacy and freedom across the world._ I've drafted suggestions which shouldn't conflict with core business models.
 
-> [!idea] Readers who work at Apple
+> [!idea]- Readers who work at Apple
 >
 > By order of importance:
 >
@@ -488,13 +488,13 @@ Securing even one of these timely improvements would be a _significant win for p
 > 4. Add a toggle to [disable the 2G radio](#disable-2g-to-avoid-stingray-attacks) without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays).
 > 5. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/)
 
-> [!idea] Readers who work at Meta
+> [!idea]- Readers who work at Meta
 > 6. Migrate WhatsApp from E2EE to zero-knowledge encryption to protect metadata. If not, more clearly warn users that their metadata are not E2EE.
 > 7. Encrypt WhatsApp backups by default (prompting the user to make an authentication key). Many users are unaware that their backups are unencrypted.
 > 8. Extend (zero-knowledge) E2EE to Instagram conversations.
 > 9. Extend (zero-knowledge) E2EE group chats in Messenger.
 
-> [!idea] Readers who work at other tech firms
+> [!idea]- Readers who work at other tech firms
 > Focus on changes with minimal technical burden or conflict with core company incentives. Start with easy wins like default settings changes. Those require no new engineering but affect the large set of users who never change settings.
 >
 ## Gradually transition workplaces from Slack to Element
@@ -505,51 +505,53 @@ Create a space where people can speak freely without fear of government surveill
 
 Element offers [a migration wizard](https://element.io/blog/slack-migration/) to directly migrate users and content. Furthermore, the [Slack to Matrix migration tool](https://github.com/Awesome-Technologies/slack-matrix-migration) can import even more data, including DMs and private channels.
 
-| **Data type**                 | **Migration support**    | **Notes**                        |
-| ------------------------: | :------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public channels       | ✅           | The Migration Wizard migrates complete Slack Workspace including all users, public channels, messages and files                      |
-| Files     | ✅           | Files shared in public channels are included in migration                                                                                                              |
-| Users                 | ✅          | Users can be transitioned en masse with automatically generated email addresses and passwords                                         |
-| Channel structure     | ✅           | Element's Slack Migration Wizard recreates Slack channels as Element rooms                                                                                             |
-| Message threads       | ✅           | Conversation threads within public channels are preserved                                                                                                              |
-| Private channels      | ❓ | Requires Slack to Matrix tool and Slack Enterprise Grid export with private channels included                                     |
-| Direct messages | ❓  | Requires Slack to Matrix tool and requires Business+ or Enterprise Grid export; won't work on DMs with Slack Connect accounts  |
-| Group DMs            | ❓ |  Requires Slack to Matrix tool and Enterprise Grid export                                                                         |
-| Apps & integrations     | ❌     | Custom apps and integrations must be reconfigured in Element                                                                                                           |
-| Custom emoji          | ❌     | Custom workspace emoji are not migrated                                                                                                                                |
-| Workspace settings    | ❌      | Settings, preferences, and customizations must be set up fresh                                                                                                         |
-| User permissions      | ⚠️            | Users are auto-joined to migrated channels, but permission structures may need reconfiguration                                                                         |
-
-To retain the benefits of Slack Connect, you can keep those Slack channels open while [interacting with those channels using Element.](https://ems-docs.element.io/books/element-cloud-documentation/page/public-slack-bridge)
-
-### Example migration timeframe
-
-#### Phase 1: establish parallel infrastructure (weeks 1-2)
-
-- [ ] Set up an Element workspace for your team or organization.
-- [ ] Choose between [Element Cloud](https://element.io/pricing) (easiest, \$5-10/user/month) or self-hosted Matrix server (free but requires technical expertise).
-- [ ] Create equivalent channels/rooms for sensitive discussions.
-- [ ] Invite a small pilot group.
-
-#### Phase 2: gradual adoption (weeks 3-8)
-
-- [ ] Start moving sensitive conversations to Element:
-    - Policy discussions that could be politically risky.
-    - Organizing around workplace issues.
-    - Any communication with non-US citizens about political topics.
-
-#### Phase 3: expand usage (months 2-6)
-
-- [ ] Create bridges between platforms if needed for the transition period.
-- [ ] Gradually move more conversations to Element.
-- [ ] Establish Element as the default for any sensitive topics.
-- [ ] Import from Slack and have your users move over for essential business, keeping Slack available as a backup.
-
-#### Phase 4: full transition (optional)
-
-- [ ] Evaluate whether full migration makes sense for your organization.
-- [ ] For maximum security, fully deprecate Slack and delete message history.
-- [ ] Or maintain dual platforms with clear boundaries, like "Slack is now read-only."
+> [!info]- Migration details and timeline
+>
+> | **Data type**                 | **Migration support**    | **Notes**                        |
+> | ------------------------: | :------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | Public channels       | ✅           | The Migration Wizard migrates complete Slack Workspace including all users, public channels, messages and files                      |
+> | Files     | ✅           | Files shared in public channels are included in migration                                                                                                              |
+> | Users                 | ✅          | Users can be transitioned en masse with automatically generated email addresses and passwords                                         |
+> | Channel structure     | ✅           | Element's Slack Migration Wizard recreates Slack channels as Element rooms                                                                                             |
+> | Message threads       | ✅           | Conversation threads within public channels are preserved                                                                                                              |
+> | Private channels      | ❓ | Requires Slack to Matrix tool and Slack Enterprise Grid export with private channels included                                     |
+> | Direct messages | ❓  | Requires Slack to Matrix tool and requires Business+ or Enterprise Grid export; won't work on DMs with Slack Connect accounts  |
+> | Group DMs            | ❓ |  Requires Slack to Matrix tool and Enterprise Grid export                                                                         |
+> | Apps & integrations     | ❌     | Custom apps and integrations must be reconfigured in Element                                                                                                           |
+> | Custom emoji          | ❌     | Custom workspace emoji are not migrated                                                                                                                                |
+> | Workspace settings    | ❌      | Settings, preferences, and customizations must be set up fresh                                                                                                         |
+> | User permissions      | ⚠️            | Users are auto-joined to migrated channels, but permission structures may need reconfiguration                                                                         |
+>
+> To retain the benefits of Slack Connect, you can keep those Slack channels open while [interacting with those channels using Element.](https://ems-docs.element.io/books/element-cloud-documentation/page/public-slack-bridge)
+>
+> ### Example migration timeframe
+>
+> #### Phase 1: establish parallel infrastructure (weeks 1-2)
+>
+> - [ ] Set up an Element workspace for your team or organization.
+> - [ ] Choose between [Element Cloud](https://element.io/pricing) (easiest, \$5-10/user/month) or self-hosted Matrix server (free but requires technical expertise).
+> - [ ] Create equivalent channels/rooms for sensitive discussions.
+> - [ ] Invite a small pilot group.
+>
+> #### Phase 2: gradual adoption (weeks 3-8)
+>
+> - [ ] Start moving sensitive conversations to Element:
+>     - Policy discussions that could be politically risky.
+>     - Organizing around workplace issues.
+>     - Any communication with non-US citizens about political topics.
+>
+> #### Phase 3: expand usage (months 2-6)
+>
+> - [ ] Create bridges between platforms if needed for the transition period.
+> - [ ] Gradually move more conversations to Element.
+> - [ ] Establish Element as the default for any sensitive topics.
+> - [ ] Import from Slack and have your users move over for essential business, keeping Slack available as a backup.
+>
+> #### Phase 4: full transition (optional)
+>
+> - [ ] Evaluate whether full migration makes sense for your organization.
+> - [ ] For maximum security, fully deprecate Slack and delete message history.
+> - [ ] Or maintain dual platforms with clear boundaries, like "Slack is now read-only."
 
 # Appendix: Precautions which didn't make the cut for the main article
 
