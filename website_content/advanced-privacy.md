@@ -126,7 +126,7 @@ However, if the "lock" is not a password but merely a biometric, the legal water
 
 ## Disable 2G to avoid "stingray" attacks
 
-Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then they trick your phone into downgrading to a 2G connection. At that point, criminals and police make your phone basically admit who you are. They do this to everyone within half a kilometer.
+Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then the machine tricks your phone into downgrading to a 2G connection. At that point, criminals and/or police make your phone basically admit who you are. They do this to everyone within half a kilometer.
 
 Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
 

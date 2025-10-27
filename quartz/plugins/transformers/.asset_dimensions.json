@@ -5618,5 +5618,21 @@
   "./asset_staging/privacy-20251026183019.png": {
     "width": 856,
     "height": 527
+  },
+  "/static/images/external-favicons/support_okta_com.png": {
+    "width": 32,
+    "height": 32
+  },
+  "/static/images/external-favicons/sfchronicle_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "./asset_staging/privacy-20251026202702.png": {
+    "width": 800,
+    "height": 524
+  },
+  "./asset_staging/privacy-20251026203248.png": {
+    "width": 780,
+    "height": 572
   }
 }

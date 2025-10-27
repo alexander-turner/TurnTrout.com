@@ -19,32 +19,27 @@ next-post-slug: advanced-privacy
 lw-sequence-title: 
 next-post-title: Advanced Privacy Despite Authoritarianism
 ---
+Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. He prophesied a day that the free world might regret its surveillance infrastructure. I think that that day [is here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d)
 
-Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files). He spoke of [powerful eyes](https://en.wikipedia.org/wiki/Five_Eyes) illegally spying on millions of Americans and other people around the world. Many people were upset, including me -- I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act).
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
-Figure: July 2013. I'm in the center, holding the banner.
-
-Edward Snowden warned of a day that the free world might regret its surveillance infrastructure. I think that that day [is here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d) ICE, for example, [has cropped up as a new surveillance agency](https://americandragnet.org/), not only listening but also intruding:
-
-> [!quote] [American Dragnet: Data-Driven Deportation in the 21st Century](https://americandragnet.org/)
-> Subtitle: Foreword, May 2025
+> [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
+> <p class="float-right"><img src="./asset_staging/privacy-20251026203248.png" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;margin-bottom: -.25rem;"><figcaption></figcaption></p>
 >
-> When we published _American Dragnet: Data-Driven Deportation in the 21st Century_ in 2022, we understood that the surveillance infrastructure our report describes could one day be deployed by an authoritarian executive to coerce and control the U.S. population at scale. We did not anticipate that this day would come within three years. Our hope was that the findings of our research would be useful for the communities organizing against immigration policing and digital surveillance, and would help to provoke policy change.
+> My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
-> Today, as [masked federal agents abduct students off the street in broad daylight](https://www.cnn.com/2025/03/29/us/rumeysa-ozturk-tufts-university-arrest-saturday/index.html), and [the President scoffs at an order from the Supreme Court to facilitate the return of a man illegally deported to El Salvador](https://abcnews.go.com/US/timeline-wrongful-deportation-kilmar-abrego-garcia-el-salvador/story?id=120803843), and [his administration threatens to suspend habeas corpus](https://www.msnbc.com/rachel-maddow-show/maddowblog/trumps-line-possibly-suspending-habeas-corpus-goes-bad-worse-rcna236649), to hope to be saved by “policy change” would be to indulge in soothing nonsense. It would be vain to hope that the exposure of wrongdoing or the revelation of brutality could rouse the current Congress on behalf of the people.
->
-> There is, in some sense, nothing left to be revealed or exposed. Or to be more precise, the revelation and exposure of new particulars will not tell us anything more about the nature of the political situation through which we are living. The struggle now is not to uncover the right information, but to rightly understand the meaning of the information we already have, and to face that meaning together.
+> My first night in jail, my hands were burning from the pepper spray and tear gas because I was never allowed to wash them off. During the three nights and three days I was locked up and put on suicide watch, I could not make a phone call and was not given a chance to speak to a lawyer.[^pic]
 
- This situation has greatly worsened since that foreword in May.
+[^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will?utm_source=sailthru&utm_medium=email&utm_campaign=majorinvestigations&utm_content=feature)
 
-> [!warning] Authoritarianism is already here. Protect yourself.
+As of October 2025, ICE is a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government, but this dog *is*. That same government has directly declared its political opponents to be "domestic extremists" and has begun cracking down:
+
+> [!warning] Authoritarianism is here. Protect yourself.
+> The Trump regime views its political opponents as literal enemies of the state:
 >
 > > [!quote] [Stephen Miller](https://www.snopes.com/fact-check/stephen-miller-democrats-extremist/)
 > > Subtitle: Trump's Deputy Chief of Staff for Policy and Homeland Security Advisor
 > >
-> > The Democrat Party does not fight for, care about or represent American citizens. It is an entity devoted _exclusively_ to the defense of hardened criminals, gangbangers, and illegal alien killers and terrorists. The Democrat Party is not a political party. It is a domestic extremist organization.
+> > The Democrat Party does not fight for, care about, or represent American citizens. It is an entity devoted *exclusively* to the defense of hardened criminals, gangbangers, and illegal alien killers and terrorists. The Democrat Party is not a political party. It is a domestic extremist organization.
 >
 >   Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not legally a classification). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
 >
@@ -63,36 +58,44 @@ Edward Snowden warned of a day that the free world might regret its surveillance
 >
 > **Accept the reality of the risk cast by the future. Act now to prepare.**
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
-
-I'm going to help you protect your communications and information so you can think and speak freely. The privacy won't be perfect, but it should give you  breathing room. As more people reclaim their privacy, their networks grow more secure and resistant to authoritarian punishment.
+This guide will help you protect your communications and information so you can think and speak freely. The privacy won't be perfect, but it should give you  breathing room. As more people reclaim their privacy, their networks grow more secure and resistant to authoritarian punishment.
 
 Let's get started.
 
 > [!info]  I'm only speaking for myself
 >  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views.
 
-> [!warning] Not sufficient for people at high risk of _targeted_ surveillance
-> Please also refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
-
 # What should I read?
 
 This guide is long. Don't try to complete it all at once. My website has long-lasting checkbox functionality. As you complete items, check them off to remember your place in the guide.
 
-   - [ ] You can check off this item, refresh the page, and the box remains checked!
+   - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
    | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
    | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
-   | Privacy basics | 90 minutes    | $13/month        | Significant privacy against mass surveillance. Govt. has harder time seeing who you talk to and can't monitor what you say on the Signal app. Less creepy tracking. |
+   | Privacy basics | 90 minutes upfront + 45 minutes for YubiKey setup when it arrives    | \$110 + $13/month        | Significant privacy against mass surveillance. Govt. has a harder time seeing who you talk to and can't monitor what you say on the Signal app. |
    | End-to-end encrypt your data  | At least 4.5 hours  | \$14/month    |   Mass surveillance unlikely to capture your important data or communications.   |
 
-Each tier builds on the previous. I also wrote [a sequel focused on more advanced steps.](/advanced-privacy) Something is better than nothing. Even a few hours can transform your privacy. If money is hard to come by, don't worry - many of the best interventions are free. Do what you can.
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
 
-This guide is about protecting yourself, but it's not necessarily about _hiding_. Take risks which merit the pain. Effectively resist by sharing meaningful statements while retaining your logistics and organizing.
+*Each tier builds on the previous, so do them in order.*
+
+1. Something is better than nothing. Even a few hours can transform your privacy.
+2. If money is hard to come by, don't worry - many of the best interventions are free.
+3. Do what you can. If you find this subject distressing, you're not alone because I do as well. Do what you can.
+
+# What's your risk level?
+
+If you're an immigrant, investigative journalist, or political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
+
+This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should speak out. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
+
+> [!warning] Not sufficient for people at high risk of *targeted* surveillance
+> Please also refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
 
 > [!warning] What information this guide will and won't help you protect
->   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. _You will be hard-pressed to turn invisible while participating in modern society._
+>   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
 >
 >   This guide will teach you to protect a limited selection of your data:
 >   1. Content of your communications (Signal E2EE),
@@ -110,7 +113,7 @@ This article will assume less computer science background than most of my articl
 I've structured my recommendations around two key principles.
 
 Open source code
-:  If a program is open source, then that means anyone can see its code. In turn, that means if the developers put something suspicious or sneaky in the program, someone will probably read the code and notice. You don't need to _trust_ that the people who made the app didn't include creepy tracking.
+:  If a program is open source, then that means anyone can see its code. In turn, that means if the developers put something suspicious or sneaky in the program, someone will probably read the code and notice. You don't need to *trust* that the people who made the app didn't include creepy tracking.
 
 :  Open source programs are usually free as well!
 
@@ -125,11 +128,11 @@ Unless I mention otherwise, all of my recommendations are both open source and E
 
 ## Manage passwords with Bitwarden
 
-Subtitle: Time: 20 minutes with ongoing maintenance as you import passwords.
+Subtitle: Time: 30 minutes with ongoing maintenance as you import passwords.
 
 Use a different long password for every single login you have. Do not reuse passwords. Do not reuse passwords. Do not make simple passwords like `mail123`.
 
-If you're not using a password manager already, _Bitwarden will make your life easier_. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
+If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
 
 Here's what to do:
 1. [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
@@ -144,15 +147,13 @@ Since you're using a unique password for every site, you won't have to scramble 
 
 ## Two-factor authentication (2FA)
 
-Subtitle: YubiKey > authenticator app > text- / email-based 2FA. If you're not going to use a YubiKey, at least [use Proton Authenticator](#use-proton-authenticator-as-your-2fa-app).
-
 "2-factor authentication" means an attacker has to try a lot harder to get into your accounts.  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
 
 Enable two-factor authentication on every possible account that you care about protecting. You don't have to do it all at once. You can just enable 2FA on your most important accounts and then start enabling them in the future as you notice.
 
 ### Don't use text- and phone-based 2FA
 
-The US government forces telecoms to permit spying on their customers (including you). _Assume that all text messages or phone calls are actively monitored by the US and Chinese governments._
+The US government forces telecoms to permit spying on their customers (including you). *Assume that all text messages or phone calls are actively monitored by the US and Chinese governments.*
 
 > [!quote] [Communications Assistance for Law Enforcement Act](https://en.wikipedia.org/wiki/Communications_Assistance_for_Law_Enforcement_Act)
 > The Act obliges telecommunications companies to make it possible for law enforcement agencies to tap any phone conversations carried out over its networks, as well as making call detail records available. The act stipulates that it must not be possible for a person to detect that his or her conversation is being monitored by the respective government agency.
@@ -175,30 +176,6 @@ The fast and free upgrade is to prefer authenticator apps over SMS and email.
  As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
 1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
 
-### Optional: buy a YubiKey (and a backup)
-
-Subtitle: Time: 5 minutes to order & 40 minutes to secure your most important accounts. Cost: \$110.
-
-> [!money] Optional but recommended
-> YubiKeys are physical devices which guarantee "these accounts _cannot_ get hacked remotely". Accounts like your email or Bitwarden are extremely valuable and worth protecting.
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
-
-You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts, like Bitwarden. You really, really don't want hackers to compromise your Bitwarden.
-
-1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/)
-2. Set up key-based 2FA on your most important logins. For each site, register 2FA on both keys.
-3. Keep the two factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
-
-> [!question] These keys are expensive. Do I really need two?
-> I know they aren't cheap. However, they will make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind.
->
-> At _minimum_, you need two keys. If you just had one key, you're one "oops I lost it" away from being _locked out of your most important accounts_. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys.
->
-> For convenience, you might even get a third key: a YubiKey 5C Nano (an additional \$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
->
-> - [ ] If you buy a Nano key, [switch it to "Long Touch" mode](https://support.okta.com/help/s/article/swapping-yubico-otp-between-slot-1-to-slot-2?language=en_US) so it doesn't mess up your typing whenever you bump it.
-
 ## Keep your OS up to date
 
 Make sure you've enabled automatic security updates on your device. Just search "security update" in your phone and computer settings. Enable for both.  Install operating system updates ASAP.
@@ -214,7 +191,7 @@ If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end enc
 
 ## Secure your devices with strong passwords
 
-Use an eight digit PIN for your phone. Using Bitwarden, secure your laptop with a _passphrase_ which consists of five randomly generated words. After a couple tries, you'll remember it.
+Use an eight digit PIN for your phone. Using Bitwarden, secure your laptop with a *passphrase* which consists of five randomly generated words. After a couple tries, you'll remember it.
 
 - [ ] Use a secure password for each device.
 
@@ -224,7 +201,7 @@ On Mac, I just hit `ctrl+command+Q` by habit. Otherwise, someone in the area cou
 
 ## Use Signal over Facebook Messenger, WhatsApp, texting, or phone calls
 
-Cost: 5 minutes.
+Subtitle: Time: 5 minutes.
 
  Plain phone calls and text messages are not encrypted. That's why the government has been warrantlessly spying on them for a long time. "Encrypted" services (which aren't E2EE) aren't that safe either:
 
@@ -277,7 +254,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
 
-### VPNs are _fundamentally unreliable_ on mobile iOS as of October 2025
+### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
 Subtitle: And it's on Apple.
 
@@ -304,7 +281,7 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 
 ## Browse the web using Brave
 
-Subtitle: Time: 20 minutes.
+Subtitle: Time: 30 minutes.
 
 I thoroughly ran available browsers against my criteria for you:
 
@@ -315,17 +292,19 @@ I thoroughly ran available browsers against my criteria for you:
 5. Open source, and
 6. Good default settings (convenient for you).
 
-I settled on [Brave](https://brave.com/), based on Chromium. The browser is a _huge_ privacy upgrade from normal browsers, especially in the context of recent restrictions on popular ad blockers. I also found it easy to migrate to Brave.
+I settled on [Brave](https://brave.com/), based on Chromium. The browser is a *huge* privacy upgrade from normal browsers, especially in the context of recent restrictions on popular ad blockers. I also found it straightforward to migrate to Brave.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif]]
 Figure:  For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
 
-Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the _only_ browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than its competitors.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
+Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the *only* browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than its competitors.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
 
 If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](https://github.com/arkenfox/user.js) (requires technical expertise) or using the Firefox fork [Librewolf](https://librewolf.net/) (which deletes your cookies and history each setting, disrupting your usual usage patterns).
 
- - [ ] On each device:
-     - [ ] [Download Brave](https://brave.com/).
+- [ ] [Download Brave](https://brave.com/).
+- [ ] Run Brave, importing during setup your bookmarks from your current browser.
+- [ ] Remember to install any extensions you want!
+- [ ] On each device:
      - [ ] Set Brave as your default browser.
      - [ ] Enable Sync and enable syncing everything (it's E2EE).
      - [ ] Install the Bitwarden extension, pin the extension icon to be visible while browsing the web, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
@@ -341,12 +320,12 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >     - [ ] "Auto-redirect AMP pages".
 >     - [ ] "Auto-redirect tracking URLs".
 >     - [ ] "Prevent sites from fingerprinting based on language".
->     - [ ] _Disable sending a "Do not track" request_ (ironically, it makes you easier to track).
+>     - [ ] *Disable sending a "Do not track" request* (ironically, it makes you easier to track).
 >     - [ ] Disable all options under "Data collection".
 > 3. [ ] Also apply these settings in your mobile Brave browser.
 
 > [!tip] Send your friends clean links
-> You ever see those _suuuuper_ long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
+> You ever see those *suuuuper* long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
 
 > [!idea] Insight: reducing commercial tracking reduces your exposure to government tracking
 >
@@ -367,17 +346,40 @@ Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduck
 
 ## Give each app as few permissions as possible
 
-Subtitle: Time: 10 minutes to review existing permission settings.
+Subtitle: Time: 20 minutes to review existing permission settings.
 
-Be especially wary about giving out _precise location_ data. Don't be afraid to say "no" if a permissions request seems unreasonable --- you can always read more on the app and come back later if you change your mind. Review your mobile and desktop applications in your permissions centers. Check that apps aren't taking absurd permissions they don't need (like a calculator asking for access to contacts).
+Be especially wary about giving out *precise location* data. Don't be afraid to say "no" if a permissions request seems unreasonable --- you can always read more on the app and come back later if you change your mind. Review your mobile and desktop applications in your permissions centers. Check that apps aren't taking absurd permissions they don't need (like a calculator asking for access to contacts).
 
 - [ ] Review app permissions.
 
 > [!example] Minimizing location permissions
-> I found several apps were using my location _all of the time_, including:
+> I found several apps were using my location *all of the time*, including:
 > 1. My Govee smart lights app (deny!),
 > 2. Maps (should only need it when I'm using the app), and
 > 3. System Intelligence (doesn't need much location data).
+
+## Buy a YubiKey (and a backup)
+
+Subtitle: Time: 5 minutes to order & 40 minutes to secure your most important accounts. Cost: \$110.
+
+YubiKeys are physical devices which guarantee "these accounts *cannot* get hacked remotely". To log into an account protected by your YubiKey, you physically tap the key. Accounts like your email or Bitwarden are extremely valuable and worth protecting. The security ordering is: YubiKey > authenticator app > text- / email-based 2FA.
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
+
+You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts. You really, really don't want hackers to compromise your Bitwarden.
+
+1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/)
+2. Set up key-based 2FA on your most important logins. For each site, register 2FA on both keys.
+3. Keep the two factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
+
+> [!question] These keys are expensive. Do I really need two?
+> I know they aren't cheap. However, they will make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind.
+>
+> At *minimum*, you need two keys. If you just had one key, you're one "oops I lost it" away from being *locked out of your most important accounts*. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys.
+>
+> For convenience, you might even get a third key: a YubiKey 5C Nano (an additional \$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
+>
+> - [ ] If you buy a Nano key, [switch it to "Long Touch" mode](https://support.okta.com/help/s/article/swapping-yubico-otp-between-slot-1-to-slot-2?language=en_US) so it doesn't mess up your typing whenever you bump it.
 
 ## Your pictures and videos contain your GPS location
 
@@ -416,21 +418,21 @@ Let's secure your data.
 > The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP.
 >
 > Apple didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me:
-> 1. How important it is to have full E2EE for _all data you care about_,
+> 1. How important it is to have full E2EE for *all data you care about*,
 > 2. Your E2EE should not be through a single cloud provider (lest they be forced to delete all of it), and
 > 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored.
 >
 > To be clear, iCloud's ADP is far better than nothing. But open source E2EE is even more secure.
 
-_After each replacement, remember to delete your original data and to stop syncing to that source._
+*After each replacement, remember to delete your original data and to stop syncing to that source.*
 
 ## Switch to Proton Mail
 
 Subtitle: 30 minutes
 
-Centrally hosted mail may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, _the government can make them hand over your emails_.
+Centrally hosted mail may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, *the government can make them hand over your emails*.
 
-Proton Mail stores your emails E2EE. Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's easy to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
+Proton Mail stores your emails E2EE. Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
 1. [ ] Create or log in to your Proton account (e.g. use the account you made above for ProtonVPN).
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new ProtonMail address.  
@@ -447,9 +449,11 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 
 Subtitle: Time: 1 hour. Cost: Nothing, if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
 
-I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
+I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.  The downloading and uploading process will probably take a while, so do this in the background and  If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
 
 - [ ] Download your existing Drive files
+    - [ ] Google
+    - [ ] iCloud
 - [ ] [Install Proton Drive](https://proton.me/drive/download).
 - [ ] Migrate your existing files to Proton Drive.
 
@@ -467,9 +471,9 @@ That said, I use [Obsidian](https://obsidian.md), and if you do, you're fine sta
 
 ## Store your photos in Ente
 
-Subtitle: Time: Depends on how many photos you have in the cloud on how many services. I'd guess this takes anywhere from 20 minutes to 3 hours. Cost: \$12/month for 1TB storage.
+Subtitle: Time: Depends on how many photos you have in the cloud on how many services. I'd guess this takes anywhere from 40 minutes to 4 hours. Cost: \$12/month for 1TB storage.
 
-I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
+I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses *local* AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
  Plus, now all of my 23,000 photos are in one place.
 
@@ -483,7 +487,7 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration,
   - [ ] iCloud Photos.
   - [ ] Any private photos which don't sync automatically to your services.
 
-[^googleDelete]: To delete your data from Google Photos _after_ importing to Ente, you'll have to select photos one screen at a time and then click "Download." I found it best to do this on desktop, zoom out my browser a bunch, and then continually expanding my selection by shift-clicking. I selected about 3,000 photos at a time.
+[^googleDelete]: To delete your data from Google Photos *after* importing to Ente, you'll have to select photos one screen at a time and then click "Download." I found it best to do this on desktop, zoom out my browser a bunch, and then continually expanding my selection by shift-clicking. I selected about 3,000 photos at a time.
 
 ## Make OsmAnd your map of choice
 
@@ -518,7 +522,7 @@ Use Signal with messages which disappear after a short time period (like a day o
 
 Subtitle: Time: 10 minutes. Cost: \$2/month after free trial.
 
-Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
+Android and Apple contacts are *not* encrypted, even if you enable Advanced Data Protection on iOS. I don't want the government to be able to find out who I talk to or the contact information others have entrusted to me. Here's what to do instead:
 
 - [ ] [Register for an EteSync account](https://www.etesync.com/).
 - [ ] Download EteSync to mobile devices. Don't worry about the calendar features.
@@ -537,7 +541,7 @@ Android and Apple contacts are _not_ encrypted, even if you enable Advanced Data
 
 "It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"?
 
-The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. _That's the entire reason that data brokers make money from your information_ - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
+The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. *That's the entire reason that data brokers make money from your information* - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
 
 Imagine: You go to a protest. [License Plate Readers log every car that drove by](/advanced-privacy#automated-license-plate-readers-can-t-do-anything-about-them). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases derived from driver's license photos.
 
@@ -548,4 +552,25 @@ By reclaiming bubbles of individual liberty, we thereby promote liberty and just
 ![[privacy-20251026183019.png|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
 > [!tip] Keep reading for more action items
-> To truly minimize the chance your communications get you snagged by the incipient surveillance state, you'll want to complete the steps [in the next post](/advanced-privacy). I also offer [a concrete migration plan off of Slack](/advanced-privacy#slack), which _does not_ offer privacy from  surveillance.
+> To truly minimize the chance your communications get you snagged by the incipient surveillance state, you'll want to complete the steps [in the next post](/advanced-privacy). I also offer [a concrete migration plan off of Slack](/advanced-privacy#gradually-transition-workplaces-from-slack-to-element), which *does not* offer privacy from  surveillance.
+
+# Appendix: I care about digital privacy a lot
+
+ Many people were upset by the Snowden revelations, including me. I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act)
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
+Figure: July 2013. I'm in the center, holding the banner.
+
+# Appendix: A prescient, under-heeded warning of ICE in 2022
+
+ Since its founding in 2003, ICE [has effectively grown into a new surveillance agency](https://americandragnet.org/). ICE not only listens but also intrudes:
+
+> [!quote] [American Dragnet: Data-Driven Deportation in the 21st Century](https://americandragnet.org/)
+> Subtitle: Foreword, May 2025
+>
+>
+> When we published *American Dragnet: Data-Driven Deportation in the 21st Century* in 2022, we understood that the surveillance infrastructure our report describes could one day be deployed by an authoritarian executive to coerce and control the U.S. population at scale. We did not anticipate that this day would come within three years. Our hope was that the findings of our research would be useful for the communities organizing against immigration policing and digital surveillance, and would help to provoke policy change.
+>
+> Today, as [masked federal agents abduct students off the street in broad daylight](https://www.cnn.com/2025/03/29/us/rumeysa-ozturk-tufts-university-arrest-saturday/index.html), and [the President scoffs at an order from the Supreme Court to facilitate the return of a man illegally deported to El Salvador](https://abcnews.go.com/US/timeline-wrongful-deportation-kilmar-abrego-garcia-el-salvador/story?id=120803843), and [his administration threatens to suspend habeas corpus](https://www.msnbc.com/rachel-maddow-show/maddowblog/trumps-line-possibly-suspending-habeas-corpus-goes-bad-worse-rcna236649), to hope to be saved by “policy change” would be to indulge in soothing nonsense. It would be vain to hope that the exposure of wrongdoing or the revelation of brutality could rouse the current Congress on behalf of the people.
+>
+> There is, in some sense, nothing left to be revealed or exposed. Or to be more precise, the revelation and exposure of new particulars will not tell us anything more about the nature of the political situation through which we are living. The struggle now is not to uncover the right information, but to rightly understand the meaning of the information we already have, and to face that meaning together.
