@@ -440,6 +440,8 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 
 ## Store files in Proton Drive
 
+Subtitle: Time: 1 hour. Cost: Nothing, if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
+
 I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is easy: just download your Drive content from Google Takeout and then upload to the Proton Drive app. If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
 
 - [ ] Download your existing Drive files
@@ -447,6 +449,8 @@ I was using Google Drive and iCloud Drive. Neither are open source, and Google D
 - [ ] Migrate your existing files to Proton Drive.
 
 ## Take notes with Standard Notes instead of Notion or Roam
+
+Subtitle: Time: 20 minutes.
 
 Standard Notes is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched.
 
@@ -457,6 +461,8 @@ That said, I use [Obsidian](https://obsidian.md), and if you do, you're fine sta
 - [ ] [Import your files into Standard Notes](https://standardnotes.com/tools).
 
 ## Store your photos in Ente
+
+Subtitle: Time: Depends on how many photos you have in the cloud on how many services. I'd guess this takes anywhere from 20 minutes to 3 hours. Cost: \$12/month for 1TB storage.
 
 I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses _local_ AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
@@ -476,6 +482,8 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, easy migration,
 
 ## Make OsmAnd your map of choice
 
+Subtitle: Time: 15 minutes.
+
 The [OsmAnd](https://osmand.net) doesn't collect your data but is instead flooded with  data of its own. The maps have surprising amount of detail, down to the nearby benches. I  can even download a detailed map of the entire state of California for just 8GB. Don't worry, the app will give you verbal directions during your trip!
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
@@ -485,7 +493,9 @@ The [OsmAnd](https://osmand.net) doesn't collect your data but is instead floode
 
 ## Schedule with Proton Calendar
 
-Neither Google nor iCloud Calendar are E2EE - even with iCloud's Advanced Data Protection enabled. The government could compel the companies to hand over your calendars.
+Subtitle: Time: 15 minutes.
+
+Neither Google nor iCloud Calendar are E2EE - even with iCloud's Advanced Data Protection enabled. The government could compel the companies to hand over your calendars (including shared events with other people).
 
 Proton Calendar lacks some of the convenient features of Google Calendar, but Proton calendar gets the job done and it's private. I just imported my Google Calendar and  began making new entries in the Proton calendar instead.  Proton Calendar  automatically imports calendar invitations sent to your Proton Mail address - another  reason to [do your email through Proton Mail.](https://proton.me/mail)
 
