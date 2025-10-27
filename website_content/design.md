@@ -29,7 +29,7 @@ Figure: The beginning of my journey, rendered under my third commit ([`6e687609`
 Figure: Content rendered approximately when this article was first published ([`31bba104`](https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c)).
 
 > [!warning] My stance on AI-written content
-> As of July 2025, my site contains almost no unmarked AI-written content. I sometimes use AI to write a conclusion or summarize a pdf, but I generally revise every sentence. I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content.
+> For text meant to be in my voice, I always review and edit AI generations I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
 >
 > In 2025, I started using AI to stress-test my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
 
