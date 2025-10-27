@@ -8,21 +8,22 @@ tags:
   - open-source
   - understanding-the-world
   - community
-description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
+description: In 2025, America is different. Reduce your chance of persecution via
+  smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://i.imgur.com/J9EZDFI.png
+card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.png
 aliases:
   - privacy
   - privacy-tips
 next-post-slug: advanced-privacy
-lw-sequence-title: 
+lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 ---
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
-> <p class="float-right"><img src="./asset_staging/privacy-20251026203248.png" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;margin-bottom: -.25rem;"><figcaption></figcaption></p>
+> <p class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;margin-bottom: -.25rem;"><figcaption></figcaption></p>
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
@@ -91,7 +92,7 @@ If you're an immigrant, investigative journalist, or a political figure who oppo
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
 > [!warning] Not sufficient for people at high risk of *targeted* surveillance
-> Please also refer to [a more hardcore guide written by experts](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
+> In addition to reading this guide and [the more hardcore sequel](/advanced-privacy) also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
 
 > [!warning] What information this guide will and won't help you protect
 >   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
@@ -448,7 +449,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 
 Subtitle: Time: 1 hour. Cost: Nothing, if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
 
-I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.  The downloading and uploading process will probably take a while, so do this in the background and  If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage.
+I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
 
 - [ ] Download your existing Drive files
     - [ ] Google
@@ -538,7 +539,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 
 "It's just one piece of information", you think. So what if the ISP knows you read an article on [`thenation.com`](https://www.thenation.com/) or [`propublica.org`](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)? Or that you texted your friend to ask "can I pick you up soon"?
 
-The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. *That's the entire reason that data brokers make money from your information* - because that information strongly predicts what you will go, what you will search, who you know, and what you next want to buy.
+The point isn't that individual fragments of your attention will not tell your life story. But by systematically tracking and analyzing these fragments, the government can build a detailed picture of who you are and what you think. *That's the entire reason that data brokers make money from your information* - because that information strongly predicts what you will search, who you know, and what you next want to buy.
 
 Imagine: You go to a protest. [License Plate Readers log every car that drove by](/advanced-privacy#automated-license-plate-readers-can-t-do-anything-about-them). The government scans social media activity using packs of AI led by human handlers. Even though you don't post, the AIs recognize you and your brother by cross-referencing your faces (in others' photographs) against their databases derived from driver's license photos.
 
@@ -546,7 +547,7 @@ When you follow this guide, you obscure those digital spies and trackers. When y
 
 By reclaiming bubbles of individual liberty, we thereby promote liberty and justice for all.
 
-![[privacy-20251026183019.png|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251026183019.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
 > [!tip] Keep reading for more action items
 > To truly minimize the chance your communications get you snagged by the incipient surveillance state, you'll want to complete the steps [in the next post](/advanced-privacy). I also offer [a concrete migration plan off of Slack](/advanced-privacy#gradually-transition-workplaces-from-slack-to-element), which *does not* offer privacy from  surveillance.

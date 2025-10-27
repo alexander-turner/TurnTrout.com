@@ -7,20 +7,31 @@ tags:
   - understanding-the-world
   - practical
   - community
-description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
+description: In 2025, America is different. Reduce your chance of persecution via
+  smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://i.imgur.com/J9EZDFI.png
+card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.png
 aliases:
   - advanced-privacy-despite-authoritarianism
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 ---
-As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll keep helping you harden your privacy against the intrusive government.
+As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide is appropriate for people at high risk, like opposition politicians, immigrants, and investigative journalists.
 
-![[advanced-privacy-20251026182933.png|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
+![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
-I'll assume you've read the previous post and have taken the suggested precautions.
+# New concepts
+
+## The difference between mass surveillance and targeted investigation
+
+[An Opinionated Guide to Privacy Despite Authoritarianism](/privacy-tips) helped protect against mass surveillance that lets the government track lots of people at once. This guide _partially_ addresses both mass and targeted investigation. In a targeted investigation, you now need to worry about physical threats as well: device seizure, physical surveillance, informants, and people who are investigating you in particular.
+
+This guide _is not sufficient to protect you against targeted investigation_. Think of these guides as raising the cost for the government to surveil you. It's still possible, but it's tougher and less likely.
+
+## Protect your network, not just yourself
+
+Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-tips#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're  meeting with by just demanding data from your cloud calendar provider.
 
 # Important steps for at-risk people
 
@@ -441,7 +452,7 @@ Later, [I propose](#x-migration-plan) a two-month migration during which you cro
 
 Mastodon's structure is resilient against censorship. Mastodon can't "chicken out" like Bluesky seems to have done because Mastodon operates on a _federated_ model. The "Fediverse" is a collection of interlinked servers which use a shared protocol. The servers can interoperate seamlessly. Users can easily port their data from one server to another. Censorship becomes hard -- more like "whack a mole" with a million moles, where the moles may be using _quite_ sophisticated VPNs. :)
 
-![[advanced-privacy-20251025204759.png]]
+![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif]]
 Figure: A _centralized_ network on the left versus a _federated_ network on the right. The federated network is robust to the censorship of individual servers. Users can export their data and migrate to a new server.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
