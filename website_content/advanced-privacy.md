@@ -301,7 +301,7 @@ Eventually I'll likely be able to run a local model on my MacBook Pro but with t
 
 ### `opensuperwhisper` runs local speech-to-text on Mac
 
-This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on Macbook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder.
+This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on MacBook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder.
 
 ### Regularly delete your chat history for frontier models
 
@@ -683,7 +683,7 @@ Cloud backups survive house fires, but many cloud services can decrypt your data
 
 iCloud (with ADP) doesn't work because I want complete incremental backup of all the files on my computer in order to protect against losing work if something happens to my system. Therefore, the backup software should be scanning my entire home directory (with exceptions), and also make it easy for me to restore files.
 
-I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my config template](https://assets.turntrout.com/duplicati.json).
+I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my configuration template](https://assets.turntrout.com/duplicati.json).
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so  if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 

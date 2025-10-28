@@ -540,7 +540,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 - [ ] Download EteSync to mobile devices. Don't worry about the calendar features.
 - [ ] On iOS, [consult the user guide for special instructions.](https://www.etesync.com/user-guide/ios/)
 - [ ] Import contacts from your existing sources.
-- [ ] Create a new "Test Etesync" contact in your app and check that the contact appears in the EteSync app.
+- [ ] Create a new "Test EteSync" contact in your app and check that the contact appears in the EteSync app.
 - [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
 
 ## Collaborate privately
