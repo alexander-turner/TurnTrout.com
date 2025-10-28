@@ -283,8 +283,9 @@ def get_non_code_text(
 
     Args:
         soup_or_tag: BeautifulSoup object or Tag to extract text from
-        replace_with_placeholder: If True, replace code with _PRIVATE_UNICODE_CHAR instead of
-            removing it (preserves text positions)
+        replace_with_placeholder: If True, replace code with
+            _PRIVATE_UNICODE_CHAR instead of removing it
+            (preserves text positions)
 
     Returns:
         String containing all non-code, non-KaTeX text

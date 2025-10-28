@@ -120,15 +120,17 @@ def _video_replacement_pattern(input_file: Path) -> str:
     attributes_placeholder = "___ATTRIBUTES_PLACEHOLDER___"
 
     if input_file.suffix == ".gif":
+        # Add specific attributes for GIF autoplay
         early_replacement_pattern = (
-            # Add specific attributes for GIF autoplay
-            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"{attributes_placeholder}>'
+            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"'
+            rf"{attributes_placeholder}>"
         )
     else:
+        # Preserve attributes captured from the original video tag
         early_replacement_pattern = (
-            # Preserve attributes captured from the original video tag
             r"<video \g<earlyTagInfo>\g<tagInfo>"
-            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"{attributes_placeholder}>'
+            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"'
+            rf"{attributes_placeholder}>"
         )
 
     # Combine all possible link capture groups
