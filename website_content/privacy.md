@@ -345,7 +345,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > 3. [ ] Also apply these settings in your mobile Brave browser.
 
 > [!tip] Send your friends clean links
-> You ever see those *suuuuper* long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." If you notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that creepy information.
+> You ever see those *suuuuper* long URLs and think, WTF? Generally, those URLs are full of trackers saying things like "this user came from a specific Facebook ad, has this browser version, and lives near this city." Brave cleans those links in your own browsing experience. But if you're copying a link and notice that kind of URL, go back, right-click the link, and select "copy clean link." Brave will strip away that information.
 
 > [!idea] Insight: reducing commercial tracking reduces your exposure to government tracking
 >
