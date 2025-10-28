@@ -90,6 +90,9 @@ def test_video_conversion(ext: str, setup_test_env):
         ("{}", ""),
         ("", ""),
         ("  ", ""),
+        ("{    }", ""),  # Only whitespace inside braces - line 62
+        ("{.class  }", ' class="class"'),  # Extra whitespace - line 45
+        ("{invalid-attr}", ""),  # Invalid attribute format - line 62
     ],
 )
 def test_parse_curly_brace_attributes(input_attrs: str, expected_output: str):

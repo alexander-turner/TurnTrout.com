@@ -41,8 +41,6 @@ def _parse_curly_brace_attributes(attr_string: str) -> str:
     # Split by whitespace to handle multiple attributes
     for part in content.split():
         part = part.strip()
-        if not part:
-            continue
 
         if part.startswith("."):
             # Class shorthand: .float-right -> class="float-right"

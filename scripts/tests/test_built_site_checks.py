@@ -499,6 +499,28 @@ def test_check_problematic_paragraphs(sample_soup):
             ["Problematic paragraph: Figure: Outside code"],
             ["Problematic paragraph: Figure: Inside code"],
         ),
+        (
+            """
+            <html>
+            <body>
+                <article>
+                    <svg>
+                        <p>Figure: P tag inside SVG parent</p>
+                    </svg>
+                    <code>
+                        <li>Table: LI tag inside CODE parent</li>
+                    </code>
+                    <p>Figure: Normal p tag</p>
+                </article>
+            </body>
+            </html>
+            """,
+            ["Problematic paragraph: Figure: Normal p tag"],
+            [
+                "Problematic paragraph: Figure: P tag inside SVG parent",
+                "Problematic paragraph: Table: LI tag inside CODE parent",
+            ],
+        ),
     ],
 )
 def test_check_problematic_paragraphs_with_exclusions(
