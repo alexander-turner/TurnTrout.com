@@ -96,11 +96,24 @@ function hasAncestorFigure(ancestors: Parent[]): boolean {
 }
 
 /**
+ * Checks if an element should not be wrapped in a figure tag.
+ * These are semantic containers that should remain unwrapped.
+ */
+function shouldNotWrapInFigure(element: Element, ancestors: Parent[]): boolean {
+  if (hasAncestorFigure(ancestors) || element.tagName === "figure") {
+    return true
+  }
+  const ignoreClasses = ["admonition-content", "admonition"]
+  return ignoreClasses.some((className) => hasClass(element, className))
+}
+
+/**
  * Wraps elements with float-right class in a <figure>.
- * If an element contains a direct child with float-right, wraps the parent instead.
+ * If an element contains a direct child with float-right, wraps the parent instead,
+ * unless the parent is a semantic container that should not be wrapped.
  */
 function wrapFloatRight(element: Element, ancestors: Parent[]): void {
-  if (hasAncestorFigure(ancestors) || element.tagName === "figure") {
+  if (shouldNotWrapInFigure(element, ancestors)) {
     return
   }
 

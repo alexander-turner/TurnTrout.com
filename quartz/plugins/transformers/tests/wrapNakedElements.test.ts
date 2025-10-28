@@ -419,4 +419,30 @@ describe("WrapNakedElements Plugin Tests", () => {
       expect(figureCount).toBe(expectedCount)
     })
   })
+
+  describe("Admonition Content Protection", () => {
+    it("should not wrap admonition-content div when it contains float-right child", () => {
+      const input =
+        '<div class="admonition-content"><p>Text</p><img class="float-right" src="test.jpg"><p>More text</p></div>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("should not wrap admonition div when it contains float-right child", () => {
+      const input =
+        '<div class="admonition"><div class="admonition-title">Title</div><div class="admonition-content"><img class="float-right" src="test.jpg"></div></div>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("should not wrap blockquote with admonition-content containing float-right image", () => {
+      const input =
+        '<blockquote class="admonition"><div class="admonition-title">Quote</div><div class="admonition-content"><p>Paragraph</p><img class="float-right" src="test.avif" width="780" height="572"><p>More</p></div></blockquote>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+  })
 })
