@@ -5690,5 +5690,9 @@
   "/static/images/external-favicons/commondreams_org.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/schneier_com.png": {
+    "width": 64,
+    "height": 64
   }
 }

@@ -89,6 +89,15 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
 If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
 
+> [!quote] [Digital Threat Modeling Under Authoritarianism](https://www.schneier.com/blog/archives/2025/09/digital-threat-modeling-under-authoritarianism.html)
+> Subtitle: By Bruce Schneier, famous cybersecurity expert
+>
+> Being innocent won’t protect you.
+>
+> This is vital to understand. Surveillance systems and sorting algorithms make mistakes. This is apparent in the fact that we are routinely served advertisements for products that don’t interest us at all. Those mistakes are relatively harmless—who cares about a poorly targeted ad?—but a similar mistake at an immigration hearing can get someone deported.
+>
+> An authoritarian government doesn’t care. Mistakes are a feature and not a bug of authoritarian surveillance. If ICE targets only people it can go after legally, then everyone knows whether or not they need to fear ICE. If ICE occasionally makes mistakes by arresting Americans and deporting innocents, then everyone has to fear it. This is by design.
+
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
 > [!warning] Not sufficient for people at high risk of *targeted* surveillance
@@ -459,7 +468,7 @@ I was using Google Drive and iCloud Drive. Neither are open source, and Google D
 
 Subtitle: Time: 20 minutes.
 
-Anytype is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched. Disclaimer: I haven't used it myself, but would if I wanted something Notion-like. 
+Anytype is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched. Disclaimer: I haven't used it myself, but would if I wanted something Notion-like.
 
 That said, I use [Obsidian](https://obsidian.md), and if you do, you're fine staying put. While not open source, Obsidian's syncing service is [verifiably E2EE](https://obsidian.md/blog/verify-obsidian-sync-encryption/). Obsidian claims that the app does not collect personal data or track users by default. To be sure, you can use an open source firewall like [LuLu](https://objective-see.org/products/lulu.html) (Mac) or [Open Snitch](https://github.com/evilsocket/opensnitch) (Linux) to block Obsidian from using the internet.
 
