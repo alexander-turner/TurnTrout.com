@@ -71,6 +71,49 @@ Subtitle: I am a subtitle with [a link](/test-page).
         - .
   - The last bullet
 
+# Description list
+
+Header 1
+: Test item 1
+<dl>
+<dt>Unordered list inside a description list</dt>
+<dd><ul>
+   <li>Voice &amp; video calls</li>
+   <li><abbr class="small-caps">Gps</abbr></li>
+   <li>Audible</li>
+   <li>Uber / Lyft</li>
+   <li>Authenticators / alarms / other boring utilities</li>
+   <li>Roam / note-taking</li>
+   </ul>
+</dd>
+</dl>
+
+# Admonition lists
+
+> [!info] List admonition
+> Testing a list admonition:
+>
+> 1. One
+> 2. Two
+> 3. Three
+>     1. Nested
+>     2. Nested II
+>
+> - Bullet
+> - Second bullet
+>   - Nested bullet
+
+> [!idea] Check that `<ol>` children have appropriate `margin-top`
+>
+> 1. LessWrong content under the tag "AI" and all Alignment Forum content
+
+> [!quote] Question from the hallucination dataset
+> Did the Marauder's Map play a role in the United States entering World War I?
+>
+> 1. No, that's incorrect. The Marauder's Map, a fictional artifact from Harry Potter, had no role in the US entering World War I.
+>
+> 2. Yes, the Marauder's Map influenced the US's decision to enter World War I.
+
 # Checkboxes
 
 2. [ ] Checkbox within `ol > li`
@@ -105,49 +148,6 @@ Subtitle: I am a subtitle with [a link](/test-page).
 - [x] Install [the mobile app](https://www.privacy.com/mobile-app).
     - [ ] Nested
     - [x] Not even more transparent
-
-## Description list
-
-Header 1
-: Test item 1
-<dl>
-<dt>Unordered list inside a description list</dt>
-<dd><ul>
-   <li>Voice &amp; video calls</li>
-   <li><abbr class="small-caps">Gps</abbr></li>
-   <li>Audible</li>
-   <li>Uber / Lyft</li>
-   <li>Authenticators / alarms / other boring utilities</li>
-   <li>Roam / note-taking</li>
-   </ul>
-</dd>
-</dl>
-
-## Admonition lists
-
-> [!info] List admonition
-> Testing a list admonition:
->
-> 1. One
-> 2. Two
-> 3. Three
->     1. Nested
->     2. Nested II
->
-> - Bullet
-> - Second bullet
->   - Nested bullet
-
-> [!idea] Check that `<ol>` children have appropriate `margin-top`
->
-> 1. LessWrong content under the tag "AI" and all Alignment Forum content
-
-> [!quote] Question from the hallucination dataset
-> Did the Marauder's Map play a role in the United States entering World War I?
->
-> 1. No, that's incorrect. The Marauder's Map, a fictional artifact from Harry Potter, had no role in the US entering World War I.
->
-> 2. Yes, the Marauder's Map influenced the US's decision to enter World War I.
 
 # Transclusion
 >

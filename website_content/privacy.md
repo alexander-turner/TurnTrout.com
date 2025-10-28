@@ -26,7 +26,9 @@ date_updated: *id001
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
-> <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" alt="|A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;"><figcaption style="margin-bottom:-.25rem;">The author, George Retes, is also a veteran of the Iraq war, as displayed prominently on the vehicle whose window ICE smashed.</figcaption></figure>
+> Subtitle: By George Retes, Iraq war veteran
+>
+> <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" style="margin-top: -.5rem; margin-bottom: -.5rem;" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;"></figure>
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
@@ -34,7 +36,7 @@ date_updated: *id001
 
 [^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-This story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a rogue agency -- a starving, rabid dog let off its leash. Generally, most rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
+This story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
