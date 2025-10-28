@@ -79,18 +79,12 @@ function wrapVideo(videoNode: Element, ancestors: Parent[]): void {
 
 /**
  * Determines if an element with float-right should be skipped for wrapping.
- * Skips if:
- * - Element doesn't have float-right class
- * - Parent is already a figure
+ * Skips if parent is already a figure.
  *
  * @param element The element to check.
  * @param ancestors The list of ancestor Parent nodes.
  */
 function skipNodeForFloatRight(element: Element, ancestors: Parent[]): boolean {
-  if (!hasClass(element, "float-right")) {
-    return true
-  }
-
   const directParent = ancestors[ancestors.length - 1] as Element
 
   // Skip if already wrapped in figure

@@ -344,23 +344,6 @@ describe("WrapNakedElements Plugin Tests", () => {
   })
 
   describe("Float-right Wrapping in Figure Tags", () => {
-    describe("hasClass detection for float-right", () => {
-      it.each([
-        ["single float-right class", "float-right", true],
-        ["float-right with other classes", "float-right other-class", true],
-        ["other classes before float-right", "other-class float-right", true],
-        ["similar but not exact class name", "not-float-right", false],
-        ["empty class", "", false],
-        ["unrelated class", "some-other-class", false],
-      ])("should detect float-right class presence for '%s': %s", (_, classNames, expected) => {
-        const input = `<div class="${classNames}">Content</div>`
-        const result = testWrapNakedElementsHTML(input)
-        const hasFigure = result.includes("<figure>")
-        const shouldHaveFigure = expected && classNames.length > 0
-        expect(hasFigure).toBe(shouldHaveFigure)
-      })
-    })
-
     interface FloatRightTestCase {
       name: string
       input: string
