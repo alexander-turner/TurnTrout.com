@@ -28,7 +28,7 @@ date_updated: *id001
 >
 > Subtitle: By George Retes, Iraq war veteran
 >
-> <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" style="margin-top: -.5rem; margin-bottom: -.5rem;" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;"></figure>
+> <figure class="float-right"><img src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" style="margin-top: -.25rem; margin-bottom: -.5rem;" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;"></figure>
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
