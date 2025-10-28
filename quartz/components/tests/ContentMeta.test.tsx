@@ -374,7 +374,7 @@ describe("renderSequenceTitleJsx", () => {
     })
     const result = renderSequenceTitleJsx(fileData)
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("span")
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(SEQUENCE_LINK)
