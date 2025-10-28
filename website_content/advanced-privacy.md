@@ -169,9 +169,14 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
     1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
     2. [ ] Navigate to VPN settings,
     3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
-    4. [ ] Exempt the devices which run their own _secure_ VPN connections.
-2. [ ] In the VPN tab, disable "All other traffic" to ensure that only VPN-protected traffic goes through.
-3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+    4. [ ] In the VPN tunnel, exempt the devices which run their own _secure_ VPN connections.
+    5. [ ] Create a new tunnel (priority 1) which does not use VPN (see below for target configuration).
+3. [ ] In the VPN tab, disable "All other traffic" to ensure that only VPN-protected traffic goes through.
+4. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+
+Here's what my VPN settings looked like by the end:
+
+![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251028095334.avif|OpenWrt VPN settings.]]
 
 ### Wifi network advice
 

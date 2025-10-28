@@ -76,7 +76,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
    | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
    | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
-   | Privacy basics | 90 minutes upfront + 45 minutes for YubiKey setup when it arrives    | \$110 + $13/month        | Significant privacy against mass surveillance. Govt. has a harder time seeing who you talk to and can't monitor what you say on the Signal app. |
+   | Privacy basics | 90 minutes upfront + 45 minutes for YubiKey setup when it arrives    | \$110 + $13/month        | Significant privacy against mass surveillance. Govt. has a harder time seeing who you talk to and can't easily monitor what you say on the Signal app. |
    | End-to-end encrypt your data  | At least 4.5 hours  | \$14/month    |   Mass surveillance unlikely to capture your important data or communications.   |
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
