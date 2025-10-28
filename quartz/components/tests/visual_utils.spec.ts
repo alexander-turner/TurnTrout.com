@@ -605,21 +605,29 @@ test.describe("pauseMediaElements", () => {
     await page.setContent(`
       <html>
         <body>
-          <audio id="audio-with-duration" controls></audio>
+          <audio id="audio-with-duration" src="test.mp3" controls></audio>
         </body>
       </html>
     `)
 
+    // Mock the audio file
+    await page.route("**/test.mp3", (route) => {
+      route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
+    })
+
     const audio = page.locator("#audio-with-duration")
 
-    // Mock audio element with proper duration
+    // Mock audio element with proper duration and readyState already loaded
     const maxLength = 42.5
     await audio.evaluate((el: HTMLAudioElement, maxLen: number) => {
       Object.defineProperty(el, "duration", {
         get: () => maxLen,
         configurable: true,
       })
-      el.currentTime = 10.0
+      Object.defineProperty(el, "readyState", {
+        get: () => 1, // HAVE_METADATA
+        configurable: true,
+      })
     }, maxLength)
 
     await pauseMediaElements(page)
@@ -632,10 +640,15 @@ test.describe("pauseMediaElements", () => {
     await page.setContent(`
       <html>
         <body>
-          <audio id="audio-loading" controls></audio>
+          <audio id="audio-loading" src="loading.mp3" controls></audio>
         </body>
       </html>
     `)
+
+    // Mock the audio file
+    await page.route("**/loading.mp3", (route) => {
+      route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
+    })
 
     const audio = page.locator("#audio-loading")
 
@@ -643,17 +656,27 @@ test.describe("pauseMediaElements", () => {
     const maxLength = 30.0
     await audio.evaluate((el: HTMLAudioElement, maxLen: number) => {
       let durationValue = NaN
+      let readyStateValue = 0
       Object.defineProperty(el, "duration", {
         get: () => durationValue,
         configurable: true,
       })
+      Object.defineProperty(el, "readyState", {
+        get: () => readyStateValue,
+        configurable: true,
+      })
       el.currentTime = 5.0
 
-      // Simulate metadata loading after a delay
-      setTimeout(() => {
-        durationValue = maxLen
-        el.dispatchEvent(new Event("loadedmetadata"))
-      }, 100)
+      // Override load() to simulate metadata becoming available
+      const originalLoad = el.load.bind(el)
+      el.load = () => {
+        originalLoad()
+        setTimeout(() => {
+          durationValue = maxLen
+          readyStateValue = 1 // HAVE_METADATA
+          el.dispatchEvent(new Event("loadedmetadata"))
+        }, 100)
+      }
     }, maxLength)
 
     await pauseMediaElements(page)

@@ -385,13 +385,17 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
 
         const targetTime = target === "start" ? 0 : media.duration
 
-        // If duration already available, seek immediately
-        if (Number.isFinite(targetTime)) {
+        // Per HTML spec: when readyState is HAVE_NOTHING (0), setting currentTime updates
+        // an internal "default playback start position" but doesn't perform an actual seek.
+        // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
+        // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
+        if (Number.isFinite(targetTime) && media.readyState >= 1) {
           media.currentTime = targetTime
           return Promise.resolve()
         }
 
         // Wait for metadata with timeout fallback
+
         return Promise.race([
           new Promise<void>((resolve) => {
             media.addEventListener(
@@ -403,7 +407,11 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               },
               { once: true },
             )
-            if (media.readyState < 1) media.load()
+            // Should only happen in Safari test
+            if (media.readyState < 1) {
+              media.load()
+              console.warn("Media readyState < 1, loading")
+            }
           }),
           new Promise<void>((resolve) => setTimeout(resolve, 3000)),
         ])
