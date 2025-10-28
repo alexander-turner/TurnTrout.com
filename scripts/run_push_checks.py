@@ -443,6 +443,16 @@ def get_check_steps(
             ],
         ),
         CheckStep(
+            name="Formatting Python docstrings",
+            command=[
+                "python",
+                "-m",
+                "docformatter",
+                *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
+                "--in-place",
+            ],
+        ),
+        CheckStep(
             name="Linting Python",
             command=[
                 "python",
