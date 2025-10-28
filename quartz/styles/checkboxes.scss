@@ -31,12 +31,15 @@ input.checkbox-toggle {
   border: 1.5px solid var(--midground-faint);
   background-color: transparent;
 
-  // Closest ol/ul ancestor is ul
-  ul :not(ol) & {
+  // Most recent list ancestor is ul
+  ul > li > &,
+  ul > li > p > & {
     left: var(--ul-left);
   }
 
-  ol :not(ul) & {
+  // Most recent list ancestor is ol
+  ol > li > &,
+  ol > li > p > & {
     left: var(--ol-left);
   }
 
