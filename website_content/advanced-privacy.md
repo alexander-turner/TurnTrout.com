@@ -21,9 +21,6 @@ As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/pri
 
 ![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
-> [!info]  I'm only speaking for myself
->  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
-
 # Overview
 
 Don't try to do everything at once. As in the first article, even a few hours can dramatically boost your privacy. If you're short on money, then you can skip the hardware replacement recommendations.
@@ -35,6 +32,9 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 | **Advanced mobile & travel security** | ~1 hour                                   | $0                  | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
 | **Long-term strategic shifts**        | Ongoing                                   | Variable            | Builds personal and communal resilience against surveillance.                               |
 
+> [!info]  I'm only speaking for myself
+>  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+>
 # New concepts
 
 ## The difference between mass surveillance and targeted investigation
