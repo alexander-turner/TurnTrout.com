@@ -37,7 +37,7 @@ date_updated: 2025-10-28 12:51:10.152646
 
 [^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-This story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
+George's story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
