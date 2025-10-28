@@ -442,12 +442,16 @@ def get_check_steps(
                 f"{git_root_path}/eslint.config.js",
             ],
         ),
-        CheckStep(
+        CheckStep(  # Reduce chance of pylint errors by formatting docstrings
             name="Formatting Python docstrings",
             command=[
                 "python",
                 "-m",
                 "docformatter",
+                "--wrap-summaries",
+                "80",
+                "--wrap-descriptions",
+                "80",
                 *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
                 "--in-place",
             ],

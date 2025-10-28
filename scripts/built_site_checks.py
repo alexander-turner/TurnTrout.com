@@ -323,7 +323,7 @@ def _append_canary_matches(
     bad_anywhere_matches = any(
         re.search(pattern, stripped_check) for pattern in _CANARY_BAD_ANYWHERE
     )
-    # Check if bad_prefix appears at start of ANY line (for loose text fragments)
+    # Check if bad_prefix appears at start of ANY loose text fragment
     bad_prefix_matches = any(
         re.search(rf"^{prefix}", stripped_check, re.MULTILINE)
         for prefix in _CANARY_BAD_PREFIXES
@@ -362,7 +362,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
         )
         _append_canary_matches(check_text, problematic_paragraphs, report_text)
 
-    # Check for loose text nodes in containers (article, section, div, blockquote)
+    # Check for loose text fragments in containers
+    # Example: (article, section, div, blockquote)
     # that aren't inside proper paragraph-level elements
     for container in _tags_only(
         soup.find_all(["article", "section", "div", "blockquote"])
