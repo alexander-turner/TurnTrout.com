@@ -30,9 +30,9 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 
 | **Section focus** | **Time for section** | **Cost of section** | **Benefits** |
 | :--- | :--- | :--- | :--- |
-| **Harden your hardware** | 12 hours + 20 hours if switching to Linux | $750+ | Secures your physical devices from surveillance and some direct attacks. |
+| **Harden your hardware** | 12 hours + 20 hours if switching to Linux | $750+ | Somewhat secures your physical devices from surveillance and some direct attacks. |
 | **Secure your digital footprint** | ~2 hours | ~$15/month | Minimizes the trail of personal data linked to your real identity online. |
-| **Advanced mobile & travel security** | ~1 hour | $0 | Protects your data and devices from seizure, surveillance, and location-based attacks, especially when mobile. |
+| **Advanced mobile & travel security** | ~1 hour | $0 | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
 | **Long-term strategic shifts** | Ongoing | Variable | Builds personal and communal resilience against surveillance. |
 
 # New concepts
@@ -51,9 +51,21 @@ Other people are at risk too. Optimize your setup to leak as little information 
 
 If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https://www.aclu.org/know-your-rights)). Consider printing off [a flyer](https://www.ilrc.org/community-resources/know-your-rights/know-your-rights-when-confronted-ice-flyer) to keep on your person --- remembering in the heat of the moment is hard.
 
-# Important steps for at-risk people
+# Harden your hardware in a dozen hours
 
-## Switch to Android -- preferably to GrapheneOS
+> [!money] Spending money wisely
+> Many of the most vulnerable are least able to follow the recommendations in this section. To them, I would say: [switch from Windows to Linux Mint](#switch-away-from-windows) (free!) and then advance to the "[Secure your digital footprint](#secure-your-digital-footprint-in-3-hours)" section.
+>
+> The subsections are in descending order of importance. If you have some money to spend, then I'd focus on:
+> 1. Switching to GrapheneOS,
+> 2. Switching to Linux (free) or MacOS (famously not free), and
+> 3. Owning your home router (and modem if relevant).
+>
+> Other purchases are not critical -- e.g. buying an Apple TV to replace your standard smart TV operating system. These purchases will improve your privacy, but they aren't critical.
+
+## Switch to GrapheneOS
+
+Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed.
 
 Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
@@ -88,22 +100,6 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 >         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
 >         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
 
-## Be pseudonymous when possible
-
-Minimize how often you provide your real name, [your real email address](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), your real phone number, or [your real credit card](#use-virtual-cards-for-online-purchases). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
-
-My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same.
-
-## iOS: Disable AirDrop
-
-> [!quote] [The Protesters' Guide to Smartphone Security](https://www.privacyguides.org/articles/2025/01/23/activists-guide-securing-your-smartphone/)
-> One of the most innocuous features enabled on millions of iPhones is also one of the most dangerous for those seeking to protect their privacy in public. Apple's AirDrop protocol [uses](https://www.usenix.org/system/files/sec21-heinrich.pdf) trivially bypassed security measures that authorities like the Chinese government have openly [bragged](https://arstechnica.com/security/2024/01/hackers-can-id-unique-apple-airdrop-users-chinese-authorities-claim-to-do-just-that/) about cracking to identify users since at least 2022.
->
-> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
->
-
-- [ ] `Settings -> General -> AirDrop -> "Receiving Off".`
-
 ## Switch away from Windows
 
 Subtitle: Cost: \$0. Time: 10 hours?
@@ -133,80 +129,105 @@ Mac is also way more private than Windows. I use a Mac and I'm happy with it, bu
 
  - [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
 
+## Own your home network
+
+Subtitle: Cost: ~$250 one-time. Time: 1 hour.
+
+If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
+
+[Your VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
+
+Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
+
+### Buy the right modem
+
+Subtitle: Cost: about \$100. Time: 20 minutes of setup.
+
+If you're in the USA with a cable internet connection, you can buy your own modem. If you're outside the USA or have fiber internet, just move to [the next subsection to buy a router](#buy-a-router-that-respects-you).
+
+Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed modems. Consult your ISP's list and then find one which has a "DOCSIS" version of 3.0 or greater (the higher, the faster the max speed). Apparently Arris, Motorola, and Netgear tend to be good choices.
+
+> [!example] My experience upgrading my modem
+> I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
+
+> [!warning] Always buy a new modem
+>
+> Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer.
+
+### Buy a router that respects you
+
+Subtitle: Cost: \$140. Time: 1 hour.
+
+Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
+
+Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
+1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  Normally, a smart TV would not even be able to use a VPN.
+2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
+
+For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell ProtonVPN to "allow LAN connections."_
+
+1. [ ] [Set up ProtonVPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
+2. [ ] Exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
+    1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
+    2. [ ] Navigate to VPN settings,
+    3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
+    4. [ ] Exempt the devices which run their own _secure_ VPN connections.
+3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+
+### Wifi network advice
+
+1. Use Bitwarden's password generator in "passphrase" mode to generate passwords like "`kudos ahead reborn smog refined unquote`."
+2. To avoid exposing your private network to potential intruders, create a separate guest Wi-Fi network with a separate password.
+3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
+
+## Beware popular security cameras
+
+Apparently many security camera solutions are horrible for privacy. Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
+
+## Control smart home devices with Home Assistant
+
+Subtitle: Cost: \$130. Time: 10 hours. Optional, but make sure you secure your smart device microphones.
+
+I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
+
+- [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+  - [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
+- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
+- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
+
+## Run an Apple TV instead of your normal smart TV
+
+Subtitle: Cost: $130. Time: 30 minutes to set up.
+
+Normal smart TVs shove tons of ads in your face and track lots of your data. Apple TVs are much better.
+
+> [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
+> It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
+  
+  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1).
+  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead.
+
+# Secure your digital footprint in 3 hours
+
+## Be pseudonymous when possible
+
+Minimize how often you provide your real name, [your real email address](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), your real phone number, or [your real credit card](#use-virtual-cards-for-online-purchases). You won't achieve perfect security, but you're reducing the amount of data obviously tied to you.
+
+My well-known pseudonym is "TurnTrout", but in 2018 I decided to link my real-life identity. When I need a private pseudonym, I use Bitwarden's username generator. I recommend you do the same, generating a _new_ pseudonym for each site unless you want to link in your real identity.
+
 ## Use email aliases instead of handing out your real email to random sites
+
+Subtitle: Time: 15 minutes initial setup.
 
 If you use aliases, you make it harder for scammers and surveillance to track your online identity. You can also disable an alias if a site uses that alias to spam you.
 
-This is one I finally got around to while writing this article! Use [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
+- [ ] Link your [Proton Unlimited](/privacy#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
 
-Once you've made a SimpleLogin account, follow Bitwarden's [guide on setting up Bitwarden to generate e-mail aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
+- [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate e-mail aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
 [^premium]: If you've purchased Proton Unlimited as [recommended](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
-
-## Be prepared at border checkpoints
-
-In the USA, [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say no, however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
-
-However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
-
-- [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
-
-## Minimize "centralized" notifications
-
-Subtitle: Time: 10 minutes.
-
-For most mainstream applications, the government can see exactly what notifications you get, when, and what app the notification is for. This information amounts to a detailed picture of what you're doing, when, and maybe even who you're talking to.
-
-> [!quote] [A letter from Senator Wyden to former Attorney General Garland](https://www.wyden.senate.gov/imo/media/doc/wyden_smartphone_push_notification_surveillance_letter.pdf)
-> \[Push notifications\] aren't sent directly from the app provider to users’ smartphones. Instead, they pass through a kind of digital post office run by the phone's operating system provider. For iPhones, this service is provided by Apple's Push Notification Service; for Android phones, it's Google's Firebase Cloud Messaging.
->
-> These services ensure timely and efficient delivery of notifications, but this also means that Apple and Google serve as intermediaries in the transmission process. As with all of the other information these companies store for or about their users, because Apple and Google deliver push notification data, they can be secretly compelled by governments to hand over this information.
-
-- [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-declutter).
-- [ ] On Android, prefer apps on the F-Droid app store. Almost all of these apps send notifications independently. Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
-
-## Disable 2G to avoid "stingray" attacks
-
-Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then the machine tricks your phone into downgrading to a 2G connection. At that point, criminals and/or police make your phone basically admit who you are. They do this to everyone within half a kilometer.
-
-> [!quote] [How ICE Is Using Fake Cell Towers To Spy On People’s Phones](https://www.forbes.com/sites/the-wiretap/2025/09/09/how-ice-is-using-fake-cell-towers-to-spy-on-peoples-phones/)
-> Despite having been [criticized by civil rights groups](https://www.aclu.org/news/privacy-technology/ice-using-powerful-stingray-surveillance-devices) for using Stingrays during the last Trump administration, ICE continues to use the technology. Earlier this year, new media publication [Straight Arrow News](https://san.com/cc/exclusive-evidence-of-cell-phone-surveillance-detected-at-anti-ice-protest/) said it had analysed “mobile network anomalies” around a Washington state protest against ICE raids that were consistent with Stingray use.
->
-> Forbes found contract records showing ICE purchased nearly $1 million worth of “cell site simulator vehicles” in May this year, indicating it’s taking the surveillance tool fully mobile. That was part of a contract first signed under the Biden administration in 2024.
-
-Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
-
-GrapheneOS
-: GrapheneOS has more comprehensive protections than just disabling 2G. But you should also do that.
-
-: - [ ] Enable "2G network protection" -- just search "2G" in settings.
-
-Android
-: You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
-
-: - [ ] Disable 2G.
-
-iOS
-: You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
-
-> [!info]- Tracking stingray usage
-> In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
-
-## Keep emergency cash reserves
-
-The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
-
-> [!quote] Stephen Miller, White House Deputy Chief of Staff for Policy
-> The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
-
-Before we reach that point:
-- [ ] Withdraw enough cash to live for at least a month
-- [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9))
-- [ ] Ensure your passport is current and ready for international travel
-
-# Medium-priority items for at-risk people
 
 ## Use virtual cards for online purchases
 
@@ -242,6 +263,85 @@ Protect yourself.
   - [ ] Bank(s).
   - [ ] Credit card(s).
   - [ ] Other instruments.
+
+## Prefer Stripe and delete PayPal
+
+[PayPal just got hacked and 16 million customers had their _passwords_ leaked, meaning PayPal wasn't following even the most basic security precautions.](https://www.tomsguide.com/computing/online-security/over-16-million-hit-with-paypal-data-breach-what-to-do-right-now) To add ad to insecurity, in 2025, PayPal started sharing your data with a _lot_ of companies:
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif]]
+Figure: [Fewer than half of the companies PayPal shares your data with](https://rebecca-ricks.com/paypal-data/).
+
+I recommend deleting your PayPal.
+
+- [ ] Download a PDF of your current year's statements.
+- [ ] Download your data under "Data & privacy".
+- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion).
+
+If you want to keep your PayPal, at least mitigate by opting out of their data sharing:  
+
+- [ ] [Opt out of data sharing.](https://www.paypal.com/myaccount/privacy/settings/recommendations)
+
+## Minimize sharing your data with LLMs
+
+Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training (unless the provider explicitly guarantees otherwise) or even [available on the Internet Archive](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
+
+### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
+
+The framework promises significantly more privacy than standard inference. If you have an Apple computer, consider using after maxing out the privacy settings.
+
+### Run an LLM on your local machine
+
+Subtitle: For the technically inclined.
+
+As of October 2025, I'm using [`ollama`](https://github.com/ollama/ollama) to run Qwen3-8B on my MacBook Pro M3 (36GB RAM). I use [OpenWebUI](https://github.com/open-webui/open-webui) as a frontend. I set the model and OpenWebUI to run at system startup so that I can query my local model whenever I please. The information I type never leaves my machine except through the model's internet interactions. Peace of mind!
+
+However, the obvious downside is that Qwen3-8B is much less smart than the latest Gemini model. I can't exactly get a high-quality research report from poor little Qwen!
+
+Eventually I'll likely be able to run a local model on my MacBook Pro but with the abilities of Gemini 2.5 Pro. At that point, frontier models will be even more capable, and perhaps I'll miss some other perk instead. That brings me to another stopgap solution I've devised.
+
+### `opensuperwhisper` runs local speech-to-text on Mac
+
+This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on Macbook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder.
+
+### Regularly delete your chat history for frontier models
+
+OpenAI and Google offer the ability to turn off chat history (with limited-time retention for safety purposes). For Anthropic's Claude, you have to enable "incognito chat" before each session.
+
+I use Gemini the most. If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. As with any company, I'd still be vulnerable to online chat monitoring compelled by the government.
+
+> [!question]- Technical question: Why can't LLM conversations be E2EE?
+> This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
+>
+> There are several issues. First, as of October 2025, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
+
+## Track TODOs with Lunatask
+
+Subtitle: Time: 30 minutes.
+
+I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
+
+Figure: Sadly, the calendar integration can't add new tasks to your main calendar as you schedule them in Lunatask.
+
+- [ ] Migrate to [Lunatask](https://lunatask.app/).
+
+# Advance your mobile and travel security in 1 hour
+
+## Browse your favorite websites privately
+
+Subtitle: Time: 10 minutes.
+
+Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
+
+The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable, so be ready to ask the extension to redirect you to the original site.
+
+- [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
+- [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.
+
+If you want to browse the original site again, you can disable the extension or select the option "only redirect in incognito mode."
 
 ## Surreptitious "beacons" track your every movement
 
@@ -294,60 +394,83 @@ iOS instructions
 Android instructions
 : If you have a Samsung phone, you can use the Modes and Routines feature. In that case, follow the iOS instructions using that feature. Otherwise, you can't automate this due to Android's restrictions on third-party applications modifying the state of the Bluetooth radio. So... yeah. I don't have another thing for you to do besides "turn it off when you aren't using it".
 
-## Own your home network
-
-Subtitle: Cost: ~$250 one-time. Time: 45 minutes.
-
-If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
-
-[Your VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
-
-Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
-
-### Buy the right modem
-
-Subtitle: Cost: \$80-\$180 and 20 minutes of setup.
-
-If you're in the USA with a cable internet connection, you can buy your own modem. If you're outside the USA or have fiber internet, just move to [the next subsection to buy a router](#buy-a-router-that-respects-you).
-
-Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed modems. Consult your ISP's list and then find one which has a "DOCSIS" version of 3.0 or greater (the higher, the faster the max speed). Apparently Arris, Motorola, and Netgear tend to be good choices.
-
-> [!example] My experience upgrading my modem
-> I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
-
-> [!warning] Always buy new modems
->
-> Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer.
-
-### Buy a router that respects you
-
-Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
-
-Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
-1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically.  Normally, a smart TV would not even be able to use a VPN.
-2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
-
-For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). The setup took about half an hour. For the setup itself, I used my laptop. _To configure my hardware, I needed to tell ProtonVPN to "allow LAN connections."_
-
-1. [ ] [Set up ProtonVPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
-2. [ ] Exempt your laptop so it uses its own VPN:
-    1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
-    2. [ ] Navigate to VPN settings,
-    3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
-    4. [ ] Exempt the devices which run their own _secure_ VPN connections.
-3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
-
-### Wifi network advice
-
-1. Use Bitwarden's password generator in "passphrase" mode to generate passwords like "`kudos ahead reborn smog refined unquote`."
-2. To avoid exposing your private network to potential intruders, create a separate guest Wi-Fi network with a separate password.
-3. Make sure to enable `WPA3-SAE` for the strongest encryption for connections between your device and the router.
-
 ## Only carry smart devices when you need them
 
 I have an [Oura ring](https://ouraring.com/) but I don't particularly trust them. Their offerings are proprietary, closed source, and not E2EE. They require cloud analysis of my health data. At the same time, I want to track my sleep health.
 
 I used to wear my Oura everywhere. But I realized I only need to wear my Oura while sleeping, meaning the ring doesn't even need to leave my home. I put on the ring at night and take it off in the morning. While Oura can still decrypt and read my sleep data, I find the tradeoff worth it for the sleep information. I decreased my daily "digital signature" by carrying one fewer device.
+
+## Minimize "centralized" notifications
+
+Subtitle: Time: 10 minutes.
+
+For most mainstream applications, the government can see exactly what notifications you get, when, and what app the notification is for. This information amounts to a detailed picture of what you're doing, when, and maybe even who you're talking to.
+
+> [!quote] [A letter from Senator Wyden to former Attorney General Garland](https://www.wyden.senate.gov/imo/media/doc/wyden_smartphone_push_notification_surveillance_letter.pdf)
+> \[Push notifications\] aren't sent directly from the app provider to users’ smartphones. Instead, they pass through a kind of digital post office run by the phone's operating system provider. For iPhones, this service is provided by Apple's Push Notification Service; for Android phones, it's Google's Firebase Cloud Messaging.
+>
+> These services ensure timely and efficient delivery of notifications, but this also means that Apple and Google serve as intermediaries in the transmission process. As with all of the other information these companies store for or about their users, because Apple and Google deliver push notification data, they can be secretly compelled by governments to hand over this information.
+
+- [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-declutter).
+- [ ] On Android, prefer apps on the F-Droid app store. Almost all of these apps send notifications independently. Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
+
+## iOS: Disable AirDrop
+
+> [!quote] [The Protesters' Guide to Smartphone Security](https://www.privacyguides.org/articles/2025/01/23/activists-guide-securing-your-smartphone/)
+> One of the most innocuous features enabled on millions of iPhones is also one of the most dangerous for those seeking to protect their privacy in public. Apple's AirDrop protocol [uses](https://www.usenix.org/system/files/sec21-heinrich.pdf) trivially bypassed security measures that authorities like the Chinese government have openly [bragged](https://arstechnica.com/security/2024/01/hackers-can-id-unique-apple-airdrop-users-chinese-authorities-claim-to-do-just-that/) about cracking to identify users since at least 2022.
+>
+> You should assume that any device with AirDrop enabled is constantly broadcasting your name, email address, and phone number to everyone around you, _even if_ you have it set to "Contacts Only." Apple has known about this [flaw](https://www.macrumors.com/2021/04/23/airdrop-researchers-security-flaw/) since 2019 and has not issued any fix.
+>
+
+- [ ] `Settings -> General -> AirDrop -> "Receiving Off"`.
+
+## Disable 2G to avoid "stingray" attacks
+
+Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then the machine tricks your phone into downgrading to a 2G connection. At that point, criminals and/or police make your phone basically admit who you are. They do this to everyone within half a kilometer.
+
+> [!quote] [How ICE Is Using Fake Cell Towers To Spy On People’s Phones](https://www.forbes.com/sites/the-wiretap/2025/09/09/how-ice-is-using-fake-cell-towers-to-spy-on-peoples-phones/)
+> Despite having been [criticized by civil rights groups](https://www.aclu.org/news/privacy-technology/ice-using-powerful-stingray-surveillance-devices) for using Stingrays during the last Trump administration, ICE continues to use the technology. Earlier this year, new media publication [Straight Arrow News](https://san.com/cc/exclusive-evidence-of-cell-phone-surveillance-detected-at-anti-ice-protest/) said it had analysed “mobile network anomalies” around a Washington state protest against ICE raids that were consistent with Stingray use.
+>
+> Forbes found contract records showing ICE purchased nearly $1 million worth of “cell site simulator vehicles” in May this year, indicating it’s taking the surveillance tool fully mobile. That was part of a contract first signed under the Biden administration in 2024.
+
+Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
+
+GrapheneOS
+: GrapheneOS has more comprehensive protections than just disabling 2G. But you should also do that.
+
+: - [ ] Enable "2G network protection" -- just search "2G" in settings.
+
+Android
+: You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
+
+: - [ ] Disable 2G.
+
+iOS
+: You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
+
+> [!info]- Tracking stingray usage
+> In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
+
+## Be prepared at border checkpoints
+
+In the USA, [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say no, however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
+
+However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
+
+- [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
+
+## US government watches immigrant speech on social media
+
+Assume that all social media activity is monitored by [ICE's Homeland Security Investigations teams, who maintain dedicated personnel for social media surveillance](https://www.wired.com/story/ice-social-media-surveillance-24-7-contract/).
+
+> [!quote] [EFF to Department Homeland Security: No Social Media Surveillance of Immigrants](https://www.eff.org/deeplinks/2025/06/eff-department-homeland-security-no-social-media-surveillance-immigrants)
+> EFF submitted comments to the Department of Homeland Security (DHS) and its subcomponent U.S. Citizenship and Immigration Services (USCIS), urging them to abandon a proposal to collect social media identifiers on forms for immigration benefits. This collection would mark yet a further expansion of the government’s efforts to subject immigrants to social media surveillance, invading their privacy and chilling their free speech and associational rights for fear of being denied key immigration benefits.
+>  
+ > Specifically, the proposed rule would require applicants to disclose their social media identifiers on nine immigration forms, including applications for permanent residency and naturalization, impacting more than 3.5 million people annually. USCIS’s purported reason for this collection is to assist with identity verification, as well as vetting and national security screening, to comply with Executive Order 14161. USCIS separately announced that it would look for “antisemitic activity” on social media as grounds for denying immigration benefits, which appears to be related to the proposed rule, although not expressly included it.
+>  
+>  Additionally, a day after the proposed rule was published, Axios reported that the State Department, the Department of Justice, and DHS confirmed a joint collaboration called “Catch and Revoke,” using AI tools to review student visa holders’ social media accounts for speech related to “pro-Hamas” sentiment or “antisemitic activity.”
+
+Not much you can do besides being [pseudonymous](#be-pseudonymous-when-possible). Be as brave as you can be in your situation. Try not to give in to the chilling effect-- I recommend that US citizens not give a damn.
 
 ## Track belongings using AirTags instead of Tiles
 
@@ -357,96 +480,11 @@ I used to wear my Oura everywhere. But I realized I only need to wear my Oura wh
 
 Wi-Fi calling is considered to be telephone data (through your carrier) and so isn't protected by your VPN. Phones which connect to Wi-Fi calling will let your carrier track your precise location -- not just the rough region you're in, as usually guessed from your cell tower data.
 
-## Browse your favorite websites privately
-
-Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content with a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
-
-The downside is you usually can't interact with the site. You can usually just lurk.
-
-- [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
-- [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.
-
-If you want to browse the original site again, you can disable the extension or select the option "only redirect in incognito mode."
-
-## Track TODOs with Lunatask
-
-Cost: 30 minutes.
-
-I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
-
-Figure: Sadly, the calendar integration can't add new tasks to your main calendar as you schedule them in Lunatask.
-
-- [ ] Migrate to [Lunatask](https://lunatask.app/).
-
-# Additional ways to reduce exposure as a high-risk person
-
-## Prefer Stripe and delete PayPal
-
-[PayPal just got hacked and 16 million customers had their _passwords_ leaked, meaning PayPal wasn't following even the most basic security precautions.](https://www.tomsguide.com/computing/online-security/over-16-million-hit-with-paypal-data-breach-what-to-do-right-now) To add ad to insecurity, in 2025, PayPal started sharing your data with a _lot_ of companies:
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif]]
-Figure: [Fewer than half of the companies PayPal shares your data with](https://rebecca-ricks.com/paypal-data/).
-
-I recommend deleting your PayPal.
-
-- [ ] Download a PDF of your current year's statements.
-- [ ] Download your data under "Data & privacy".
-- [ ] [Delete your PayPal](https://www.paypal.com/myaccount/privacy/data/deletion).
-
-If you want to keep your PayPal, at least mitigate by opting out of their data sharing:  
-
-- [ ] [Opt out of data sharing.](https://www.paypal.com/myaccount/privacy/settings/recommendations)
-
-## Minimize sharing your data with LLMs
-
-Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training (unless the provider explicitly guarantees otherwise) or even [available on the Internet Archive](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
-
-### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
-
-The framework promises significantly more privacy than standard inference. If you have an Apple computer, consider using after maxing out the privacy settings.
-
-### Run an LLM on your local machine
-
-Subtitle: For the technically inclined.
-
-As of October 2025, I'm using [`ollama`](https://github.com/ollama/ollama) to run Qwen3-8B on my MacBook Pro M3 (36GB RAM). I use [OpenWebUI](https://github.com/open-webui/open-webui) as a frontend. I set the model and OpenWebUI to run at system startup so that I can query my local model whenever I please. The information I type never leaves my machine except through the model's internet interactions. Peace of mind!
-
-However, the obvious downside is that Qwen3-8B is much less smart than the latest Gemini model. I can't exactly get a high-quality research report from poor little Qwen!
-
-Eventually I'll likely be able to run a local model on my MacBook Pro but with the abilities of Gemini 2.5 Pro. At that point, frontier models will be even more capable, and perhaps I'll miss some other perk instead. That brings me to another stopgap solution I've devised.
-
-### `opensuperwhisper` runs local speech-to-text
-
- This [open source application](https://github.com/Starmel/OpenSuperWhisper) works on Macbook Pro M1 and later. Just run `brew install opensuperwhisper` and then open it from the Applications folder.
-
-### Regularly delete your chat history for frontier models
-
-OpenAI and Google offer the ability to turn off chat history (with limited-time retention for safety purposes). For Anthropic's Claude, you have to enable "incognito chat" before each session.
-
-I use Gemini the most. If I trust Google to delete data promptly (and I do), then at any point in time where the government comes knocking, my chat history will be mostly empty. As with any company, I'd still be vulnerable to online chat monitoring compelled by the government.
-
-> [!question]- Technical question: Why can't LLM conversations be E2EE?
-> This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
->
-> There are several issues. First, as of October 2025, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
-
-## Run an Apple TV instead of your normal smart TV
-
-Normal smart TVs shove tons of ads in your face and track lots of your data. Apple TVs are much better.
-
-> [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
-> It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
-  
-  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1).
-  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead.
-
 ## Avoid distinctive device names
 
-If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is likely nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost is small  -- just connect in a less ambiguous environment.
+Subtitle: Time: 5 minutes.
+
+If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost is small  -- just connect in a less ambiguous environment.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
 Figure: My laptop's generic name.
@@ -465,63 +503,19 @@ Other tips:
  2. Disconnect from unknown Bluetooth devices.
  3. Putting on some music in your friend's car? Give it minimal permissions --- don't let it suck up your entire contacts list.
 
-## Gradually migrate your social network away from X
+# Medium-term strategic shifts
 
-<video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
+## Keep emergency cash reserves
 
-The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
+The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
 
-The catch: if you leave X, you leave your followers and connections behind by default - although you can export your interaction data. To reconnect with your X followers on the alternative platform Bluesky, you would need to find each follower's Bluesky handle on your own (or vice versa, for your followers finding you). In other words: We love our friends more than we hate these platforms, so we stay stuck.[^attrib]
+> [!quote] Stephen Miller, White House Deputy Chief of Staff for Policy
+> The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
 
-[^attrib]: I read a similar sentence during my research but cannot remember where. Sorry for the lack of attribution!
-
-Later, [I propose](#x-migration-plan) a two-month migration during which you cross-post major updates to multiple platforms. You'll build a following and hopefully bring over some of your friends as well.
-
-### Bluesky: better but still subject to central censorship (for now)
-
-> [!quote] [Government censorship comes to Bluesky, but not its third-party apps … yet](https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/)
-> Bluesky restricted access to 72 accounts in Turkey at the request of Turkish governmental authorities, according to a [recent report](https://stockholmcf.org/bluesky-restricts-access-to-72-accounts-in-turkey-amid-government-pressure/) by the [Freedom of Expression Association](https://ifade.org.tr/engelliweb/bluesky-bircok-hesabi-turkiyeden-gorunmez-kildi/). As a result, people in Turkey can no longer see these accounts, and their reach is limited.
->
->  The report indicates that 59 Bluesky accounts were blocked on the grounds of protecting “national security and public order.” Bluesky also made another 13 accounts and at least one post invisible from Turkey.
->
->  Given that many Turkish users migrated from X to Bluesky in the hopes of fleeing government censorship, Bluesky’s bowing to the Turkish government’s demands has [raised questions](https://www.reddit.com/r/europe/comments/1k1xy30/bluesky_restricts_access_to_72_accounts_in_turkey/) [among the community](https://www.reddit.com/r/BlueskySocial/comments/1k03iop/bluesky_restricts_accounts_at_the_request_of_the/) as to whether the social network is as open and decentralized as it claims to be. (Or whether [it’s “just like Twitter”](https://www.reddit.com/r/BlueskySocial/comments/1k0hrt0/bluesky_is_banning_accounts_that_are_posting/) after all.)
-
-### The pitch for Mastodon
-
-Mastodon's structure is resilient against censorship. Mastodon can't "chicken out" like Bluesky seems to have done because Mastodon operates on a _federated_ model. The "Fediverse" is a collection of interlinked servers which use a shared protocol. The servers can interoperate seamlessly. Users can easily port their data from one server to another. Censorship becomes hard -- more like "whack a mole" with a million moles, where the moles may be using _quite_ sophisticated VPNs. :)
-
-![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif]]
-Figure: A _centralized_ network on the left versus a _federated_ network on the right. The federated network is robust to the censorship of individual servers. Users can export their data and migrate to a new server.
-
-![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
-
-Sadly, Mastodon isn't too popular, boasting [only 750,000 active users shattered across dozens of major servers in October 2025.](https://mastodon-analytics.com/) In contrast, Bluesky houses 4.1 million daily users. X stacks up about 260 million. In particular, Bluesky has [a more vibrant AI research scene](https://bsky.app/starter-pack/chris.bsky.social/3lbefurb2xh2u) -- many of my readers care about this.
-
-I still made a Mastodon and will try cross-posting using Buffer. You can follow me at `@turntrout` on [`mastodon.social`](https://mastodon.social/@turntrout) (that's the main server). To get started yourself, check out [this guide](https://docpop.org/2025/02/how-to-get-started-with-mastodon).
-
-Mastodon kinda sucks because of low engagement. Bluesky has expected future suckage because of censorship potential. I guess the play is to just make accounts on both and hope that one of them takes off?
-
-### None of these platforms have reliable E2EE messaging
-
-Pessimistically assume that every interaction on X (including ["encrypted"](https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/) DMs) may be read by the company and the government.
-
-> [!warning] E2EE and social media
-> Neither Bluesky nor Mastodon offers or has announced plans for E2EE. The platforms' decentralized nature makes E2EE technically challenging. Assume that anything you post or DM can be read by platform administrators and potentially compelled by governments. For private conversations, continue using Signal.
-
-### X migration plan
-
-1. [ ] Set up new accounts on Bluesky and/or Mastodon.
-2. [ ] Pin an announcement with your new handles to your X profile.
-3. [ ] DM your closest contacts directly - don't rely on them seeing your post.
-4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool](https://buffer.com/).
-5. [ ] Engage actively on your new platform to build momentum.
-6. [ ] Set a sunset date for X and stick to it.
-7. [ ] Export your data from X.
-    - [ ] [Request to download your data](https://x.com/settings/download_your_data).
-    - [ ] Download the data when ready.
-10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
-
-# What's next?
+Before we reach that point, I recommend you immediately:
+- [ ] Withdraw enough cash to live for at least a month,
+- [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9)), and
+- [ ] Ensure your passport is current and ready for international travel.
 
 ## Tech workers can push for privacy improvements
 
@@ -549,7 +543,7 @@ Securing even one of these timely improvements would be a _significant win for p
 
 > [!idea]- Readers who work at other tech firms
 > Focus on changes with minimal technical burden or conflict with core company incentives. Start with easy wins like default settings changes. Those require no new engineering but affect the large set of users who never change settings.
->
+
 ## Gradually transition workplaces from Slack to Element
 
 Slack is not E2EE. The government can read those messages if it seized the servers. The Trump regime's intimidation tactics _will_ chill discussion of e.g. AI policy, especially among non-US citizens. Lots of people I know fit that description. Foreseeable censorship and state-driven retaliation will probably put them at serious risk.
@@ -606,6 +600,62 @@ Element offers [a migration wizard](https://element.io/blog/slack-migration/) to
 > - [ ] For maximum security, fully deprecate Slack and delete message history.
 > - [ ] Or maintain dual platforms with clear boundaries, like "Slack is now read-only."
 
+## Gradually migrate your social network away from X
+
+<video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
+
+The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
+
+The catch: if you leave X, you leave your followers and connections behind by default - although you can export your interaction data. To reconnect with your X followers on the alternative platform Bluesky, you would need to find each follower's Bluesky handle on your own (or vice versa, for your followers finding you). In other words: We love our friends more than we hate these platforms, so we stay stuck.[^attrib]
+
+[^attrib]: I read a similar sentence during my research but cannot remember where. Sorry for the lack of attribution!
+
+Later, [I propose](#x-migration-plan) a two-month migration during which you cross-post major updates to multiple platforms. You'll build a following and hopefully bring over some of your friends as well. Admittedly, this isn't so much about privacy as about building censorship-resistant infrastructure.
+
+### Bluesky: better but still subject to central censorship (for now)
+
+> [!quote] [Government censorship comes to Bluesky, but not its third-party apps … yet](https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/)
+> Bluesky restricted access to 72 accounts in Turkey at the request of Turkish governmental authorities, according to a [recent report](https://stockholmcf.org/bluesky-restricts-access-to-72-accounts-in-turkey-amid-government-pressure/) by the [Freedom of Expression Association](https://ifade.org.tr/engelliweb/bluesky-bircok-hesabi-turkiyeden-gorunmez-kildi/). As a result, people in Turkey can no longer see these accounts, and their reach is limited.
+>
+>  The report indicates that 59 Bluesky accounts were blocked on the grounds of protecting “national security and public order.” Bluesky also made another 13 accounts and at least one post invisible from Turkey.
+>
+>  Given that many Turkish users migrated from X to Bluesky in the hopes of fleeing government censorship, Bluesky’s bowing to the Turkish government’s demands has [raised questions](https://www.reddit.com/r/europe/comments/1k1xy30/bluesky_restricts_access_to_72_accounts_in_turkey/) [among the community](https://www.reddit.com/r/BlueskySocial/comments/1k03iop/bluesky_restricts_accounts_at_the_request_of_the/) as to whether the social network is as open and decentralized as it claims to be. (Or whether [it’s “just like Twitter”](https://www.reddit.com/r/BlueskySocial/comments/1k0hrt0/bluesky_is_banning_accounts_that_are_posting/) after all.)
+
+### The pitch for Mastodon
+
+Mastodon's structure is resilient against censorship. Mastodon can't "chicken out" like Bluesky seems to have done because Mastodon operates on a _federated_ model. The "Fediverse" is a collection of interlinked servers which use a shared protocol. The servers can interoperate seamlessly. Users can easily port their data from one server to another. Censorship becomes hard -- more like "whack a mole" with a million moles, where the moles may be using _quite_ sophisticated VPNs. :)
+
+![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif]]
+Figure: A _centralized_ network on the left versus a _federated_ network on the right. The federated network is robust to the censorship of individual servers. Users can export their data and migrate to a new server.
+
+![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
+
+Sadly, Mastodon isn't too popular, boasting [only 750,000 active users shattered across dozens of major servers in October 2025.](https://mastodon-analytics.com/) In contrast, Bluesky houses 4.1 million daily users. X stacks up about 260 million. In particular, Bluesky has [a more vibrant AI research scene](https://bsky.app/starter-pack/chris.bsky.social/3lbefurb2xh2u) -- many of my readers care about this.
+
+I still made a Mastodon and will try cross-posting using Buffer. You can follow me at `@turntrout` on [`mastodon.social`](https://mastodon.social/@turntrout) (that's the main server). To get started yourself, check out [this guide](https://docpop.org/2025/02/how-to-get-started-with-mastodon).
+
+Mastodon kinda sucks because of low engagement. Bluesky has expected future suckage because of censorship potential. I guess the play is to just make accounts on both and hope that one of them takes off?
+
+### None of these platforms have reliable E2EE messaging
+
+Pessimistically assume that every interaction on X (including ["encrypted"](https://techcrunch.com/2025/09/05/x-is-now-offering-me-end-to-end-encrypted-chat-you-probably-shouldnt-trust-it-yet/) DMs) may be read by the company and the government.
+
+> [!warning] E2EE and social media
+> Neither Bluesky nor Mastodon offers or has announced plans for E2EE. The platforms' decentralized nature makes E2EE technically challenging. Assume that anything you post or DM can be read by platform administrators and potentially compelled by governments. For private conversations, continue using Signal.
+
+### X migration plan
+
+1. [ ] Set up new accounts on Bluesky and/or Mastodon.
+2. [ ] Pin an announcement with your new handles to your X profile.
+3. [ ] DM your closest contacts directly - don't rely on them seeing your post.
+4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool](https://buffer.com/).
+5. [ ] Engage actively on your new platform to build momentum.
+6. [ ] Set a sunset date for X and stick to it.
+7. [ ] Export your data from X.
+    - [ ] [Request to download your data](https://x.com/settings/download_your_data).
+    - [ ] Download the data when ready.
+10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
+
 # Appendix: Precautions which didn't make the cut for the main article
 
 ## Automated license plate readers: can't do anything about them
@@ -618,32 +668,6 @@ The remedy is to support data retention limits, restrict inter-agency sharing, d
 
 Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
 
-## Beware popular security cameras
-
-Apparently many security camera solutions are horrible for privacy. Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
-
-## US government watches immigrant speech on social media
-
-Assume that all social media activity is monitored by [ICE's Homeland Security Investigations teams, who maintain dedicated personnel for social media surveillance](https://www.wired.com/story/ice-social-media-surveillance-24-7-contract/).
-
-> [!quote] [EFF to Department Homeland Security: No Social Media Surveillance of Immigrants](https://www.eff.org/deeplinks/2025/06/eff-department-homeland-security-no-social-media-surveillance-immigrants)
-> EFF submitted comments to the Department of Homeland Security (DHS) and its subcomponent U.S. Citizenship and Immigration Services (USCIS), urging them to abandon a proposal to collect social media identifiers on forms for immigration benefits. This collection would mark yet a further expansion of the government’s efforts to subject immigrants to social media surveillance, invading their privacy and chilling their free speech and associational rights for fear of being denied key immigration benefits.
->  
- > Specifically, the proposed rule would require applicants to disclose their social media identifiers on nine immigration forms, including applications for permanent residency and naturalization, impacting more than 3.5 million people annually. USCIS’s purported reason for this collection is to assist with identity verification, as well as vetting and national security screening, to comply with Executive Order 14161. USCIS separately announced that it would look for “antisemitic activity” on social media as grounds for denying immigration benefits, which appears to be related to the proposed rule, although not expressly included it.
->  
->  Additionally, a day after the proposed rule was published, Axios reported that the State Department, the Department of Justice, and DHS confirmed a joint collaboration called “Catch and Revoke,” using AI tools to review student visa holders’ social media accounts for speech related to “pro-Hamas” sentiment or “antisemitic activity.”
-
-Not much you can do besides being [pseudonymous](#be-pseudonymous-when-possible). Be as brave as you can be in your situation. Try not to give in to the chilling effect. Speak your mind while being smart about it.
-
-## Control smart home devices with Home Assistant
-
-I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
-
-- [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
-  - [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
-- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
-- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
-
 ## Ensure true E2EE for incremental backups
 
 Cloud backups survive house fires, but many cloud services can decrypt your data. I used to use [Backblaze](https://www.backblaze.com/cloud-backup/personal)'s backup client but then realized that they briefly store the encryption key on their own devices. Meaning I have to tell them how to decrypt my data!
@@ -654,14 +678,16 @@ I instead started using [Duplicati](https://duplicati.com/) to send encrypted ba
 
 I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 
-## Buy webcam covers
-
-For less than \$10, I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to. However, this attack is rather rare. Probably this defense just makes you feel better.
-
-[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
-
 ## Protect against geo-guessing
 
 Even [without metadata,](#your-pictures-and-videos-contain-your-gps-location) your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments.
 
 If you share a photo but don't want to share your location... Assume that's not possible, unless you're an expert.
+
+## Buy webcam covers
+
+Subtitle: Cost: $10. Low-priority.
+
+I purchased [two webcam covers for my laptops.](https://www.amazon.com/dp/B079MCPJGH?ref=ppx_yo2ov_dt_b_fed_asin_title)[^covers] Even if a hacker compromises webcam and also the "your video is on" light, I still never expose my video feed when I don't expect to. However, this attack is rather rare. Probably this defense just makes you feel better. I just figured I might as well cover the possibility.
+
+[^covers]: If you purchase a cover for your laptop, be sure to not obstruct its ambient light sensor. Shine a bright light on the webcam to check.
