@@ -153,6 +153,9 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   expect(openedMenuButtonState).not.toEqual(originalMenuButtonState)
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
+
+  // Move mouse away to avoid hover states
+  await page.mouse.move(0, 0)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
     elementToScreenshot: navbarRightMenu,
   })
