@@ -27,9 +27,9 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 
 | **Section focus**                     | **Time for section**                      | **Cost of section** | **Benefits**                                                                                |
 | -----------------------------------: | :---------------------------------------: | :-----------------: | :------------------------------------------------------------------------------------------ |
-| **Harden your hardware**              | 12 hours + 20 hours if switching to Linux | $750+               | Somewhat secures your physical devices from surveillance and some direct attacks.           |
-| **Secure your digital footprint**     | ~2 hours                                  | ~$15/month          | Minimizes the trail of personal data linked to your real identity online.                   |
-| **Advanced mobile & travel security** | ~1 hour                                   | $0                  | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
+| **Harden your hardware**              | 8 hours + 20 hours if switching to Linux | $900+               | Somewhat secures your physical devices from surveillance and some direct attacks.           |
+| **Secure your digital footprint**     | 2 hours                                  | $15/month          | Minimizes the trail of personal data linked to your real identity online.                   |
+| **Advanced mobile & travel security** | 1 hour                                   | $0                  | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
 | **Long-term strategic shifts**        | Ongoing                                   | Variable            | Builds personal and communal resilience against surveillance.                               |
 
 > [!info]  I'm only speaking for myself
@@ -65,7 +65,7 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 
 ## Switch to GrapheneOS
 
-Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed.
+Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed. Time: 6 hours.
 
 Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
@@ -102,7 +102,7 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 
 ## Switch away from Windows
 
-Subtitle: Cost: \$0. Time: 10 hours?
+Subtitle: Cost: \$0. Time: 20 hours.
 
 For years, I dithered about switching away from Windows. Windows was all I knew.  But now that I've switched, I'm glad I did. Microsoft Windows operates on a misaligned business model that extracts data, annoys you, and fundamentally doesn't respect you.
 
@@ -131,7 +131,7 @@ Mac is also way more private than Windows. I use a Mac and I'm happy with it, bu
 
 ## Own your home network
 
-Subtitle: Cost: ~$250 one-time. Time: 1 hour.
+Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
@@ -140,8 +140,6 @@ If you are using the combination modem/router box that your ISP rented to you, y
 Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
 
 ### Buy the right modem
-
-Subtitle: Cost: about \$100. Time: 20 minutes of setup.
 
 If you're in the USA with a cable internet connection, you can buy your own modem. If you're outside the USA or have fiber internet, just move to [the next subsection to buy a router](#buy-a-router-that-respects-you).
 
@@ -155,8 +153,6 @@ Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed
 > Don't buy a refurbished modem. It could still be tied to the previous owner's account, leading to hours of frustrating calls with tech support. More seriously, there's a faint chance that someone tampered with the device to spy on the next buyer.
 
 ### Buy a router that respects you
-
-Subtitle: Cost: \$140. Time: 1 hour.
 
 Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
 
@@ -231,7 +227,7 @@ If you use aliases, you make it harder for scammers and surveillance to track yo
 
 ## Use virtual cards for online purchases
 
-Subtitle: Cost: Free for up to 10 new virtual cards per month.
+Subtitle: Cost: Free for up to 10 new virtual cards per month. Time: 15 minutes.
 
 Companies buy your data because it helps them predict what you'll do. The government wants it for similar reasons. As we do not live in a world with E2EE transactions between buyers and sellers, we must settle for imperfect protection.
 
@@ -257,6 +253,8 @@ Protect yourself.
 
 ## Opt out of financial institution data sharing
 
+Subtitle: Time: 15 minutes.
+
 [These companies share tons of your data as well.](https://www.denverpost.com/2019/08/31/credit-card-privacy-concerns/) By law, they have to let you opt out.
 
 - [ ] Minimize data sharing via your:
@@ -264,7 +262,9 @@ Protect yourself.
   - [ ] Credit card(s).
   - [ ] Other instruments.
 
-## Prefer Stripe and delete PayPal
+## Delete PayPal
+
+Subtitle: Time: 30 minutes plus a few more hours depending on how much you use PayPal.
 
 [PayPal just got hacked and 16 million customers had their _passwords_ leaked, meaning PayPal wasn't following even the most basic security precautions.](https://www.tomsguide.com/computing/online-security/over-16-million-hit-with-paypal-data-breach-what-to-do-right-now) To add ad to insecurity, in 2025, PayPal started sharing your data with a _lot_ of companies:
 
@@ -345,6 +345,8 @@ If you want to browse the original site again, you can disable the extension or 
 
 ## Surreptitious "beacons" track your every movement
 
+Subtitle: Time: 20 minutes.
+
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
 > ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif]]
 >
@@ -411,7 +413,7 @@ For most mainstream applications, the government can see exactly what notificati
 >
 > These services ensure timely and efficient delivery of notifications, but this also means that Apple and Google serve as intermediaries in the transmission process. As with all of the other information these companies store for or about their users, because Apple and Google deliver push notification data, they can be secretly compelled by governments to hand over this information.
 
-- [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-declutter).
+- [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-minimalism).
 - [ ] On Android, prefer apps on the F-Droid app store. Almost all of these apps send notifications independently. Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
 
 ## iOS: Disable AirDrop
@@ -488,6 +490,8 @@ If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Blueto
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
 Figure: My laptop's generic name.
+
+- [ ] Rename your devices to have generic names.
 
 As a reminder, your Bluetooth devices and other broadcastable names may include other smart devices:
   1. Laptop

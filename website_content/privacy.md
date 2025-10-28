@@ -103,7 +103,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
 
 | **Your situation** | **Threat level** | **Recommended sections** |
-|--:|:-:|:-:|
+|--:|:-:|:--|
 | General privacy-conscious user | Low | Quick Start & Privacy Basics |
 | Politically active, US citizen | Medium | Both guides --- all sections |
 | Immigrant, journalist critical of regime, opposition politician | High | Both guides & consult security professionals |
@@ -433,7 +433,7 @@ Let's secure your data.
 > [!warning] iCloud's Advanced Data Protection may not last forever
 > The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP.
 >
-> Apple didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me:
+> Apple claimed they didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me:
 > 1. How important it is to have full E2EE for *all data you care about*,
 > 2. Your E2EE should not be through a single cloud provider (lest they be forced to delete all of it), and
 > 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored.
@@ -444,7 +444,7 @@ Let's secure your data.
 
 ## Switch to Proton Mail
 
-Subtitle: 30 minutes
+Subtitle: Time: 30 minutes.
 
 Centrally hosted mail may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, *the government can make them hand over your emails*.
 
@@ -455,7 +455,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
 5. [ ] Start using Proton Mail! :)
 
-> [!warning] Most of your email can still be read by the authorities in transit
+> [!warning] Most of your email can still be read in transit by the authorities
 > If two Proton Mail emails communicate, they automatically use E2EE. However, if e.g. a `@gmail.com` address sends you something, the content will be plainly visible to the authorities.
 
 > [!danger] The authorities can always track whom you're emailing and when
@@ -463,7 +463,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 
 ## Store files in Proton Drive
 
-Subtitle: Time: 1 hour. Cost: Nothing, if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
+Subtitle: Time: 1 hour. Cost: Nothing if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
 
 I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
 
