@@ -707,8 +707,7 @@ def test_update_readme_copyright_year_updates_needed(
 def test_update_readme_copyright_year_no_update_needed(
     mock_readme_path, initial_content, current_year
 ):
-    """Test that the file is not modified when the copyright year is
-    current."""
+    """Test that the file is not modified when the copyright year is current."""
     mock_readme_path.write_text(initial_content, encoding="utf-8")
     mock_current_datetime = datetime(current_year, 5, 15)
 

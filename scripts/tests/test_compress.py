@@ -482,8 +482,7 @@ def test_avif_format_pixel_depth(temp_dir: Path) -> None:
 def test_get_gif_frame_rate_parametrized(
     temp_dir: Path, test_id: str, length_in_seconds: float, expected_fps: int
 ) -> None:
-    """Test `_get_gif_frame_rate` with various valid GIF
-    `length_in_seconds`."""
+    """Test `_get_gif_frame_rate` with various valid GIF `length_in_seconds`."""
     input_file = temp_dir / f"{test_id}.gif"
     utils._create_test_gif(
         input_file,

@@ -69,8 +69,7 @@ safety_settings = {
 
 
 def get_gemini_description(content: str) -> str:
-    """Generate a description for a blog post using the Gemini 1.5 Pro
-    model."""
+    """Generate a description for a blog post using the Gemini 1.5 Pro model."""
     model = genai.GenerativeModel("gemini-1.5-pro")
     prompt = """
     Based on the following content, write a concise description for a blog post. Offer a factual, neutral summary of the content. 

@@ -607,8 +607,8 @@ def test_latex_tags_variations(
 )
 def test_check_sequence_relationships(test_case: Dict[str, Any]) -> None:
     """
-    Test checking bidirectional relationships between posts using next/prev
-    post slugs.
+    Test checking bidirectional relationships between posts using next/prev post
+    slugs.
 
     Args:
         test_case: Dictionary containing test data including:

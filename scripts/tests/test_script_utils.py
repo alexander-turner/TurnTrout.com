@@ -58,8 +58,8 @@ def test_get_git_root_raises_error():
 
 
 def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test that find_executable raises FileNotFoundError for an executable
-    that does not exist."""
+    """Test that find_executable raises FileNotFoundError for an executable that
+    does not exist."""
     monkeypatch.setattr(script_utils, "_executable_cache", {})
     monkeypatch.setattr(shutil, "which", lambda name: None)
     with pytest.raises(FileNotFoundError):
@@ -636,8 +636,8 @@ def test_should_have_md(
 
 
 def test_md_for_html_with_redirect(mock_public_dir: Path) -> None:
-    """Test that redirect pages are correctly identified as not needing
-    markdown files."""
+    """Test that redirect pages are correctly identified as not needing markdown
+    files."""
     test_file = mock_public_dir / "test.html"
     redirect_html = """
     <html>
