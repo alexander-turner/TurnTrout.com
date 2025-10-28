@@ -560,6 +560,7 @@ img.favicon {
   &[src$="nips_cc.avif"],
   &[src$="backblaze_com.avif"],
   &[src$="matsprogram_org.avif"],
+  &[src$="thebulwark_com.avif"],
   &[src$="proceedings_mlr_press.avif"] {
     :root[data-theme="dark"] & {
       filter: invert(100%) grayscale(100%);

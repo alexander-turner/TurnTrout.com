@@ -5686,5 +5686,9 @@
   "https://assets.turntrout.com/static/images/external-favicons/anytype_io.avif": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/commondreams_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

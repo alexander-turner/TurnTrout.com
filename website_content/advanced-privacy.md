@@ -509,7 +509,7 @@ Other tips:
 
 The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
 
-> [!quote] Stephen Miller, White House Deputy Chief of Staff for Policy
+> [!quote] [Stephen Miller, White House Deputy Chief of Staff for Policy](https://www.commondreams.org/news/stephen-miller-dismantle-the-left)
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
 
 Before we reach that point, I recommend you immediately:
@@ -525,15 +525,15 @@ Securing even one of these timely improvements would be a _significant win for p
 >
 > By order of importance:
 >
-> 1. Enable the "Always-on VPN" toggle for consumers, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution.
-> 2. Make ADP the default setting where legally permissible.
-> 3. Tighten the Wi-Fi Positioning Systems to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
+> 1. **Enable the "Always-on VPN" toggle for consumers**, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution.
+> 2. **Make ADP the default setting where legally permissible.**
+> 3. **Tighten the Wi-Fi Positioning Systems** to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
 >    1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing.
 >    2. Implement a per-device and per-account rate limit that is sufficient for legitimate location lookups but too low for mass data harvesting.
 >    3. Require queries to be tied to an authenticated Apple ID to allow Apple to ban abusive users.
 >    4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but very powerful adversaries."
-> 4. Add a toggle to [disable the 2G radio](#disable-2g-to-avoid-stingray-attacks) without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays).
-> 5. Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/)
+> 4. **Add a toggle to [disable the 2G radio](#disable-2g-to-avoid-stingray-attacks)** without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays).
+> 5. **Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019**. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/)
 
 > [!idea]- Readers who work at Meta
 > 6. Migrate WhatsApp from E2EE to zero-knowledge encryption to protect metadata. If not, more clearly warn users that their metadata are not E2EE.
@@ -656,6 +656,12 @@ Pessimistically assume that every interaction on X (including ["encrypted"](http
     - [ ] Download the data when ready.
 10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
 
+# What next?
+
+I'm scared by what's happening to the country I love. I don't have a full gameplan. But what I do know is this: these precautions make us stronger. They make us think better by freely communicating information which the regime might wish to suppress. They make us feel better by reducing the risk of persecution, putting us at ease. Most importantly, these precautions help us work together. By securing our infrastructure, we enable acts of kindness and bravery.
+
+We'll need a lot of both in the coming years.
+
 # Appendix: Precautions which didn't make the cut for the main article
 
 ## Automated license plate readers: can't do anything about them
@@ -676,7 +682,7 @@ iCloud (with ADP) doesn't work because I want complete incremental backup of all
 
 I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my config template](https://assets.turntrout.com/duplicati.json).
 
-I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
+I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so  if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 
 ## Protect against geo-guessing
 
