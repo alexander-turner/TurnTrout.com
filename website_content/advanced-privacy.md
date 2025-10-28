@@ -28,12 +28,12 @@ As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/pri
 
 Don't try to do everything at once. As in the first article, even a few hours can dramatically boost your privacy. If you're short on money, then you can skip the hardware replacement recommendations.
 
-| **Section focus** | **Time for section** | **Cost of section** | **Benefits** |
-| :--- | :--- | :--- | :--- |
-| **Harden your hardware** | 12 hours + 20 hours if switching to Linux | $750+ | Somewhat secures your physical devices from surveillance and some direct attacks. |
-| **Secure your digital footprint** | ~2 hours | ~$15/month | Minimizes the trail of personal data linked to your real identity online. |
-| **Advanced mobile & travel security** | ~1 hour | $0 | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
-| **Long-term strategic shifts** | Ongoing | Variable | Builds personal and communal resilience against surveillance. |
+| **Section focus**                     | **Time for section**                      | **Cost of section** | **Benefits**                                                                                |
+| -----------------------------------: | :---------------------------------------: | :-----------------: | :------------------------------------------------------------------------------------------ |
+| **Harden your hardware**              | 12 hours + 20 hours if switching to Linux | $750+               | Somewhat secures your physical devices from surveillance and some direct attacks.           |
+| **Secure your digital footprint**     | ~2 hours                                  | ~$15/month          | Minimizes the trail of personal data linked to your real identity online.                   |
+| **Advanced mobile & travel security** | ~1 hour                                   | $0                  | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
+| **Long-term strategic shifts**        | Ongoing                                   | Variable            | Builds personal and communal resilience against surveillance.                               |
 
 # New concepts
 
