@@ -106,12 +106,12 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 > An authoritarian government doesn't care. Mistakes are a feature and not a bug of authoritarian surveillance. If ICE targets only people it can go after legally, then everyone knows whether or not they need to fear ICE. If ICE occasionally makes mistakes by arresting Americans and deporting innocents, then everyone has to fear it. This is by design.
 > <!-- vale on -->
 
-|                                              **Your situation** | **Threat level** | **Recommended sections**                                        |
-| --------------------------------------------------------------: | :--------------: | :-------------------------------------------------------------- |
-|        Lives in stable democracy / doesn't complain about Trump |       Low        | Quick Start & Privacy Basics                                    |
-|                                  Politically active, US citizen |      Medium      | This guide and [the sequel](/advanced-privacy) --- all sections |
-| Immigrant, journalist critical of regime, opposition politician |       High       | Both guides & consult security professionals                    |
-|                           Facing imminent arrest or deportation |     Critical     | This guide is insufficient - seek legal counsel immediately     |
+|                                              **Your situation** | **Threat level** | **Recommended sections**                                     |
+| --------------------------------------------------------------: | :--------------: | :----------------------------------------------------------- |
+|        Lives in stable democracy / doesn't complain about Trump |       Low        | Quick Start & Privacy Basics                                 |
+|                                  Politically active, US citizen |      Medium      | This guide and [the sequel](/advanced-privacy), all sections |
+| Immigrant, journalist critical of regime, opposition politician |       High       | Both guides & consult security professionals                 |
+|                           Facing imminent arrest or deportation |     Critical     | This guide is insufficient - seek legal counsel immediately  |
 
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
