@@ -41,6 +41,12 @@ input.checkbox-toggle {
   ol > li > &,
   ol > li > p > & {
     left: var(--ol-left);
+
+    // Safari uses margin-left instead of padding-left on ol > li
+    // Need to compensate by shifting checkbox left by that amount
+    @supports (-webkit-hyphens: none) {
+      left: calc(var(--ol-left) - #{$li-padding-left});
+    }
   }
 
   &:focus-visible {
