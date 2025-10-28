@@ -19,7 +19,10 @@ aliases:
 next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
+date_published: &id001 2025-10-28 10:05:55.881595
+date_updated: *id001
 ---
+
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >

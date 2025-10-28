@@ -5,17 +5,21 @@ no_dropcap: true
 tags:
   - personal
   - open-source
-description: "My open-source projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities."
+description: "My open-source projects include this website's infrastructure, AI-powered
+  alt text generation, and dataset protection utilities."
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: 
+card_image:
 aliases:
   - oss
   - FOSS
   - foss
   - software
   - OSS
+date_published: &id001 2025-10-28 10:05:55.881595
+date_updated: *id001
 ---
+
 # This website
 
 Subtitle: I've made over 4,500 commits. That's over halfway to being over 9,000!
