@@ -63,7 +63,7 @@ This guide will help you protect your communications and information so you can 
 Let's get started.
 
 > [!info]  I'm only speaking for myself
->  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views.
+>  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
 
 # What should I read?
 
@@ -87,8 +87,6 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
 # What's your risk level?
 
-If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
-
 > [!quote] [Digital Threat Modeling Under Authoritarianism](https://www.schneier.com/blog/archives/2025/09/digital-threat-modeling-under-authoritarianism.html)
 > Subtitle: By Bruce Schneier, famous cybersecurity expert
 >
@@ -97,6 +95,15 @@ If you're an immigrant, investigative journalist, or a political figure who oppo
 > This is vital to understand. Surveillance systems and sorting algorithms make mistakes. This is apparent in the fact that we are routinely served advertisements for products that don’t interest us at all. Those mistakes are relatively harmless—who cares about a poorly targeted ad?—but a similar mistake at an immigration hearing can get someone deported.
 >
 > An authoritarian government doesn’t care. Mistakes are a feature and not a bug of authoritarian surveillance. If ICE targets only people it can go after legally, then everyone knows whether or not they need to fear ICE. If ICE occasionally makes mistakes by arresting Americans and deporting innocents, then everyone has to fear it. This is by design.
+
+If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
+
+| **Your situation** | **Threat level** | **Recommended sections** |
+|--:|:-:|:-:|
+| General privacy-conscious user | Low | Quick Start & Privacy Basics |
+| Politically active, US citizen | Medium | Both guides --- all sections |
+| Immigrant, journalist critical of regime, opposition politician | High | Both guides & consult security professionals |
+| Facing imminent arrest or deportation | Critical | This guide is insufficient - seek legal counsel immediately |
 
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
@@ -131,7 +138,7 @@ End-to-end encryption (E2EE)
 
 : Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
-Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following my recommendations, you will create "dark spots" where the surveillance apparatus can't look. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely and to organize discreetly.
+Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following this guide's recommendations, you will create "dark spots" where the surveillance apparatus has trouble looking. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely and to organize discreetly.
 
 # Quick start in 50 minutes
 
@@ -266,10 +273,8 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 >
 ### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
-Subtitle: And it's on Apple.
-
 > [!danger]
-> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS are a scam](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
+> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
 >  
 > Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, in the next post, I recommend switching [to GrapheneOS.](/advanced-privacy#switch-to-android-preferably-to-grapheneos)
 

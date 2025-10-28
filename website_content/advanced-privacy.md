@@ -22,7 +22,7 @@ As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/pri
 ![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
 
 > [!info]  I'm only speaking for myself
->  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views.
+>  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
 
 # Overview
 
@@ -199,7 +199,7 @@ I love my Google Home setup but it sends data home which isn't E2EE. The solutio
 
 Subtitle: Cost: $130. Time: 30 minutes to set up.
 
-Normal smart TVs shove tons of ads in your face and track lots of your data. Apple TVs are much better.
+Normal smart TVs track lots of your data. Apple TVs are much better.
 
 > [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
 > It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
@@ -283,7 +283,7 @@ If you want to keep your PayPal, at least mitigate by opting out of their data s
 
 ## Minimize sharing your data with LLMs
 
-Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training (unless the provider explicitly guarantees otherwise) or even [available on the Internet Archive](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
+Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training or even [available on the Internet Archive](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
 
 ### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
 
@@ -453,7 +453,7 @@ iOS
 
 ## Be prepared at border checkpoints
 
-In the USA, [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say no, however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
+In the USA, my understanding is that [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say "no", however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
 
 However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
