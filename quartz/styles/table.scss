@@ -75,17 +75,12 @@ tr {
 
 .table-container {
   overflow-x: auto;
+  margin-top: calc(2 * $base-margin);
 
   & > table {
-    margin: calc(2 * $base-margin);
+    margin: 0 auto calc(2 * $base-margin);
     padding: calc(3 * $base-margin);
     border-collapse: collapse;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  &:first-child > table {
-    margin-top: $base-margin;
   }
 }
 

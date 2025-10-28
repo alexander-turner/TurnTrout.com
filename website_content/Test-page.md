@@ -358,6 +358,12 @@ Table: A `<figcaption>` element created from the Markdown cue of "Table:".
 
 Table: Ensure that word wrapping works properly on table header elements to prevent overflow.
 
+   - [ ] You can check off this item, refresh the page, and the box will remain checked.
+
+   | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
+   | -----------------: | :--------: | :----------: | :--------------------------------- |
+   | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
+
 # Video
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
