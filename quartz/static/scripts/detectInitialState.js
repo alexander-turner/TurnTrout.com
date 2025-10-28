@@ -32,7 +32,7 @@
   window.__quartz_checkbox_states = new Map()
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (key && key.includes("-checkbox-")) {
+    if (key?.includes("-checkbox-")) {
       window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
     }
   }
