@@ -109,7 +109,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 |                                                                             **Your situation** | **Threat level** | **Recommended sections**                                     |
 | ---------------------------------------------------------------------------------------------: | :--------------: | :----------------------------------------------------------- |
 | Living in a stable democracy, a Trump supporter who does not belong to any marginalized groups |       Low        | Quick Start & Privacy Basics                                 |
-|                                                                 Politically active, US citizen |      Medium      | This guide and [the sequel](/advanced-privacy), all sections |
+|                                    US citizen who does not support Trump |      Medium      | This guide and [the sequel](/advanced-privacy), all sections |
 |                                Immigrant, journalist critical of regime, opposition politician |       High       | Both guides & consult security professionals                 |
 |                                                          Facing imminent arrest or deportation |     Critical     | This guide is insufficient - seek legal counsel immediately  |
 
