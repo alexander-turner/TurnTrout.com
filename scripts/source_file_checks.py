@@ -403,8 +403,8 @@ _END_OF_LINE_BRACES_REGEX = r"{[^$`\\]*}\s*$"
 
 def check_unescaped_braces(text: str) -> List[str]:
     """
-    Check for unescaped braces in markdown files that aren't at beginning/end
-    of line or inside of katex element.
+    Check for unescaped braces in markdown files that aren't at beginning/end of
+    line or inside of katex element.
 
     Args:
         file_path: Path to the markdown file to check

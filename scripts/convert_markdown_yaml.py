@@ -185,8 +185,7 @@ def _setup_and_store_image(png_path: Path, png_filename: str) -> Path:
 
 
 def process_card_image_in_markdown(md_file: Path) -> None:
-    """Process the 'card_image' in the YAML frontmatter of the given md
-    file."""
+    """Process the 'card_image' in the YAML frontmatter of the given md file."""
     git_root = script_utils.get_git_root()
     content_dir = git_root / "website_content"
     if not md_file.resolve().is_relative_to(content_dir):

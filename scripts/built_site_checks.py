@@ -841,8 +841,8 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
 
 def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
     """
-    Check for consecutive periods in text content, including cases where
-    they're separated by quotation marks.
+    Check for consecutive periods in text content, including cases where they're
+    separated by quotation marks.
 
     Returns:
         list of strings containing problematic text with consecutive periods
@@ -913,8 +913,8 @@ def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
 
 
 def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
-    """Check for syntactically malformed href attributes in `<a>` tags using
-    the `validators` library."""
+    """Check for syntactically malformed href attributes in `<a>` tags using the
+    `validators` library."""
     malformed_links: list[str] = []
     for link in _tags_only(soup.find_all("a", href=True)):
         href = link.get("href")
@@ -1282,8 +1282,8 @@ def _check_element_spacing(
 
 def check_link_spacing(soup: BeautifulSoup) -> list[str]:
     """
-    Check for non-footnote links that don't have proper spacing with
-    surrounding text.
+    Check for non-footnote links that don't have proper spacing with surrounding
+    text.
 
     Links should have a space before them unless preceded by specific
     characters.

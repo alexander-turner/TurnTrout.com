@@ -662,6 +662,9 @@ I'm scared by what's happening to the country I love. I don't have a full gamepl
 
 We'll need a lot of both in the coming years.
 
+> [!thanks]
+> Garrett Baker gave feedback on drafts of these posts.
+>
 # Appendix: Precautions which didn't make the cut for the main article
 
 ## Automated license plate readers: can't do anything about them
