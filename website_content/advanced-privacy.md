@@ -78,7 +78,7 @@ I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel ph
 I'm going to be real with you: the switch will be inconvenient at first. It took me an entire evening to get all my apps set up again. If you want to invest in avoiding a surveillance state, this is a good investment. You'll end up with a phone that has nearly all the functionality you'd expect of an Android. Everything should just work, with a few exceptions:
 
 1. About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/). If your app isn't listed, that might be OK. For example, a friend found that First Tech bank's app isn't on the list, but he was still able to log in using the Brave web browser on my GrapheneOS phone. From there, GrapheneOS can pin the webpage to the home screen.
-2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I _will_ miss using Google Pay for public transportation.
+2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I do miss using Google Pay for public transportation.
 
 ### How to make the switch
 
@@ -143,7 +143,9 @@ Plus, open-source routers have neat features. They can shield your entire networ
 
 If you're in the USA with a cable internet connection, you can buy your own modem. If you're outside the USA or have fiber internet, just move to [the next subsection to buy a router](#buy-a-router-that-respects-you).
 
-Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed modems. Consult your ISP's list and then find one which has a "DOCSIS" version of 3.0 or greater (the higher, the faster the max speed). Apparently Arris, Motorola, and Netgear tend to be good choices.
+Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed modems.
+
+- [ ] Consult your ISP's list and then buy a modem which has a "DOCSIS" version of 3.0 or greater (the higher, the faster the max speed). Apparently Arris, Motorola, and Netgear tend to be good choices.
 
 > [!example] My experience upgrading my modem
 > I get my internet through Xfinity. I consulted their [list of approved modems](https://www.xfinity.com/support/internet/customerowned) and then I purchased an [Arris SB8200](https://www.amazon.com/ARRIS-SURFboard-Approved-SB8200-Frustration/dp/B07DY16W2Z/ref=sr_1_1?sr=8-1). The newer Arris S34 was supported, but I [read that it was finicky to set up](https://www.reddit.com/r/Comcast_Xfinity/comments/1fkay76/arris_s34_is_finally_working_for_nextgen_fast/?rdt=46016) (and my network connection isn't faster than 800Mbps anyways). At about \$168, the Arris SB8200 modem would pay for itself after 11 months of not paying my ISP \$15/month.
@@ -168,6 +170,7 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
     2. [ ] Navigate to VPN settings,
     3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
     4. [ ] Exempt the devices which run their own _secure_ VPN connections.
+2. [ ] In the VPN tab, disable "All other traffic" to ensure that only VPN-protected traffic goes through.
 3. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
 
 ### Wifi network advice
@@ -608,7 +611,7 @@ Element offers [a migration wizard](https://element.io/blog/slack-migration/) to
 
 <video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
 
-The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-declutter).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
+The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-minimalism).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
 
 The catch: if you leave X, you leave your followers and connections behind by default - although you can export your interaction data. To reconnect with your X followers on the alternative platform Bluesky, you would need to find each follower's Bluesky handle on your own (or vice versa, for your followers finding you). In other words: We love our friends more than we hate these platforms, so we stay stuck.[^attrib]
 
@@ -634,7 +637,7 @@ Figure: A _centralized_ network on the left versus a _federated_ network on the 
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
 
-Sadly, Mastodon isn't too popular, boasting [only 750,000 active users shattered across dozens of major servers in October 2025.](https://mastodon-analytics.com/) In contrast, Bluesky houses 4.1 million daily users. X stacks up about 260 million. In particular, Bluesky has [a more vibrant AI research scene](https://bsky.app/starter-pack/chris.bsky.social/3lbefurb2xh2u) -- many of my readers care about this.
+Sadly, Mastodon isn't too popular, boasting [only 750,000 active users sprinkled across dozens of major servers in October 2025.](https://mastodon-analytics.com/) In contrast, Bluesky houses 4.1 million daily users. X stacks up about 260 million. In particular, Bluesky has [a more vibrant AI research scene](https://bsky.app/starter-pack/chris.bsky.social/3lbefurb2xh2u) -- many of my readers care about this.
 
 I still made a Mastodon and will try cross-posting using Buffer. You can follow me at `@turntrout` on [`mastodon.social`](https://mastodon.social/@turntrout) (that's the main server). To get started yourself, check out [this guide](https://docpop.org/2025/02/how-to-get-started-with-mastodon).
 

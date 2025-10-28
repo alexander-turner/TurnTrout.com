@@ -56,7 +56,7 @@ This story isn't an isolated incident: ProPublica [found that "more than 170 US 
 >
 > On October 8th, 2025, Trump [posted](https://www.nbcnews.com/politics/white-house/trump-says-gov-jb-pritzker-chicago-mayor-brandon-johnson-jail-rcna236339) that Chicago Mayor Brandon Johnson and Illinois Governor JB Pritzker "should be in jail for failing to protect Ice Officers!". When pressed by reporters about what crimes he believed they had committed, Trump said "I've seen the law" and doubled down on his call for their imprisonment.
 >
-> Trump labels his opposition as terrorists, targets political ideologies through executive orders, and tells his generals to prepare to go to war inside our own country. Sooner or later, you might become an "enemy from within."
+> Trump labels his opposition as terrorists, targets political ideologies through executive orders, and tells America's generals to prepare to go to war inside our own country. Sooner or later, you might become an "enemy from within."
 >
 > **Accept the reality of the risk cast by the future. Act now to prepare.**
 
@@ -505,12 +505,19 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 Subtitle: Time: 15 minutes.
 
-The [OsmAnd](https://osmand.net) doesn't collect your data but is instead flooded with  data of its own. The maps have surprising amount of detail, down to the nearby benches. I  can even download a detailed map of the entire state of California for just 8GB. Don't worry, the app will give you verbal directions during your trip!
+[OsmAnd](https://osmand.net) doesn't collect your data. Its maps have surprising amount of detail, down to the nearby benches. I  can even download a detailed map of the entire state of California for just 8GB --- offline maps usage is both private and practical. That said, the app does take some getting used to.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
 
 - [ ] Install OsmAnd ([Android](https://f-droid.org/en/packages/net.osmand.plus/), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257)).
 - [ ] Delete your Maps location data from the cloud.
+
+The main drawback I've seen so far is that OsmAnd doesn't incorporate live timetables for public transit. On Android, open source [Transportr](https://transportr.app/) should be able to help. However, Transportr isn't available on iOS. iPhone users might use Apple Maps (with its claimed privacy guarantees) for transit planning and then return to OsmAnd.
+
+- [ ] Android: Download [Transportr](https://transportr.app/).
+
+> [!warning] Ridesharing apps
+> Remember that Uber and Lyft record who you are and where you're going. Usually this is okay, but keep it in mind for sensitive situations where you want more privacy.
 
 ## Schedule with Proton Calendar
 
