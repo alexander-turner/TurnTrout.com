@@ -205,7 +205,7 @@ If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end enc
 - [ ] Enable ADP in settings.
 
 > [!warning]
-> If you are in the UK, you'll have to refer to [my later section](#end-to-end-encrypt-your-data) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web, extending government surveillance --- all in order to "protect the children."
+> If you are in the UK, you'll have to refer to [my later section](#end-to-end-encryption-for-your-data-in-4-hours) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web, extending government surveillance --- all in order to "protect the children."
 
 ## Secure your devices with strong passwords
 
@@ -261,7 +261,7 @@ The metadata alone reveal a detailed picture of your online life. A VPN prevents
 
 I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for one year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
-As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
+As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encryption-for-your-data-in-4-hours), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
 - [ ] Create a Proton account and store the credentials in your Bitwarden.
 - [ ] [Download and run ProtonVPN](https://protonvpn.com/).
@@ -280,7 +280,7 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 > [!danger]
 > I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
 >  
-> Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, in the next post, I recommend switching [to GrapheneOS.](/advanced-privacy#switch-to-android-preferably-to-grapheneos)
+> Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, in the next post, I recommend switching [to GrapheneOS.](/advanced-privacy#switch-to-grapheneos)
 
 The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
 

@@ -45,7 +45,7 @@ This guide _is not sufficient to protect you against targeted investigation_. Th
 
 ## Protect your network, not just yourself
 
-Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-tips#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're  meeting with by just demanding data from your cloud calendar provider.
+Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-despite-authoritarianism#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're  meeting with by just demanding data from your cloud calendar provider.
 
 ## Know your rights
 
@@ -67,10 +67,10 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 
 Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed.
 
-Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
+Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
 > [!info] Reminder that I work at Google DeepMind
-> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
+> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
 
 I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
@@ -135,9 +135,9 @@ Subtitle: Cost: ~$250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
+[Your VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
 
-Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
+Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
 
 ### Buy the right modem
 
@@ -221,13 +221,13 @@ Subtitle: Time: 15 minutes initial setup.
 
 If you use aliases, you make it harder for scammers and surveillance to track your online identity. You can also disable an alias if a site uses that alias to spam you.
 
-- [ ] Link your [Proton Unlimited](/privacy#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
+- [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
 
 - [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate email aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
-[^premium]: If you've purchased Proton Unlimited as [recommended](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
+[^premium]: If you've purchased Proton Unlimited as [recommended](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
 
 ## Use virtual cards for online purchases
 
@@ -332,7 +332,7 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 
 Subtitle: Time: 10 minutes.
 
-Even if you're using [a VPN](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+Even if you're using [a VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
 
@@ -375,13 +375,13 @@ The following steps stop your phone from being passively detected by Bluetooth b
     2. [ ] Search for "Wi-Fi Scanning" and disable it.
     3. [ ] Search for "Location Accuracy" and disable it.
 
-If you're switching to [GrapheneOS (which you hopefully are)](#switch-to-android-preferably-to-grapheneos), use its granular per-app network and sensor permissions to prevent apps from accessing Bluetooth unnecessarily. Conservative permission settings should  totally stop your phone from passively responding to nearby beacons, since those wait for responses from shady apps.
+If you're switching to [GrapheneOS (which you hopefully are)](#switch-to-grapheneos), use its granular per-app network and sensor permissions to prevent apps from accessing Bluetooth unnecessarily. Conservative permission settings should  totally stop your phone from passively responding to nearby beacons, since those wait for responses from shady apps.
 
 ### Minimize the uptime of your Bluetooth radio
 
 If data companies have the information, so can the government. Obviously, the most privacy-boosting remedy is turning Bluetooth _off_, cold-turkey -- but I don't want to forsake my AirPods in my day-to-day life. Here's what to do instead.
 
-[GrapheneOS](#switch-to-android-preferably-to-grapheneos) instructions
+GrapheneOS instructions
 : GrapheneOS includes a "Bluetooth timeout" feature that automatically disables Bluetooth after a period of inactivity. Enable in `Settings > Network & internet > Bluetooth > Bluetooth timeout`.
 
 iOS instructions
@@ -433,7 +433,7 @@ Stingray attacks use a machine which pretends to be a fake "cell tower" with sup
 >
 > Forbes found contract records showing ICE purchased nearly $1 million worth of “cell site simulator vehicles” in May this year, indicating it’s taking the surveillance tool fully mobile. That was part of a contract first signed under the Biden administration in 2024.
 
-Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
+Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](/privacy-despite-authoritarianism#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
 
 GrapheneOS
 : GrapheneOS has more comprehensive protections than just disabling 2G. But you should also do that.
@@ -525,7 +525,7 @@ Securing even one of these timely improvements would be a _significant win for p
 >
 > By order of importance:
 >
-> 1. **Enable the "Always-on VPN" toggle for consumers**, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution.
+> 1. **Enable the "Always-on VPN" toggle for consumers**, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution.
 > 2. **Make ADP the default setting where legally permissible.**
 > 3. **Tighten the Wi-Fi Positioning Systems** to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
 >    1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing.
@@ -689,7 +689,7 @@ I also have local Time Machine backups on an external hard drive. These backups 
 
 ## Protect against geo-guessing
 
-Even [without metadata,](#your-pictures-and-videos-contain-your-gps-location) your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments.
+Even [without metadata,](/privacy-despite-authoritarianism#your-pictures-and-videos-contain-your-gps-location) your photo still might be "geo-guessed." In the game ["GeoGuessr"](https://www.geoguessr.com/), people compete to guess the location of a Google Street View photograph (with the ability to explore nearby using the Street View). [Radu, the 2025 world champion, can sometimes guess obscure road locations with 200-meter precision.](https://www.youtube.com/watch?v=-IumRw8Z-XI)  Recently, [`geospy.ai`](https://geospy.ai/) entered the marketplace to power law enforcement. Humans and AI are far more likely to fail locating a patch of forest, but likely to succeed at picking up on subtle cues in urban and rural environments.
 
 If you share a photo but don't want to share your location... Assume that's not possible, unless you're an expert.
 
