@@ -5,7 +5,7 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
-/** Waits for the theme transition to complete. */
+// skipcq: JS-0098
 export async function waitForThemeTransition(page: Page) {
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
@@ -406,15 +406,17 @@ export function showingPreview(page: Page): boolean {
  * @returns A promise that resolves when all transitions have completed
  */
 export async function waitForTransitionEnd(element: Locator): Promise<void> {
-  await element.evaluate((el) => {
-    return new Promise((resolve) => {
-      const computedStyle = window.getComputedStyle(el)
+  const page = element.page()
+
+  await page.waitForFunction(
+    (el) => {
+      const element = el as Element
+      const computedStyle = window.getComputedStyle(element)
       const transitionDurationValue = computedStyle.transitionDuration
 
       // If no transitionDuration is set or empty, resolve immediately
       if (!transitionDurationValue || transitionDurationValue.trim() === "") {
-        resolve(true)
-        return
+        return true
       }
 
       // Parse individual durations and convert to milliseconds
@@ -427,39 +429,28 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
 
       // If all durations are 0, resolve immediately
       if (parsedDurations.every((d) => d === 0)) {
-        resolve(true)
-        return
+        return true
       }
 
-      // Determine the maximum transition duration
-      const maxDuration = Math.max(...parsedDurations)
+      // Wait for all transitionend events
+      return new Promise<boolean>((resolve) => {
+        const properties = computedStyle.transitionProperty.split(",").map((p) => p.trim())
+        let pendingTransitions = properties.length
 
-      // Count transitions using transitionProperty
-      const properties = computedStyle.transitionProperty.split(",").map((p) => p.trim())
-      let pendingTransitions = properties.length
-
-      // Listen for all transitionend events
-      const onTransitionEnd = (): void => {
-        pendingTransitions--
-        if (pendingTransitions <= 0) {
-          el.removeEventListener("transitionend", onTransitionEnd)
-          // Wait for the longest transition to surely complete plus a short buffer
-          setTimeout(() => {
+        const onTransitionEnd = (): void => {
+          pendingTransitions--
+          if (pendingTransitions <= 0) {
+            element.removeEventListener("transitionend", onTransitionEnd)
             resolve(true)
-          }, maxDuration + 150)
+          }
         }
-      }
-      el.addEventListener("transitionend", onTransitionEnd)
 
-      // Safety timeout in case transitionend events never fire
-      setTimeout(() => {
-        if (pendingTransitions > 0) {
-          el.removeEventListener("transitionend", onTransitionEnd)
-          resolve(true)
-        }
-      }, maxDuration + 150)
-    })
-  })
+        element.addEventListener("transitionend", onTransitionEnd)
+      })
+    },
+    await element.elementHandle(),
+    { timeout: 5000 },
+  )
 }
 
 // skipcq: JS-0098

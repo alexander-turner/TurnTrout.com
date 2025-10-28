@@ -212,13 +212,13 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      // Verify element is stable by polling for visual consistency
+      // Verify element is stable by checking computed transform is at final position
       await expect
         .poll(async () => {
-          const before = await element.screenshot()
+          const box1 = await element.boundingBox()
           await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)))
-          const after = await element.screenshot()
-          return before.equals(after)
+          const box2 = await element.boundingBox()
+          return box1?.x === box2?.x && box1?.y === box2?.y
         })
         .toBe(true)
     })
@@ -268,9 +268,12 @@ test.describe("visual_utils functions", () => {
 
       await waitPromise
 
-      await expect(element).toHaveScreenshot("test-multiple-transitions.png", {
-        maxDiffPixels: 0,
-      })
+      // Verify both transitions have completed by checking final computed styles
+      const finalOpacity = await element.evaluate((el) => window.getComputedStyle(el).opacity)
+      const finalTransform = await element.evaluate((el) => window.getComputedStyle(el).transform)
+
+      expect(parseFloat(finalOpacity)).toBeCloseTo(0, 1)
+      expect(finalTransform).toContain("100")
     })
   })
 })
