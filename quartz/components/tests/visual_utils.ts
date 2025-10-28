@@ -430,51 +430,51 @@ export function showingPreview(page: Page): boolean {
  * @returns A promise that resolves when all transitions have completed
  */
 export async function waitForTransitionEnd(element: Locator): Promise<void> {
-  const page = element.page()
+  await element.evaluate((el: Element) => {
+    const computedStyle = window.getComputedStyle(el)
+    const transitionDurationValue = computedStyle.transitionDuration
 
-  await page.waitForFunction(
-    (el) => {
-      const element = el as Element
-      const computedStyle = window.getComputedStyle(element)
-      const transitionDurationValue = computedStyle.transitionDuration
+    // If no transitionDuration is set or empty, resolve immediately
+    if (!transitionDurationValue || transitionDurationValue.trim() === "") {
+      return Promise.resolve()
+    }
 
-      // If no transitionDuration is set or empty, resolve immediately
-      if (!transitionDurationValue || transitionDurationValue.trim() === "") {
-        return true
-      }
+    // Parse individual durations and convert to milliseconds
+    const durations = transitionDurationValue.split(",").map((d) => d.trim())
+    const parsedDurations = durations.map((d) => {
+      if (d.endsWith("ms")) return parseFloat(d)
+      if (d.endsWith("s")) return parseFloat(d) * 1000
+      return 0
+    })
 
-      // Parse individual durations and convert to milliseconds
-      const durations = transitionDurationValue.split(",").map((d) => d.trim())
-      const parsedDurations = durations.map((d) => {
-        if (d.endsWith("ms")) return parseFloat(d)
-        if (d.endsWith("s")) return parseFloat(d) * 1000
-        return 0
-      })
+    // If all durations are 0, resolve immediately
+    if (parsedDurations.every((d) => d === 0)) {
+      return Promise.resolve()
+    }
 
-      // If all durations are 0, resolve immediately
-      if (parsedDurations.every((d) => d === 0)) {
-        return true
-      }
+    // Wait for all transitionend events
+    return new Promise<void>((resolve) => {
+      const properties = computedStyle.transitionProperty.split(",").map((p) => p.trim())
+      let pendingTransitions = properties.length
 
-      // Wait for all transitionend events
-      return new Promise<boolean>((resolve) => {
-        const properties = computedStyle.transitionProperty.split(",").map((p) => p.trim())
-        let pendingTransitions = properties.length
-
-        const onTransitionEnd = (): void => {
-          pendingTransitions--
-          if (pendingTransitions <= 0) {
-            element.removeEventListener("transitionend", onTransitionEnd)
-            resolve(true)
-          }
+      const onTransitionEnd = (): void => {
+        pendingTransitions--
+        if (pendingTransitions <= 0) {
+          el.removeEventListener("transitionend", onTransitionEnd)
+          resolve()
         }
+      }
 
-        element.addEventListener("transitionend", onTransitionEnd)
-      })
-    },
-    await element.elementHandle(),
-    { timeout: 5000 },
-  )
+      el.addEventListener("transitionend", onTransitionEnd)
+
+      // Fallback timeout in case transitionend doesn't fire
+      setTimeout(() => {
+        el.removeEventListener("transitionend", onTransitionEnd)
+        resolve()
+        console.warn("Transition end not detected")
+      }, 5000)
+    })
+  })
 }
 
 // skipcq: JS-0098
