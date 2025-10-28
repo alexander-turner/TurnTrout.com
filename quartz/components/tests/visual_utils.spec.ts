@@ -592,14 +592,74 @@ test.describe("pauseMediaElements", () => {
 
     await pauseMediaElements(page)
 
-    for (const el of [video1, audio1, video2]) {
-      expect(await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.paused)).toBe(true)
-      expect(
-        await el.evaluate((el: HTMLVideoElement | HTMLAudioElement) => el.currentTime),
-      ).toBeCloseTo(
-        0, // Should be at end, but there's no duration on mock video
-      )
+    for (const el of [video1, video2]) {
+      expect(await el.evaluate((el: HTMLVideoElement) => el.paused)).toBe(true)
+      expect(await el.evaluate((el: HTMLVideoElement) => el.currentTime)).toBeCloseTo(0)
     }
+
+    expect(await audio1.evaluate((el: HTMLAudioElement) => el.paused)).toBe(true)
+    expect(await audio1.evaluate((el: HTMLAudioElement) => el.currentTime)).toBeCloseTo(0)
+  })
+
+  test("seeks audio to end when duration is available", async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <audio id="audio-with-duration" controls></audio>
+        </body>
+      </html>
+    `)
+
+    const audio = page.locator("#audio-with-duration")
+
+    // Mock audio element with proper duration
+    const maxLength = 42.5
+    await audio.evaluate((el: HTMLAudioElement, maxLen: number) => {
+      Object.defineProperty(el, "duration", {
+        get: () => maxLen,
+        configurable: true,
+      })
+      el.currentTime = 10.0
+    }, maxLength)
+
+    await pauseMediaElements(page)
+
+    expect(await audio.evaluate((el: HTMLAudioElement) => el.paused)).toBe(true)
+    expect(await audio.evaluate((el: HTMLAudioElement) => el.currentTime)).toBeCloseTo(maxLength)
+  })
+
+  test("waits for metadata when audio duration is not immediately available", async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <audio id="audio-loading" controls></audio>
+        </body>
+      </html>
+    `)
+
+    const audio = page.locator("#audio-loading")
+
+    // Mock audio element that loads metadata asynchronously
+    const maxLength = 30.0
+    await audio.evaluate((el: HTMLAudioElement, maxLen: number) => {
+      let durationValue = NaN
+      Object.defineProperty(el, "duration", {
+        get: () => durationValue,
+        configurable: true,
+      })
+      el.currentTime = 5.0
+
+      // Simulate metadata loading after a delay
+      setTimeout(() => {
+        durationValue = maxLen
+        el.dispatchEvent(new Event("loadedmetadata"))
+      }, 100)
+    }, maxLength)
+
+    await pauseMediaElements(page)
+
+    expect(await audio.evaluate((el: HTMLAudioElement) => el.paused)).toBe(true)
+    expect(await audio.evaluate((el: HTMLAudioElement) => el.currentTime)).toBeCloseTo(maxLength)
   })
 
   test("does not affect non-media elements", async ({ page }) => {

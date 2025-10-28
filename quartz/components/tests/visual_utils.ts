@@ -373,22 +373,46 @@ export async function search(page: Page, term: string) {
 // skipcq: JS-0098
 export async function pauseMediaElements(page: Page, scope?: Locator): Promise<void> {
   const mediaScope = scope ?? page
-  const videoPromises = (await mediaScope.locator("video").all()).map((el) =>
-    el.evaluate((n: HTMLVideoElement) => {
-      n.pause()
-      n.currentTime = 0
-    }),
-  )
-  const audioPromises = (await mediaScope.locator("audio").all()).map((el) =>
-    el.evaluate((n: HTMLAudioElement) => {
-      n.pause()
-      if (Number.isFinite(n.duration)) {
-        n.currentTime = n.duration
-      }
-    }),
-  )
 
-  await Promise.all([...videoPromises, ...audioPromises])
+  const pauseMedia = async (
+    selector: "video" | "audio",
+    seekTo: "start" | "end",
+  ): Promise<void> => {
+    const elements = await mediaScope.locator(selector).all()
+    const promises = elements.map((el) =>
+      el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
+        media.pause()
+
+        const targetTime = target === "start" ? 0 : media.duration
+
+        // If duration already available, seek immediately
+        if (Number.isFinite(targetTime)) {
+          media.currentTime = targetTime
+          return Promise.resolve()
+        }
+
+        // Wait for metadata with timeout fallback
+        return Promise.race([
+          new Promise<void>((resolve) => {
+            media.addEventListener(
+              "loadedmetadata",
+              () => {
+                const time = target === "start" ? 0 : media.duration
+                if (Number.isFinite(time)) media.currentTime = time
+                resolve()
+              },
+              { once: true },
+            )
+            if (media.readyState < 1) media.load()
+          }),
+          new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+        ])
+      }, seekTo),
+    )
+    await Promise.all(promises)
+  }
+
+  await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
 }
 
 /**
