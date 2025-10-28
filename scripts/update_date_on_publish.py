@@ -126,8 +126,13 @@ COPYRIGHT_PATTERN = re.compile(
 )
 
 
-def update_readme_copyright_year(current_datetime: datetime) -> None:
-    """Update the copyright year in README.md if necessary."""
+def update_readme_copyright_year(current_datetime: datetime) -> bool:
+    """
+    Update the copyright year in README.md if necessary.
+
+    Returns:
+        bool: True if README was modified, False otherwise
+    """
     if not _README_PATH.exists():
         raise FileNotFoundError(f"README.md not found at {_README_PATH}")
 
@@ -141,7 +146,7 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
 
     readme_end_year = match.group("end_year")
     if readme_end_year == current_year:
-        return
+        return False
 
     print(
         f"Updating copyright year in {_README_PATH} "
@@ -152,6 +157,7 @@ def update_readme_copyright_year(current_datetime: datetime) -> None:
         rf"© {readme_start_year}-{current_year}", readme_content
     )
     _README_PATH.write_text(new_readme_content, encoding="utf-8")
+    return True
 
 
 # pylint: disable=missing-function-docstring
@@ -169,6 +175,7 @@ def main(content_dir: Path = Path("website_content")) -> None:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "website_content" in current directory.
     """
+    files_modified = False
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
         if not metadata and not content:
@@ -191,9 +198,11 @@ def main(content_dir: Path = Path("website_content")) -> None:
         if metadata != original_metadata:
             print(f"Updated date information on {md_file_path}")
             write_to_yaml(md_file_path, metadata, content)
+            files_modified = True
 
-    update_readme_copyright_year(now)
-    commit_changes("chore: update publish dates")
+    readme_modified = update_readme_copyright_year(now)
+    if files_modified or readme_modified:
+        commit_changes("chore: update publish dates")
 
 
 if __name__ == "__main__":

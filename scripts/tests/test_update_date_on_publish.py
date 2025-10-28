@@ -752,3 +752,44 @@ def test_commit_changes():
             call(["git", "commit", "-m", test_message], check=True),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)
+
+
+def test_main_no_changes_no_commit(temp_content_dir, mock_datetime, mock_git):
+    """Test that main doesn't commit when no files are modified."""
+    initial_date = create_timestamp(datetime(2024, 1, 1))
+    files = [
+        (
+            "existing1.md",
+            {
+                "title": "Post 1",
+                "date_published": initial_date,
+                "date_updated": initial_date,
+            },
+        ),
+        (
+            "existing2.md",
+            {
+                "title": "Post 2",
+                "date_published": initial_date,
+                "date_updated": initial_date,
+            },
+        ),
+    ]
+
+    for filename, metadata in files:
+        create_markdown_file(
+            temp_content_dir / filename,
+            frontmatter=metadata,
+            content="Test content",
+        )
+
+    with (
+        patch("subprocess.check_output", side_effect=mock_git()),
+        patch("scripts.update_date_on_publish.commit_changes") as mock_commit,
+        patch(
+            "scripts.update_date_on_publish.update_readme_copyright_year",
+            return_value=False,
+        ),
+    ):
+        update_lib.main(temp_content_dir)
+        mock_commit.assert_not_called()
