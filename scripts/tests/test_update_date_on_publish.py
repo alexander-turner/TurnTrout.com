@@ -260,14 +260,10 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
             content="Test content",
         )
 
-    with (
-        patch(
-            "subprocess.check_output", side_effect=mock_git(["modified.md"])
-        ),
-        patch("scripts.update_date_on_publish.commit_changes") as mock_commit,
+    with patch(
+        "subprocess.check_output", side_effect=mock_git(["modified.md"])
     ):
         update_lib.main(temp_content_dir)
-        mock_commit.assert_called_once()
 
     expected_new_date = create_timestamp(datetime(2024, 2, 1))
     for filename, _ in files:
@@ -596,7 +592,6 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     with (
         patch.object(Path, "glob", mock_glob),
         patch("subprocess.check_output", side_effect=mock_git()),
-        patch("scripts.update_date_on_publish.commit_changes"),
     ):
         update_lib.main()
 
@@ -633,7 +628,6 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
         patch("scripts.utils.split_yaml", side_effect=mock_split_yaml),
         patch("subprocess.check_output", side_effect=mock_git()),
         patch.object(update_lib, "write_to_yaml") as mock_write,
-        patch("scripts.update_date_on_publish.commit_changes"),
     ):
         update_lib.main(temp_content_dir)
         # Assert write was called once (for the valid file), not twice
@@ -754,8 +748,10 @@ def test_commit_changes():
         mock_run.assert_has_calls(expected_calls, any_order=False)
 
 
-def test_main_no_changes_no_commit(temp_content_dir, mock_datetime, mock_git):
-    """Test that main doesn't commit when no files are modified."""
+def test_main_no_changes_no_modifications(
+    temp_content_dir, mock_datetime, mock_git
+):
+    """Test that main doesn't modify files when no changes are needed."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
     files = [
         (
@@ -783,13 +779,22 @@ def test_main_no_changes_no_commit(temp_content_dir, mock_datetime, mock_git):
             content="Test content",
         )
 
+    # Get initial file modification times
+    initial_mtimes = {
+        f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")
+    }
+
     with (
         patch("subprocess.check_output", side_effect=mock_git()),
-        patch("scripts.update_date_on_publish.commit_changes") as mock_commit,
         patch(
             "scripts.update_date_on_publish.update_readme_copyright_year",
             return_value=False,
         ),
     ):
         update_lib.main(temp_content_dir)
-        mock_commit.assert_not_called()
+
+    # Check that files weren't modified
+    final_mtimes = {
+        f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")
+    }
+    assert initial_mtimes == final_mtimes

@@ -175,7 +175,6 @@ def main(content_dir: Path = Path("website_content")) -> None:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "website_content" in current directory.
     """
-    files_modified = False
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
         if not metadata and not content:
@@ -198,11 +197,8 @@ def main(content_dir: Path = Path("website_content")) -> None:
         if metadata != original_metadata:
             print(f"Updated date information on {md_file_path}")
             write_to_yaml(md_file_path, metadata, content)
-            files_modified = True
 
-    readme_modified = update_readme_copyright_year(now)
-    if files_modified or readme_modified:
-        commit_changes("chore: update publish dates")
+    update_readme_copyright_year(now)
 
 
 if __name__ == "__main__":
