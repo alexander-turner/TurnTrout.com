@@ -18,7 +18,8 @@ def temp_dir():
 
 @pytest.fixture()
 def git_repo_setup(tmp_path: Path):
-    """Initialize a temporary git repository and return its root Path.
+    """
+    Initialize a temporary git repository and return its root Path.
 
     Many integration tests need a valid git repository to satisfy helper
     functions which call *git* under-the-hood (e.g. *get_git_root*).
@@ -29,7 +30,8 @@ def git_repo_setup(tmp_path: Path):
 
 @pytest.fixture()
 def quartz_project_structure(tmp_path: Path):
-    """Create a minimal Quartz directory layout under *tmp_path*.
+    """
+    Create a minimal Quartz directory layout under *tmp_path*.
 
     The structure mirrors the directories expected by many scripts:
     ├── public/
@@ -48,7 +50,8 @@ def quartz_project_structure(tmp_path: Path):
 
 @pytest.fixture()
 def quartz_dirs(mock_git_root: Path) -> tuple[Path, Path]:
-    """Create and return standard quartz static and content directories.
+    """
+    Create and return standard quartz static and content directories.
 
     Returns:
         Tuple of (static_dir, content_dir) paths.
@@ -62,7 +65,8 @@ def quartz_dirs(mock_git_root: Path) -> tuple[Path, Path]:
 
 @pytest.fixture()
 def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
-    """Mock git root with initialized repo and mocked git.Repo.
+    """
+    Mock git root with initialized repo and mocked git.Repo.
 
     This fixture creates a temporary directory structure that mimics
     the project root and mocks both git.Repo and get_git_root() to
@@ -89,7 +93,8 @@ def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
 
 @pytest.fixture()
 def git_initialized_dir(tmp_path: Path) -> dict[str, Any]:
-    """Initialize a git repository with basic config in tmp_path.
+    """
+    Initialize a git repository with basic config in tmp_path.
 
     Creates a git repository with user.name and user.email configured,
     ready for commits.
@@ -112,7 +117,8 @@ def git_initialized_dir(tmp_path: Path) -> dict[str, Any]:
 
 @pytest.fixture()
 def mock_r2_upload_module():
-    """Mock the r2_upload module for tests that don't need real R2 operations.
+    """
+    Mock the r2_upload module for tests that don't need real R2 operations.
 
     This fixture patches sys.modules to provide a mock r2_upload module,
     preventing actual R2/rclone operations during tests.
@@ -123,7 +129,8 @@ def mock_r2_upload_module():
 
 @pytest.fixture()
 def mock_subprocess_run():
-    """Mock subprocess.run for tests that don't need real command execution.
+    """
+    Mock subprocess.run for tests that don't need real command execution.
 
     Returns a mock that simulates successful command completion by default.
     Tests can customize the mock's return value as needed.
@@ -135,10 +142,11 @@ def mock_subprocess_run():
 
 @pytest.fixture()
 def mock_rclone():
-    """Mock rclone subprocess calls with successful return codes.
+    """
+    Mock rclone subprocess calls with successful return codes.
 
-    Useful for tests involving R2 upload operations that should not
-    actually interact with cloud storage.
+    Useful for tests involving R2 upload operations that should not actually
+    interact with cloud storage.
     """
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0)

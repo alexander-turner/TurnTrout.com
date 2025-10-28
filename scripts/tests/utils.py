@@ -202,7 +202,8 @@ def create_markdown_file(
     frontmatter: dict[str, Any] | None = None,
     content: str = "# Test",
 ) -> Path:
-    """Create a markdown file with YAML front-matter.
+    """
+    Create a markdown file with YAML front-matter.
 
     Args:
         path: Destination *Path*.
@@ -329,7 +330,8 @@ def _get_gif_frame_rate(gif_path: Path) -> float:
 def run_shell_command(
     script_path: Path, *args: str, shell: str = "fish"
 ) -> subprocess.CompletedProcess:
-    """Execute a shell script with the specified shell interpreter.
+    """
+    Execute a shell script with the specified shell interpreter.
 
     Args:
         script_path: Path to the script to execute.
@@ -346,7 +348,8 @@ def run_shell_command(
 
 
 def create_timestamp(dt: datetime) -> TimeStamp:
-    """Convert a datetime object to a ruamel.yaml TimeStamp.
+    """
+    Convert a datetime object to a ruamel.yaml TimeStamp.
 
     Args:
         dt: The datetime to convert.
@@ -364,7 +367,8 @@ def setup_git_repo_with_files(
     configure_user: bool = True,
     initial_commit: bool = True,
 ) -> git.Repo:
-    """Create a git repository with specified markdown files.
+    """
+    Create a git repository with specified markdown files.
 
     Args:
         tmp_path: Base directory for the repository.

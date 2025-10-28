@@ -306,13 +306,15 @@ def _append_canary_matches(
     Check if element text contains canary phrases and add to results.
 
     Args:
-        check_text: Text to check for patterns (may contain placeholders for code).
+        check_text: Text to check for patterns
+            (may contain placeholders for code).
             This preserves text positions to avoid false positives when code
             appears before patterns like ": ".
-        lst: List to append problematic text to
+        lst: List to append problematic text to.
         report_text: Optional text to report in error messages (without placeholders).
-            If None, check_text is reported. Use this to show clean text without
-            code placeholder characters in error output.
+            If None, check_text is reported. Use this to
+            show clean text without code placeholder characters
+            in error output.
     """
     stripped_check = check_text.strip()
     if not stripped_check:

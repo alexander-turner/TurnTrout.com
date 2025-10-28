@@ -2493,8 +2493,8 @@ def test_check_favicon_parent_elements(html, expected):
 def test_check_root_files_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
 ):
-    """Test the check_root_files_location function with various file
-    structures for both robots.txt and favicon.ico."""
+    """Test the check_root_files_location function with various file structures
+    for both robots.txt and favicon.ico."""
     # Create the test files
     for file_path in file_structure:
         full_path = tmp_path / file_path
@@ -4236,7 +4236,8 @@ description: Test description
     ],
 )
 def test_check_metadata_matches(tmp_path, html_content, md_content, expected):
-    """Test the check_metadata_matches function with various metadata scenarios."""
+    """Test the check_metadata_matches function with various metadata
+    scenarios."""
     # Create markdown file
     md_file = tmp_path / "test.md"
     md_file.write_text(md_content, encoding="utf-8")
@@ -4281,7 +4282,8 @@ tags: [test]
 
 
 def test_check_metadata_matches_with_nonexistent_md_file(tmp_path):
-    """Test that check_metadata_matches handles non-existent markdown files gracefully."""
+    """Test that check_metadata_matches handles non-existent markdown files
+    gracefully."""
     html_content = """
     <html>
     <head>
