@@ -17,9 +17,23 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 ---
-As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide is appropriate for people at high risk, like opposition politicians, immigrants, and investigative journalists.
+As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide seems most appropriate for people at higher risk, like opposition politicians, immigrants, and investigative journalists. However, the Trump regime gives little respect to legal boundaries. I think everyone should gear up for the potentially darker days ahead.
 
 ![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
+
+> [!info]  I'm only speaking for myself
+>  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views.
+
+# Overview
+
+Don't try to do everything at once. As in the first article, even a few hours can dramatically boost your privacy. If you're short on money, then you can skip the hardware replacement recommendations.
+
+| **Section focus** | **Time for section** | **Cost of section** | **Benefits** |
+| :--- | :--- | :--- | :--- |
+| **Harden your hardware** | 12 hours + 20 hours if switching to Linux | $750+ | Secures your physical devices from surveillance and some direct attacks. |
+| **Secure your digital footprint** | ~2 hours | ~$15/month | Minimizes the trail of personal data linked to your real identity online. |
+| **Advanced mobile & travel security** | ~1 hour | $0 | Protects your data and devices from seizure, surveillance, and location-based attacks, especially when mobile. |
+| **Long-term strategic shifts** | Ongoing | Variable | Builds personal and communal resilience against surveillance. |
 
 # New concepts
 
@@ -139,9 +153,28 @@ However, if the "lock" is not a password but merely a biometric, the legal water
 
 - [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
 
+## Minimize "centralized" notifications
+
+Subtitle: Time: 10 minutes.
+
+For most mainstream applications, the government can see exactly what notifications you get, when, and what app the notification is for. This information amounts to a detailed picture of what you're doing, when, and maybe even who you're talking to.
+
+> [!quote] [A letter from Senator Wyden to former Attorney General Garland](https://www.wyden.senate.gov/imo/media/doc/wyden_smartphone_push_notification_surveillance_letter.pdf)
+> \[Push notifications\] aren't sent directly from the app provider to users’ smartphones. Instead, they pass through a kind of digital post office run by the phone's operating system provider. For iPhones, this service is provided by Apple's Push Notification Service; for Android phones, it's Google's Firebase Cloud Messaging.
+>
+> These services ensure timely and efficient delivery of notifications, but this also means that Apple and Google serve as intermediaries in the transmission process. As with all of the other information these companies store for or about their users, because Apple and Google deliver push notification data, they can be secretly compelled by governments to hand over this information.
+
+- [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-declutter).
+- [ ] On Android, prefer apps on the F-Droid app store. Almost all of these apps send notifications independently. Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
+
 ## Disable 2G to avoid "stingray" attacks
 
 Stingray attacks use a machine which pretends to be a fake "cell tower" with super strong signal. Your phone switches to the "cell tower" because the signal seems stronger. Then the machine tricks your phone into downgrading to a 2G connection. At that point, criminals and/or police make your phone basically admit who you are. They do this to everyone within half a kilometer.
+
+> [!quote] [How ICE Is Using Fake Cell Towers To Spy On People’s Phones](https://www.forbes.com/sites/the-wiretap/2025/09/09/how-ice-is-using-fake-cell-towers-to-spy-on-peoples-phones/)
+> Despite having been [criticized by civil rights groups](https://www.aclu.org/news/privacy-technology/ice-using-powerful-stingray-surveillance-devices) for using Stingrays during the last Trump administration, ICE continues to use the technology. Earlier this year, new media publication [Straight Arrow News](https://san.com/cc/exclusive-evidence-of-cell-phone-surveillance-detected-at-anti-ice-protest/) said it had analysed “mobile network anomalies” around a Washington state protest against ICE raids that were consistent with Stingray use.
+>
+> Forbes found contract records showing ICE purchased nearly $1 million worth of “cell site simulator vehicles” in May this year, indicating it’s taking the surveillance tool fully mobile. That was part of a contract first signed under the Biden administration in 2024.
 
 Stingrays can pick up metadata from plain old texts and calls. Avoid by [using Signal](#use-signal-over-facebook-messenger-whatsapp-texting-or-phone-calls) -- it's E2EE, so they would just be "intercepting" nonsense ciphertext. I think the only way to avoid being located at all is to enable airplane mode or to even use a Faraday cage to shield your phone from all radio signals.
 
@@ -158,7 +191,8 @@ Android
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
 
-In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
+> [!info]- Tracking stingray usage
+> In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)
 
 ## Keep emergency cash reserves
 
@@ -589,6 +623,8 @@ Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
 Apparently many security camera solutions are horrible for privacy. Make sure you're either keeping your videos local or that the video is encrypted so that only you can decrypt it. [Reolink](https://reolink.com/) seems good and is compatible with Home Assistant!
 
 ## US government watches immigrant speech on social media
+
+Assume that all social media activity is monitored by [ICE's Homeland Security Investigations teams, who maintain dedicated personnel for social media surveillance](https://www.wired.com/story/ice-social-media-surveillance-24-7-contract/).
 
 > [!quote] [EFF to Department Homeland Security: No Social Media Surveillance of Immigrants](https://www.eff.org/deeplinks/2025/06/eff-department-homeland-security-no-social-media-surveillance-immigrants)
 > EFF submitted comments to the Department of Homeland Security (DHS) and its subcomponent U.S. Citizenship and Immigration Services (USCIS), urging them to abandon a proposal to collect social media identifiers on forms for immigration benefits. This collection would mark yet a further expansion of the government’s efforts to subject immigrants to social media surveillance, invading their privacy and chilling their free speech and associational rights for fear of being denied key immigration benefits.

@@ -5670,5 +5670,17 @@
   "/static/images/external-favicons/unicog_org.png": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/anytype_io.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/san_com.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/san_com.avif": {
+    "width": 64,
+    "height": 64
   }
 }

@@ -41,7 +41,7 @@ This story isn't an isolated incident: ProPublica [found that "more than 170 US 
 > >
 > > The Democrat Party does not fight for, care about, or represent American citizens. It is an entity devoted *exclusively* to the defense of hardened criminals, gangbangers, and illegal alien killers and terrorists. The Democrat Party is not a political party. It is a domestic extremist organization.
 >
->   Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not legally a classification). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
+>   Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not a legal classification, and "antifa" is not a specific organization). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
 >
 > The order put the FBI's Joint Terrorism Task Force in the lead and directed the Treasury Department ["to identify and disrupt financial networks that fund domestic terrorism and political violence,"](https://www.opb.org/article/2025/09/25/trump-orders-crackdown-domestic-terrorists/) naming Democratic donors George Soros and Reid Hoffman as potential targets (without providing evidence).
 >
@@ -52,7 +52,7 @@ This story isn't an isolated incident: ProPublica [found that "more than 170 US 
 > >
 > > It's a war from within.
 >
-> On October 8th, 2025, Trump [posted](https://www.nbcnews.com/politics/white-house/trump-says-gov-jb-pritzker-chicago-mayor-brandon-johnson-jail-rcna236339) that Chicago Mayor Brandon Johnson and Illinois Governor JB Pritzker "should be in jail for failing to protect Ice Officers!" When pressed by reporters about what crimes he believed they had committed, Trump said "I've seen the law" and doubled down on his call for their imprisonment.
+> On October 8th, 2025, Trump [posted](https://www.nbcnews.com/politics/white-house/trump-says-gov-jb-pritzker-chicago-mayor-brandon-johnson-jail-rcna236339) that Chicago Mayor Brandon Johnson and Illinois Governor JB Pritzker "should be in jail for failing to protect Ice Officers!". When pressed by reporters about what crimes he believed they had committed, Trump said "I've seen the law" and doubled down on his call for their imprisonment.
 >
 > Trump labels his opposition as terrorists, targets political ideologies through executive orders, and tells his generals to prepare to go to war inside our own country. Sooner or later, you might become an "enemy from within."
 >
@@ -232,14 +232,14 @@ When you browse the internet, you send your ISP a list of sites you're browsing.
 
 US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific pages you visit or what you search for on encrypted sites, they can still see:
 
-- Which domains you visit (e.g. `google.com`)
-- When and how often you visit them
-- How long you spend on each site
-- Your full browsing activity on the sites that still don't use HTTPS
+- Which domains you visit (e.g. `google.com`),
+- When and how often you visit them,
+- How long you spend on each site, and
+- Your full browsing activity on the sites that still don't use HTTPS.
 
-The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing even this domain-level information, as all your traffic is encrypted before it reaches the ISP.
+The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing this information, since all your traffic is encrypted before it reaches the ISP.
 
-I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for a year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
+I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for one year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encrypt-your-data), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
@@ -455,17 +455,15 @@ I was using Google Drive and iCloud Drive. Neither are open source, and Google D
 - [ ] [Install Proton Drive](https://proton.me/drive/download).
 - [ ] Migrate your existing files to Proton Drive.
 
-## Take notes with Standard Notes instead of Notion or Roam
+## Take notes with Anytype instead of Notion or Roam
 
 Subtitle: Time: 20 minutes.
 
-Standard Notes is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched.
+Anytype is open source and E2EE. Great for managing your private thoughts and notes without harboring a small fear of being watched. Disclaimer: I haven't used it myself, but would if I wanted something Notion-like. 
 
 That said, I use [Obsidian](https://obsidian.md), and if you do, you're fine staying put. While not open source, Obsidian's syncing service is [verifiably E2EE](https://obsidian.md/blog/verify-obsidian-sync-encryption/). Obsidian claims that the app does not collect personal data or track users by default. To be sure, you can use an open source firewall like [LuLu](https://objective-see.org/products/lulu.html) (Mac) or [Open Snitch](https://github.com/evilsocket/opensnitch) (Linux) to block Obsidian from using the internet.
 
-- [ ] If using software like Notion, [export your files to Markdown](https://help.obsidian.md/plugins/importer) using Obsidian's guides.
-- [ ] [Download Standard Notes.](https://standardnotes.com/)
-- [ ] [Import your files into Standard Notes](https://standardnotes.com/tools).
+- [ ] [Download Anytype](https://anytype.io/) and import any existing notes you have.
 
 ## Store your photos in Ente
 
