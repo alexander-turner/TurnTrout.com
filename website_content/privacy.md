@@ -46,11 +46,13 @@ This story isn't an isolated incident: ProPublica [found that "more than 170 US 
 > The order put the FBI's Joint Terrorism Task Force in the lead and directed the Treasury Department ["to identify and disrupt financial networks that fund domestic terrorism and political violence,"](https://www.opb.org/article/2025/09/25/trump-orders-crackdown-domestic-terrorists/) naming Democratic donors George Soros and Reid Hoffman as potential targets (without providing evidence).
 >
 > > [!quote] [Trump's address to 800 senior military leaders at Marine Corps Base Quantico](https://www.aljazeera.com/news/2025/9/30/key-takeaways-from-trumps-speech-to-us-military-generals)
+<!-- vale off -->
 > > This is going to be a big thing for the people in this room, because it's the enemy from within, and we have to handle it before it gets out of control. It won't get out of control once you're involved at all. We're under invasion from within. No different than a foreign enemy, but more difficult in many ways because they don't wear uniforms.
 > >
 > > In our inner cities—which we're going to be talking about because it's a big part of war now. It's a big part of war. San Francisco, Chicago, New York, Los Angeles. They're very unsafe places. And we're gonna straighten them out one-by-one. This is gonna be a major part for some of the people in this room. It's a war, too.
 > >
 > > It's a war from within.
+<!-- vale on -->
 >
 > On October 8th, 2025, Trump [posted](https://www.nbcnews.com/politics/white-house/trump-says-gov-jb-pritzker-chicago-mayor-brandon-johnson-jail-rcna236339) that Chicago Mayor Brandon Johnson and Illinois Governor JB Pritzker "should be in jail for failing to protect Ice Officers!". When pressed by reporters about what crimes he believed they had committed, Trump said "I've seen the law" and doubled down on his call for their imprisonment.
 >
@@ -90,11 +92,13 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 > [!quote] [Digital Threat Modeling Under Authoritarianism](https://www.schneier.com/blog/archives/2025/09/digital-threat-modeling-under-authoritarianism.html)
 > Subtitle: By Bruce Schneier, famous cybersecurity expert
 >
-> Being innocent won’t protect you.
+<!-- vale off -->
+> Being innocent won't protect you.
 >
 > This is vital to understand. Surveillance systems and sorting algorithms make mistakes. This is apparent in the fact that we are routinely served advertisements for products that don’t interest us at all. Those mistakes are relatively harmless—who cares about a poorly targeted ad?—but a similar mistake at an immigration hearing can get someone deported.
 >
-> An authoritarian government doesn’t care. Mistakes are a feature and not a bug of authoritarian surveillance. If ICE targets only people it can go after legally, then everyone knows whether or not they need to fear ICE. If ICE occasionally makes mistakes by arresting Americans and deporting innocents, then everyone has to fear it. This is by design.
+> An authoritarian government doesn't care. Mistakes are a feature and not a bug of authoritarian surveillance. If ICE targets only people it can go after legally, then everyone knows whether or not they need to fear ICE. If ICE occasionally makes mistakes by arresting Americans and deporting innocents, then everyone has to fear it. This is by design.
+<!-- vale on -->
 
 If you're an immigrant, investigative journalist, or a political figure who opposes Trump, you're at  higher risk and should read both this post and [the sequel](/advanced-privacy). If you lurk and never share political opinions, you're at  lower risk but you should at least do the Quick Start.
 
@@ -578,9 +582,11 @@ Figure: July 2013. I'm in the center, holding the banner.
 > [!quote] [American Dragnet: Data-Driven Deportation in the 21st Century](https://americandragnet.org/)
 > Subtitle: Foreword, May 2025
 >
+<!-- vale off -->
 >
 > When we published *American Dragnet: Data-Driven Deportation in the 21st Century* in 2022, we understood that the surveillance infrastructure our report describes could one day be deployed by an authoritarian executive to coerce and control the U.S. population at scale. We did not anticipate that this day would come within three years. Our hope was that the findings of our research would be useful for the communities organizing against immigration policing and digital surveillance, and would help to provoke policy change.
 >
 > Today, as [masked federal agents abduct students off the street in broad daylight](https://www.cnn.com/2025/03/29/us/rumeysa-ozturk-tufts-university-arrest-saturday/index.html), and [the President scoffs at an order from the Supreme Court to facilitate the return of a man illegally deported to El Salvador](https://abcnews.go.com/US/timeline-wrongful-deportation-kilmar-abrego-garcia-el-salvador/story?id=120803843), and [his administration threatens to suspend habeas corpus](https://www.msnbc.com/rachel-maddow-show/maddowblog/trumps-line-possibly-suspending-habeas-corpus-goes-bad-worse-rcna236649), to hope to be saved by “policy change” would be to indulge in soothing nonsense. It would be vain to hope that the exposure of wrongdoing or the revelation of brutality could rouse the current Congress on behalf of the people.
 >
 > There is, in some sense, nothing left to be revealed or exposed. Or to be more precise, the revelation and exposure of new particulars will not tell us anything more about the nature of the political situation through which we are living. The struggle now is not to uncover the right information, but to rightly understand the meaning of the information we already have, and to face that meaning together.
+<!-- vale on -->

@@ -70,7 +70,7 @@ Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run t
 Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
 
 > [!info] Reminder that I work at Google DeepMind
-> Though I don't think my employment much influenced my recommendations. For what it's worth, before I learned about [the VPN fiasco](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
+> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
 
 I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
@@ -106,7 +106,7 @@ Subtitle: Cost: \$0. Time: 10 hours?
 
 For years, I dithered about switching away from Windows. Windows was all I knew.  But now that I've switched, I'm glad I did. Microsoft Windows operates on a misaligned business model that extracts data, annoys you, and fundamentally doesn't respect you.
 
-Windows leaks your data like water through someone's hands... after they've fully opened their hands, that is! Honestly, Windows is a pain in the ass. Even though it's what I grew up with, after spending a few years away, I'm so glad I don't have to deal with it anymore. Doubly so considering how Microsoft pushed out Windows 11 to force [millions of consumers  replace millions of computers which work just fine with Windows 10](https://www.tomshardware.com/software/windows/microsofts-draconian-windows-11-restrictions-will-send-an-estimated-240-million-pcs-to-the-landfill-when-windows-10-hits-end-of-life-in-2025).
+Windows leaks your data like water through someone's hands... after they've fully opened their hands, that is! Honestly, Windows is so frustrating. Even though it's what I grew up with, after spending a few years away, I'm so glad I don't have to deal with it anymore. Doubly so considering how Microsoft pushed out Windows 11 to force [millions of consumers  replace millions of computers which work just fine with Windows 10](https://www.tomshardware.com/software/windows/microsofts-draconian-windows-11-restrictions-will-send-an-estimated-240-million-pcs-to-the-landfill-when-windows-10-hits-end-of-life-in-2025).
 
 More specifically, Windows sends out so much information about you via so-called telemetry, which Microsoft makes extremely hard to disable.  Compared to iOS and Linux, Windows is far more vulnerable to viruses and ransomware. The user experience also just sucks.  You don't have control over what's happening and your system might just restart on you whenever it pleases.
 
@@ -225,7 +225,7 @@ If you use aliases, you make it harder for scammers and surveillance to track yo
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
 
-- [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate e-mail aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
+- [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate email aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
 [^premium]: If you've purchased Proton Unlimited as [recommended](#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
 
@@ -312,7 +312,7 @@ I use Gemini the most. If I trust Google to delete data promptly (and I do), the
 > [!question]- Technical question: Why can't LLM conversations be E2EE?
 > This brings us to a set of techniques under the umbrella of [_fully homomorphic encryption_](https://en.wikipedia.org/wiki/Homomorphic_encryption) (FHE). If you homomorphically encrypt your data, then the model can "digest" that data and spit out (encrypted) answers --  without being able to decode what your data mean.
 >
-> There are several issues. First, as of October 2025, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
+> Several issues arise. First, as of October 2025, no one knows how to run models on FHE data without significant slowdowns. Second, FHE makes LLM tool calls difficult and LLM web searches impossible. Third, if the leading model providers did this, they wouldn't have visibility into potential misuse of their models.
 
 ## Track TODOs with Lunatask
 
@@ -455,7 +455,7 @@ iOS
 
 In the USA, my understanding is that [the DHS cannot compel an American citizen to unlock a password-locked device](https://reason.com/2025/04/04/what-to-do-if-border-police-ask-to-search-your-phone/?nab=0).  If you say "no", however, they might keep your device for a while and try to crack it on their own. If you're not a citizen, the rules are different. You should read more elsewhere.
 
-However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. In a pinch, modern phones also enable this if you hold down the screen-power and volume-up buttons.
+However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. Alternatively, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
 - [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
 
@@ -531,7 +531,7 @@ Securing even one of these timely improvements would be a _significant win for p
 >    1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing.
 >    2. Implement a per-device and per-account rate limit that is sufficient for legitimate location lookups but too low for mass data harvesting.
 >    3. Require queries to be tied to an authenticated Apple ID to allow Apple to ban abusive users.
->    4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but very powerful adversaries."
+>    4. Follow Google's model of requiring an API key and charging a small fee for queries. The cost of a global scan would be "prohibitively expensive for all but powerful adversaries."
 > 4. **Add a toggle to [disable the 2G radio](#disable-2g-to-avoid-stingray-attacks)** without having to enter lockdown mode. Safeguard user privacy by _defaulting_ to e.g. "2G off (except emergency calls)". It doesn't make sense to be in the middle of strong 5G service but _still_ be open to 2G (and thus to stingrays).
 > 5. **Fix [the AirDrop vulnerability](#ios-disable-airdrop) originally reported in 2019**. Security researchers have even developed a secure open source solution: ["PrivateDrop."](https://privatedrop.github.io/)
 
