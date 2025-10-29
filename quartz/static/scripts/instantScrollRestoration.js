@@ -139,6 +139,16 @@
       window.addEventListener(event, markInteraction, { passive: true, once: true })
     }
 
+    // Track if we've already seen an unexplained large drift so we can allow one
+    // correction attempt before treating it as user input. This helps Safari, which can
+    // briefly jump by a large amount while layout settles after reload.
+    let largeDriftDetected = false
+    const cancelMonitoringDueToUser = () => {
+      userHasScrolled = true
+      console.debug("[InstantScrollRestoration] User scroll detected, canceling layout monitoring")
+      window.removeEventListener("scroll", scrollHandler, { passive: true })
+    }
+
     // Scroll handler for monitoring drift
     const scrollHandler = () => {
       if (programmaticScroll) return
@@ -146,18 +156,30 @@
       const currentScroll = window.scrollY
 
       // Determine if this scroll likely originates from the user. Explicit interaction
-      // (wheel/touch/pointer/keyboard) is a strong signal, but very large deltas are
-      // also unlikely to stem from subtle layout shifts. Treat either case as user
-      // input and cancel monitoring. Small/medium deltas without interaction are
-      // handled as layout drift and corrected.
+      // (wheel/touch/pointer/keyboard) is a strong signal. In addition, repeated large
+      // deltas without any recorded interaction are treated as user input, but the first
+      // occurrence is forgiven to allow layout drift correction on Safari.
       const delta = Math.abs(currentScroll - targetPos)
+      const SMALL_DELTA_THRESHOLD = 10 // px
       const LARGE_DELTA_THRESHOLD = 60 // px
-      if (delta > 10 && (userInteracted || delta > LARGE_DELTA_THRESHOLD)) {
-        userHasScrolled = true
-        console.debug(
-          "[InstantScrollRestoration] User scroll detected, canceling layout monitoring",
-        )
-        window.removeEventListener("scroll", scrollHandler, { passive: true })
+
+      if (delta <= SMALL_DELTA_THRESHOLD) {
+        largeDriftDetected = false
+        return
+      }
+
+      if (userInteracted) {
+        cancelMonitoringDueToUser()
+        return
+      }
+
+      if (delta > LARGE_DELTA_THRESHOLD) {
+        if (largeDriftDetected) {
+          cancelMonitoringDueToUser()
+        } else {
+          // Only set the flag if we haven't seen a large drift yet
+          largeDriftDetected = true
+        }
       }
     }
 

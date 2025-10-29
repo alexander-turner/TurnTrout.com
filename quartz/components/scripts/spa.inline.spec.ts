@@ -12,7 +12,6 @@ import { type Page, test, expect } from "@playwright/test"
 import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
-const FIREFOX_SCROLL_DELAY = 2000
 const TIGHT_SCROLL_TOLERANCE = 10
 
 /*
@@ -38,6 +37,28 @@ async function waitForHistoryScrollNotEquals(
   await page.waitForFunction((initial) => {
     return window.history.state?.scroll !== initial
   }, initialScroll)
+}
+
+/**
+ * Waits for hash navigation to complete and scroll position to be saved to history state.
+ * More reliable than fixed timeouts for cross-browser compatibility.
+ */
+async function waitForHashScrollComplete(page: Page): Promise<void> {
+  // Wait for scroll to be saved to history (debounced by 100ms)
+  await page.waitForFunction(() => {
+    return (
+      window.history.state &&
+      typeof window.history.state.scroll === "number" &&
+      window.history.state.scroll > 0
+    )
+  })
+
+  // Wait for scroll position to stabilize (no changes between checks)
+  await page.waitForFunction(() => {
+    if (!window.history.state?.scroll) return false
+    const stablePos = window.history.state.scroll
+    return Math.abs(window.scrollY - stablePos) < 5
+  })
 }
 
 /*
@@ -236,10 +257,8 @@ test.describe("Scroll Behavior", () => {
         waitUntil: "domcontentloaded",
       })
 
-      // Wait so that we don't race in Firefox
-      // IIRC I tried alternatives like waitForFunction, but it didn't work
-      // eslint-disable-next-line playwright/no-wait-for-timeout
-      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
+      // Wait for hash scroll to complete and be saved to history
+      await waitForHashScrollComplete(page)
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
       await waitForScroll(page, scrollPos)
       await waitForHistoryState(page, scrollPos)
@@ -439,14 +458,18 @@ test.describe("Same-page navigation", () => {
         waitUntil: "domcontentloaded",
       })
 
-      // Firefox will error without waiting for scroll to complete
+      // Wait for scroll to complete and stabilize
       const previousScroll =
         // eslint-disable-next-line playwright/no-conditional-in-test
         scrollPositions.length > 0 ? scrollPositions[scrollPositions.length - 1] : 0
-      await waitForHistoryScrollNotEquals(page, previousScroll)
 
-      // eslint-disable-next-line playwright/no-wait-for-timeout
-      await page.waitForTimeout(FIREFOX_SCROLL_DELAY)
+      await page.waitForFunction((prevScroll) => {
+        // Ensure history state has a new scroll value different from previous
+        if (!window.history.state?.scroll) return false
+        if (window.history.state.scroll === prevScroll) return false
+        // Ensure actual scroll position matches history state (scroll complete)
+        return Math.abs(window.scrollY - window.history.state.scroll) < 5
+      }, previousScroll)
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
