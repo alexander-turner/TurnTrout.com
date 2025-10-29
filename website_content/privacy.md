@@ -29,7 +29,7 @@ date_updated: 2025-10-28 12:51:10.152646
 >
 > Subtitle: By George Retes, Iraq war veteran
 >
-> <img class="float-right" src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780px " height="572" style="margin-top: -.25rem; margin-bottom: -.5rem;" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;">
+> <img class="float-right" src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780px " height="572" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;">
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
@@ -37,7 +37,7 @@ date_updated: 2025-10-28 12:51:10.152646
 
 [^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-George's story isn't an isolated incident: ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
+George's story isn't an isolated incident. ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
@@ -116,7 +116,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
 > [!warning] Not sufficient for people at high risk of *targeted* surveillance
-> In addition to reading this guide and [the more advanced sequel](/advanced-privacy), also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios). If you're going to enter or exit the USA on international travel soon, consider [preparing devices for travel through a US border](https://www.eff.org/deeplinks/2025/06/journalist-security-checklist-preparing-devices-travel-through-us-border).
+> In addition to reading this guide and [the more advanced sequel](/advanced-privacy), also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios).
 
 > [!warning] What information this guide will and won't help you protect
 >   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
