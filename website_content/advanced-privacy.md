@@ -87,7 +87,7 @@ If you're technically comfortable, I recommend buying a [Pixel 9a](https://store
 > [!info] Getting started in GrapheneOS
 > 1. [ ] Download F-Droid using the Vanadium browser. F-Droid is an app store which only carries publicly verified open source applications.
 > 2. [ ] In F-Droid, download the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and more anonymous. When you want to download an app, first check if it's on F-Droid and then check Aurora.
-> 3. [ ] Download Bitwarden and then download ProtonVPN.
+> 3. [ ] Download Bitwarden and then download Proton VPN.
 > 4. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
 > 5. [ ] Download your other apps.
 >        - Be stingy in letting them access the network --- only give them access if they should have it.
@@ -135,7 +135,7 @@ Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via ProtonVPN."
+[Your VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
 
 Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
 
@@ -159,12 +159,12 @@ Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed
 Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
 
 Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
-1. Easy to install your ProtonVPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  Normally, a smart TV would not even be able to use a VPN.
+1. Easy to install your Proton VPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  Normally, a smart TV would not even be able to use a VPN.
 2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
-For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell ProtonVPN to "allow LAN connections."_
+For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell Proton VPN to "allow LAN connections."_
 
-1. [ ] [Set up ProtonVPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
+1. [ ] [Set up Proton VPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
 2. [ ] Exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
     1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
     2. [ ] Navigate to VPN settings,
@@ -675,7 +675,7 @@ I'm scared by what's happening to the country I love. I don't have a full gamepl
 We'll need a lot of both in the coming years.
 
 > [!thanks]
-> Garrett Baker and Joshua Turner gave feedback on drafts of these posts.
+> Garrett Baker and Joshua Turner gave feedback on drafts of these posts. [`fx`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=x6Nuo4hc9tGFsgECw) provided comments which improved the posts.
 
 # Appendix: Precautions which didn't make the cut for the main article
 

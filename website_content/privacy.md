@@ -239,7 +239,7 @@ Subtitle: Time: 5 minutes.
 
 # Privacy basics in 90 minutes
 
-## ProtonVPN stops your internet service provider (ISP) from spying on you
+## Proton VPN stops your internet service provider (ISP) from spying on you
 
 Subtitle: Cost: Free, with recommended upgrade at $13.99/mo. Time: 15 minutes.
 
@@ -263,12 +263,36 @@ US government spy agencies have [broad surveillance powers](https://www.aclu.org
 
 The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing this information, since all your traffic is encrypted before it reaches the ISP.
 
-I recommend downloading [ProtonVPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for one year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
+I recommend downloading [Proton VPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for one year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
+
+> [!info] The ISP won't see which sites you browse, but Proton will
+> To connect to the internet, *some* server needs to figure out where your internet traffic should go. When you don't use a VPN, your ISP handles that. When you do use a VPN, the VPN provider does instead. Therefore, Proton can see what sites you visit.
+>
+> So why use Proton VPN? There are several benefits. Most importantly, your ISP will generally record your activity and funnel it to the government. In contrast, Proton doesn't record your activity, as [verified by independent experts](https://protonvpn.com/blog/no-logs-audit/).
+>
+> > [!quote]- Does Proton VPN keep logs?
+> > In order to respect our users’ privacy, Proton VPN enforces a strict no-logs policy. This means we keep no session usage logs of what you do online, and we do not log metadata that can compromise your privacy.
+>  >  
+>  >  - We don’t log which websites you visit
+>  >  - We don’t log your traffic or the content of any communications
+>  >  - We don’t log your IP address
+>  >  - We don’t log your session lengths
+>  >  - We don’t log or track any location-based information
+>  >
+>  >  This level of privacy is possible in part because we are based in Switzerland, which has some of the strongest data protection and digital privacy laws in the world. Data required for maintenance and troubleshooting purposes is secured using full-disk encryption on all our bare-metal servers, over which we have full control.
+>  >  
+>  >  Full details about the information that we do store (such as account information) are available in our [Privacy Policy](https://protonvpn.com/privacy-policy). Our apps are all [fully open source and independently audited](https://protonvpn.com/blog/open-source/) so that you can be sure they are trustworthy, and we aim for [transparency](https://protonvpn.com/blog/is-protonvpn-trustworthy/) in everything we do.
+>  >  
+>  >  Proton VPN’s Swiss jurisdiction also confers additional benefits which are favorable for VPN services. In most countries, VPNs can be forced to log as the result of government orders, even if they are by default no-logs. However, within the current Swiss legal framework, Proton VPN also does not have forced logging obligations.
+>  >  
+>  >  \[...\]
+>  >  
+>  >  Proton VPN’s strict no-logs policy was tested in a legal case in 2019 where we were ordered to turn over logs to help identify a user and we were unable to comply because such logs did not exist. Our no-logs policy has also been [verified by external independent experts.](https://protonvpn.com/blog/no-logs-audit/)
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encryption-for-your-data-in-4-hours), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
 - [ ] Create a Proton account and store the credentials in your Bitwarden.
-- [ ] [Download and run ProtonVPN](https://protonvpn.com/).
+- [ ] [Download and run Proton VPN](https://protonvpn.com/).
 - In the settings, ensure:
      - [ ] Your VPN always starts along with your device.
      - [ ] Traffic can only go through your VPN (enable the "kill switch").
@@ -277,7 +301,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
 
 > [!tip] Some websites may think you're a bot because many people use the same VPN IP address
-> Compared to other VPNs, I've heard that ProtonVPN is good about not getting you flagged. Consider changing VPN servers in the app if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
+> Compared to other VPNs, I've heard that Proton VPN is good about not getting you flagged. Consider changing VPN servers in the app if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
 >
 ### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
@@ -453,7 +477,7 @@ Subtitle: Time: 30 minutes.
 Centrally hosted mail may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, *the government can make them hand over your emails*.
 
 Proton Mail stores your emails E2EE. Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
-1. [ ] Create or log in to your Proton account (e.g. use the account you made above for ProtonVPN).
+1. [ ] Create or log in to your Proton account (e.g. use the account you made above for Proton VPN).
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new ProtonMail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
@@ -469,7 +493,7 @@ Proton Mail stores your emails E2EE. Proton Mail also screens out creepy trackin
 
 Subtitle: Time: 1 hour. Cost: Nothing if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
 
-I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for ProtonVPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
+I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for Proton VPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
 
 - [ ] Download your existing Drive files
     - [ ] Google
