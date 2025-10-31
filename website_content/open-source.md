@@ -40,7 +40,7 @@ npx quartz build --serve
 
 # Automatic alt text generation
 
-Subtitle: Install with `pip install alt-text-llm`
+Subtitle: Install with `pip install alt-text-llm`.
 
 When I started writing in 2018, I didn't include alt text. Over the years, over 500 un-alt'ed images piled up. These (mostly) aren't simple images of geese or sunsets. Most of my images are technical, from graphs of experimental results to [hand-drawn AI alignment comics](/reframing-impact). Describing these assets was a major slog, so I turned to automation.
 
@@ -60,7 +60,7 @@ If you want to improve accessibility for your content, go ahead and [check out m
 
 # Protect datasets from scrapers
 
-Subtitle: Install with `pip install easy-dataset-share`
+Subtitle: Install with `pip install easy-dataset-share`.
 
 I helped fund this project.
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)

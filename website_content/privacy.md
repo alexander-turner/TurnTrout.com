@@ -29,7 +29,7 @@ date_updated: 2025-10-28 12:51:10.152646
 >
 > Subtitle: By George Retes, Iraq war veteran
 >
-> <img class="float-right" src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780px " height="572" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;">
+> <img class="float-right" src="https://assets.turntrout.com/static/images/posts/privacy-20251026203248.avif" width="780" height="572" alt="A Latino man sits in a driver's seat, door open. He faces the camera at sunset with a field behind him." loading="lazy" style="aspect-ratio:780 / 572;">
 >
 > My wallet with my identification was in the car, but the agents refused to go look and confirm that I was a citizen. Instead, I sat in the dirt with my hands zip-tied with other detainees for four hours. When I was sitting there, I could hear agents asking each other why I had been arrested. They were unsure, but I was taken away and thrown in a jail cell anyway.
 >
@@ -116,7 +116,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 This guide is about protecting yourself, but it's not necessarily about *hiding*. I personally think what's going on right now is horrible and that most citizens should act. At the same time, you should take intelligent risks via intentional public statements -- not avoidable risk because the government spies on your private communications.
 
 > [!warning] Not sufficient for people at high risk of *targeted* surveillance
-> In addition to reading this guide and [the more advanced sequel](/advanced-privacy), also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios).
+> If you're at risk, read this guide and [the more advanced sequel](https://turntrout.com/advanced-privacy) but also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios) and consult a security professional.
 
 > [!warning] What information this guide will and won't help you protect
 >   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
@@ -195,7 +195,7 @@ Subtitle: Time: 5 minutes to install app.
 
 The fast and free upgrade is to prefer authenticator apps over SMS and email.
 
- As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator solves both of these issues.
+ As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator is the answer.
 1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
 
 ## Keep your OS up to date
@@ -277,7 +277,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
 
 > [!tip] Some websites may think you're a bot because many people use the same VPN IP address
-> Compared to other VPNs, I've heard that ProtonVPN is good about avoiding bot detection. Consider changing VPN servers (in the app) if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
+> Compared to other VPNs, I've heard that ProtonVPN is good about not getting you flagged. Consider changing VPN servers in the app if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
 >
 ### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
