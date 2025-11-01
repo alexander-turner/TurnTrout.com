@@ -96,6 +96,7 @@ function countFaviconsInTree(tree: Root): void {
     tree,
     "element",
     (node: Element, _index: number | undefined, parent: Parent | undefined) => {
+      // istanbul ignore next
       if (!parent) return
       if (node.tagName !== "a" || !node.properties.href) {
         return
