@@ -79,7 +79,8 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
    - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-> [!money] This guide is free, but I estimate expected time and money costs to set up equipment and services
+> [!money] This guide is free
+> In the following table, I estimate the cost of purchasing the *equipment and services* recommended in the different tiers of the guide.
 
    | **Tier**               | **Time for tier** | **Anticipated cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
@@ -134,7 +135,7 @@ This guide is about protecting yourself, but it's not necessarily about *hiding*
 
 # Open source and encryption are your friends
 
-This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists which list the "top 10" password managers. I'll tell you what to use.
+This article will assume less computer science background than most of my articles do, and that's because I'm writing for friends and family. I'll give concrete, specific, and immediately actionable recommendations. For example, no decision paralysis from waffle-y lists of the "top 10" password managers. I'll tell you what to use.
 
 I've structured my recommendations around two key principles.
 
@@ -144,7 +145,7 @@ Open source code
 :  Open source programs are usually free as well!
 
 End-to-end encryption (E2EE)
-: While iCloud might encrypt the photos you upload, that'll only prevent outside people from taking a peek. If Apple wanted to, they could look at your photos. More concerningly and more likely, if a government demands that Apple hand over your photos, they're able to and they might need to comply. However, if you enable end-to-end encryption, that's no longer possible, because only you can unlock or decrypt that information.  
+: While Apple Calendar might encrypt the events you schedule, that'll only prevent outside people from taking a peek. If Apple wanted to, they could look at your calendar. More concerningly and more likely, if a government demands that Apple hand over your schedule, they're able to and need to comply. However, if you enable end-to-end encryption, that's no longer possible, because only you can unlock or decrypt that information.  
 
 : Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
@@ -167,7 +168,7 @@ Here's what to do:
     - [ ] Write down the passphrase and keep it in on your person.
     - [ ] At first, you'll have to pull out the phrase all the time. Eventually, you'll memorize it. At that point, destroy the paper.
 3. [ ] Use Bitwarden to automatically fill in your passwords. Every time you log into an account, ensure the credentials are stored in Bitwarden.
-4. [ ] Every time you make a new account, use Bitwarden to make a new login. Generate a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
+4. [ ] Every time you make a new account, use Bitwarden to make a new login. Generate a random password which is at least 20 characters long --- Bitwarden will remember it for you.
 
 Since you're using a unique password for every site, you won't have to scramble in the event of a breach. The only account which might even possibly be compromised is the specific account whose password was breached. After all, the compromised password has nothing to do with all the other passwords which Bitwarden generated!
 
@@ -175,7 +176,7 @@ Since you're using a unique password for every site, you won't have to scramble 
 
 ## Two-factor authentication (2FA)
 
-"2-factor authentication" means an attacker has to try a lot harder to get into your accounts.  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
+"2-factor authentication" means an attacker has to try a lot harder to get into your accounts, because they need a password *and* another piece of information -- a second "factor".  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
 
 Enable two-factor authentication on every possible account that you care about protecting. You don't have to do it all at once. You can just enable 2FA on your most important accounts and then start enabling them in the future as you notice.
 
@@ -188,7 +189,7 @@ The US government forces telecoms to permit spying on their customers (including
 >
 > \[...\] Journalists and technologists have characterized the CALEA-mandated infrastructure as government backdoors. In 2024, the U.S. government realized that China had been tapping communications in the U.S. using that infrastructure for months, or perhaps longer.
 
-Since the American government mandated vulnerabilities in key American communications infrastructure, the Chinese government was also able to exploit those vulnerabilities. We now must turn away from text-based 2FA:
+Since the American government mandated vulnerabilities in key American communications infrastructure, the Chinese government was also able to exploit those vulnerabilities.
 
 > [!quote] [Government Issues New iPhone, Android 2FA Warning—Stop Using SMS Codes Now](https://www.forbes.com/sites/zakdoffman/2024/12/18/feds-warn-android-and-iphone-users-stop-using-sms-for-2fa/)
 > What is clear is SMS is not acceptable, even for temporary, one-time passcodes. “Do not use SMS as a second factor for authentication. SMS messages are not encrypted—a threat actor with access to a telecommunication provider’s network who intercepts these messages can read them. SMS MFA is not phishing-resistant and is therefore not strong authentication for accounts of highly targeted individuals.”
@@ -258,7 +259,7 @@ When you browse the internet, you send your ISP a list of sites you're browsing.
 
 ### The US government spy apparatus is creepy
 
-US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific pages you visit or what you search for on encrypted sites, they can still see:
+US government spy agencies have [broad surveillance powers](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa) which allow them to compel ISPs and other service providers to hand over communications data without a warrant. While HTTPS encryption (used by most major sites) prevents ISPs from seeing the specific parts of the site you visit or what data you send, they can still see:
 
 - Which domains you visit (e.g. `google.com`),
 - When and how often you visit them,
@@ -305,8 +306,10 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
 
 > [!tip] Some websites may think you're a bot because many people use the same VPN IP address
-> Compared to other VPNs, I've heard that Proton VPN is good about not getting you flagged. Consider changing VPN servers in the app if you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (don't make a bad habit). Your VPN is your most powerful shield against mass surveillance.
+> Compared to other VPNs, I've heard that Proton VPN is relatively good about not getting you flagged. Sadly, I still get flagged a few times a day, which is inconvenient but worth the privacy boost.
 >
+> Consider changing VPN servers in the app when you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (*do not make a bad habit*). Your VPN is your most powerful shield against mass surveillance.
+
 ### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
 
 > [!danger]
@@ -321,7 +324,11 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin)
 > As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance. I suggest sticking with Proton VPN.
 >
-> My impression is that guessing your site usage is  difficult in real-world settings, so I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
+> There are several reasons for comfort:
+> 1. The attacks seem too expensive to run as mass surveillance, and
+> 2. Many attacks only allow determining whether or not you're visiting one of a tiny number of sites.
+>
+> I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -329,8 +336,8 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 >
 > In late 2024, the government further expanded its surveillance powers.
 > > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
-> > Subtitle: Published June 5th, 2024
-> > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Sen. Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
+> > Subtitle: June 5th, 2024
+> > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Senator Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
 
 ## Browse the web using Brave
 
@@ -389,13 +396,13 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 > >  
 > > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
 > >
-## Use a privacy-centered search engine
+## Use the Brave search engine
 
 Subtitle: Time: 2 minutes.
 
-Both [Brave Search](https://search.brave.com/) and [DuckDuckGo](https://duckduckgo.com/) are strong engines. That said, neither is as good as Google at surfacing the result you want. If you don't get what you want the first time, consider sending it over to Google by beginning your query with `!g`.
+Brave is much better for our high privacy needs. However, Brave is not as good as Google at surfacing the desired result. If you don't get what you want the first time, consider sending it over to Google by beginning your query with `!g`.
 
-- [ ] In your browser's settings, set one of these to be the default search.
+- [ ] In your browser's settings, set Brave to be the default search.
 
 ## Give each app as few permissions as possible
 
@@ -490,7 +497,7 @@ Proton Mail stores your emails E2EE. If two Proton Mail email addresses communic
 Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
 1. [ ] Create or log in to your Proton account (e.g. use the account you made above for Proton VPN).
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
-3. [ ] Push another button to forward new emails from your Gmail to your new ProtonMail address.  
+3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
 5. [ ] Start using Proton Mail! :)
 
@@ -508,6 +515,7 @@ I was using Google Drive and iCloud Drive. Neither are open source, and Google D
     - [ ] iCloud
 - [ ] [Install Proton Drive](https://proton.me/drive/download).
 - [ ] Migrate your existing files to Proton Drive.
+    - If you delete your Google Drive content, I'd retain for reference any files that have comments or collaboration (like Google Docs).
 
 ## Take notes with Anytype instead of Notion or Roam
 
@@ -592,8 +600,8 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 ## Collaborate privately
 
 1. [ ] To circulate secure forms, use [Cryptpad](https://cryptpad.fr/form).
-2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/). Integrates well [with Proton Drive](#store-files-in-proton-drive).
-3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/).
+2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/), which integrates well [with Proton Drive](#store-files-in-proton-drive).
+3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/). Disclaimer: I've had trouble the two times I've tried using this tool. Make sure it works for you before relying on it for sensitive meetings.
 
 # Reclaim your bubbles of freedom
 

@@ -5742,5 +5742,21 @@
   "https://assets.turntrout.com/static/images/external-favicons/hajim_rochester_edu.avif": {
     "width": 64,
     "height": 64
+  },
+  "/static/images/external-favicons/obtainium_imranr_dev.png": {
+    "width": 64,
+    "height": 64
+  },
+  "/static/images/external-favicons/apps_obtainium_imranr_dev.png": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/obtainium_imranr_dev.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apps_obtainium_imranr_dev.avif": {
+    "width": 64,
+    "height": 64
   }
 }

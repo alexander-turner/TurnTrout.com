@@ -77,28 +77,75 @@ I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel ph
 
 I'm going to be real with you: the switch will be inconvenient at first. It took me an entire evening to get all my apps set up again. If you want to invest in avoiding a surveillance state, this is a good investment. You'll end up with a phone that has nearly all the functionality you'd expect of an Android. Everything should just work, with a few exceptions:
 
-1. About 10% of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/). If your app isn't listed, that might be OK. For example, a friend found that First Tech bank's app isn't on the list, but he was still able to log in using the Brave web browser on my GrapheneOS phone. From there, GrapheneOS can pin the webpage to the home screen.
+1. A small number of banking apps don't work. Make sure that your bank is [listed as compatible](https://privsec.dev/posts/android/banking-applications-compatibility-with-grapheneos/). If your app isn't listed, that might be OK. For example, a friend found that First Tech bank's app isn't on the list, but he was still able to log in using the Brave web browser on my GrapheneOS phone. From there, GrapheneOS can pin the webpage to the home screen.
 2. Google Pay won't work, so you can't pay by scanning with your phone directly. To replicate the experience, [purchase a credit card holding accessory](https://www.amazon.com/s?k=phone+credit+card+holder)  and put your card in the back.  This should feel basically the same. I do miss using Google Pay for public transportation.
 
 ### How to make the switch
 
-If you're technically comfortable, I recommend buying a [Pixel 9a](https://store.google.com/product/pixel_9a)   for about \$499 directly from Google (if you buy from a carrier, you might hit issues).  Then [install the OS yourself](https://grapheneos.org/install/web) -- the process is surprisingly straightforward!  If you aren't comfortable setting it up yourself, you can [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
+If you're technically comfortable, I recommend buying a Pixel 9a  for about \$499 directly from Google (if you buy from a carrier, you might hit issues).  Then [install the OS yourself](https://grapheneos.org/install/web) -- the process is surprisingly straightforward!
 
-> [!info] Getting started in GrapheneOS
-> 1. [ ] Download F-Droid using the Vanadium browser. F-Droid is an app store which only carries publicly verified open source applications.
-> 2. [ ] In F-Droid, download the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and more anonymous. When you want to download an app, first check if it's on F-Droid and then check Aurora.
-> 3. [ ] Download Bitwarden and then download Proton VPN.
-> 4. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
-> 5. [ ] Download your other apps.
->        - Be stingy in letting them access the network --- only give them access if they should have it.
->        - Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
->        - If you use Android Auto, then you'll need to download it as well.
-> 6. [ ] Set these security settings in `Settings -> Security & privacy`:
->     1. [ ] Exploit protection:
->         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on).
->         2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection).
->         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
->         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
+- [ ] [Buy a Pixel 9a normally](https://store.google.com/product/pixel_9a).
+    - [ ] [Install GrapheneOS.](https://grapheneos.org/install/web)
+- [ ] If you aren't comfortable setting it up yourself, [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
+
+#### For any Android user: download apps from Obtainium and Aurora
+
+Subtitle: Time: 30 minutes to reinstall apps from secure sources.
+
+Complete this section whether you're on a new GrapheneOS installation or whether you're keeping your current Android device. Obtainium downloads apps directly from developers (cutting out potentially compromised middlemen). Aurora lets you access the Play Store's full catalog without a Google account tracking every installation.
+
+1. [ ] Install [Obtainium.](https://obtainium.imranr.dev/)
+
+Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. There are two kinds of installations: simple installations and "complicated" installations.
+
+To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-osmand-your-map-of-choice)):
+        1. Open the "Add app" tab in Obtainium.
+        2. Search for the name of the app (e.g. "Transportr") using the field "Search (some sources only)".
+        3. Select the search sources "GitHub", "GitLab", and "Forgejo".
+        4. When you see potential matches, you won't see star ratings or reviews. Instead, you can click on the names to see how popular and legitimate the application looks. Review the description to make sure it's an app for Android developed by the correct team (e.g. Proton VPN should be developed by a user like [`ProtonVPN`](https://github.com/ProtonVPN/android-app) and not `Bill.Farthings42`).
+        5. If the repository looks legit, go back and select that application to install.
+        6. _Fully uninstall any other versions of the application first._
+        7. Complete the installation through Obtainium.
+
+The Signal messaging app is a "complicated" installation. To download Signal, just go to [this set of crowdsourced app configurations](https://apps.obtainium.imranr.dev/) and click "add to Obtainium" --- other folks did the complicated work for you. :)
+
+2. [ ] Install AppVerifier (a "complicated" installation). AppVerifier helps you check that you're installing legit versions of apps. When you install an application through Obtainium, you can "share" the downloaded file with AppVerifier to check.
+
+> [!tip] Complicated installations from these guides
+> I recommend adding all of these configurations to your Obtainium so you can install them. Make sure to uninstall any existing versions first.
+> - [ ] AnyType,
+> - [ ] AppVerifier,
+> - [ ] Aurora Store,
+> - [ ] Bitwarden,
+> - [ ] Brave,
+> - [ ] Ente,
+> - [ ] Home Assistant,
+> - [ ] Mastodon,
+> - [ ] Obsidian,
+> - [ ] OsmAnd,
+> - [ ] Proton Calendar,
+> - [ ] Proton Drive,
+> - [ ] Signal, and
+> - [ ] Tor Browser.
+
+The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and more anonymous. Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
+
+- [ ] If you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
+
+#### The rest of the switch to GrapheneOS
+
+1. [ ] Download Bitwarden and then download Proton VPN.
+2. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
+3. [ ] Download your other apps.
+       - Be stingy in letting them access the network --- only give them access if they should have it.
+       - Instead of downloading apps for everything (e.g. a banking app), I just tapped "install web app" after loading the banking page. Web apps expose less of your data than native apps.
+       - If you use Android Auto, then you'll need to download it as well.
+4. [ ] Set these security settings in `Settings -> Security & privacy`:
+    1. [ ] Exploit protection:
+        1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on).
+        2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection).
+        3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
+        4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
 
 ## Switch away from Windows
 
@@ -270,7 +317,7 @@ Subtitle: Time: 15 minutes.
   - [ ] Credit card(s).
   - [ ] Other instruments.
 
-## Delete PayPal
+## Consider deleting PayPal
 
 Subtitle: Time: 30 minutes plus a few more hours depending on how much you use PayPal.
 
@@ -326,7 +373,10 @@ I use Gemini the most. If I trust Google to delete data promptly (and I do), the
 
 Subtitle: Time: 30 minutes.
 
-I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/) -- which is (guess what?) open source and E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
+> [!warning] Lunatask is not open source
+> The initial version of the post claimed the app was open source. I'm leaving the recommendation here while I look for an open source alternative.
+
+I used to track my tasks with Todoist, but I never felt fully comfortable. I transferred to [Lunatask](https://lunatask.app/), which is E2EE. Lunatask is also just a better app in my opinion. It prioritizes tasks for you (no more juggling self-imposed due dates), maintains personal/work separation by not showing "work" tasks while in the "personal" zone, and easily slots tasks into your schedule (just drag and drop).
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014133029.avif|The Lunatask view of tasks for this post, with a calendar view on the side.]]
 
@@ -337,6 +387,8 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 # Advance your mobile and travel security in 1 hour
 
 ## The Tor browser can provide true anonymity
+
+Subtitle: Time: 5 minutes.
 
 After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). However, as mentioned earlier, the VPN provider can theoretically see who you are _and_ what you're doing. While Proton claims to keep no logs (and verified that via independent audit), some activities (like transmitting secure documents to reporters to whistleblow on government abuse) are so risky that you don't even want to trust Proton. In this kind of situation, use the [Tor](https://www.torproject.org/) web browser. Basically, the browser connects you to websites in a way that stops any one server from knowing both who you are and what you're doing --- not even Proton will know!
 
@@ -360,6 +412,7 @@ The downside is you usually can't interact with the site. You can usually just l
 
 - [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
 - [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.
+- [ ] On mobile, you can install
 
 If you want to browse the original site again, you can disable the extension or select the option "only redirect in incognito mode."
 
@@ -434,7 +487,8 @@ For most mainstream applications, the government can see exactly what notificati
 > These services ensure timely and efficient delivery of notifications, but this also means that Apple and Google serve as intermediaries in the transmission process. As with all of the other information these companies store for or about their users, because Apple and Google deliver push notification data, they can be secretly compelled by governments to hand over this information.
 
 - [ ] Audit which apps have notifications enabled. Disable notifications for _every single app which doesn't have to provide critical, real-time alerts_. Each notification you prevent is one less metadatum logged on a server you don't control. Reducing notifications also [promotes peace of mind](/digital-minimalism).
-- [ ] On Android, prefer apps on the F-Droid app store. Almost all of these apps send notifications independently. Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
+
+Note that [Signal](https://www.reddit.com/r/signal/comments/g217a6/what_can_google_glean_from_signal_using_fcmgcm/) only uses Google's notification system to say "hey check the Signal servers for the real notification". [Proton notifications are E2EE](https://proton.me/blog/android-client-security-model/) so the government would only see "the user got a Proton Mail notification."
 
 ## iOS: Disable AirDrop
 
@@ -463,7 +517,7 @@ GrapheneOS
 : - [ ] Enable "2G network protection" -- just search "2G" in settings.
 
 Android
-: You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
+: You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
 : - [ ] Disable 2G.
 
@@ -531,7 +585,7 @@ Other tips:
 
 ## Keep emergency cash reserves
 
-The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (read: those who publicly disagree with the Trump administration) will have trouble accessing their money:
+The US government may engage in financial warfare against its critics. [Stephen Miller](https://www.thebulwark.com/p/its-stephen-millers-show-now-charlie-kirk-assassination-trump-leftists-retribution) threatened retaliation against Americans who exercised their free speech rights. He warned that "radical leftists" (seemingly meaning: those who strongly and publicly disagree with the Trump administration) will have trouble accessing their money:
 
 > [!quote] [Stephen Miller, White House Deputy Chief of Staff for Policy](https://www.commondreams.org/news/stephen-miller-dismantle-the-left)
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
