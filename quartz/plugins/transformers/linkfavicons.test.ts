@@ -653,6 +653,65 @@ describe("Favicon Utilities", () => {
           expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
         },
       )
+
+      it("should add whitelisted favicons even if count is below threshold", async () => {
+        const hostname = "turntrout.com"
+        const faviconPath = linkfavicons.TURNTROUT_FAVICON_PATH
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT - 1)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBeGreaterThan(0)
+        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+      })
+
+      it("should skip non-whitelisted favicons if count is below threshold", async () => {
+        const hostname = "example.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT - 1)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBe(0)
+      })
+
+      it("should whitelist favicons that end with whitelist suffix", async () => {
+        const hostname = "apple.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        // Verify the path ends with the whitelist suffix
+        expect(faviconPath.endsWith("apple_com.png")).toBe(true)
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT - 1)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBeGreaterThan(0)
+        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+      })
     })
   })
 })

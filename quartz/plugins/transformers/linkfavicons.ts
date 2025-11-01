@@ -47,6 +47,18 @@ export const FAVICON_COUNTS_FILE = path.join(
  */
 export const MIN_FAVICON_COUNT = 3
 
+/**
+ * Whitelist of favicon paths that should always be included regardless of count.
+ * These favicons will be added even if they appear fewer than MIN_FAVICON_COUNT times.
+ * Entries can be full paths or suffixes (e.g., "apple_com.png" will match any path ending with "apple_com.png").
+ */
+export const FAVICON_COUNT_WHITELIST = [
+  MAIL_PATH,
+  ANCHOR_PATH,
+  TURNTROUT_FAVICON_PATH,
+  "apple_com.png",
+]
+
 // istanbul ignore if
 if (!fs.existsSync(FAVICON_URLS_FILE)) {
   try {
@@ -549,8 +561,10 @@ async function handleLink(
     }
 
     // Check if favicon appears frequently enough across the site
+    // Whitelisted favicons are always included regardless of count
     const count = faviconCounts.get(imgPath) || 0
-    if (count < MIN_FAVICON_COUNT) {
+    const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
+    if (!isWhitelisted && count < MIN_FAVICON_COUNT) {
       logger.debug(
         `Favicon ${imgPath} appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )
