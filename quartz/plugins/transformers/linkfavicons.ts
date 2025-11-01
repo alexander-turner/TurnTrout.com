@@ -540,10 +540,6 @@ export function normalizeUrl(href: string): string {
   return href
 }
 
-/**
- * Processes links by downloading and inserting favicons.
- * Only inserts favicons if they appear at least MIN_FAVICON_COUNT times across the site.
- */
 async function handleLink(
   href: string,
   node: Element,
@@ -562,11 +558,13 @@ async function handleLink(
 
     // Check if favicon appears frequently enough across the site
     // Whitelisted favicons are always included regardless of count
-    const count = faviconCounts.get(imgPath) || 0
+    // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
+    const countKey = getQuartzPath(finalURL.hostname)
+    const count = faviconCounts.get(countKey) || 0
     const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
     if (!isWhitelisted && count < MIN_FAVICON_COUNT) {
       logger.debug(
-        `Favicon ${imgPath} appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
+        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )
       return
     }
