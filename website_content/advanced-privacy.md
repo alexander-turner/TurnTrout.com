@@ -96,7 +96,7 @@ Complete this section whether you're on a new GrapheneOS installation or whether
 
 1. [ ] Install [Obtainium.](https://obtainium.imranr.dev/)
 
-Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. There are two kinds of installations: simple installations and "complicated" installations.
+Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
 To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-osmand-your-map-of-choice)):
         1. Open the "Add app" tab in Obtainium.

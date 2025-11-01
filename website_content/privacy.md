@@ -273,7 +273,7 @@ I recommend downloading [Proton VPN.](https://protonvpn.com/) While Proton VPN h
 > [!info] The ISP won't see which sites you browse, but Proton will
 > To connect to the internet, *some* server needs to figure out where your internet traffic should go. When you don't use a VPN, your ISP handles that. When you do use a VPN, the VPN provider does instead. Therefore, Proton can see what sites you visit.
 >
-> So why use Proton VPN? There are several benefits. Most importantly, your ISP will generally record your activity and funnel it to the government. In contrast, Proton doesn't record your activity, as [verified by independent experts](https://protonvpn.com/blog/no-logs-audit/).
+> So why use Proton VPN? Several reasons. Most importantly, your ISP will generally record your activity and funnel it to the government. In contrast, Proton doesn't record your activity, as [verified by independent experts](https://protonvpn.com/blog/no-logs-audit/).
 >
 > > [!quote]- Does Proton VPN keep logs?
 > > In order to respect our users’ privacy, Proton VPN enforces a strict no-logs policy. This means we keep no session usage logs of what you do online, and we do not log metadata that can compromise your privacy.
@@ -324,7 +324,7 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin)
 > As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance. I suggest sticking with Proton VPN.
 >
-> There are several reasons for comfort:
+> Here are several reasons for comfort:
 > 1. The attacks seem too expensive to run as mass surveillance, and
 > 2. Many attacks only allow determining whether or not you're visiting one of a tiny number of sites.
 >
