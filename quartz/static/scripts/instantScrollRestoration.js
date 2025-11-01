@@ -139,10 +139,13 @@
       window.addEventListener(event, markInteraction, { passive: true, once: true })
     }
 
-    // Track if we've already seen an unexplained large drift so we can allow one
-    // correction attempt before treating it as user input. This helps Safari, which can
-    // briefly jump by a large amount while layout settles after reload.
-    let largeDriftDetected = false
+    // Track if we've already seen an unexplained large drift during the initial few frames.
+    // Safari can briefly jump by a large amount while layout settles after reload, so we
+    // allow one correction very early in the monitoring window before considering the
+    // movement as user input. After the first few frames—or after some time has elapsed—
+    // large deltas are treated as user-driven again.
+    let largeDriftForgiven = false
+    const monitoringStart = performance.now()
     const cancelMonitoringDueToUser = () => {
       userHasScrolled = true
       console.debug("[InstantScrollRestoration] User scroll detected, canceling layout monitoring")
@@ -164,7 +167,7 @@
       const LARGE_DELTA_THRESHOLD = 60 // px
 
       if (delta <= SMALL_DELTA_THRESHOLD) {
-        largeDriftDetected = false
+        largeDriftForgiven = false
         return
       }
 
@@ -174,12 +177,15 @@
       }
 
       if (delta > LARGE_DELTA_THRESHOLD) {
-        if (largeDriftDetected) {
-          cancelMonitoringDueToUser()
-        } else {
-          // Only set the flag if we haven't seen a large drift yet
-          largeDriftDetected = true
+        const elapsed = performance.now() - monitoringStart
+        const withinForgivenessWindow = !largeDriftForgiven && frameCount < 3 && elapsed < 150
+
+        if (withinForgivenessWindow) {
+          largeDriftForgiven = true
+          return
         }
+
+        cancelMonitoringDueToUser()
       }
     }
 
