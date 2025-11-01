@@ -158,7 +158,7 @@ Subtitle: Time: 30 minutes with ongoing maintenance as you import passwords.
 
 Use a different long password for every single login you have. Do not reuse passwords. Do not reuse passwords. Do not make simple passwords like `mail123`.
 
-If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden. 
+If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
 
 Here's what to do:
 1. [ ] [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
@@ -318,9 +318,10 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 
 ### Other VPN notes
 
-> [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin) 
-> As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance, so I suggest sticking with Proton VPN and hoping they implement defenses soon. 
-
+> [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin)
+> As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance. I suggest sticking with Proton VPN.
+>
+> My impression is that guessing your site usage is  difficult in real-world settings, so I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -585,8 +586,9 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 - [ ] Create a new "Test EteSync" contact in your app and check that the contact appears in the EteSync app.
 - [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
 
-> [!warning] 
+> [!warning]
 > Even if you secure your own address book, authorities can partially reconstruct it by gathering the data that you gave to your contacts (if their contacts storage isn't E2EE).
+>
 ## Collaborate privately
 
 1. [ ] To circulate secure forms, use [Cryptpad](https://cryptpad.fr/form).

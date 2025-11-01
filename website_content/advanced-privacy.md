@@ -39,7 +39,6 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 
 ## The difference between mass surveillance and targeted investigation
 
-
 [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy-tips)  protects against mass surveillance that lets the government track lots of people at once. This guide _partially_ addresses both mass and targeted investigation. In a targeted investigation, you now need to worry about physical threats as well: device seizure, physical surveillance, informants, and people who are investigating you in particular.
 
 This guide _is not sufficient to protect you against targeted investigation_. Think of these guides as raising the cost for the government to surveil you. It's still possible, but it's tougher and less likely.
@@ -339,14 +338,15 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 
 ## The Tor browser can provide true anonymity
 
+After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). However, as mentioned earlier, the VPN provider can theoretically see who you are _and_ what you're doing. While Proton claims to keep no logs (and verified that via independent audit), some activities (like transmitting secure documents to reporters to whistleblow on government abuse) are so risky that you don't even want to trust Proton. In this kind of situation, use the [Tor](https://www.torproject.org/) web browser. Basically, the browser connects you to websites in a way that stops any one server from knowing both who you are and what you're doing --- not even Proton will know!
 
-After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).  [Tor](https://www.torproject.org/) 
 - [ ] Install the official Tor browser.
-- [ ] To defeat [website fingerprinting](https://www.hajim.rochester.edu/senior-design-day/fingerprinting-vpn-traffic-an-evaluation-of-website-fingerprinting-attacks-on-modern-virtual-private-network-applications/), you need to enable the `obsf4` bridge. Go to [`about:preferences#connection`](about:preferences#connection) and tap "select a built-in bridge" and then choose `obsf4`.
 
 > [!warning]
-> 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time. 
+> 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time.
+>     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to [`about:preferences#connection`](about:preferences#connection) and tap "select a built-in bridge" and then choose `obsf4`.
 > 2. Never configure the Tor Browser's `about:config` or install extensions. That'll make you easier to "fingerprint" and [separate you from the herd.](https://www.privacyguides.org/en/tor/#tor-browser)
+> 3. When you open Tor, its window will have a certain size. Don't modify this size or maximize the window—believe it or not, that can help deanonymize you!
 
 ## Browse your favorite websites privately
 
@@ -538,13 +538,8 @@ The US government may engage in financial warfare against its critics. [Stephen 
 
 Before we reach that point, I recommend you immediately:
 - [ ] Purchase [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9) to keep in your home,
-- [ ] Withdraw up to \$2,000 in cash and store it in the safe,
-- [ ] Store it securely at home (consider ), and
+- [ ] Withdraw up to \$2,000 in cash and store it in the safe, and
 - [ ] Ensure your passport is current and ready for international travel. Probably store it in the safe as well.
-
-> [!note]
-
-> [!warning]
 
 ## Tech workers can push for privacy improvements
 
