@@ -79,7 +79,9 @@ This guide is long. Don't try to complete it all at once. My website has long-la
 
    - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-   | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
+> [!money] This guide is free, but I estimate expected time and money costs to set up equipment and services
+
+   | **Tier**               | **Time for tier** | **Anticipated cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
    | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
    | Privacy basics | 90 minutes upfront + 45 minutes for YubiKey setup when it arrives    | \$110 + $13/month        | Significant privacy against mass surveillance. Govt. has a harder time seeing who you talk to and can't easily monitor what you say on the Signal app. |
@@ -156,7 +158,7 @@ Subtitle: Time: 30 minutes with ongoing maintenance as you import passwords.
 
 Use a different long password for every single login you have. Do not reuse passwords. Do not reuse passwords. Do not make simple passwords like `mail123`.
 
-If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
+If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden. 
 
 Here's what to do:
 1. [ ] [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
@@ -168,6 +170,8 @@ Here's what to do:
 4. [ ] Every time you make a new account, use Bitwarden to make a new login. Generate a random password which is at least 20 characters long. No sweat off your back there, because you're not the one who has to remember anything! :)
 
 Since you're using a unique password for every site, you won't have to scramble in the event of a breach. The only account which might even possibly be compromised is the specific account whose password was breached. After all, the compromised password has nothing to do with all the other passwords which Bitwarden generated!
+
+> [!tip]  Bitwarden (the company) [cannot access any of your information or passwords](https://bitwarden.com/resources/zero-knowledge-encryption-white-paper/) --- only you can.
 
 ## Two-factor authentication (2FA)
 
@@ -313,6 +317,10 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
 
 ### Other VPN notes
+
+> [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin) 
+> As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance, so I suggest sticking with Proton VPN and hoping they implement defenses soon. 
+
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -476,15 +484,14 @@ Subtitle: Time: 30 minutes.
 
 Centrally hosted mail may secure your data well, but the company still could read your emails if they wanted to. Even if they treat your data with utmost professionalism, *the government can make them hand over your emails*.
 
-Proton Mail stores your emails E2EE. Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
+Proton Mail stores your emails E2EE. If two Proton Mail email addresses communicate, they automatically use E2EE in communicating with each other. However, if e.g. a `@gmail.com` address sends you something, the content  will be plainly visible to the authorities while in the sender's account (if they seize data from Google) and also during transmission. Once received, Proton does encrypt the data in your mailbox,  but the government could have already intercepted it in transit.
+
+Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
 1. [ ] Create or log in to your Proton account (e.g. use the account you made above for Proton VPN).
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new ProtonMail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
 5. [ ] Start using Proton Mail! :)
-
-> [!warning] Most of your email can still be read in transit by the authorities
-> If two Proton Mail emails communicate, they automatically use E2EE. However, if e.g. a `@gmail.com` address sends you something, the content will be plainly visible to the authorities.
 
 > [!danger] The authorities can always track whom you're emailing and when
 > The problem has to do with [the definition of the email protocol itself](https://www.forbes.com/sites/timworstall/2013/08/18/why-email-can-never-be-truly-secure-its-the-metadata/). Use Signal for truly sensitive communication.
@@ -578,6 +585,8 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 - [ ] Create a new "Test EteSync" contact in your app and check that the contact appears in the EteSync app.
 - [ ] Once you've verified these contacts work, delete your contacts on whatever cloud service you were using.
 
+> [!warning] 
+> Even if you secure your own address book, authorities can partially reconstruct it by gathering the data that you gave to your contacts (if their contacts storage isn't E2EE).
 ## Collaborate privately
 
 1. [ ] To circulate secure forms, use [Cryptpad](https://cryptpad.fr/form).

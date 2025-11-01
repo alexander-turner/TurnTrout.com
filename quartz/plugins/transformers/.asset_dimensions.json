@@ -5722,5 +5722,9 @@
   "https://assets.turntrout.com/static/images/external-favicons/transportr_app.avif": {
     "width": 32,
     "height": 32
+  },
+  "/static/images/external-favicons/whatismybrowser_com.png": {
+    "width": 64,
+    "height": 64
   }
 }

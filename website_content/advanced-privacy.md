@@ -25,12 +25,12 @@ As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/pri
 
 Don't try to do everything at once. As in the first article, even a few hours can dramatically boost your privacy. If you're short on money, then you can skip the hardware replacement recommendations.
 
-| **Section focus**                     | **Time for section**                      | **Cost of section** | **Benefits**                                                                                |
-| -----------------------------------: | :---------------------------------------: | :-----------------: | :------------------------------------------------------------------------------------------ |
-| **Harden your hardware**              | 8 hours + 20 hours if switching to Linux | $900+               | Somewhat secures your physical devices from surveillance and some direct attacks.           |
-| **Secure your digital footprint**     | 2 hours                                  | $15/month          | Minimizes the trail of personal data linked to your real identity online.                   |
-| **Advanced mobile & travel security** | 1 hour                                   | $0                  | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
-| **Long-term strategic shifts**        | Ongoing                                   | Variable            | Builds personal and communal resilience against surveillance.                               |
+|                     **Section focus** |           **Time for section**           | **Anticipated cost of completing section** | **Benefits**                                                                                |
+| ------------------------------------: | :--------------------------------------: | :----------------------------------------: | :------------------------------------------------------------------------------------------ |
+|              **Harden your hardware** | 8 hours + 20 hours if switching to Linux |                   $900+                    | Somewhat secures your physical devices from surveillance and some direct attacks.           |
+|     **Secure your digital footprint** |                 2 hours                  |                 $15/month                  | Minimizes the trail of personal data linked to your real identity online.                   |
+| **Advanced mobile & travel security** |                  1 hour                  |                     $0                     | Helps protect your data and devices from seizure, surveillance, and location-based attacks. |
+|        **Long-term strategic shifts** |                 Ongoing                  |                  Variable                  | Builds personal and communal resilience against surveillance.                               |
 
 > [!info]  I'm only speaking for myself
 >  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
@@ -38,6 +38,7 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 # New concepts
 
 ## The difference between mass surveillance and targeted investigation
+
 
 [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy-tips)  protects against mass surveillance that lets the government track lots of people at once. This guide _partially_ addresses both mass and targeted investigation. In a targeted investigation, you now need to worry about physical threats as well: device seizure, physical surveillance, informants, and people who are investigating you in particular.
 
@@ -256,7 +257,7 @@ Protect yourself.
 > However, you can pay for digital services pseudonymously using a virtual card, an [email alias](#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites), and a random fake name (but don't do this for anything which legally requires your real information). When merchants sell those data to brokers, the brokers won't be able to link it to you. That takes you off the grid some!
 
 > [!idea] Virtual cards provide minor protection against persecution via bank statements
-> If the government later demands that e.g. Bank of America give the names of everyone who donated to the Democrats in the last year, then even if the bank complies, your name won't be on the list. _However_, the government could still get the information from Privacy.com. For true anonymity, use cash or prepaid cards.
+> If the government later demands that e.g. Bank of America give the names of everyone who donated to the Democrats in the last year, then even if the bank complies, your name won't be on the list. _However_, the government could still get the information from Privacy.com. For more anonymity, use cash or prepaid debit cards purchased using cash.
 >
 
 ## Opt out of financial institution data sharing
@@ -335,6 +336,17 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 - [ ] Migrate to [Lunatask](https://lunatask.app/).
 
 # Advance your mobile and travel security in 1 hour
+
+## The Tor browser can provide true anonymity
+
+
+After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).  [Tor](https://www.torproject.org/) 
+- [ ] Install the official Tor browser.
+- [ ] To defeat [website fingerprinting](https://www.hajim.rochester.edu/senior-design-day/fingerprinting-vpn-traffic-an-evaluation-of-website-fingerprinting-attacks-on-modern-virtual-private-network-applications/), you need to enable the `obsf4` bridge. Go to [`about:preferences#connection`](about:preferences#connection) and tap "select a built-in bridge" and then choose `obsf4`.
+
+> [!warning]
+> 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time. 
+> 2. Never configure the Tor Browser's `about:config` or install extensions. That'll make you easier to "fingerprint" and [separate you from the herd.](https://www.privacyguides.org/en/tor/#tor-browser)
 
 ## Browse your favorite websites privately
 
@@ -525,9 +537,14 @@ The US government may engage in financial warfare against its critics. [Stephen 
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
 
 Before we reach that point, I recommend you immediately:
-- [ ] Withdraw enough cash to live for at least a month,
-- [ ] Store it securely at home (consider [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9)), and
-- [ ] Ensure your passport is current and ready for international travel.
+- [ ] Purchase [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9) to keep in your home,
+- [ ] Withdraw up to \$2,000 in cash and store it in the safe,
+- [ ] Store it securely at home (consider ), and
+- [ ] Ensure your passport is current and ready for international travel. Probably store it in the safe as well.
+
+> [!note]
+
+> [!warning]
 
 ## Tech workers can push for privacy improvements
 
@@ -675,7 +692,7 @@ I'm scared by what's happening to the country I love. I don't have a full gamepl
 We'll need a lot of both in the coming years.
 
 > [!thanks]
-> Garrett Baker and Joshua Turner gave feedback on drafts of these posts. [`fx`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=x6Nuo4hc9tGFsgECw) provided comments which improved the posts.
+> Garrett Baker and Joshua Turner gave feedback on drafts of these posts. [`fx`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=x6Nuo4hc9tGFsgECw), [`Rana Dexsin`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=NYcaBcBPa4bsBenQ4), [`StartAtTheEnd`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=ypwCPaxrfkA5Tmg7u), and [`jbash`](https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism?commentId=hRXL9LhwKovtLpDTr) provided comments which improved the posts.
 
 # Appendix: Precautions which didn't make the cut for the main article
 
