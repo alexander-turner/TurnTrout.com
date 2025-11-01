@@ -2,6 +2,7 @@ import { QuartzConfig } from "./quartz/cfg"
 import {
   AddFavicons,
   AfterArticle,
+  CountFavicons,
   AliasRedirects,
   AllTagsPage,
   Assets,
@@ -76,6 +77,7 @@ const config: QuartzConfig = {
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
       TagAcronyms(),
       TroutOrnamentHr(),
+      CountFavicons(),
       AddFavicons(),
       AfterArticle(),
       ColorVariables(),

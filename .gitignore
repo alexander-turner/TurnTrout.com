@@ -20,6 +20,7 @@ lost-pixel/*
 *~
 *.bak
 **/.!*
+**/*.tmp
 
 # Posts
 website_content/drafts
@@ -30,6 +31,7 @@ website_content/drafts
 
 # Media files
 **.faviconUrls.txt
+**.faviconCounts.txt
 # quartz/plugins/transformers/.asset_dimensions.json
 quartz/static/images/external-favicons/*.png
 quartz/static/images/posts
