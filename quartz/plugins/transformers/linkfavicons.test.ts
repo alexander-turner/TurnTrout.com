@@ -827,6 +827,50 @@ describe("isHeading", () => {
   })
 })
 
+describe("isAssetLink", () => {
+  it.each([
+    ["https://example.com/page", false],
+    ["https://example.com/page/", false],
+    ["https://example.com", false],
+    ["/relative/path", false],
+    ["https://example", false],
+    ["https://example/", false],
+    ["https://example.com/page.", false],
+    ["https://example.com/page.?query", false],
+    ["https://example.com/file.xyz", false],
+    ["https://example.com/file.unknown", false],
+    ["https://example.com/document.pdf", false],
+    ["https://example.com/page.html", false],
+    ["https://example.com/data.json", false],
+    ["https://example.com/style.css", false],
+    ["https://example.com/image.png", true],
+    ["https://example.com/image.jpg", true],
+    ["https://example.com/image.jpeg", true],
+    ["https://example.com/image.gif", true],
+    ["https://example.com/image.svg", true],
+    ["https://example.com/image.webp", true],
+    ["https://example.com/image.avif", true],
+    ["https://example.com/video.mp4", true],
+    ["https://example.com/video.webm", true],
+    ["https://example.com/audio.mp3", true],
+    ["https://example.com/audio.wav", true],
+    ["https://example.com/audio.m4a", true],
+    ["https://example.com/image.png?size=large", true],
+    ["https://example.com/video.mp4?v=123", true],
+    ["https://example.com/image.png#section", true],
+    ["https://example.com/video.mp4#timestamp=10", true],
+    ["https://example.com/image.png?size=large#section", true],
+    ["https://example.com/image.PNG", true],
+    ["https://example.com/image.JPG", true],
+    ["https://example.com/video.MP4", true],
+    ["./image.png", true],
+    ["../video.mp4", true],
+    ["audio.mp3", true],
+  ])("should return %s for %s", (href, expected) => {
+    expect(linkfavicons.isAssetLink(href)).toBe(expected)
+  })
+})
+
 describe("AddFavicons plugin", () => {
   beforeEach(() => {
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)

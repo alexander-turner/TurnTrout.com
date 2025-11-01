@@ -3,6 +3,7 @@ import type { ReadableStream } from "stream/web"
 
 import gitRoot from "find-git-root"
 import fs from "fs"
+import mime from "mime-types"
 import path from "path"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
@@ -432,6 +433,31 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
 }
 
 /**
+ * Checks if a URL points to an asset file that shouldn't get a favicon.
+ */
+export function isAssetLink(href: string): boolean {
+  // Remove query parameters and fragments before extracting extension
+  const urlWithoutParams = href.split("?")[0].split("#")[0]
+  const extension = urlWithoutParams.split(".").pop()?.toLowerCase()
+
+  if (!extension) {
+    return false
+  }
+
+  const mimeType = mime.lookup(extension)
+  if (!mimeType) {
+    return false
+  }
+
+  return (
+    mimeType.startsWith("image/") ||
+    mimeType.startsWith("video/") ||
+    mimeType.startsWith("audio/") ||
+    mimeType === "application/mp4"
+  )
+}
+
+/**
  * Checks if a link should be skipped for favicon processing.
  */
 function shouldSkipFavicon(node: Element, href: string): boolean {
@@ -440,15 +466,14 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
       node.properties.className.includes("same-page-link")) ||
     (Array.isArray(node.properties.className) &&
       node.properties.className.includes("same-page-link"))
-  const isAsset = /\.(png|jpg|jpeg)$/.test(href)
 
-  return samePage || isAsset
+  return samePage || isAssetLink(href)
 }
 
 /**
  * Normalizes relative URLs to absolute URLs.
  */
-function normalizeUrl(href: string): string {
+export function normalizeUrl(href: string): string {
   if (!href.startsWith("http")) {
     if (href.startsWith("./")) {
       href = href.slice(2)
