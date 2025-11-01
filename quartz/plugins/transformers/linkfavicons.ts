@@ -33,6 +33,19 @@ export const FAVICON_URLS_FILE = path.join(
   "transformers",
   ".faviconUrls.txt",
 )
+export const FAVICON_COUNTS_FILE = path.join(
+  __dirname,
+  "quartz",
+  "plugins",
+  "transformers",
+  ".faviconCounts.txt",
+)
+
+/**
+ * Minimum number of times a favicon must appear across the site to be included.
+ * Favicons that appear fewer times will not be added to links.
+ */
+export const MIN_FAVICON_COUNT = 3
 
 // istanbul ignore if
 if (!fs.existsSync(FAVICON_URLS_FILE)) {
@@ -157,6 +170,36 @@ export function writeCacheToFile(): void {
     .join("\n")
 
   fs.writeFileSync(FAVICON_URLS_FILE, data, { flag: "w+" })
+}
+
+/**
+ * Reads favicon counts from the FAVICON_COUNTS_FILE and returns them as a Map.
+ *
+ * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
+ */
+export function readFaviconCounts(): Map<string, number> {
+  if (!fs.existsSync(FAVICON_COUNTS_FILE)) {
+    logger.warn(`Favicon counts file not found at ${FAVICON_COUNTS_FILE}`)
+    return new Map<string, number>()
+  }
+
+  const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
+  const lines = data.split("\n")
+  const countMap = new Map<string, number>()
+
+  for (const line of lines) {
+    if (!line.trim()) continue
+    const parts = line.split("\t")
+    if (parts.length >= 2) {
+      const count = parseInt(parts[0], 10)
+      const faviconPath = parts[1]
+      if (!isNaN(count) && faviconPath) {
+        countMap.set(faviconPath, count)
+      }
+    }
+  }
+
+  return countMap
 }
 
 /**
@@ -487,8 +530,13 @@ export function normalizeUrl(href: string): string {
 
 /**
  * Processes links by downloading and inserting favicons.
+ * Only inserts favicons if they appear at least MIN_FAVICON_COUNT times across the site.
  */
-async function handleLink(href: string, node: Element): Promise<void> {
+async function handleLink(
+  href: string,
+  node: Element,
+  faviconCounts: Map<string, number>,
+): Promise<void> {
   try {
     const finalURL = new URL(href)
     logger.info(`Final URL: ${finalURL.href}`)
@@ -497,6 +545,15 @@ async function handleLink(href: string, node: Element): Promise<void> {
 
     if (imgPath === DEFAULT_PATH) {
       logger.info(`No favicon found for ${finalURL.hostname}; skipping`)
+      return
+    }
+
+    // Check if favicon appears frequently enough across the site
+    const count = faviconCounts.get(imgPath) || 0
+    if (count < MIN_FAVICON_COUNT) {
+      logger.debug(
+        `Favicon ${imgPath} appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
+      )
       return
     }
 
@@ -511,16 +568,21 @@ async function handleLink(href: string, node: Element): Promise<void> {
  * Main node processing function for adding favicons to links.
  *
  * Link processing logic:
- * 1. Handles mailto: links with mail icon
- * 2. Processes same-page (#) links with anchor icon
+ * 1. Handles mailto: links with mail icon (always added, not subject to count threshold)
+ * 2. Processes same-page (#) links with anchor icon (always added, not subject to count threshold)
  * 3. Skips image/asset links and already processed links
  * 4. Normalizes relative URLs to absolute
- * 5. Downloads and inserts appropriate favicon
+ * 5. Downloads and inserts appropriate favicon (only if appears >= MIN_FAVICON_COUNT times)
  *
  * @param node - Link element to process
  * @param parent - Parent element of the link
+ * @param faviconCounts - Map of favicon paths to their counts across the site
  */
-export async function ModifyNode(node: Element, parent: Parent): Promise<void> {
+export async function ModifyNode(
+  node: Element,
+  parent: Parent,
+  faviconCounts: Map<string, number>,
+): Promise<void> {
   logger.info(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
     logger.debug("Node is not an anchor or has no href, skipping")
@@ -553,7 +615,7 @@ export async function ModifyNode(node: Element, parent: Parent): Promise<void> {
 
   // Process external links
   href = normalizeUrl(href)
-  await handleLink(href, node)
+  await handleLink(href, node, faviconCounts)
 }
 
 /**
@@ -574,6 +636,9 @@ export const AddFavicons = () => {
         () => {
           return async (tree: Root) => {
             logger.info("Starting favicon processing")
+            const faviconCounts = readFaviconCounts()
+            logger.info(`Loaded ${faviconCounts.size} favicon counts`)
+
             const nodesToProcess: [Element, Parent][] = []
 
             visit(
@@ -590,7 +655,9 @@ export const AddFavicons = () => {
             )
 
             logger.info(`Processing ${nodesToProcess.length} nodes`)
-            await Promise.all(nodesToProcess.map(([node, parent]) => ModifyNode(node, parent)))
+            await Promise.all(
+              nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
+            )
             logger.info("Finished processing favicons")
 
             writeCacheToFile()

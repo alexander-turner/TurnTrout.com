@@ -1,10 +1,7 @@
 import type { Element, Root, Parent } from "hast"
 
-import gitRoot from "find-git-root"
 import fs from "fs"
-import path from "path"
 import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
 
 import { type QuartzTransformerPlugin } from "../types"
 import {
@@ -13,21 +10,12 @@ import {
   isAssetLink,
   isHeading,
   MAIL_PATH,
+  FAVICON_COUNTS_FILE,
   normalizeUrl,
 } from "./linkfavicons"
 import { createWinstonLogger } from "./logger_utils"
 
 const logger = createWinstonLogger("countfavicons")
-
-const __filepath = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(gitRoot(__filepath))
-const FAVICON_COUNTS_FILE = path.join(
-  __dirname,
-  "quartz",
-  "plugins",
-  "transformers",
-  ".faviconCounts.txt",
-)
 
 // Module-level counter to accumulate counts across all files
 const faviconCounter = new Map<string, number>()

@@ -270,20 +270,21 @@ describe("Favicon Utilities", () => {
     describe("span creation", () => {
       const imgPath = "/test/favicon.png"
 
-      it(`should create a span with the last ${linkfavicons.maxCharsToRead} characters and favicon for long text`, () => {
-        const text = "Long text content"
+      it.each([
+        ["Long text content", 2],
+        ["Medium", 2],
+      ])("should create a span correctly for %s", (text, expectedChildren) => {
         const node = h("div", {}, [text])
         linkfavicons.insertFavicon(imgPath, node)
 
-        expect(node.children.length).toBe(2)
+        expect(node.children.length).toBe(expectedChildren)
         const firstSegment = text.slice(0, -linkfavicons.maxCharsToRead)
         expect(node.children[0]).toEqual({ type: "text", value: firstSegment })
-
         const lastSegment = text.slice(-linkfavicons.maxCharsToRead)
         expect(node.children[1]).toMatchObject(createExpectedSpan(lastSegment, imgPath))
       })
 
-      it("should create a span with all characters and favicon for short text", () => {
+      it("should create a span correctly for short text", () => {
         const text = "1234"
         const node = h("div", {}, [text])
         linkfavicons.insertFavicon(imgPath, node)
@@ -292,28 +293,10 @@ describe("Favicon Utilities", () => {
         expect(node.children[0]).toMatchObject(createExpectedSpan(text, imgPath))
       })
 
-      it(`should create a span with up to ${linkfavicons.maxCharsToRead} characters for medium-length text`, () => {
-        const text = "Medium"
-        const node = h("div", {}, [text])
-        linkfavicons.insertFavicon(imgPath, node)
-
-        expect(node.children.length).toBe(2)
-        const firstSegment = text.slice(0, -linkfavicons.maxCharsToRead)
-        expect(node.children[0]).toEqual({ type: "text", value: firstSegment })
-        const secondSegment = text.slice(-linkfavicons.maxCharsToRead)
-        expect(node.children[1]).toMatchObject(createExpectedSpan(secondSegment, imgPath))
-      })
-
-      it("should not create a span for nodes without text content", () => {
-        const node = h("div", {}, [h("div")])
-        linkfavicons.insertFavicon(imgPath, node)
-
-        expect(node.children.length).toBe(2)
-        expect(node.children[1]).toEqual(linkfavicons.createFaviconElement(imgPath))
-      })
-
-      it("should handle empty text nodes correctly", () => {
-        const node = h("div", {}, [""])
+      it.each([
+        [h("div", {}, [h("div")]), "nodes without text content"],
+        [h("div", {}, [""]), "empty text nodes"],
+      ])("should handle %s correctly", (node) => {
         linkfavicons.insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
@@ -432,14 +415,25 @@ describe("Favicon Utilities", () => {
         children: [],
       } as Element
       const parent = h("div", [node])
+      const faviconCounts = new Map<string, number>()
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       // Should not add any favicon since it has same-page-link class
       expect(node.children.length).toBe(0)
     })
   })
 
   describe("linkfavicons.ModifyNode", () => {
+    const faviconCounts = new Map<string, number>()
+
+    beforeEach(() => {
+      faviconCounts.clear()
+      // Set up counts for common favicons
+      faviconCounts.set(linkfavicons.TURNTROUT_FAVICON_PATH, linkfavicons.MIN_FAVICON_COUNT + 1)
+      faviconCounts.set(linkfavicons.MAIL_PATH, linkfavicons.MIN_FAVICON_COUNT + 1)
+      faviconCounts.set(linkfavicons.ANCHOR_PATH, linkfavicons.MIN_FAVICON_COUNT + 1)
+    })
+
     it.each([
       ["./shard-theory", linkfavicons.TURNTROUT_FAVICON_PATH],
       ["../shard-theory", linkfavicons.TURNTROUT_FAVICON_PATH],
@@ -450,7 +444,7 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href })
       const parent = h("div", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
     })
 
@@ -461,7 +455,7 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href })
       const parent = h(parentTag, [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       expect(node.children.length).toBe(0)
     })
 
@@ -469,7 +463,7 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href: "#section-1" })
       const parent = h("p", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(node.properties.className).toContain("same-page-link")
       expect(node.children.length).toBe(1)
@@ -480,7 +474,7 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href: "#section-1", className: ["existing-class"] })
       const parent = h("p", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(Array.isArray(node.properties.className)).toBe(true)
       expect(node.properties.className).toContain("existing-class")
@@ -497,7 +491,7 @@ describe("Favicon Utilities", () => {
       } as Element
       const parent = h("p", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(typeof node.properties.className).toBe("string")
       expect(node.properties.className).toBe("existing-class same-page-link")
@@ -513,7 +507,7 @@ describe("Favicon Utilities", () => {
       } as Element
       const parent = h("p", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(Array.isArray(node.properties.className)).toBe(true)
       expect(node.properties.className).toEqual(["same-page-link"])
@@ -525,7 +519,7 @@ describe("Favicon Utilities", () => {
         const node = h("a", { href })
         const parent = h("div", [node])
 
-        await linkfavicons.ModifyNode(node, parent)
+        await linkfavicons.ModifyNode(node, parent, faviconCounts)
         expect(node.children.length).toBe(0)
       },
     )
@@ -539,7 +533,7 @@ describe("Favicon Utilities", () => {
       const node = h(tagName, properties)
       const parent = h("div", [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       expect(node.children.length).toBe(0)
     })
 
@@ -554,7 +548,7 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href }, [])
       const parent = h("div", {}, [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       expect(node.children.length).toBe(0)
     })
 
@@ -564,8 +558,101 @@ describe("Favicon Utilities", () => {
       const node = h("a", { href: invalidHref }, [])
       const parent = h("div", {}, [node])
 
-      await linkfavicons.ModifyNode(node, parent)
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
       expect(node.children.length).toBe(0)
+    })
+
+    describe("favicon count threshold", () => {
+      it(`should skip favicons that appear fewer than ${linkfavicons.MIN_FAVICON_COUNT} times`, async () => {
+        const hostname = "example.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT - 1)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBe(0)
+      })
+
+      it(`should add favicons that appear exactly ${linkfavicons.MIN_FAVICON_COUNT} times`, async () => {
+        const hostname = "example.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBeGreaterThan(0)
+        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+      })
+
+      it(`should add favicons that appear more than ${linkfavicons.MIN_FAVICON_COUNT} times`, async () => {
+        const hostname = "example.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBeGreaterThan(0)
+        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+      })
+
+      it("should skip favicons not in counts map (treat as 0)", async () => {
+        const hostname = "example.com"
+        const faviconPath = linkfavicons.getQuartzPath(hostname)
+        const href = `https://${hostname}/page`
+
+        const counts = new Map<string, number>()
+
+        linkfavicons.urlCache.clear()
+        linkfavicons.urlCache.set(faviconPath, faviconPath)
+
+        const node = h("a", { href }, [])
+        const parent = h("div", {}, [node])
+
+        await linkfavicons.ModifyNode(node, parent, counts)
+        expect(node.children.length).toBe(0)
+      })
+
+      it.each([
+        ["mailto:test@example.com", linkfavicons.MAIL_PATH, "div"],
+        ["#section-1", linkfavicons.ANCHOR_PATH, "p"],
+      ])(
+        "should always add %s favicons regardless of count",
+        async (href, expectedPath, parentTag) => {
+          const counts = new Map<string, number>()
+          counts.set(expectedPath, 0)
+
+          const node = h("a", { href }, [])
+          const parent = h(parentTag, {}, [node])
+
+          await linkfavicons.ModifyNode(node, parent, counts)
+          expect(node.children.length).toBeGreaterThan(0)
+          expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
+        },
+      )
     })
   })
 })
@@ -805,6 +892,69 @@ describe("linkfavicons.readFaviconUrls", () => {
   })
 })
 
+describe("linkfavicons.readFaviconCounts", () => {
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it("should return empty Map when file doesn't exist", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(false)
+
+    const result = linkfavicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(0)
+  })
+
+  it.each([
+    [
+      "10\t/static/images/external-favicons/example_com.png\n5\t/static/images/external-favicons/test_com.png",
+      new Map([
+        ["/static/images/external-favicons/example_com.png", 10],
+        ["/static/images/external-favicons/test_com.png", 5],
+      ]),
+      "valid file content",
+    ],
+    ["", new Map(), "empty file"],
+    [
+      "10\t/static/images/external-favicons/example_com.png\ninvalid_line\n5\t/static/images/external-favicons/test_com.png",
+      new Map([
+        ["/static/images/external-favicons/example_com.png", 10],
+        ["/static/images/external-favicons/test_com.png", 5],
+      ]),
+      "file with invalid lines",
+    ],
+    [
+      "10\t/static/images/external-favicons/example_com.png\n\n5\t/static/images/external-favicons/test_com.png",
+      new Map([
+        ["/static/images/external-favicons/example_com.png", 10],
+        ["/static/images/external-favicons/test_com.png", 5],
+      ]),
+      "file with empty lines",
+    ],
+  ])("should handle $description", (fileContent, expectedMap) => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockReturnValue(fileContent)
+
+    const result = linkfavicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(expectedMap.size)
+    expectedMap.forEach((value, key) => {
+      expect(result.get(key)).toBe(value)
+    })
+  })
+
+  it("should throw when file read fails", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw new Error("File read error")
+    })
+
+    expect(() => linkfavicons.readFaviconCounts()).toThrow("File read error")
+  })
+})
+
 describe("isHeading", () => {
   it.each([
     ["h1", true],
@@ -874,6 +1024,12 @@ describe("isAssetLink", () => {
 describe("AddFavicons plugin", () => {
   beforeEach(() => {
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest
+      .spyOn(fs, "readFileSync")
+      .mockReturnValue(
+        `${linkfavicons.MIN_FAVICON_COUNT + 1}\t${linkfavicons.MAIL_PATH}\n${linkfavicons.MIN_FAVICON_COUNT + 1}\t${linkfavicons.ANCHOR_PATH}`,
+      )
   })
 
   it("should return a plugin configuration with correct name", () => {
@@ -888,7 +1044,6 @@ describe("AddFavicons plugin", () => {
     const htmlPlugins = plugin.htmlPlugins()
     const transformFunction = htmlPlugins[0]()
 
-    // Create a mock tree with anchor nodes
     const tree = {
       type: "root",
       children: [
@@ -898,7 +1053,6 @@ describe("AddFavicons plugin", () => {
 
     await transformFunction(tree as unknown as import("hast").Root)
 
-    // Check that fs.writeFileSync was called (by writeCacheToFile)
     expect(fs.writeFileSync).toHaveBeenCalled()
 
     // Verify favicons were added
