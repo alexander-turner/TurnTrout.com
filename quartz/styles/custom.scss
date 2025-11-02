@@ -503,7 +503,7 @@ img.favicon {
     }
   }
 
-  &[src$="mail.svg"] {
+  .favicon-span > &[src$="mail.svg"] {
     margin-left: 0.05rem;
   }
 
