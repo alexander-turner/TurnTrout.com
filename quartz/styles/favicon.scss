@@ -110,11 +110,14 @@ img.favicon {
   }
 
   // Make logos white on dark mode
-  &[src$="matsprogram_org.avif"],
-  &[src$="proceedings_mlr_press.avif"],
-  &[src$="lesswrong_com.avif"] {
-    :root[data-theme="dark"] & {
-      filter: invert(100%) grayscale(100%);
+  :root[data-theme="dark"] & {
+    &[src$="lesswrong_com.avif"] {
+      filter: invert(100%) grayscale(100%) brightness(0.9);
+    }
+
+    &[src$="matsprogram_org.avif"],
+    &[src$="proceedings_mlr_press.avif"] {
+      filter: invert(100%) grayscale(100%) brightness(1.5);
     }
   }
 
@@ -122,6 +125,10 @@ img.favicon {
     :root[data-theme="light"] & {
       filter: brightness(0.3);
     }
+  }
+
+  &[src$="arxiv_org.avif"] {
+    filter: brightness(1.5) saturate($favicon-default-saturate);
   }
 
   // Gray logos made white on dark mode
