@@ -1,10 +1,10 @@
 import fs from "fs"
-import { type Element } from "hast"
+import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { visit } from "unist-util-visit"
 
-import { type FilePath, type FullSlug } from "../../util/path"
+import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countfavicons"
 import {
   createFaviconElement,
@@ -16,6 +16,28 @@ import { createWinstonLogger } from "../transformers/logger_utils"
 import { type QuartzEmitterPlugin } from "../types"
 
 const logger = createWinstonLogger("populateFaviconContainer")
+
+const TEST_PAGE_SLUG = "Test-page" as FullSlug
+
+const findFaviconContainer = (root: Root): Element | null => {
+  let container: Element | null = null
+  visit(root, "element", (node) => {
+    if (node.tagName === "div" && node.properties?.id === "favicon-container") {
+      container = node
+    }
+  })
+  return container
+}
+
+const getValidFavicons = (faviconCounts: Map<string, number>): Element[] => {
+  return Array.from(faviconCounts.entries())
+    .filter(([path]: [string, number]) => {
+      const url = getFaviconUrl(path)
+      return url !== DEFAULT_PATH && shouldIncludeFavicon(url, path, faviconCounts)
+    })
+    .sort(([, countA]: [string, number], [, countB]: [string, number]) => countB - countA)
+    .map(([path]: [string, number]) => createFaviconElement(getFaviconUrl(path)))
+}
 
 /**
  * Emitter that populates the #favicon-container on the test page after all files have been processed.
@@ -32,8 +54,7 @@ export const PopulateFaviconContainer: QuartzEmitterPlugin = () => {
       return new DepGraph<FilePath>()
     },
     async emit(ctx) {
-      const testPageSlug = "Test-page" as FullSlug
-      const testPagePath = `${ctx.argv.output}/${testPageSlug}.html`
+      const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
 
       // Check if test page exists
       if (!fs.existsSync(testPagePath)) {
@@ -47,39 +68,21 @@ export const PopulateFaviconContainer: QuartzEmitterPlugin = () => {
       const faviconCounts = getFaviconCounts()
       logger.info(`Using ${faviconCounts.size} favicon counts for container`)
 
-      // Read the HTML file
-      const htmlContent = fs.readFileSync(testPagePath, "utf-8")
-      const root = fromHtml(htmlContent)
-
-      // Find the favicon container
-      let container: Element | null = null
-      visit(root, "element", (node) => {
-        if (node.tagName === "div" && node.properties?.id === "favicon-container") {
-          container = node
-        }
-      })
+      const html = fs.readFileSync(testPagePath, "utf-8")
+      const root = fromHtml(html)
+      const container = findFaviconContainer(root)
 
       if (!container) {
         logger.warn("No #favicon-container found on test page")
         return []
       }
 
-      // Populate with valid favicons
-      const validFavicons = Array.from(faviconCounts.entries())
-        .filter(([path]: [string, number]) => {
-          const url = getFaviconUrl(path)
-          return url !== DEFAULT_PATH && shouldIncludeFavicon(url, path, faviconCounts)
-        })
-        .sort(([, countA]: [string, number], [, countB]: [string, number]) => countB - countA) // Descending order by count
-        .map(([path]: [string, number]) => createFaviconElement(getFaviconUrl(path)))
-
+      const validFavicons = getValidFavicons(faviconCounts)
       logger.info(`Adding ${validFavicons.length} favicons to container`)
-      const containerElement = container as Element
-      containerElement.children = validFavicons
 
-      // Write back to file
-      const updatedHtml = toHtml(root)
-      fs.writeFileSync(testPagePath, updatedHtml, "utf-8")
+      container.children = validFavicons
+
+      fs.writeFileSync(testPagePath, toHtml(root), "utf-8")
 
       return [testPagePath as FilePath]
     },
