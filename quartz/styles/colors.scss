@@ -214,12 +214,14 @@ pre {
 a {
   color: var(--color-link);
 
-  &:visited {
+  &:visited,
+  &:visited * {
     color: var(--color-link-visited);
   }
 }
 
 a:hover,
+a:hover *,
 #toc-title button:hover {
   color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
 }
