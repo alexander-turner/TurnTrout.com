@@ -239,6 +239,21 @@ export async function readFaviconUrls(): Promise<Map<string, string>> {
 }
 
 /**
+ * Constructs a CDN URL from a favicon path.
+ * Converts .png paths to .avif and prepends CDN base URL.
+ *
+ * @param faviconPath - Path to favicon (e.g., "/static/images/external-favicons/example_com.png")
+ * @returns Full CDN URL (e.g., "https://assets.turntrout.com/static/images/external-favicons/example_com.avif")
+ */
+export function getFaviconUrl(faviconPath: string): string {
+  if (faviconPath.startsWith("http")) {
+    return faviconPath
+  }
+  const avifPath = faviconPath.replace(".png", ".avif")
+  return `https://assets.turntrout.com${avifPath}`
+}
+
+/**
  * Attempts to locate or download a favicon for a given hostname.
  *
  * Search order:
@@ -270,8 +285,7 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   }
 
   // Check for AVIF version
-  const avifPath = faviconPath.replace(".png", ".avif")
-  const avifUrl = avifPath.startsWith("http") ? avifPath : `https://assets.turntrout.com${avifPath}`
+  const avifUrl = getFaviconUrl(faviconPath)
 
   try {
     const avifResponse = await fetch(avifUrl)
@@ -526,6 +540,28 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 }
 
 /**
+ * Checks if a favicon should be included based on count threshold and whitelist.
+ *
+ * A favicon is included if:
+ * - It is whitelisted (always included regardless of count), OR
+ * - Its count is >= MIN_FAVICON_COUNT
+ *
+ * @param imgPath - The favicon image path/URL
+ * @param countKey - The lookup key for the favicon count (typically from getQuartzPath)
+ * @param faviconCounts - Map of favicon paths to their counts across the site
+ * @returns True if the favicon should be included, false otherwise
+ */
+export function shouldIncludeFavicon(
+  imgPath: string,
+  countKey: string,
+  faviconCounts: Map<string, number>,
+): boolean {
+  const count = faviconCounts.get(countKey) || 0
+  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
+  return isWhitelisted || count >= MIN_FAVICON_COUNT
+}
+
+/**
  * Normalizes relative URLs to absolute URLs.
  */
 export function normalizeUrl(href: string): string {
@@ -560,9 +596,8 @@ async function handleLink(
     // Whitelisted favicons are always included regardless of count
     // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
     const countKey = getQuartzPath(finalURL.hostname)
-    const count = faviconCounts.get(countKey) || 0
-    const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
-    if (!isWhitelisted && count < MIN_FAVICON_COUNT) {
+    if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
+      const count = faviconCounts.get(countKey) || 0
       logger.debug(
         `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )

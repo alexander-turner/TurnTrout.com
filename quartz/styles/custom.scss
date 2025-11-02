@@ -507,10 +507,6 @@ img.favicon {
     margin-left: 0.05rem;
   }
 
-  &[src$="forum_effectivealtruism_org.avif"] {
-    filter: saturate(0%) invert(100%) sepia(100%) hue-rotate(185deg) contrast(100%);
-  }
-
   :root[data-theme="dark"] &[src$="opentimestamps_org.avif"] {
     filter: saturate(0%) invert(80%) sepia(6%) hue-rotate(185deg) contrast(92%);
   }

@@ -237,6 +237,70 @@ describe("Favicon Utilities", () => {
     })
   })
 
+  describe("getFaviconUrl", () => {
+    it.each([
+      [
+        "/static/images/external-favicons/example_com.png",
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.avif",
+      ],
+      [
+        "/static/images/external-favicons/test_com.png",
+        "https://assets.turntrout.com/static/images/external-favicons/test_com.avif",
+      ],
+      [linkfavicons.TURNTROUT_FAVICON_PATH, linkfavicons.TURNTROUT_FAVICON_PATH],
+      [linkfavicons.MAIL_PATH, linkfavicons.MAIL_PATH],
+      ["https://example.com/favicon.ico", "https://example.com/favicon.ico"],
+    ])("should construct URL from path %s", (path, expectedUrl) => {
+      expect(linkfavicons.getFaviconUrl(path)).toBe(expectedUrl)
+    })
+  })
+
+  describe("shouldIncludeFavicon", () => {
+    it.each([
+      [linkfavicons.MIN_FAVICON_COUNT + 1, true, "exceeds threshold"],
+      [linkfavicons.MIN_FAVICON_COUNT, true, "equals threshold"],
+      [linkfavicons.MIN_FAVICON_COUNT - 1, false, "below threshold"],
+      [0, false, "zero count"],
+    ])("should return %s when count %s", (count, expected) => {
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set("/static/images/external-favicons/example_com.png", count)
+
+      const result = linkfavicons.shouldIncludeFavicon(
+        "/favicon.png",
+        "/static/images/external-favicons/example_com.png",
+        faviconCounts,
+      )
+
+      expect(result).toBe(expected)
+    })
+
+    it("should treat missing count as zero", () => {
+      const faviconCounts = new Map<string, number>()
+
+      const result = linkfavicons.shouldIncludeFavicon(
+        "/favicon.png",
+        "/static/images/external-favicons/example_com.png",
+        faviconCounts,
+      )
+
+      expect(result).toBe(false)
+    })
+
+    it.each([
+      [linkfavicons.MAIL_PATH],
+      [linkfavicons.ANCHOR_PATH],
+      [linkfavicons.TURNTROUT_FAVICON_PATH],
+      ["/static/images/external-favicons/apple_com.png"],
+    ])("should include whitelisted favicon %s even if count is zero", (imgPath) => {
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set(imgPath, 0)
+
+      const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+      expect(result).toBe(true)
+    })
+  })
+
   describe("linkfavicons.CreateFaviconElement", () => {
     it.each([
       ["/path/to/favicon.png", "Test Description"],

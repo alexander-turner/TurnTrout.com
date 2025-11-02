@@ -432,9 +432,9 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 ## External links with favicons
 
-Check out [GitHub](https://github.com). <img src="https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.avif" class="favicon no-span" alt="A red abstract logo of interconnected nodes and lines forming a flame-like shape on a green background.">
-
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons)
+
+<div id="favicon-container"></div>
 
 # Typography
 

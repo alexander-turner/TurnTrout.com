@@ -5758,5 +5758,29 @@
   "https://assets.turntrout.com/static/images/external-favicons/apps_obtainium_imranr_dev.avif": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/archive_ph.avif": {
+    "width": 57,
+    "height": 57
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/argos-ci_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/fee_org.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/geeksforgeeks_org.avif": {
+    "width": 32,
+    "height": 32
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mindingourway_com.avif": {
+    "width": 64,
+    "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/purgecss_com.avif": {
+    "width": 64,
+    "height": 64
   }
 }

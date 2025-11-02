@@ -20,6 +20,10 @@ const logger = createWinstonLogger("countfavicons")
 // Module-level counter to accumulate counts across all files
 const faviconCounter = new Map<string, number>()
 
+export function getFaviconCounts(): Map<string, number> {
+  return new Map(faviconCounter)
+}
+
 /**
  * Determines what favicon path a link would get based on its href.
  * Uses the same logic as linkfavicons.ts to predict favicon paths.
