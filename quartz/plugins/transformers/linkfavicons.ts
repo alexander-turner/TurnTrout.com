@@ -65,6 +65,7 @@ export const FAVICON_COUNT_WHITELIST = [
   "deepmind_com",
   "anthropic_com",
   "openai_com",
+  "forum_effectivealtruism_org",
 ]
 
 export const FAVICON_SUBSTRING_BLACKLIST = [
