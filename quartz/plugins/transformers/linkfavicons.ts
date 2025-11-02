@@ -74,6 +74,8 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "developer_mozilla_org",
   "link_springer_com",
   "unicog_org", // looks like wordpress
+  "proceedings_neurips_cc", // too small
+  "papers_nips_cc",
 ]
 
 // istanbul ignore if

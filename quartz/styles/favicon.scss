@@ -1,0 +1,144 @@
+@use "./variables.scss" as *;
+
+$favicon-default-saturate: 10%;
+
+:root[data-theme="dark"] video,
+:root[data-theme="dark"] img {
+  &.favicon {
+    filter: saturate($favicon-default-saturate);
+  }
+}
+
+.subtitle {
+  & .favicon {
+    // Smaller favicon for smaller font
+    --favicon-size: calc(var(--font-size-minus-1) * 0.65);
+
+    width: var(--favicon-size);
+    height: var(--favicon-size);
+  }
+}
+
+.favicon-span {
+  white-space: nowrap;
+}
+
+img.favicon {
+  display: inline;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin: -20% auto -0.07em calc(0.125 * $base-margin);
+  vertical-align: 10%;
+  filter: saturate($favicon-default-saturate);
+  mix-blend-mode: normal;
+  cursor: text;
+
+  // Don't pollute copied text with favicon
+  user-select: none;
+
+  // Make favicons align properly with headings
+  h1 &,
+  h2 &,
+  h3 &,
+  h4 &,
+  h5 &,
+  h6 & {
+    vertical-align: 65%;
+  }
+
+  &.close-text {
+    margin-left: 0.05rem;
+  }
+
+  &[src$="cladlab_nd_edu.avif"] {
+    filter: invert(90%);
+  }
+
+  // These are really dark by default so we make them match var(--foreground)
+  &[src$="mail.svg"],
+  &[src$="readthesequences_com.avif"] {
+    // Computed to match var(--foreground) using https://codepen.io/sosuke/pen/Pjoqqp
+    filter: invert(27%);
+
+    :root[data-theme="dark"] & {
+      filter: invert(91%) sepia(6%) hue-rotate(185deg) contrast(92%);
+    }
+  }
+
+  .favicon-span > &[src$="mail.svg"] {
+    margin-left: 0.05rem;
+  }
+
+  :root[data-theme="dark"] &[src$="opentimestamps_org.avif"] {
+    filter: saturate($favicon-default-saturate) invert(80%) sepia(6%) hue-rotate(185deg)
+      contrast(92%);
+  }
+
+  // Make the anchor icon less bright on dark mode
+  &[src$="anchor.svg"] {
+    // Rotate the anchor so that it resembles the trout within-site icon
+    // also flip it horizontally
+    transform: rotate(-90deg) scaleX(-1) scale(1.2);
+    filter: invert(27%);
+
+    :root[data-theme="dark"] & {
+      filter: invert(80%) sepia(6%) hue-rotate(185deg) contrast(92%);
+    }
+  }
+
+  :root[data-theme="light"] &[src$="gwern_net.avif"] {
+    filter: invert(100%);
+    mix-blend-mode: multiply;
+  }
+
+  // Make Wikipedia logo be white W against transparent background
+  &[src$="wikipedia_org.avif"] {
+    :root[data-theme="dark"] & {
+      filter: invert(0.95) brightness(2);
+    }
+  }
+
+  // Very dark by default
+  &[src$="github_com.avif"] {
+    :root[data-theme="light"] & {
+      filter: invert(25%);
+    }
+
+    :root[data-theme="dark"] & {
+      filter: invert(75%) sepia(6%) hue-rotate(185deg) contrast(92%);
+    }
+  }
+
+  // Make logos white on dark mode
+  &[src$="matsprogram_org.avif"],
+  &[src$="proceedings_mlr_press.avif"],
+  &[src$="lesswrong_com.avif"] {
+    :root[data-theme="dark"] & {
+      filter: invert(100%) grayscale(100%);
+    }
+  }
+
+  &[src$="arbital_com.avif"] {
+    :root[data-theme="light"] & {
+      filter: brightness(0.3);
+    }
+  }
+
+  // Gray logos made white on dark mode
+  &[src$="alignmentforum_org.avif"],
+  &[src$="ai-alignment_com.avif"] {
+    :root[data-theme="dark"] & {
+      filter: brightness(3); // Make it brighter
+    }
+  }
+
+  &[src$="turntrout-favicons/favicon.ico"] {
+    :root[data-theme="light"] & {
+      filter: contrast(15%);
+    }
+
+    :root[data-theme="dark"] & {
+      filter: invert(91%) sepia(6%) hue-rotate(185deg) brightness() contrast(50%);
+    }
+  }
+}
