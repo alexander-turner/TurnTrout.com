@@ -119,6 +119,22 @@ img.favicon {
     &[src$="proceedings_mlr_press.avif"] {
       filter: invert(100%) grayscale(100%) brightness(1.5);
     }
+
+    &[src$="intelligence_org.avif"],
+    &[src$="amazon_com.avif"],
+    &[src$="smile_amazon_com.avif"] {
+      filter: hue-rotate(195deg) invert(1);
+    }
+
+    &[src$="colab_research_google_com.avif"],
+    &[src$="docs_google_com.avif"],
+    &[src$="developers_google_com.avif"] {
+      filter: hue-rotate(195deg) invert(0.93) saturate(0.2);
+    }
+
+    &[src$="bitwarden_com.avif"] {
+      filter: hue-rotate(195deg) invert(0.93) saturate(0.5);
+    }
   }
 
   &[src$="arbital_com.avif"] {
