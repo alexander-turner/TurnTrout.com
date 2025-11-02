@@ -2884,8 +2884,6 @@ Oura
 Partiful
 Pritzker
 ProPublica
-ProtonMail
-ProtonVPN
 Quantico
 Qwen3-8B
 Radu

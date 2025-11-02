@@ -3551,6 +3551,19 @@ def test_check_video_source_order_and_match(
             '<a href="https://ht%3Cem%3Etp://...">Malformed 1 (Internal)</a>',
             [],
         ),  # No class="external"
+        # --- Browser-specific about: URLs (should be ignored) ---
+        (
+            '<a class="external" href="about:preferences#connection">About URL</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="http://about:preferences#connection">About URL HTTP</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="https://about:preferences#connection">About URL HTTPS</a>',
+            [],
+        ),
         # --- Edge Cases ---
         (
             '<a class="external" href="">Empty Href</a>',

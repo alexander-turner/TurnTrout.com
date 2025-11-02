@@ -930,6 +930,10 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
                 )
             continue
 
+        # Ignore browser-specific about: URLs
+        if href.startswith(("about:", "http://about:", "https://about:")):
+            continue
+
         classes = script_utils.get_classes(link)
         if (
             "external" not in classes
