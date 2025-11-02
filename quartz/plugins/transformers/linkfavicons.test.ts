@@ -13,6 +13,7 @@ import { PassThrough } from "stream"
 
 // skipcq: JS-C1003
 import * as linkfavicons from "./linkfavicons"
+import { FAVICON_SUBSTRING_BLACKLIST } from "./linkfavicons"
 
 jest.mock("fs")
 import fs from "fs"
@@ -298,6 +299,32 @@ describe("Favicon Utilities", () => {
       const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
       expect(result).toBe(true)
+    })
+
+    describe("favicon blacklist", () => {
+      it.each(
+        FAVICON_SUBSTRING_BLACKLIST.map((blacklistEntry) => [
+          `/static/images/external-favicons/${blacklistEntry}.png`,
+        ]),
+      )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
+        const faviconCounts = new Map<string, number>()
+        faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+
+        const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+        expect(result).toBe(false)
+      })
+
+      it("should exclude favicons with blacklisted substring in middle of path", () => {
+        const blacklistEntry = FAVICON_SUBSTRING_BLACKLIST[0]
+        const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
+        const faviconCounts = new Map<string, number>()
+        faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+
+        const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+        expect(result).toBe(false)
+      })
     })
   })
 

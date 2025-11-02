@@ -59,6 +59,23 @@ export const FAVICON_COUNT_WHITELIST = [
   "apple_com.png",
 ]
 
+export const FAVICON_SUBSTRING_BLACKLIST = [
+  "incompleteideas_net",
+  "hpmor_com",
+  "jacobgw",
+  "pubsonline_informs_org",
+  "nickbostrom_com",
+  "cs_umd",
+  "acritch",
+  "medium_com",
+  "wired_com",
+  "selfawaresystems",
+  "vkrakovna",
+  "developer_mozilla_org",
+  "link_springer_com",
+  "unicog_org", // looks like wordpress
+]
+
 // istanbul ignore if
 if (!fs.existsSync(FAVICON_URLS_FILE)) {
   try {
@@ -540,11 +557,11 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 }
 
 /**
- * Checks if a favicon should be included based on count threshold and whitelist.
+ * Checks if a favicon should be included based on count threshold, whitelist, and blacklist.
  *
  * A favicon is included if:
- * - It is whitelisted (always included regardless of count), OR
- * - Its count is >= MIN_FAVICON_COUNT
+ * - It is NOT blacklisted, AND
+ * - (It is whitelisted (always included regardless of count), OR its count is >= MIN_FAVICON_COUNT)
  *
  * @param imgPath - The favicon image path/URL
  * @param countKey - The lookup key for the favicon count (typically from getQuartzPath)
@@ -556,6 +573,9 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: Map<string, number>,
 ): boolean {
+  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => imgPath.includes(entry))
+  if (isBlacklisted) return false
+
   const count = faviconCounts.get(countKey) || 0
   const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
   return isWhitelisted || count >= MIN_FAVICON_COUNT
