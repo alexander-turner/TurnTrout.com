@@ -1252,3 +1252,105 @@ describe("AddFavicons plugin", () => {
     expect(anchorWithoutHref.children.length).toBe(0)
   })
 })
+
+describe("replaceFavicon", () => {
+  beforeEach(() => {
+    linkfavicons.urlCache.clear()
+  })
+
+  it.each([
+    [
+      "/static/images/external-favicons/blog_openai_com.png",
+      "/static/images/external-favicons/openai_com.png",
+      "local PNG path",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
+      "CDN AVIF URL",
+    ],
+  ])("should replace %s with configured replacement", (input, expected) => {
+    const result = linkfavicons.replaceFavicon(input)
+    expect(result).toBe(expected)
+  })
+
+  it.each([
+    "/static/images/external-favicons/example_com.png",
+    linkfavicons.MAIL_PATH,
+    linkfavicons.ANCHOR_PATH,
+    linkfavicons.TURNTROUT_FAVICON_PATH,
+    "/static/images/other-folder/example.png",
+    "https://example.com/favicon.ico",
+  ])("should not replace %s", (input) => {
+    const result = linkfavicons.replaceFavicon(input)
+    expect(result).toBe(input)
+  })
+
+  it.each([
+    [
+      "/static/images/external-favicons/blog_openai_com.png",
+      "/static/images/external-favicons/openai_com.png",
+      ".png",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
+      ".avif",
+    ],
+  ])("should preserve %s extension when replacing", (input, expected, extension) => {
+    const result = linkfavicons.replaceFavicon(input)
+    expect(result).toBe(expected)
+    expect(result).toContain(extension)
+    expect(result).not.toContain("blog_openai_com")
+  })
+
+  describe("integration with ModifyNode", () => {
+    it("should apply replacement before inserting favicon", async () => {
+      const hostname = "blog.openai.com"
+      const originalPath = linkfavicons.getQuartzPath(hostname)
+      const replacedPath = "/static/images/external-favicons/openai_com.png"
+      const href = `https://${hostname}/page`
+
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+      linkfavicons.urlCache.clear()
+      linkfavicons.urlCache.set(originalPath, originalPath)
+
+      const node = h("a", { href }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      expect(node.children.length).toBeGreaterThan(0)
+      // The favicon should be replaced
+      const insertedFavicon = node.children[0] as Element
+      expect(insertedFavicon.properties.src).toBe(replacedPath)
+    })
+
+    it("should use replaced path for count checking", async () => {
+      const hostname = "blog.openai.com"
+      const originalPath = linkfavicons.getQuartzPath(hostname)
+      const replacedPath = "/static/images/external-favicons/openai_com.png"
+      const href = `https://${hostname}/page`
+
+      // Set count for original path below threshold
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT - 1)
+      // Set count for replaced path above threshold
+      faviconCounts.set(replacedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+      linkfavicons.urlCache.clear()
+      linkfavicons.urlCache.set(originalPath, originalPath)
+
+      const node = h("a", { href }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      // Should still insert because replacement happens before count check
+      // and countKey is based on hostname, not the replaced path
+      expect(node.children.length).toBeGreaterThan(0)
+    })
+  })
+})

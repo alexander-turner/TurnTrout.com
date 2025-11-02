@@ -45,18 +45,26 @@ export const FAVICON_COUNTS_FILE = path.join(
  * Minimum number of times a favicon must appear across the site to be included.
  * Favicons that appear fewer times will not be added to links.
  */
-export const MIN_FAVICON_COUNT = 3
+export const MIN_FAVICON_COUNT = 6
 
 /**
- * Whitelist of favicon paths that should always be included regardless of count.
+ * Whitelist of favicon paths that should always be included regardless of count. Often widely recognizable.
  * These favicons will be added even if they appear fewer than MIN_FAVICON_COUNT times.
- * Entries can be full paths or suffixes (e.g., "apple_com.png" will match any path ending with "apple_com.png").
+ * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
 export const FAVICON_COUNT_WHITELIST = [
   MAIL_PATH,
   ANCHOR_PATH,
   TURNTROUT_FAVICON_PATH,
-  "apple_com.png",
+  "apple_com",
+  "x_com",
+  "open_spotify_com",
+  "discord_gg",
+  "huggingface_co",
+  "deepmind_google",
+  "deepmind_com",
+  "anthropic_com",
+  "openai_com",
 ]
 
 export const FAVICON_SUBSTRING_BLACKLIST = [
@@ -76,6 +84,14 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "unicog_org", // looks like wordpress
   "proceedings_neurips_cc", // too small
   "papers_nips_cc",
+  "playpen_icomtek_csir_co_za", // doesn't exist
+]
+
+export const REPLACE_FAVICONS = [
+  {
+    from: "blog_openai_com.avif",
+    to: "openai_com.avif",
+  },
 ]
 
 // istanbul ignore if
@@ -259,7 +275,7 @@ export async function readFaviconUrls(): Promise<Map<string, string>> {
 
 /**
  * Constructs a CDN URL from a favicon path.
- * Converts .png paths to .avif and prepends CDN base URL.
+ * Converts .png paths to prefixes CDN base URL.
  *
  * @param faviconPath - Path to favicon (e.g., "/static/images/external-favicons/example_com.png")
  * @returns Full CDN URL (e.g., "https://assets.turntrout.com/static/images/external-favicons/example_com.avif")
@@ -270,6 +286,61 @@ export function getFaviconUrl(faviconPath: string): string {
   }
   const avifPath = faviconPath.replace(".png", ".avif")
   return `https://assets.turntrout.com${avifPath}`
+}
+
+/**
+ * Replaces a favicon path based on the REPLACE_FAVICONS configuration.
+ * Checks if the favicon path matches any "from" pattern and replaces it with the corresponding "to" pattern.
+ * Handles both local paths (.png) and CDN URLs (.avif), preserving the path structure.
+ *
+ * @param faviconPath - The favicon path to potentially replace (can be local path, CDN URL, or special path)
+ * @returns The replaced favicon path, or the original path if no replacement is configured
+ */
+export function replaceFavicon(faviconPath: string): string {
+  // Don't replace special paths (mail, anchor, turntrout favicon)
+  if (
+    faviconPath === MAIL_PATH ||
+    faviconPath === ANCHOR_PATH ||
+    faviconPath === TURNTROUT_FAVICON_PATH
+  ) {
+    return faviconPath
+  }
+
+  // Extract basename from path
+  let basename: string
+  let pathPrefix = ""
+
+  if (faviconPath.startsWith("http")) {
+    // CDN URL: https://assets.turntrout.com/static/images/external-favicons/example_com.avif
+    const urlMatch = faviconPath.match(
+      /https:\/\/assets\.turntrout\.com\/static\/images\/external-favicons\/([^/]+)$/,
+    )
+    if (!urlMatch) {
+      return faviconPath
+    }
+    basename = urlMatch[1]
+    pathPrefix = "https://assets.turntrout.com/static/images/external-favicons/"
+  } else {
+    // Local path: /static/images/external-favicons/example_com.png
+    const pathMatch = faviconPath.match(/^(\/static\/images\/external-favicons\/)([^/]+)$/)
+    if (!pathMatch) {
+      return faviconPath
+    }
+    pathPrefix = pathMatch[1]
+    basename = pathMatch[2]
+  }
+
+  // Check if basename matches any replacement pattern
+  for (const replacement of REPLACE_FAVICONS) {
+    if (basename === replacement.from || basename === replacement.from.replace(".avif", ".png")) {
+      // Replace the basename, preserving the extension
+      const extension = basename.includes(".avif") ? ".avif" : ".png"
+      const newBasename = replacement.to.replace(".avif", extension)
+      return `${pathPrefix}${newBasename}`
+    }
+  }
+
+  return faviconPath
 }
 
 /**
@@ -579,7 +650,7 @@ export function shouldIncludeFavicon(
   if (isBlacklisted) return false
 
   const count = faviconCounts.get(countKey) || 0
-  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.endsWith(entry))
+  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
   return isWhitelisted || count >= MIN_FAVICON_COUNT
 }
 
@@ -614,20 +685,26 @@ async function handleLink(
       return
     }
 
+    // Apply favicon replacement if configured
+    const replacedPath = replaceFavicon(imgPath)
+    if (replacedPath !== imgPath) {
+      logger.info(`Replacing favicon ${imgPath} with ${replacedPath}`)
+    }
+
     // Check if favicon appears frequently enough across the site
     // Whitelisted favicons are always included regardless of count
     // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
     const countKey = getQuartzPath(finalURL.hostname)
-    if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
+    if (!shouldIncludeFavicon(replacedPath, countKey, faviconCounts)) {
       const count = faviconCounts.get(countKey) || 0
       logger.debug(
-        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
+        `Favicon ${replacedPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )
       return
     }
 
-    logger.info(`Inserting favicon for ${finalURL.hostname}: ${imgPath}`)
-    insertFavicon(imgPath, node)
+    logger.info(`Inserting favicon for ${finalURL.hostname}: ${replacedPath}`)
+    insertFavicon(replacedPath, node)
   } catch (error) {
     logger.error(`Error processing URL ${href}: ${error}`)
   }
