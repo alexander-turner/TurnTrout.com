@@ -396,7 +396,7 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 > [!warning]
 > 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time.
->     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to [`about:preferences#connection`](http://about:preferences#connection) and tap "select a built-in bridge" and then choose `obsf4`.
+>     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to `about:preferences#connection` and tap "select a built-in bridge" and then choose `obsf4`.
 > 2. Never configure the Tor Browser's `about:config` or install extensions. That'll make you easier to "fingerprint" and [separate you from the herd.](https://www.privacyguides.org/en/tor/#tor-browser)
 > 3. When you open Tor, its window will have a certain size. Don't modify this size or maximize the window—believe it or not, that can help deanonymize you!
 

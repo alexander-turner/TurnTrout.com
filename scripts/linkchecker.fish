@@ -8,17 +8,14 @@ if test -z "$TARGET_FILES"
     set -x no_proxy "http://localhost:8080"
 end
 
-# Ignore about: URLs
-set -l ABOUT_IGNORE_PATTERNS --ignore-url="about:.*" --ignore-url="https?://about:.*"
 
 # Internal links should NEVER 404! Check links which start with a dot or slash
-linkchecker $TARGET_FILES --threads 50 $ABOUT_IGNORE_PATTERNS
+linkchecker $TARGET_FILES --threads 50 
 set -l INTERNAL_STATUS $status
 
 # Check external links which I control
 linkchecker $TARGET_FILES \
     --ignore-url="!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)" \
-    $ABOUT_IGNORE_PATTERNS \
     --no-warnings \
     --check-extern \
     --threads 30 \
