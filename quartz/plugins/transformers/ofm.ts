@@ -21,7 +21,7 @@ import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
-import { slugify as slugAnchor } from "./gfm"
+import { slugify as slugAnchor, resetSlugger } from "./gfm"
 
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
@@ -685,6 +685,9 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
     textTransform(_ctx, src: string | Buffer) {
       /* istanbul ignore next -- Buffer input handling edge case */
       src = typeof src === "string" ? src : src.toString()
+
+      // Reset slugger per file so IDs are unique per page, not globally
+      resetSlugger()
 
       // strip HTML comments
       src = src.replace(/<!--[\s\S]*?-->/g, "")

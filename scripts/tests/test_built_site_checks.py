@@ -2284,6 +2284,78 @@ def test_check_iframe_sources(
 
 
 @pytest.mark.parametrize(
+    "html,mock_responses,expected_issues,expected_urls",
+    [
+        (
+            '<iframe src="https://example.com/embed"></iframe>',
+            [(True, 200)],
+            [],
+            ["https://example.com/embed"],
+        ),
+        (
+            '<iframe src="https://bad.example/embed"></iframe>',
+            [(False, 500)],
+            [
+                "Iframe embed returned status 500: https://bad.example/embed",
+            ],
+            ["https://bad.example/embed"],
+        ),
+        (
+            '<iframe src="https://error.example/embed"></iframe>',
+            [Exception("boom")],
+            ["Failed to load iframe embed https://error.example/embed: boom"],
+            ["https://error.example/embed"],
+        ),
+        (
+            '<iframe src="//protocol.example/embed"></iframe>',
+            [(True, 200)],
+            [],
+            ["https://protocol.example/embed"],
+        ),
+        (
+            '<iframe src="/relative/embed"></iframe>',
+            [],
+            [],
+            [],
+        ),
+        (
+            "<iframe></iframe>",
+            [],
+            ["Iframe missing 'src' attribute"],
+            [],
+        ),
+    ],
+)
+def test_check_iframe_embeds(
+    monkeypatch,
+    html: str,
+    mock_responses: list,
+    expected_issues: list[str],
+    expected_urls: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    requested_urls: list[str] = []
+    responses = list(mock_responses)
+
+    def mock_head(url: str, timeout: int) -> object:
+        requested_urls.append(url)
+        if not responses:
+            raise AssertionError("Unexpected requests.head call")
+        response = responses.pop(0)
+        if isinstance(response, Exception):
+            raise requests.RequestException(str(response))
+        ok, status = response
+        return type("MockResponse", (), {"ok": ok, "status_code": status})
+
+    monkeypatch.setattr(requests, "head", mock_head)
+
+    issues = built_site_checks.check_iframe_embeds(soup)
+
+    assert sorted(issues) == sorted(expected_issues)
+    assert requested_urls == expected_urls
+
+
+@pytest.mark.parametrize(
     "html,expected",
     [
         # Basic cases - missing spaces
@@ -3551,6 +3623,19 @@ def test_check_video_source_order_and_match(
             '<a href="https://ht%3Cem%3Etp://...">Malformed 1 (Internal)</a>',
             [],
         ),  # No class="external"
+        # --- Browser-specific about: URLs (should be ignored) ---
+        (
+            '<a class="external" href="about:preferences#connection">About URL</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="http://about:preferences#connection">About URL HTTP</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="https://about:preferences#connection">About URL HTTPS</a>',
+            [],
+        ),
         # --- Edge Cases ---
         (
             '<a class="external" href="">Empty Href</a>',

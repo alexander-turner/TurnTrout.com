@@ -110,7 +110,7 @@ function shouldNotWrapInFigure(element: Element, ancestors: Parent[]): boolean {
 /**
  * Wraps elements with float-right class in a <figure>.
  * If an element contains a direct child with float-right, wraps the parent instead,
- * unless the parent is a semantic container that should not be wrapped.
+ * unless the parent is a semantic container that should not be wrapped (like paragraphs).
  */
 function wrapFloatRight(element: Element, ancestors: Parent[]): void {
   if (shouldNotWrapInFigure(element, ancestors)) {
@@ -122,18 +122,22 @@ function wrapFloatRight(element: Element, ancestors: Parent[]): void {
   )
 
   // Wrap parents that contain float-right children (e.g., span.video-container > video.float-right)
-  if (hasFloatRightChild) {
+  // But skip if the parent is a paragraph - in that case, the float-right child will be wrapped directly
+  if (hasFloatRightChild && element.tagName !== "p") {
     wrapElement(element, ancestors, () => false, "figure", "")
     return
   }
 
-  // Wrap standalone float-right elements ONLY if their parent is root-level
-  // (Otherwise, the parent will be wrapped when visited)
+  // Wrap standalone float-right elements if:
+  // 1. Their parent is root-level, OR
+  // 2. Their parent is a paragraph (semantic container that shouldn't be wrapped)
   if (hasClass(element, "float-right")) {
     const directParent = ancestors[ancestors.length - 1]
     const parentIsRootLevel = directParent?.type === "root"
+    const parentIsParagraph =
+      directParent && "tagName" in directParent && directParent.tagName === "p"
 
-    if (parentIsRootLevel) {
+    if (parentIsRootLevel || parentIsParagraph) {
       wrapElement(element, ancestors, skipNodeForFloatRight, "figure", "")
     }
   }

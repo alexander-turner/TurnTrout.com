@@ -391,10 +391,6 @@ Figure: This image should be transparent in light mode and have a light backgrou
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
 <!--spellchecker-enable-->
 
-# Fatebook embed
-
-<iframe title="Prediction: Are You Going To Like TurnTrout.com? (Resolved 'Yes')" src="https://fatebook.io/embed/q/are-you-going-to-like-turntrout-com---cm2u10nym00029cc3j1h05pot?compact=true&requireSignIn=false" height="200"></iframe>
-
 # Spoilers
 >
 >Normal blockquote
@@ -409,7 +405,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 # Math
 
-Inline math: $e^\{i\pi\} + 1 = 0$
+Inline math: $e^{i\pi} + 1 = 0$
 
 Display math:
 $$
@@ -583,6 +579,17 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._
 # Footnote demonstration
 
 This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^2]
+
+Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
+
+[^spam1]: Make sure we hit double-digit footnotes to test formatting.
+[^spam2]: Make sure we hit double-digit footnotes to test formatting.
+[^spam3]: Make sure we hit double-digit footnotes to test formatting.
+[^spam4]: Make sure we hit double-digit footnotes to test formatting.
+[^spam5]: Make sure we hit double-digit footnotes to test formatting.
+[^spam6]: Make sure we hit double-digit footnotes to test formatting.
+[^spam7]: Make sure we hit double-digit footnotes to test formatting.
+[^spam8]: Make sure we hit double-digit footnotes to test formatting.
 
 # Code blocks
 

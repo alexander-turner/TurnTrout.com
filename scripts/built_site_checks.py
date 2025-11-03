@@ -839,6 +839,37 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
     return problematic_iframes
 
 
+def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
+    """Check that iframe embeds are structurally valid and accessible."""
+    problematic_embeds: list[str] = []
+
+    for iframe in _tags_only(soup.find_all("iframe")):
+        src_attr = iframe.get("src")
+        if not isinstance(src_attr, str) or not src_attr.strip():
+            problematic_embeds.append("Iframe missing 'src' attribute")
+            continue
+
+        normalized_src = src_attr.strip()
+        if normalized_src.startswith("//"):
+            normalized_src = "https:" + normalized_src
+
+        # Validate external endpoints when possible
+        if validators.url(normalized_src):
+            try:
+                response = requests.head(normalized_src, timeout=10)
+                if not response.ok:
+                    problematic_embeds.append(
+                        f"Iframe embed returned status {response.status_code}: {normalized_src}"
+                    )
+            except requests.RequestException as exc:
+                problematic_embeds.append(
+                    f"Failed to load iframe embed {normalized_src}: {exc}"
+                )
+        # Relative or non-URL embeds are assumed to be internal and skipped
+
+    return problematic_embeds
+
+
 def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
     """
     Check for consecutive periods in text content, including cases where they're
@@ -928,6 +959,10 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
                     href,
                     prefix="Syntactically invalid email: ",
                 )
+            continue
+
+        # Ignore browser-specific about: URLs
+        if href.startswith(("about:", "http://about:", "https://about:")):
             continue
 
         classes = script_utils.get_classes(link)
@@ -1083,6 +1118,7 @@ def check_file_for_issues(
         "inline_style_variables": check_inline_style_variables(
             soup, defined_css_variables
         ),
+        "problematic_iframe_embeds": check_iframe_embeds(soup),
     }
 
     if should_check_fonts:

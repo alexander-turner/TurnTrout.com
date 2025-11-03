@@ -143,7 +143,7 @@ The above list contained the [Aurora app store](https://auroraoss.com/). Aurora 
 4. [ ] Set these security settings in `Settings -> Security & privacy`:
     1. [ ] Exploit protection:
         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on).
-        2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection).
+        2. [ ] USB-C port: "Charging-only when locked" (rules out large class of USB-C based attacks).
         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
 
@@ -182,7 +182,7 @@ Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
+[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
 
 Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
 
@@ -272,13 +272,13 @@ Subtitle: Time: 15 minutes initial setup.
 
 If you use aliases, you make it harder for scammers and surveillance to track your online identity. You can also disable an alias if a site uses that alias to spam you.
 
-- [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
+- [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
 
 - [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate email aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
-[^premium]: If you've purchased Proton Unlimited as [recommended](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
+[^premium]: If you've purchased Proton Unlimited as [recommended](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
 
 ## Use virtual cards for online purchases
 
@@ -396,7 +396,7 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 > [!warning]
 > 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time.
->     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to [`about:preferences#connection`](about:preferences#connection) and tap "select a built-in bridge" and then choose `obsf4`.
+>     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to `about:preferences#connection` and tap "select a built-in bridge" and then choose `obsf4`.
 > 2. Never configure the Tor Browser's `about:config` or install extensions. That'll make you easier to "fingerprint" and [separate you from the herd.](https://www.privacyguides.org/en/tor/#tor-browser)
 > 3. When you open Tor, its window will have a certain size. Don't modify this size or maximize the window—believe it or not, that can help deanonymize you!
 
@@ -404,7 +404,7 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 Subtitle: Time: 10 minutes.
 
-Even if you're using [a VPN](/privacy-despite-authoritarianism#protonvpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
 

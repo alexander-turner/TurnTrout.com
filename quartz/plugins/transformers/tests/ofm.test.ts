@@ -1296,4 +1296,76 @@ describe("Header slug consistency between wikilinks and actual headers", () => {
     const result = transformer.textTransform(mockCtx, input)
     expect(result).toBe("![[page#]]")
   })
+
+  it("should not add -1 suffix to transclusion anchors when there are no duplicates", () => {
+    resetSlugger()
+    const input = "![[/test-page#section-to-transclude]]"
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+    const result = transformer.textTransform(mockCtx, input)
+    expect(result).toBe("![[/test-page#section-to-transclude]]")
+    expect(result).not.toContain("section-to-transclude-1")
+  })
+
+  it("should reset slugger per file so IDs are unique per page, not globally", () => {
+    resetSlugger()
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+
+    // Process first file with a transclusion
+    const file1 = "![[page1#my-section]]"
+    const result1 = transformer.textTransform(mockCtx, file1)
+    expect(result1).toBe("![[page1#my-section]]")
+
+    // Process second file with the same anchor - should NOT get -1 suffix
+    // because slugger is reset per file
+    const file2 = "![[page2#my-section]]"
+    const result2 = transformer.textTransform(mockCtx, file2)
+    expect(result2).toBe("![[page2#my-section]]")
+    expect(result2).not.toContain("my-section-1")
+  })
+
+  it("should handle multiple transclusions to the same anchor in the same file", () => {
+    resetSlugger()
+    const input = "![[/test-page#section-to-transclude]]\n![[/test-page#section-to-transclude]]"
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+    const result = transformer.textTransform(mockCtx, input)
+    // First transclusion should normalize to base anchor
+    expect(result).toContain("![[/test-page#section-to-transclude]]")
+    // Second transclusion gets -1 suffix because slugger tracks duplicates within the same file
+    // This matches how headers with duplicate text get numbered IDs
+    expect(result).toContain("section-to-transclude-1")
+  })
+
+  it("should normalize transclusion anchors consistently with regular wikilinks", () => {
+    resetSlugger()
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+
+    // Regular wikilink
+    const regularLink = "[[page#Section's Title]]"
+    const regularResult = transformer.textTransform(mockCtx, regularLink)
+    expect(regularResult).toBe("[[page#section-s-title]]")
+
+    // Reset for next test
+    resetSlugger()
+
+    // Transclusion with same anchor should normalize the same way
+    const transclusion = "![[page#Section's Title]]"
+    const transclusionResult = transformer.textTransform(mockCtx, transclusion)
+    expect(transclusionResult).toBe("![[page#section-s-title]]")
+  })
 })

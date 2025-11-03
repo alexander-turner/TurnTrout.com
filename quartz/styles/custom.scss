@@ -34,10 +34,10 @@ li > blockquote:first-child {
     margin-top: calc(2 * $base-margin);
   }
 
-  // Footnotes narrower than normal lists, also even
+  // Footnotes narrower than normal lists
   & > ol {
-    padding-left: calc(0.5 * $list-padding-left);
-    padding-right: calc(0.5 * $list-padding-left);
+    padding-left: calc(2.5 * $base-margin);
+    padding-right: 0;
   }
 
   & li {
