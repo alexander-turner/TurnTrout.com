@@ -420,6 +420,23 @@ describe("WrapNakedElements Plugin Tests", () => {
     })
   })
 
+  describe("Paragraph Protection", () => {
+    it("should wrap float-right child in figure, not the paragraph", () => {
+      const input =
+        '<p>Over the years, I\'ve worked on lots of research problems. <span class="float-right" style="max-width: 40%;"><img src="test.jpg" alt="A professional photograph of me."/> While not <em>technically</em> a part of my research, I\'ve included a photo of myself anyways.</span></p>'
+      const result = testWrapNakedElementsHTML(input)
+      // The paragraph should not be wrapped in a figure
+      expect(result).toMatch(/^<p>/)
+      expect(result).toMatch(/<\/p>$/)
+      // But the float-right span should be wrapped in a figure
+      expect(result).toContain("<figure>")
+      expect(result).toContain('<span class="float-right"')
+      expect(result).toContain("</figure>")
+      // Verify the structure: <p>...<figure><span class="float-right">...</span></figure>...</p>
+      expect(result).toMatch(/<p>.*<figure><span class="float-right".*<\/figure>.*<\/p>/)
+    })
+  })
+
   describe("Admonition Content Protection", () => {
     it("should not wrap admonition-content div when it contains float-right child", () => {
       const input =
