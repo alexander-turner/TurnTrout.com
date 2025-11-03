@@ -584,6 +584,17 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._
 
 This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^2]
 
+Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
+
+[^spam1]: Make sure we hit double-digit footnotes to test formatting.
+[^spam2]: Make sure we hit double-digit footnotes to test formatting.
+[^spam3]: Make sure we hit double-digit footnotes to test formatting.
+[^spam4]: Make sure we hit double-digit footnotes to test formatting.
+[^spam5]: Make sure we hit double-digit footnotes to test formatting.
+[^spam6]: Make sure we hit double-digit footnotes to test formatting.
+[^spam7]: Make sure we hit double-digit footnotes to test formatting.
+[^spam8]: Make sure we hit double-digit footnotes to test formatting.
+
 # Code blocks
 
 ```json
