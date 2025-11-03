@@ -143,7 +143,7 @@ The above list contained the [Aurora app store](https://auroraoss.com/). Aurora 
 4. [ ] Set these security settings in `Settings -> Security & privacy`:
     1. [ ] Exploit protection:
         1. [ ] Auto reboot: 8 hours (makes it harder to crack your device, since your phone is only truly protected before you unlock it for the first time after powering it on).
-        2. [ ] USB-C port: Charging only (rules out large class of USB-C based attacks; just change this from settings if you need a data connection).
+        2. [ ] USB-C port: "Charging-only when locked" (rules out large class of USB-C based attacks).
         3. [ ] Turn off Wi-Fi and Bluetooth automatically: 5 minutes (reduce [passive tracking by nearby beacons](#surreptitious-beacons-track-your-every-movement)).
         4. [ ] Hardened memory allocator: Enabled (protects against many common hacks).
 
