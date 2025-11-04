@@ -75,15 +75,6 @@ describe("darkmode", () => {
     })
 
     localStorage.clear()
-
-    // Mock component_script_utils.wrapWithoutTransition to not require return values
-    jest.mock("./component_script_utils", () => ({
-      wrapWithoutTransition:
-        <Args extends unknown[], R>(fn: (...args: Args) => R) =>
-        (...args: Args): R => {
-          return fn(...args)
-        },
-    }))
   })
 
   afterEach(() => {

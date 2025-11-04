@@ -9,7 +9,6 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   takeRegressionScreenshot,
-  waitForThemeTransition,
   pauseMediaElements,
   showingPreview,
   getH1Screenshots,
@@ -515,49 +514,6 @@ test.describe("getH1Screenshots", () => {
   }
 })
 
-test.describe("waitForThemeTransition", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <head>
-          <style>
-            :root {
-              --background-primary: white;
-              --text-primary: black;
-            }
-            :root[data-theme="dark"] {
-              --background-primary: black;
-              --text-primary: white;
-            }
-            body {
-              background-color: var(--background-primary);
-              color: var(--text-primary);
-            }
-            .temporary-transition body {
-              transition: background-color 0.1s ease-in-out;
-            }
-          </style>
-        </head>
-        <body></body>
-      </html>
-    `)
-  })
-
-  test("resolves immediately if theme does not visually change", async ({ page }) => {
-    await page.emulateMedia({ colorScheme: "light" })
-    // Set initial theme directly
-    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"))
-
-    const start = Date.now()
-    // Set theme to the same value
-    await page.evaluate(() => {
-      document.documentElement.setAttribute("data-theme", "light")
-    })
-    await waitForThemeTransition(page)
-    const duration = Date.now() - start
-    expect(duration).toBeLessThan(100)
-  })
-})
 test.describe("pauseMediaElements", () => {
   test.beforeEach(async ({ page }) => {
     await page.setContent(`

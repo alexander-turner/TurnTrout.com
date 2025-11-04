@@ -3,8 +3,6 @@ import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals
 import {
   throttle,
   debounce,
-  withoutTransition,
-  wrapWithoutTransition,
   animate,
   registerEscapeHandler,
   removeAllChildren,
@@ -219,95 +217,6 @@ describe("debounce", () => {
     // Advance enough time to trigger execution
     jest.advanceTimersByTime(100)
     expect(func).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe("withoutTransition", () => {
-  const originalGetComputedStyle = window.getComputedStyle
-
-  beforeEach(() => {
-    window.getComputedStyle = jest.fn().mockReturnValue({ opacity: "1" }) as jest.Mock<
-      typeof window.getComputedStyle
-    >
-    jest.spyOn(document.head, "appendChild").mockImplementation((x) => x)
-    jest.spyOn(document.head, "removeChild").mockImplementation((x) => x)
-  })
-
-  afterEach(() => {
-    window.getComputedStyle = originalGetComputedStyle
-  })
-
-  it("should add and remove transition-disabling style", () => {
-    const action = jest.fn()
-    withoutTransition(action)
-
-    expect(document.head.appendChild).toHaveBeenCalled()
-    expect(action).toHaveBeenCalled()
-    expect(document.head.removeChild).toHaveBeenCalled()
-  })
-
-  it("should use requestAnimationFrame fallback when getComputedStyle is undefined", () => {
-    // Temporarily remove getComputedStyle
-    const originalGetComputedStyle = window.getComputedStyle
-    // @ts-expect-error - Intentionally setting to undefined for test
-    window.getComputedStyle = undefined
-
-    const action = jest.fn()
-    withoutTransition(action)
-
-    expect(document.head.appendChild).toHaveBeenCalled()
-    expect(action).toHaveBeenCalled()
-
-    // Should use requestAnimationFrame for cleanup
-    jest.advanceTimersByTime(frameTime)
-    expect(document.head.removeChild).toHaveBeenCalled()
-
-    // Restore getComputedStyle
-    window.getComputedStyle = originalGetComputedStyle
-  })
-})
-
-describe("wrapWithoutTransition", () => {
-  it("should wrap function execution with transition handling", () => {
-    const func = jest.fn().mockReturnValue("result")
-    const wrapped = wrapWithoutTransition(func)
-    const addClassSpy = jest.spyOn(document.documentElement.classList, "add")
-    const removeClassSpy = jest.spyOn(document.documentElement.classList, "remove")
-
-    const result = wrapped()
-
-    expect(addClassSpy).toHaveBeenCalledWith("temporary-transition")
-    expect(func).toHaveBeenCalled()
-    expect(result).toBe("result")
-
-    // Class should not be removed before 1000ms
-    jest.advanceTimersByTime(500)
-    expect(removeClassSpy).not.toHaveBeenCalled()
-
-    // Class should be removed after 1000ms
-    jest.advanceTimersByTime(500)
-    expect(removeClassSpy).toHaveBeenCalledWith("temporary-transition")
-
-    addClassSpy.mockRestore()
-    removeClassSpy.mockRestore()
-  })
-
-  it("should handle void functions", () => {
-    const func = jest.fn()
-    const wrapped = wrapWithoutTransition(func)
-    const addClassSpy = jest.spyOn(document.documentElement.classList, "add")
-    const removeClassSpy = jest.spyOn(document.documentElement.classList, "remove")
-
-    wrapped()
-
-    expect(addClassSpy).toHaveBeenCalledWith("temporary-transition")
-    expect(func).toHaveBeenCalled()
-
-    jest.advanceTimersByTime(1000)
-    expect(removeClassSpy).toHaveBeenCalledWith("temporary-transition")
-
-    addClassSpy.mockRestore()
-    removeClassSpy.mockRestore()
   })
 })
 
