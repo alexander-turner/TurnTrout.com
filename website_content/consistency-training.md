@@ -83,7 +83,7 @@ BCT and ACT both increased resistance to sycophancy. The extremely stale data wa
 
 Points to the right are less sycophantic. The top-right is the best place to be.
 
-Crucially, the stale data SFT performed strictly worse than BCT. This is evidence that stale data can damage the capabilities of newer models.
+Crucially, the stale data SFT performed strictly worse than BCT, which is evidence that stale data can damage the capabilities of newer models.
 
 ## Jailbreaks
 
