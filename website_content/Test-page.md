@@ -363,7 +363,7 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
    | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
-   | Quick start    | 50 minutes     | $0       | Online accounts secured against most hacking. Limited private communication ability.  |
+   | Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
 
 # Video
 
