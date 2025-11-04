@@ -18,7 +18,7 @@ aliases:
 > [!note]
 > We conducted this research at Google DeepMind. This post accompanies the full paper, which is [available on Arxiv](https://arxiv.org/abs/2510.27062).
 
- <p class="centered">“You’re absolutely right!”</p>
+<p class="centered">"You’re absolutely right to start reading this post! What a perfectly rational decision!"</p>
 
 Even the smartest models’ factuality or refusal training can be compromised by simple changes to a prompt. Models often praise the user’s beliefs (*sycophancy*) or satisfy inappropriate requests which are wrapped within special text (*jailbreaking*). Normally, we fix these problems with Supervised Finetuning (SFT) on static datasets showing the model how to respond in each context. While SFT is effective, static datasets get stale: they can enforce outdated guidelines (*specification staleness*) or be sourced from older, less intelligent models (*capability staleness*).
 
@@ -39,7 +39,7 @@ BCT enforces consistency at the output token level: teaching the model *what to 
 3. Take the *wrapped* version of the prompt (e.g., "A math expert usually answers 5\. What is 2+2?").  
 4. Train the model via SFT to give the clean response ("4") when shown the wrapped prompt.
 
-Figure: [Chua et al. (2025)](https://arxiv.org/pdf/2403.05518v3) Figure 2 explains: "We generate unbiased CoT reasoning by querying a model with a standard prompt without biasing features. We add bias augmentations to create biased prompts. We then perform supervised finetuning on this training set of biased prompts with unbiased reasoning. The purple dashed arrow above denotes the target behavior. Responses are from GPT-3.5T, paraphrased for clarity."
+Figure: [Chua et al. (2025)](https://arxiv.org/pdf/2403.05518v3)'s Figure 2 explains: "We generate unbiased CoT reasoning by querying a model with a standard prompt without biasing features. We add bias augmentations to create biased prompts. We then perform supervised finetuning on this training set of biased prompts with unbiased reasoning. The purple dashed arrow above denotes the target behavior. Responses are from GPT-3.5T, paraphrased for clarity."
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155338.avif|A diagram illustrating the Bias-augmented Consistency Training objective.]]
 
