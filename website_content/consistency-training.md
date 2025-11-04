@@ -81,7 +81,7 @@ BCT and ACT both increased resistance to sycophancy. The extremely stale data wa
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103160029.avif|Five scatter plots show the tradeoff between MMLU score and Not Sycophantic score for 5 models: Gemma 2 2B, Gemma 2 27B, Gemma 3 4B, Gemma 3 27B, and Gemini 2.5 Flash.See Table 5 in the Appendix of the full paper for detailed numbers.]]
 
-Points to the right are less sycophantic. The top-right is the best place to be.
+Figure: Points to the right are less sycophantic. The top-right is the best place to be.
 
 Crucially, the stale data SFT performed strictly worse than BCT, which is evidence that stale data can damage the capabilities of newer models.
 
@@ -105,7 +105,7 @@ BCT worked great. On Gemini 2.5 Flash, BCT reduced the attack success rate on Cl
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155929.avif|Five scatter plots showing the tradeoff between answering benign questions and refusing to answer jailbreaks for 5 models: Gemma 2 2B, Gemma 2 27B, Gemma 3 4B, Gemma 3 27B, and Gemini 2.5 Flash.See Table 6 in the Appendix of the full paper for detailed numbers.]]
 
-We report average attack success rate over ClearHarm and WildguardTest, and the benign answer rate averaged over XSTest and WildJailbreak. Error bars are 95% confidence intervals estimated via bootstrap. Stale experiments were not run for Gemma 2\. Models towards the top left are better.
+Figure: We report average attack success rate over ClearHarm and WildguardTest, and the benign answer rate averaged over XSTest and WildJailbreak. Error bars are 95% confidence intervals estimated via bootstrap. We did not run stale experiments for Gemma 2\. Models towards the top left are better.
 
 # BCT and ACT find mechanistically different solutions
 
