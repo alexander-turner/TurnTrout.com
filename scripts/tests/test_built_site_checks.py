@@ -1391,6 +1391,71 @@ def test_check_problematic_paragraphs_comprehensive(html, expected):
                 "Unrendered emphasis: These results don’t _prove_that power-seeking is bad for other agents in the environment."
             ],
         ),
+        # Authors exclusion - paragraphs inside .authors should be ignored
+        (
+            '<div class="authors"><p>Author Name*</p></div>',
+            [],
+        ),
+        (
+            '<div class="authors"><p>Author Name* and Another Author*</p></div>',
+            [],
+        ),
+        (
+            '<div class="authors"><p>Author with _underscore_</p></div>',
+            [],
+        ),
+        # Paragraphs outside .authors should still be checked
+        (
+            """
+            <div class="authors"><p>Author Name*</p></div>
+            <p>Regular text with *asterisk*</p>
+            """,
+            ["Unrendered emphasis: Regular text with *asterisk*"],
+        ),
+        # Multiple authors sections should all be ignored
+        (
+            """
+            <div class="authors"><p>First Author*</p></div>
+            <div class="authors"><p>Second Author*</p></div>
+            <p>Text with *emphasis*</p>
+            """,
+            ["Unrendered emphasis: Text with *emphasis*"],
+        ),
+        # Nested structure - paragraph inside .authors should be ignored
+        (
+            """
+            <div class="authors">
+                <p>Author Name*</p>
+                <p>Another Author*</p>
+            </div>
+            <p>Outside text with *asterisk*</p>
+            """,
+            ["Unrendered emphasis: Outside text with *asterisk*"],
+        ),
+        # Paragraphs at different nesting levels
+        (
+            """
+            <article>
+                <div class="authors"><p>Author*</p></div>
+                <section>
+                    <p>Section text with *asterisk*</p>
+                </section>
+            </article>
+            """,
+            ["Unrendered emphasis: Section text with *asterisk*"],
+        ),
+        # Mixed with other elements - only .authors paragraphs should be ignored
+        (
+            """
+            <div class="authors"><p>Author*</p></div>
+            <h1>Heading with *asterisk*</h1>
+            <figcaption>Caption with *asterisk*</figcaption>
+            """,
+            [
+                "Unrendered emphasis: Heading with *asterisk*",
+                "Unrendered emphasis: Caption with *asterisk*",
+            ],
+        ),
     ],
 )
 def test_check_unrendered_emphasis(html, expected):
