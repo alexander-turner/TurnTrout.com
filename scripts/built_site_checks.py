@@ -859,7 +859,8 @@ def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
                 response = requests.head(normalized_src, timeout=10)
                 if not response.ok:
                     problematic_embeds.append(
-                        f"Iframe embed returned status {response.status_code}: {normalized_src}"
+                        f"Iframe embed returned status {response.status_code}"
+                        f": {normalized_src}"
                     )
             except requests.RequestException as exc:
                 problematic_embeds.append(
