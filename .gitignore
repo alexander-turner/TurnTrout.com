@@ -6,6 +6,7 @@ prof
 tsconfig.tsbuildinfo
 .obsidian
 .quartz-cache
+.quartz_checks
 private/
 *subset.woff2
 *zopfli*
@@ -30,7 +31,6 @@ website_content/drafts
 
 # Media files
 **.faviconUrls.txt
-# quartz/plugins/transformers/.asset_dimensions.json
 quartz/static/images/external-favicons/*.png
 quartz/static/images/posts
 *.avif_original
