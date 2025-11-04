@@ -6,6 +6,7 @@ no_dropcap: "false"
 tags:
   - AI
   - critique
+  - deepmind
 description: Common factuality benchmark was easily gamed using our simple decision
   tree. The benchmark is now updated.
 authors: Alex Turner and Mark Kurzeja
