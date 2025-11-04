@@ -117,7 +117,7 @@ The token-based BCT loss causes activation distance to rise during training, whi
 
 # Discussion
 
-Consistency training maintains a powerful advantage not captured by our experiments. Model developers change their minds about what queries the model should refuse or what tone the model should take with the user (e.g. deferent versus straightforward). Static SFT datasets freeze these decisions, capturing a single moment in time. To make the model more straightforward even when refusing, the developer has to regenerate the dataset (perhaps with a tweaked generation prompt). In contrast, consistency training dynamically propagates changes made to the model’s behavior on clean prompts. Consistency training entirely sidesteps this kind of problem.
+Consistency training maintains a powerful advantage not captured by our experiments. Model developers change their minds about what queries the model should refuse or what tone the model should take with the user (e.g. deferential versus straightforward). Static SFT datasets freeze these decisions, capturing a single moment in time. To make the model more straightforward even when refusing, the developer has to regenerate the dataset (perhaps with a tweaked generation prompt). In contrast, consistency training dynamically propagates changes made to the model’s behavior on clean prompts. Consistency training entirely sidesteps this kind of problem.
 
 # Conclusion
 
