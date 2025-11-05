@@ -18,7 +18,7 @@ aliases:
 > [!note]
 > We conducted this research at Google DeepMind. This post accompanies the full paper, which is [available on Arxiv](https://arxiv.org/abs/2510.27062).
 
-<p class="centered">"You’re absolutely right to start reading this post! What a perfectly rational decision!"</p>
+> You’re absolutely right to start reading this post! What a perfectly rational decision!
 
 Even the smartest models’ factuality or refusal training can be compromised by simple changes to a prompt. Models often praise the user’s beliefs (*sycophancy*) or satisfy inappropriate requests which are wrapped within special text (*jailbreaking*). Normally, we fix these problems with Supervised Finetuning (SFT) on static datasets showing the model how to respond in each context. While SFT is effective, static datasets get stale: they can enforce outdated guidelines (*specification staleness*) or be sourced from older, less intelligent models (*capability staleness*).
 
