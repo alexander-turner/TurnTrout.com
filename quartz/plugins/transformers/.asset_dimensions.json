@@ -5854,5 +5854,9 @@
   "https://assets.turntrout.com/static/images/posts/consistency-training-20251103160139.avif": {
     "width": 1646,
     "height": 440
+  },
+  "/static/images/external-favicons/discuss_grapheneos_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

@@ -535,6 +535,9 @@ However, if the "lock" is not a password but merely a biometric, the legal water
 
 - [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
 
+> [!warning] "Duress" PINs put you in serious legal danger
+> On GrapheneOS, you can set a special "duress" PIN. If you unlock the device using the duress PIN, you instantly wipe the entire device and it shuts down. [Wiping your device is highly suspicious](https://discuss.grapheneos.org/d/22035-threat-model-help-needed-travelling-through-customs/7) and might get you jailed for destruction of evidence. You might still enable the duress PIN for other reasons, like if you're getting mugged and want to ensure your information doesn't get stolen along with your phone.
+
 ## US government watches immigrant speech on social media
 
 Assume that all social media activity is monitored by [ICE's Homeland Security Investigations teams, who maintain dedicated personnel for social media surveillance](https://www.wired.com/story/ice-social-media-surveillance-24-7-contract/).
