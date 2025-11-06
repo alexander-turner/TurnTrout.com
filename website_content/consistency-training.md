@@ -6,14 +6,18 @@ tags:
   - AI
   - activation-engineering
   - deepmind
-description: "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash."
+description: "Simple & effective: train the AI to behave as if the jailbreak were
+  not present. Explores activation-level training of Gemini 2.5 Flash."
 authors: Alex Irpan* and Alex Turner*, Mark Kurzeja, David Elson, and Rohin Shah
 hideSubscriptionLinks: false
-card_image: 
+card_image:
 aliases:
   - consistency
   - activation-training
+date_published: &id001 2025-11-06 14:34:13.304738
+date_updated: *id001
 ---
+
 
 > [!note]
 > We conducted this research at Google DeepMind. This post accompanies the full paper, which is [available on Arxiv](https://arxiv.org/abs/2510.27062).
