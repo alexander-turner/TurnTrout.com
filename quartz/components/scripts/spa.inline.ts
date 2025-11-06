@@ -105,13 +105,11 @@ function scrollToHash(hash: string): void {
 async function updatePage(html: Document, url: URL): Promise<void> {
   normalizeRelativeURLs(html, url)
 
-  let title = html.querySelector("title")?.textContent
-  if (title) {
-    document.title = title
-  } else {
-    const h1 = document.querySelector("h1")
-    title = h1?.innerText ?? h1?.textContent ?? url.pathname
-  }
+  // Extract title for accessibility announcer
+  const title =
+    html.querySelector("title")?.textContent ??
+    html.querySelector("h1")?.textContent ??
+    url.pathname
 
   if (announcer.textContent !== title) {
     announcer.textContent = title
@@ -134,15 +132,11 @@ async function updatePage(html: Document, url: URL): Promise<void> {
 
   console.debug(`[updatePage] Starting micromorph for ${url.pathname}`)
   try {
-    await micromorph(document.body, html.body)
+    await micromorph(document.documentElement, html.documentElement)
     console.debug(`[updatePage] Micromorph finished for ${url.pathname}`)
   } catch (e) {
     console.error(`[updatePage] Micromorph error for ${url.pathname}:`, e)
   }
-
-  // Patch head
-  const elementsToRemove = document.head.querySelectorAll(":not([spa-preserve])")
-  elementsToRemove.forEach((el) => el.remove())
 }
 
 interface FetchResult {

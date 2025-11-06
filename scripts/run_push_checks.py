@@ -10,7 +10,6 @@ import signal
 import socket
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 from collections import deque
@@ -26,9 +25,18 @@ from rich.style import Style
 console = Console()
 SERVER_START_WAIT_TIME: int = 90
 
-TEMP_DIR = Path(tempfile.gettempdir()) / "quartz_checks"
-os.makedirs(TEMP_DIR, exist_ok=True)
-STATE_FILE_PATH = TEMP_DIR / "last_successful_step.json"
+# Compute git root once at module load time
+_GIT_ROOT = Path(
+    subprocess.check_output(
+        [shutil.which("git") or "git", "rev-parse", "--show-toplevel"],
+        text=True,
+    ).strip()
+)
+
+# Store state in git root instead of /tmp so it persists across reboots
+STATE_DIR = _GIT_ROOT / ".quartz_checks"
+os.makedirs(STATE_DIR, exist_ok=True)
+STATE_FILE_PATH = STATE_DIR / "progress.json"
 
 
 # pylint: disable=missing-class-docstring
@@ -397,14 +405,6 @@ def run_command(
 
     except subprocess.CalledProcessError as e:  # pragma: no cover
         return False, e.stdout or "", e.stderr or ""
-
-
-_GIT_ROOT = Path(
-    subprocess.check_output(
-        [shutil.which("git") or "git", "rev-parse", "--show-toplevel"],
-        text=True,
-    ).strip()
-)
 
 
 def get_check_steps(

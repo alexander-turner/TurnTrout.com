@@ -6,11 +6,11 @@ no_dropcap: "false"
 tags:
   - AI
   - activation-engineering
-description: We tried boosting Gemini benchmarks by optimizing steering vectors. It
-  didn't work. We share our takeaways.
+  - deepmind
+description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
 authors: Alex Turner, Mark Kurzeja, Dave Orr, and David Elson
 hideSubscriptionLinks: false
-card_image:
+card_image: 
 aliases:
   - bidpo
   - steering-postmortem

@@ -5782,5 +5782,81 @@
   "https://assets.turntrout.com/static/images/external-favicons/purgecss_com.avif": {
     "width": 64,
     "height": 64
+  },
+  "../asset_staging/consistency-training-20251103155338.png": {
+    "width": 1212,
+    "height": 452
+  },
+  "../asset_staging/consistency-training-20251103155743.png": {
+    "width": 1822,
+    "height": 420
+  },
+  "../asset_staging/consistency-training-20251103155820.png": {
+    "width": 1858,
+    "height": 430
+  },
+  "../asset_staging/consistency-training-20251103160029.png": {
+    "width": 1728,
+    "height": 1104
+  },
+  "../asset_staging/consistency-training-20251103155929.png": {
+    "width": 1696,
+    "height": 1096
+  },
+  "../asset_staging/consistency-training-20251103160139.png": {
+    "width": 1646,
+    "height": 440
+  },
+  "./asset_staging/consistency-training-20251103155338.png": {
+    "width": 1212,
+    "height": 452
+  },
+  "./asset_staging/consistency-training-20251103155743.png": {
+    "width": 1822,
+    "height": 420
+  },
+  "./asset_staging/consistency-training-20251103155820.png": {
+    "width": 1858,
+    "height": 430
+  },
+  "./asset_staging/consistency-training-20251103160029.png": {
+    "width": 1728,
+    "height": 1104
+  },
+  "./asset_staging/consistency-training-20251103155929.png": {
+    "width": 1696,
+    "height": 1096
+  },
+  "./asset_staging/consistency-training-20251103160139.png": {
+    "width": 1646,
+    "height": 440
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103155338.avif": {
+    "width": 1212,
+    "height": 452
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103155743.avif": {
+    "width": 1822,
+    "height": 420
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif": {
+    "width": 1858,
+    "height": 430
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103160029.avif": {
+    "width": 1728,
+    "height": 1104
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103155929.avif": {
+    "width": 1696,
+    "height": 1096
+  },
+  "https://assets.turntrout.com/static/images/posts/consistency-training-20251103160139.avif": {
+    "width": 1646,
+    "height": 440
+  },
+  "/static/images/external-favicons/discuss_grapheneos_org.png": {
+    "width": 64,
+    "height": 64
   }
 }

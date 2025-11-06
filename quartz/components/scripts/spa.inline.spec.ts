@@ -664,3 +664,79 @@ test.describe("Network Behavior", () => {
     expect(requestMade).toBe(false)
   })
 })
+
+test.describe("Document Head Updates", () => {
+  test("updates page title when navigating between pages", async ({ page }) => {
+    await page.waitForFunction(() => document.title !== "")
+    const initialTitle = await page.title()
+    expect(initialTitle).toBeTruthy()
+
+    // Navigate to a different page
+    await page.click('a[href$="/about"]')
+    await page.waitForURL("**/about")
+    await page.waitForFunction(() => document.title !== "")
+
+    const newTitle = await page.title()
+    expect(newTitle).toBeTruthy()
+    expect(newTitle).not.toBe(initialTitle)
+  })
+
+  test("updates page title when using browser back button", async ({ page }) => {
+    await page.waitForFunction(() => document.title !== "")
+    const homeTitle = await page.title()
+
+    // Navigate to another page
+    await page.click('a[href$="/about"]')
+    await page.waitForURL("**/about")
+    await page.waitForFunction(() => document.title !== "")
+    const aboutTitle = await page.title()
+
+    // Go back
+    await page.goBack()
+    await page.waitForURL("**/")
+    await page.waitForFunction(() => document.title !== "")
+
+    const restoredTitle = await page.title()
+    expect(restoredTitle).toBe(homeTitle)
+    expect(restoredTitle).not.toBe(aboutTitle)
+  })
+
+  test("preserves spa-preserve elements during navigation", async ({ page }) => {
+    // Get the analytics script element (has spa-preserve)
+    const analyticsScriptSrc = await page.evaluate(() => {
+      const script = document.querySelector("script[data-website-id]")
+      return script?.getAttribute("src")
+    })
+    expect(analyticsScriptSrc).toBeTruthy()
+
+    // Navigate to another page
+    await page.click('a[href$="/about"]')
+    await page.waitForURL("**/about")
+
+    // Verify the same script is still there
+    const scriptAfterNav = await page.evaluate(() => {
+      const script = document.querySelector("script[data-website-id]")
+      return script?.getAttribute("src")
+    })
+    expect(scriptAfterNav).toBe(analyticsScriptSrc)
+  })
+
+  test("updates meta description during navigation", async ({ page }) => {
+    const initialDescription = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="description"]')
+      return meta?.getAttribute("content")
+    })
+
+    // Navigate to a different page
+    await page.click('a[href$="/about"]')
+    await page.waitForURL("**/about")
+
+    const newDescription = await page.evaluate(() => {
+      const meta = document.querySelector('meta[name="description"]')
+      return meta?.getAttribute("content")
+    })
+    expect(newDescription).toBeTruthy()
+    // The description should change for different pages
+    expect(newDescription).not.toBe(initialDescription)
+  })
+})

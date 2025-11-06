@@ -6,36 +6,6 @@ import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
 // skipcq: JS-0098
-export async function waitForThemeTransition(page: Page) {
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      // If no transition is needed (theme didn't change), resolve immediately
-      const computedBg = getComputedStyle(document.body).backgroundColor
-      requestAnimationFrame(() => {
-        // Check if background color changed in the next frame
-        if (getComputedStyle(document.body).backgroundColor === computedBg) {
-          resolve()
-          return
-        }
-
-        document.documentElement.classList.add("temporary-transition")
-
-        // Listen for the transition end on body background-color
-        const onTransitionEnd = (e: TransitionEvent) => {
-          if (e.propertyName === "background-color") {
-            document.body.removeEventListener("transitionend", onTransitionEnd)
-            document.documentElement.classList.remove("temporary-transition")
-            resolve()
-          }
-        }
-
-        document.body.addEventListener("transitionend", onTransitionEnd)
-      })
-    })
-  })
-}
-
-// skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
   await page.evaluate((t) => {
     localStorage.setItem("saved-theme", t)
@@ -56,7 +26,12 @@ export async function setTheme(page: Page, theme: Theme) {
     }
   }, theme)
 
-  await waitForThemeTransition(page)
+  // Wait a frame for theme to apply
+  await page.evaluate(() => {
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve())
+    })
+  })
 }
 
 /** Gets the name of the screenshot file. */

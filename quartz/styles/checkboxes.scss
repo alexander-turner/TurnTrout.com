@@ -82,9 +82,9 @@ input.checkbox-toggle {
 // Make lighter in a way that includes eg favicons
 
 :is(li:has(> input.checkbox-toggle:checked), li:has(> * > input.checkbox-toggle:checked)):not(
-  li:has(> input.checkbox-toggle:checked) *,
-  li:has(> * > input.checkbox-toggle:checked) *
-) {
+    li:has(> input.checkbox-toggle:checked) *,
+    li:has(> * > input.checkbox-toggle:checked) *
+  ) {
   opacity: 0.75;
 }
 

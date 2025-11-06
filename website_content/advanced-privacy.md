@@ -16,7 +16,10 @@ aliases:
   - advanced-privacy-despite-authoritarianism
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
+date_published: &id001 2025-11-06 14:34:13.304738
+date_updated: *id001
 ---
+
 As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide seems most appropriate for people at higher risk, like opposition politicians, immigrants, and investigative journalists. However, the Trump regime gives little respect to legal boundaries. I think everyone should gear up for the potentially darker days ahead.
 
 ![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]
@@ -534,6 +537,9 @@ In the USA, my understanding is that [the DHS cannot compel an American citizen 
 However, if the "lock" is not a password but merely a biometric, the legal waters seem darker. Therefore, I recommend turning off your devices before the checkpoint, which should force password entry on next unlock and prevent your phone's information from being pried out as easily. Alternatively, modern phones also enable this if you hold down the screen-power and volume-up buttons.
 
 - [ ] On Android, you might have to enable "lockdown mode" as an option. Make sure it's enabled if necessary.
+
+> [!warning] "Duress" PINs put you in serious legal danger
+> On GrapheneOS, you can set a special "duress" PIN. If you unlock the device using the duress PIN, you instantly wipe the entire device and it shuts down. [Wiping your device is highly suspicious](https://discuss.grapheneos.org/d/22035-threat-model-help-needed-travelling-through-customs/7) and might get you jailed for destruction of evidence. You might still enable the duress PIN for other reasons, like if you're getting mugged and want to ensure your information doesn't get stolen along with your phone.
 
 ## US government watches immigrant speech on social media
 

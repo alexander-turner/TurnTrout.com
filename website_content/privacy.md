@@ -20,8 +20,9 @@ next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2025-10-28 12:51:10.152646
+date_updated: 2025-11-06 14:34:13.304738
 ---
+
 
 
 
@@ -214,7 +215,7 @@ If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end enc
 - [ ] Enable ADP in settings.
 
 > [!warning]
-> If you are in the UK, you'll have to refer to [my later section](#end-to-end-encryption-for-your-data-in-4-hours) on achieving E2EE for your data. That's because [Apple shut down ADP there after being pressured by your government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web, extending government surveillance --- all in order to "protect the children."
+> If you are in the UK, you may have to refer to [the later section](#end-to-end-encryption-for-your-data-in-4-hours) on achieving E2EE for your data. That's because [Apple stopped supporting ADP for new UK users after being pressured by the UK government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web, extending government surveillance --- all in order to "protect the children."
 
 ## Secure your devices with strong passwords
 

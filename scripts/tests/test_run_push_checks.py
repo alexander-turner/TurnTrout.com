@@ -1,6 +1,5 @@
 """Unit tests for run_push_checks.py."""
 
-import importlib
 import json
 import signal
 import subprocess
@@ -27,17 +26,21 @@ def reset_global_state():
 @pytest.fixture
 def temp_state_dir():
     """Create a temporary directory for state files."""
-    with (
-        tempfile.TemporaryDirectory() as temp_dir,
-        patch("tempfile.gettempdir", return_value=temp_dir),
-    ):
-        # Reload module to pick up mocked tempdir
-        importlib.reload(run_push_checks)
-        # Clear any existing state before tests run
-        run_push_checks.reset_saved_progress()
-        yield temp_dir
-        # Clean up after tests
-        run_push_checks.reset_saved_progress()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        state_file = temp_path / "progress.json"
+
+        with (
+            patch.object(run_push_checks, "STATE_DIR", temp_path),
+            patch.object(run_push_checks, "STATE_FILE_PATH", state_file),
+        ):
+            if state_file.exists():
+                state_file.unlink()
+
+            yield temp_dir
+
+            if state_file.exists():
+                state_file.unlink()
 
 
 @pytest.fixture

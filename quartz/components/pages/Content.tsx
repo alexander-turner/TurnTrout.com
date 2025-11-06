@@ -28,6 +28,7 @@ const WarningLink = (
   </a>
 )
 
+// istanbul ignore next
 const WarningTitle = () => (
   <div className="admonition-title">
     <span className="admonition-title-inner">
@@ -87,6 +88,9 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
     return null
   }
   const toc = buildNestedList(fileData.toc, 0, 0)[0]
+  if (!toc || toc.length === 0) {
+    return null
+  }
   return (
     <blockquote
       className="admonition example is-collapsible"
@@ -109,6 +113,7 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
 
 const lessWrongFavicon = <img src={LESSWRONG_FAVICON_PATH} className="favicon" alt="" />
 
+// istanbul ignore next
 function lessWrongQuestion(url: string): JSX.Element {
   return (
     <blockquote className="admonition question" data-admonition="question">

@@ -627,6 +627,21 @@ describe("CreateTableOfContents", () => {
     expect(result).toBeNull()
   })
 
+  it("should return null when page has no headings (empty TOC array)", () => {
+    const propsWithNoHeadings = {
+      ...mockQuartzComponentProps,
+      fileData: {
+        ...mockQuartzComponentProps.fileData,
+        toc: [],
+      },
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (CreateTableOfContents as any)(propsWithNoHeadings)
+
+    expect(result).toBeNull()
+  })
+
   it.each([
     [undefined, "Table of Contents"],
     ["understanding machine learning algorithms", "Understanding Machine Learning Algorithms"],

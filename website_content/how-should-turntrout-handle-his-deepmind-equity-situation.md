@@ -3,8 +3,7 @@ permalink: deepmind-equity-discussion
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turntrout-handle-his-deepmind-equity-situation
+lw-page-url: https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turntrout-handle-his-deepmind-equity-situation
 lw-is-question: "false"
 lw-posted-at: 2023-10-16T18:25:38.895000Z
 lw-last-modification: 2023-10-26T00:56:40.657000Z
@@ -18,23 +17,22 @@ lw-vote-count: 21
 af-base-score: 28
 af-num-comments-on-upload: 0
 publish: true
-title: "How should TurnTrout handle his DeepMind equity situation?"
+title: How should TurnTrout handle his DeepMind equity situation?
 lw-latest-edit: 2023-10-26T00:56:40.898000Z
 lw-is-linkpost: "false"
 authors: Oliver Habryka and Alex Turner
 tags:
-  - "practical"
+  - practical
+  - deepmind
 aliases:
-  - "how-should-turntrout-handle-his-deepmind-equity-situation"
+  - how-should-turntrout-handle-his-deepmind-equity-situation
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2023-10-16 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turntrout-handle-his-deepmind-equity-situation
+original_url: https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turntrout-handle-his-deepmind-equity-situation
 no_dropcap: true
 skip_import: true
-description: Considering how to ethically manage AI equity when my goal is to reduce
-  AI risk, not maximize profit.
+description: Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.
 date_updated: 2025-06-03 22:57:00.423836
 ---
 

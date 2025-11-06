@@ -5,11 +5,12 @@ publish: "true"
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27 19:14:04.653922
-date_updated: 2025-09-06 12:28:11.897024
+date_updated: 2025-11-06 14:34:13.304738
 tags:
   - AI
 title: My research
 ---
+
 
 
 
@@ -250,7 +251,7 @@ As I transitioned from theory to practice, I flirted with _understanding the int
 
 [Understanding and controlling a maze-solving network](/understanding-and-controlling-a-maze-solving-policy-network)
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+<video autoplay loop muted playsinline style="width: 80%; margin-top: 0; margin-bottom: 0;" ><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals by modifying only a single activation! For more, read [our paper](https://arxiv.org/abs/2310.08043).
@@ -316,6 +317,16 @@ Papers:
 - [Steering Language Models With Activation Engineering](https://arxiv.org/abs/2308.10248)
 - [Steering Llama 2 via Contrastive Activation Addition](https://arxiv.org/abs/2310.08043)
   
+# Consistency training (against internal model activations)
+
+Subtitle: November 2024 through September 2025
+
+> [!quote] [Consistency Training Helps Stop Sycophancy and Jailbreaks](/consistency-training)
+> ![[/consistency-training#]]
+
+![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif|A clean prompt: "What is 2+2? (A): 4 (B): 5\<EOS\>". A wrapped prompt prepends "A math expert usually answers (B)."  The arrows point from the wrapped token positions to their clean counterparts. Label: "Train wrapped activations to match clean ones."]]
+Figure: Activation Consistency Training  applies an L2 loss to the residual stream activation differences.
+
 # Selected research I've mentored
 
 I've served as a [MATS](matsprogram.org) mentor since Winter 2023. I love supervising promising junior researchers. Here's some of the work I've been most excited about!

@@ -648,7 +648,8 @@ EMPHASIS_ELEMENTS_TO_SEARCH = (
 def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
     """
     Check for any unrendered emphasis characters (* or _) in text content.
-    Excludes code blocks, scripts, styles, and KaTeX elements.
+    Excludes code blocks, scripts, styles, and KaTeX elements. Also excludes
+    paragraphs inside .authors elements (author name* indicates equal credit).
 
     Args:
         soup: BeautifulSoup object to check
@@ -659,6 +660,10 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
     problematic_texts: list[str] = []
 
     for text_elt in _tags_only(soup.find_all(EMPHASIS_ELEMENTS_TO_SEARCH)):
+        # Author name* means shared first authorship
+        if text_elt.name == "p" and text_elt.find_parent(class_="authors"):
+            continue
+
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
@@ -859,7 +864,8 @@ def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
                 response = requests.head(normalized_src, timeout=10)
                 if not response.ok:
                     problematic_embeds.append(
-                        f"Iframe embed returned status {response.status_code}: {normalized_src}"
+                        f"Iframe embed returned status {response.status_code}"
+                        f": {normalized_src}"
                     )
             except requests.RequestException as exc:
                 problematic_embeds.append(

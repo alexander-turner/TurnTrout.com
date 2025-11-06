@@ -276,10 +276,6 @@
       color: inherit;
     }
 
-    .temporary-transition & * {
-      color: var(--color);
-    }
-
     & .small-caps,
     & sup {
       font-variant-numeric: normal;

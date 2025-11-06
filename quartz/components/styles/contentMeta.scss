@@ -69,3 +69,7 @@
     }
   }
 }
+
+#content-meta:not(#table-of-contents ~ #content-meta) > *:first-child {
+  margin-top: 0;
+}

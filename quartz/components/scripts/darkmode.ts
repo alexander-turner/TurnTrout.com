@@ -1,5 +1,3 @@
-import { wrapWithoutTransition } from "./component_script_utils"
-
 export type Theme = "light" | "dark" | "auto"
 
 /* istanbul ignore next: Browser API, tested in darkmode.spec.ts */
@@ -90,7 +88,7 @@ function setupDarkMode() {
 
   const toggle = document.querySelector("#theme-toggle") as HTMLButtonElement
   if (toggle) {
-    toggle.addEventListener("click", wrapWithoutTransition(rotateTheme))
+    toggle.addEventListener("click", rotateTheme)
   }
 
   document.addEventListener("nav", () => {
@@ -105,10 +103,9 @@ function setupDarkMode() {
         document.documentElement.setAttribute("data-theme", newTheme)
       }
     }
-    const wrappedSystemPreference = wrapWithoutTransition(doSystemPreference)
 
     const colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-    colorSchemeMediaQuery.addEventListener("change", wrappedSystemPreference)
+    colorSchemeMediaQuery.addEventListener("change", doSystemPreference)
 
     // Update theme state after navigation
     const currentTheme = localStorage.getItem("saved-theme") || "auto"

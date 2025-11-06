@@ -287,26 +287,6 @@ sup {
   }
 }
 
-// Dark <-> Light
-.temporary-transition *,
-.temporary-transition .mermaid *,
-.temporary-transition *::-webkit-scrollbar,
-.temporary-transition *::-webkit-media-controls,
-.temporary-transition *::-webkit-media-controls-play-button,
-.temporary-transition *::-webkit-media-controls-panel,
-.temporary-transition #left-sidebar {
-  transition:
-    color 1s ease-in-out,
-    background-color 1s ease-in-out,
-    border-color 1s ease-in-out,
-    fill 1s ease-in-out,
-    stroke 1s ease-in-out,
-    box-shadow 1s ease-in-out,
-    text-decoration-color 1s ease-in-out,
-    filter 1s ease-in-out,
-    scrollbar-color 1s ease-in-out !important;
-}
-
 .video-container {
   position: relative;
 }
