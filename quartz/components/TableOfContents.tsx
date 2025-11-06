@@ -53,6 +53,11 @@ export const CreateTableOfContents: QuartzComponent = ({
 
   const toc = buildNestedList(tocData, 0, 0)[0]
 
+  if (!toc || toc.length === 0) {
+    logger.info(`TableOfContents skipped for ${fileData.filePath}: nested list is empty`)
+    return null
+  }
+
   return (
     <div id="table-of-contents" className="desktop-only">
       <h1 id="toc-title" className="h6">
