@@ -143,4 +143,73 @@ describe("Content component - mobile ToC rendering", () => {
 
     expect(result).toBeNull()
   })
+
+  it.each([
+    {
+      description: "lw-is-question is true and original_url exists",
+      frontmatter: {
+        title: "Test Question",
+        "lw-is-question": "true",
+        original_url: "https://lesswrong.com/posts/test",
+      },
+      expectedAdmonition: "question",
+      childIndex: 1,
+    },
+    {
+      description: "lw-reward-post-warning is true",
+      frontmatter: {
+        title: "Test",
+        "lw-reward-post-warning": "true",
+      },
+      expectedAdmonition: "warning",
+      childIndex: 2,
+    },
+  ])(
+    "should render $expectedAdmonition admonition when $description",
+    ({ frontmatter, expectedAdmonition, childIndex }) => {
+      const props = createQuartzProps({ frontmatter })
+      const ContentComponent = Content()
+      const result = ContentComponent(props)
+
+      assertJSXElement(result)
+      const children = result.props.children as JSX.Element[]
+      const admonitionBlock = children[childIndex]
+      assertJSXElement(admonitionBlock)
+      expect(admonitionBlock.props["data-admonition"]).toBe(expectedAdmonition)
+    },
+  )
+
+  it.each([
+    {
+      description: "lw-is-question is true but original_url is missing",
+      frontmatter: {
+        title: "Test Question",
+        "lw-is-question": "true",
+      },
+    },
+    {
+      description: "lw-is-question is false with original_url present",
+      frontmatter: {
+        title: "Test",
+        "lw-is-question": "false",
+        original_url: "https://lesswrong.com/posts/test",
+      },
+    },
+    {
+      description: "lw-reward-post-warning is not set",
+      frontmatter: {
+        title: "Test",
+      },
+    },
+  ])("should not render admonitions when $description", ({ frontmatter }) => {
+    const props = createQuartzProps({ frontmatter })
+    const ContentComponent = Content()
+    const result = ContentComponent(props)
+
+    assertJSXElement(result)
+    const children = result.props.children as JSX.Element[]
+    expect(children.length).toBe(4)
+    expect(children[1]).toBeFalsy()
+    expect(children[2]).toBeFalsy()
+  })
 })
