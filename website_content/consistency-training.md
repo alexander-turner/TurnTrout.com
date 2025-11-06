@@ -126,7 +126,7 @@ Consistency training is a powerful self-supervised framework for making models r
 More philosophically, perhaps model alignment doesn’t always involve saying exactly the right thing across situations, but instead saying the *same thing* across situations.
 
 > [!thanks] Acknowledgments
-> Zachary Kenton and Rif Saurous gave feedback on paper drafts. Neel Nanda and Arthur Conmy commented on early research directions.
+> Zachary Kenton and Rif A. Saurous gave feedback on paper drafts. Neel Nanda and Arthur Conmy commented on early research directions.
 
 ```bibtex
 @misc{irpan2025consistencytraininghelpsstop,
