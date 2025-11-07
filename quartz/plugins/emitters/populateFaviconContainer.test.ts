@@ -47,12 +47,28 @@ jest.unstable_mockModule("../transformers/linkfavicons", () => ({
     }
     return path.replace(".png", ".avif")
   }),
-  createFaviconElement: jest.fn((url: string) => ({
-    type: "element",
-    tagName: "img",
-    properties: { src: url, class: "favicon", alt: "", loading: "lazy" },
-    children: [],
-  })),
+  createFaviconElement: jest.fn((url: string) => {
+    if (url.endsWith(".svg")) {
+      const domain = url.match(/\/([^/]+)\.svg$/)?.[1] || ""
+      return {
+        type: "element",
+        tagName: "span",
+        properties: {
+          class: "favicon favicon-svg",
+          "data-domain": domain,
+          style: `--mask-url: url(${url});`,
+          alt: "",
+        },
+        children: [],
+      }
+    }
+    return {
+      type: "element",
+      tagName: "img",
+      properties: { src: url, class: "favicon", alt: "", loading: "lazy" },
+      children: [],
+    }
+  }),
   DEFAULT_PATH: "/default-favicon.png",
 }))
 

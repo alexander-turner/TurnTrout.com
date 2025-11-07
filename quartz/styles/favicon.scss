@@ -4,7 +4,7 @@ $favicon-default-saturate: 10%;
 
 :root[data-theme="dark"] video,
 :root[data-theme="dark"] img {
-  &.favicon {
+  &.favicon:not(.favicon-svg) {
     filter: saturate($favicon-default-saturate);
   }
 }
@@ -23,18 +23,22 @@ $favicon-default-saturate: 10%;
   white-space: nowrap;
 }
 
-img.favicon {
+.favicon {
   display: inline;
   width: 0.65rem;
   height: 0.65rem;
   margin: -20% auto -0.07em calc(0.125 * $base-margin);
   vertical-align: 10%;
-  filter: saturate($favicon-default-saturate);
-  mix-blend-mode: normal;
   cursor: text;
 
   // Don't pollute copied text with favicon
   user-select: none;
+
+  // Default filters for img favicons (not SVG masks)
+  &:not(.favicon-svg) {
+    filter: saturate($favicon-default-saturate);
+    mix-blend-mode: normal;
+  }
 
   // Make favicons align properly with headings
   h1 &,
@@ -50,7 +54,18 @@ img.favicon {
     margin-left: 0.05rem;
   }
 
-  // Make all SVG favicons match foreground color
+  // SVG-specific styling using masks for color control
+  &-svg {
+    display: inline-block;
+    background-color: var(--foreground); // Default to foreground color
+    mask: var(--mask-url) no-repeat center / contain;
+    filter: none; // Don't apply img filters to masks
+    mix-blend-mode: normal;
+
+    // Per-domain colors using color-mix TODO fill in
+  }
+
+  // Legacy: Make all SVG img favicons match foreground color (for non-mask SVGs)
   &[src$=".svg"] {
     // Computed to match var(--foreground) using https://codepen.io/sosuke/pen/Pjoqqp
     filter: invert(27%);

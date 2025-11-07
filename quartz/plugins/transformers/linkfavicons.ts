@@ -89,6 +89,7 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "jacobgw",
   "pubsonline_informs_org",
   "nickbostrom_com",
+  "vox_com",
   "cs_umd",
   "acritch",
   "medium_com",
@@ -636,11 +637,12 @@ export interface FaviconNode extends Element {
   tagName: "img" | "span"
   children: Element[]
   properties: {
-    src: string
+    src?: string
     class: string
     alt: string
     style?: string
     loading?: "lazy" | "eager"
+    "data-domain"?: string
   }
 }
 
@@ -653,6 +655,24 @@ export interface FaviconNode extends Element {
  */
 export function createFaviconElement(urlString: string, description = ""): FaviconNode {
   logger.debug(`Creating favicon element with URL: ${urlString}`)
+
+  // Use mask-based rendering for SVG favicons
+  if (urlString.endsWith(".svg")) {
+    const domain = urlString.match(/\/([^/]+)\.svg$/)?.[1] || ""
+    return {
+      type: "element",
+      tagName: "span",
+      children: [],
+      properties: {
+        class: "favicon favicon-svg",
+        "data-domain": domain,
+        style: `--mask-url: url(${urlString});`,
+        alt: description,
+      },
+    }
+  }
+
+  // Standard img element for non-SVG favicons
   return {
     type: "element",
     tagName: "img",
