@@ -665,7 +665,7 @@ test.describe("Network Behavior", () => {
   })
 })
 
-test.describe("Document Head Updates", () => {
+test.describe("Document Head & Body Updates", () => {
   // Helper to ensure the about link is visible (opens mobile menu if needed)
   async function ensureAboutLinkVisible(page: Page): Promise<void> {
     const aboutLink = page.locator('a[href$="/about"]')
@@ -695,18 +695,20 @@ test.describe("Document Head Updates", () => {
     return () => navPromise
   }
 
+  async function navigateAndWait(page: Page, url: string): Promise<void> {
+    const awaitNav = await waitForNavigation(page)
+    await page.click(`a[href$="${url}"]`)
+    await page.waitForURL(`**${url}`)
+    await awaitNav()
+  }
+
   test("updates page title when navigating between pages", async ({ page }) => {
     await page.waitForFunction(() => document.title !== "")
     const initialTitle = await page.title()
     expect(initialTitle).toBeTruthy()
 
-    // Navigate to a different page
     await ensureAboutLinkVisible(page)
-    const awaitNav = await waitForNavigation(page)
-
-    await page.click('a[href$="/about"]')
-    await page.waitForURL("**/about")
-    await awaitNav()
+    await navigateAndWait(page, "/about")
     await page.waitForFunction(() => document.title !== "")
 
     const newTitle = await page.title()
@@ -718,19 +720,13 @@ test.describe("Document Head Updates", () => {
     await page.waitForFunction(() => document.title !== "")
     const homeTitle = await page.title()
 
-    // Navigate to another page
     await ensureAboutLinkVisible(page)
-    let awaitNav = await waitForNavigation(page)
-
-    await page.click('a[href$="/about"]')
-    await page.waitForURL("**/about")
-    await awaitNav()
+    await navigateAndWait(page, "/about")
     await page.waitForFunction(() => document.title !== "")
     const aboutTitle = await page.title()
 
-    // Go back - wait for popstate navigation to complete
-    awaitNav = await waitForNavigation(page)
-
+    // Go back
+    const awaitNav = await waitForNavigation(page)
     await page.goBack()
     await page.waitForURL("**/")
     await awaitNav()
@@ -741,50 +737,162 @@ test.describe("Document Head Updates", () => {
     expect(restoredTitle).not.toBe(aboutTitle)
   })
 
-  test("preserves spa-preserve elements during navigation", async ({ page }) => {
-    // Get the analytics script element (has spa-preserve)
-    const analyticsScriptSrc = await page.evaluate(() => {
-      const script = document.querySelector("script[data-website-id]")
-      return script?.getAttribute("src")
-    })
-    expect(analyticsScriptSrc).toBeTruthy()
+  interface MetaTagTest {
+    name: string
+    selector: string
+    getAttribute: (el: Element | null) => string | null
+  }
 
-    // Navigate to another page
+  const metaTagTests: MetaTagTest[] = [
+    {
+      name: "meta description",
+      selector: 'meta[name="description"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+    {
+      name: "Open Graph title",
+      selector: 'meta[property="og:title"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+    {
+      name: "Open Graph description",
+      selector: 'meta[property="og:description"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+    {
+      name: "Open Graph URL",
+      selector: 'meta[property="og:url"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+    {
+      name: "Twitter Card title",
+      selector: 'meta[name="twitter:title"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+    {
+      name: "Twitter Card description",
+      selector: 'meta[name="twitter:description"]',
+      getAttribute: (el) => el?.getAttribute("content") ?? null,
+    },
+  ]
+
+  for (const testCase of metaTagTests) {
+    test(`updates ${testCase.name} during navigation`, async ({ page }) => {
+      const initialValue = await page.evaluate(
+        ({ selector, getAttribute }) => {
+          const el = document.querySelector(selector)
+          return eval(`(${getAttribute})`)(el)
+        },
+        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+      )
+
+      await ensureAboutLinkVisible(page)
+      await navigateAndWait(page, "/about")
+
+      const newValue = await page.evaluate(
+        ({ selector, getAttribute }) => {
+          const el = document.querySelector(selector)
+          return eval(`(${getAttribute})`)(el)
+        },
+        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+      )
+
+      expect(newValue).toBeTruthy()
+      expect(newValue).not.toBe(initialValue)
+    })
+  }
+
+  interface PreservedElementTest {
+    name: string
+    selector: string
+    getAttribute: (el: Element | null) => string | null
+  }
+
+  const preservedElementTests: PreservedElementTest[] = [
+    {
+      name: "spa-preserve script elements",
+      selector: "script[data-website-id]",
+      getAttribute: (el) => el?.getAttribute("src") ?? null,
+    },
+    {
+      name: "spa-preserve link elements",
+      selector: 'link[rel="stylesheet"][href="/index.css"]',
+      getAttribute: (el) => el?.getAttribute("href") ?? null,
+    },
+  ]
+
+  for (const testCase of preservedElementTests) {
+    test(`preserves ${testCase.name} during navigation`, async ({ page }) => {
+      const initialValue = await page.evaluate(
+        ({ selector, getAttribute }) => {
+          const el = document.querySelector(selector)
+          return eval(`(${getAttribute})`)(el)
+        },
+        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+      )
+      expect(initialValue).toBeTruthy()
+
+      await ensureAboutLinkVisible(page)
+      await navigateAndWait(page, "/about")
+
+      const newValue = await page.evaluate(
+        ({ selector, getAttribute }) => {
+          const el = document.querySelector(selector)
+          return eval(`(${getAttribute})`)(el)
+        },
+        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+      )
+      expect(newValue).toBe(initialValue)
+    })
+  }
+
+  test("updates body content during navigation", async ({ page }) => {
+    const initialBodyText = await page.evaluate(() => {
+      const h1 = document.querySelector("h1")
+      return h1?.textContent
+    })
+
     await ensureAboutLinkVisible(page)
-    const awaitNav = await waitForNavigation(page)
+    await navigateAndWait(page, "/about")
 
-    await page.click('a[href$="/about"]')
-    await page.waitForURL("**/about")
-    await awaitNav()
-
-    // Verify the same script is still there
-    const scriptAfterNav = await page.evaluate(() => {
-      const script = document.querySelector("script[data-website-id]")
-      return script?.getAttribute("src")
+    const newBodyText = await page.evaluate(() => {
+      const h1 = document.querySelector("h1")
+      return h1?.textContent
     })
-    expect(scriptAfterNav).toBe(analyticsScriptSrc)
+
+    expect(newBodyText).toBeTruthy()
+    expect(newBodyText).not.toBe(initialBodyText)
   })
 
-  test("updates meta description during navigation", async ({ page }) => {
-    const initialDescription = await page.evaluate(() => {
+  test("maintains consistent state after multiple navigations", async ({ page }) => {
+    await ensureAboutLinkVisible(page)
+    await navigateAndWait(page, "/about")
+
+    const aboutTitle = await page.title()
+    const aboutDescription = await page.evaluate(() => {
       const meta = document.querySelector('meta[name="description"]')
       return meta?.getAttribute("content")
     })
 
-    // Navigate to a different page
-    await ensureAboutLinkVisible(page)
-    const awaitNav = await waitForNavigation(page)
+    // Navigate back to home
+    let awaitNav = await waitForNavigation(page)
+    await page.goBack()
+    await page.waitForURL("**/")
+    await awaitNav()
 
-    await page.click('a[href$="/about"]')
+    // Navigate forward to about again
+    awaitNav = await waitForNavigation(page)
+    await page.goForward()
     await page.waitForURL("**/about")
     await awaitNav()
 
-    const newDescription = await page.evaluate(() => {
+    const finalTitle = await page.title()
+    const finalDescription = await page.evaluate(() => {
       const meta = document.querySelector('meta[name="description"]')
       return meta?.getAttribute("content")
     })
-    expect(newDescription).toBeTruthy()
-    // The description should change for different pages
-    expect(newDescription).not.toBe(initialDescription)
+
+    expect(finalTitle).toBe(aboutTitle)
+    expect(finalDescription).toBe(aboutDescription)
   })
 })
