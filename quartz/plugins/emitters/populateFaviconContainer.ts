@@ -58,7 +58,18 @@ const getValidFavicons = (faviconCounts: Map<string, number>): Element[] => {
     })
     .filter((item): item is { path: string; url: string; count: number } => item !== null)
     .sort((a, b) => b.count - a.count)
-    .map(({ url }) => createFaviconElement(url))
+    .map(({ url }) => {
+      const faviconElement = createFaviconElement(url)
+      const span: Element = {
+        type: "element",
+        tagName: "span",
+        properties: {
+          className: "favicon-span",
+        },
+        children: [faviconElement],
+      }
+      return span
+    })
 }
 
 /**
