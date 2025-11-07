@@ -144,7 +144,7 @@ img.favicon {
   }
 
   &[src$="arxiv_org.avif"] {
-    filter: brightness(1.5) saturate($favicon-default-saturate);
+    filter: brightness(1.1) saturate($favicon-default-saturate);
   }
 
   // Gray logos made white on dark mode
