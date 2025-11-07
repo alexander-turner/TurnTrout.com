@@ -9,7 +9,9 @@ import { getFaviconCounts } from "../transformers/countfavicons"
 import {
   createFaviconElement,
   getFaviconUrl,
-  shouldIncludeFavicon,
+  transformUrl,
+  FAVICON_COUNT_WHITELIST,
+  MIN_FAVICON_COUNT,
   DEFAULT_PATH,
 } from "../transformers/linkfavicons"
 import { createWinstonLogger } from "../transformers/logger_utils"
@@ -31,12 +33,32 @@ const findFaviconContainer = (root: Root): Element | null => {
 
 const getValidFavicons = (faviconCounts: Map<string, number>): Element[] => {
   return Array.from(faviconCounts.entries())
-    .filter(([path]: [string, number]) => {
-      const url = getFaviconUrl(path)
-      return url !== DEFAULT_PATH && shouldIncludeFavicon(url, path, faviconCounts)
+    .map(([path, count]: [string, number]) => {
+      // Transform path (checks blacklist/whitelist)
+      // Note: Paths are already normalized at hostname level in getQuartzPath
+      const transformedPath = transformUrl(path)
+
+      // Skip if blacklisted
+      if (transformedPath === DEFAULT_PATH) {
+        return null
+      }
+
+      const url = getFaviconUrl(transformedPath)
+      if (url === DEFAULT_PATH) {
+        return null
+      }
+
+      const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => transformedPath.includes(entry))
+
+      if (isWhitelisted || count >= MIN_FAVICON_COUNT) {
+        return { path: transformedPath, url, count } as const
+      }
+
+      return null
     })
-    .sort(([, countA]: [string, number], [, countB]: [string, number]) => countB - countA)
-    .map(([path]: [string, number]) => createFaviconElement(getFaviconUrl(path)))
+    .filter((item): item is { path: string; url: string; count: number } => item !== null)
+    .sort((a, b) => b.count - a.count)
+    .map(({ url }) => createFaviconElement(url))
 }
 
 /**

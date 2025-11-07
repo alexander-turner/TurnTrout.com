@@ -1266,20 +1266,6 @@ describe("transformUrl", () => {
   })
 
   it.each([
-    [
-      "/static/images/external-favicons/blog_openai_com.png",
-      "/static/images/external-favicons/openai_com.png",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
-    ],
-  ])("should apply replacements", (input, expected) => {
-    const result = linkfavicons.transformUrl(input)
-    expect(result).toBe(expected)
-  })
-
-  it.each([
     [linkfavicons.MAIL_PATH, linkfavicons.MAIL_PATH],
     [linkfavicons.ANCHOR_PATH, linkfavicons.ANCHOR_PATH],
     [linkfavicons.TURNTROUT_FAVICON_PATH, linkfavicons.TURNTROUT_FAVICON_PATH],
@@ -1302,186 +1288,103 @@ describe("transformUrl", () => {
     expect(result).toBe(expected)
   })
 
-  it("should return transformed path for non-whitelisted, non-blacklisted paths", () => {
+  it("should return path unchanged for non-whitelisted, non-blacklisted paths", () => {
     const input = "/static/images/external-favicons/example_com.png"
     const result = linkfavicons.transformUrl(input)
     expect(result).toBe(input)
   })
-
-  it("should apply replacements before checking blacklist", () => {
-    // If a replacement would result in a blacklisted path, it should be caught
-    const input = "/static/images/external-favicons/blog_openai_com.png"
-    const result = linkfavicons.transformUrl(input)
-    // Should apply replacement first, then check blacklist
-    expect(result).toBe("/static/images/external-favicons/openai_com.png")
-  })
 })
 
-describe("replaceFavicon", () => {
-  beforeEach(() => {
-    linkfavicons.urlCache.clear()
-  })
-
+describe("getQuartzPath hostname normalization", () => {
   it.each([
-    [
-      "/static/images/external-favicons/blog_openai_com.png",
-      "/static/images/external-favicons/openai_com.png",
-      ".png",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
-      ".avif",
-    ],
-  ])(
-    "should replace %s with configured replacement and preserve extension",
-    (input, expected, extension) => {
-      const result = linkfavicons.replaceFavicon(input)
-      expect(result).toBe(expected)
-      expect(result).toContain(extension)
-      expect(result).not.toContain("blog_openai_com")
-    },
-  )
-
-  it.each([
-    "/static/images/external-favicons/example_com.png",
-    linkfavicons.MAIL_PATH,
-    linkfavicons.ANCHOR_PATH,
-    linkfavicons.TURNTROUT_FAVICON_PATH,
-    "/static/images/other-folder/example.png",
-    "https://example.com/favicon.ico",
-  ])("should not replace %s", (input) => {
-    const result = linkfavicons.replaceFavicon(input)
-    expect(result).toBe(input)
-  })
-
-  describe("integration with ModifyNode", () => {
-    it("should apply replacement before inserting favicon", async () => {
-      const hostname = "blog.openai.com"
-      const originalPath = linkfavicons.getQuartzPath(hostname)
-      const replacedPath = "/static/images/external-favicons/openai_com.png"
-      const replacedAvifUrl = linkfavicons.getFaviconUrl(replacedPath)
-      const href = `https://${hostname}/page`
-
-      const faviconCounts = new Map<string, number>()
-      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT + 1)
-
-      // Mock AVIF fetch to succeed (since replacement happens before AVIF check)
-      jest.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response("Mock AVIF content", {
-          status: 200,
-          headers: { "Content-Type": "image/avif" },
-        }),
-      )
-
-      linkfavicons.urlCache.clear()
-
-      const node = h("a", { href }, [])
-      const parent = h("div", {}, [node])
-
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
-
-      expect(node.children.length).toBeGreaterThan(0)
-      // The favicon should be replaced and AVIF URL returned
-      const insertedFavicon = node.children[0] as Element
-      expect(insertedFavicon.properties.src).toBe(replacedAvifUrl)
-    })
-
-    it("should use replaced path for count checking", async () => {
-      const hostname = "blog.openai.com"
-      const originalPath = linkfavicons.getQuartzPath(hostname)
-      const href = `https://${hostname}/page`
-
-      // Set count for original path above threshold (countKey is based on hostname)
-      const faviconCounts = new Map<string, number>()
-      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT + 1)
-
-      // Mock AVIF fetch to succeed
-      jest.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response("Mock AVIF content", {
-          status: 200,
-          headers: { "Content-Type": "image/avif" },
-        }),
-      )
-
-      linkfavicons.urlCache.clear()
-
-      const node = h("a", { href }, [])
-      const parent = h("div", {}, [node])
-
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
-
-      // Should insert because replacement happens before count check
-      // and countKey is based on hostname, not the replaced path
-      expect(node.children.length).toBeGreaterThan(0)
-    })
-  })
-
-  it.each([
-    [
-      "/static/images/external-favicons/support_apple_com.png",
-      "/static/images/external-favicons/apple_com.png",
-      "support_apple_com local PNG",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/support_apple_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/apple_com.avif",
-      "support_apple_com CDN AVIF",
-    ],
-    [
-      "/static/images/external-favicons/assets_anthropic_com.png",
-      "/static/images/external-favicons/anthropic_com.png",
-      "assets_anthropic_com local PNG",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/assets_anthropic_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
-      "assets_anthropic_com CDN AVIF",
-    ],
-    [
-      "/static/images/external-favicons/cdn_anthropic_com.png",
-      "/static/images/external-favicons/anthropic_com.png",
-      "cdn_anthropic_com local PNG",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/cdn_anthropic_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
-      "cdn_anthropic_com CDN AVIF",
-    ],
-    [
-      "/static/images/external-favicons/alignment_anthropic_com.png",
-      "/static/images/external-favicons/anthropic_com.png",
-      "alignment_anthropic_com local PNG",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/alignment_anthropic_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
-      "alignment_anthropic_com CDN AVIF",
-    ],
-  ])("should replace all REPLACE_FAVICONS entries: %s", (input, expected) => {
-    const result = linkfavicons.replaceFavicon(input)
+    ["blog.openai.com", "/static/images/external-favicons/openai_com.png"],
+    ["support.apple.com", "/static/images/external-favicons/apple_com.png"],
+    ["assets.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
+    ["cdn.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
+    ["alignment.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
+    ["www-anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
+    ["subdomain.blog.openai.com", "/static/images/external-favicons/openai_com.png"],
+    ["any.subdomain.google.com", "/static/images/external-favicons/google_com.png"],
+  ])("should normalize hostname %s to canonical domain", (hostname, expected) => {
+    const result = linkfavicons.getQuartzPath(hostname)
     expect(result).toBe(expected)
   })
 
-  it.each([
-    "/static/images/external-favicons/invalid_path.png",
-    "/static/images/external-favicons/example.png",
-    "/static/images/external-favicons/",
-    "https://assets.turntrout.com/static/images/external-favicons/",
-    "https://assets.turntrout.com/static/images/external-favicons/invalid_path.avif",
-    "https://other-domain.com/static/images/external-favicons/blog_openai_com.avif",
-    "https://assets.turntrout.com/other/path/blog_openai_com.avif",
-    "/other/path/blog_openai_com.png",
-  ])("should not replace malformed or non-matching paths: %s", (input) => {
-    const result = linkfavicons.replaceFavicon(input)
-    expect(result).toBe(input)
+  it("should not normalize google.com itself", () => {
+    const result = linkfavicons.getQuartzPath("google.com")
+    expect(result).toBe("/static/images/external-favicons/google_com.png")
   })
 
-  it("should handle paths that match replacement pattern but with different structure", () => {
-    const input = "/static/images/external-favicons/blog_openai_com_extra.png"
-    const result = linkfavicons.replaceFavicon(input)
-    // Implementation uses includes(), so it will replace blog_openai_com with openai_com
-    expect(result).toBe("/static/images/external-favicons/openai_com_extra.png")
+  it("should not normalize excluded google.com subdomains", () => {
+    expect(linkfavicons.getQuartzPath("scholar.google.com")).toBe(
+      "/static/images/external-favicons/scholar_google_com.png",
+    )
+    expect(linkfavicons.getQuartzPath("play.google.com")).toBe(
+      "/static/images/external-favicons/play_google_com.png",
+    )
+    expect(linkfavicons.getQuartzPath("docs.google.com")).toBe(
+      "/static/images/external-favicons/docs_google_com.png",
+    )
+  })
+
+  it("should not normalize non-matching hostnames", () => {
+    const result = linkfavicons.getQuartzPath("example.com")
+    expect(result).toBe("/static/images/external-favicons/example_com.png")
+  })
+
+  describe("integration with ModifyNode", () => {
+    it("should use normalized path for favicon insertion", async () => {
+      const hostname = "blog.openai.com"
+      const normalizedPath = linkfavicons.getQuartzPath(hostname)
+      const normalizedAvifUrl = linkfavicons.getFaviconUrl(normalizedPath)
+      const href = `https://${hostname}/page`
+
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set(normalizedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+      jest.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response("Mock AVIF content", {
+          status: 200,
+          headers: { "Content-Type": "image/avif" },
+        }),
+      )
+
+      linkfavicons.urlCache.clear()
+
+      const node = h("a", { href }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      expect(node.children.length).toBeGreaterThan(0)
+      const insertedFavicon = node.children[0] as Element
+      expect(insertedFavicon.properties.src).toBe(normalizedAvifUrl)
+    })
+
+    it("should use normalized path for count checking", async () => {
+      const hostname = "blog.openai.com"
+      const normalizedPath = linkfavicons.getQuartzPath(hostname)
+      const href = `https://${hostname}/page`
+
+      const faviconCounts = new Map<string, number>()
+      faviconCounts.set(normalizedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+      jest.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response("Mock AVIF content", {
+          status: 200,
+          headers: { "Content-Type": "image/avif" },
+        }),
+      )
+
+      linkfavicons.urlCache.clear()
+
+      const node = h("a", { href }, [])
+      const parent = h("div", {}, [node])
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      expect(node.children.length).toBeGreaterThan(0)
+    })
   })
 })
 

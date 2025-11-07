@@ -47,6 +47,14 @@ export const FAVICON_COUNTS_FILE = path.join(
  */
 export const MIN_FAVICON_COUNT = 6
 
+export const GOOGLE_SUBDOMAIN_WHITELIST = [
+  "scholar",
+  "play",
+  "docs",
+  "drive",
+  "mail",
+  "colab.research",
+]
 /**
  * Whitelist of favicon paths that should always be included regardless of count. Often widely recognizable.
  * These favicons will be added even if they appear fewer than MIN_FAVICON_COUNT times.
@@ -61,11 +69,11 @@ export const FAVICON_COUNT_WHITELIST = [
   "open_spotify_com",
   "discord_gg",
   "huggingface_co",
-  "deepmind_google",
   "deepmind_com",
   "anthropic_com",
   "openai_com",
   "forum_effectivealtruism_org",
+  ...GOOGLE_SUBDOMAIN_WHITELIST.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
 
 export const FAVICON_SUBSTRING_BLACKLIST = [
@@ -87,17 +95,27 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "papers_nips_cc",
   "playpen_icomtek_csir_co_za", // doesn't exist
   "distill_pub", // not recognizable
+  "mathpix", // not recognizable
 ]
 
-export const REPLACE_FAVICONS = [
+/**
+ * Hostname replacements to normalize subdomains to their main domain.
+ * Each entry contains a regex pattern to match hostnames and the canonical domain to normalize to.
+ * Patterns match both exact hostnames and subdomains (e.g., "blog.openai.com" and "subdomain.blog.openai.com").
+ */
+const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
+  { pattern: /^.+\.openai\.com$/, to: "openai.com" },
+  { pattern: /^.+\.apple\.com$/, to: "apple.com" },
+  { pattern: /^.+\.deepmind\.com$/, to: "deepmind.com" },
+  { pattern: /^.+anthropic\.com$/, to: "anthropic.com" },
+  { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
+  { pattern: /^.+amazon\.com$/, to: "amazon.com" },
+  { pattern: /^.*protonvpn\.com/, to: "proton.me" },
+  // Match any *.google.com subdomain except scholar, play, and docs subdomains
   {
-    from: "blog_openai_com",
-    to: "openai_com",
+    pattern: new RegExp(`^(?!${GOOGLE_SUBDOMAIN_WHITELIST.join("|")}\\.).+\\.google\\.com$`),
+    to: "google.com",
   },
-  { from: "support_apple_com", to: "apple_com" },
-  { from: "assets_anthropic_com", to: "anthropic_com" },
-  { from: "cdn_anthropic_com", to: "anthropic_com" },
-  { from: "alignment_anthropic_com", to: "anthropic_com" },
 ]
 
 // istanbul ignore if
@@ -178,11 +196,28 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
 }
 
 /**
+ * Normalizes a hostname by applying subdomain replacements.
+ * Converts subdomains like "blog.openai.com" to their canonical domain "openai.com".
+ *
+ * @param hostname - The hostname to normalize
+ * @returns The normalized hostname
+ */
+function normalizeHostname(hostname: string): string {
+  for (const replacement of HOSTNAME_REPLACEMENTS) {
+    if (replacement.pattern.test(hostname)) {
+      return replacement.to
+    }
+  }
+  return hostname
+}
+
+/**
  * Generates a standardized path for storing favicons in the Quartz system.
  *
  * Handles special cases:
  * - Converts localhost to turntrout.com
  * - Removes www. prefix from domains
+ * - Normalizes subdomains (e.g., blog.openai.com -> openai.com)
  * - Uses special path for turntrout.com domain
  * - Converts dots to underscores for filesystem compatibility
  *
@@ -192,6 +227,7 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
 export function getQuartzPath(hostname: string): string {
   logger.debug(`Generating Quartz path for hostname: ${hostname}`)
   hostname = hostname === "localhost" ? "turntrout.com" : hostname.replace(/^www\./, "")
+  hostname = normalizeHostname(hostname)
   const sanitizedHostname = hostname.replace(/\./g, "_")
   const path = sanitizedHostname.includes("turntrout_com")
     ? TURNTROUT_FAVICON_PATH
@@ -295,81 +331,28 @@ export function getFaviconUrl(faviconPath: string): string {
 }
 
 /**
- * Transforms a favicon URL by applying replacements, checking whitelist, and blacklist.
+ * Transforms a favicon URL by checking whitelist and blacklist.
  *
  * Processing order:
- * 1. Applies any configured replacements (e.g., blog_openai_com -> openai_com)
- * 2. Returns transformed path if whitelisted (always included)
- * 3. Returns DEFAULT_PATH if blacklisted (never included)
- * 4. Otherwise returns transformed path for further count checking
+ * 1. Returns path if whitelisted (always included)
+ * 2. Returns DEFAULT_PATH if blacklisted (never included)
+ * 3. Otherwise returns path for further count checking
+ *
+ * Note: Path replacements are handled at the hostname level in getQuartzPath,
+ * so paths passed here are already normalized.
  *
  * @param faviconPath - The favicon path to transform (can be local path, CDN URL, or special path)
- * @returns The transformed favicon path, or DEFAULT_PATH if blacklisted
+ * @returns The favicon path, or DEFAULT_PATH if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const replacedPath = replaceFavicon(faviconPath)
-
-  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => replacedPath.includes(entry))
+  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => faviconPath.includes(entry))
   if (isBlacklisted) {
     return DEFAULT_PATH
   }
 
-  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => replacedPath.includes(entry))
+  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => faviconPath.includes(entry))
   if (isWhitelisted) {
-    return replacedPath
-  }
-
-  return replacedPath
-}
-
-/**
- * Replaces a favicon path based on the REPLACE_FAVICONS configuration.
- * Checks if the favicon path matches any "from" pattern and replaces it with the corresponding "to" pattern.
- * Handles both local paths (.png) and CDN URLs (.avif), preserving the path structure.
- *
- * @param faviconPath - The favicon path to potentially replace (can be local path, CDN URL, or special path)
- * @returns The replaced favicon path, or the original path if no replacement is configured
- */
-export function replaceFavicon(faviconPath: string): string {
-  // Don't replace special paths (mail, anchor, turntrout favicon)
-  if (
-    faviconPath === MAIL_PATH ||
-    faviconPath === ANCHOR_PATH ||
-    faviconPath === TURNTROUT_FAVICON_PATH
-  ) {
     return faviconPath
-  }
-
-  // Extract basename from path
-  let basename: string
-  let pathPrefix = ""
-
-  if (faviconPath.startsWith("http")) {
-    // CDN URL: https://assets.turntrout.com/static/images/external-favicons/example_com.avif
-    const urlMatch = faviconPath.match(
-      /https:\/\/assets\.turntrout\.com\/static\/images\/external-favicons\/([^/]+)$/,
-    )
-    if (!urlMatch) {
-      return faviconPath
-    }
-    basename = urlMatch[1]
-    pathPrefix = "https://assets.turntrout.com/static/images/external-favicons/"
-  } else {
-    // Local path: /static/images/external-favicons/example_com.png
-    const pathMatch = faviconPath.match(/^(\/static\/images\/external-favicons\/)([^/]+)$/)
-    if (!pathMatch) {
-      return faviconPath
-    }
-    pathPrefix = pathMatch[1]
-    basename = pathMatch[2]
-  }
-
-  // Check if basename matches any replacement pattern
-  for (const replacement of REPLACE_FAVICONS) {
-    if (basename.includes(replacement.from)) {
-      const newName = basename.replace(replacement.from, replacement.to)
-      return `${pathPrefix}${newName}`
-    }
   }
 
   return faviconPath

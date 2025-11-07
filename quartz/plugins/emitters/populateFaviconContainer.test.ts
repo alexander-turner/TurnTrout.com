@@ -19,21 +19,33 @@ jest.unstable_mockModule("../transformers/linkfavicons", () => ({
   MIN_FAVICON_COUNT: 3,
   TURNTROUT_FAVICON_PATH:
     "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico",
+  FAVICON_COUNT_WHITELIST: [
+    "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico",
+    "apple_com",
+  ],
+  FAVICON_SUBSTRING_BLACKLIST: ["blacklisted_com"],
+  transformUrl: jest.fn((path: string) => {
+    // Mock blacklist check
+    if (path.includes("blacklisted_com")) {
+      return "/default-favicon.png"
+    }
+    // Mock replacements (e.g., blog_openai_com -> openai_com)
+    if (path.includes("blog_openai_com")) {
+      return path.replace("blog_openai_com", "openai_com")
+    }
+    // Return path as-is (no replacement needed)
+    return path
+  }),
   getFaviconUrl: jest.fn((path: string) => {
+    // Return DEFAULT_PATH for paths that should be filtered out
+    if (path === "/default-favicon.png" || path.includes("invalid_url")) {
+      return "/default-favicon.png"
+    }
     if (path.startsWith("http")) {
       return path
     }
     return path.replace(".png", ".avif")
   }),
-  shouldIncludeFavicon: jest.fn(
-    (imgPath: string, countKey: string, faviconCounts: Map<string, number>) => {
-      const count = faviconCounts.get(countKey) || 0
-      const isWhitelisted =
-        imgPath === "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico" ||
-        imgPath.endsWith("apple_com.png")
-      return isWhitelisted || count >= 3
-    },
-  ),
   createFaviconElement: jest.fn((url: string) => ({
     type: "element",
     tagName: "img",
@@ -184,6 +196,59 @@ describe("PopulateFaviconContainer", () => {
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
       expect(writtenContent).toContain(linkfavicons.TURNTROUT_FAVICON_PATH)
+    })
+
+    it("should filter out blacklisted favicons", async () => {
+      const faviconCounts = createMockCounts([
+        [
+          "/static/images/external-favicons/blacklisted_com.png",
+          linkfavicons.MIN_FAVICON_COUNT + 10,
+        ],
+        ["/static/images/external-favicons/valid_com.png", linkfavicons.MIN_FAVICON_COUNT + 1],
+      ])
+      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+
+      const emitter = PopulateFaviconContainer()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(mockGetFaviconCounts).toHaveBeenCalled()
+      expect(fs.writeFileSync).toHaveBeenCalled()
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).not.toContain("blacklisted_com")
+      expect(writtenContent).toContain("valid_com.avif")
+    })
+
+    it("should handle already-normalized paths", async () => {
+      // Paths in counts file are already normalized at hostname level in getQuartzPath
+      const faviconCounts = createMockCounts([
+        ["/static/images/external-favicons/openai_com.png", linkfavicons.MIN_FAVICON_COUNT + 1],
+      ])
+      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+
+      const emitter = PopulateFaviconContainer()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(mockGetFaviconCounts).toHaveBeenCalled()
+      expect(fs.writeFileSync).toHaveBeenCalled()
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain("openai_com.avif")
+    })
+
+    it("should filter out favicons where getFaviconUrl returns DEFAULT_PATH", async () => {
+      const faviconCounts = createMockCounts([
+        ["/static/images/external-favicons/invalid_url.png", linkfavicons.MIN_FAVICON_COUNT + 1],
+        ["/static/images/external-favicons/valid_com.png", linkfavicons.MIN_FAVICON_COUNT + 1],
+      ])
+      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+
+      const emitter = PopulateFaviconContainer()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(mockGetFaviconCounts).toHaveBeenCalled()
+      expect(fs.writeFileSync).toHaveBeenCalled()
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).not.toContain("invalid_url")
+      expect(writtenContent).toContain("valid_com.avif")
     })
 
     it("should handle empty counts", async () => {

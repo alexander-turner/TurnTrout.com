@@ -5858,5 +5858,9 @@
   "/static/images/external-favicons/discuss_grapheneos_org.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/google_com.avif": {
+    "width": 64,
+    "height": 64
   }
 }
