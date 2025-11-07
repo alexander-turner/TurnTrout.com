@@ -295,6 +295,34 @@ export function getFaviconUrl(faviconPath: string): string {
 }
 
 /**
+ * Transforms a favicon URL by applying replacements, checking whitelist, and blacklist.
+ *
+ * Processing order:
+ * 1. Applies any configured replacements (e.g., blog_openai_com -> openai_com)
+ * 2. Returns transformed path if whitelisted (always included)
+ * 3. Returns DEFAULT_PATH if blacklisted (never included)
+ * 4. Otherwise returns transformed path for further count checking
+ *
+ * @param faviconPath - The favicon path to transform (can be local path, CDN URL, or special path)
+ * @returns The transformed favicon path, or DEFAULT_PATH if blacklisted
+ */
+export function transformUrl(faviconPath: string): string {
+  const replacedPath = replaceFavicon(faviconPath)
+
+  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => replacedPath.includes(entry))
+  if (isBlacklisted) {
+    return DEFAULT_PATH
+  }
+
+  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => replacedPath.includes(entry))
+  if (isWhitelisted) {
+    return replacedPath
+  }
+
+  return replacedPath
+}
+
+/**
  * Replaces a favicon path based on the REPLACE_FAVICONS configuration.
  * Checks if the favicon path matches any "from" pattern and replaces it with the corresponding "to" pattern.
  * Handles both local paths (.png) and CDN URLs (.avif), preserving the path structure.
@@ -366,7 +394,12 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   logger.info(`Attempting to find or save favicon for ${hostname}`)
 
   const faviconPath = getQuartzPath(hostname)
-  const updatedPath = replaceFavicon(faviconPath)
+  const updatedPath = transformUrl(faviconPath)
+
+  // If blacklisted, return early
+  if (updatedPath === DEFAULT_PATH) {
+    return DEFAULT_PATH
+  }
 
   // Check cache first
   if (urlCache.has(updatedPath)) {
@@ -690,12 +723,14 @@ async function handleLink(
       return
     }
 
-    // Check if favicon appears frequently enough across the site
-    // Whitelisted favicons are always included regardless of count
+    // transformUrl already handles whitelist/blacklist, so we only need to check count
     // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
     const countKey = getQuartzPath(finalURL.hostname)
-    if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
-      const count = faviconCounts.get(countKey) || 0
+    const count = faviconCounts.get(countKey) || 0
+
+    // If not whitelisted (already handled by transformUrl), check count threshold
+    const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
+    if (!isWhitelisted && count < MIN_FAVICON_COUNT) {
       logger.debug(
         `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )

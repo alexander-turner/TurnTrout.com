@@ -121,6 +121,16 @@ describe("Favicon Utilities", () => {
       expect(global.fetch).toHaveBeenCalledTimes(2) // AVIF and Google attempts
     })
 
+    it("should return DEFAULT_PATH immediately if blacklisted by transformUrl", async () => {
+      const blacklistedHostname = "incompleteideas.net"
+      const fetchSpy = jest.spyOn(global, "fetch")
+      const result = await linkfavicons.MaybeSaveFavicon(blacklistedHostname)
+      expect(result).toBe(linkfavicons.DEFAULT_PATH)
+      // Should not attempt any fetches since it's blacklisted
+      expect(fetchSpy).not.toHaveBeenCalled()
+      fetchSpy.mockRestore()
+    })
+
     it.each<[string, number, boolean]>([
       ["Local PNG exists", 404, true],
       ["Download PNG from Google", 404, false],
@@ -1247,6 +1257,63 @@ describe("AddFavicons plugin", () => {
 
     expect(spanElement.children.length).toBe(0)
     expect(anchorWithoutHref.children.length).toBe(0)
+  })
+})
+
+describe("transformUrl", () => {
+  beforeEach(() => {
+    linkfavicons.urlCache.clear()
+  })
+
+  it.each([
+    [
+      "/static/images/external-favicons/blog_openai_com.png",
+      "/static/images/external-favicons/openai_com.png",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
+    ],
+  ])("should apply replacements", (input, expected) => {
+    const result = linkfavicons.transformUrl(input)
+    expect(result).toBe(expected)
+  })
+
+  it.each([
+    [linkfavicons.MAIL_PATH, linkfavicons.MAIL_PATH],
+    [linkfavicons.ANCHOR_PATH, linkfavicons.ANCHOR_PATH],
+    [linkfavicons.TURNTROUT_FAVICON_PATH, linkfavicons.TURNTROUT_FAVICON_PATH],
+    [
+      "/static/images/external-favicons/apple_com.png",
+      "/static/images/external-favicons/apple_com.png",
+    ],
+  ])("should return %s if whitelisted", (input, expected) => {
+    const result = linkfavicons.transformUrl(input)
+    expect(result).toBe(expected)
+  })
+
+  it.each(
+    FAVICON_SUBSTRING_BLACKLIST.map((blacklistEntry) => [
+      `/static/images/external-favicons/${blacklistEntry}.png`,
+      linkfavicons.DEFAULT_PATH,
+    ]),
+  )("should return DEFAULT_PATH if blacklisted: %s", (input, expected) => {
+    const result = linkfavicons.transformUrl(input)
+    expect(result).toBe(expected)
+  })
+
+  it("should return transformed path for non-whitelisted, non-blacklisted paths", () => {
+    const input = "/static/images/external-favicons/example_com.png"
+    const result = linkfavicons.transformUrl(input)
+    expect(result).toBe(input)
+  })
+
+  it("should apply replacements before checking blacklist", () => {
+    // If a replacement would result in a blacklisted path, it should be caught
+    const input = "/static/images/external-favicons/blog_openai_com.png"
+    const result = linkfavicons.transformUrl(input)
+    // Should apply replacement first, then check blacklist
+    expect(result).toBe("/static/images/external-favicons/openai_com.png")
   })
 })
 
