@@ -130,12 +130,94 @@ async function updatePage(html: Document, url: URL): Promise<void> {
     })
   }
 
-  console.debug(`[updatePage] Starting micromorph for ${url.pathname}`)
+  console.debug(`[updatePage] Starting DOM update for ${url.pathname}`)
   try {
-    await micromorph(document.documentElement, html.documentElement)
-    console.debug(`[updatePage] Micromorph finished for ${url.pathname}`)
+    // Only morph the body to preserve spa-preserve elements in head
+    await micromorph(document.body, html.body)
+    // Update head elements AFTER morphing to ensure browser recognizes changes
+    // This is especially important for Safari/Firefox which cache head state
+    updateHeadElements(html)
+    console.debug(`[updatePage] DOM update finished for ${url.pathname}`)
   } catch (e) {
-    console.error(`[updatePage] Micromorph error for ${url.pathname}:`, e)
+    console.error(`[updatePage] DOM update error for ${url.pathname}:`, e)
+  }
+}
+
+/**
+ * Updates document head elements manually. We don't use micromorph for head
+ * because we need to preserve spa-preserve elements and ensure reliable updates
+ * across all browsers.
+ */
+function updateHeadElements(html: Document): void {
+  const newHead = html.head
+  const currentHead = document.head
+
+  const newTitle = newHead.querySelector("title")?.textContent
+  if (newTitle) {
+    document.title = newTitle
+  }
+
+  // Update or create meta tags (excluding spa-preserve ones)
+  const metaTags = newHead.querySelectorAll("meta:not([spa-preserve])")
+
+  for (const newMeta of Array.from(metaTags)) {
+    const name = newMeta.getAttribute("name")
+    const property = newMeta.getAttribute("property")
+    const httpEquiv = newMeta.getAttribute("http-equiv")
+    const content = newMeta.getAttribute("content") || ""
+
+    // Find existing meta tag by name, property, or http-equiv (excluding spa-preserve)
+    let existingMeta: HTMLMetaElement | null = null
+    let selector = ""
+    if (name) {
+      selector = `meta[name="${name}"]:not([spa-preserve])`
+    } else if (property) {
+      selector = `meta[property="${property}"]:not([spa-preserve])`
+    } else if (httpEquiv) {
+      selector = `meta[http-equiv="${httpEquiv}"]:not([spa-preserve])`
+    }
+
+    existingMeta = currentHead.querySelector(selector) as HTMLMetaElement | null
+    if (existingMeta) {
+      existingMeta.setAttribute("content", content)
+    } else {
+      console.warn(
+        `[updateHeadElements] No existing meta tag found for name: ${name}, property: ${property}, http-equiv: ${httpEquiv}. Creating new meta tag.`,
+      )
+      const newMeta = document.createElement("meta")
+      if (name) newMeta.name = name
+      if (property) newMeta.setAttribute("property", property)
+      if (httpEquiv) newMeta.httpEquiv = httpEquiv
+      newMeta.setAttribute("content", content)
+      currentHead.appendChild(newMeta)
+    }
+  }
+
+  // Remove meta tags that are no longer in the new head (excluding spa-preserve)
+  const currentMetas = currentHead.querySelectorAll("meta:not([spa-preserve])")
+  for (const currentMeta of Array.from(currentMetas)) {
+    const name = currentMeta.getAttribute("name")
+    const property = currentMeta.getAttribute("property")
+    const httpEquiv = currentMeta.getAttribute("http-equiv")
+
+    let existsInNew = false
+    let selector = ""
+    if (name) {
+      selector = `meta[name="${name}"]`
+    } else if (property) {
+      selector = `meta[property="${property}"]`
+    } else if (httpEquiv) {
+      selector = `meta[http-equiv="${httpEquiv}"]`
+    } else {
+      console.warn(
+        `[updateHeadElements] No name, property, or http-equiv found for meta tag: ${currentMeta.outerHTML}`,
+      )
+    }
+    existsInNew = newHead.querySelector(selector) !== null
+
+    if (!existsInNew) {
+      currentMeta.remove()
+    }
   }
 }
 

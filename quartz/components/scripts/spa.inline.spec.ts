@@ -666,14 +666,47 @@ test.describe("Network Behavior", () => {
 })
 
 test.describe("Document Head Updates", () => {
+  // Helper to ensure the about link is visible (opens mobile menu if needed)
+  async function ensureAboutLinkVisible(page: Page): Promise<void> {
+    const aboutLink = page.locator('a[href$="/about"]')
+    const isVisible = await aboutLink.isVisible().catch(() => false)
+    if (!isVisible) {
+      // On mobile, the menu might be hidden. Try opening it.
+      const menuButton = page.locator("#menu-button")
+      const menu = page.locator("#navbar-right .menu")
+      if (await menuButton.isVisible().catch(() => false)) {
+        await menuButton.click()
+        // Wait for menu to become visible
+        await expect(menu).toBeVisible()
+        await expect(menu).toHaveClass(/visible/)
+      }
+      // If still not visible, use force click
+      await aboutLink.scrollIntoViewIfNeeded()
+    }
+  }
+
+  // Helper to wait for SPA navigation to complete (including DOM updates)
+  async function waitForNavigation(page: Page): Promise<() => Promise<void>> {
+    const navPromise = page.evaluate(() => {
+      return new Promise<void>((resolve) => {
+        document.addEventListener("nav", () => resolve(), { once: true })
+      })
+    })
+    return () => navPromise
+  }
+
   test("updates page title when navigating between pages", async ({ page }) => {
     await page.waitForFunction(() => document.title !== "")
     const initialTitle = await page.title()
     expect(initialTitle).toBeTruthy()
 
     // Navigate to a different page
+    await ensureAboutLinkVisible(page)
+    const awaitNav = await waitForNavigation(page)
+
     await page.click('a[href$="/about"]')
     await page.waitForURL("**/about")
+    await awaitNav()
     await page.waitForFunction(() => document.title !== "")
 
     const newTitle = await page.title()
@@ -686,14 +719,21 @@ test.describe("Document Head Updates", () => {
     const homeTitle = await page.title()
 
     // Navigate to another page
+    await ensureAboutLinkVisible(page)
+    let awaitNav = await waitForNavigation(page)
+
     await page.click('a[href$="/about"]')
     await page.waitForURL("**/about")
+    await awaitNav()
     await page.waitForFunction(() => document.title !== "")
     const aboutTitle = await page.title()
 
-    // Go back
+    // Go back - wait for popstate navigation to complete
+    awaitNav = await waitForNavigation(page)
+
     await page.goBack()
     await page.waitForURL("**/")
+    await awaitNav()
     await page.waitForFunction(() => document.title !== "")
 
     const restoredTitle = await page.title()
@@ -710,8 +750,12 @@ test.describe("Document Head Updates", () => {
     expect(analyticsScriptSrc).toBeTruthy()
 
     // Navigate to another page
+    await ensureAboutLinkVisible(page)
+    const awaitNav = await waitForNavigation(page)
+
     await page.click('a[href$="/about"]')
     await page.waitForURL("**/about")
+    await awaitNav()
 
     // Verify the same script is still there
     const scriptAfterNav = await page.evaluate(() => {
@@ -728,8 +772,12 @@ test.describe("Document Head Updates", () => {
     })
 
     // Navigate to a different page
+    await ensureAboutLinkVisible(page)
+    const awaitNav = await waitForNavigation(page)
+
     await page.click('a[href$="/about"]')
     await page.waitForURL("**/about")
+    await awaitNav()
 
     const newDescription = await page.evaluate(() => {
       const meta = document.querySelector('meta[name="description"]')
