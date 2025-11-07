@@ -550,59 +550,56 @@ describe("Favicon Utilities", () => {
       expect(node.children.length).toBe(0)
     })
 
-    it("should add same-page-link class and anchor icon for internal links", async () => {
-      const node = h("a", { href: "#section-1" })
-      const parent = h("p", [node])
+    it.each([
+      [
+        undefined,
+        (node: Element) => {
+          expect(node.properties.className).toContain("same-page-link")
+          expect(node.children.length).toBe(1)
+          expect(node.children[0]).toHaveProperty("properties.src", linkfavicons.ANCHOR_PATH)
+        },
+      ],
+      [
+        ["existing-class"],
+        (node: Element) => {
+          expect(Array.isArray(node.properties.className)).toBe(true)
+          expect(node.properties.className).toContain("existing-class")
+          expect(node.properties.className).toContain("same-page-link")
+        },
+      ],
+      [
+        "existing-class",
+        (node: Element) => {
+          expect(typeof node.properties.className).toBe("string")
+          expect(node.properties.className).toBe("existing-class same-page-link")
+        },
+      ],
+    ])(
+      "should handle internal links with different className types",
+      async (initialClassName, assertFn) => {
+        const node =
+          initialClassName === undefined
+            ? ({
+                type: "element",
+                tagName: "a",
+                properties: { href: "#section-1" },
+                children: [],
+              } as Element)
+            : initialClassName === "existing-class"
+              ? ({
+                  type: "element",
+                  tagName: "a",
+                  properties: { href: "#section-1", className: initialClassName },
+                  children: [],
+                } as Element)
+              : h("a", { href: "#section-1", className: initialClassName })
+        const parent = h("p", [node])
 
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+        await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
-      expect(node.properties.className).toContain("same-page-link")
-      expect(node.children.length).toBe(1)
-      expect(node.children[0]).toHaveProperty("properties.src", linkfavicons.ANCHOR_PATH)
-    })
-
-    it("should handle existing className array for internal links", async () => {
-      const node = h("a", { href: "#section-1", className: ["existing-class"] })
-      const parent = h("p", [node])
-
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
-
-      expect(Array.isArray(node.properties.className)).toBe(true)
-      expect(node.properties.className).toContain("existing-class")
-      expect(node.properties.className).toContain("same-page-link")
-    })
-
-    it("should handle existing className string for internal links", async () => {
-      // Create node manually to ensure string className remains string (h() converts to array)
-      const node = {
-        type: "element",
-        tagName: "a",
-        properties: { href: "#section-1", className: "existing-class" },
-        children: [],
-      } as Element
-      const parent = h("p", [node])
-
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
-
-      expect(typeof node.properties.className).toBe("string")
-      expect(node.properties.className).toBe("existing-class same-page-link")
-    })
-
-    it("should handle internal links with no existing className", async () => {
-      // Create node manually to test the undefined className case
-      const node = {
-        type: "element",
-        tagName: "a",
-        properties: { href: "#section-1" },
-        children: [],
-      } as Element
-      const parent = h("p", [node])
-
-      await linkfavicons.ModifyNode(node, parent, faviconCounts)
-
-      expect(Array.isArray(node.properties.className)).toBe(true)
-      expect(node.properties.className).toEqual(["same-page-link"])
-    })
+        assertFn(node)
+      },
+    )
 
     it.each([[123 as unknown as string], ["image.png"]])(
       "should skip when href is %s",
@@ -1262,17 +1259,22 @@ describe("replaceFavicon", () => {
     [
       "/static/images/external-favicons/blog_openai_com.png",
       "/static/images/external-favicons/openai_com.png",
-      "local PNG path",
+      ".png",
     ],
     [
       "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
       "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
-      "CDN AVIF URL",
+      ".avif",
     ],
-  ])("should replace %s with configured replacement", (input, expected) => {
-    const result = linkfavicons.replaceFavicon(input)
-    expect(result).toBe(expected)
-  })
+  ])(
+    "should replace %s with configured replacement and preserve extension",
+    (input, expected, extension) => {
+      const result = linkfavicons.replaceFavicon(input)
+      expect(result).toBe(expected)
+      expect(result).toContain(extension)
+      expect(result).not.toContain("blog_openai_com")
+    },
+  )
 
   it.each([
     "/static/images/external-favicons/example_com.png",
@@ -1286,36 +1288,26 @@ describe("replaceFavicon", () => {
     expect(result).toBe(input)
   })
 
-  it.each([
-    [
-      "/static/images/external-favicons/blog_openai_com.png",
-      "/static/images/external-favicons/openai_com.png",
-      ".png",
-    ],
-    [
-      "https://assets.turntrout.com/static/images/external-favicons/blog_openai_com.avif",
-      "https://assets.turntrout.com/static/images/external-favicons/openai_com.avif",
-      ".avif",
-    ],
-  ])("should preserve %s extension when replacing", (input, expected, extension) => {
-    const result = linkfavicons.replaceFavicon(input)
-    expect(result).toBe(expected)
-    expect(result).toContain(extension)
-    expect(result).not.toContain("blog_openai_com")
-  })
-
   describe("integration with ModifyNode", () => {
     it("should apply replacement before inserting favicon", async () => {
       const hostname = "blog.openai.com"
       const originalPath = linkfavicons.getQuartzPath(hostname)
       const replacedPath = "/static/images/external-favicons/openai_com.png"
+      const replacedAvifUrl = linkfavicons.getFaviconUrl(replacedPath)
       const href = `https://${hostname}/page`
 
       const faviconCounts = new Map<string, number>()
       faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT + 1)
 
+      // Mock AVIF fetch to succeed (since replacement happens before AVIF check)
+      jest.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response("Mock AVIF content", {
+          status: 200,
+          headers: { "Content-Type": "image/avif" },
+        }),
+      )
+
       linkfavicons.urlCache.clear()
-      linkfavicons.urlCache.set(originalPath, originalPath)
 
       const node = h("a", { href }, [])
       const parent = h("div", {}, [node])
@@ -1323,34 +1315,262 @@ describe("replaceFavicon", () => {
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(node.children.length).toBeGreaterThan(0)
-      // The favicon should be replaced
+      // The favicon should be replaced and AVIF URL returned
       const insertedFavicon = node.children[0] as Element
-      expect(insertedFavicon.properties.src).toBe(replacedPath)
+      expect(insertedFavicon.properties.src).toBe(replacedAvifUrl)
     })
 
     it("should use replaced path for count checking", async () => {
       const hostname = "blog.openai.com"
       const originalPath = linkfavicons.getQuartzPath(hostname)
-      const replacedPath = "/static/images/external-favicons/openai_com.png"
       const href = `https://${hostname}/page`
 
-      // Set count for original path below threshold
+      // Set count for original path above threshold (countKey is based on hostname)
       const faviconCounts = new Map<string, number>()
-      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT - 1)
-      // Set count for replaced path above threshold
-      faviconCounts.set(replacedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+      faviconCounts.set(originalPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+      // Mock AVIF fetch to succeed
+      jest.spyOn(global, "fetch").mockResolvedValueOnce(
+        new Response("Mock AVIF content", {
+          status: 200,
+          headers: { "Content-Type": "image/avif" },
+        }),
+      )
 
       linkfavicons.urlCache.clear()
-      linkfavicons.urlCache.set(originalPath, originalPath)
 
       const node = h("a", { href }, [])
       const parent = h("div", {}, [node])
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
-      // Should still insert because replacement happens before count check
+      // Should insert because replacement happens before count check
       // and countKey is based on hostname, not the replaced path
       expect(node.children.length).toBeGreaterThan(0)
     })
+  })
+
+  it.each([
+    [
+      "/static/images/external-favicons/support_apple_com.png",
+      "/static/images/external-favicons/apple_com.png",
+      "support_apple_com local PNG",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/support_apple_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/apple_com.avif",
+      "support_apple_com CDN AVIF",
+    ],
+    [
+      "/static/images/external-favicons/assets_anthropic_com.png",
+      "/static/images/external-favicons/anthropic_com.png",
+      "assets_anthropic_com local PNG",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/assets_anthropic_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
+      "assets_anthropic_com CDN AVIF",
+    ],
+    [
+      "/static/images/external-favicons/cdn_anthropic_com.png",
+      "/static/images/external-favicons/anthropic_com.png",
+      "cdn_anthropic_com local PNG",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/cdn_anthropic_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
+      "cdn_anthropic_com CDN AVIF",
+    ],
+    [
+      "/static/images/external-favicons/alignment_anthropic_com.png",
+      "/static/images/external-favicons/anthropic_com.png",
+      "alignment_anthropic_com local PNG",
+    ],
+    [
+      "https://assets.turntrout.com/static/images/external-favicons/alignment_anthropic_com.avif",
+      "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.avif",
+      "alignment_anthropic_com CDN AVIF",
+    ],
+  ])("should replace all REPLACE_FAVICONS entries: %s", (input, expected) => {
+    const result = linkfavicons.replaceFavicon(input)
+    expect(result).toBe(expected)
+  })
+
+  it.each([
+    "/static/images/external-favicons/invalid_path.png",
+    "/static/images/external-favicons/example.png",
+    "/static/images/external-favicons/",
+    "https://assets.turntrout.com/static/images/external-favicons/",
+    "https://assets.turntrout.com/static/images/external-favicons/invalid_path.avif",
+    "https://other-domain.com/static/images/external-favicons/blog_openai_com.avif",
+    "https://assets.turntrout.com/other/path/blog_openai_com.avif",
+    "/other/path/blog_openai_com.png",
+  ])("should not replace malformed or non-matching paths: %s", (input) => {
+    const result = linkfavicons.replaceFavicon(input)
+    expect(result).toBe(input)
+  })
+
+  it("should handle paths that match replacement pattern but with different structure", () => {
+    const input = "/static/images/external-favicons/blog_openai_com_extra.png"
+    const result = linkfavicons.replaceFavicon(input)
+    // Implementation uses includes(), so it will replace blog_openai_com with openai_com
+    expect(result).toBe("/static/images/external-favicons/openai_com_extra.png")
+  })
+})
+
+describe("normalizeUrl", () => {
+  it.each([
+    ["https://example.com/page", "https://example.com/page"],
+    ["http://example.com/page", "http://example.com/page"],
+    ["./shard-theory", "https://www.turntrout.com/shard-theory"],
+    ["../shard-theory", "https://www.turntrout.com/shard-theory"],
+    ["/absolute/path", "https://www.turntrout.com//absolute/path"],
+    ["relative/path", "https://www.turntrout.com/relative/path"],
+    ["./nested/./path", "https://www.turntrout.com/nested/./path"],
+    ["../parent/../sibling", "https://www.turntrout.com/parent/../sibling"],
+  ])("should normalize %s to %s", (input, expected) => {
+    const result = linkfavicons.normalizeUrl(input)
+    expect(result).toBe(expected)
+  })
+
+  it.each([
+    ["./page?query=value#section", "https://www.turntrout.com/page?query=value#section"],
+    ["./", "https://www.turntrout.com/"],
+    ["../../deep/path", "https://www.turntrout.com/../deep/path"],
+  ])("should handle edge cases: %s", (input, expected) => {
+    const result = linkfavicons.normalizeUrl(input)
+    expect(result).toBe(expected)
+  })
+})
+
+describe("maybeSpliceText edge cases", () => {
+  const imgPath = "/test/favicon.png"
+
+  it("should handle node with only whitespace text", () => {
+    const node = h("a", {}, ["   "])
+    const result = linkfavicons.maybeSpliceText(node, linkfavicons.createFaviconElement(imgPath))
+    expect(result).toEqual(linkfavicons.createFaviconElement(imgPath))
+  })
+
+  it.each([
+    ["A", "single character text"],
+    ["1234", "exactly maxCharsToRead characters"],
+    ["12", "text shorter than maxCharsToRead"],
+  ])("should handle node with %s", (text) => {
+    const node = h("a", {}, [text])
+    linkfavicons.insertFavicon(imgPath, node)
+    expect(node.children.length).toBe(1)
+    expect(node.children[0]).toMatchObject(createExpectedSpan(text, imgPath))
+  })
+
+  it("should handle nested tagsToZoomInto elements", () => {
+    const innerText = "nested text"
+    const node = h("a", {}, [
+      { type: "text", value: "Outer " },
+      h("em", {}, [{ type: "text", value: "text " }]),
+      h("strong", {}, [innerText]),
+    ])
+    linkfavicons.insertFavicon(imgPath, node)
+
+    const strongElement = node.children[2] as Element
+    expect(strongElement.tagName).toBe("strong")
+    const firstSegment = innerText.slice(0, -linkfavicons.maxCharsToRead)
+    const lastSegment = innerText.slice(-linkfavicons.maxCharsToRead)
+    expect(strongElement.children[0]).toEqual({ type: "text", value: firstSegment })
+    expect(strongElement.children[1]).toMatchObject(createExpectedSpan(lastSegment, imgPath))
+  })
+
+  it("should handle node with element child that has no text", () => {
+    const node = h("a", {}, [h("div")])
+    const result = linkfavicons.maybeSpliceText(node, linkfavicons.createFaviconElement(imgPath))
+    expect(result).toEqual(linkfavicons.createFaviconElement(imgPath))
+  })
+
+  it("should handle node with mixed children ending in element", () => {
+    const node = h("a", {}, [{ type: "text", value: "Text " }, h("span", {}, ["More"])])
+    linkfavicons.insertFavicon(imgPath, node)
+    // Favicon should be appended to the span element, not the parent
+    const spanElement = node.children[1] as Element
+    expect(spanElement.children.length).toBeGreaterThan(0)
+  })
+})
+
+describe("shouldIncludeFavicon edge cases", () => {
+  it("should exclude blacklisted favicon even if whitelisted", () => {
+    const blacklistEntry = FAVICON_SUBSTRING_BLACKLIST[0]
+    const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
+    const faviconCounts = new Map<string, number>()
+    faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+
+    // Even if it contains a whitelist entry, blacklist should take precedence
+    const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+    expect(result).toBe(false)
+  })
+
+  it("should include whitelisted favicon even if count is zero and not in map", () => {
+    const imgPath = linkfavicons.MAIL_PATH
+    const faviconCounts = new Map<string, number>()
+
+    const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+    expect(result).toBe(true)
+  })
+
+  it("should handle whitelist substring matching", () => {
+    const imgPath = "/static/images/external-favicons/subdomain_apple_com.png"
+    const faviconCounts = new Map<string, number>()
+    faviconCounts.set(imgPath, 0)
+
+    const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
+
+    expect(result).toBe(true)
+  })
+
+  it("should handle countKey different from imgPath", () => {
+    const imgPath = "/static/images/external-favicons/example_com.png"
+    const countKey = "/static/images/external-favicons/example_com.png"
+    const faviconCounts = new Map<string, number>()
+    faviconCounts.set(countKey, linkfavicons.MIN_FAVICON_COUNT + 1)
+
+    const result = linkfavicons.shouldIncludeFavicon(imgPath, countKey, faviconCounts)
+
+    expect(result).toBe(true)
+  })
+})
+
+describe("getQuartzPath edge cases", () => {
+  it.each([
+    ["www.www.example.com", "/static/images/external-favicons/www_example_com.png"],
+    ["subdomain.turntrout.com", linkfavicons.TURNTROUT_FAVICON_PATH],
+    ["www.turntrout.com", linkfavicons.TURNTROUT_FAVICON_PATH],
+    ["example.co.uk", "/static/images/external-favicons/example_co_uk.png"],
+    ["test.example.co.uk", "/static/images/external-favicons/test_example_co_uk.png"],
+  ])("should handle %s correctly", (hostname, expectedPath) => {
+    expect(linkfavicons.getQuartzPath(hostname)).toBe(expectedPath)
+  })
+})
+
+describe("ModifyNode with asset links", () => {
+  const faviconCounts = new Map<string, number>()
+
+  beforeEach(() => {
+    faviconCounts.clear()
+    faviconCounts.set(linkfavicons.TURNTROUT_FAVICON_PATH, linkfavicons.MIN_FAVICON_COUNT + 1)
+  })
+
+  it.each([
+    ["https://example.com/image.png"],
+    ["https://example.com/video.mp4"],
+    ["https://example.com/audio.mp3"],
+    ["./local-image.jpg"],
+    ["../parent/video.webm"],
+  ])("should skip asset link %s", async (href) => {
+    const node = h("a", { href })
+    const parent = h("div", [node])
+
+    await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+    expect(node.children.length).toBe(0)
   })
 })

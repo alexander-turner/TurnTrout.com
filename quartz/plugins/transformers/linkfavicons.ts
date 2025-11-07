@@ -86,13 +86,18 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "proceedings_neurips_cc", // too small
   "papers_nips_cc",
   "playpen_icomtek_csir_co_za", // doesn't exist
+  "distill_pub", // not recognizable
 ]
 
 export const REPLACE_FAVICONS = [
   {
-    from: "blog_openai_com.avif",
-    to: "openai_com.avif",
+    from: "blog_openai_com",
+    to: "openai_com",
   },
+  { from: "support_apple_com", to: "apple_com" },
+  { from: "assets_anthropic_com", to: "anthropic_com" },
+  { from: "cdn_anthropic_com", to: "anthropic_com" },
+  { from: "alignment_anthropic_com", to: "anthropic_com" },
 ]
 
 // istanbul ignore if
@@ -333,11 +338,9 @@ export function replaceFavicon(faviconPath: string): string {
 
   // Check if basename matches any replacement pattern
   for (const replacement of REPLACE_FAVICONS) {
-    if (basename === replacement.from || basename === replacement.from.replace(".avif", ".png")) {
-      // Replace the basename, preserving the extension
-      const extension = basename.includes(".avif") ? ".avif" : ".png"
-      const newBasename = replacement.to.replace(".avif", extension)
-      return `${pathPrefix}${newBasename}`
+    if (basename.includes(replacement.from)) {
+      const newName = basename.replace(replacement.from, replacement.to)
+      return `${pathPrefix}${newName}`
     }
   }
 
@@ -363,10 +366,11 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   logger.info(`Attempting to find or save favicon for ${hostname}`)
 
   const faviconPath = getQuartzPath(hostname)
+  const updatedPath = replaceFavicon(faviconPath)
 
   // Check cache first
-  if (urlCache.has(faviconPath)) {
-    const cachedValue = urlCache.get(faviconPath)
+  if (urlCache.has(updatedPath)) {
+    const cachedValue = urlCache.get(updatedPath)
     if (cachedValue === DEFAULT_PATH) {
       logger.info(`Skipping previously failed favicon for ${hostname}`)
       return DEFAULT_PATH
@@ -376,13 +380,13 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   }
 
   // Check for AVIF version
-  const avifUrl = getFaviconUrl(faviconPath)
+  const avifUrl = getFaviconUrl(updatedPath)
 
   try {
     const avifResponse = await fetch(avifUrl)
     if (avifResponse.ok) {
       logger.info(`AVIF found for ${hostname}: ${avifUrl}`)
-      urlCache.set(faviconPath, avifUrl)
+      urlCache.set(updatedPath, avifUrl)
       return avifUrl
     }
   } catch (err) {
@@ -390,11 +394,11 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   }
 
   // Check for local PNG
-  const localPngPath = path.join(QUARTZ_FOLDER, faviconPath)
+  const localPngPath = path.join(QUARTZ_FOLDER, updatedPath)
   try {
     await fs.promises.stat(localPngPath)
-    logger.info(`Local PNG found for ${hostname}: ${faviconPath}`)
-    return faviconPath
+    logger.info(`Local PNG found for ${hostname}: ${updatedPath}`)
+    return updatedPath
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       // Try to download from Google
@@ -403,18 +407,18 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
       try {
         if (await downloadImage(googleFaviconURL, localPngPath)) {
           logger.info(`Successfully downloaded favicon for ${hostname}`)
-          return faviconPath
+          return updatedPath
         }
       } catch (downloadErr) {
         logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
-        urlCache.set(faviconPath, DEFAULT_PATH) // Cache the failure
+        urlCache.set(updatedPath, DEFAULT_PATH) // Cache the failure
       }
     }
   }
 
   // If all else fails, use default and cache the failure
   logger.debug(`Failed to find or download favicon for ${hostname}, using default`)
-  urlCache.set(faviconPath, DEFAULT_PATH)
+  urlCache.set(updatedPath, DEFAULT_PATH)
   return DEFAULT_PATH
 }
 
@@ -686,26 +690,20 @@ async function handleLink(
       return
     }
 
-    // Apply favicon replacement if configured
-    const replacedPath = replaceFavicon(imgPath)
-    if (replacedPath !== imgPath) {
-      logger.info(`Replacing favicon ${imgPath} with ${replacedPath}`)
-    }
-
     // Check if favicon appears frequently enough across the site
     // Whitelisted favicons are always included regardless of count
     // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
     const countKey = getQuartzPath(finalURL.hostname)
-    if (!shouldIncludeFavicon(replacedPath, countKey, faviconCounts)) {
+    if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
       const count = faviconCounts.get(countKey) || 0
       logger.debug(
-        `Favicon ${replacedPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
+        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
       )
       return
     }
 
-    logger.info(`Inserting favicon for ${finalURL.hostname}: ${replacedPath}`)
-    insertFavicon(replacedPath, node)
+    logger.info(`Inserting favicon for ${finalURL.hostname}: ${imgPath}`)
+    insertFavicon(imgPath, node)
   } catch (error) {
     logger.error(`Error processing URL ${href}: ${error}`)
   }
