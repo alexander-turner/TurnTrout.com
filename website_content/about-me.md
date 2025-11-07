@@ -45,11 +45,10 @@ My email is [`alex@turntrout.com`](mailto:alex@turntrout.com). While I'm not gua
 If my writing means something to you or has brightened your life, consider:
 
 1. Donating to my [ko-fi](https://ko-fi.com/turntrout),[^donate] or
-2. Leaving me a nice [email](mailto:alex@turntrout.com) or [an anonymous compliment](https://docs.google.com/forms/d/e/1FAIpQLSc26LXn7-05pzvKKYZeIWM1lX79n845g2uGRqPRGG7qEwy1iA/viewform)! 💙🐟
+2. Leaving me a nice [email](mailto:alex@turntrout.com) or [an anonymous compliment](https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2C5DFQ1Q4T?f=fat_0NG2CBPA31WF3#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B)! 💙🐟
 
 I prefer messages over donations.
 
-> [!bug]- Report a bug
-> <iframe title="Bug Report Form" src="https://docs.google.com/forms/d/e/1FAIpQLScSrZlykZIFyvrk2yxSoVn9VJ6RsLbIjChaDGG0cheVakC5hw/viewform?usp=sf_link" height=800 ></iframe>
+<iframe title="Bug report form" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2CY2QF1Z4S?f=fat_0NG2D9YF31NBQ#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800px" />
 
 [^donate]: Ko-fi donations will not affect my ability to do AI alignment research. To support alignment research, I suggest the [Long-Term Future Fund](https://www.givingwhatwecan.org/charities/long-term-future-fund).

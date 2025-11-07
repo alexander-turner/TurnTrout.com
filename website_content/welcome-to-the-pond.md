@@ -118,7 +118,7 @@ Analogies can be useful; analogies can be deadly. For an analogy to be useful, i
 >
 > If your claim meets the criteria, I will also credit your name on a list - alongside the called-out analogy. I will comment how I changed my mind as a result of realizing I gave a weak argument. Lastly, if the analogy lacks mechanistic justification _but_ such a justification exists, I will pay $10 and edit the article.
 >
-> To claim your bounty, [submit your find.](https://docs.google.com/forms/d/e/1FAIpQLScEePeMdZREtCkbk9J5fKfB9x6li-aHlecvSAbj6TyAub7jMw/viewform?usp=sf_link)
+> To claim your bounty, [submit your find.](https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2EHBH31K2J?f=fat_0NG2FAA9B1RED#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B)
 
 ## Post edits are public and cryptographically timestamped
 

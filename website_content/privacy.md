@@ -600,7 +600,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 >
 ## Collaborate privately
 
-1. [ ] To circulate secure forms, use [Cryptpad](https://cryptpad.fr/form).
+1. [ ] To circulate E2EE forms, use [Palform](https://palform.app/).
 2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/), which integrates well [with Proton Drive](#store-files-in-proton-drive).
 3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/). Disclaimer: I've had trouble the two times I've tried using this tool. Make sure it works for you before relying on it for sensitive meetings.
 
