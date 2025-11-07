@@ -50,6 +50,16 @@ img.favicon {
     margin-left: 0.05rem;
   }
 
+  // Make all SVG favicons match foreground color
+  &[src$=".svg"] {
+    // Computed to match var(--foreground) using https://codepen.io/sosuke/pen/Pjoqqp
+    filter: invert(27%);
+
+    :root[data-theme="dark"] & {
+      filter: invert(91%) sepia(6%) hue-rotate(185deg) contrast(92%);
+    }
+  }
+
   &[src$="cladlab_nd_edu.avif"] {
     filter: invert(90%);
   }
@@ -89,13 +99,6 @@ img.favicon {
   :root[data-theme="light"] &[src$="gwern_net.avif"] {
     filter: invert(100%);
     mix-blend-mode: multiply;
-  }
-
-  // Make Wikipedia logo be white W against transparent background
-  &[src$="wikipedia_org.avif"] {
-    :root[data-theme="dark"] & {
-      filter: invert(0.95) brightness(2);
-    }
   }
 
   // Very dark by default

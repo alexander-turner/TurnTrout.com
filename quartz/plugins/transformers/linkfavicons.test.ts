@@ -71,7 +71,24 @@ describe("Favicon Utilities", () => {
     const hostname = "example.com"
     const avifUrl = "https://assets.turntrout.com/static/images/external-favicons/example_com.avif"
 
-    const mockFetchAndFs = (avifStatus: number, localPngExists: boolean, googleStatus = 200) => {
+    const mockFetchAndFs = (
+      avifStatus: number,
+      localPngExists: boolean,
+      googleStatus = 200,
+      localSvgExists = false,
+      cdnSvgStatus = 404,
+    ) => {
+      // SVG CDN response
+      let responseBodySvg = ""
+      if (cdnSvgStatus === 200) {
+        responseBodySvg = "Mock SVG content"
+      }
+      const svgResponse = new Response(responseBodySvg, {
+        status: cdnSvgStatus,
+        headers: { "Content-Type": "image/svg+xml" },
+      })
+
+      // AVIF CDN response
       let responseBodyAVIF = ""
       if (avifStatus === 200) {
         responseBodyAVIF = "Mock image content"
@@ -81,6 +98,7 @@ describe("Favicon Utilities", () => {
         headers: { "Content-Type": "image/avif" },
       })
 
+      // Google download response
       let responseBodyGoogle = ""
       if (googleStatus === 200) {
         responseBodyGoogle = "Mock image content"
@@ -90,35 +108,53 @@ describe("Favicon Utilities", () => {
         headers: { "Content-Type": "image/png" },
       })
 
+      // Mock fetch: SVG CDN, then AVIF CDN, then Google
       jest
         .spyOn(global, "fetch")
+        .mockResolvedValueOnce(svgResponse)
         .mockResolvedValueOnce(AVIFResponse)
         .mockResolvedValueOnce(googleResponse)
 
       jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
 
+      // Mock fs.promises.stat: local SVG, then local PNG
       jest
         .spyOn(fs.promises, "stat")
+        .mockImplementationOnce(() =>
+          localSvgExists
+            ? Promise.resolve({ size: 1000 } as fs.Stats)
+            : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
+        )
         .mockImplementationOnce(() =>
           localPngExists
             ? Promise.resolve({ size: 1000 } as fs.Stats)
             : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
         )
-        .mockImplementationOnce(() => Promise.resolve({ size: 1000 } as fs.Stats))
     }
 
-    it.each<[string, number, boolean, string | null, number?]>([
-      ["AVIF exists", 200, false, avifUrl],
-    ])("%s", async (_, avifStatus, localPngExists, expected, googleStatus = 200) => {
-      mockFetchAndFs(avifStatus, localPngExists, googleStatus)
-      expect(await linkfavicons.MaybeSaveFavicon(hostname)).toBe(expected)
-    })
+    it.each<[string, number, boolean, string | null, number?, boolean?, number?]>([
+      ["AVIF exists", 200, false, avifUrl, 200, false, 404],
+    ])(
+      "%s",
+      async (
+        _,
+        avifStatus,
+        localPngExists,
+        expected,
+        googleStatus,
+        localSvgExists,
+        cdnSvgStatus,
+      ) => {
+        mockFetchAndFs(avifStatus, localPngExists, googleStatus, localSvgExists, cdnSvgStatus)
+        expect(await linkfavicons.MaybeSaveFavicon(hostname)).toBe(expected)
+      },
+    )
 
     it("should return DEFAULT_PATH when all attempts fail", async () => {
-      mockFetchAndFs(404, false, 404)
+      mockFetchAndFs(404, false, 404, false, 404)
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
       expect(result).toBe(linkfavicons.DEFAULT_PATH)
-      expect(global.fetch).toHaveBeenCalledTimes(2) // AVIF and Google attempts
+      expect(global.fetch).toHaveBeenCalledTimes(3) // SVG CDN, AVIF CDN, and Google attempts
     })
 
     it("should return DEFAULT_PATH immediately if blacklisted by transformUrl", async () => {
@@ -131,12 +167,12 @@ describe("Favicon Utilities", () => {
       fetchSpy.mockRestore()
     })
 
-    it.each<[string, number, boolean]>([
-      ["Local PNG exists", 404, true],
-      ["Download PNG from Google", 404, false],
-    ])("%s", async (_, avifStatus, localPngExists) => {
+    it.each<[string, number, boolean, boolean, number]>([
+      ["Local PNG exists", 404, true, false, 404],
+      ["Download PNG from Google", 404, false, false, 404],
+    ])("%s", async (_, avifStatus, localPngExists, localSvgExists, cdnSvgStatus) => {
       const expected = linkfavicons.getQuartzPath(hostname)
-      mockFetchAndFs(avifStatus, localPngExists)
+      mockFetchAndFs(avifStatus, localPngExists, 200, localSvgExists, cdnSvgStatus)
       expect(await linkfavicons.MaybeSaveFavicon(hostname)).toBe(expected)
     })
 
@@ -145,8 +181,11 @@ describe("Favicon Utilities", () => {
 
       jest.spyOn(global, "fetch").mockRejectedValue(new Error("CDN not available"))
 
-      // Mock fs.promises.stat to succeed for local file
-      jest.spyOn(fs.promises, "stat").mockResolvedValue({} as fs.Stats)
+      // Mock fs.promises.stat: SVG not found, PNG found
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+        .mockResolvedValueOnce({} as fs.Stats)
 
       linkfavicons.urlCache.clear()
 
@@ -161,16 +200,16 @@ describe("Favicon Utilities", () => {
 
     it("should cache and skip previously failed downloads", async () => {
       // Mock all download attempts to fail
-      mockFetchAndFs(404, false, 404)
+      mockFetchAndFs(404, false, 404, false, 404)
 
       // First attempt should try all download methods
       const firstResult = await linkfavicons.MaybeSaveFavicon(hostname)
       expect(firstResult).toBe(linkfavicons.DEFAULT_PATH)
-      expect(global.fetch).toHaveBeenCalledTimes(2) // AVIF and Google attempts
+      expect(global.fetch).toHaveBeenCalledTimes(3) // SVG CDN, AVIF CDN, and Google attempts
 
       // Reset mocks for second attempt
       jest.clearAllMocks()
-      mockFetchAndFs(404, false, 404)
+      mockFetchAndFs(404, false, 404, false, 404)
 
       // Second attempt should skip immediately due to cached failure
       const secondResult = await linkfavicons.MaybeSaveFavicon(hostname)
@@ -180,7 +219,7 @@ describe("Favicon Utilities", () => {
 
     it("should persist failed downloads to cache file", async () => {
       // Mock all download attempts to fail
-      mockFetchAndFs(404, false, 404)
+      mockFetchAndFs(404, false, 404, false, 404)
 
       // Mock writeFileSync
       const writeFileSyncMock = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
@@ -198,6 +237,52 @@ describe("Favicon Utilities", () => {
         ),
         expect.any(Object),
       )
+    })
+
+    it("should handle fetch errors gracefully when checking CDN", async () => {
+      // Mock fs.promises.stat: SVG not found, PNG not found
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+
+      // Mock fetch to throw error for SVG, then AVIF, then succeed for Google
+      jest
+        .spyOn(global, "fetch")
+        .mockRejectedValueOnce(new Error("Network error"))
+        .mockRejectedValueOnce(new Error("Network error"))
+        .mockResolvedValueOnce(
+          new Response("Mock image content", {
+            status: 200,
+            headers: { "Content-Type": "image/png" },
+          }),
+        )
+
+      jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
+
+      linkfavicons.urlCache.clear()
+
+      const result = await linkfavicons.MaybeSaveFavicon(hostname)
+      const expected = linkfavicons.getQuartzPath(hostname)
+      expect(result).toBe(expected)
+    })
+
+    it("should return local SVG when found", async () => {
+      const hostname = "example.com"
+      const faviconPath = linkfavicons.getQuartzPath(hostname)
+      const svgPath = faviconPath.replace(".png", ".svg")
+      const localSvgPath = path.join("quartz", svgPath)
+
+      linkfavicons.urlCache.clear()
+
+      // Mock fs.promises.stat: SVG found
+      jest.spyOn(fs.promises, "stat").mockResolvedValueOnce({ size: 1000 } as fs.Stats)
+
+      const result = await linkfavicons.MaybeSaveFavicon(hostname)
+
+      expect(result).toBe(svgPath)
+      expect(linkfavicons.urlCache.get(faviconPath)).toBe(svgPath)
+      expect(fs.promises.stat).toHaveBeenCalledWith(localSvgPath)
     })
 
     it("should load and respect cached failures on startup", async () => {
@@ -264,6 +349,102 @@ describe("Favicon Utilities", () => {
     ])("should construct URL from path %s", (path, expectedUrl) => {
       expect(linkfavicons.getFaviconUrl(path)).toBe(expectedUrl)
     })
+
+    it("should return cached SVG URL when cache contains full URL", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+      const cachedSvgUrl =
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg"
+
+      linkfavicons.urlCache.set(pngPath, cachedSvgUrl)
+
+      const result = linkfavicons.getFaviconUrl(pngPath)
+      expect(result).toBe(cachedSvgUrl)
+    })
+
+    it("should return cached SVG path when cache contains path", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+      const cachedSvgPath = "/static/images/external-favicons/example_com.svg"
+
+      linkfavicons.urlCache.set(pngPath, cachedSvgPath)
+
+      const result = linkfavicons.getFaviconUrl(pngPath)
+      expect(result).toBe(`https://assets.turntrout.com${cachedSvgPath}`)
+    })
+
+    it("should return cached AVIF URL when cache contains AVIF URL", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+      const cachedAvifUrl =
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.avif"
+
+      linkfavicons.urlCache.set(pngPath, cachedAvifUrl)
+
+      const result = linkfavicons.getFaviconUrl(pngPath)
+      expect(result).toBe(cachedAvifUrl)
+    })
+
+    it("should ignore cached DEFAULT_PATH", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+
+      linkfavicons.urlCache.set(pngPath, linkfavicons.DEFAULT_PATH)
+
+      const result = linkfavicons.getFaviconUrl(pngPath)
+      // Should fall through to AVIF since DEFAULT_PATH is ignored
+      expect(result).toBe(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.avif",
+      )
+    })
+
+    it("should return SVG URL when local SVG exists for PNG path", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+      const svgPath = "/static/images/external-favicons/example_com.svg"
+      const localSvgPath = path.join("quartz", svgPath)
+
+      linkfavicons.urlCache.clear()
+      jest.spyOn(fs, "accessSync").mockImplementationOnce(() => {
+        // File exists
+      })
+
+      const result = linkfavicons.getFaviconUrl(pngPath)
+      expect(result).toBe(`https://assets.turntrout.com${svgPath}`)
+      expect(fs.accessSync).toHaveBeenCalledWith(localSvgPath, fs.constants.F_OK)
+    })
+
+    it("should handle non-PNG non-SVG paths", () => {
+      const otherPath = "/static/images/external-favicons/example_com.jpg"
+      const result = linkfavicons.getFaviconUrl(otherPath)
+      expect(result).toBe(`https://assets.turntrout.com${otherPath}`)
+    })
+  })
+
+  describe("normalizePathForCounting", () => {
+    it("should preserve full URLs", () => {
+      const url = "https://assets.turntrout.com/static/images/mail.svg"
+      expect(linkfavicons.normalizePathForCounting(url)).toBe(url)
+    })
+
+    it("should preserve .svg paths", () => {
+      const svgPath = "/static/images/external-favicons/mail.svg"
+      expect(linkfavicons.normalizePathForCounting(svgPath)).toBe(svgPath)
+    })
+
+    it("should preserve .ico paths", () => {
+      const icoPath = "/static/images/favicon.ico"
+      expect(linkfavicons.normalizePathForCounting(icoPath)).toBe(icoPath)
+    })
+
+    it("should remove .png extension", () => {
+      const pngPath = "/static/images/external-favicons/example_com.png"
+      expect(linkfavicons.normalizePathForCounting(pngPath)).toBe(
+        "/static/images/external-favicons/example_com",
+      )
+    })
+
+    it("should remove .avif extension", () => {
+      const avifPath = "/static/images/external-favicons/example_com.avif"
+      expect(linkfavicons.normalizePathForCounting(avifPath)).toBe(
+        "/static/images/external-favicons/example_com",
+      )
+    })
   })
 
   describe("shouldIncludeFavicon", () => {
@@ -274,7 +455,8 @@ describe("Favicon Utilities", () => {
       [0, false, "zero count"],
     ])("should return %s when count %s", (count, expected) => {
       const faviconCounts = new Map<string, number>()
-      faviconCounts.set("/static/images/external-favicons/example_com.png", count)
+      // Counts are stored without extensions (format-agnostic)
+      faviconCounts.set("/static/images/external-favicons/example_com", count)
 
       const result = linkfavicons.shouldIncludeFavicon(
         "/favicon.png",
@@ -304,7 +486,8 @@ describe("Favicon Utilities", () => {
       ["/static/images/external-favicons/apple_com.png"],
     ])("should include whitelisted favicon %s even if count is zero", (imgPath) => {
       const faviconCounts = new Map<string, number>()
-      faviconCounts.set(imgPath, 0)
+      // Counts are stored without extensions (format-agnostic), but special paths are preserved
+      faviconCounts.set(linkfavicons.normalizePathForCounting(imgPath), 0)
 
       const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
@@ -318,7 +501,11 @@ describe("Favicon Utilities", () => {
         ]),
       )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
         const faviconCounts = new Map<string, number>()
-        faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+        // Counts are stored without extensions (format-agnostic)
+        faviconCounts.set(
+          linkfavicons.normalizePathForCounting(imgPath),
+          linkfavicons.MIN_FAVICON_COUNT + 10,
+        )
 
         const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
@@ -329,7 +516,11 @@ describe("Favicon Utilities", () => {
         const blacklistEntry = FAVICON_SUBSTRING_BLACKLIST[0]
         const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
         const faviconCounts = new Map<string, number>()
-        faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+        // Counts are stored without extensions (format-agnostic)
+        faviconCounts.set(
+          linkfavicons.normalizePathForCounting(imgPath),
+          linkfavicons.MIN_FAVICON_COUNT + 10,
+        )
 
         const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
@@ -685,7 +876,11 @@ describe("Favicon Utilities", () => {
         const href = `https://${hostname}/page`
 
         const counts = new Map<string, number>()
-        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT)
+        // Counts are stored without extensions (format-agnostic)
+        counts.set(
+          linkfavicons.normalizePathForCounting(faviconPath),
+          linkfavicons.MIN_FAVICON_COUNT,
+        )
 
         linkfavicons.urlCache.clear()
         linkfavicons.urlCache.set(faviconPath, faviconPath)
@@ -704,7 +899,11 @@ describe("Favicon Utilities", () => {
         const href = `https://${hostname}/page`
 
         const counts = new Map<string, number>()
-        counts.set(faviconPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+        // Counts are stored without extensions (format-agnostic)
+        counts.set(
+          linkfavicons.normalizePathForCounting(faviconPath),
+          linkfavicons.MIN_FAVICON_COUNT + 10,
+        )
 
         linkfavicons.urlCache.clear()
         linkfavicons.urlCache.set(faviconPath, faviconPath)
@@ -1340,14 +1539,33 @@ describe("getQuartzPath hostname normalization", () => {
       const href = `https://${hostname}/page`
 
       const faviconCounts = new Map<string, number>()
-      faviconCounts.set(normalizedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
-
-      jest.spyOn(global, "fetch").mockResolvedValueOnce(
-        new Response("Mock AVIF content", {
-          status: 200,
-          headers: { "Content-Type": "image/avif" },
-        }),
+      // Counts are stored without extensions (format-agnostic)
+      faviconCounts.set(
+        linkfavicons.normalizePathForCounting(normalizedPath),
+        linkfavicons.MIN_FAVICON_COUNT + 1,
       )
+
+      // Mock SVG check (404), then AVIF check (200)
+      jest
+        .spyOn(global, "fetch")
+        .mockResolvedValueOnce(
+          new Response("", {
+            status: 404,
+            headers: { "Content-Type": "image/svg+xml" },
+          }),
+        )
+        .mockResolvedValueOnce(
+          new Response("Mock AVIF content", {
+            status: 200,
+            headers: { "Content-Type": "image/avif" },
+          }),
+        )
+
+      // Mock fs.promises.stat: SVG not found, PNG not found
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
 
       linkfavicons.urlCache.clear()
 
@@ -1367,7 +1585,11 @@ describe("getQuartzPath hostname normalization", () => {
       const href = `https://${hostname}/page`
 
       const faviconCounts = new Map<string, number>()
-      faviconCounts.set(normalizedPath, linkfavicons.MIN_FAVICON_COUNT + 1)
+      // Counts are stored without extensions (format-agnostic)
+      faviconCounts.set(
+        linkfavicons.normalizePathForCounting(normalizedPath),
+        linkfavicons.MIN_FAVICON_COUNT + 1,
+      )
 
       jest.spyOn(global, "fetch").mockResolvedValueOnce(
         new Response("Mock AVIF content", {
@@ -1470,7 +1692,11 @@ describe("shouldIncludeFavicon edge cases", () => {
     const blacklistEntry = FAVICON_SUBSTRING_BLACKLIST[0]
     const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
     const faviconCounts = new Map<string, number>()
-    faviconCounts.set(imgPath, linkfavicons.MIN_FAVICON_COUNT + 10)
+    // Counts are stored without extensions (format-agnostic)
+    faviconCounts.set(
+      linkfavicons.normalizePathForCounting(imgPath),
+      linkfavicons.MIN_FAVICON_COUNT + 10,
+    )
 
     // Even if it contains a whitelist entry, blacklist should take precedence
     const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
@@ -1490,7 +1716,8 @@ describe("shouldIncludeFavicon edge cases", () => {
   it("should handle whitelist substring matching", () => {
     const imgPath = "/static/images/external-favicons/subdomain_apple_com.png"
     const faviconCounts = new Map<string, number>()
-    faviconCounts.set(imgPath, 0)
+    // Counts are stored without extensions (format-agnostic)
+    faviconCounts.set(linkfavicons.normalizePathForCounting(imgPath), 0)
 
     const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
@@ -1501,7 +1728,11 @@ describe("shouldIncludeFavicon edge cases", () => {
     const imgPath = "/static/images/external-favicons/example_com.png"
     const countKey = "/static/images/external-favicons/example_com.png"
     const faviconCounts = new Map<string, number>()
-    faviconCounts.set(countKey, linkfavicons.MIN_FAVICON_COUNT + 1)
+    // Counts are stored without extensions (format-agnostic)
+    faviconCounts.set(
+      linkfavicons.normalizePathForCounting(countKey),
+      linkfavicons.MIN_FAVICON_COUNT + 1,
+    )
 
     const result = linkfavicons.shouldIncludeFavicon(imgPath, countKey, faviconCounts)
 

@@ -11,6 +11,7 @@ import {
   isHeading,
   MAIL_PATH,
   FAVICON_COUNTS_FILE,
+  normalizePathForCounting,
   normalizeUrl,
 } from "./linkfavicons"
 import { createWinstonLogger } from "./logger_utils"
@@ -27,6 +28,7 @@ export function getFaviconCounts(): Map<string, number> {
 /**
  * Determines what favicon path a link would get based on its href.
  * Uses the same logic as linkfavicons.ts to predict favicon paths.
+ * Returns format-agnostic path (without extension) for counting.
  */
 function getFaviconPathForLink(href: string): string | null {
   if (href.includes("mailto:")) {
@@ -48,7 +50,8 @@ function getFaviconPathForLink(href: string): string | null {
     const url = new URL(normalizedHref)
     const hostname = url.hostname
     const faviconPath = getQuartzPath(hostname)
-    return faviconPath
+    // Strip extension for counting (counts are format-agnostic)
+    return normalizePathForCounting(faviconPath)
   } catch {
     // Invalid URL, skip
     return null

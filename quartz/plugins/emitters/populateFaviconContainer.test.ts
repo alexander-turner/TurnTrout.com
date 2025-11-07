@@ -24,6 +24,7 @@ jest.unstable_mockModule("../transformers/linkfavicons", () => ({
     "apple_com",
   ],
   FAVICON_SUBSTRING_BLACKLIST: ["blacklisted_com"],
+  urlCache: new Map<string, string>(),
   transformUrl: jest.fn((path: string) => {
     // Mock blacklist check
     if (path.includes("blacklisted_com")) {
@@ -320,30 +321,61 @@ describe("PopulateFaviconContainer", () => {
       expect(mockGetFaviconCounts).toHaveBeenCalled()
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain('class="favicon-span"')
       expect(writtenContent).toContain('class="favicon"')
       expect(writtenContent).toContain('alt=""')
       expect(writtenContent).toContain('loading="lazy"')
     })
 
-    it("should wrap favicons in favicon-span elements", async () => {
-      const faviconCounts = createMockCounts([
-        ["/static/images/external-favicons/example_com.png", linkfavicons.MIN_FAVICON_COUNT + 1],
-        ["/static/images/external-favicons/test_com.png", linkfavicons.MIN_FAVICON_COUNT + 1],
-      ])
+    it("should cache SVG URLs when found on CDN", async () => {
+      // Clear urlCache before test
+      linkfavicons.urlCache.clear()
+
+      const pngPath = "/static/images/external-favicons/example_com"
+      const faviconCounts = createMockCounts([[pngPath, linkfavicons.MIN_FAVICON_COUNT + 1]])
       mockGetFaviconCounts.mockReturnValue(faviconCounts)
+
+      // Mock fetch to return successful response for SVG
+      const mockFetch = jest
+        .fn<() => Promise<Response>>()
+        .mockResolvedValue({ ok: true } as Response)
+      global.fetch = mockFetch as unknown as typeof fetch
 
       const emitter = PopulateFaviconContainer()
       await emitter.emit(mockCtx, [], mockStaticResources)
 
-      expect(mockGetFaviconCounts).toHaveBeenCalled()
-      expect(fs.writeFileSync).toHaveBeenCalled()
-      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      // Each favicon should be wrapped in a span with class "favicon-span"
-      const faviconSpanMatches = writtenContent.match(/<span[^>]*class="favicon-span"[^>]*>/g)
-      expect(faviconSpanMatches).toHaveLength(2)
-      // Each span should contain an img tag
-      expect(writtenContent).toMatch(/<span[^>]*class="favicon-span"[^>]*>.*<img[^>]*>.*<\/span>/s)
+      // Verify SVG URL was checked
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
+
+      // Verify cache was populated with PNG->SVG mapping
+      expect(linkfavicons.urlCache.get(`${pngPath}.png`)).toBe(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
+    })
+
+    it("should check CDN for paths cached with DEFAULT_PATH", async () => {
+      // Clear urlCache and populate with DEFAULT_PATH entry
+      linkfavicons.urlCache.clear()
+      const pngPath = "/static/images/external-favicons/example_com"
+      linkfavicons.urlCache.set(`${pngPath}.png`, linkfavicons.DEFAULT_PATH)
+
+      const faviconCounts = createMockCounts([[pngPath, linkfavicons.MIN_FAVICON_COUNT + 1]])
+      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+
+      // Mock fetch to return successful response for SVG
+      const mockFetch = jest
+        .fn<() => Promise<Response>>()
+        .mockResolvedValue({ ok: true } as Response)
+      global.fetch = mockFetch as unknown as typeof fetch
+
+      const emitter = PopulateFaviconContainer()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      // Verify SVG URL was checked even though path was in cache
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
     })
   })
 })

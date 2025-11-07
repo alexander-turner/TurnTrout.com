@@ -5862,5 +5862,77 @@
   "https://assets.turntrout.com/static/images/external-favicons/google_com.avif": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/huggingface_co.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/scholar_google_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/github_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/docs_google_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/apple_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/reddit_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/x_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/discord_gg.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/youtube_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/colab_research_google_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/open_spotify_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/openai_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/drive_google_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/play_google_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/overleaf_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/google_com.svg": {
+    "width": 24,
+    "height": 24
   }
 }

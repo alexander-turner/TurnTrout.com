@@ -71,7 +71,14 @@ export const FAVICON_COUNT_WHITELIST = [
   "huggingface_co",
   "deepmind_com",
   "anthropic_com",
+  "sfchronicle_com",
+  "nytimes_com",
+  "snopes_com",
+  "whitehouse_gov",
+  "msnbc_com",
   "openai_com",
+  "abcnews_go_com",
+  "cnn_com",
   "forum_effectivealtruism_org",
   ...GOOGLE_SUBDOMAIN_WHITELIST.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
@@ -106,7 +113,7 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
 const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
   { pattern: /^.+\.openai\.com$/, to: "openai.com" },
   { pattern: /^.+\.apple\.com$/, to: "apple.com" },
-  { pattern: /^.+\.deepmind\.com$/, to: "deepmind.com" },
+  { pattern: /^.*\.deepmind.+$/, to: "deepmind.com" },
   { pattern: /^.+anthropic\.com$/, to: "anthropic.com" },
   { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
   { pattern: /^.+amazon\.com$/, to: "amazon.com" },
@@ -116,6 +123,8 @@ const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
     pattern: new RegExp(`^(?!${GOOGLE_SUBDOMAIN_WHITELIST.join("|")}\\.).+\\.google\\.com$`),
     to: "google.com",
   },
+  { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
+  { pattern: /^.*nytimes\.com$/, to: "nytimes.com" },
 ]
 
 // istanbul ignore if
@@ -161,6 +170,7 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
   }
 
   const contentType = response.headers.get("content-type")
+  // Accept image/* (including image/svg+xml)
   if (!contentType || !contentType.startsWith("image/")) {
     throw new DownloadError(`URL does not point to an image: ${url}. Content-Type: ${contentType}`)
   }
@@ -209,6 +219,26 @@ function normalizeHostname(hostname: string): string {
     }
   }
   return hostname
+}
+
+/**
+ * Normalizes a favicon path for counting by removing format-specific extensions.
+ * Counts are format-agnostic (domain-based), so we store paths without extensions.
+ *
+ * @param faviconPath - Path with extension (e.g., "/static/images/external-favicons/example_com.png")
+ * @returns Path without extension (e.g., "/static/images/external-favicons/example_com")
+ */
+export function normalizePathForCounting(faviconPath: string): string {
+  // Special paths (mail, anchor, turntrout) are full URLs, return as-is
+  if (faviconPath.startsWith("http")) {
+    return faviconPath
+  }
+  // Special paths like mail.svg and anchor.svg should be preserved as-is
+  if (faviconPath.match(/\.(svg|ico)$/)) {
+    return faviconPath
+  }
+  // Remove .png, .svg, .avif extensions for counting (domain-based paths)
+  return faviconPath.replace(/\.(png|svg|avif)$/, "")
 }
 
 /**
@@ -317,16 +347,49 @@ export async function readFaviconUrls(): Promise<Map<string, string>> {
 
 /**
  * Constructs a CDN URL from a favicon path.
- * Converts .png paths to prefixes CDN base URL.
+ * For PNG files, checks for SVG version first (preferred), then converts to AVIF format.
+ * For SVG files, returns as-is.
  *
- * @param faviconPath - Path to favicon (e.g., "/static/images/external-favicons/example_com.png")
- * @returns Full CDN URL (e.g., "https://assets.turntrout.com/static/images/external-favicons/example_com.avif")
+ * @param faviconPath - Path to favicon (e.g., "/static/images/external-favicons/example_com.png" or ".svg")
+ * @returns Full CDN URL (e.g., "https://assets.turntrout.com/static/images/external-favicons/example_com.svg" or ".avif")
  */
 export function getFaviconUrl(faviconPath: string): string {
   if (faviconPath.startsWith("http")) {
     return faviconPath
   }
-  const avifPath = faviconPath.replace(".png", ".avif")
+  // SVG files don't need conversion, serve directly
+  if (faviconPath.endsWith(".svg")) {
+    return `https://assets.turntrout.com${faviconPath}`
+  }
+
+  // Normalize path to .png for cache lookup (cache keys are always .png paths)
+  const pngPath = faviconPath.replace(/\.(avif|png)$/, ".png")
+
+  // Check cache first (may contain SVG URL from populateFaviconContainer CDN check)
+  const cached = urlCache.get(pngPath)
+  if (cached && cached !== DEFAULT_PATH) {
+    if (cached.startsWith("http")) {
+      return cached
+    }
+    // Cache contains SVG path, construct CDN URL
+    if (cached.endsWith(".svg")) {
+      return `https://assets.turntrout.com${cached}`
+    }
+  }
+
+  // Check if SVG version exists locally
+  const svgPath = pngPath.replace(".png", ".svg")
+  const localSvgPath = path.join(QUARTZ_FOLDER, svgPath)
+  try {
+    fs.accessSync(localSvgPath, fs.constants.F_OK)
+    // SVG exists locally, return SVG CDN URL
+    return `https://assets.turntrout.com${svgPath}`
+  } catch {
+    // SVG doesn't exist, fall back to AVIF
+  }
+
+  // Fallback to AVIF
+  const avifPath = pngPath.replace(".png", ".avif")
   return `https://assets.turntrout.com${avifPath}`
 }
 
@@ -359,14 +422,154 @@ export function transformUrl(faviconPath: string): string {
 }
 
 /**
+ * Checks if a favicon path is cached and returns the cached value if found.
+ *
+ * @param faviconPath - The favicon path to check in cache
+ * @param hostname - Domain name for logging
+ * @returns Cached favicon path/URL, or null if not cached
+ */
+function checkCachedFavicon(faviconPath: string, hostname: string): string | null {
+  if (urlCache.has(faviconPath)) {
+    const cachedValue = urlCache.get(faviconPath)
+    if (cachedValue === DEFAULT_PATH) {
+      logger.info(`Skipping previously failed favicon for ${hostname}`)
+      return DEFAULT_PATH
+    }
+    logger.info(`Returning cached favicon for ${hostname}`)
+    return cachedValue as string
+  }
+  return null
+}
+
+/**
+ * Checks if a local SVG file exists for the given favicon path.
+ *
+ * @param svgPath - The SVG path to check (e.g., "/static/images/external-favicons/example_com.svg")
+ * @param faviconPath - The original favicon path for caching
+ * @param hostname - Domain name for logging
+ * @returns SVG path if found, null otherwise
+ */
+async function checkLocalSvg(
+  svgPath: string,
+  faviconPath: string,
+  hostname: string,
+): Promise<string | null> {
+  const localSvgPath = path.join(QUARTZ_FOLDER, svgPath)
+  try {
+    await fs.promises.stat(localSvgPath)
+    logger.info(`Local SVG found for ${hostname}: ${svgPath}`)
+    urlCache.set(faviconPath, svgPath)
+    return svgPath
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Checks if an SVG file exists on the CDN.
+ *
+ * @param svgPath - The SVG path to check
+ * @param faviconPath - The original favicon path for caching
+ * @param hostname - Domain name for logging
+ * @returns CDN URL if found, null otherwise
+ */
+async function checkCdnSvg(
+  svgPath: string,
+  faviconPath: string,
+  hostname: string,
+): Promise<string | null> {
+  const svgUrl = getFaviconUrl(svgPath)
+  try {
+    const svgResponse = await fetch(svgUrl)
+    if (svgResponse.ok) {
+      logger.info(`SVG found on CDN for ${hostname}: ${svgUrl}`)
+      urlCache.set(faviconPath, svgUrl)
+      return svgUrl
+    }
+  } catch {
+    logger.debug(`SVG not found on CDN for ${hostname}`)
+  }
+  return null
+}
+
+/**
+ * Checks if a local PNG file exists for the given favicon path.
+ *
+ * @param faviconPath - The PNG path to check
+ * @param hostname - Domain name for logging
+ * @returns PNG path if found, null otherwise
+ */
+async function checkLocalPng(faviconPath: string, hostname: string): Promise<string | null> {
+  const localPngPath = path.join(QUARTZ_FOLDER, faviconPath)
+  try {
+    await fs.promises.stat(localPngPath)
+    logger.info(`Local PNG found for ${hostname}: ${faviconPath}`)
+    return faviconPath
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Checks if an AVIF file exists on the CDN.
+ *
+ * @param faviconPath - The PNG path (will be converted to AVIF)
+ * @param hostname - Domain name for logging
+ * @returns CDN AVIF URL if found, null otherwise
+ */
+async function checkCdnAvif(faviconPath: string, hostname: string): Promise<string | null> {
+  const avifUrl = getFaviconUrl(faviconPath)
+  try {
+    const avifResponse = await fetch(avifUrl)
+    if (avifResponse.ok) {
+      logger.info(`AVIF found for ${hostname}: ${avifUrl}`)
+      urlCache.set(faviconPath, avifUrl)
+      return avifUrl
+    }
+  } catch {
+    logger.debug(`AVIF not found on CDN for ${hostname}`)
+  }
+  return null
+}
+
+/**
+ * Attempts to download a favicon from Google's favicon service.
+ *
+ * @param hostname - Domain to download favicon for
+ * @param localPngPath - Local path to save the downloaded PNG
+ * @param faviconPath - The favicon path for caching
+ * @returns PNG path if download successful, null otherwise
+ */
+async function downloadFromGoogle(
+  hostname: string,
+  localPngPath: string,
+  faviconPath: string,
+): Promise<string | null> {
+  const googleFaviconURL = `https://www.google.com/s2/favicons?sz=64&domain=${hostname}`
+  logger.info(`Attempting to download favicon from Google: ${googleFaviconURL}`)
+  try {
+    if (await downloadImage(googleFaviconURL, localPngPath)) {
+      logger.info(`Successfully downloaded favicon for ${hostname}`)
+      return faviconPath
+    }
+  } catch (downloadErr) {
+    logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
+    urlCache.set(faviconPath, DEFAULT_PATH) // Cache the failure
+  }
+  return null
+}
+
+/**
  * Attempts to locate or download a favicon for a given hostname.
  *
  * Search order:
  * 1. Check URL cache for previous results
- * 2. Look for AVIF version on CDN
- * 3. Check for local PNG file
- * 4. Try downloading from Google's favicon service
- * 5. Fall back to default if all attempts fail
+ * 2. Check for local SVG file (preferred)
+ * 3. Check for SVG on CDN
+ * 4. Check for local PNG file
+ * 5. Look for AVIF version on CDN
+ * 6. Try downloading from Google's favicon service
+ * 7. Fall back to default if all attempts fail
  *
  * Caches results (including failures) to avoid repeated lookups
  *
@@ -385,51 +588,41 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   }
 
   // Check cache first
-  if (urlCache.has(updatedPath)) {
-    const cachedValue = urlCache.get(updatedPath)
-    if (cachedValue === DEFAULT_PATH) {
-      logger.info(`Skipping previously failed favicon for ${hostname}`)
-      return DEFAULT_PATH
-    }
-    logger.info(`Returning cached favicon for ${hostname}`)
-    return cachedValue as string
+  const cached = checkCachedFavicon(updatedPath, hostname)
+  if (cached !== null) {
+    return cached
   }
 
-  // Check for AVIF version
-  const avifUrl = getFaviconUrl(updatedPath)
+  // Check for local SVG first (preferred format)
+  const svgPath = updatedPath.replace(".png", ".svg")
+  const localSvg = await checkLocalSvg(svgPath, updatedPath, hostname)
+  if (localSvg !== null) {
+    return localSvg
+  }
 
-  try {
-    const avifResponse = await fetch(avifUrl)
-    if (avifResponse.ok) {
-      logger.info(`AVIF found for ${hostname}: ${avifUrl}`)
-      urlCache.set(updatedPath, avifUrl)
-      return avifUrl
-    }
-  } catch (err) {
-    logger.error(`Error checking AVIF on ${avifUrl}. ${err}`)
+  // Check for SVG on CDN
+  const cdnSvg = await checkCdnSvg(svgPath, updatedPath, hostname)
+  if (cdnSvg !== null) {
+    return cdnSvg
   }
 
   // Check for local PNG
+  const localPng = await checkLocalPng(updatedPath, hostname)
+  if (localPng !== null) {
+    return localPng
+  }
+
+  // Check for AVIF version on CDN
+  const cdnAvif = await checkCdnAvif(updatedPath, hostname)
+  if (cdnAvif !== null) {
+    return cdnAvif
+  }
+
+  // Try to download from Google (as PNG)
   const localPngPath = path.join(QUARTZ_FOLDER, updatedPath)
-  try {
-    await fs.promises.stat(localPngPath)
-    logger.info(`Local PNG found for ${hostname}: ${updatedPath}`)
-    return updatedPath
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      // Try to download from Google
-      const googleFaviconURL = `https://www.google.com/s2/favicons?sz=64&domain=${hostname}`
-      logger.info(`Attempting to download favicon from Google: ${googleFaviconURL}`)
-      try {
-        if (await downloadImage(googleFaviconURL, localPngPath)) {
-          logger.info(`Successfully downloaded favicon for ${hostname}`)
-          return updatedPath
-        }
-      } catch (downloadErr) {
-        logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
-        urlCache.set(updatedPath, DEFAULT_PATH) // Cache the failure
-      }
-    }
+  const downloaded = await downloadFromGoogle(hostname, localPngPath, updatedPath)
+  if (downloaded !== null) {
+    return downloaded
   }
 
   // If all else fails, use default and cache the failure
@@ -658,8 +851,8 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
  * - (It is whitelisted (always included regardless of count), OR its count is >= MIN_FAVICON_COUNT)
  *
  * @param imgPath - The favicon image path/URL
- * @param countKey - The lookup key for the favicon count (typically from getQuartzPath)
- * @param faviconCounts - Map of favicon paths to their counts across the site
+ * @param countKey - The lookup key for the favicon count (typically from getQuartzPath, will be normalized)
+ * @param faviconCounts - Map of favicon paths to their counts across the site (paths without extensions)
  * @returns True if the favicon should be included, false otherwise
  */
 export function shouldIncludeFavicon(
@@ -670,7 +863,9 @@ export function shouldIncludeFavicon(
   const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => imgPath.includes(entry))
   if (isBlacklisted) return false
 
-  const count = faviconCounts.get(countKey) || 0
+  // Normalize countKey (remove extension) to match format-agnostic counts
+  const normalizedCountKey = normalizePathForCounting(countKey)
+  const count = faviconCounts.get(normalizedCountKey) || 0
   const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
   return isWhitelisted || count >= MIN_FAVICON_COUNT
 }
@@ -707,8 +902,8 @@ async function handleLink(
     }
 
     // transformUrl already handles whitelist/blacklist, so we only need to check count
-    // Use getQuartzPath as the lookup key to match what countfavicons.ts uses
-    const countKey = getQuartzPath(finalURL.hostname)
+    // Use getQuartzPath as the lookup key, but normalize it (remove extension) to match countfavicons.ts
+    const countKey = normalizePathForCounting(getQuartzPath(finalURL.hostname))
     const count = faviconCounts.get(countKey) || 0
 
     // If not whitelisted (already handled by transformUrl), check count threshold

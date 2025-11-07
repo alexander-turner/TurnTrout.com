@@ -13,6 +13,7 @@ import {
   FAVICON_COUNT_WHITELIST,
   MIN_FAVICON_COUNT,
   DEFAULT_PATH,
+  urlCache,
 } from "../transformers/linkfavicons"
 import { createWinstonLogger } from "../transformers/logger_utils"
 import { type QuartzEmitterPlugin } from "../types"
@@ -31,18 +32,64 @@ const findFaviconContainer = (root: Root): Element | null => {
   return container
 }
 
-const getValidFavicons = (faviconCounts: Map<string, number>): Element[] => {
+const getValidFavicons = async (faviconCounts: Map<string, number>): Promise<Element[]> => {
+  // Check CDN for SVGs for PNG paths that aren't cached yet
+  const pngPathsToCheck = Array.from(faviconCounts.keys())
+    .map((pathWithoutExt) => {
+      if (
+        pathWithoutExt.startsWith("http") ||
+        pathWithoutExt.includes(".svg") ||
+        pathWithoutExt.includes(".ico")
+      ) {
+        return null
+      }
+      const pathWithExt = `${pathWithoutExt}.png`
+      const transformedPath = transformUrl(pathWithExt)
+      return transformedPath !== DEFAULT_PATH && transformedPath.endsWith(".png")
+        ? transformedPath
+        : null
+    })
+    .filter((path): path is string => path !== null)
+    .filter((path) => !urlCache.has(path) || urlCache.get(path) === DEFAULT_PATH)
+
+  // Check CDN for SVGs in parallel (only for paths not already cached)
+  await Promise.all(
+    pngPathsToCheck.map(async (pngPath) => {
+      const svgPath = pngPath.replace(".png", ".svg")
+      const svgUrl = `https://assets.turntrout.com${svgPath}`
+      try {
+        const response = await fetch(svgUrl)
+        if (response.ok) {
+          urlCache.set(pngPath, svgUrl)
+        }
+      } catch {
+        // SVG doesn't exist on CDN, that's fine
+      }
+    }),
+  )
+
+  // Now get favicon URLs (which will use cached SVGs if found)
   return Array.from(faviconCounts.entries())
-    .map(([path, count]: [string, number]) => {
+    .map(([pathWithoutExt, count]: [string, number]) => {
+      // Counts are stored without extensions (format-agnostic), but transformUrl expects .png paths
+      // Special paths (mail, anchor, turntrout) are full URLs/paths, others need .png added
+      const pathWithExt =
+        pathWithoutExt.startsWith("http") ||
+        pathWithoutExt.includes(".svg") ||
+        pathWithoutExt.includes(".ico")
+          ? pathWithoutExt
+          : `${pathWithoutExt}.png`
+
       // Transform path (checks blacklist/whitelist)
       // Note: Paths are already normalized at hostname level in getQuartzPath
-      const transformedPath = transformUrl(path)
+      const transformedPath = transformUrl(pathWithExt)
 
       // Skip if blacklisted
       if (transformedPath === DEFAULT_PATH) {
         return null
       }
 
+      // Get favicon URL (getFaviconUrl checks cache, which now includes SVGs from CDN check above)
       const url = getFaviconUrl(transformedPath)
       if (url === DEFAULT_PATH) {
         return null
@@ -58,18 +105,7 @@ const getValidFavicons = (faviconCounts: Map<string, number>): Element[] => {
     })
     .filter((item): item is { path: string; url: string; count: number } => item !== null)
     .sort((a, b) => b.count - a.count)
-    .map(({ url }) => {
-      const faviconElement = createFaviconElement(url)
-      const span: Element = {
-        type: "element",
-        tagName: "span",
-        properties: {
-          className: "favicon-span",
-        },
-        children: [faviconElement],
-      }
-      return span
-    })
+    .map(({ url }) => createFaviconElement(url))
 }
 
 /**
@@ -110,7 +146,7 @@ export const PopulateFaviconContainer: QuartzEmitterPlugin = () => {
         return []
       }
 
-      const validFavicons = getValidFavicons(faviconCounts)
+      const validFavicons = await getValidFavicons(faviconCounts)
       logger.info(`Adding ${validFavicons.length} favicons to container`)
 
       container.children = validFavicons
