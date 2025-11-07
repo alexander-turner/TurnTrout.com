@@ -13,8 +13,11 @@ from typing import Final
 # Mapping from source filename to target domain-based filename
 # Format: source_filename -> target_filename (domain_com.ext)
 FAVICON_MAPPING: Final[dict[str, str]] = {
+    "amazon_com.svg": "amazon_com.svg",  # Already in correct format
     "anthropic.svg": "anthropic_com.svg",
     "apple.svg": "apple_com.svg",
+    "arxiv.svg": "arxiv_org.svg",
+    "cnn.svg": "cnn_com.svg",
     "deepmind.svg": "deepmind_com.svg",
     "discord.svg": "discord_gg.svg",  # Based on whitelist entry
     "drive.google.svg": "drive_google_com.svg",
@@ -25,15 +28,20 @@ FAVICON_MAPPING: Final[dict[str, str]] = {
     "googledocs.svg": "docs_google_com.svg",
     "googlescholar.svg": "scholar_google_com.svg",
     "gwern.png": "gwern_net.png",  # Keep PNG format
+    "gwern_net.svg": "gwern_net.svg",  # Already in correct format
     "huggingface.svg": "huggingface_co.svg",
-    "lesswrong.png": "lesswrong_com.png",  # Keep PNG format
-    "miri.png": "miri_org.png",  # Assuming miri.org - adjust if needed
+    "intelligence_org.svg": "intelligence_org.svg",  # Already in correct format
+    "lesswrong_com.svg": "lesswrong_com.svg",  # Already in correct format
+    "miri.png": "miri_org.png",
+    "msnbc.svg": "msnbc_com.svg",
+    "nytimes.svg": "nytimes_com.svg",  # Based on whitelist entry
+    "open.spotify.svg": "open_spotify_com.svg",  # Based on whitelist entry
     "openai.svg": "openai_com.svg",
     "overleaf.svg": "overleaf_com.svg",
     "play.google.svg": "play_google_com.svg",
     "proton.svg": "proton_me.svg",  # Based on hostname replacement
     "reddit.svg": "reddit_com.svg",
-    "spotify.svg": "open_spotify_com.svg",  # Based on whitelist entry
+    "whitehouse_gov.svg": "whitehouse_gov.svg",  # Already in correct format
     "wikipedia.svg": "wikipedia_org.svg",
     "x.svg": "x_com.svg",
     "youtube.svg": "youtube_com.svg",
