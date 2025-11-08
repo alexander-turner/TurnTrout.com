@@ -18,7 +18,7 @@ jest.mock("fs")
 import fs from "fs"
 
 import {
-  turntroutFaviconName,
+  localTroutFaviconBasename,
   turntroutFaviconPath,
   mailIconPath,
   anchorIconPath,
@@ -441,7 +441,7 @@ describe("Favicon Utilities", () => {
     })
 
     it("should preserve .ico paths", () => {
-      const icoPath = `/static/images/${turntroutFaviconName}`
+      const icoPath = `/static/images/${localTroutFaviconBasename}`
       expect(linkfavicons.normalizePathForCounting(icoPath)).toBe(icoPath)
     })
 

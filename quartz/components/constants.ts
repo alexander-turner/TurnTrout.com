@@ -4,8 +4,8 @@ export const defaultDescription = "Writings about doing good, thinking well, and
 export const locale = "en-US"
 
 // Site-specific icon/favicon paths
-export const turntroutFaviconName = "favicon.svg"
-export const turntroutFaviconPath = `https://assets.turntrout.com/static/images/turntrout-favicons/${turntroutFaviconName}`
+export const localTroutFaviconBasename = "favicon.svg"
+export const turntroutFaviconPath = `https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg`
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
 export const mailIconPath = "https://assets.turntrout.com/static/images/mail.svg"
 export const anchorIconPath = "https://assets.turntrout.com/static/images/anchor.svg"

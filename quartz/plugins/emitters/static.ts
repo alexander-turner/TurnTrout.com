@@ -2,7 +2,7 @@ import fs from "fs"
 
 import type { QuartzEmitterPlugin } from "../types"
 
-import { turntroutFaviconName } from "../../components/constants"
+import { localTroutFaviconBasename } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
 import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
@@ -18,7 +18,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     const staticPath = joinSegments(QUARTZ, "static")
     const fps = await glob("**", staticPath, cfg.configuration.ignorePatterns)
     for (const fp of fps) {
-      if (fp === "robots.txt" || fp === turntroutFaviconName) {
+      if (fp === "robots.txt" || fp === localTroutFaviconBasename) {
         graph.addEdge(
           joinSegments("static", fp) as FilePath,
           joinSegments(argv.output, fp) as FilePath,
