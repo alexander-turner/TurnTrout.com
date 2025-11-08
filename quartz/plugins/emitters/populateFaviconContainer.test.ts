@@ -143,8 +143,8 @@ describe("PopulateFaviconContainer", () => {
   describe("container population", () => {
     it("should populate #favicon-container with valid favicons that exceed threshold", async () => {
       const faviconCounts = createMockCounts([
-        ["/static/images/external-favicons/example_com.png", 10],
-        ["/static/images/external-favicons/test_com.png", 5],
+        ["/static/images/external-favicons/example_com.png", minFaviconCount - 1],
+        ["/static/images/external-favicons/test_com.png", minFaviconCount + 3],
       ])
       mockGetFaviconCounts.mockReturnValue(faviconCounts)
 
@@ -154,7 +154,7 @@ describe("PopulateFaviconContainer", () => {
       expect(mockGetFaviconCounts).toHaveBeenCalled()
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain("example_com.avif")
+      expect(writtenContent).not.toContain("example_com.avif")
       expect(writtenContent).toContain("test_com.avif")
     })
 

@@ -24,6 +24,7 @@ import {
 import { createWinstonLogger } from "../transformers/logger_utils"
 import { type QuartzEmitterPlugin } from "../types"
 
+// istanbul ignore next
 const FAVICON_COUNT_WHITELIST = [
   mailIconPath,
   anchorIconPath,
