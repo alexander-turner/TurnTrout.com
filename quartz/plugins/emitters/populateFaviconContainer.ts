@@ -9,6 +9,7 @@ import {
   faviconCountWhitelist,
   mailIconPath,
   anchorIconPath,
+  rssIconPath,
   turntroutFaviconPath,
   googleSubdomainWhitelist,
 } from "../../components/constants"
@@ -28,6 +29,7 @@ import { type QuartzEmitterPlugin } from "../types"
 const FAVICON_COUNT_WHITELIST = [
   mailIconPath,
   anchorIconPath,
+  rssIconPath,
   turntroutFaviconPath,
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),

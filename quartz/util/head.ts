@@ -5,7 +5,7 @@ import {
   defaultDescription,
   defaultTitle,
   appleTouchIconUrl,
-  localTroutFaviconBasename,
+  faviconUrl,
 } from "../components/constants"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { escapeHTML } from "./escape"
@@ -93,8 +93,7 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     <meta name="twitter:site" content="@Turn_Trout" />
     ${maybeRenderAuthorTags(authors)}
 
-    <link rel="icon" href="${escapeHTML(localTroutFaviconBasename)}" type="image/svg+xml" />
-    <link rel="icon" href="${escapeHTML("favicon.ico")}" sizes="any" />
+    <link rel="icon" href="${escapeHTML(faviconUrl)}" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="${escapeHTML(appleTouchIconUrl)}" />
   `
 }

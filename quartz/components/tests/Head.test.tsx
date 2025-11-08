@@ -35,7 +35,7 @@ import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
-import { appleTouchIconUrl, defaultTitle, localTroutFaviconBasename } from "../constants"
+import { appleTouchIconUrl, defaultTitle, faviconUrl } from "../constants"
 import HeadConstructor, { renderMetaJsx } from "../Head"
 import { type QuartzComponentProps } from "../types"
 
@@ -120,7 +120,7 @@ describe("Head Component", () => {
           tagName: "link",
           properties: {
             rel: "icon",
-            href: localTroutFaviconBasename,
+            href: faviconUrl,
             type: "image/x-icon",
           },
         },
@@ -133,7 +133,7 @@ describe("Head Component", () => {
         h("meta", { name: "description", content: "Test description" }),
         h("meta", { property: "og:title", content: "Test Page" }),
         h("meta", { property: "og:type", content: "article" }),
-        h("link", { rel: "icon", href: localTroutFaviconBasename, type: "image/x-icon" }),
+        h("link", { rel: "icon", href: faviconUrl, type: "image/x-icon" }),
       ]),
     )
 
@@ -236,7 +236,7 @@ describe("Head Component", () => {
 
       expect(html).toContain('href="/index.css"')
       expect(html).toContain('href="/static/styles/katex.min.css"')
-      expect(html).toContain(localTroutFaviconBasename)
+      expect(html).toContain(faviconUrl)
       expect(html).toContain(appleTouchIconUrl)
     })
 

@@ -7,10 +7,12 @@ export const locale = "en-US"
 export const localTroutFaviconExtensionDefault = "svg"
 export const localTroutFaviconBasenameDefault = "favicon"
 export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
+export const faviconUrl = `/${localTroutFaviconBasename}`
 export const turntroutFaviconPath = `https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg`
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
 export const mailIconPath = "https://assets.turntrout.com/static/images/mail.svg"
 export const anchorIconPath = "https://assets.turntrout.com/static/images/anchor.svg"
+export const rssIconPath = "https://assets.turntrout.com/static/images/rss.svg"
 export const lesswrongFaviconPath =
   "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg"
 
@@ -40,6 +42,7 @@ export const faviconCountWhitelist = [
   "abcnews_go_com",
   "cnn_com",
   "forum_effectivealtruism_org",
+  "substack_com",
 ]
 export const faviconSubstringBlacklist = [
   "incompleteideas_net",

@@ -3,7 +3,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
-import { mailIconPath } from "../../components/constants"
+import { mailIconPath, rssIconPath } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createFaviconElement } from "./linkfavicons"
@@ -19,7 +19,7 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
 
 const rssSpan = h("span", { className: "favicon-span" }, [
   h("abbr", { class: "small-caps" }, "rss"),
-  createFaviconElement("https://assets.turntrout.com/static/images/rss.svg", "RSS icon"),
+  createFaviconElement(rssIconPath, "RSS icon"),
 ])
 export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [
