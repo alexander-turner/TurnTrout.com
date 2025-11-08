@@ -207,7 +207,7 @@ ol {
     }
 
     // Ensure tables are aligned with the footnote marker
-    & > .table-container {
+    & .table-container {
       display: inline-block;
       vertical-align: top;
     }
