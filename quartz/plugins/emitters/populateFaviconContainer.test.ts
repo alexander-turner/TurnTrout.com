@@ -3,6 +3,8 @@
  */
 import { jest, describe, it, expect, beforeEach, afterEach, beforeAll } from "@jest/globals"
 
+import { turntroutFaviconPath } from "../../components/constants"
+
 jest.mock("fs")
 jest.unstable_mockModule("../transformers/logger_utils", () => ({
   createWinstonLogger: jest.fn(() => ({
@@ -15,14 +17,13 @@ jest.unstable_mockModule("../transformers/logger_utils", () => ({
 jest.unstable_mockModule("../transformers/countfavicons", () => ({
   getFaviconCounts: jest.fn(() => new Map<string, number>()),
 }))
+jest.unstable_mockModule("../../components/constants", () => ({
+  turntroutFaviconPath: turntroutFaviconPath,
+}))
 jest.unstable_mockModule("../transformers/linkfavicons", () => ({
   MIN_FAVICON_COUNT: 3,
-  TURNTROUT_FAVICON_PATH:
-    "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico",
-  FAVICON_COUNT_WHITELIST: [
-    "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico",
-    "apple_com",
-  ],
+  TURNTROUT_FAVICON_PATH: turntroutFaviconPath,
+  FAVICON_COUNT_WHITELIST: [turntroutFaviconPath, "apple_com"],
   FAVICON_SUBSTRING_BLACKLIST: ["blacklisted_com"],
   urlCache: new Map<string, string>(),
   transformUrl: jest.fn((path: string) => {

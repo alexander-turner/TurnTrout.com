@@ -10,15 +10,15 @@ import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
+import { turntroutFaviconPath } from "../../components/constants"
 import { createWinstonLogger } from "./logger_utils"
 
 const logger = createWinstonLogger("linkfavicons")
 
 export const MAIL_PATH = "https://assets.turntrout.com/static/images/mail.svg"
-export const TURNTROUT_FAVICON_PATH =
-  "https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico"
+export const TURNTROUT_FAVICON_PATH = turntroutFaviconPath
 export const LESSWRONG_FAVICON_PATH =
-  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.avif"
+  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg"
 const QUARTZ_FOLDER = "quartz"
 const FAVICON_FOLDER = "static/images/external-favicons"
 export const DEFAULT_PATH = ""
@@ -73,7 +73,6 @@ export const FAVICON_COUNT_WHITELIST = [
   "anthropic_com",
   "sfchronicle_com",
   "nytimes_com",
-  "snopes_com",
   "whitehouse_gov",
   "msnbc_com",
   "openai_com",
@@ -93,6 +92,7 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "cs_umd",
   "acritch",
   "medium_com",
+  "snopes_com",
   "wired_com",
   "selfawaresystems",
   "vkrakovna",
@@ -104,6 +104,9 @@ export const FAVICON_SUBSTRING_BLACKLIST = [
   "playpen_icomtek_csir_co_za", // doesn't exist
   "distill_pub", // not recognizable
   "mathpix", // not recognizable
+  "sciencedirect", // not recognizable
+  "aclanthology", // not recognizable
+  "mlr_press", // not recognizable
 ]
 
 /**

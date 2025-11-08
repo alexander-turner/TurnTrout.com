@@ -109,7 +109,10 @@ describe("AliasRedirects", () => {
 
     const aliasesModule = await import("./aliases")
     AliasRedirects = aliasesModule.AliasRedirects
-    defaultCardUrl = aliasesModule.defaultCardUrl
+
+    const constantsModule = await import("../../components/constants")
+    defaultCardUrl = constantsModule.defaultCardUrl
+
     plugin = AliasRedirects()
   })
 

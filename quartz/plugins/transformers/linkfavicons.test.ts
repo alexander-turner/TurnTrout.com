@@ -18,6 +18,8 @@ import { FAVICON_SUBSTRING_BLACKLIST } from "./linkfavicons"
 jest.mock("fs")
 import fs from "fs"
 
+import { turntroutFaviconName } from "../../components/constants"
+
 jest.mock("stream/promises")
 
 beforeAll(() => {
@@ -433,7 +435,7 @@ describe("Favicon Utilities", () => {
     })
 
     it("should preserve .ico paths", () => {
-      const icoPath = "/static/images/favicon.ico"
+      const icoPath = `/static/images/${turntroutFaviconName}`
       expect(linkfavicons.normalizePathForCounting(icoPath)).toBe(icoPath)
     })
 
@@ -754,8 +756,8 @@ describe("Favicon Utilities", () => {
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
       const faviconElement = node.children[0] as Element
-      expect(faviconElement.tagName).toBe("img")
-      expect(faviconElement.properties.src).toBe(expectedPath)
+      expect(faviconElement.tagName).toBe("span")
+      expect(faviconElement.properties.style).toContain(expectedPath)
     })
 
     it.each([
@@ -1005,7 +1007,8 @@ describe("Favicon Utilities", () => {
 
         await linkfavicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+        expect(node.children[0]).toHaveProperty("properties.style")
+        expect((node.children[0] as Element).properties.style).toContain(faviconPath)
       })
 
       it("should skip non-whitelisted favicons if count is below threshold", async () => {

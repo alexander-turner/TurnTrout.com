@@ -6,14 +6,14 @@ import * as React from "react"
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 
 import {
-  TURNTROUT_FAVICON_PATH,
   LESSWRONG_FAVICON_PATH,
   createFaviconElement,
 } from "../../plugins/transformers/linkfavicons"
 import { htmlToJsx } from "../../util/jsx"
+import { turntroutFaviconPath } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
-const turntroutFaviconNode = createFaviconElement(TURNTROUT_FAVICON_PATH, "")
+const turntroutFaviconNode = createFaviconElement(turntroutFaviconPath, "")
 const turntroutFavicon =
   turntroutFaviconNode.tagName === "span" ? (
     <span

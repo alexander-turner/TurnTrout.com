@@ -2,6 +2,7 @@ import fs from "fs"
 
 import type { QuartzEmitterPlugin } from "../types"
 
+import { turntroutFaviconName } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
 import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
@@ -17,7 +18,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     const staticPath = joinSegments(QUARTZ, "static")
     const fps = await glob("**", staticPath, cfg.configuration.ignorePatterns)
     for (const fp of fps) {
-      if (fp === "robots.txt" || fp === "favicon.ico") {
+      if (fp === "robots.txt" || fp === turntroutFaviconName) {
         graph.addEdge(
           joinSegments("static", fp) as FilePath,
           joinSegments(argv.output, fp) as FilePath,
@@ -44,11 +45,11 @@ export const Static: QuartzEmitterPlugin = () => ({
       emittedFiles.push(joinSegments(argv.output, "robots.txt") as FilePath)
     }
 
-    // Copy favicon.ico to root
-    const faviconPath = joinSegments(staticPath, "favicon.ico")
+    // Copy favicon.svg to root
+    const faviconPath = joinSegments(staticPath, "favicon.svg")
     if (fs.existsSync(faviconPath)) {
-      await fs.promises.copyFile(faviconPath, joinSegments(argv.output, "favicon.ico"))
-      emittedFiles.push(joinSegments(argv.output, "favicon.ico") as FilePath)
+      await fs.promises.copyFile(faviconPath, joinSegments(argv.output, "favicon.svg"))
+      emittedFiles.push(joinSegments(argv.output, "favicon.svg") as FilePath)
     }
 
     // Copy everything else to /static/
@@ -60,7 +61,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     // Add all other files to emitted files list
     emittedFiles.push(
       ...(fps
-        .filter((fp) => !(fp === "robots.txt" || fp === "favicon.ico"))
+        .filter((fp) => !(fp === "robots.txt" || fp === "favicon.svg"))
         .map((fp) => joinSegments(argv.output, "static", fp)) as FilePath[]),
     )
 
