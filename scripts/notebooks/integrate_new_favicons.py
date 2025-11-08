@@ -7,7 +7,16 @@ correct location.
 """
 
 import shutil
+import sys
 from pathlib import Path
+
+# Add parent scripts directory to path for imports
+_SCRIPTS_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from normalize_svg_viewbox import (  # type: ignore  # noqa: E402
+    normalize_svg_viewbox,
+)
 
 # Mapping from source filename to target domain-based filename
 # Format: source_filename -> target_filename (domain_com.ext)
@@ -58,6 +67,8 @@ def main() -> None:
 
     moved_count: int = 0
     skipped_count: int = 0
+    moved_files: list[Path] = []
+
     for source_name in FAVICON_MAPPING:
         source_path: Path = SOURCE_DIR / source_name
         if not source_path.exists():
@@ -73,11 +84,21 @@ def main() -> None:
         shutil.copy2(source_path, target_path)
         print(f"Moved: {source_name} -> {target_name}")
         moved_count += 1
+        moved_files.append(target_path)
 
     print("\nSummary:")
     print(f"  Moved: {moved_count}")
     print(f"  Skipped: {skipped_count}")
     print(f"\nTarget directory: {TARGET_DIR.absolute()}")
+
+    # Normalize viewBoxes for all moved SVG files
+    if moved_files:
+        print("\nNormalizing SVG viewBoxes to 24x24...")
+        for svg_path in moved_files:
+            try:
+                normalize_svg_viewbox(svg_path, target_size=24)
+            except (ValueError, OSError) as e:
+                print(f"Warning: Failed to normalize {svg_path.name}: {e}")
 
 
 if __name__ == "__main__":
