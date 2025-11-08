@@ -19,9 +19,7 @@ import fs from "fs"
 
 import {
   localTroutFaviconBasename,
-  turntroutFaviconPath,
-  mailIconPath,
-  anchorIconPath,
+  specialFaviconPaths,
   minFaviconCount,
   faviconSubstringBlacklist,
 } from "../../components/constants"
@@ -337,9 +335,9 @@ describe("Favicon Utilities", () => {
   describe("GetQuartzPath", () => {
     it.each([
       ["www.example.com", "/static/images/external-favicons/example_com.png"],
-      ["localhost", turntroutFaviconPath],
-      ["turntrout.com", turntroutFaviconPath],
-      ["https://turntrout.com", turntroutFaviconPath],
+      ["localhost", specialFaviconPaths.turntrout],
+      ["turntrout.com", specialFaviconPaths.turntrout],
+      ["https://turntrout.com", specialFaviconPaths.turntrout],
       ["subdomain.example.org", "/static/images/external-favicons/subdomain_example_org.png"],
     ])("should return the correct favicon path for %s", (hostname, expectedPath) => {
       expect(linkfavicons.getQuartzPath(hostname)).toBe(expectedPath)
@@ -356,8 +354,8 @@ describe("Favicon Utilities", () => {
         "/static/images/external-favicons/test_com.png",
         "https://assets.turntrout.com/static/images/external-favicons/test_com.avif",
       ],
-      [turntroutFaviconPath, turntroutFaviconPath],
-      [mailIconPath, mailIconPath],
+      [specialFaviconPaths.turntrout, specialFaviconPaths.turntrout],
+      [specialFaviconPaths.mail, specialFaviconPaths.mail],
       ["https://example.com/favicon.ico", "https://example.com/favicon.ico"],
     ])("should construct URL from path %s", (path, expectedUrl) => {
       expect(linkfavicons.getFaviconUrl(path)).toBe(expectedUrl)
@@ -493,9 +491,9 @@ describe("Favicon Utilities", () => {
     })
 
     it.each([
-      [mailIconPath],
-      [anchorIconPath],
-      [turntroutFaviconPath],
+      [specialFaviconPaths.mail],
+      [specialFaviconPaths.anchor],
+      [specialFaviconPaths.turntrout],
       ["/static/images/external-favicons/apple_com.png"],
     ])("should include whitelisted favicon %s even if count is zero", (imgPath) => {
       const faviconCounts = new Map<string, number>()
@@ -706,11 +704,11 @@ describe("Favicon Utilities", () => {
           ".",
         ])
 
-        linkfavicons.insertFavicon(mailIconPath, node)
+        linkfavicons.insertFavicon(specialFaviconPaths.mail, node)
 
         expect(node.children.length).toBe(3)
         const lastChild = node.children[node.children.length - 1]
-        expect(lastChild).toMatchObject(createExpectedSpan(".", mailIconPath))
+        expect(lastChild).toMatchObject(createExpectedSpan(".", specialFaviconPaths.mail))
       })
     })
   })
@@ -742,14 +740,14 @@ describe("Favicon Utilities", () => {
     beforeEach(() => {
       faviconCounts.clear()
       // Set up counts for common favicons
-      faviconCounts.set(turntroutFaviconPath, minFaviconCount + 1)
-      faviconCounts.set(mailIconPath, minFaviconCount + 1)
-      faviconCounts.set(anchorIconPath, minFaviconCount + 1)
+      faviconCounts.set(specialFaviconPaths.turntrout, minFaviconCount + 1)
+      faviconCounts.set(specialFaviconPaths.mail, minFaviconCount + 1)
+      faviconCounts.set(specialFaviconPaths.anchor, minFaviconCount + 1)
     })
 
     it.each([
-      ["./shard-theory", turntroutFaviconPath],
-      ["../shard-theory", turntroutFaviconPath],
+      ["./shard-theory", specialFaviconPaths.turntrout],
+      ["../shard-theory", specialFaviconPaths.turntrout],
     ])("should insert img favicon for %s", async (href, expectedPath) => {
       const node = h("a", { href })
       const parent = h("div", [node])
@@ -761,9 +759,9 @@ describe("Favicon Utilities", () => {
     })
 
     it.each([
-      ["#test", anchorIconPath],
-      ["mailto:test@example.com", mailIconPath],
-      ["mailto:another@domain.org", mailIconPath],
+      ["#test", specialFaviconPaths.anchor],
+      ["mailto:test@example.com", specialFaviconPaths.mail],
+      ["mailto:another@domain.org", specialFaviconPaths.mail],
     ])("should insert span favicon for %s", async (href, expectedPath) => {
       const node = h("a", { href })
       const parent = h("div", [node])
@@ -794,7 +792,7 @@ describe("Favicon Utilities", () => {
           // ANCHOR_PATH is SVG, so it creates a span element with mask
           const faviconElement = node.children[0] as Element
           expect(faviconElement.tagName).toBe("span")
-          expect(faviconElement.properties.style).toContain(anchorIconPath)
+          expect(faviconElement.properties.style).toContain(specialFaviconPaths.anchor)
         },
       ],
       [
@@ -965,8 +963,8 @@ describe("Favicon Utilities", () => {
       })
 
       it.each([
-        ["mailto:test@example.com", mailIconPath, "div"],
-        ["#section-1", anchorIconPath, "p"],
+        ["mailto:test@example.com", specialFaviconPaths.mail, "div"],
+        ["#section-1", specialFaviconPaths.anchor, "p"],
       ])(
         "should always add %s favicons regardless of count",
         async (href, expectedPath, parentTag) => {
@@ -987,7 +985,7 @@ describe("Favicon Utilities", () => {
 
       it("should add whitelisted favicons even if count is below threshold", async () => {
         const hostname = "turntrout.com"
-        const faviconPath = turntroutFaviconPath
+        const faviconPath = specialFaviconPaths.turntrout
         const href = `https://${hostname}/page`
 
         const counts = new Map<string, number>()
@@ -1419,7 +1417,7 @@ describe("AddFavicons plugin", () => {
     jest
       .spyOn(fs, "readFileSync")
       .mockReturnValue(
-        `${minFaviconCount + 1}\t${mailIconPath}\n${minFaviconCount + 1}\t${anchorIconPath}`,
+        `${minFaviconCount + 1}\t${specialFaviconPaths.mail}\n${minFaviconCount + 1}\t${specialFaviconPaths.anchor}`,
       )
   })
 
@@ -1455,13 +1453,13 @@ describe("AddFavicons plugin", () => {
     // MAIL_PATH is SVG, so it creates a span element with mask, not img with src
     const mailFavicon = mailtoLink.children[0] as Element
     expect(mailFavicon.tagName).toBe("span")
-    expect(mailFavicon.properties.style).toContain(mailIconPath)
+    expect(mailFavicon.properties.style).toContain(specialFaviconPaths.mail)
 
     expect(sectionLink.children.length).toBe(1)
     // ANCHOR_PATH is SVG, so it creates a span element with mask, not img with src
     const anchorFavicon = sectionLink.children[0] as Element
     expect(anchorFavicon.tagName).toBe("span")
-    expect(anchorFavicon.properties.style).toContain(anchorIconPath)
+    expect(anchorFavicon.properties.style).toContain(specialFaviconPaths.anchor)
   })
 
   it("should handle nodes with undefined parent", async () => {
@@ -1506,9 +1504,9 @@ describe("transformUrl", () => {
   })
 
   it.each([
-    [mailIconPath, mailIconPath],
-    [anchorIconPath, anchorIconPath],
-    [turntroutFaviconPath, turntroutFaviconPath],
+    [specialFaviconPaths.mail, specialFaviconPaths.mail],
+    [specialFaviconPaths.anchor, specialFaviconPaths.anchor],
+    [specialFaviconPaths.turntrout, specialFaviconPaths.turntrout],
     [
       "/static/images/external-favicons/apple_com.png",
       "/static/images/external-favicons/apple_com.png",
@@ -1737,7 +1735,7 @@ describe("shouldIncludeFavicon edge cases", () => {
   })
 
   it("should include whitelisted favicon even if count is zero and not in map", () => {
-    const imgPath = mailIconPath
+    const imgPath = specialFaviconPaths.mail
     const faviconCounts = new Map<string, number>()
 
     const result = linkfavicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
@@ -1772,8 +1770,8 @@ describe("shouldIncludeFavicon edge cases", () => {
 describe("getQuartzPath edge cases", () => {
   it.each([
     ["www.www.example.com", "/static/images/external-favicons/www_example_com.png"],
-    ["subdomain.turntrout.com", turntroutFaviconPath],
-    ["www.turntrout.com", turntroutFaviconPath],
+    ["subdomain.turntrout.com", specialFaviconPaths.turntrout],
+    ["www.turntrout.com", specialFaviconPaths.turntrout],
     ["example.co.uk", "/static/images/external-favicons/example_co_uk.png"],
     ["test.example.co.uk", "/static/images/external-favicons/test_example_co_uk.png"],
   ])("should handle %s correctly", (hostname, expectedPath) => {
@@ -1786,7 +1784,7 @@ describe("ModifyNode with asset links", () => {
 
   beforeEach(() => {
     faviconCounts.clear()
-    faviconCounts.set(turntroutFaviconPath, minFaviconCount + 1)
+    faviconCounts.set(specialFaviconPaths.turntrout, minFaviconCount + 1)
   })
 
   it.each([

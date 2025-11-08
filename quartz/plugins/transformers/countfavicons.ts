@@ -3,7 +3,7 @@ import type { Element, Root, Parent } from "hast"
 import fs from "fs"
 import { visit } from "unist-util-visit"
 
-import { mailIconPath, anchorIconPath } from "../../components/constants"
+import { specialFaviconPaths } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import {
   getQuartzPath,
@@ -32,11 +32,11 @@ export function getFaviconCounts(): Map<string, number> {
  */
 function getFaviconPathForLink(href: string): string | null {
   if (href.includes("mailto:")) {
-    return mailIconPath
+    return specialFaviconPaths.mail
   }
 
   if (href.startsWith("#")) {
-    return anchorIconPath
+    return specialFaviconPaths.anchor
   }
 
   // Skip asset links (reuse centralized check from linkfavicons.ts)

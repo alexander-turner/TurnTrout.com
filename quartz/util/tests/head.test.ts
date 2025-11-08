@@ -108,9 +108,6 @@ describe("renderHead", () => {
       expect(result).toContain(
         `<link rel="icon" href="${escapeHTML(faviconUrl)}" type="image/svg+xml" />`,
       )
-      expect(result).toContain(
-        `<link rel="icon" href="${escapeHTML("favicon.ico")}" sizes="any" />`,
-      )
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
 
@@ -152,7 +149,6 @@ describe("renderHead", () => {
 
       // Favicon tags
       expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/svg+xml" />`)
-      expect(result).toContain(`<link rel="icon" href="favicon.ico" sizes="any" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
@@ -381,7 +377,6 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/svg+xml" />`)
-      expect(result).toContain(`<link rel="icon" href="favicon.ico" sizes="any" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })

@@ -7,10 +7,7 @@ import { visit } from "unist-util-visit"
 import {
   minFaviconCount,
   faviconCountWhitelist,
-  mailIconPath,
-  anchorIconPath,
-  rssIconPath,
-  turntroutFaviconPath,
+  specialFaviconPaths,
   googleSubdomainWhitelist,
 } from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
@@ -27,10 +24,7 @@ import { type QuartzEmitterPlugin } from "../types"
 
 // istanbul ignore next
 const FAVICON_COUNT_WHITELIST = [
-  mailIconPath,
-  anchorIconPath,
-  rssIconPath,
-  turntroutFaviconPath,
+  ...Object.values(specialFaviconPaths),
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]

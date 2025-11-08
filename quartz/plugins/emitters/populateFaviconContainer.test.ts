@@ -3,7 +3,7 @@
  */
 import { jest, describe, it, expect, beforeEach, afterEach, beforeAll } from "@jest/globals"
 
-import { turntroutFaviconPath, minFaviconCount } from "../../components/constants"
+import { specialFaviconPaths, minFaviconCount } from "../../components/constants"
 
 jest.mock("fs")
 jest.unstable_mockModule("../transformers/logger_utils", () => ({
@@ -18,10 +18,8 @@ jest.unstable_mockModule("../transformers/countfavicons", () => ({
   getFaviconCounts: jest.fn(() => new Map<string, number>()),
 }))
 jest.unstable_mockModule("../../components/constants", () => ({
-  turntroutFaviconPath: turntroutFaviconPath,
+  specialFaviconPaths: { ...specialFaviconPaths },
   minFaviconCount: minFaviconCount,
-  mailIconPath: "https://assets.turntrout.com/static/images/mail.svg",
-  anchorIconPath: "https://assets.turntrout.com/static/images/anchor.svg",
   faviconCountWhitelist: ["apple_com"],
   faviconSubstringBlacklist: ["blacklisted_com"],
   googleSubdomainWhitelist: [],
@@ -198,7 +196,7 @@ describe("PopulateFaviconContainer", () => {
     })
 
     it("should include whitelisted favicons even if below threshold", async () => {
-      const faviconCounts = createMockCounts([[turntroutFaviconPath, minFaviconCount - 1]])
+      const faviconCounts = createMockCounts([[specialFaviconPaths.turntrout, minFaviconCount - 1]])
       mockGetFaviconCounts.mockReturnValue(faviconCounts)
 
       const emitter = PopulateFaviconContainer()
@@ -207,7 +205,7 @@ describe("PopulateFaviconContainer", () => {
       expect(mockGetFaviconCounts).toHaveBeenCalled()
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain(turntroutFaviconPath)
+      expect(writtenContent).toContain(specialFaviconPaths.turntrout)
     })
 
     it("should filter out blacklisted favicons", async () => {

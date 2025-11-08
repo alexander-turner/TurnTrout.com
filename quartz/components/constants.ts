@@ -8,13 +8,18 @@ export const localTroutFaviconExtensionDefault = "svg"
 export const localTroutFaviconBasenameDefault = "favicon"
 export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 export const faviconUrl = `/${localTroutFaviconBasename}`
-export const turntroutFaviconPath = `https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg`
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
-export const mailIconPath = "https://assets.turntrout.com/static/images/mail.svg"
-export const anchorIconPath = "https://assets.turntrout.com/static/images/anchor.svg"
-export const rssIconPath = "https://assets.turntrout.com/static/images/rss.svg"
-export const lesswrongFaviconPath =
-  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg"
+
+// Unified favicon paths - all special icons that should always be whitelisted
+const faviconBasePath = "https://assets.turntrout.com/static/images"
+export const specialFaviconPaths = {
+  mail: `${faviconBasePath}/mail.svg`,
+  anchor: `${faviconBasePath}/anchor.svg`,
+  rss: `${faviconBasePath}/rss.svg`,
+  turntrout: `${faviconBasePath}/external-favicons/turntrout_com.svg`,
+  substack: `${faviconBasePath}/external-favicons/substack_com.svg`,
+  lesswrong: `${faviconBasePath}/external-favicons/lesswrong_com.svg`,
+} as const
 
 // Favicon display configuration
 export const minFaviconCount = 6

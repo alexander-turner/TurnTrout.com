@@ -11,9 +11,7 @@ import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
 import {
-  turntroutFaviconPath,
-  mailIconPath,
-  anchorIconPath,
+  specialFaviconPaths,
   minFaviconCount,
   googleSubdomainWhitelist,
   faviconCountWhitelist,
@@ -50,9 +48,7 @@ export const FAVICON_COUNTS_FILE = path.join(
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
 const FAVICON_COUNT_WHITELIST = [
-  mailIconPath,
-  anchorIconPath,
-  turntroutFaviconPath,
+  ...Object.values(specialFaviconPaths),
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
@@ -213,13 +209,15 @@ export function getQuartzPath(hostname: string): string {
   hostname = normalizeHostname(hostname)
   const sanitizedHostname = hostname.replace(/\./g, "_")
   const path = sanitizedHostname.includes("turntrout_com")
-    ? turntroutFaviconPath
+    ? specialFaviconPaths.turntrout
     : `/${FAVICON_FOLDER}/${sanitizedHostname}.png`
   logger.debug(`Generated Quartz path: ${path}`)
   return path
 }
 
-const defaultCache = new Map<string, string>([[turntroutFaviconPath, turntroutFaviconPath]])
+const defaultCache = new Map<string, string>([
+  [specialFaviconPaths.turntrout, specialFaviconPaths.turntrout],
+])
 // skipcq: JS-D1001
 export function createUrlCache(): Map<string, string> {
   return new Map(defaultCache)
@@ -747,7 +745,7 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
  */
 function handleMailtoLink(node: Element): void {
   logger.info("Inserting mail icon for mailto link")
-  insertFavicon(mailIconPath, node)
+  insertFavicon(specialFaviconPaths.mail, node)
 }
 
 // skipcq: JS-D1001
@@ -774,7 +772,7 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
     node.properties.className = ["same-page-link"]
   }
 
-  insertFavicon(anchorIconPath, node)
+  insertFavicon(specialFaviconPaths.anchor, node)
   return true
 }
 

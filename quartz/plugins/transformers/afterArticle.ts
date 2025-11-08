@@ -3,23 +3,24 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
-import { mailIconPath, rssIconPath } from "../../components/constants"
+import { specialFaviconPaths } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createFaviconElement } from "./linkfavicons"
 import { createSequenceLinksComponent } from "./sequenceLinks"
 import { troutContainerId } from "./trout_hr"
 
-const SUBSTACK_URL = "https://assets.turntrout.com/static/images/external-favicons/substack_com.svg"
-
 const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscribe" }, [
   "newsle",
-  h("span", { className: "favicon-span" }, ["tter", createFaviconElement(SUBSTACK_URL)]),
+  h("span", { className: "favicon-span" }, [
+    "tter",
+    createFaviconElement(specialFaviconPaths.substack),
+  ]),
 ])
 
 const rssSpan = h("span", { className: "favicon-span" }, [
   h("abbr", { class: "small-caps" }, "rss"),
-  createFaviconElement(rssIconPath, "RSS icon"),
+  createFaviconElement(specialFaviconPaths.rss, "RSS icon"),
 ])
 export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [
@@ -28,7 +29,10 @@ const subscriptionElement = h("div", { className: "centered" }, [
 
 const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
   "alex@turntrout",
-  h("span", { className: "favicon-span" }, [".com", createFaviconElement(mailIconPath)]),
+  h("span", { className: "favicon-span" }, [
+    ".com",
+    createFaviconElement(specialFaviconPaths.mail),
+  ]),
 ])
 
 const pgpLink = h(

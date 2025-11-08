@@ -21,7 +21,7 @@ jest.mock("./logger_utils", () => ({
 
 import fs from "fs"
 
-import { turntroutFaviconPath, mailIconPath, anchorIconPath } from "../../components/constants"
+import { specialFaviconPaths } from "../../components/constants"
 import { CountFavicons } from "./countfavicons"
 import * as linkfavicons from "./linkfavicons"
 
@@ -78,9 +78,9 @@ describe("CountFavicons plugin", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(mailIconPath)
+    expect(content).toContain(specialFaviconPaths.mail)
     const lines = content.split("\n").filter((line) => line.trim())
-    const mailLine = lines.find((line) => line.includes(mailIconPath))
+    const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
     expect(mailLine).toContain("2\t")
   })
 
@@ -96,9 +96,9 @@ describe("CountFavicons plugin", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(anchorIconPath)
+    expect(content).toContain(specialFaviconPaths.anchor)
     const lines = content.split("\n").filter((line) => line.trim())
-    const anchorLine = lines.find((line) => line.includes(anchorIconPath))
+    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
     expect(anchorLine).toContain("2\t")
   })
 
@@ -209,9 +209,9 @@ describe("CountFavicons plugin", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(anchorIconPath)
+    expect(content).toContain(specialFaviconPaths.anchor)
     const lines = content.split("\n").filter((line) => line.trim())
-    const anchorLine = lines.find((line) => line.includes(anchorIconPath))
+    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
     expect(anchorLine).toBeDefined()
     const count = parseInt(anchorLine!.split("\t")[0], 10)
     expect(count).toBeGreaterThanOrEqual(2)
@@ -312,8 +312,8 @@ describe("CountFavicons plugin", () => {
     const lines = content.split("\n").filter((line) => line.trim())
     expect(lines.length).toBeGreaterThanOrEqual(2)
 
-    const mailLine = lines.find((line) => line.includes(mailIconPath))
-    const anchorLine = lines.find((line) => line.includes(anchorIconPath))
+    const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
+    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
 
     expect(mailLine).toBeDefined()
     expect(anchorLine).toBeDefined()
@@ -364,8 +364,8 @@ describe("CountFavicons plugin", () => {
     const lines1 = content1.split("\n").filter((line) => line.trim())
     const lines2 = content2.split("\n").filter((line) => line.trim())
 
-    const mailLine1 = lines1.find((line) => line.includes(mailIconPath))
-    const mailLine2 = lines2.find((line) => line.includes(mailIconPath))
+    const mailLine1 = lines1.find((line) => line.includes(specialFaviconPaths.mail))
+    const mailLine2 = lines2.find((line) => line.includes(specialFaviconPaths.mail))
 
     expect(mailLine1).toBeDefined()
     expect(mailLine2).toBeDefined()
@@ -431,9 +431,9 @@ describe("CountFavicons plugin", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(turntroutFaviconPath)
+    expect(content).toContain(specialFaviconPaths.turntrout)
     const lines = content.split("\n").filter((line) => line.trim())
-    const turntroutLine = lines.find((line) => line.includes(turntroutFaviconPath))
+    const turntroutLine = lines.find((line) => line.includes(specialFaviconPaths.turntrout))
     expect(turntroutLine).toBeDefined()
     const count = parseInt(turntroutLine!.split("\t")[0], 10)
     expect(count).toBeGreaterThanOrEqual(2)
