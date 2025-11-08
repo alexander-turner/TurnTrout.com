@@ -23,6 +23,7 @@ import {
   minFaviconCount,
   faviconSubstringBlacklist,
 } from "../../components/constants"
+import { hasClass } from "./utils"
 
 jest.mock("stream/promises")
 
@@ -762,6 +763,8 @@ describe("Favicon Utilities", () => {
       ["#test", specialFaviconPaths.anchor],
       ["mailto:test@example.com", specialFaviconPaths.mail],
       ["mailto:another@domain.org", specialFaviconPaths.mail],
+      ["/rss.xml", specialFaviconPaths.rss],
+      ["/some/path/rss.xml", specialFaviconPaths.rss],
     ])("should insert span favicon for %s", async (href, expectedPath) => {
       const node = h("a", { href })
       const parent = h("div", [node])
@@ -847,6 +850,51 @@ describe("Favicon Utilities", () => {
         expect(node.children.length).toBe(0)
       },
     )
+
+    it.each([
+      [
+        "https://example.com",
+        h("span", { className: "favicon-span" }, [h("span", { className: "favicon favicon-svg" })]),
+      ],
+      ["mailto:test@example.com", h("span", { className: "favicon favicon-svg" })],
+      ["#section", h("span", { className: "favicon" })],
+      ["/rss.xml", h("span", { className: "favicon favicon-svg" })],
+      ["https://example.com", h("span", { className: "favicon-svg" })],
+      ["https://example.com", h("img", { className: "favicon", src: "/favicon.ico" })],
+      [
+        "https://example.com",
+        h("span", { className: "some-wrapper" }, [
+          h("span", { className: "favicon-span" }, [h("span", { className: "favicon" })]),
+        ]),
+      ],
+    ])("should skip %s that already has a favicon", async (href, faviconElement) => {
+      const node = h("a", { href }, [faviconElement])
+      const parent = h("div", [node])
+      const initialChildrenCount = node.children.length
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      expect(node.children.length).toBe(initialChildrenCount)
+    })
+
+    it("should process link with favicon-span but no favicon element", async () => {
+      const node = h("a", { href: "mailto:test@example.com" }, [
+        h("span", { className: "favicon-span" }, ["rss"]),
+      ])
+      const parent = h("div", [node])
+      const initialChildrenCount = node.children.length
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+
+      // Should add favicon even though favicon-span exists (since it doesn't contain a favicon element)
+      expect(node.children.length).toBeGreaterThan(initialChildrenCount)
+      const hasFaviconElement = node.children.some((child) => {
+        if (child.type !== "element") return false
+        const element = child as Element
+        return hasClass(element, "favicon") || hasClass(element, "favicon-svg")
+      })
+      expect(hasFaviconElement).toBe(true)
+    })
 
     it.each([
       ["external-link.html", "a", { className: "some-class same-page-link other-class" }],

@@ -3,37 +3,24 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
-import { specialFaviconPaths } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
-import { createFaviconElement } from "./linkfavicons"
 import { createSequenceLinksComponent } from "./sequenceLinks"
 import { troutContainerId } from "./trout_hr"
 
 const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscribe" }, [
-  "newsle",
-  h("span", { className: "favicon-span" }, [
-    "tter",
-    createFaviconElement(specialFaviconPaths.substack),
-  ]),
+  "newsletter",
 ])
 
 const rssSpan = h("span", { className: "favicon-span" }, [
   h("abbr", { class: "small-caps" }, "rss"),
-  createFaviconElement(specialFaviconPaths.rss, "RSS icon"),
 ])
 export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [
   h("div", h("p", ["Find out when I post more content: ", newsletterElement, " & ", rssElement])),
 ])
 
-const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
-  "alex@turntrout",
-  h("span", { className: "favicon-span" }, [
-    ".com",
-    createFaviconElement(specialFaviconPaths.mail),
-  ]),
-])
+const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, ["alex@turntrout.com"])
 
 const pgpLink = h(
   "a",

@@ -31,7 +31,6 @@ import {
   rearrangeLinkPunctuation,
   markerChar,
 } from "../formatting_improvement_html"
-import { hasClass } from "../utils"
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -1190,35 +1189,6 @@ describe("Skip Formatting", () => {
   ])("should skip formatting when no-formatting class is present: %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
-  })
-})
-
-describe("hasClass", () => {
-  test("handles string className", () => {
-    const node = h("div", { className: "test-class other-class" })
-
-    expect(hasClass(node, "test-class")).toBe(true)
-    expect(hasClass(node, "other-class")).toBe(true)
-    expect(hasClass(node, "missing-class")).toBe(false)
-  })
-
-  test("handles array className", () => {
-    const node = h("div", { className: ["test-class", "other-class"] })
-
-    expect(hasClass(node, "test-class")).toBe(true)
-    expect(hasClass(node, "other-class")).toBe(true)
-    expect(hasClass(node, "missing-class")).toBe(false)
-  })
-
-  test("handles missing properties", () => {
-    const node = h("div")
-    expect(hasClass(node, "any-class")).toBe(false)
-  })
-
-  test("handles null/undefined className", () => {
-    const node = h("div", { className: null })
-
-    expect(hasClass(node, "any-class")).toBe(false)
   })
 })
 

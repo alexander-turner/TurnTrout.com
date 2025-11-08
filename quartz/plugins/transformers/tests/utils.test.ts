@@ -1,5 +1,5 @@
 import { jest, describe, it, expect } from "@jest/globals"
-import { type Parent, type Text } from "hast"
+import { type Element, type Parent, type Text } from "hast"
 import { h } from "hastscript"
 
 import {
@@ -7,6 +7,7 @@ import {
   type ReplaceFnResult,
   shouldCapitalizeNodeText,
   gatherTextBeforeIndex,
+  hasClass,
 } from "../utils"
 
 const acceptAll = () => false
@@ -329,5 +330,56 @@ describe("gatherTextBeforeIndex", () => {
     },
   ])("should handle $description", ({ parent, index, expected }) => {
     expect(gatherTextBeforeIndex(parent, index)).toBe(expected)
+  })
+})
+
+describe("hasClass", () => {
+  it.each([
+    ["string className", { className: "test-class other-class" }, "test-class", true],
+    ["string className", { className: "test-class other-class" }, "other-class", true],
+    ["string className", { className: "test-class other-class" }, "missing-class", false],
+    ["array className", { className: ["test-class", "other-class"] }, "test-class", true],
+    ["array className", { className: ["test-class", "other-class"] }, "other-class", true],
+    ["array className", { className: ["test-class", "other-class"] }, "missing-class", false],
+    ["string class", { class: "test-class other-class" }, "test-class", true],
+    ["string class", { class: "test-class other-class" }, "other-class", true],
+    ["string class", { class: "test-class other-class" }, "missing-class", false],
+    ["array class", { class: ["test-class", "other-class"] }, "test-class", true],
+    ["array class", { class: ["test-class", "other-class"] }, "other-class", true],
+    ["array class", { class: ["test-class", "other-class"] }, "missing-class", false],
+  ])("handles %s", (_type, props, className, expected) => {
+    const node = h("div", props)
+    expect(hasClass(node, className)).toBe(expected)
+  })
+
+  it("handles both className and class when both exist (hastscript merges them)", () => {
+    const node = h("div", { className: "className-value", class: "class-value" })
+
+    // hastscript merges both into className array, so both should be found
+    expect(hasClass(node, "className-value")).toBe(true)
+    expect(hasClass(node, "class-value")).toBe(true)
+  })
+
+  it("prefers className over class when manually creating element", () => {
+    const node: Element = {
+      type: "element",
+      tagName: "div",
+      properties: {
+        className: "className-value",
+        class: "class-value",
+      },
+      children: [],
+    }
+
+    expect(hasClass(node, "className-value")).toBe(true)
+    expect(hasClass(node, "class-value")).toBe(false)
+  })
+
+  it.each([
+    ["missing properties", h("div"), "any-class", false],
+    ["null className", h("div", { className: null }), "any-class", false],
+    ["null class", h("div", { class: null }), "any-class", false],
+  ])("handles %s", (_type, node, className, expected) => {
+    expect(hasClass(node, className)).toBe(expected)
   })
 })

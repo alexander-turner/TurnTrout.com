@@ -74,6 +74,7 @@ export const faviconSubstringBlacklist = [
   "sciencedirect",
   "aclanthology",
   "mlr_press",
+  "openpgp",
 ]
 
 // UI strings (extracted from i18n en-US locale)

@@ -18,6 +18,7 @@ import {
   faviconSubstringBlacklist,
 } from "../../components/constants"
 import { createWinstonLogger } from "./logger_utils"
+import { hasClass } from "./utils"
 
 const logger = createWinstonLogger("linkfavicons")
 
@@ -74,6 +75,7 @@ const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
   { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
   { pattern: /^.*nytimes\.com$/, to: "nytimes.com" },
   { pattern: /^.*wikipedia\.org$/, to: "wikipedia.org" },
+  { pattern: /^.*substack\.com$/, to: "substack.com" },
 ]
 
 // istanbul ignore if
@@ -655,6 +657,10 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
   const maybeSpliceTextResult = maybeSpliceText(node, toAppend)
   if (maybeSpliceTextResult) {
     node.children.push(maybeSpliceTextResult)
+  } else {
+    // If maybeSpliceText returns null (e.g., when zooming into nested elements),
+    // the favicon was already added to the nested element, so we don't need to do anything
+    logger.debug("Favicon was added to nested element, skipping direct append")
   }
 }
 
@@ -802,6 +808,25 @@ export function isAssetLink(href: string): boolean {
 }
 
 /**
+ * Checks if a link already has a favicon element.
+ */
+function hasFavicon(node: Element): boolean {
+  for (const child of node.children) {
+    if (child.type !== "element") {
+      continue
+    }
+
+    if (hasClass(child, "favicon") || hasClass(child, "favicon-svg")) {
+      return true
+    }
+    if (hasFavicon(child)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
  * Checks if a link should be skipped for favicon processing.
  */
 function shouldSkipFavicon(node: Element, href: string): boolean {
@@ -925,6 +950,12 @@ export async function ModifyNode(
     return
   }
 
+  // Skip if link already has a favicon
+  if (hasFavicon(node)) {
+    logger.debug(`Skipping favicon insertion for link that already has a favicon: ${href}`)
+    return
+  }
+
   if (href.includes("mailto:")) {
     handleMailtoLink(node)
     return
@@ -933,6 +964,11 @@ export async function ModifyNode(
   const isSamePageLink = href.startsWith("#")
   if (isSamePageLink) {
     handleSamePageLink(node, href, parent)
+    return
+  }
+
+  if (href.endsWith("/rss.xml")) {
+    insertFavicon(specialFaviconPaths.rss, node)
     return
   }
 

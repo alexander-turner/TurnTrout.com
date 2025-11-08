@@ -189,8 +189,10 @@ export function hasAncestor(
 
 // Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
-  if (typeof node.properties?.className === "string" || Array.isArray(node.properties?.className)) {
-    return node.properties.className.includes(className)
+  // Check both className and class properties (hastscript uses class)
+  const classProp = node.properties?.className || node.properties?.class
+  if (typeof classProp === "string" || Array.isArray(classProp)) {
+    return classProp.includes(className)
   }
   return false
 }
