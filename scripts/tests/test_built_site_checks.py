@@ -90,13 +90,13 @@ def robots_txt_file(mock_environment):
 
 @pytest.fixture
 def root_files(mock_environment):
-    """Create both robots.txt and favicon.svg files."""
+    """Create required root files: robots.txt, favicon.svg, and favicon.ico."""
     public_dir = mock_environment["public_dir"]
-    robots_txt = public_dir / "robots.txt"
-    favicon = public_dir / "favicon.svg"
-    robots_txt.touch()
-    favicon.touch()
-    return [robots_txt, favicon]
+    files = []
+    for filename in built_site_checks.REQUIRED_ROOT_FILES:
+        files.append(public_dir / filename)
+        files[-1].touch()
+    return files
 
 
 @pytest.fixture
@@ -2616,35 +2616,51 @@ def test_check_favicon_parent_elements(html, expected):
 @pytest.mark.parametrize(
     "file_structure,expected",
     [
-        # Test both files in root (valid)
-        (["robots.txt", "favicon.svg"], []),
-        # Test missing both files
+        # Test all files in root (valid)
+        (["robots.txt", "favicon.svg", "favicon.ico"], []),
+        # Test missing all files
         (
             [],
             [
                 "robots.txt not found in site root",
                 "favicon.svg not found in site root",
+                "favicon.ico not found in site root",
             ],
         ),
         # Test missing robots.txt only
-        (["favicon.svg"], ["robots.txt not found in site root"]),
+        (
+            ["favicon.svg", "favicon.ico"],
+            ["robots.txt not found in site root"],
+        ),
         # Test missing favicon.svg only
-        (["robots.txt"], ["favicon.svg not found in site root"]),
+        (
+            ["robots.txt", "favicon.ico"],
+            ["favicon.svg not found in site root"],
+        ),
+        # Test missing favicon.ico only
+        (
+            ["robots.txt", "favicon.svg"],
+            ["favicon.ico not found in site root"],
+        ),
         # Test files in subdirectory (should still report missing from root)
         (
-            ["static/robots.txt", "static/favicon.svg"],
+            ["static/robots.txt", "static/favicon.svg", "static/favicon.ico"],
             [
                 "robots.txt not found in site root",
                 "favicon.svg not found in site root",
+                "favicon.ico not found in site root",
             ],
         ),
-        # Test mixed: one in root, one in subdirectory
+        # Test mixed: one in root, others in subdirectory
         (
-            ["robots.txt", "static/favicon.svg"],
-            ["favicon.svg not found in site root"],
+            ["robots.txt", "static/favicon.svg", "static/favicon.ico"],
+            [
+                "favicon.svg not found in site root",
+                "favicon.ico not found in site root",
+            ],
         ),
         (
-            ["static/robots.txt", "favicon.svg"],
+            ["static/robots.txt", "favicon.svg", "favicon.ico"],
             ["robots.txt not found in site root"],
         ),
     ],
@@ -2653,7 +2669,7 @@ def test_check_root_files_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
 ):
     """Test the check_root_files_location function with various file structures
-    for both robots.txt and favicon.svg."""
+    for robots.txt, favicon.svg, and favicon.ico."""
     # Create the test files
     for file_path in file_structure:
         full_path = tmp_path / file_path
@@ -3194,7 +3210,7 @@ def test_main_root_files_issues(
     monkeypatch,
     disable_md_requirement,
 ):
-    """Test main() when root files (robots.txt and favicon.svg) are missing."""
+    """Test main() when root files (robots.txt, favicon.svg, and favicon.ico) are missing."""
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
@@ -3215,6 +3231,7 @@ def test_main_root_files_issues(
                 "root_files_issues": [
                     "robots.txt not found in site root",
                     "favicon.svg not found in site root",
+                    "favicon.ico not found in site root",
                 ]
             },
         )

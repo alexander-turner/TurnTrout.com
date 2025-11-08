@@ -1631,7 +1631,7 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
-REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg")
+REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")
 
 
 def check_root_files_location(base_dir: Path) -> list[str]:
