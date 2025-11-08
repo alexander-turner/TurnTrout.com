@@ -10,8 +10,7 @@ import { createFaviconElement } from "./linkfavicons"
 import { createSequenceLinksComponent } from "./sequenceLinks"
 import { troutContainerId } from "./trout_hr"
 
-const SUBSTACK_URL =
-  "https://assets.turntrout.com/static/images/external-favicons/substack_com.avif"
+const SUBSTACK_URL = "https://assets.turntrout.com/static/images/external-favicons/substack_com.svg"
 
 const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscribe" }, [
   "newsle",

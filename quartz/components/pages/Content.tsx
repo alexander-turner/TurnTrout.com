@@ -11,20 +11,13 @@ import { turntroutFaviconPath, lesswrongFaviconPath } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
 const turntroutFaviconNode = createFaviconElement(turntroutFaviconPath, "")
-const turntroutFavicon =
-  turntroutFaviconNode.tagName === "span" ? (
-    <span
-      className={turntroutFaviconNode.properties.class}
-      data-domain={turntroutFaviconNode.properties["data-domain"]}
-      style={turntroutFaviconNode.properties.style}
-    />
-  ) : (
-    <img
-      src={turntroutFaviconNode.properties.src}
-      className={turntroutFaviconNode.properties.class}
-      alt=""
-    />
-  )
+const turntroutFavicon = (
+  <span
+    className={turntroutFaviconNode.properties.class}
+    data-domain={turntroutFaviconNode.properties["data-domain"]}
+    style={turntroutFaviconNode.properties.style}
+  />
+)
 
 const WarningLink = (
   <a

@@ -2614,6 +2614,65 @@ def test_check_favicon_parent_elements(html, expected):
 
 
 @pytest.mark.parametrize(
+    "html,expected",
+    [
+        # No favicons
+        ("<div><p>No favicons here</p></div>", []),
+        # Non-AVIF favicon
+        ('<img class="favicon" src="test.ico">', []),
+        # PNG favicon
+        ('<img class="favicon" src="test.png">', []),
+        # Single AVIF favicon
+        (
+            '<img class="favicon" src="https://example.com/favicon.avif">',
+            ["AVIF favicon found: https://example.com/favicon.avif"],
+        ),
+        # AVIF favicon with uppercase extension
+        (
+            '<img class="favicon" src="test.AVIF">',
+            ["AVIF favicon found: test.AVIF"],
+        ),
+        # Multiple AVIF favicons
+        (
+            """
+            <div>
+                <img class="favicon" src="https://example.com/first.avif">
+                <img class="favicon" src="https://example.com/second.avif">
+            </div>
+            """,
+            [
+                "AVIF favicon found: https://example.com/first.avif",
+                "AVIF favicon found: https://example.com/second.avif",
+            ],
+        ),
+        # Mixed favicon types
+        (
+            """
+            <div>
+                <img class="favicon" src="test.ico">
+                <img class="favicon" src="test.avif">
+                <img class="favicon" src="test.png">
+            </div>
+            """,
+            ["AVIF favicon found: test.avif"],
+        ),
+        # Non-favicon AVIF images should be ignored
+        ('<img src="image.avif">', []),
+        # AVIF favicon with query parameters
+        (
+            '<img class="favicon" src="favicon.avif?v=123">',
+            ["AVIF favicon found: favicon.avif?v=123"],
+        ),
+    ],
+)
+def test_check_avif_favicons(html, expected):
+    """Test the check_avif_favicons function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_avif_favicons(soup)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
     "file_structure,expected",
     [
         # Test all files in root (valid)

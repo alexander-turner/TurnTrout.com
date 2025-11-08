@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.parse
 from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
@@ -945,6 +946,28 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     return problematic_favicons
 
 
+def check_avif_favicons(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for img.favicon elements with AVIF image sources.
+
+    Returns:
+        list of strings describing favicons using AVIF format.
+    """
+    avif_favicons: list[str] = []
+    img_favicons = soup.select("img.favicon")
+
+    for favicon in img_favicons:
+        src = favicon.get("src", "")
+        if not isinstance(src, str):
+            continue
+        parsed_src = urllib.parse.urlparse(src)
+        ext = Path(parsed_src.path).suffix
+        if ext.lower() == ".avif":
+            avif_favicons.append(f"AVIF favicon found: {src}")
+
+    return avif_favicons
+
+
 def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
     """
     Check if the page preloads the EBGaramond font via subfont.
@@ -1129,6 +1152,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "invalid_favicon_parents": check_favicon_parent_elements(soup),
+        "avif_favicons": check_avif_favicons(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),

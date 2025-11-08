@@ -2,10 +2,14 @@ import fs from "fs"
 
 import type { QuartzEmitterPlugin } from "../types"
 
-import { localTroutFaviconBasename } from "../../components/constants"
+import { localTroutFaviconBasenameDefault } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
 import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
+
+function isLocalFavicon(fp: FilePath): boolean {
+  return fp.startsWith(`${localTroutFaviconBasenameDefault}.`)
+}
 
 export const Static: QuartzEmitterPlugin = () => ({
   name: "Static",
@@ -18,7 +22,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     const staticPath = joinSegments(QUARTZ, "static")
     const fps = await glob("**", staticPath, cfg.configuration.ignorePatterns)
     for (const fp of fps) {
-      if (fp === "robots.txt" || fp === localTroutFaviconBasename) {
+      if (fp === "robots.txt" || isLocalFavicon(fp)) {
         graph.addEdge(
           joinSegments("static", fp) as FilePath,
           joinSegments(argv.output, fp) as FilePath,
@@ -45,11 +49,15 @@ export const Static: QuartzEmitterPlugin = () => ({
       emittedFiles.push(joinSegments(argv.output, "robots.txt") as FilePath)
     }
 
-    // Copy favicon.svg to root
-    const faviconPath = joinSegments(staticPath, "favicon.svg")
-    if (fs.existsSync(faviconPath)) {
-      await fs.promises.copyFile(faviconPath, joinSegments(argv.output, "favicon.svg"))
-      emittedFiles.push(joinSegments(argv.output, "favicon.svg") as FilePath)
+    // Copy all favicon files to root
+    const faviconFiles = fps.filter(isLocalFavicon)
+    for (const faviconFile of faviconFiles) {
+      const sourcePath = joinSegments(staticPath, faviconFile)
+      const destPath = joinSegments(argv.output, faviconFile)
+      if (fs.existsSync(sourcePath)) {
+        await fs.promises.copyFile(sourcePath, destPath)
+        emittedFiles.push(destPath as FilePath)
+      }
     }
 
     // Copy everything else to /static/
@@ -61,7 +69,7 @@ export const Static: QuartzEmitterPlugin = () => ({
     // Add all other files to emitted files list
     emittedFiles.push(
       ...(fps
-        .filter((fp) => !(fp === "robots.txt" || fp === "favicon.svg"))
+        .filter((fp) => fp !== "robots.txt" && !isLocalFavicon(fp))
         .map((fp) => joinSegments(argv.output, "static", fp)) as FilePath[]),
     )
 

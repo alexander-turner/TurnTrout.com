@@ -11,6 +11,7 @@ import {
   localTroutFaviconBasename,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
+import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
 
@@ -105,7 +106,10 @@ describe("renderHead", () => {
       expect(result).toContain(`<title>${defaultTitle}</title>`)
       expect(result).toContain(`<meta name="description" content="${defaultDescription}">`)
       expect(result).toContain(
-        `<link rel="icon" href="${localTroutFaviconBasename}" type="image/x-icon" />`,
+        `<link rel="icon" href="${escapeHTML(localTroutFaviconBasename)}" type="image/svg+xml" />`,
+      )
+      expect(result).toContain(
+        `<link rel="icon" href="${escapeHTML("favicon.ico")}" sizes="any" />`,
       )
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
@@ -148,8 +152,9 @@ describe("renderHead", () => {
 
       // Favicon tags
       expect(result).toContain(
-        `<link rel="icon" href="${localTroutFaviconBasename}" type="image/x-icon" />`,
+        `<link rel="icon" href="${localTroutFaviconBasename}" type="image/svg+xml" />`,
       )
+      expect(result).toContain(`<link rel="icon" href="favicon.ico" sizes="any" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
@@ -378,8 +383,9 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain(
-        `<link rel="icon" href="${localTroutFaviconBasename}" type="image/x-icon" />`,
+        `<link rel="icon" href="${localTroutFaviconBasename}" type="image/svg+xml" />`,
       )
+      expect(result).toContain(`<link rel="icon" href="favicon.ico" sizes="any" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
