@@ -121,9 +121,11 @@ describe("CountFavicons plugin", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(faviconPath)
+    // Counts are now stored without extensions (format-agnostic)
+    const pathWithoutExt = faviconPath.replace(/\.png$/, "")
+    expect(content).toContain(pathWithoutExt)
     const lines = content.split("\n").filter((line) => line.trim())
-    const externalLine = lines.find((line) => line.includes(faviconPath))
+    const externalLine = lines.find((line) => line.includes(pathWithoutExt))
     expect(externalLine).toContain("3\t")
   })
 
@@ -457,8 +459,9 @@ describe("CountFavicons plugin", () => {
     const lines = content.split("\n").filter((line) => line.trim())
     expect(lines.length).toBeGreaterThanOrEqual(2)
 
-    const exampleLine = lines.find((line) => line.includes("example_com.png"))
-    const testLine = lines.find((line) => line.includes("test_com.png"))
+    // Counts are now stored without extensions (format-agnostic)
+    const exampleLine = lines.find((line) => line.includes("example_com"))
+    const testLine = lines.find((line) => line.includes("test_com"))
 
     expect(exampleLine).toBeDefined()
     expect(testLine).toBeDefined()

@@ -54,7 +54,12 @@ const createExpectedSpan = (
   extraMarginLeft?: boolean,
 ): Record<string, unknown> => {
   const faviconElement = linkfavicons.createFaviconElement(imgPath)
-  faviconElement.properties.class = `favicon${extraMarginLeft ? " close-text" : ""}`
+  // Update class based on element type
+  if (faviconElement.tagName === "span") {
+    faviconElement.properties.class = `favicon favicon-svg${extraMarginLeft ? " close-text" : ""}`
+  } else {
+    faviconElement.properties.class = `favicon${extraMarginLeft ? " close-text" : ""}`
+  }
 
   return {
     type: "element",
@@ -533,7 +538,7 @@ describe("Favicon Utilities", () => {
     it.each([
       ["/path/to/favicon.png", "Test Description"],
       ["/another/favicon.jpg", "Another Description"],
-    ])("should create a favicon element with src=%s and alt=%s", (urlString, description) => {
+    ])("should create a favicon img element with src=%s and alt=%s", (urlString, description) => {
       const element = linkfavicons.createFaviconElement(urlString, description)
       expect(element).toEqual({
         type: "element",
@@ -546,6 +551,20 @@ describe("Favicon Utilities", () => {
           loading: "lazy",
         },
       })
+    })
+
+    it.each([
+      ["https://assets.turntrout.com/static/images/external-favicons/github_com.svg", "github_com"],
+      ["https://assets.turntrout.com/static/images/external-favicons/openai_com.svg", "openai_com"],
+    ])("should create a favicon span element for SVG with src=%s", (urlString, expectedDomain) => {
+      const element = linkfavicons.createFaviconElement(urlString, "")
+      expect(element.type).toBe("element")
+      expect(element.tagName).toBe("span")
+      expect(element.properties.class).toBe("favicon favicon-svg")
+      expect(element.properties["data-domain"]).toBe(expectedDomain)
+      expect(element.properties.style).toBe(`--mask-url: url(${urlString});`)
+      expect(element.properties.alt).toBe("")
+      expect(element.children).toEqual([])
     })
   })
 
@@ -729,15 +748,28 @@ describe("Favicon Utilities", () => {
     it.each([
       ["./shard-theory", linkfavicons.TURNTROUT_FAVICON_PATH],
       ["../shard-theory", linkfavicons.TURNTROUT_FAVICON_PATH],
-      ["#test", linkfavicons.ANCHOR_PATH],
-      ["mailto:test@example.com", linkfavicons.MAIL_PATH],
-      ["mailto:another@domain.org", linkfavicons.MAIL_PATH],
-    ])("should insert favicon for %s", async (href, expectedPath) => {
+    ])("should insert img favicon for %s", async (href, expectedPath) => {
       const node = h("a", { href })
       const parent = h("div", [node])
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
-      expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
+      const faviconElement = node.children[0] as Element
+      expect(faviconElement.tagName).toBe("img")
+      expect(faviconElement.properties.src).toBe(expectedPath)
+    })
+
+    it.each([
+      ["#test", linkfavicons.ANCHOR_PATH],
+      ["mailto:test@example.com", linkfavicons.MAIL_PATH],
+      ["mailto:another@domain.org", linkfavicons.MAIL_PATH],
+    ])("should insert span favicon for %s", async (href, expectedPath) => {
+      const node = h("a", { href })
+      const parent = h("div", [node])
+
+      await linkfavicons.ModifyNode(node, parent, faviconCounts)
+      const faviconElement = node.children[0] as Element
+      expect(faviconElement.tagName).toBe("span")
+      expect(faviconElement.properties.style).toContain(expectedPath)
     })
 
     it.each([
@@ -757,7 +789,10 @@ describe("Favicon Utilities", () => {
         (node: Element) => {
           expect(node.properties.className).toContain("same-page-link")
           expect(node.children.length).toBe(1)
-          expect(node.children[0]).toHaveProperty("properties.src", linkfavicons.ANCHOR_PATH)
+          // ANCHOR_PATH is SVG, so it creates a span element with mask
+          const faviconElement = node.children[0] as Element
+          expect(faviconElement.tagName).toBe("span")
+          expect(faviconElement.properties.style).toContain(linkfavicons.ANCHOR_PATH)
         },
       ],
       [
@@ -947,7 +982,10 @@ describe("Favicon Utilities", () => {
 
           await linkfavicons.ModifyNode(node, parent, counts)
           expect(node.children.length).toBeGreaterThan(0)
-          expect(node.children[0]).toHaveProperty("properties.src", expectedPath)
+          // These are SVG paths (mail.svg, anchor.svg), so they create span elements with masks
+          const faviconElement = node.children[0] as Element
+          expect(faviconElement.tagName).toBe("span")
+          expect(faviconElement.properties.style).toContain(expectedPath)
         },
       )
 
@@ -1417,10 +1455,16 @@ describe("AddFavicons plugin", () => {
     const sectionLink = divElement.children[1] as Element
 
     expect(mailtoLink.children.length).toBe(1)
-    expect((mailtoLink.children[0] as Element).properties.src).toBe(linkfavicons.MAIL_PATH)
+    // MAIL_PATH is SVG, so it creates a span element with mask, not img with src
+    const mailFavicon = mailtoLink.children[0] as Element
+    expect(mailFavicon.tagName).toBe("span")
+    expect(mailFavicon.properties.style).toContain(linkfavicons.MAIL_PATH)
 
     expect(sectionLink.children.length).toBe(1)
-    expect((sectionLink.children[0] as Element).properties.src).toBe(linkfavicons.ANCHOR_PATH)
+    // ANCHOR_PATH is SVG, so it creates a span element with mask, not img with src
+    const anchorFavicon = sectionLink.children[0] as Element
+    expect(anchorFavicon.tagName).toBe("span")
+    expect(anchorFavicon.properties.style).toContain(linkfavicons.ANCHOR_PATH)
   })
 
   it("should handle nodes with undefined parent", async () => {

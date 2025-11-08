@@ -126,6 +126,7 @@ const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
   },
   { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
   { pattern: /^.*nytimes\.com$/, to: "nytimes.com" },
+  { pattern: /^.*wikipedia\.org$/, to: "wikipedia.org" },
 ]
 
 // istanbul ignore if
@@ -658,6 +659,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
 
   // Use mask-based rendering for SVG favicons
   if (urlString.endsWith(".svg")) {
+    // istanbul ignore next
     const domain = urlString.match(/\/([^/]+)\.svg$/)?.[1] || ""
     return {
       type: "element",

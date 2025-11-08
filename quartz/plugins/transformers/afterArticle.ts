@@ -19,12 +19,7 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
 
 const rssSpan = h("span", { className: "favicon-span" }, [
   h("abbr", { class: "small-caps" }, "rss"),
-  h("img", {
-    src: "https://assets.turntrout.com/static/images/rss.svg",
-    id: "rss-svg",
-    alt: "RSS icon",
-    className: "favicon",
-  }),
+  createFaviconElement("https://assets.turntrout.com/static/images/rss.svg", "RSS icon"),
 ])
 export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [

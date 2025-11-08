@@ -8,11 +8,26 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 import {
   TURNTROUT_FAVICON_PATH,
   LESSWRONG_FAVICON_PATH,
+  createFaviconElement,
 } from "../../plugins/transformers/linkfavicons"
 import { htmlToJsx } from "../../util/jsx"
 import { buildNestedList } from "../TableOfContents"
 
-const turntroutFavicon = <img src={TURNTROUT_FAVICON_PATH} className="favicon" alt="" />
+const turntroutFaviconNode = createFaviconElement(TURNTROUT_FAVICON_PATH, "")
+const turntroutFavicon =
+  turntroutFaviconNode.tagName === "span" ? (
+    <span
+      className={turntroutFaviconNode.properties.class}
+      data-domain={turntroutFaviconNode.properties["data-domain"]}
+      style={turntroutFaviconNode.properties.style}
+    />
+  ) : (
+    <img
+      src={turntroutFaviconNode.properties.src}
+      className={turntroutFaviconNode.properties.class}
+      alt=""
+    />
+  )
 
 const WarningLink = (
   <a
@@ -111,7 +126,14 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
   )
 }
 
-const lessWrongFavicon = <img src={LESSWRONG_FAVICON_PATH} className="favicon" alt="" />
+const lessWrongFaviconNode = createFaviconElement(LESSWRONG_FAVICON_PATH, "")
+const lessWrongFavicon = (
+  <span
+    className={lessWrongFaviconNode.properties.class}
+    data-domain={lessWrongFaviconNode.properties["data-domain"]}
+    style={lessWrongFaviconNode.properties.style}
+  />
+)
 
 // istanbul ignore next
 function lessWrongQuestion(url: string): JSX.Element {
