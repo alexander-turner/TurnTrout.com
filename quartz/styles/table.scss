@@ -3,15 +3,10 @@
 table {
   table-layout: fixed;
   border-collapse: collapse;
-  margin-top: $base-margin;
   align-self: center;
 
   &.full-width {
     width: 100%;
-  }
-
-  .footnotes & {
-    margin-left: $base-margin;
   }
 
   &.center-table-headings th,
@@ -85,6 +80,10 @@ tr {
     margin: 0 auto calc(2 * $base-margin);
     padding: calc(3 * $base-margin);
     border-collapse: collapse;
+
+    .footnotes & {
+      margin-top: $base-margin;
+    }
   }
 }
 
