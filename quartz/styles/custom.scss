@@ -205,6 +205,12 @@ ol {
     & > figure {
       display: inline; // Else it's misaligned with top of table
     }
+
+    // Ensure tables are aligned with the footnote marker
+    & > .table-container {
+      display: inline-block;
+      vertical-align: top;
+    }
   }
 }
 

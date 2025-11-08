@@ -10,6 +10,10 @@ table {
     width: 100%;
   }
 
+  .footnotes & {
+    margin-left: $base-margin;
+  }
+
   &.center-table-headings th,
   &.center-table-headings td {
     // Important to override the inline styling applied by Markdown
