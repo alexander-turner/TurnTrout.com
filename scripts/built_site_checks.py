@@ -912,33 +912,31 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
     problematic_favicons: list[str] = []
 
-    # Check img.favicon elements (non-SVG favicons)
-    for favicon in soup.select("img.favicon:not(.no-span)"):
-        parent = favicon.parent
-        context = favicon.get("src", "unknown source")
-        if (
-            not parent
-            or parent.name != "span"
-            or "favicon-span" not in script_utils.get_classes(parent)
-        ):
-            info = f"Favicon ({context}) is not a direct child of"
-            info += " a span.favicon-span."
-            if parent:
-                info += " Instead, it's a child of "
-                info += f"<{parent.name}>: {parent.get_text()}"
-            problematic_favicons.append(info)
+    img_favicons = soup.select("img.favicon:not(.no-span)")
+    span_favicons = soup.select("span.favicon-svg")
+    contexts = [
+        (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
+        for favicon in img_favicons
+    ] + [
+        (
+            favicon.get("data-domain", "unknown domain"),
+            "SVG favicon ({ctx})",
+            favicon,
+        )
+        for favicon in span_favicons
+    ]
 
-    # Check span.favicon-svg elements (SVG favicons with masks)
-    for favicon in soup.select("span.favicon-svg"):
+    for context, info_template, favicon in contexts:
         parent = favicon.parent
-        context = favicon.get("data-domain", "unknown domain")
         if (
             not parent
             or parent.name != "span"
             or "favicon-span" not in script_utils.get_classes(parent)
         ):
-            info = f"SVG favicon ({context}) is not a direct child of"
-            info += " a span.favicon-span."
+            info = (
+                info_template.format(ctx=context)
+                + " is not a direct child of a span.favicon-span."
+            )
             if parent:
                 info += " Instead, it's a child of "
                 info += f"<{parent.name}>: {parent.get_text()}"
@@ -1633,7 +1631,7 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
-REQUIRED_ROOT_FILES = ("robots.txt", "favicon.ico")
+REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg")
 
 
 def check_root_files_location(base_dir: Path) -> list[str]:

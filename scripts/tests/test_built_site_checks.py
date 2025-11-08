@@ -90,10 +90,10 @@ def robots_txt_file(mock_environment):
 
 @pytest.fixture
 def root_files(mock_environment):
-    """Create both robots.txt and favicon.ico files."""
+    """Create both robots.txt and favicon.svg files."""
     public_dir = mock_environment["public_dir"]
     robots_txt = public_dir / "robots.txt"
-    favicon = public_dir / "favicon.ico"
+    favicon = public_dir / "favicon.svg"
     robots_txt.touch()
     favicon.touch()
     return [robots_txt, favicon]
@@ -2617,34 +2617,34 @@ def test_check_favicon_parent_elements(html, expected):
     "file_structure,expected",
     [
         # Test both files in root (valid)
-        (["robots.txt", "favicon.ico"], []),
+        (["robots.txt", "favicon.svg"], []),
         # Test missing both files
         (
             [],
             [
                 "robots.txt not found in site root",
-                "favicon.ico not found in site root",
+                "favicon.svg not found in site root",
             ],
         ),
         # Test missing robots.txt only
-        (["favicon.ico"], ["robots.txt not found in site root"]),
-        # Test missing favicon.ico only
-        (["robots.txt"], ["favicon.ico not found in site root"]),
+        (["favicon.svg"], ["robots.txt not found in site root"]),
+        # Test missing favicon.svg only
+        (["robots.txt"], ["favicon.svg not found in site root"]),
         # Test files in subdirectory (should still report missing from root)
         (
-            ["static/robots.txt", "static/favicon.ico"],
+            ["static/robots.txt", "static/favicon.svg"],
             [
                 "robots.txt not found in site root",
-                "favicon.ico not found in site root",
+                "favicon.svg not found in site root",
             ],
         ),
         # Test mixed: one in root, one in subdirectory
         (
-            ["robots.txt", "static/favicon.ico"],
-            ["favicon.ico not found in site root"],
+            ["robots.txt", "static/favicon.svg"],
+            ["favicon.svg not found in site root"],
         ),
         (
-            ["static/robots.txt", "favicon.ico"],
+            ["static/robots.txt", "favicon.svg"],
             ["robots.txt not found in site root"],
         ),
     ],
@@ -2653,7 +2653,7 @@ def test_check_root_files_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
 ):
     """Test the check_root_files_location function with various file structures
-    for both robots.txt and favicon.ico."""
+    for both robots.txt and favicon.svg."""
     # Create the test files
     for file_path in file_structure:
         full_path = tmp_path / file_path
@@ -3194,7 +3194,7 @@ def test_main_root_files_issues(
     monkeypatch,
     disable_md_requirement,
 ):
-    """Test main() when root files (robots.txt and favicon.ico) are missing."""
+    """Test main() when root files (robots.txt and favicon.svg) are missing."""
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
@@ -3214,7 +3214,7 @@ def test_main_root_files_issues(
             {
                 "root_files_issues": [
                     "robots.txt not found in site root",
-                    "favicon.ico not found in site root",
+                    "favicon.svg not found in site root",
                 ]
             },
         )
