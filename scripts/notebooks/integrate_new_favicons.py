@@ -27,12 +27,10 @@ FAVICON_MAPPING: Final[dict[str, str]] = {
     "googlecolab.svg": "colab_research_google_com.svg",
     "googledocs.svg": "docs_google_com.svg",
     "googlescholar.svg": "scholar_google_com.svg",
-    "gwern.png": "gwern_net.png",  # Keep PNG format
     "gwern_net.svg": "gwern_net.svg",  # Already in correct format
     "huggingface.svg": "huggingface_co.svg",
     "intelligence_org.svg": "intelligence_org.svg",  # Already in correct format
     "lesswrong_com.svg": "lesswrong_com.svg",  # Already in correct format
-    "miri.png": "miri_org.png",
     "msnbc.svg": "msnbc_com.svg",
     "nytimes.svg": "nytimes_com.svg",  # Based on whitelist entry
     "open.spotify.svg": "open_spotify_com.svg",  # Based on whitelist entry
@@ -41,6 +39,7 @@ FAVICON_MAPPING: Final[dict[str, str]] = {
     "play.google.svg": "play_google_com.svg",
     "proton.svg": "proton_me.svg",  # Based on hostname replacement
     "reddit.svg": "reddit_com.svg",
+    "sfchronicle_com.svg": "sfchronicle_com.svg",  # Already in correct format
     "whitehouse_gov.svg": "whitehouse_gov.svg",  # Already in correct format
     "wikipedia.svg": "wikipedia_org.svg",
     "x.svg": "x_com.svg",

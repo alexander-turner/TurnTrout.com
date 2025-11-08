@@ -102,7 +102,7 @@ def check_localhost_links(soup: BeautifulSoup) -> list[str]:
 
 def check_favicons_missing(soup: BeautifulSoup) -> bool:
     """Check if favicons are missing."""
-    return not soup.select("article p img.favicon")
+    return not soup.select("article p img.favicon, article p span.favicon-svg")
 
 
 def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
@@ -903,7 +903,8 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
 
 def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all img.favicon elements are direct children of span elements.
+    Check that all img.favicon and span.favicon-svg elements are direct children
+    of span elements.
 
     Returns:
         list of strings describing favicons that are not direct
@@ -911,6 +912,7 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
     problematic_favicons: list[str] = []
 
+    # Check img.favicon elements (non-SVG favicons)
     for favicon in soup.select("img.favicon:not(.no-span)"):
         parent = favicon.parent
         context = favicon.get("src", "unknown source")
@@ -920,6 +922,22 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
             or "favicon-span" not in script_utils.get_classes(parent)
         ):
             info = f"Favicon ({context}) is not a direct child of"
+            info += " a span.favicon-span."
+            if parent:
+                info += " Instead, it's a child of "
+                info += f"<{parent.name}>: {parent.get_text()}"
+            problematic_favicons.append(info)
+
+    # Check span.favicon-svg elements (SVG favicons with masks)
+    for favicon in soup.select("span.favicon-svg"):
+        parent = favicon.parent
+        context = favicon.get("data-domain", "unknown domain")
+        if (
+            not parent
+            or parent.name != "span"
+            or "favicon-span" not in script_utils.get_classes(parent)
+        ):
+            info = f"SVG favicon ({context}) is not a direct child of"
             info += " a span.favicon-span."
             if parent:
                 info += " Instead, it's a child of "
