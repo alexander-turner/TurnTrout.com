@@ -56,130 +56,18 @@ $favicon-default-saturate: 10%;
 
   // SVG-specific styling using masks for color control
   &-svg {
+    --svg-color: var(--foreground);
+
     display: inline-block;
-    background-color: var(--foreground); // Default to foreground color
     mask: var(--mask-url) no-repeat center / contain;
     filter: none; // Don't apply img filters to masks
     mix-blend-mode: normal;
 
-    // Per-domain colors using color-mix TODO fill in
+    // Per-domain colors using color-mix
+    background-color: color-mix(in srgb, var(--foreground) 80%, var(--svg-color));
   }
 
-  // Legacy: Make all SVG img favicons match foreground color (for non-mask SVGs)
-  &[src$=".svg"] {
-    // Computed to match var(--foreground) using https://codepen.io/sosuke/pen/Pjoqqp
-    filter: invert(27%);
-
-    :root[data-theme="dark"] & {
-      filter: invert(91%) sepia(6%) hue-rotate(185deg) contrast(92%);
-    }
-  }
-
-  &[src$="cladlab_nd_edu.avif"] {
-    filter: invert(90%);
-  }
-
-  // These are really dark by default so we make them match var(--foreground)
-  &[src$="mail.svg"],
-  &[src$="readthesequences_com.avif"] {
-    // Computed to match var(--foreground) using https://codepen.io/sosuke/pen/Pjoqqp
-    filter: invert(27%);
-
-    :root[data-theme="dark"] & {
-      filter: invert(91%) sepia(6%) hue-rotate(185deg) contrast(92%);
-    }
-  }
-
-  .favicon-span > &[src$="mail.svg"] {
+  .favicon-span > &[data-domain="mail"] {
     margin-left: 0.05rem;
-  }
-
-  :root[data-theme="dark"] &[src$="opentimestamps_org.avif"] {
-    filter: saturate($favicon-default-saturate) invert(80%) sepia(6%) hue-rotate(185deg)
-      contrast(92%);
-  }
-
-  // Make the anchor icon less bright on dark mode
-  &[src$="anchor.svg"] {
-    // Rotate the anchor so that it resembles the trout within-site icon
-    // also flip it horizontally
-    transform: rotate(-90deg) scaleX(-1) scale(1.2);
-    filter: invert(27%);
-
-    :root[data-theme="dark"] & {
-      filter: invert(80%) sepia(6%) hue-rotate(185deg) contrast(92%);
-    }
-  }
-
-  :root[data-theme="light"] &[src$="gwern_net.avif"] {
-    filter: invert(100%);
-    mix-blend-mode: multiply;
-  }
-
-  // Very dark by default
-  &[src$="github_com.avif"] {
-    :root[data-theme="light"] & {
-      filter: invert(25%);
-    }
-
-    :root[data-theme="dark"] & {
-      filter: invert(75%) sepia(6%) hue-rotate(185deg) contrast(92%);
-    }
-  }
-
-  // Make logos white on dark mode
-  :root[data-theme="dark"] & {
-    &[src$="lesswrong_com.avif"] {
-      filter: invert(100%) grayscale(100%) brightness(0.9);
-    }
-
-    &[src$="matsprogram_org.avif"],
-    &[src$="proceedings_mlr_press.avif"] {
-      filter: invert(100%) grayscale(100%) brightness(1.5);
-    }
-
-    &[src$="intelligence_org.avif"],
-    &[src$="amazon_com.avif"],
-    &[src$="smile_amazon_com.avif"] {
-      filter: hue-rotate(195deg) invert(1);
-    }
-
-    &[src$="colab_research_google_com.avif"],
-    &[src$="docs_google_com.avif"],
-    &[src$="developers_google_com.avif"] {
-      filter: hue-rotate(195deg) invert(0.93) saturate(0.2);
-    }
-
-    &[src$="bitwarden_com.avif"] {
-      filter: hue-rotate(195deg) invert(0.93) saturate(0.5);
-    }
-  }
-
-  &[src$="arbital_com.avif"] {
-    :root[data-theme="light"] & {
-      filter: brightness(0.3);
-    }
-  }
-
-  &[src$="arxiv_org.avif"] {
-    filter: brightness(1.1) saturate($favicon-default-saturate);
-  }
-
-  // Gray logos made white on dark mode
-  &[src$="alignmentforum_org.avif"],
-  &[src$="ai-alignment_com.avif"] {
-    :root[data-theme="dark"] & {
-      filter: brightness(3); // Make it brighter
-    }
-  }
-
-  &[src$="turntrout-favicons/favicon.ico"] {
-    :root[data-theme="light"] & {
-      filter: contrast(15%);
-    }
-
-    :root[data-theme="dark"] & {
-      filter: invert(91%) sepia(6%) hue-rotate(185deg) brightness() contrast(50%);
-    }
   }
 }

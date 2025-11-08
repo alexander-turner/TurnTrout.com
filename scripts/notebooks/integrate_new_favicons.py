@@ -49,21 +49,22 @@ def main() -> None:
         raise FileNotFoundError(f"Source directory not found: {SOURCE_DIR}")
 
     # Add all nonexistent files to the mapping
-    for source_name in SOURCE_DIR.glob("*.svg"):
-        str_source_name = str(source_name.name)
+    for source_file in SOURCE_DIR.glob("*.svg"):
+        str_source_name = str(source_file.name)
         if str_source_name not in FAVICON_MAPPING:
             FAVICON_MAPPING[str_source_name] = str_source_name
 
     TARGET_DIR.mkdir(parents=True, exist_ok=True)
 
-    moved_count = 0
-    skipped_count = 0
-    for source_name, target_name in FAVICON_MAPPING.items():
-        source_path = SOURCE_DIR / str(source_name)
+    moved_count: int = 0
+    skipped_count: int = 0
+    for source_name in FAVICON_MAPPING:
+        source_path: Path = SOURCE_DIR / source_name
         if not source_path.exists():
             raise FileNotFoundError(f"Source file not found: {source_name}")
 
-        target_path = TARGET_DIR / target_name
+        target_name: str = FAVICON_MAPPING[source_name]
+        target_path: Path = TARGET_DIR / target_name
         if target_path.exists():
             print(f"Skipping {target_name} (already exists)")
             skipped_count += 1
