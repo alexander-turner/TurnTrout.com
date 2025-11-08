@@ -3,9 +3,10 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
+import { mailIconPath } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
-import { createFaviconElement, MAIL_PATH } from "./linkfavicons"
+import { createFaviconElement } from "./linkfavicons"
 import { createSequenceLinksComponent } from "./sequenceLinks"
 import { troutContainerId } from "./trout_hr"
 
@@ -28,7 +29,7 @@ const subscriptionElement = h("div", { className: "centered" }, [
 
 const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, [
   "alex@turntrout",
-  h("span", { className: "favicon-span" }, [".com", createFaviconElement(MAIL_PATH)]),
+  h("span", { className: "favicon-span" }, [".com", createFaviconElement(mailIconPath)]),
 ])
 
 const pgpLink = h(

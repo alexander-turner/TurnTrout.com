@@ -1,10 +1,70 @@
 export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
 export const defaultTitle = "The Pond"
 export const defaultDescription = "Writings about doing good, thinking well, and living happily."
+export const locale = "en-US"
+
+// Site-specific icon/favicon paths
 export const turntroutFaviconName = "favicon.svg"
 export const turntroutFaviconPath = `https://assets.turntrout.com/static/images/turntrout-favicons/${turntroutFaviconName}`
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
-export const locale = "en-US"
+export const mailIconPath = "https://assets.turntrout.com/static/images/mail.svg"
+export const anchorIconPath = "https://assets.turntrout.com/static/images/anchor.svg"
+export const lesswrongFaviconPath =
+  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg"
+
+// Favicon display configuration
+export const minFaviconCount = 6
+export const googleSubdomainWhitelist = [
+  "scholar",
+  "play",
+  "docs",
+  "drive",
+  "mail",
+  "colab.research",
+]
+export const faviconCountWhitelist = [
+  "apple_com",
+  "x_com",
+  "open_spotify_com",
+  "discord_gg",
+  "huggingface_co",
+  "deepmind_com",
+  "anthropic_com",
+  "sfchronicle_com",
+  "nytimes_com",
+  "whitehouse_gov",
+  "msnbc_com",
+  "openai_com",
+  "abcnews_go_com",
+  "cnn_com",
+  "forum_effectivealtruism_org",
+]
+export const faviconSubstringBlacklist = [
+  "incompleteideas_net",
+  "hpmor_com",
+  "jacobgw",
+  "pubsonline_informs_org",
+  "nickbostrom_com",
+  "vox_com",
+  "cs_umd",
+  "acritch",
+  "medium_com",
+  "snopes_com",
+  "wired_com",
+  "selfawaresystems",
+  "vkrakovna",
+  "developer_mozilla_org",
+  "link_springer_com",
+  "unicog_org",
+  "proceedings_neurips_cc",
+  "papers_nips_cc",
+  "playpen_icomtek_csir_co_za",
+  "distill_pub",
+  "mathpix",
+  "sciencedirect",
+  "aclanthology",
+  "mlr_press",
+]
 
 // UI strings (extracted from i18n en-US locale)
 export const uiStrings = {

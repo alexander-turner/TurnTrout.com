@@ -10,19 +10,22 @@ import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { turntroutFaviconPath } from "../../components/constants"
+import {
+  turntroutFaviconPath,
+  mailIconPath,
+  anchorIconPath,
+  minFaviconCount,
+  googleSubdomainWhitelist,
+  faviconCountWhitelist,
+  faviconSubstringBlacklist,
+} from "../../components/constants"
 import { createWinstonLogger } from "./logger_utils"
 
 const logger = createWinstonLogger("linkfavicons")
 
-export const MAIL_PATH = "https://assets.turntrout.com/static/images/mail.svg"
-export const TURNTROUT_FAVICON_PATH = turntroutFaviconPath
-export const LESSWRONG_FAVICON_PATH =
-  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg"
 const QUARTZ_FOLDER = "quartz"
 const FAVICON_FOLDER = "static/images/external-favicons"
 export const DEFAULT_PATH = ""
-export const ANCHOR_PATH = "https://assets.turntrout.com/static/images/anchor.svg"
 
 const __filepath = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(gitRoot(__filepath))
@@ -42,71 +45,16 @@ export const FAVICON_COUNTS_FILE = path.join(
 )
 
 /**
- * Minimum number of times a favicon must appear across the site to be included.
- * Favicons that appear fewer times will not be added to links.
- */
-export const MIN_FAVICON_COUNT = 6
-
-export const GOOGLE_SUBDOMAIN_WHITELIST = [
-  "scholar",
-  "play",
-  "docs",
-  "drive",
-  "mail",
-  "colab.research",
-]
-/**
  * Whitelist of favicon paths that should always be included regardless of count. Often widely recognizable.
- * These favicons will be added even if they appear fewer than MIN_FAVICON_COUNT times.
+ * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-export const FAVICON_COUNT_WHITELIST = [
-  MAIL_PATH,
-  ANCHOR_PATH,
-  TURNTROUT_FAVICON_PATH,
-  "apple_com",
-  "x_com",
-  "open_spotify_com",
-  "discord_gg",
-  "huggingface_co",
-  "deepmind_com",
-  "anthropic_com",
-  "sfchronicle_com",
-  "nytimes_com",
-  "whitehouse_gov",
-  "msnbc_com",
-  "openai_com",
-  "abcnews_go_com",
-  "cnn_com",
-  "forum_effectivealtruism_org",
-  ...GOOGLE_SUBDOMAIN_WHITELIST.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
-export const FAVICON_SUBSTRING_BLACKLIST = [
-  "incompleteideas_net",
-  "hpmor_com",
-  "jacobgw",
-  "pubsonline_informs_org",
-  "nickbostrom_com",
-  "vox_com",
-  "cs_umd",
-  "acritch",
-  "medium_com",
-  "snopes_com",
-  "wired_com",
-  "selfawaresystems",
-  "vkrakovna",
-  "developer_mozilla_org",
-  "link_springer_com",
-  "unicog_org", // looks like wordpress
-  "proceedings_neurips_cc", // too small
-  "papers_nips_cc",
-  "playpen_icomtek_csir_co_za", // doesn't exist
-  "distill_pub", // not recognizable
-  "mathpix", // not recognizable
-  "sciencedirect", // not recognizable
-  "aclanthology", // not recognizable
-  "mlr_press", // not recognizable
+const FAVICON_COUNT_WHITELIST = [
+  mailIconPath,
+  anchorIconPath,
+  turntroutFaviconPath,
+  ...faviconCountWhitelist,
+  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
 
 /**
@@ -124,7 +72,7 @@ const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
   { pattern: /^.*protonvpn\.com/, to: "proton.me" },
   // Match any *.google.com subdomain except scholar, play, and docs subdomains
   {
-    pattern: new RegExp(`^(?!${GOOGLE_SUBDOMAIN_WHITELIST.join("|")}\\.).+\\.google\\.com$`),
+    pattern: new RegExp(`^(?!${googleSubdomainWhitelist.join("|")}\\.).+\\.google\\.com$`),
     to: "google.com",
   },
   { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
@@ -265,13 +213,13 @@ export function getQuartzPath(hostname: string): string {
   hostname = normalizeHostname(hostname)
   const sanitizedHostname = hostname.replace(/\./g, "_")
   const path = sanitizedHostname.includes("turntrout_com")
-    ? TURNTROUT_FAVICON_PATH
+    ? turntroutFaviconPath
     : `/${FAVICON_FOLDER}/${sanitizedHostname}.png`
   logger.debug(`Generated Quartz path: ${path}`)
   return path
 }
 
-const defaultCache = new Map<string, string>([[TURNTROUT_FAVICON_PATH, TURNTROUT_FAVICON_PATH]])
+const defaultCache = new Map<string, string>([[turntroutFaviconPath, turntroutFaviconPath]])
 // skipcq: JS-D1001
 export function createUrlCache(): Map<string, string> {
   return new Map(defaultCache)
@@ -413,7 +361,7 @@ export function getFaviconUrl(faviconPath: string): string {
  * @returns The favicon path, or DEFAULT_PATH if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => faviconPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklist.some((entry) => faviconPath.includes(entry))
   if (isBlacklisted) {
     return DEFAULT_PATH
   }
@@ -799,7 +747,7 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
  */
 function handleMailtoLink(node: Element): void {
   logger.info("Inserting mail icon for mailto link")
-  insertFavicon(MAIL_PATH, node)
+  insertFavicon(mailIconPath, node)
 }
 
 // skipcq: JS-D1001
@@ -826,7 +774,7 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
     node.properties.className = ["same-page-link"]
   }
 
-  insertFavicon(ANCHOR_PATH, node)
+  insertFavicon(anchorIconPath, node)
   return true
 }
 
@@ -873,7 +821,7 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
  *
  * A favicon is included if:
  * - It is NOT blacklisted, AND
- * - (It is whitelisted (always included regardless of count), OR its count is >= MIN_FAVICON_COUNT)
+ * - (It is whitelisted (always included regardless of count), OR its count is >= minFaviconCount)
  *
  * @param imgPath - The favicon image path/URL
  * @param countKey - The lookup key for the favicon count (typically from getQuartzPath, will be normalized)
@@ -885,14 +833,14 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: Map<string, number>,
 ): boolean {
-  const isBlacklisted = FAVICON_SUBSTRING_BLACKLIST.some((entry) => imgPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklist.some((entry) => imgPath.includes(entry))
   if (isBlacklisted) return false
 
   // Normalize countKey (remove extension) to match format-agnostic counts
   const normalizedCountKey = normalizePathForCounting(countKey)
   const count = faviconCounts.get(normalizedCountKey) || 0
   const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
-  return isWhitelisted || count >= MIN_FAVICON_COUNT
+  return isWhitelisted || count >= minFaviconCount
 }
 
 /**
@@ -933,9 +881,9 @@ async function handleLink(
 
     // If not whitelisted (already handled by transformUrl), check count threshold
     const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
-    if (!isWhitelisted && count < MIN_FAVICON_COUNT) {
+    if (!isWhitelisted && count < minFaviconCount) {
       logger.debug(
-        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${MIN_FAVICON_COUNT}), skipping`,
+        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${minFaviconCount}), skipping`,
       )
       return
     }
@@ -955,7 +903,7 @@ async function handleLink(
  * 2. Processes same-page (#) links with anchor icon (always added, not subject to count threshold)
  * 3. Skips image/asset links and already processed links
  * 4. Normalizes relative URLs to absolute
- * 5. Downloads and inserts appropriate favicon (only if appears >= MIN_FAVICON_COUNT times)
+ * 5. Downloads and inserts appropriate favicon (only if appears >= minFaviconCount times)
  *
  * @param node - Link element to process
  * @param parent - Parent element of the link

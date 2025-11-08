@@ -3,13 +3,12 @@ import type { Element, Root, Parent } from "hast"
 import fs from "fs"
 import { visit } from "unist-util-visit"
 
+import { mailIconPath, anchorIconPath } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import {
-  ANCHOR_PATH,
   getQuartzPath,
   isAssetLink,
   isHeading,
-  MAIL_PATH,
   FAVICON_COUNTS_FILE,
   normalizePathForCounting,
   normalizeUrl,
@@ -21,6 +20,7 @@ const logger = createWinstonLogger("countfavicons")
 // Module-level counter to accumulate counts across all files
 const faviconCounter = new Map<string, number>()
 
+// istanbul ignore next
 export function getFaviconCounts(): Map<string, number> {
   return new Map(faviconCounter)
 }
@@ -32,11 +32,11 @@ export function getFaviconCounts(): Map<string, number> {
  */
 function getFaviconPathForLink(href: string): string | null {
   if (href.includes("mailto:")) {
-    return MAIL_PATH
+    return mailIconPath
   }
 
   if (href.startsWith("#")) {
-    return ANCHOR_PATH
+    return anchorIconPath
   }
 
   // Skip asset links (reuse centralized check from linkfavicons.ts)

@@ -4,19 +4,33 @@ import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { visit } from "unist-util-visit"
 
+import {
+  minFaviconCount,
+  faviconCountWhitelist,
+  mailIconPath,
+  anchorIconPath,
+  turntroutFaviconPath,
+  googleSubdomainWhitelist,
+} from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countfavicons"
 import {
   createFaviconElement,
   getFaviconUrl,
   transformUrl,
-  FAVICON_COUNT_WHITELIST,
-  MIN_FAVICON_COUNT,
   DEFAULT_PATH,
   urlCache,
 } from "../transformers/linkfavicons"
 import { createWinstonLogger } from "../transformers/logger_utils"
 import { type QuartzEmitterPlugin } from "../types"
+
+const FAVICON_COUNT_WHITELIST = [
+  mailIconPath,
+  anchorIconPath,
+  turntroutFaviconPath,
+  ...faviconCountWhitelist,
+  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
+]
 
 const logger = createWinstonLogger("populateFaviconContainer")
 
@@ -95,9 +109,11 @@ const getValidFavicons = async (faviconCounts: Map<string, number>): Promise<Ele
         return null
       }
 
-      const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => transformedPath.includes(entry))
+      const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry: string) =>
+        transformedPath.includes(entry),
+      )
 
-      if (isWhitelisted || count >= MIN_FAVICON_COUNT) {
+      if (isWhitelisted || count >= minFaviconCount) {
         return { path: transformedPath, url, count } as const
       }
 

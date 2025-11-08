@@ -5,12 +5,9 @@ import * as React from "react"
 
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 
-import {
-  LESSWRONG_FAVICON_PATH,
-  createFaviconElement,
-} from "../../plugins/transformers/linkfavicons"
+import { createFaviconElement } from "../../plugins/transformers/linkfavicons"
 import { htmlToJsx } from "../../util/jsx"
-import { turntroutFaviconPath } from "../constants"
+import { turntroutFaviconPath, lesswrongFaviconPath } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
 const turntroutFaviconNode = createFaviconElement(turntroutFaviconPath, "")
@@ -126,7 +123,7 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
   )
 }
 
-const lessWrongFaviconNode = createFaviconElement(LESSWRONG_FAVICON_PATH, "")
+const lessWrongFaviconNode = createFaviconElement(lesswrongFaviconPath, "")
 const lessWrongFavicon = (
   <span
     className={lessWrongFaviconNode.properties.class}
