@@ -39,6 +39,10 @@ function getFaviconPathForLink(href: string): string | null {
     return specialFaviconPaths.anchor
   }
 
+  if (href === "/rss.xml" || href.endsWith("/rss.xml")) {
+    return specialFaviconPaths.rss
+  }
+
   // Skip asset links (reuse centralized check from linkfavicons.ts)
   if (isAssetLink(href)) {
     return null

@@ -102,6 +102,24 @@ describe("CountFavicons plugin", () => {
     expect(anchorLine).toContain("2\t")
   })
 
+  it("should count RSS links", () => {
+    const transformFunction = createTransformFunction()
+
+    const tree = {
+      type: "root",
+      children: [h("div", [h("a", { href: "/rss.xml" }), h("a", { href: "/rss.xml" })])],
+    } as Root
+
+    transformFunction(tree)
+
+    expect(fs.writeFileSync).toHaveBeenCalled()
+    const content = getWrittenContent()
+    expect(content).toContain(specialFaviconPaths.rss)
+    const lines = content.split("\n").filter((line) => line.trim())
+    const rssLine = lines.find((line) => line.includes(specialFaviconPaths.rss))
+    expect(rssLine).toContain("2\t")
+  })
+
   it("should count external URL links", () => {
     const transformFunction = createTransformFunction()
     const hostname = "example.com"
