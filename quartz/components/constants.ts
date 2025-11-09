@@ -11,14 +11,14 @@ export const faviconUrl = `/${localTroutFaviconBasename}`
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
 
 // Unified favicon paths - all special icons that should always be whitelisted
-const faviconBasePath = "https://assets.turntrout.com/static/images"
+const faviconBasePath = "https://assets.turntrout.com/static/images/external-favicons"
 export const specialFaviconPaths = {
   mail: `${faviconBasePath}/mail.svg`,
   anchor: `${faviconBasePath}/anchor.svg`,
   rss: `${faviconBasePath}/rss.svg`,
-  turntrout: `${faviconBasePath}/external-favicons/turntrout_com.svg`,
-  substack: `${faviconBasePath}/external-favicons/substack_com.svg`,
-  lesswrong: `${faviconBasePath}/external-favicons/lesswrong_com.svg`,
+  turntrout: `${faviconBasePath}/turntrout_com.svg`,
+  substack: `${faviconBasePath}/substack_com.svg`,
+  lesswrong: `${faviconBasePath}/lesswrong_com.svg`,
 } as const
 
 // Favicon display configuration

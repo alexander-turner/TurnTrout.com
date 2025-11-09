@@ -9,6 +9,7 @@ correct location.
 import shutil
 import sys
 from pathlib import Path
+from typing import Iterable
 
 # Add parent scripts directory to path for imports
 _SCRIPTS_DIR = Path(__file__).parent.parent
@@ -51,13 +52,33 @@ FAVICON_MAPPING: dict[str, str] = {
 SOURCE_DIR = Path.home() / "Pictures" / "new_favicons"
 TARGET_DIR = Path("quartz/static/images/external-favicons")
 
+# Special favicon paths from constants.ts that should also be normalized
+special_svgs = [
+    "mail.svg",
+    "anchor.svg",
+    "rss.svg",
+    "turntrout_com.svg",
+    "substack_com.svg",
+    "lesswrong_com.svg",
+]
+SPECIAL_FAVICON_PATHS = [TARGET_DIR / svg for svg in special_svgs]
+
+
+def normalize_svg_files(svg_paths: Iterable[Path]) -> None:
+    """Normalize a list of SVG files to 24x24 viewBox."""
+    if not svg_paths:
+        return
+
+    print("\nNormalizing SVG files to 24x24...")
+    for svg_path in svg_paths:
+        if not svg_path.exists():
+            continue
+        normalize_svg_viewbox(svg_path, target_size=24)
+
 
 def main() -> None:
     """Move and rename favicons according to mapping."""
-    if not SOURCE_DIR.exists():
-        raise FileNotFoundError(f"Source directory not found: {SOURCE_DIR}")
-
-    # Add all nonexistent files to the mapping
+    # Add all unspecified files to the mapping
     for source_file in SOURCE_DIR.glob("*.svg"):
         str_source_name = str(source_file.name)
         if str_source_name not in FAVICON_MAPPING:
@@ -65,40 +86,25 @@ def main() -> None:
 
     TARGET_DIR.mkdir(parents=True, exist_ok=True)
 
-    moved_count: int = 0
-    skipped_count: int = 0
     moved_files: list[Path] = []
+    for source_name, target_name in FAVICON_MAPPING.items():
+        source_path = SOURCE_DIR / source_name
+        target_path = TARGET_DIR / target_name
 
-    for source_name in FAVICON_MAPPING:
-        source_path: Path = SOURCE_DIR / source_name
-        if not source_path.exists():
-            raise FileNotFoundError(f"Source file not found: {source_name}")
-
-        target_name: str = FAVICON_MAPPING[source_name]
-        target_path: Path = TARGET_DIR / target_name
-        if target_path.exists():
-            print(f"Skipping {target_name} (already exists)")
-            skipped_count += 1
+        if not source_path.exists() or target_path.exists():
             continue
 
         shutil.copy2(source_path, target_path)
         print(f"Moved: {source_name} -> {target_name}")
-        moved_count += 1
         moved_files.append(target_path)
 
-    print("\nSummary:")
-    print(f"  Moved: {moved_count}")
-    print(f"  Skipped: {skipped_count}")
-    print(f"\nTarget directory: {TARGET_DIR.absolute()}")
-
-    # Normalize viewBoxes for all moved SVG files
-    if moved_files:
-        print("\nNormalizing SVG viewBoxes to 24x24...")
-        for svg_path in moved_files:
-            try:
-                normalize_svg_viewbox(svg_path, target_size=24)
-            except (ValueError, OSError) as e:
-                print(f"Warning: Failed to normalize {svg_path.name}: {e}")
+    # Normalize all SVG files: newly moved + special paths + existing
+    all_svgs = (
+        moved_files
+        + SPECIAL_FAVICON_PATHS
+        + [p for p in TARGET_DIR.glob("*.svg") if p not in moved_files]
+    )
+    normalize_svg_files(all_svgs)
 
 
 if __name__ == "__main__":

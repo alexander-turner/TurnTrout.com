@@ -430,7 +430,7 @@ describe("Favicon Utilities", () => {
 
   describe("normalizePathForCounting", () => {
     it("should preserve full URLs", () => {
-      const url = "https://assets.turntrout.com/static/images/mail.svg"
+      const url = specialFaviconPaths.mail
       expect(linkfavicons.normalizePathForCounting(url)).toBe(url)
     })
 

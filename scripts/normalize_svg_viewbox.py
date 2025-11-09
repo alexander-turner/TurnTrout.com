@@ -1,95 +1,91 @@
 #!/usr/bin/env python3
-"""
-Normalize SVG favicon viewBoxes to a standard square 24x24 format.
-
-This script processes SVG files to ensure consistent rendering when used as CSS masks.
-It transforms the viewBox to "0 0 24 24" while preserving the visual content by:
-1. Calculating the current viewBox dimensions
-2. Scaling and centering the content to fit the new square viewBox
-3. Preserving aspect ratio by adding padding to the shorter dimension
-"""
+"""Normalize SVG favicon viewBoxes to a standard square 24x24 format with
+content filling the space."""
 
 import argparse
+import shutil
+import subprocess
 import sys
 from pathlib import Path
-from typing import Tuple
 from xml.etree import ElementTree as ET
 
 
-def parse_viewbox(viewbox_str: str) -> Tuple[float, float, float, float]:
-    """Parse viewBox string into (min_x, min_y, width, height)."""
-    parts = viewbox_str.strip().split()
-    if len(parts) != 4:
-        raise ValueError(f"Invalid viewBox format: {viewbox_str}")
-    return tuple(float(p) for p in parts)  # type: ignore
+def check_inkscape() -> bool:
+    """Check if Inkscape is available."""
+    return shutil.which("inkscape") is not None
 
 
-def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
-    """
-    Normalize SVG viewBox to square target_size x target_size.
-
-    Args:
-        svg_path: Path to SVG file to normalize
-        target_size: Target viewBox dimension (default 24)
-    """
-    # Register SVG namespace to avoid ns0: prefixes
+def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
+    """Set viewBox to square target_size, scale content to fill, and remove
+    width/height attributes."""
     ET.register_namespace("", "http://www.w3.org/2000/svg")
-
     tree = ET.parse(svg_path)
     root = tree.getroot()
 
-    # Get current viewBox
-    viewbox_str = root.get("viewBox")
-    if not viewbox_str:
-        print(f"Warning: {svg_path.name} has no viewBox attribute, skipping")
-        return
+    # Get current viewBox to calculate scale
+    viewbox = root.get("viewBox", "0 0 100 100")
+    parts = viewbox.split()
+    current_width = float(parts[2])
+    current_height = float(parts[3])
 
-    min_x, min_y, width, height = parse_viewbox(viewbox_str)
+    # Calculate scale to fill target size (scale to larger dimension)
+    scale = target_size / max(current_width, current_height)
 
-    # If already normalized, skip
-    if (min_x, min_y, width, height) == (0, 0, target_size, target_size):
-        print(f"✓ {svg_path.name} already normalized")
-        return
-
-    # Calculate scale factor (use smaller dimension to ensure content fits)
-    max_dimension = max(width, height)
-    scale = target_size / max_dimension
-
-    # Calculate translation to center content in new viewBox
-    scaled_width = width * scale
-    scaled_height = height * scale
-    translate_x = (target_size - scaled_width) / 2 - (min_x * scale)
-    translate_y = (target_size - scaled_height) / 2 - (min_y * scale)
-
-    # Wrap all existing content in a group with transform
-    # Create new group element
-    group = ET.Element("g")
-    group.set(
-        "transform",
-        f"translate({translate_x:.3f},{translate_y:.3f}) scale({scale:.6f})",
-    )
-
-    # Move all children to the group
+    # Wrap all children in a scaled group
     children = list(root)
-    for child in children:
-        root.remove(child)
-        group.append(child)
+    if children:
+        group = ET.Element("g")
+        group.set("transform", f"scale({scale})")
+        for child in children:
+            root.remove(child)
+            group.append(child)
+        root.append(group)
 
-    root.append(group)
-
-    root.set("viewBox", f"0 0 {target_size} {target_size}")
-
-    # Remove width/height attributes to make it fully scalable
     if "width" in root.attrib:
         del root.attrib["width"]
     if "height" in root.attrib:
         del root.attrib["height"]
 
-    # Write back
+    # Set square viewBox
+    root.set("viewBox", f"0 0 {target_size} {target_size}")
+
     tree.write(svg_path, encoding="utf-8", xml_declaration=True)
-    print(
-        f"✓ Normalized {svg_path.name}: {width:.1f}x{height:.1f} → {target_size}x{target_size}"
+
+
+def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
+    """
+    Normalize SVG to square target_size x target_size with content filling the
+    viewBox.
+
+    Args:
+        svg_path: Path to SVG file to normalize
+        target_size: Target viewBox dimension (default 24)
+    """
+    if not check_inkscape():
+        raise RuntimeError(
+            "Inkscape not found. Install with: brew install inkscape"
+        )
+
+    # Use Inkscape to fit page to drawing content
+    subprocess.run(
+        [
+            "inkscape",
+            str(svg_path),
+            "--export-type=svg",
+            "--export-plain-svg",
+            f"--export-filename={svg_path}",
+            "--fit-page-to-drawing",
+            "--export-area-page",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     )
+
+    # Fix viewBox to be square and strip width/height attributes
+    fix_svg_viewbox(svg_path, target_size)
+
+    print(f"✓ Normalized {svg_path.name}")
 
 
 def main() -> int:
@@ -117,6 +113,13 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    if not check_inkscape():
+        print(
+            "Error: Inkscape not found. Install with: brew install inkscape",
+            file=sys.stderr,
+        )
+        return 1
+
     for svg_path in args.svg_files:
         if not svg_path.exists():
             print(f"Error: {svg_path} does not exist", file=sys.stderr)
@@ -128,13 +131,10 @@ def main() -> int:
 
         try:
             if args.dry_run:
-                tree = ET.parse(svg_path)
-                root = tree.getroot()
-                viewbox = root.get("viewBox", "none")
-                print(f"Would normalize {svg_path.name}: viewBox={viewbox}")
+                print(f"Would normalize {svg_path.name}")
             else:
                 normalize_svg_viewbox(svg_path, args.size)
-        except (ET.ParseError, ValueError, OSError) as e:
+        except RuntimeError as e:
             print(f"Error processing {svg_path}: {e}", file=sys.stderr)
 
     return 0
