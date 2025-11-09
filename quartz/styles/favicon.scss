@@ -39,6 +39,10 @@
 svg.favicon {
   --color-percentage: 40%;
   --svg-color: var(--foreground);
+  --google-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
+  --google-blue: color-mix(in srgb, var(--blue) var(--color-percentage), var(--svg-color));
+  --google-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
+  --google-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
 
   display: inline-block;
   mask: var(--mask-url) no-repeat center / contain;
@@ -104,4 +108,15 @@ svg.favicon[data-domain="amazon_com"] {
   }
 
   background: linear-gradient(to bottom, var(--foreground) 75%, var(--yellow-target) 70%);
+}
+
+// Google "G" with four brand colors (blue, red, yellow, green)
+svg.favicon[data-domain="google_com"] {
+  background: conic-gradient(
+    from -70deg at 50% 50%,
+    var(--google-red) 0deg 120deg,
+    var(--google-blue) 120deg 220deg,
+    var(--google-green) 220deg 310deg,
+    var(--google-yellow) 310deg 360deg
+  );
 }
