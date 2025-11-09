@@ -88,6 +88,16 @@ svg.favicon {
       var(--google-green) 240deg 360deg
     );
   }
+
+  &[data-domain="play_google_com"] {
+    background: conic-gradient(
+      from -135deg at 50% 50%,
+      var(--google-blue) 0deg 95deg,
+      var(--google-green) 95deg 180deg,
+      var(--google-yellow) 180deg 260deg,
+      var(--google-red) 260deg 360deg
+    );
+  }
 }
 
 // Per-domain SVG colors
