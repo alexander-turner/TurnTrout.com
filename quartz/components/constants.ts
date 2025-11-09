@@ -67,7 +67,7 @@ export const faviconSubstringBlacklist = [
   "developer_mozilla_org",
   "link_springer_com",
   "unicog_org",
-  "proceedings_neurips_cc",
+  "neurips_cc",
   "papers_nips_cc",
   "playpen_icomtek_csir_co_za",
   "distill_pub",

@@ -1639,6 +1639,16 @@ describe("normalizeHostname", () => {
     expect(result).toBe(expectedPath)
   })
 
+  it.each(["math", "gaming", "stats", "ai"])(
+    "should preserve stackexchange subdomains: %s.stackexchange.com",
+    (subdomain) => {
+      const hostname = `${subdomain}.stackexchange.com`
+      const result = linkfavicons.getQuartzPath(hostname)
+      const expectedPath = `/static/images/external-favicons/${hostname.replace(/\./g, "_")}.png`
+      expect(result).toBe(expectedPath)
+    },
+  )
+
   it("should handle localhost specially", () => {
     const result = linkfavicons.getQuartzPath("localhost")
     expect(result).toBe(specialFaviconPaths.turntrout)

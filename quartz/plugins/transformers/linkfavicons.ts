@@ -147,6 +147,7 @@ const SPECIAL_DOMAIN_MAPPINGS: Array<{ pattern: RegExp; to: string }> = [
   { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
   { pattern: /^.*protonvpn\.com/, to: "proton.me" },
   { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
+  { pattern: /^.*nips\.cc$/, to: "neurips.cc" },
 ]
 
 /**
@@ -157,11 +158,17 @@ const SPECIAL_DOMAIN_MAPPINGS: Array<{ pattern: RegExp; to: string }> = [
  * Special cases:
  * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
  * - Preserves whitelisted Google subdomains (scholar.google.com, play.google.com, etc.)
+ * - Preserves all StackExchange subdomains (math.stackexchange.com, gaming.stackexchange.com, etc.)
  *
  * @param hostname - The hostname to normalize
  * @returns The root domain or mapped domain, or the original hostname if parsing fails
  */
 function normalizeHostname(hostname: string): string {
+  // Preserve StackExchange subdomains
+  if (/^[^.]+\.stackexchange\.com$/.test(hostname)) {
+    return hostname
+  }
+
   for (const mapping of SPECIAL_DOMAIN_MAPPINGS) {
     if (mapping.pattern.test(hostname)) {
       return mapping.to
