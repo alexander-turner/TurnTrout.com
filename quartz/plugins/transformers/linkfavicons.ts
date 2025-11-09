@@ -62,14 +62,14 @@ const FAVICON_COUNT_WHITELIST = [
 const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
   { pattern: /^.+\.openai\.com$/, to: "openai.com" },
   { pattern: /^.+\.apple\.com$/, to: "apple.com" },
-  { pattern: /^.*\.deepmind.+$/, to: "deepmind.com" },
+  { pattern: /^.*deepmind.+$/, to: "deepmind.com" },
   { pattern: /^.+anthropic\.com$/, to: "anthropic.com" },
   { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
   { pattern: /^.+amazon\.com$/, to: "amazon.com" },
   { pattern: /^.*protonvpn\.com/, to: "proton.me" },
   // Match any *.google.com subdomain except scholar, play, and docs subdomains
   {
-    pattern: new RegExp(`^(?!${googleSubdomainWhitelist.join("|")}\\.).+\\.google\\.com$`),
+    pattern: new RegExp(`^(?!${googleSubdomainWhitelist.join("|")}).+\\.google\\.com$`),
     to: "google.com",
   },
   { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
