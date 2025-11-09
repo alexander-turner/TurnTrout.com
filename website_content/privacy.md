@@ -548,13 +548,17 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 ## Make OsmAnd your map of choice
 
-Subtitle: Time: 15 minutes.
+Subtitle: Time: 15 minutes. Cost: $3/month for optional premium service.
+
+> [!warning] OsmAnd is a bit of a pain
+> Unlike most of this section's recommendations, OsmAnd has a real learning curve and feature disparity. In many ways, OsmAnd is superior to standard map apps. But it's also frustrating at times. Be sure to familiarize before any high-stakes trips. If it's too much hassle, then use Apple Maps --- which is relatively private but is also closed source.
 
 [OsmAnd](https://osmand.net) doesn't collect your data. Its maps have surprising amount of detail, down to the nearby benches. I  can even download a detailed map of the entire state of California for just 8GB --- offline maps usage is both private and practical. That said, the app does take some getting used to.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
 
-- [ ] Install OsmAnd ([Android](https://f-droid.org/en/packages/net.osmand.plus/), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257)).
+- [ ] Install OsmAnd ([Android](https://play.google.com/store/apps/details?id=net.osmand), [iOS](https://apps.apple.com/us/app/osmand-maps-travel-navigate/id934850257)).
+- [ ] Download maps for your state. You only get a few free map downloads before you have to pay $3/month.
 - [ ] Delete your Maps location data from the cloud.
 
 The main drawback I've seen so far is that OsmAnd doesn't incorporate live timetables for public transit. On Android, open source [Transportr](https://transportr.app/) should be able to help. However, Transportr isn't available on iOS. iPhone users might use Apple Maps (with its claimed privacy guarantees) for transit planning and then return to OsmAnd.
