@@ -10,6 +10,8 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Iterable
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 # Add parent scripts directory to path for imports
 _SCRIPTS_DIR = Path(__file__).parent.parent
@@ -47,6 +49,7 @@ FAVICON_MAPPING: dict[str, str] = {
     "wikipedia.svg": "wikipedia_org.svg",
     "x.svg": "x_com.svg",
     "youtube.svg": "youtube_com.svg",
+    "wordpress.svg": "wordpress_com.svg",
 }
 
 SOURCE_DIR = Path.home() / "Pictures" / "new_favicons"
@@ -62,6 +65,21 @@ special_svgs = [
     "lesswrong_com.svg",
 ]
 SPECIAL_FAVICON_PATHS = [TARGET_DIR / svg for svg in special_svgs]
+
+
+def check_exists_on_cdn(target_path: Path) -> bool:
+    """Check if a favicon file already exists on the remote CDN."""
+    # Remove "quartz/" prefix from path for CDN URL
+    path_str = str(target_path)
+    if path_str.startswith("quartz/"):
+        path_str = path_str[7:]  # Remove "quartz/" prefix
+    cdn_url = f"https://assets.turntrout.com/{path_str}"
+    try:
+        request = Request(cdn_url, method="HEAD")
+        with urlopen(request) as response:
+            return response.getcode() == 200
+    except (HTTPError, URLError):
+        return False
 
 
 def normalize_svg_files(svg_paths: Iterable[Path]) -> None:
@@ -92,6 +110,10 @@ def main() -> None:
         target_path = TARGET_DIR / target_name
 
         if not source_path.exists() or target_path.exists():
+            continue
+
+        if check_exists_on_cdn(target_path):
+            print(f"Skipped (exists on CDN): {source_name} -> {target_name}")
             continue
 
         shutil.copy2(source_path, target_path)

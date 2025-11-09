@@ -134,6 +134,7 @@ $domain-svg-colors: (
   "rss": var(--orange),
   "substack_com": var(--orange),
   "youtube_com": var(--red),
+  "wordpress_com": var(--teal),
 );
 
 @each $domain, $color in $domain-svg-colors {
