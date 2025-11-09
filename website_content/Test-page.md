@@ -232,6 +232,8 @@ Hi! Am I being transcluded?
 > [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping on Cross-Border Data
 > Subtitle: A multi-line admonition.
 
+> [!quote] [Here's a LINK with various spans and a favicon at the end. Color should be gray, except on hover.](/)
+
 # Mermaid diagrams
 
 ```mermaid
