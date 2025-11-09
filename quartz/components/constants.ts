@@ -48,6 +48,7 @@ export const faviconCountWhitelist = [
   "cnn_com",
   "forum_effectivealtruism_org",
   "substack_com",
+  "google_com",
 ]
 export const faviconSubstringBlacklist = [
   "incompleteideas_net",

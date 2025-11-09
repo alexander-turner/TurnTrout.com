@@ -131,7 +131,7 @@ export const generateFaviconContent = (): ContentGenerator => {
 
     // Create table
     const tableRows: Element[] = [
-      h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Right-skewed")]),
+      h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Exclamation")]),
     ]
 
     for (const { url } of validFavicons) {
@@ -139,8 +139,8 @@ export const generateFaviconContent = (): ContentGenerator => {
       tableRows.push(
         h("tr", [
           h("td", [h("span", ["test", faviconElement])]),
-          h("td", [h("span", ["test", faviconElement])]),
-          h("td", [h("span", ["test", faviconElement])]),
+          h("td", [h("span", ["test.", faviconElement])]),
+          h("td", [h("span", ["test!", faviconElement])]),
         ]),
       )
     }

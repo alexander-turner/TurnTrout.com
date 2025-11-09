@@ -1,29 +1,28 @@
 @use "./variables.scss" as *;
 
-.subtitle {
-  & .favicon {
-    // Smaller favicon for smaller font
-    --favicon-size: calc(var(--font-size-minus-1) * 0.65);
-
-    width: var(--favicon-size);
-    height: var(--favicon-size);
-  }
-}
-
 .favicon-span {
   white-space: nowrap;
 }
 
 .favicon {
+  --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
+  --base-vertical-adjustment: calc(0.5 * #{$base-margin});
+  --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
+  --favicon-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+
   display: inline;
-  width: 0.65rem;
-  height: 0.65rem;
+  width: var(--favicon-size);
+  height: var(--favicon-size);
   margin: -20% auto -0.07em calc(0.125 * $base-margin);
-  vertical-align: 10%;
+  vertical-align: var(--vertical-adjustment);
   cursor: text;
 
   // Don't pollute copied text with favicon
   user-select: none;
+
+  .subtitle & {
+    --favicon-size: calc(var(--favicon-size) * 0.65);
+  }
 
   // Make favicons align properly with headings
   h1 &,
@@ -33,10 +32,6 @@
   h5 &,
   h6 & {
     vertical-align: 65%;
-  }
-
-  &.close-text {
-    margin-left: 0.05rem;
   }
 }
 
@@ -62,16 +57,14 @@ svg.favicon {
     transform: rotate(-90deg) scaleX(-1);
   }
 
-  // &[data-domain="proton_me"] {
-  //   --proton-dimension: 0.6rem;
+  &[data-domain="proton_me"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
 
-  //   width: var(--proton-dimension);
-  //   height: var(--proton-dimension);
-  // }
-}
-
-.favicon-span > svg.favicon[data-domain="mail"] {
-  margin-left: 0.05rem;
+  &[data-domain="substack_com"],
+  &[data-domain="rss"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
 }
 
 // Per-domain SVG colors
@@ -82,7 +75,6 @@ $domain-svg-colors: (
   "deepmind_com": var(--blue),
   "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
   "forum_effectivealtruism_org": var(--teal),
-  "google_com": var(--blue),
   "colab_research_google_com": var(--gold),
   "docs_google_com": var(--blue),
   "scholar_google_com": var(--blue),
