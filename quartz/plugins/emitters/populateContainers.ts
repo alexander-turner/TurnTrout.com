@@ -6,12 +6,6 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
-import {
-  minFaviconCount,
-  faviconCountWhitelist,
-  specialFaviconPaths,
-  googleSubdomainWhitelist,
-} from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countfavicons"
 import {
@@ -20,16 +14,10 @@ import {
   transformUrl,
   DEFAULT_PATH,
   urlCache,
+  shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
 import { createWinstonLogger } from "../transformers/logger_utils"
 import { type QuartzEmitterPlugin } from "../types"
-
-// istanbul ignore next
-const FAVICON_COUNT_WHITELIST = [
-  ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -79,105 +67,85 @@ export const generateTestCountContent = (): ContentGenerator => {
 }
 
 /**
+ * Adds .png extension to path if it doesn't already have an extension.
+ */
+const addPngExtension = (path: string): string => {
+  if (path.startsWith("http") || path.includes(".svg") || path.includes(".ico")) {
+    return path
+  }
+  return `${path}.png`
+}
+
+/**
+ * Checks CDN for SVG version of PNG paths and caches results.
+ */
+const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
+  await Promise.all(
+    pngPaths.map(async (pngPath) => {
+      const svgUrl = `https://assets.turntrout.com${pngPath.replace(".png", ".svg")}`
+      try {
+        const response = await fetch(svgUrl)
+        if (response.ok) {
+          urlCache.set(pngPath, svgUrl)
+        }
+      } catch {
+        // SVG doesn't exist on CDN, that's fine
+      }
+    }),
+  )
+}
+
+/**
  * Generates favicon elements based on favicon counts from the build process.
  */
 export const generateFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconCounts = getFaviconCounts()
 
-    // Check CDN for SVGs for PNG paths that aren't cached yet
+    // Find PNG paths that need SVG CDN checking
     const pngPathsToCheck = Array.from(faviconCounts.keys())
-      .map((pathWithoutExt) => {
-        if (
-          pathWithoutExt.startsWith("http") ||
-          pathWithoutExt.includes(".svg") ||
-          pathWithoutExt.includes(".ico")
-        ) {
-          return null
-        }
-        const pathWithExt = `${pathWithoutExt}.png`
-        const transformedPath = transformUrl(pathWithExt)
-        return transformedPath !== DEFAULT_PATH && transformedPath.endsWith(".png")
-          ? transformedPath
-          : null
-      })
-      .filter((path): path is string => path !== null)
+      .map(addPngExtension)
+      .map(transformUrl)
+      .filter((path) => path !== DEFAULT_PATH && path.endsWith(".png"))
       .filter((path) => !urlCache.has(path) || urlCache.get(path) === DEFAULT_PATH)
 
-    // Check CDN for SVGs in parallel (only for paths not already cached)
-    await Promise.all(
-      pngPathsToCheck.map(async (pngPath) => {
-        const svgPath = pngPath.replace(".png", ".svg")
-        const svgUrl = `https://assets.turntrout.com${svgPath}`
-        try {
-          const response = await fetch(svgUrl)
-          if (response.ok) {
-            urlCache.set(pngPath, svgUrl)
-          }
-        } catch {
-          // SVG doesn't exist on CDN, that's fine
-        }
-      }),
-    )
+    await checkCdnSvgs(pngPathsToCheck)
 
-    // Now get favicon URLs (which will use cached SVGs if found)
+    // Process and filter favicons
     const validFavicons = Array.from(faviconCounts.entries())
-      .map(([pathWithoutExt, count]: [string, number]) => {
-        // Counts are stored without extensions (format-agnostic), but transformUrl expects .png paths
-        // Special paths (mail, anchor, turntrout) are full URLs/paths, others need .png added
-        const pathWithExt =
-          pathWithoutExt.startsWith("http") ||
-          pathWithoutExt.includes(".svg") ||
-          pathWithoutExt.includes(".ico")
-            ? pathWithoutExt
-            : `${pathWithoutExt}.png`
-
-        // Transform path (checks blacklist/whitelist)
-        // Note: Paths are already normalized at hostname level in getQuartzPath
+      .map(([pathWithoutExt, count]) => {
+        const pathWithExt = addPngExtension(pathWithoutExt)
         const transformedPath = transformUrl(pathWithExt)
+        if (transformedPath === DEFAULT_PATH) return null
 
-        // Skip if blacklisted
-        if (transformedPath === DEFAULT_PATH) {
-          return null
-        }
-
-        // Get favicon URL (getFaviconUrl checks cache, which now includes SVGs from CDN check above)
         const url = getFaviconUrl(transformedPath)
-        if (url === DEFAULT_PATH) {
-          return null
-        }
+        if (url === DEFAULT_PATH) return null
 
-        const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry: string) =>
-          transformedPath.includes(entry),
-        )
+        // Use helper from linkfavicons.ts to check if favicon should be included
+        if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
-        if (isWhitelisted || count >= minFaviconCount) {
-          return { path: transformedPath, url, count } as const
-        }
-
-        return null
+        return { url, count } as const
       })
-      .filter((item): item is { path: string; url: string; count: number } => item !== null)
+      .filter((item): item is { url: string; count: number } => item !== null)
       .sort((a, b) => b.count - a.count)
 
-    // Create a three-column table: Lowercase | Punctuation | Right-skewed
+    // Create table
     const tableRows: Element[] = [
       h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Right-skewed")]),
     ]
 
     for (const { url } of validFavicons) {
       const faviconElement = createFaviconElement(url)
-
       tableRows.push(
         h("tr", [
           h("td", [h("span", ["test", faviconElement])]),
-          h("td", [h("span", ["test.", faviconElement])]),
-          h("td", [h("span", ["test!", faviconElement])]),
+          h("td", [h("span", ["test", faviconElement])]),
+          h("td", [h("span", ["test", faviconElement])]),
         ]),
       )
     }
 
-    return [h("table", tableRows)]
+    return [h("table", { class: "center-table-headings" }, tableRows)]
   }
 }
 

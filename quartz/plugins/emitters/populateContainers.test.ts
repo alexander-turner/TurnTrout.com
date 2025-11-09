@@ -48,6 +48,48 @@ jest.unstable_mockModule("../transformers/linkfavicons", () => ({
     }
     return path.replace(".png", ".avif")
   }),
+  normalizePathForCounting: jest.fn((path: string) => {
+    // Remove extensions for counting
+    if (path.startsWith("http")) {
+      return path
+    }
+    if (path.match(/\.(svg|ico)$/)) {
+      return path
+    }
+    return path.replace(/\.(png|svg|avif)$/, "")
+  }),
+  shouldIncludeFavicon: jest.fn(
+    (imgPath: string, countKey: string, faviconCounts: Map<string, number>) => {
+      // Mock blacklist check (check URL path)
+      if (imgPath.includes("blacklisted_com")) {
+        return false
+      }
+      // Mock whitelist check (check URL path)
+      const isWhitelisted =
+        imgPath.includes("apple_com") ||
+        imgPath.includes("turntrout") ||
+        imgPath.includes("mail.svg") ||
+        imgPath.includes("anchor.svg")
+      if (isWhitelisted) {
+        return true
+      }
+      // Check count threshold - normalize countKey like the real function does
+      // Handle both normalized keys (no extension) and keys with extensions from test data
+      // Test data has keys with extensions, but real getFaviconCounts() returns keys without extensions
+      // So check original key first (for test compatibility), then normalized key (for real behavior)
+      let count = faviconCounts.get(countKey)
+      if (count === undefined) {
+        // Normalize like the real function
+        if (countKey.startsWith("http") || countKey.match(/\.(svg|ico)$/)) {
+          count = faviconCounts.get(countKey) ?? 0
+        } else {
+          const normalizedKey = countKey.replace(/\.(png|svg|avif)$/, "")
+          count = faviconCounts.get(normalizedKey) ?? 0
+        }
+      }
+      return count >= minFaviconCount
+    },
+  ),
   createFaviconElement: jest.fn((url: string) => {
     if (url.endsWith(".svg")) {
       const domain = url.match(/\/([^/]+)\.svg$/)?.[1] || ""
