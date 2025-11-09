@@ -1,7 +1,5 @@
 @use "./variables.scss" as *;
 
-$favicon-default-saturate: 10%;
-
 .subtitle {
   & .favicon {
     // Smaller favicon for smaller font
@@ -44,6 +42,7 @@ $favicon-default-saturate: 10%;
 
 // SVG-specific styling using masks for color control
 svg.favicon {
+  --color-percentage: 40%;
   --svg-color: var(--foreground);
 
   display: inline-block;
@@ -52,12 +51,23 @@ svg.favicon {
   mix-blend-mode: normal;
 
   // Per-domain colors using color-mix
-  background-color: color-mix(in srgb, var(--foreground) 80%, var(--svg-color));
+  background-color: color-mix(in srgb, var(--foreground), var(--svg-color) var(--color-percentage));
+
+  :root[data-theme="dark"] & {
+    --color-percentage: 30%;
+  }
 
   // Rotate and flip anchor icon to resemble the trout within-site icon
   &[data-domain="anchor"] {
     transform: rotate(-90deg) scaleX(-1);
   }
+
+  // &[data-domain="proton_me"] {
+  //   --proton-dimension: 0.6rem;
+
+  //   width: var(--proton-dimension);
+  //   height: var(--proton-dimension);
+  // }
 }
 
 .favicon-span > svg.favicon[data-domain="mail"] {
@@ -66,35 +76,40 @@ svg.favicon {
 
 // Per-domain SVG colors
 $domain-svg-colors: (
-  "abcnews_go_com": #ffde00,
-  "alignmentforum_org": #5f9b65,
-  "anthropic_com": #d97757,
-  "arbital_com": #006a3d,
-  "arxiv_org": #b31b1b,
-  "cnn_com": #c00,
-  "deepmind_com": #2151a1,
-  "discord_gg": #5865f2,
-  "drive_google_com": #4285f4,
-  "forum_effectivealtruism_org": #0c869b,
-  "google_com": #4285f4,
-  "colab_research_google_com": #f9ab00,
-  "docs_google_com": #4285f4,
-  "scholar_google_com": #4285f4,
-  "huggingface_co": #ffb000,
-  "intelligence_org": #3498db,
-  "matsprogram_org": #e74c3c,
-  "open_spotify_com": #1db954,
-  "overleaf_com": #46a247,
-  "play_google_com": #4285f4,
-  "proton_me": #6d4aff,
-  "reddit_com": #ff4500,
-  "rss": #ee802f,
-  "substack_com": #ff6719,
-  "youtube_com": #f00,
+  "arbital_com": var(--green),
+  "arxiv_org": var(--red),
+  "cnn_com": var(--red),
+  "deepmind_com": var(--blue),
+  "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
+  "forum_effectivealtruism_org": var(--teal),
+  "google_com": var(--blue),
+  "colab_research_google_com": var(--gold),
+  "docs_google_com": var(--blue),
+  "scholar_google_com": var(--blue),
+  "huggingface_co": var(--yellow),
+  "matsprogram_org": var(--red),
+  "open_spotify_com": var(--green),
+  "overleaf_com": var(--green),
+  "proton_me": var(--purple),
+  "reddit_com": var(--red),
+  "rss": var(--orange),
+  "substack_com": var(--orange),
+  "youtube_com": var(--red),
 );
 
 @each $domain, $color in $domain-svg-colors {
-  .favicon-span > svg.favicon[data-domain="#{$domain}"] {
+  svg.favicon[data-domain="#{$domain}"] {
     --svg-color: #{$color};
   }
+}
+
+// Yellow arrow on bottom
+svg.favicon[data-domain="amazon_com"] {
+  --yellow-target: var(--yellow);
+
+  :root[data-theme="dark"] & {
+    --yellow-target: color-mix(in srgb, var(--yellow) var(--color-percentage), var(--foreground));
+  }
+
+  background: linear-gradient(to bottom, var(--foreground) 75%, var(--yellow-target) 70%);
 }
