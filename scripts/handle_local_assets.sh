@@ -11,10 +11,24 @@ cleanup() {
 
 trap cleanup EXIT
 
+bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
+
+# Normalize any new SVG files added since last push
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+NEW_SVG_FILES=$(git diff --name-only --diff-filter=A "origin/$CURRENT_BRANCH" 2>/dev/null | grep '\.svg$' || true)
+
+if [ -n "$NEW_SVG_FILES" ]; then
+    NEW_SVGS=()
+    while IFS= read -r file; do
+        NEW_SVGS+=("$GIT_ROOT/$file")
+    done <<< "$NEW_SVG_FILES"
+    
+    python "$GIT_ROOT"/scripts/normalize_svg_viewbox.py "${NEW_SVGS[@]}"
+fi
+
 STATIC_DIR="$GIT_ROOT"/quartz/static
 IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif)
 
-bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
 # If asset_staging isn't empty
 if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
 
