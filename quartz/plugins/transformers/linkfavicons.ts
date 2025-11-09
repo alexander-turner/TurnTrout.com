@@ -586,7 +586,7 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
 
 export interface FaviconNode extends Element {
   type: "element"
-  tagName: "img" | "span"
+  tagName: "img" | "svg"
   children: Element[]
   properties: {
     src?: string
@@ -614,10 +614,10 @@ export function createFaviconElement(urlString: string, description = ""): Favic
     const domain = urlString.match(/\/([^/]+)\.svg$/)?.[1] || ""
     return {
       type: "element",
-      tagName: "span",
+      tagName: "svg",
       children: [],
       properties: {
-        class: "favicon favicon-svg",
+        class: "favicon",
         "data-domain": domain,
         style: `--mask-url: url(${urlString});`,
         alt: description,
@@ -816,7 +816,7 @@ function hasFavicon(node: Element): boolean {
       continue
     }
 
-    if (hasClass(child, "favicon") || hasClass(child, "favicon-svg")) {
+    if (hasClass(child, "favicon")) {
       return true
     }
     if (hasFavicon(child)) {

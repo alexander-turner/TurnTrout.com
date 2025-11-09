@@ -53,9 +53,9 @@ jest.unstable_mockModule("../transformers/linkfavicons", () => ({
       const domain = url.match(/\/([^/]+)\.svg$/)?.[1] || ""
       return {
         type: "element",
-        tagName: "span",
+        tagName: "svg",
         properties: {
-          class: "favicon favicon-svg",
+          class: "favicon",
           "data-domain": domain,
           style: `--mask-url: url(${url});`,
           alt: "",
