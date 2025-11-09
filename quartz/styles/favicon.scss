@@ -2,13 +2,6 @@
 
 $favicon-default-saturate: 10%;
 
-:root[data-theme="dark"] video,
-:root[data-theme="dark"] img {
-  &.favicon:not(.favicon-svg) {
-    filter: saturate($favicon-default-saturate);
-  }
-}
-
 .subtitle {
   & .favicon {
     // Smaller favicon for smaller font
@@ -34,12 +27,6 @@ $favicon-default-saturate: 10%;
   // Don't pollute copied text with favicon
   user-select: none;
 
-  // Default filters for img favicons (not SVG masks)
-  &:not(.favicon-svg) {
-    filter: saturate($favicon-default-saturate);
-    mix-blend-mode: normal;
-  }
-
   // Make favicons align properly with headings
   h1 &,
   h2 &,
@@ -53,26 +40,61 @@ $favicon-default-saturate: 10%;
   &.close-text {
     margin-left: 0.05rem;
   }
+}
 
-  // SVG-specific styling using masks for color control
-  &-svg {
-    --svg-color: var(--foreground);
+// SVG-specific styling using masks for color control
+svg.favicon {
+  --svg-color: var(--foreground);
 
-    display: inline-block;
-    mask: var(--mask-url) no-repeat center / contain;
-    filter: none; // Don't apply img filters to masks
-    mix-blend-mode: normal;
+  display: inline-block;
+  mask: var(--mask-url) no-repeat center / contain;
+  filter: none; // Don't apply img filters to masks
+  mix-blend-mode: normal;
 
-    // Per-domain colors using color-mix
-    background-color: color-mix(in srgb, var(--foreground) 80%, var(--svg-color));
-  }
-
-  .favicon-span > &[data-domain="mail"] {
-    margin-left: 0.05rem;
-  }
+  // Per-domain colors using color-mix
+  background-color: color-mix(in srgb, var(--foreground) 80%, var(--svg-color));
 
   // Rotate and flip anchor icon to resemble the trout within-site icon
   &[data-domain="anchor"] {
     transform: rotate(-90deg) scaleX(-1);
+  }
+}
+
+.favicon-span > svg.favicon[data-domain="mail"] {
+  margin-left: 0.05rem;
+}
+
+// Per-domain SVG colors
+$domain-svg-colors: (
+  "abcnews_go_com": #ffde00,
+  "alignmentforum_org": #5f9b65,
+  "anthropic_com": #d97757,
+  "arbital_com": #006a3d,
+  "arxiv_org": #b31b1b,
+  "cnn_com": #c00,
+  "deepmind_com": #2151a1,
+  "discord_gg": #5865f2,
+  "drive_google_com": #4285f4,
+  "forum_effectivealtruism_org": #0c869b,
+  "google_com": #4285f4,
+  "colab_research_google_com": #f9ab00,
+  "docs_google_com": #4285f4,
+  "scholar_google_com": #4285f4,
+  "huggingface_co": #ffb000,
+  "intelligence_org": #3498db,
+  "matsprogram_org": #e74c3c,
+  "open_spotify_com": #1db954,
+  "overleaf_com": #46a247,
+  "play_google_com": #4285f4,
+  "proton_me": #6d4aff,
+  "reddit_com": #ff4500,
+  "rss": #ee802f,
+  "substack_com": #ff6719,
+  "youtube_com": #f00,
+);
+
+@each $domain, $color in $domain-svg-colors {
+  .favicon-span > svg.favicon[data-domain="#{$domain}"] {
+    --svg-color: #{$color};
   }
 }
