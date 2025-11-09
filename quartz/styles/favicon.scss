@@ -39,10 +39,11 @@
 svg.favicon {
   --color-percentage: 40%;
   --svg-color: var(--foreground);
-  --google-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
-  --google-blue: color-mix(in srgb, var(--blue) var(--color-percentage), var(--svg-color));
-  --google-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
-  --google-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
+  --attenuated-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
+  --attenuated-blue: color-mix(in srgb, var(--blue) var(--color-percentage), var(--svg-color));
+  --attenuated-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
+  --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
+  --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
 
   display: inline-block;
   mask: var(--mask-url) no-repeat center / contain;
@@ -70,32 +71,45 @@ svg.favicon {
     --size-decrease: calc(0.25 * #{$base-margin});
   }
 
+  &[data-domain="arbital_com"] {
+    --color-percentage: 25%;
+  }
+
   &[data-domain="google_com"] {
     background: conic-gradient(
       from -70deg at 50% 50%,
-      var(--google-red) 0deg 120deg,
-      var(--google-blue) 120deg 220deg,
-      var(--google-green) 220deg 310deg,
-      var(--google-yellow) 310deg 360deg
+      var(--attenuated-red) 0deg 120deg,
+      var(--attenuated-blue) 120deg 220deg,
+      var(--attenuated-green) 220deg 310deg,
+      var(--attenuated-yellow) 310deg 360deg
     );
   }
 
   &[data-domain="drive_google_com"] {
     background: conic-gradient(
       from -19deg at 50% 50%,
-      var(--google-yellow) 0deg 129deg,
-      var(--google-blue) 129deg 240deg,
-      var(--google-green) 240deg 360deg
+      var(--attenuated-yellow) 0deg 129deg,
+      var(--attenuated-blue) 129deg 240deg,
+      var(--attenuated-green) 240deg 360deg
     );
   }
 
   &[data-domain="play_google_com"] {
     background: conic-gradient(
       from -135deg at 50% 50%,
-      var(--google-blue) 0deg 95deg,
-      var(--google-green) 95deg 180deg,
-      var(--google-yellow) 180deg 260deg,
-      var(--google-red) 260deg 360deg
+      var(--attenuated-blue) 0deg 95deg,
+      var(--attenuated-green) 95deg 180deg,
+      var(--attenuated-yellow) 180deg 260deg,
+      var(--attenuated-red) 260deg 360deg
+    );
+  }
+
+  &[data-domain="intelligence_org"] {
+    background: conic-gradient(
+      from -90deg at 50% 50%,
+      var(--attenuated-orange) 0deg 25deg,
+      var(--attenuated-green) 25deg 35deg,
+      var(--attenuated-blue) 35deg 360deg
     );
   }
 }
