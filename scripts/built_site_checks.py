@@ -103,7 +103,7 @@ def check_localhost_links(soup: BeautifulSoup) -> list[str]:
 
 def check_favicons_missing(soup: BeautifulSoup) -> bool:
     """Check if favicons are missing."""
-    return not soup.select("article p img.favicon, article p span.favicon-svg")
+    return not soup.select("article p img.favicon, article p svg.favicon")
 
 
 def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
@@ -904,8 +904,8 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
 
 def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all img.favicon and span.favicon-svg elements are direct children
-    of span elements.
+    Check that all img.favicon and svg.favicon elements are direct children of
+    span elements.
 
     Returns:
         list of strings describing favicons that are not direct
@@ -914,7 +914,7 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     problematic_favicons: list[str] = []
 
     img_favicons = soup.select("img.favicon:not(.no-span)")
-    span_favicons = soup.select("span.favicon-svg")
+    svg_favicons = soup.select("svg.favicon")
     contexts = [
         (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
         for favicon in img_favicons
@@ -924,7 +924,7 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
             "SVG favicon ({ctx})",
             favicon,
         )
-        for favicon in span_favicons
+        for favicon in svg_favicons
     ]
 
     for context, info_template, favicon in contexts:

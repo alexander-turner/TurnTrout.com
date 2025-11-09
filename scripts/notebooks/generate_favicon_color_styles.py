@@ -55,34 +55,17 @@ def main() -> None:
     color_vars.append("  // Per-domain SVG colors")
 
     for domain, color in sorted(BRAND_COLORS.items()):
-        color_vars.append(f'  .favicon-span > &[data-domain="{domain}"] {{')
+        color_vars.append(
+            f'\n  .favicon-span > svg.favicon[data-domain="{domain}"] {{'
+        )
         color_vars.append(f"    --svg-color: {color};")
         color_vars.append("  }")
 
-    # Find the location to insert - after the general SVG styling block
-    # Look for the end of the &-svg block
-    svg_block_end = content.find('  .favicon-span > &[data-domain="mail"]')
+    # Insert at the end of the file
+    insertion_point = len(content)
 
-    if svg_block_end == -1:
-        print("Could not find insertion point in favicon.scss")
-        return
-
-    # Insert the new colors after the mail domain entry
-    # Find the end of the mail block
-    mail_block_end = content.find("  }", svg_block_end)
-    if mail_block_end == -1:
-        print("Could not find end of mail block")
-        return
-
-    insertion_point = mail_block_end + 3  # Move past "  }"
-
-    # Insert the new content
     new_content = (
-        content[:insertion_point]
-        + "\n\n"
-        + "\n".join(color_vars)
-        + "\n"
-        + content[insertion_point:]
+        content[:insertion_point] + "\n\n" + "\n".join(color_vars) + "\n"
     )
 
     with open(scss_file, "w", encoding="utf-8") as file:
