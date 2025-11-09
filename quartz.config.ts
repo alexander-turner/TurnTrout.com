@@ -32,7 +32,7 @@ import {
   ComponentResources,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
-  PopulateFaviconContainer,
+  PopulateContainers,
 } from "./quartz/plugins"
 
 const config: QuartzConfig = {
@@ -93,7 +93,7 @@ const config: QuartzConfig = {
       AliasRedirects(),
       ComponentResources(),
       ContentPage(),
-      PopulateFaviconContainer(),
+      PopulateContainers(),
       TagPage(),
       AllTagsPage(),
       RecentPostsPage(),
