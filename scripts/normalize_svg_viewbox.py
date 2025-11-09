@@ -31,11 +31,20 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     # Calculate scale to fill target size (scale to larger dimension)
     scale = target_size / max(current_width, current_height)
 
-    # Wrap all children in a scaled group
+    # Calculate translation to center content in square viewBox
+    scaled_width = current_width * scale
+    scaled_height = current_height * scale
+    translate_x = (target_size - scaled_width) / 2
+    translate_y = (target_size - scaled_height) / 2
+
+    # Wrap all children in a scaled and translated group
     children = list(root)
     if children:
         group = ET.Element("g")
-        group.set("transform", f"scale({scale})")
+        group.set(
+            "transform",
+            f"translate({translate_x:.6f},{translate_y:.6f}) scale({scale:.6f})",
+        )
         for child in children:
             root.remove(child)
             group.append(child)
@@ -66,7 +75,7 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
             "Inkscape not found. Install with: brew install inkscape"
         )
 
-    # Use Inkscape to fit page to drawing content
+    # Use Inkscape to crop to content bounds and export
     subprocess.run(
         [
             "inkscape",
@@ -74,8 +83,7 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
             "--export-type=svg",
             "--export-plain-svg",
             f"--export-filename={svg_path}",
-            "--fit-page-to-drawing",
-            "--export-area-page",
+            "--export-area-drawing",
         ],
         check=True,
         capture_output=True,
