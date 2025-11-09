@@ -553,7 +553,7 @@ Subtitle: Time: 15 minutes. Cost: $3/month for optional premium service.
 > [!warning] OsmAnd is a bit of a pain
 > Unlike most of this section's recommendations, OsmAnd has a real learning curve and feature disparity. In many ways, OsmAnd is superior to standard map apps. But it's also frustrating at times. Be sure to familiarize before any high-stakes trips. If it's too much hassle, then use Apple Maps --- which is relatively private but is also closed source.
 
-[OsmAnd](https://osmand.net) doesn't collect your data. Its maps have surprising amount of detail, down to the nearby benches. I  can even download a detailed map of the entire state of California for just 8GB --- offline maps usage is both private and practical. That said, the app does take some getting used to.
+[OsmAnd](https://osmand.net) doesn't collect your data. Its maps have surprising amount of detail, down to the nearby benches. I even downloaded maps of the entire USA using just 16GB of space --- offline maps usage is both private and practical. That said, the app does take some getting used to.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
 
