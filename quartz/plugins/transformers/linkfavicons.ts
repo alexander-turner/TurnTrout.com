@@ -5,6 +5,7 @@ import gitRoot from "find-git-root"
 import fs from "fs"
 import mime from "mime-types"
 import path from "path"
+import * as psl from "psl"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
@@ -52,30 +53,6 @@ const FAVICON_COUNT_WHITELIST = [
   ...Object.values(specialFaviconPaths),
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
-/**
- * Hostname replacements to normalize subdomains to their main domain.
- * Each entry contains a regex pattern to match hostnames and the canonical domain to normalize to.
- * Patterns match both exact hostnames and subdomains (e.g., "blog.openai.com" and "subdomain.blog.openai.com").
- */
-const HOSTNAME_REPLACEMENTS: Array<{ pattern: RegExp; to: string }> = [
-  { pattern: /^.+\.openai\.com$/, to: "openai.com" },
-  { pattern: /^.+\.apple\.com$/, to: "apple.com" },
-  { pattern: /^.*deepmind.+$/, to: "deepmind.com" },
-  { pattern: /^.+anthropic\.com$/, to: "anthropic.com" },
-  { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
-  { pattern: /^.+amazon\.com$/, to: "amazon.com" },
-  { pattern: /^.*protonvpn\.com/, to: "proton.me" },
-  // Match any *.google.com subdomain except scholar, play, and docs subdomains
-  {
-    pattern: new RegExp(`^(?!${googleSubdomainWhitelist.join("|")}).+\\.google\\.com$`),
-    to: "google.com",
-  },
-  { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
-  { pattern: /^.*nytimes\.com$/, to: "nytimes.com" },
-  { pattern: /^.*wikipedia\.org$/, to: "wikipedia.org" },
-  { pattern: /^.*substack\.com$/, to: "substack.com" },
 ]
 
 // istanbul ignore if
@@ -157,19 +134,47 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
 }
 
 /**
- * Normalizes a hostname by applying subdomain replacements.
- * Converts subdomains like "blog.openai.com" to their canonical domain "openai.com".
+ * Special hostname mappings that deviate from simple subdomain removal.
+ * These map one domain to a different canonical domain, or preserve specific subdomains.
+ */
+const SPECIAL_DOMAIN_MAPPINGS: Array<{ pattern: RegExp; to: string }> = [
+  // Preserve whitelisted Google subdomains (map to themselves)
+  ...googleSubdomainWhitelist.map((subdomain) => ({
+    pattern: new RegExp(`^${subdomain.replace(".", "\\.")}\\.google\\.com$`),
+    to: `${subdomain}.google.com`,
+  })),
+  // Cross-domain mappings
+  { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
+  { pattern: /^.*protonvpn\.com/, to: "proton.me" },
+  { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
+]
+
+/**
+ * Normalizes a hostname by removing subdomains and extracting the root domain.
+ * Converts subdomains like "blog.openai.com" to their root domain "openai.com".
+ * Properly handles multi-part TLDs like "co.uk" (e.g., "blog.example.co.uk" -> "example.co.uk").
+ *
+ * Special cases:
+ * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
+ * - Preserves whitelisted Google subdomains (scholar.google.com, play.google.com, etc.)
  *
  * @param hostname - The hostname to normalize
- * @returns The normalized hostname
+ * @returns The root domain or mapped domain, or the original hostname if parsing fails
  */
 function normalizeHostname(hostname: string): string {
-  for (const replacement of HOSTNAME_REPLACEMENTS) {
-    if (replacement.pattern.test(hostname)) {
-      return replacement.to
+  for (const mapping of SPECIAL_DOMAIN_MAPPINGS) {
+    if (mapping.pattern.test(hostname)) {
+      return mapping.to
     }
   }
-  return hostname
+
+  // Use psl library to extract root domain (handles multi-part TLDs correctly)
+  const parsed = psl.parse(hostname)
+  // Return the registered domain if valid, otherwise return original hostname
+  if ("error" in parsed || !parsed.domain) {
+    return hostname
+  }
+  return parsed.domain
 }
 
 /**

@@ -335,7 +335,7 @@ describe("Favicon Utilities", () => {
       ["localhost", specialFaviconPaths.turntrout],
       ["turntrout.com", specialFaviconPaths.turntrout],
       ["https://turntrout.com", specialFaviconPaths.turntrout],
-      ["subdomain.example.org", "/static/images/external-favicons/subdomain_example_org.png"],
+      ["subdomain.example.org", "/static/images/external-favicons/example_org.png"],
     ])("should return the correct favicon path for %s", (hostname, expectedPath) => {
       expect(linkfavicons.getQuartzPath(hostname)).toBe(expectedPath)
     })
@@ -1577,6 +1577,79 @@ describe("transformUrl", () => {
   })
 })
 
+describe("normalizeHostname", () => {
+  it.each([
+    ["example.com", "example.com", "plain domain"],
+    ["blog.example.com", "example.com", "single subdomain"],
+    ["api.blog.example.com", "example.com", "nested subdomain"],
+    ["www.example.com", "example.com", "www subdomain"],
+    ["cdn.assets.example.org", "example.org", "multiple subdomains"],
+  ])("should remove subdomains: %s -> %s (%s)", (input, expected) => {
+    const result = linkfavicons.getQuartzPath(input)
+    const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
+    expect(result).toBe(expectedPath)
+  })
+
+  it.each([
+    ["example.co.uk", "example.co.uk", "co.uk TLD"],
+    ["blog.example.co.uk", "example.co.uk", "co.uk with subdomain"],
+    ["example.com.au", "example.com.au", "com.au TLD"],
+    ["api.example.com.au", "example.com.au", "com.au with subdomain"],
+    ["example.co.jp", "example.co.jp", "co.jp TLD"],
+    ["cdn.example.co.jp", "example.co.jp", "co.jp with subdomain"],
+  ])("should handle multi-part TLDs: %s -> %s (%s)", (input, expected) => {
+    const result = linkfavicons.getQuartzPath(input)
+    const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
+    expect(result).toBe(expectedPath)
+  })
+
+  it.each([
+    ["transformer-circuits.pub", "anthropic.com", "transformer-circuits.pub"],
+    ["www.transformer-circuits.pub", "anthropic.com", "transformer-circuits.pub with www"],
+    ["protonvpn.com", "proton.me", "protonvpn.com"],
+    ["www.protonvpn.com", "proton.me", "protonvpn.com with www"],
+    ["subdomain.protonvpn.com", "proton.me", "protonvpn.com with subdomain"],
+    ["nbc.com", "msnbc.com", "nbc.com"],
+    ["www.nbc.com", "msnbc.com", "nbc.com with www"],
+    ["news.nbc.com", "msnbc.com", "nbc.com with subdomain"],
+  ])("should apply special domain mappings: %s -> %s (%s)", (input, expected) => {
+    const result = linkfavicons.getQuartzPath(input)
+    const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
+    expect(result).toBe(expectedPath)
+  })
+
+  it.each([
+    ["mail.google.com", "mail.google.com", "whitelisted google subdomain"],
+    ["drive.google.com", "drive.google.com", "whitelisted google subdomain"],
+    ["maps.google.com", "google.com", "maps.google.com"],
+    ["www.google.com", "google.com", "www.google.com"],
+  ])("should normalize google subdomains: %s -> %s (%s)", (input, expected) => {
+    const result = linkfavicons.getQuartzPath(input)
+    const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
+    expect(result).toBe(expectedPath)
+  })
+
+  it.each([
+    ["scholar.google.com", "scholar.google.com", "scholar"],
+    ["play.google.com", "play.google.com", "play"],
+    ["docs.google.com", "docs.google.com", "docs"],
+  ])("should preserve whitelisted google subdomains: %s -> %s (%s)", (input, expected) => {
+    const result = linkfavicons.getQuartzPath(input)
+    const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
+    expect(result).toBe(expectedPath)
+  })
+
+  it("should handle localhost specially", () => {
+    const result = linkfavicons.getQuartzPath("localhost")
+    expect(result).toBe(specialFaviconPaths.turntrout)
+  })
+
+  it("should handle turntrout.com specially", () => {
+    const result = linkfavicons.getQuartzPath("turntrout.com")
+    expect(result).toBe(specialFaviconPaths.turntrout)
+  })
+})
+
 describe("getQuartzPath hostname normalization", () => {
   it.each([
     ["blog.openai.com", "/static/images/external-favicons/openai_com.png"],
@@ -1584,7 +1657,6 @@ describe("getQuartzPath hostname normalization", () => {
     ["assets.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
     ["cdn.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
     ["alignment.anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
-    ["www-anthropic.com", "/static/images/external-favicons/anthropic_com.png"],
     ["subdomain.blog.openai.com", "/static/images/external-favicons/openai_com.png"],
     ["any.subdomain.google.com", "/static/images/external-favicons/google_com.png"],
   ])("should normalize hostname %s to canonical domain", (hostname, expected) => {
@@ -1597,7 +1669,7 @@ describe("getQuartzPath hostname normalization", () => {
     expect(result).toBe("/static/images/external-favicons/google_com.png")
   })
 
-  it("should not normalize excluded google.com subdomains", () => {
+  it("should preserve whitelisted google.com subdomains", () => {
     expect(linkfavicons.getQuartzPath("scholar.google.com")).toBe(
       "/static/images/external-favicons/scholar_google_com.png",
     )
@@ -1813,11 +1885,11 @@ describe("shouldIncludeFavicon edge cases", () => {
 
 describe("getQuartzPath edge cases", () => {
   it.each([
-    ["www.www.example.com", "/static/images/external-favicons/www_example_com.png"],
+    ["www.www.example.com", "/static/images/external-favicons/example_com.png"],
     ["subdomain.turntrout.com", specialFaviconPaths.turntrout],
     ["www.turntrout.com", specialFaviconPaths.turntrout],
     ["example.co.uk", "/static/images/external-favicons/example_co_uk.png"],
-    ["test.example.co.uk", "/static/images/external-favicons/test_example_co_uk.png"],
+    ["test.example.co.uk", "/static/images/external-favicons/example_co_uk.png"],
   ])("should handle %s correctly", (hostname, expectedPath) => {
     expect(linkfavicons.getQuartzPath(hostname)).toBe(expectedPath)
   })
