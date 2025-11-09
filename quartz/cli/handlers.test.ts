@@ -20,7 +20,12 @@ import os from "os"
 import path from "path"
 
 import { variables as styleVars } from "../styles/variables"
-import { reorderHead, maybeGenerateCriticalCSS, injectCriticalCSSIntoHTMLFiles } from "./handlers"
+import {
+  reorderHead,
+  maybeGenerateCriticalCSS,
+  injectCriticalCSSIntoHTMLFiles,
+  resetCriticalCSSCache,
+} from "./handlers"
 
 const loadOptions = {
   xml: false,
@@ -143,6 +148,7 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
   beforeEach(async () => {
     // skipcq: JS-P1003
     outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
+    resetCriticalCSSCache()
   })
 
   afterEach(async () => {

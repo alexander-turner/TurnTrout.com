@@ -36,6 +36,13 @@ interface BuildArguments {
 let cachedCriticalCSS = ""
 
 /**
+ * Resets the cached critical CSS (for testing purposes)
+ */
+export function resetCriticalCSSCache(): void {
+  cachedCriticalCSS = ""
+}
+
+/**
  * Handles `npx quartz build`
  */
 export async function handleBuild(argv: BuildArguments): Promise<void> {
