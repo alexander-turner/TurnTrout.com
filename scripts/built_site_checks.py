@@ -973,7 +973,7 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     svg_favicons = soup.select("svg.favicon")
     for favicon in svg_favicons:
         style = favicon.get("style")
-        if not style or not isinstance(style, str):
+        if not style or not isinstance(style, str) or not style.strip():
             non_svg_favicons.append(
                 f"SVG favicon missing style attribute: {favicon}"
             )
@@ -994,6 +994,31 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
             non_svg_favicons.append(f"Non-SVG mask favicon found: {mask_url}")
 
     return non_svg_favicons
+
+
+def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for elements with IDs starting with 'populate-' that are empty.
+
+    Returns:
+        list of strings describing empty populate elements.
+    """
+    empty_populate_elements: list[str] = []
+
+    for element in _tags_only(soup.find_all(id=True)):
+        element_id = element.get("id")
+        if not isinstance(element_id, str):
+            continue
+
+        if element_id.startswith("populate-"):
+            # Check if element is empty (no text content or only whitespace)
+            if not element.get_text(strip=True):
+                _append_to_list(
+                    empty_populate_elements,
+                    f"<{element.name}> with id='{element_id}' is empty",
+                )
+
+    return empty_populate_elements
 
 
 def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
@@ -1193,6 +1218,7 @@ def check_file_for_issues(
             soup, defined_css_variables
         ),
         "problematic_iframe_embeds": check_iframe_embeds(soup),
+        "empty_populate_elements": check_populate_elements_nonempty(soup),
     }
 
     if should_check_fonts:

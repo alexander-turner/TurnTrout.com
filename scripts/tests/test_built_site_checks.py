@@ -4682,3 +4682,115 @@ description: Test description
 
     # Should only report the missing og:description
     assert result == ["og:description mismatch: test description != None"]
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # No populate- elements (valid)
+        (
+            "<div><p>Some content</p></div>",
+            [],
+        ),
+        # populate- element with content (valid)
+        (
+            '<div id="populate-toc"><ul><li>Item 1</li><li>Item 2</li></ul></div>',
+            [],
+        ),
+        # populate- element with text content (valid)
+        (
+            '<div id="populate-citations">Citation list here</div>',
+            [],
+        ),
+        # Empty populate- element (invalid)
+        (
+            '<div id="populate-toc"></div>',
+            ["<div> with id='populate-toc' is empty"],
+        ),
+        # populate- element with only whitespace (invalid)
+        (
+            '<div id="populate-citations">   \n\t  </div>',
+            ["<div> with id='populate-citations' is empty"],
+        ),
+        # Multiple populate- elements, some empty (invalid)
+        (
+            """
+            <div id="populate-toc"><ul><li>Item</li></ul></div>
+            <div id="populate-citations"></div>
+            <span id="populate-data">Data</span>
+            <div id="populate-empty">   </div>
+            """,
+            [
+                "<div> with id='populate-citations' is empty",
+                "<div> with id='populate-empty' is empty",
+            ],
+        ),
+        # populate- element with nested empty tags (invalid, no text content)
+        (
+            '<div id="populate-toc"><ul></ul></div>',
+            ["<div> with id='populate-toc' is empty"],
+        ),
+        # Multiple populate- elements, all with content (valid)
+        (
+            """
+            <div id="populate-toc"><ul><li>TOC Item</li></ul></div>
+            <div id="populate-citations"><p>Citation 1</p></div>
+            <span id="populate-metadata">Metadata content</span>
+            """,
+            [],
+        ),
+        # Non-populate ID elements that are empty (should be ignored)
+        (
+            """
+            <div id="some-other-id"></div>
+            <div id="populate-toc">Content</div>
+            """,
+            [],
+        ),
+        # populate- element with child elements containing text (valid)
+        (
+            '<section id="populate-references"><div><p>Reference 1</p></div></section>',
+            [],
+        ),
+        # Different element types with populate- IDs
+        (
+            """
+            <div id="populate-div">Content</div>
+            <span id="populate-span">Content</span>
+            <section id="populate-section">Content</section>
+            <ul id="populate-list"><li>Item</li></ul>
+            """,
+            [],
+        ),
+        # Different element types, all empty
+        (
+            """
+            <div id="populate-div"></div>
+            <span id="populate-span"></span>
+            <section id="populate-section"></section>
+            <ul id="populate-list"></ul>
+            """,
+            [
+                "<div> with id='populate-div' is empty",
+                "<span> with id='populate-span' is empty",
+                "<section> with id='populate-section' is empty",
+                "<ul> with id='populate-list' is empty",
+            ],
+        ),
+        # populate- element with HTML entities and special characters (valid)
+        (
+            '<div id="populate-content">&nbsp;&amp;&lt;&gt;</div>',
+            [],
+        ),
+        # populate- ID as substring but not at start (should be ignored)
+        (
+            '<div id="not-populate-toc"></div>',
+            [],
+        ),
+    ],
+)
+def test_check_populate_elements_nonempty(html, expected):
+    """Test the check_populate_elements_nonempty function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_populate_elements_nonempty(soup)
+    assert sorted(result) == sorted(expected)
