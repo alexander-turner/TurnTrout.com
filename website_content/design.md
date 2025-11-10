@@ -636,7 +636,7 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well. To ensure legibility in both light and dark mode, I also dynamically style certain favicons, including this site's favicon: <img src="https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico" style="vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Favicon for turntrout.com">.
+To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well. To ensure legibility in both light and dark mode, I also dynamically style certain favicons, including this site's favicon: <img src="https://assets.turntrout.com/static/images/external-favicons/favicon.ico" style="vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Favicon for turntrout.com">.
 
 ### I only include recognizable favicons
 
@@ -682,6 +682,11 @@ svg.favicon[data-domain="google_com"] {
 ```
 
 Code: The Google favicon uses a conic gradient to approximate the brand's four-color logo through the SVG mask. The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
+
+<div class="float-right">
+    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
+  </div>
 
 I showcase all included favicons on [the test page](/test-page#favicons) to verify that the favicons look good after several kinds of characters.
 
@@ -766,7 +771,7 @@ To meet accessibility standards, I also subtitled the 22-minute [AI Presidents D
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <img src="https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico" style="vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Favicon for turntrout.com"> favicon appears for links to other pages on the site, while the <img src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg" style="display: inline;vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Counterclockwise loop">  icon is used for within-page links.
+: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <img src="https://assets.turntrout.com/static/images/external-favicons/favicon.svg" style="vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Favicon for turntrout.com"> favicon appears for links to other pages on the site, while the <img src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg" style="display: inline;vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Counterclockwise loop">  icon is used for within-page links.
 
 Search
 : Also packaged in vanilla Quartz, my site is searchable with live content previews - rendering the entire page on the desktop view. To accord with classic keybindings, I ensured that the search window can be toggled by pressing `/`.
