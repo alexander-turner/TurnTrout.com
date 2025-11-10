@@ -646,26 +646,26 @@ Instead, I filter favicons as follows:
 1. I whitelist favicons which are definitely recognizable.
 2. I also include favicons for sites which I link to at least <span id="populate-favicon-threshold"></span> times.
 3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
-4. Lastly, I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
+4. I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
 
-To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org), but in others I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
+To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
 ### Enforcing a consistent color scheme using CSS masks
 
-Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS background colors and gradients provide the colors.
+Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` attributes and gradients provide the colors.
 
-<figure style="display: flex; justify-content: center;">
+<figure style="display: flex; justify-content: center;" id="big-favicon-demo">
   <div class="subfigure">
     <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>google.com</code></figcaption>
+    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>. At full saturation: <svg class="favicon" style=" --color-percentage: 100%;vertical-align: unset;" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement.">.</svg></figcaption>
   </div>
   <div class="subfigure">
     <svg class="favicon" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>amazon.com</code></figcaption>
+    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>.</figcaption>
   </div>
   <div class="subfigure">
     <svg class="favicon" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>slatestarcodex.com</code></figcaption>
+    <figcaption><code>slatestarcodex.com</code><svg class="favicon" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg></figcaption>
   </div>
 </figure>
 
@@ -681,7 +681,7 @@ svg.favicon[data-domain="google_com"] {
 }
 ```
 
-Code: The Google favicon uses a conic gradient to approximate the brand's four-color logo through the SVG mask. The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
+Code: The Google favicon uses a [conic gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/gradient/conic-gradient) to approximate the brand's four-color logo through the SVG mask. The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
 
 <div class="float-right">
     <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>

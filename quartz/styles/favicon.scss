@@ -148,5 +148,10 @@ svg.favicon[data-domain="amazon_com"] {
     --yellow-target: color-mix(in srgb, var(--yellow) var(--color-percentage), var(--foreground));
   }
 
-  background: linear-gradient(to bottom, var(--foreground) 75%, var(--yellow-target) 70%);
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--foreground) 0%,
+    var(--foreground) 60%,
+    var(--yellow-target) 60%
+  );
 }
