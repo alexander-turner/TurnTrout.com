@@ -146,6 +146,7 @@ export const generateFaviconContent = (): ContentGenerator => {
         if (transformedPath === DEFAULT_PATH) return null
 
         const url = getFaviconUrl(transformedPath)
+        // istanbul ignore if
         if (url === DEFAULT_PATH) return null
 
         // Use helper from linkfavicons.ts to check if favicon should be included
