@@ -78,17 +78,20 @@ Consider the following terms and phrases:
 - "Optimization pressure"
 - "Utility"
   - As opposed to (thinking of it) as "internal unit of decision-making incentivization, which is a function of internal representations of expected future events; minted after the resolution of expected future on-policy inefficiencies relative to the computational artifact's current decision-making influences"
-- "Discount rate" (in deep RL, implying that an external future-learning-signal multiplier will ingrain itself into the AI's potential inner plan-grading-function which is conveniently assumed to be additive over timesteps, and also there's just one such function and also it's Markovian)
+
 - "Inner goal / mesa objective / optimization daemon (yes, that was a real name)"
 - "Outer optimizer" (perhaps implying some amount of intentionality; a sense that 'more' optimization is 'better', even at the expense of generalization of the trained network)
 - "Optimal" (as opposed to equilibrated-under-policy-updates)
 - "Objectives" (when conflating a "loss function as objective" and "something which strongly controls how the AI makes choices")
-- "Training" (in ML)
-  - Yup!
-- "Learning" (in ML)
 - "Simplicity prior"
   - Consider the abundance of amateur theorizing about whether "schemers" will be "simpler" than "saints", or whether they will be supplanted by "sycophants." Sometimes conducted in ignorance of actual inductive bias research, which is actually a real subfield of ML.
+
+In broader machine learning, beware:
+- "Training"
+- "Learning"
+- "Discount rate" (in deep RL, implying that an external future-learning-signal multiplier will ingrain itself into the AI's potential inner plan-grading-function which is conveniently assumed to be additive over timesteps, and also there's just one such function and also it's Markovian)
 - "Reasoning" models (in inference-time scaling)
+- "Hallucination"
 
 > [!quote] Quote from [Artificial intelligence meets natural stupidity](https://www.inf.ed.ac.uk/teaching/courses/irm/mcdermott.pdf)
 > Lest this all seem merely amusing, meditate on the fate of those who have tampered with words before. The behaviorists ruined words like "behavior", "response", and, especially, "learning." **They now play happily in a dream world, internally consistent but lost to science.** And think about this: if "mechanical translation" had been called "word-by-word text manipulation", the people doing it might still be getting government money.
