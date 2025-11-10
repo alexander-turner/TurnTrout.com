@@ -15,7 +15,6 @@
   height: var(--favicon-size);
   margin: -20% auto -0.07em calc(0.125 * $base-margin);
   vertical-align: var(--vertical-adjustment);
-  cursor: text;
 
   // Don't pollute copied text with favicon
   user-select: none;
