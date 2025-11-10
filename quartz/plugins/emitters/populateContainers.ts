@@ -18,6 +18,7 @@ import {
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
 import { createWinstonLogger } from "../transformers/logger_utils"
+import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
 const logger = createWinstonLogger("populateContainers")
@@ -35,6 +36,22 @@ export const findElementById = (root: Root, id: string): Element | null => {
   visit(root, "element", (node) => {
     if (node.properties?.id === id) {
       found = node
+    }
+  })
+  return found
+}
+
+/**
+ * Finds all elements in the HAST tree by class name.
+ * @param root - The root HAST node to search
+ * @param className - The class name to search for
+ * @returns Array of elements with the matching class name
+ */
+export const findElementsByClass = (root: Root, className: string): Element[] => {
+  const found: Element[] = []
+  visit(root, "element", (node) => {
+    if (hasClass(node, className)) {
+      found.push(node)
     }
   })
   return found
@@ -97,6 +114,15 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
 }
 
 /**
+ * Generates the site's own favicon element.
+ */
+export const generateSiteFaviconContent = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    return [createFaviconElement("/static/icon.png")]
+  }
+}
+
+/**
  * Generates favicon elements based on favicon counts from the build process.
  */
 export const generateFaviconContent = (): ContentGenerator => {
@@ -151,11 +177,13 @@ export const generateFaviconContent = (): ContentGenerator => {
 }
 
 /**
- * Configuration for populating an element by ID with generated content.
+ * Configuration for populating an element by ID or class with generated content.
  */
 export interface ElementPopulatorConfig {
-  /** The ID of the element to populate */
-  id: string
+  /** The ID of the element to populate (mutually exclusive with className) */
+  id?: string
+  /** The class name of elements to populate (mutually exclusive with id) */
+  className?: string
   /** The content generator function */
   generator: ContentGenerator
 }
@@ -180,17 +208,35 @@ export const populateElements = async (
   let modified = false
 
   for (const config of configs) {
-    const element = findElementById(root, config.id)
-    if (!element) {
-      logger.warn(`No element with id "${config.id}" found in ${htmlPath}`)
-      continue
-    }
+    if (config.id) {
+      const element = findElementById(root, config.id)
+      if (!element) {
+        logger.warn(`No element with id "${config.id}" found in ${htmlPath}`)
+        continue
+      }
 
-    logger.info(`Populating element #${config.id}`)
-    const content = await config.generator()
-    element.children = content
-    modified = true
-    logger.info(`Added ${content.length} elements to #${config.id}`)
+      logger.info(`Populating element #${config.id}`)
+      const content = await config.generator()
+      element.children = content
+      modified = true
+      logger.info(`Added ${content.length} elements to #${config.id}`)
+    } else if (config.className) {
+      const elements = findElementsByClass(root, config.className)
+      if (elements.length === 0) {
+        logger.warn(`No elements with class "${config.className}" found in ${htmlPath}`)
+        continue
+      }
+
+      logger.info(`Populating ${elements.length} element(s) with class .${config.className}`)
+      const content = await config.generator()
+      for (const element of elements) {
+        element.children = content
+      }
+      modified = true
+      logger.info(`Added ${content.length} elements to each .${config.className}`)
+    } else {
+      throw new Error(`Config missing both id and className`)
+    }
   }
 
   if (modified) {
@@ -225,6 +271,10 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         {
           id: "populate-favicon-threshold",
           generator: generateConstantContent(minFaviconCount),
+        },
+        {
+          className: "populate-site-favicon",
+          generator: generateSiteFaviconContent(),
         },
       ])
     },

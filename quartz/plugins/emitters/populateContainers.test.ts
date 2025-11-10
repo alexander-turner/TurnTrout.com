@@ -40,6 +40,7 @@ import * as linkfavicons from "../transformers/linkfavicons"
 import { type QuartzEmitterPlugin } from "../types"
 // skipcq: JS-C1003
 import * as populateContainers from "./populateContainers"
+import { type ElementPopulatorConfig } from "./populateContainers"
 
 describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
@@ -70,7 +71,7 @@ describe("PopulateContainers", () => {
     jest
       .spyOn(fs, "readFileSync")
       .mockReturnValue(
-        '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div></body></html>',
+        '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
       )
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
@@ -380,6 +381,47 @@ describe("PopulateContainers", () => {
       })
     })
 
+    describe("findElementsByClass", () => {
+      it.each<[string, string, string, (elements: Element[]) => void]>([
+        [
+          "should find single element by class",
+          '<html><body><div class="test-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(1)
+            expect(elements[0]?.tagName).toBe("div")
+          },
+        ],
+        [
+          "should find multiple elements by class",
+          '<html><body><span class="test-class">1</span><div class="test-class">2</div><p class="test-class">3</p></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(3)
+            expect(elements.map((e) => e.tagName)).toEqual(["span", "div", "p"])
+          },
+        ],
+        [
+          "should return empty array when class not found",
+          '<html><body><div class="other-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => expect(elements).toHaveLength(0),
+        ],
+        [
+          "should find elements with multiple classes",
+          '<html><body><div class="test-class other-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(1)
+            expect(elements[0]?.properties?.className).toEqual(["test-class", "other-class"])
+          },
+        ],
+      ])("%s", (_, html, className, assertFn) => {
+        const elements = populateModule.findElementsByClass(fromHtml(html), className)
+        assertFn(elements)
+      })
+    })
+
     describe("generateConstantContent", () => {
       it.each([
         ["string constant", "test value", "test value"],
@@ -399,6 +441,19 @@ describe("PopulateContainers", () => {
         expect(elements).toHaveLength(1)
         expect(elements[0].tagName).toBe("span")
         expect(elements[0].children[0]).toHaveProperty("value", "3 test files")
+      })
+    })
+
+    describe("generateSiteFaviconContent", () => {
+      it("should generate site favicon element", async () => {
+        const generator = populateModule.generateSiteFaviconContent()
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+        expect(elements[0].tagName).toBe("img")
+        expect(elements[0].properties?.src).toBe("/static/icon.png")
+        expect(elements[0].properties?.class).toContain("favicon")
+        expect(elements[0].properties?.alt).toBe("")
+        expect(elements[0].properties?.loading).toBe("lazy")
       })
     })
 
@@ -460,6 +515,115 @@ describe("PopulateContainers", () => {
         expect(fs.readFileSync).not.toHaveBeenCalled()
         expect(fs.writeFileSync).not.toHaveBeenCalled()
       })
+
+      it.each([
+        [
+          "should populate single element by class",
+          '<html><body><span class="test-class"></span></body></html>',
+          [{ className: "test-class", value: "populated" }],
+          true,
+          (content: string) => {
+            expect(content).toContain("populated")
+            expect(content).toContain('class="test-class"')
+          },
+        ],
+        [
+          "should populate multiple elements by class",
+          '<html><body><span class="test-class">1</span><div class="test-class">2</div></body></html>',
+          [{ className: "test-class", value: "same" }],
+          true,
+          (content: string) => {
+            const matches = content.match(/>same</g)
+            expect(matches).toHaveLength(2)
+          },
+        ],
+        [
+          "should handle mixed ID and class configs",
+          '<html><body><div id="by-id"></div><span class="by-class"></span></body></html>',
+          [
+            { id: "by-id", value: "id-value" },
+            { className: "by-class", value: "class-value" },
+          ],
+          true,
+          (content: string) => {
+            expect(content).toContain("id-value")
+            expect(content).toContain("class-value")
+          },
+        ],
+        [
+          "should skip when class not found",
+          '<html><body><span class="other-class"></span></body></html>',
+          [{ className: "test-class", value: "populated" }],
+          false,
+          (content: string) => {
+            expect(content).not.toContain("populated")
+            expect(content).toContain('class="other-class"')
+          },
+        ],
+      ])("%s", async (_, html, configs, shouldModify, assertFn) => {
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
+
+        const result = await populateModule.populateElements(
+          "/tmp/test.html",
+          configs.map((c) => ({
+            id: c.id,
+            className: c.className,
+            generator: populateModule.generateConstantContent(c.value),
+          })),
+        )
+
+        expect(result).toEqual(shouldModify ? ["/tmp/test.html"] : [])
+        expect(fs.writeFileSync).toHaveBeenCalledTimes(shouldModify ? 1 : 0)
+        const writtenContent = shouldModify
+          ? ((fs.writeFileSync as jest.Mock).mock.calls[0][1] as string)
+          : html
+        assertFn(writtenContent)
+      })
+
+      it("should throw when config has neither id nor className", async () => {
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+
+        await expect(
+          populateModule.populateElements("/tmp/test.html", [
+            {
+              generator: populateModule.generateConstantContent("value"),
+            } as ElementPopulatorConfig,
+          ]),
+        ).rejects.toThrow("Config missing both id and className")
+      })
+    })
+  })
+
+  describe("site favicon population", () => {
+    it("should populate site favicon element", async () => {
+      mockFaviconCounts = createMockCounts([])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain('class="populate-site-favicon"')
+      expect(writtenContent).toContain("/static/icon.png")
+      expect(writtenContent).toContain('class="favicon"')
+    })
+
+    it("should populate multiple site favicon elements", async () => {
+      mockFaviconCounts = createMockCounts([])
+      jest
+        .spyOn(fs, "readFileSync")
+        .mockReturnValue(
+          '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span><span class="populate-site-favicon"></span></body></html>',
+        )
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      const matches = writtenContent.match(/\/static\/icon\.png/g)
+      expect(matches).toHaveLength(2)
     })
   })
 })
