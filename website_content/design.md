@@ -165,15 +165,15 @@ I like the pastel palettes provided by Catppuccin:
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
 </figure>
 
-I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets. I even used CSS to dynamically adjust the luminance of select favicons, avoiding the scourge of common jet-black favicons mixed in with my softer text color. My dark mode button rotates between "automatic", "force light mode", and "force dark mode."
+I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
 
 ## Color should accent content
-
-Color is important to this website, but I need to be tasteful and strict in my usage or the site turns into a mess. For example, in-line [favicons](https://en.wikipedia.org/wiki/Favicon) are colorless (e.g. [YouTube's](https://youtube.com) logo is definitely red). To choose otherwise is to choose chaos and distraction.
 
 When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
 
 During the build process, I convert all naive CSS assignments of `color:red` (<span style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
+
+I color [inline favicons](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
 # Site responsiveness
 
@@ -197,7 +197,7 @@ To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF fi
 
 <img alt="Compression ratios: (PNG size) / (AVIF size). A left-skew histogram with tails reaching out to 75x." src="https://assets.turntrout.com/static/images/posts/compression_ratio.svg" class="compression-ratio-graph"/>
 
-Figure: At first blush, most of the compression ratios seem unimpressive. However, the vast majority of the "images" are [favicons](#inline-favicons) which show up next to URLs. These images are already tiny as PNGs (e.g. 2KB), so AVIF can only compress them so much.  
+Figure: At first blush, most of the compression ratios seem unimpressive. However, back when I made this graph, the vast majority of the "images" were [favicons](#inline-favicons) which show up next to URLs. These images were already tiny as PNGs (e.g. 2KB), so AVIF could only compress them so much.  
 
 <figure><img src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." style="max-width: 85%;"> <figcaption>This friendly <abbr class="small-caps">avif</abbr> goose clocks in below <abbr class="small-caps">45kb</abbr>, while its <abbr class="small-caps">png</abbr> equivalent weighs <abbr class="small-caps">450kb</abbr>—a 10× increase!</figcaption></figure>
 
@@ -622,7 +622,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I decided to show favicons next to links. Including favicons has several benefits, from "the reader often knows what to expect" to "it just looks nice."
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -632,15 +632,43 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 4. Downloads the favicon if needed,
 5. Appends a favicon `<img>` element after the link.
 
+### Favicons never wrap alone to a new line
+
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
 To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well. To ensure legibility in both light and dark mode, I also dynamically style certain favicons, including this site's favicon: <img src="https://assets.turntrout.com/static/images/turntrout-favicons/favicon.ico" style="vertical-align: baseline; margin-right:.125rem;" class="favicon no-span" alt="Favicon for turntrout.com">.
 
-> [!note]- Prior work: Comparing with [`gwern.net`'s favicon approach](https://gwern.net/design-graveyard#static-link-icon-attributes)
->
-> `gwern` apparently initially tried using CSS rules. But for static websites (like `turntrout.com` and `gwern.net`), I think my approach is simpler. As my site incorporates more links, the CSS complexity doesn't grow at all. DOM rendering is done server-side. I don't have to decide whether a domain is sufficiently common to merit a new favicon - my site displays all available favicons. One minor downside: unfamiliar one-off favicons are minor page clutter, as they are unknown and so provide no useful information.
->
-> I confess that I don't fully understand `gwern`'s [successor approach.](https://gwern.net/design-graveyard#static-link-icon-attributes) It seems like more work, but perhaps it's more appropriate for their use cases!
+### I only include recognizable favicons
+
+I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
+
+Instead, I filter favicons as follows:
+1. I whitelist favicons which are definitely recognizable.
+2. I also include favicons for sites which I link to at least <span id="populate-favicon-threshold"></span> times.
+3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
+4. Lastly, I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
+
+### Multi-color favicons via CSS TODOfix
+
+While most favicons are monochromatic (to avoid visual chaos), some iconic brand logos benefit from their characteristic colors. For SVG favicons, I use CSS masks combined with conic gradients to apply multi-color effects. The SVG itself acts as a mask, while CSS background gradients provide the colors.
+
+For example, the [Google](https://google.com) "G" logo uses a four-color conic "gradient" (though its colors transition crisply), while [Google Drive](https://drive.google.com) displays its triangular three-color pattern (yellow, blue, green). The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
+
+```scss
+svg.favicon[data-domain="google_com"] {
+  background: conic-gradient(
+    from -70deg at 50% 50%,
+    var(--attenuated-red) 0deg 120deg,
+    var(--attenuated-blue) 120deg 220deg,
+    var(--attenuated-green) 220deg 310deg,
+    var(--attenuated-yellow) 310deg 360deg
+  );
+}
+```
+
+Code: The Google favicon uses a conic gradient to approximate the brand's four-color logo through the SVG mask.
+
+I showcase all included favicons on [the test page](/test-page#favicons) to verify that the favicons look good after several kinds of characters.
 
 ## Admonitions encapsulate information
 
