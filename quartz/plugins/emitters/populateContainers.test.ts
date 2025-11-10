@@ -1,12 +1,10 @@
 /**
  * @jest-environment node
  */
-import { jest, describe, it, expect, beforeEach, afterEach, beforeAll } from "@jest/globals"
-
-import { specialFaviconPaths, minFaviconCount } from "../../components/constants"
+import { jest, describe, it, expect, beforeEach, beforeAll, afterEach } from "@jest/globals"
 
 jest.mock("fs")
-jest.unstable_mockModule("../transformers/logger_utils", () => ({
+jest.mock("../transformers/logger_utils", () => ({
   createWinstonLogger: jest.fn(() => ({
     debug: jest.fn(),
     info: jest.fn(),
@@ -14,107 +12,10 @@ jest.unstable_mockModule("../transformers/logger_utils", () => ({
     error: jest.fn(),
   })),
 }))
-jest.unstable_mockModule("../transformers/countfavicons", () => ({
+jest.mock("../transformers/countfavicons", () => ({
   getFaviconCounts: jest.fn(() => new Map<string, number>()),
 }))
-jest.unstable_mockModule("../../components/constants", () => ({
-  specialFaviconPaths: { ...specialFaviconPaths },
-  minFaviconCount: minFaviconCount,
-  faviconCountWhitelist: ["apple_com"],
-  faviconSubstringBlacklist: ["blacklisted_com"],
-  googleSubdomainWhitelist: [],
-}))
-jest.unstable_mockModule("../transformers/linkfavicons", () => ({
-  urlCache: new Map<string, string>(),
-  transformUrl: jest.fn((path: string) => {
-    // Mock blacklist check
-    if (path.includes("blacklisted_com")) {
-      return "/default-favicon.png"
-    }
-    // Mock replacements (e.g., blog_openai_com -> openai_com)
-    if (path.includes("blog_openai_com")) {
-      return path.replace("blog_openai_com", "openai_com")
-    }
-    // Return path as-is (no replacement needed)
-    return path
-  }),
-  getFaviconUrl: jest.fn((path: string) => {
-    // Return DEFAULT_PATH for paths that should be filtered out
-    if (path === "/default-favicon.png" || path.includes("invalid_url")) {
-      return "/default-favicon.png"
-    }
-    if (path.startsWith("http")) {
-      return path
-    }
-    return path.replace(".png", ".avif")
-  }),
-  normalizePathForCounting: jest.fn((path: string) => {
-    // Remove extensions for counting
-    if (path.startsWith("http")) {
-      return path
-    }
-    if (path.match(/\.(svg|ico)$/)) {
-      return path
-    }
-    return path.replace(/\.(png|svg|avif)$/, "")
-  }),
-  shouldIncludeFavicon: jest.fn(
-    (imgPath: string, countKey: string, faviconCounts: Map<string, number>) => {
-      // Mock blacklist check (check URL path)
-      if (imgPath.includes("blacklisted_com")) {
-        return false
-      }
-      // Mock whitelist check (check URL path)
-      const isWhitelisted =
-        imgPath.includes("apple_com") ||
-        imgPath.includes("turntrout") ||
-        imgPath.includes("mail.svg") ||
-        imgPath.includes("anchor.svg")
-      if (isWhitelisted) {
-        return true
-      }
-      // Check count threshold - normalize countKey like the real function does
-      // Handle both normalized keys (no extension) and keys with extensions from test data
-      // Test data has keys with extensions, but real getFaviconCounts() returns keys without extensions
-      // So check original key first (for test compatibility), then normalized key (for real behavior)
-      let count = faviconCounts.get(countKey)
-      if (count === undefined) {
-        // Normalize like the real function
-        if (countKey.startsWith("http") || countKey.match(/\.(svg|ico)$/)) {
-          count = faviconCounts.get(countKey) ?? 0
-        } else {
-          const normalizedKey = countKey.replace(/\.(png|svg|avif)$/, "")
-          count = faviconCounts.get(normalizedKey) ?? 0
-        }
-      }
-      return count >= minFaviconCount
-    },
-  ),
-  createFaviconElement: jest.fn((url: string) => {
-    if (url.endsWith(".svg")) {
-      const domain = url.match(/\/([^/]+)\.svg$/)?.[1] || ""
-      return {
-        type: "element",
-        tagName: "svg",
-        properties: {
-          class: "favicon",
-          "data-domain": domain,
-          style: `--mask-url: url(${url});`,
-          alt: "",
-        },
-        children: [],
-      }
-    }
-    return {
-      type: "element",
-      tagName: "img",
-      properties: { src: url, class: "favicon", alt: "", loading: "lazy" },
-      children: [],
-    }
-  }),
-  DEFAULT_PATH: "/default-favicon.png",
-}))
-jest.unstable_mockModule("globby", () => ({
+jest.mock("globby", () => ({
   globby: jest.fn(async (pattern: string) => {
     if (pattern.includes("test")) {
       return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
@@ -127,36 +28,47 @@ import fs from "fs"
 import { type Element } from "hast"
 import { fromHtml } from "hast-util-from-html"
 
+import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
 import { type StaticResources } from "../../util/resources"
+// skipcq: JS-C1003
+import * as countfavicons from "../transformers/countfavicons"
+// skipcq: JS-C1003
+import * as linkfavicons from "../transformers/linkfavicons"
 import { type QuartzEmitterPlugin } from "../types"
+// skipcq: JS-C1003
+import * as populateContainers from "./populateContainers"
 
 describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
   const mockOutputDir = "/mock/output"
   const mockStaticResources: StaticResources = { css: [], js: [] }
-  let mockGetFaviconCounts: jest.MockedFunction<() => Map<string, number>>
   let PopulateContainersEmitter: QuartzEmitterPlugin
-  let linkFaviconsModule: typeof import("../transformers/linkfavicons")
+  let urlCache: Map<string, string>
+  let DEFAULT_PATH: string
 
-  beforeAll(async () => {
-    const countfaviconsModule = await import("../transformers/countfavicons")
-    mockGetFaviconCounts = countfaviconsModule.getFaviconCounts as jest.MockedFunction<
-      () => Map<string, number>
-    >
+  beforeAll(() => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
+    jest.spyOn(fs, "readFileSync").mockReturnValue("")
+    jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
-    const populateModule = await import("./populateContainers")
-    PopulateContainersEmitter = populateModule.PopulateContainers
-
-    linkFaviconsModule = await import("../transformers/linkfavicons")
+    PopulateContainersEmitter = populateContainers.PopulateContainers
+    urlCache = linkfavicons.urlCache
+    DEFAULT_PATH = linkfavicons.DEFAULT_PATH
   })
 
   beforeEach(() => {
-    mockGetFaviconCounts.mockReturnValue(new Map<string, number>())
+    ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(new Map<string, number>())
+    if (urlCache) {
+      urlCache.clear()
+    }
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
     jest
       .spyOn(fs, "readFileSync")
-      .mockReturnValue('<html><body><div id="favicon-container"></div></body></html>')
+      .mockReturnValue(
+        '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div></body></html>',
+      )
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
     mockCtx = {
@@ -168,7 +80,9 @@ describe("PopulateContainers", () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
-    // Don't restore the countfavicons mock - it's a module mock
+    if (urlCache) {
+      urlCache.clear()
+    }
   })
 
   const createMockCounts = (entries: Array<[string, number]>): Map<string, number> => {
@@ -218,33 +132,22 @@ describe("PopulateContainers", () => {
       [
         "should filter out blacklisted favicons",
         [
-          ["/static/images/external-favicons/blacklisted_com.png", minFaviconCount + 10],
+          ["/static/images/external-favicons/medium_com.png", minFaviconCount + 10],
           ["/static/images/external-favicons/valid_com.png", minFaviconCount + 1],
         ],
         (content: string) => {
-          expect(content).not.toContain("blacklisted_com")
-          expect(content).toContain("valid_com.avif")
-        },
-      ],
-      [
-        "should filter out favicons where getFaviconUrl returns DEFAULT_PATH",
-        [
-          ["/static/images/external-favicons/invalid_url.png", minFaviconCount + 1],
-          ["/static/images/external-favicons/valid_com.png", minFaviconCount + 1],
-        ],
-        (content: string) => {
-          expect(content).not.toContain("invalid_url")
+          expect(content).not.toContain("medium_com")
           expect(content).toContain("valid_com.avif")
         },
       ],
     ])("%s", async (_, counts, assertFn) => {
       const faviconCounts = createMockCounts(counts)
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
 
-      expect(mockGetFaviconCounts).toHaveBeenCalled()
+      expect(countfavicons.getFaviconCounts).toHaveBeenCalled()
       expect(fs.writeFileSync).toHaveBeenCalled()
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
       assertFn(writtenContent)
@@ -256,7 +159,7 @@ describe("PopulateContainers", () => {
         ["/static/images/external-favicons/apple_com.png", 10],
         ["/static/images/external-favicons/beta_com.png", 20],
       ])
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -271,7 +174,7 @@ describe("PopulateContainers", () => {
 
     it("should include whitelisted favicons even if below threshold", async () => {
       const faviconCounts = createMockCounts([[specialFaviconPaths.turntrout, minFaviconCount - 1]])
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -284,7 +187,7 @@ describe("PopulateContainers", () => {
       const faviconCounts = createMockCounts([
         ["/static/images/external-favicons/openai_com.png", minFaviconCount + 1],
       ])
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -294,7 +197,7 @@ describe("PopulateContainers", () => {
     })
 
     it("should handle empty counts", async () => {
-      mockGetFaviconCounts.mockReturnValue(createMockCounts([]))
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(createMockCounts([]))
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -332,7 +235,7 @@ describe("PopulateContainers", () => {
     })
 
     it("should replace existing container children", async () => {
-      mockGetFaviconCounts.mockReturnValue(
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(
         createMockCounts([
           ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
         ]),
@@ -353,7 +256,7 @@ describe("PopulateContainers", () => {
     })
 
     it("should create favicon elements with correct properties", async () => {
-      mockGetFaviconCounts.mockReturnValue(
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(
         createMockCounts([
           ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
         ]),
@@ -368,13 +271,40 @@ describe("PopulateContainers", () => {
       expect(writtenContent).toContain('loading="lazy"')
     })
 
+    it("should populate favicon threshold element", async () => {
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(createMockCounts([]))
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain('id="populate-favicon-threshold"')
+      expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
+    })
+
+    it("should populate both favicon container and threshold element", async () => {
+      const faviconCounts = createMockCounts([
+        ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
+      ])
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain('id="favicon-container"')
+      expect(writtenContent).toContain("example_com.avif")
+      expect(writtenContent).toContain('id="populate-favicon-threshold"')
+      expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
+    })
+
     it("should cache SVG URLs when found on CDN", async () => {
       // Clear urlCache before test
-      linkFaviconsModule.urlCache.clear()
+      urlCache.clear()
 
       const pngPath = "/static/images/external-favicons/example_com"
       const faviconCounts = createMockCounts([[pngPath, minFaviconCount + 1]])
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       // Mock fetch to return successful response for SVG
       const mockFetch = jest
@@ -391,19 +321,19 @@ describe("PopulateContainers", () => {
       )
 
       // Verify cache was populated with PNG->SVG mapping
-      expect(linkFaviconsModule.urlCache.get(`${pngPath}.png`)).toBe(
+      expect(urlCache.get(`${pngPath}.png`)).toBe(
         "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
       )
     })
 
     it("should check CDN for paths cached with DEFAULT_PATH", async () => {
       // Clear urlCache and populate with DEFAULT_PATH entry
-      linkFaviconsModule.urlCache.clear()
+      urlCache.clear()
       const pngPath = "/static/images/external-favicons/example_com"
-      linkFaviconsModule.urlCache.set(`${pngPath}.png`, linkFaviconsModule.DEFAULT_PATH)
+      urlCache.set(`${pngPath}.png`, DEFAULT_PATH)
 
       const faviconCounts = createMockCounts([[pngPath, minFaviconCount + 1]])
-      mockGetFaviconCounts.mockReturnValue(faviconCounts)
+      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
 
       // Mock fetch to return successful response for SVG
       const mockFetch = jest

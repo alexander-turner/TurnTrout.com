@@ -6,6 +6,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
+import { minFaviconCount } from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countfavicons"
 import {
@@ -220,6 +221,10 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         {
           id: "favicon-container",
           generator: generateFaviconContent(),
+        },
+        {
+          id: "populate-favicon-threshold",
+          generator: generateConstantContent(minFaviconCount),
         },
       ])
     },
