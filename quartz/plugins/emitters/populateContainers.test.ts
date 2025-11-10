@@ -12,8 +12,10 @@ jest.mock("../transformers/logger_utils", () => ({
     error: jest.fn(),
   })),
 }))
+let mockFaviconCounts: Map<string, number> = new Map()
+const getFaviconCountsMock = jest.fn(() => mockFaviconCounts)
 jest.mock("../transformers/countfavicons", () => ({
-  getFaviconCounts: jest.fn(() => new Map<string, number>()),
+  getFaviconCounts: getFaviconCountsMock,
 }))
 jest.mock("globby", () => ({
   globby: jest.fn(async (pattern: string) => {
@@ -59,7 +61,8 @@ describe("PopulateContainers", () => {
   })
 
   beforeEach(() => {
-    ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(new Map<string, number>())
+    mockFaviconCounts = new Map<string, number>()
+    getFaviconCountsMock.mockClear()
     if (urlCache) {
       urlCache.clear()
     }
@@ -142,7 +145,7 @@ describe("PopulateContainers", () => {
       ],
     ])("%s", async (_, counts, assertFn) => {
       const faviconCounts = createMockCounts(counts)
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -159,7 +162,7 @@ describe("PopulateContainers", () => {
         ["/static/images/external-favicons/apple_com.png", 10],
         ["/static/images/external-favicons/beta_com.png", 20],
       ])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -174,7 +177,7 @@ describe("PopulateContainers", () => {
 
     it("should include whitelisted favicons even if below threshold", async () => {
       const faviconCounts = createMockCounts([[specialFaviconPaths.turntrout, minFaviconCount - 1]])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -187,7 +190,7 @@ describe("PopulateContainers", () => {
       const faviconCounts = createMockCounts([
         ["/static/images/external-favicons/openai_com.png", minFaviconCount + 1],
       ])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -197,7 +200,7 @@ describe("PopulateContainers", () => {
     })
 
     it("should handle empty counts", async () => {
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(createMockCounts([]))
+      mockFaviconCounts = createMockCounts([])
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -235,11 +238,9 @@ describe("PopulateContainers", () => {
     })
 
     it("should replace existing container children", async () => {
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(
-        createMockCounts([
-          ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
-        ]),
-      )
+      mockFaviconCounts = createMockCounts([
+        ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
+      ])
       jest
         .spyOn(fs, "readFileSync")
         .mockReturnValue(
@@ -256,11 +257,9 @@ describe("PopulateContainers", () => {
     })
 
     it("should create favicon elements with correct properties", async () => {
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(
-        createMockCounts([
-          ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
-        ]),
-      )
+      mockFaviconCounts = createMockCounts([
+        ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
+      ])
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -272,7 +271,7 @@ describe("PopulateContainers", () => {
     })
 
     it("should populate favicon threshold element", async () => {
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(createMockCounts([]))
+      mockFaviconCounts = createMockCounts([])
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -286,7 +285,7 @@ describe("PopulateContainers", () => {
       const faviconCounts = createMockCounts([
         ["/static/images/external-favicons/example_com.png", minFaviconCount + 1],
       ])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -304,7 +303,7 @@ describe("PopulateContainers", () => {
 
       const pngPath = "/static/images/external-favicons/example_com"
       const faviconCounts = createMockCounts([[pngPath, minFaviconCount + 1]])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       // Mock fetch to return successful response for SVG
       const mockFetch = jest
@@ -333,7 +332,7 @@ describe("PopulateContainers", () => {
       urlCache.set(`${pngPath}.png`, DEFAULT_PATH)
 
       const faviconCounts = createMockCounts([[pngPath, minFaviconCount + 1]])
-      ;(countfavicons.getFaviconCounts as jest.Mock).mockReturnValue(faviconCounts)
+      mockFaviconCounts = faviconCounts
 
       // Mock fetch to return successful response for SVG
       const mockFetch = jest
