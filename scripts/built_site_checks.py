@@ -946,26 +946,26 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     return problematic_favicons
 
 
-def check_avif_favicons(soup: BeautifulSoup) -> list[str]:
+def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     """
-    Check for img.favicon elements with AVIF image sources.
+    Check for .favicon elements with non-SVG image sources.
 
     Returns:
-        list of strings describing favicons using AVIF format.
+        list of strings describing favicons using non-SVG format.
     """
-    avif_favicons: list[str] = []
-    img_favicons = soup.select("img.favicon")
+    non_svg_favicons: list[str] = []
+    favicons = soup.select(".favicon")
 
-    for favicon in img_favicons:
+    for favicon in favicons:
         src = favicon.get("src", "")
         if not isinstance(src, str):
             continue
         parsed_src = urllib.parse.urlparse(src)
         ext = Path(parsed_src.path).suffix
-        if ext.lower() == ".avif":
-            avif_favicons.append(f"AVIF favicon found: {src}")
+        if ext.lower() != ".svg":
+            non_svg_favicons.append(f"Non-SVG favicon found: {src}")
 
-    return avif_favicons
+    return non_svg_favicons
 
 
 def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
@@ -1152,7 +1152,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "invalid_favicon_parents": check_favicon_parent_elements(soup),
-        "avif_favicons": check_avif_favicons(soup),
+        "non_svg_favicons": check_favicons_are_svgs(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),

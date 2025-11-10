@@ -2618,57 +2618,65 @@ def test_check_favicon_parent_elements(html, expected):
     [
         # No favicons
         ("<div><p>No favicons here</p></div>", []),
-        # Non-AVIF favicon
-        ('<img class="favicon" src="test.ico">', []),
-        # PNG favicon
-        ('<img class="favicon" src="test.png">', []),
-        # Single AVIF favicon
+        # SVG favicon (valid)
+        ('<img class="favicon" src="test.svg">', []),
+        # ICO favicon (invalid)
+        (
+            '<img class="favicon" src="test.ico">',
+            ["Non-SVG favicon found: test.ico"],
+        ),
+        # PNG favicon (invalid)
+        (
+            '<img class="favicon" src="test.png">',
+            ["Non-SVG favicon found: test.png"],
+        ),
+        # AVIF favicon (invalid)
         (
             '<img class="favicon" src="https://example.com/favicon.avif">',
-            ["AVIF favicon found: https://example.com/favicon.avif"],
+            ["Non-SVG favicon found: https://example.com/favicon.avif"],
         ),
-        # AVIF favicon with uppercase extension
-        (
-            '<img class="favicon" src="test.AVIF">',
-            ["AVIF favicon found: test.AVIF"],
-        ),
-        # Multiple AVIF favicons
+        # Multiple non-SVG favicons
         (
             """
             <div>
-                <img class="favicon" src="https://example.com/first.avif">
-                <img class="favicon" src="https://example.com/second.avif">
+                <img class="favicon" src="https://example.com/first.png">
+                <img class="favicon" src="https://example.com/second.ico">
             </div>
             """,
             [
-                "AVIF favicon found: https://example.com/first.avif",
-                "AVIF favicon found: https://example.com/second.avif",
+                "Non-SVG favicon found: https://example.com/first.png",
+                "Non-SVG favicon found: https://example.com/second.ico",
             ],
         ),
         # Mixed favicon types
         (
             """
             <div>
+                <img class="favicon" src="test.svg">
                 <img class="favicon" src="test.ico">
-                <img class="favicon" src="test.avif">
                 <img class="favicon" src="test.png">
             </div>
             """,
-            ["AVIF favicon found: test.avif"],
+            [
+                "Non-SVG favicon found: test.ico",
+                "Non-SVG favicon found: test.png",
+            ],
         ),
-        # Non-favicon AVIF images should be ignored
-        ('<img src="image.avif">', []),
-        # AVIF favicon with query parameters
+        # Non-favicon images should be ignored
+        ('<img src="image.png">', []),
+        # Non-SVG favicon with query parameters
         (
-            '<img class="favicon" src="favicon.avif?v=123">',
-            ["AVIF favicon found: favicon.avif?v=123"],
+            '<img class="favicon" src="favicon.png?v=123">',
+            ["Non-SVG favicon found: favicon.png?v=123"],
         ),
+        # SVG favicon with uppercase extension (valid)
+        ('<img class="favicon" src="test.SVG">', []),
     ],
 )
-def test_check_avif_favicons(html, expected):
-    """Test the check_avif_favicons function."""
+def test_check_favicons_are_svgs(html, expected):
+    """Test the check_favicons_are_svgs function."""
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_avif_favicons(soup)
+    result = built_site_checks.check_favicons_are_svgs(soup)
     assert result == expected
 
 
