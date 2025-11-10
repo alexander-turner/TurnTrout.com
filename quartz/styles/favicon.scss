@@ -45,10 +45,8 @@ svg.favicon {
   --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
   --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
 
-  display: inline-block;
   mask: var(--mask-url) no-repeat center / contain;
   filter: none; // Don't apply img filters to masks
-  mix-blend-mode: normal;
 
   // Per-domain colors using color-mix
   background-color: color-mix(in srgb, var(--foreground), var(--svg-color) var(--color-percentage));

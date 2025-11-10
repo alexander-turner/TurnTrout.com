@@ -648,11 +648,26 @@ Instead, I filter favicons as follows:
 3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
 4. Lastly, I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
 
-### Multi-color favicons via CSS TODOfix
+To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org), but in others I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
-While most favicons are monochromatic (to avoid visual chaos), some iconic brand logos benefit from their characteristic colors. For SVG favicons, I use CSS masks combined with conic gradients to apply multi-color effects. The SVG itself acts as a mask, while CSS background gradients provide the colors.
+### Enforcing a consistent color scheme using CSS masks
 
-For example, the [Google](https://google.com) "G" logo uses a four-color conic "gradient" (though its colors transition crisply), while [Google Drive](https://drive.google.com) displays its triangular three-color pattern (yellow, blue, green). The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
+Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS background colors and gradients provide the colors.
+
+<figure style="display: flex; justify-content: center;">
+  <div class="subfigure">
+    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption><code>google.com</code></figcaption>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption><code>amazon.com</code></figcaption>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption><code>slatestarcodex.com</code></figcaption>
+  </div>
+</figure>
 
 ```scss
 svg.favicon[data-domain="google_com"] {
@@ -666,7 +681,7 @@ svg.favicon[data-domain="google_com"] {
 }
 ```
 
-Code: The Google favicon uses a conic gradient to approximate the brand's four-color logo through the SVG mask.
+Code: The Google favicon uses a conic gradient to approximate the brand's four-color logo through the SVG mask. The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
 
 I showcase all included favicons on [the test page](/test-page#favicons) to verify that the favicons look good after several kinds of characters.
 
