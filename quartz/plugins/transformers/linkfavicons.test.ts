@@ -882,9 +882,12 @@ describe("Favicon Utilities", () => {
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
-      // Should add favicon even though favicon-span exists (since it doesn't contain a favicon element)
-      expect(node.children.length).toBeGreaterThan(initialChildrenCount)
-      const hasFaviconElement = node.children.some((child) => {
+      // Should add favicon inside the existing favicon-span
+      expect(node.children.length).toBe(initialChildrenCount) // Parent node children count stays the same
+      const span = node.children[0] as Element
+      expect(span.tagName).toBe("span")
+      expect(span.children.length).toBe(2) // Original text + favicon
+      const hasFaviconElement = span.children.some((child) => {
         if (child.type !== "element") return false
         const element = child as Element
         return hasClass(element, "favicon")
@@ -1843,6 +1846,29 @@ describe("maybeSpliceText edge cases", () => {
     // Favicon should be appended to the span element, not the parent
     const spanElement = node.children[1] as Element
     expect(spanElement.children.length).toBeGreaterThan(0)
+  })
+
+  it("should append favicon to existing span.favicon-span", () => {
+    // Simulates the RSS link structure created in afterArticle.ts
+    const node = h("a", {}, [
+      h("span", { className: "favicon-span" }, [h("abbr", { class: "small-caps" }, ["rss"])]),
+    ])
+    linkfavicons.insertFavicon(imgPath, node)
+
+    // Favicon should be appended inside the existing span.favicon-span
+    expect(node.children.length).toBe(1)
+    const span = node.children[0] as Element
+    expect(span.tagName).toBe("span")
+    // hastscript normalizes className to an array
+    expect(span.properties.className).toEqual(["favicon-span"])
+    expect(span.children.length).toBe(2)
+    expect(span.children[0]).toMatchObject({ tagName: "abbr" })
+    expect(span.children[1]).toMatchObject({
+      type: "element",
+      properties: expect.objectContaining({
+        class: "favicon",
+      }),
+    })
   })
 })
 

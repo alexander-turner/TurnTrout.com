@@ -706,6 +706,17 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     return imgNodeToAppend
   }
 
+  // If the last child is a span.favicon-span, append the favicon directly to it
+  if (
+    lastChild.type === "element" &&
+    lastChild.tagName === "span" &&
+    hasClass(lastChild, "favicon-span")
+  ) {
+    logger.debug("Appending favicon to existing favicon-span")
+    lastChild.children.push(imgNodeToAppend)
+    return null
+  }
+
   // If the last child is a tag that should be zoomed into, recurse
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
     logger.debug(`Zooming into nested element ${lastChild.tagName}`)
