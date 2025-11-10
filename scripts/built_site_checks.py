@@ -948,22 +948,50 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
 
 def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     """
-    Check for .favicon elements with non-SVG image sources.
+    Check that all favicons are svg.favicon elements with mask-url pointing to
+    SVG.
+
+    Validates that:
+    1. No img.favicon elements exist (all should be svg.favicon with mask-url)
+    2. All svg.favicon elements have style attribute with --mask-url
+    3. All --mask-url values point to .svg files
 
     Returns:
-        list of strings describing favicons using non-SVG format.
+        list of strings describing favicon issues.
     """
     non_svg_favicons: list[str] = []
-    favicons = soup.select(".favicon")
 
-    for favicon in favicons:
+    # Check for any img.favicon elements (should not exist)
+    img_favicons = soup.select("img.favicon")
+    for favicon in img_favicons:
         src = favicon.get("src", "")
-        if not isinstance(src, str):
+        non_svg_favicons.append(
+            f"img.favicon found (should be svg.favicon with mask-url): {src}"
+        )
+
+    # Check svg.favicon elements (mask-based)
+    svg_favicons = soup.select("svg.favicon")
+    for favicon in svg_favicons:
+        style = favicon.get("style", "")
+        if not isinstance(style, str):
+            non_svg_favicons.append(
+                f"SVG favicon missing style attribute: {favicon}"
+            )
             continue
-        parsed_src = urllib.parse.urlparse(src)
-        ext = Path(parsed_src.path).suffix
+
+        # Extract URL from --mask-url: url(...)
+        mask_url_match = re.search(r"--mask-url:\s*url\(([^)]+)\)", style)
+        if not mask_url_match:
+            non_svg_favicons.append(
+                f"SVG favicon missing --mask-url in style: {style}"
+            )
+            continue
+
+        mask_url = mask_url_match.group(1).strip()
+        parsed_url = urllib.parse.urlparse(mask_url)
+        ext = Path(parsed_url.path).suffix
         if ext.lower() != ".svg":
-            non_svg_favicons.append(f"Non-SVG favicon found: {src}")
+            non_svg_favicons.append(f"Non-SVG mask favicon found: {mask_url}")
 
     return non_svg_favicons
 

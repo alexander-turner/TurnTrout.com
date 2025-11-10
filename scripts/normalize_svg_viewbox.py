@@ -24,9 +24,8 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
 
     # Get current viewBox to calculate scale
     viewbox = root.get("viewBox", "0 0 100 100")
-    parts = viewbox.split()
-    current_width = float(parts[2])
-    current_height = float(parts[3])
+    current_width = float(viewbox.split()[2])
+    current_height = float(viewbox.split()[3])
 
     # Calculate scale to fill target size (scale to larger dimension)
     scale = target_size / max(current_width, current_height)
@@ -43,7 +42,8 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
         group = ET.Element("g")
         group.set(
             "transform",
-            f"translate({translate_x:.6f},{translate_y:.6f}) scale({scale:.6f})",
+            f"translate({translate_x:.6f},{translate_y:.6f})"
+            f"scale({scale:.6f})",
         )
         for child in children:
             root.remove(child)
@@ -99,7 +99,8 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
 def main() -> int:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Normalize SVG viewBoxes to square format for consistent CSS mask rendering"
+        description="Normalize SVG viewBoxes to square format for"
+        "consistent CSS mask rendering."
     )
     parser.add_argument(
         "svg_files",
