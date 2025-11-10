@@ -304,6 +304,52 @@ describe("CountFavicons plugin", () => {
     expect(countsEqual ? mailAfterAnchor : mailCount > anchorCount).toBe(true)
   })
 
+  it("should sort alphabetically when counts are equal", () => {
+    const transformFunction = createTransformFunction()
+
+    // Create two domains with same count (2 links each) to test alphabetical sorting
+    const tree = {
+      type: "root",
+      children: [
+        h("div", [
+          h("a", { href: "https://example.com/page1" }),
+          h("a", { href: "https://example.com/page2" }),
+          h("a", { href: "https://apple.com/page1" }),
+          h("a", { href: "https://apple.com/page2" }),
+        ]),
+      ],
+    } as Root
+
+    transformFunction(tree)
+
+    expect(fs.writeFileSync).toHaveBeenCalled()
+    const content = getWrittenContent()
+    const lines = content.split("\n").filter((line) => line.trim())
+
+    const applePath = linkfavicons.getQuartzPath("apple.com")
+    const applePathWithoutExt = applePath.replace(/\.png$/, "")
+    const examplePath = linkfavicons.getQuartzPath("example.com")
+    const examplePathWithoutExt = examplePath.replace(/\.png$/, "")
+
+    const appleLine = lines.find((line) => line.includes(applePathWithoutExt))
+    const exampleLine = lines.find((line) => line.includes(examplePathWithoutExt))
+
+    expect(appleLine).toBeDefined()
+    expect(exampleLine).toBeDefined()
+
+    const appleCount = parseInt(appleLine!.split("\t")[0], 10)
+    const exampleCount = parseInt(exampleLine!.split("\t")[0], 10)
+
+    // Both should have count 2 (equal counts)
+    expect(appleCount).toBe(2)
+    expect(exampleCount).toBe(2)
+
+    // Verify alphabetical order: apple should come before example
+    const appleIndex = lines.indexOf(appleLine!)
+    const exampleIndex = lines.indexOf(exampleLine!)
+    expect(appleIndex).toBeLessThan(exampleIndex)
+  })
+
   it("should accumulate counts across multiple file processing", () => {
     const transformFunction = createTransformFunction()
 
