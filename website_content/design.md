@@ -672,7 +672,7 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
 ```scss
 svg.favicon[data-domain="google_com"] {
   background: conic-gradient(
-    from -70deg at 50% 50%,
+    from -70deg at 45% 50%,
     var(--attenuated-red) 0deg 120deg,
     var(--attenuated-blue) 120deg 220deg,
     var(--attenuated-green) 220deg 310deg,

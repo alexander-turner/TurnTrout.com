@@ -5942,5 +5942,9 @@
   "https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg": {
     "width": 24,
     "height": 24
+  },
+  "/static/images/external-favicons/mozilla_org.png": {
+    "width": 64,
+    "height": 64
   }
 }
