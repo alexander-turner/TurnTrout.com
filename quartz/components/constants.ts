@@ -4,10 +4,11 @@ export const defaultDescription = "Writings about doing good, thinking well, and
 export const locale = "en-US"
 
 // Site-specific icon/favicon paths
-export const localTroutFaviconExtensionDefault = "svg"
+export const localTroutFaviconExtensionDefault = "ico"
 export const localTroutFaviconBasenameDefault = "favicon"
 export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 export const faviconUrl = `/${localTroutFaviconBasename}`
+export const faviconMimeType = "image/x-icon"
 export const appleTouchIconUrl = "https://assets.turntrout.com/static/images/apple-icon.png"
 
 // Unified favicon paths - all special icons that should always be whitelisted
