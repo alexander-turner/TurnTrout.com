@@ -53,6 +53,7 @@ export const faviconCountWhitelist = [
 ]
 export const faviconSubstringBlacklist = [
   "incompleteideas_net",
+  "svgrepo",
   "hpmor_com",
   "jacobgw",
   "pubsonline_informs_org",
