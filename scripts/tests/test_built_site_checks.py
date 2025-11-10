@@ -2618,24 +2618,36 @@ def test_check_favicon_parent_elements(html, expected):
     [
         # No favicons
         ("<div><p>No favicons here</p></div>", []),
-        # SVG favicon (valid)
-        ('<img class="favicon" src="test.svg">', []),
+        # img.favicon with SVG (invalid - should be svg.favicon with mask-url)
+        (
+            '<img class="favicon" src="test.svg">',
+            [
+                "img.favicon found (should be svg.favicon with mask-url): test.svg"
+            ],
+        ),
         # ICO favicon (invalid)
         (
             '<img class="favicon" src="test.ico">',
-            ["Non-SVG favicon found: test.ico"],
+            [
+                "img.favicon found (should be svg.favicon with mask-url): test.ico"
+            ],
         ),
         # PNG favicon (invalid)
         (
             '<img class="favicon" src="test.png">',
-            ["Non-SVG favicon found: test.png"],
+            [
+                "img.favicon found (should be svg.favicon with mask-url): test.png"
+            ],
         ),
         # AVIF favicon (invalid)
         (
             '<img class="favicon" src="https://example.com/favicon.avif">',
-            ["Non-SVG favicon found: https://example.com/favicon.avif"],
+            [
+                "img.favicon found (should be svg.favicon with mask-url): "
+                "https://example.com/favicon.avif"
+            ],
         ),
-        # Multiple non-SVG favicons
+        # Multiple img.favicon elements (all invalid)
         (
             """
             <div>
@@ -2644,11 +2656,13 @@ def test_check_favicon_parent_elements(html, expected):
             </div>
             """,
             [
-                "Non-SVG favicon found: https://example.com/first.png",
-                "Non-SVG favicon found: https://example.com/second.ico",
+                "img.favicon found (should be svg.favicon with mask-url): "
+                "https://example.com/first.png",
+                "img.favicon found (should be svg.favicon with mask-url): "
+                "https://example.com/second.ico",
             ],
         ),
-        # Mixed favicon types
+        # Mixed img.favicon types (all invalid)
         (
             """
             <div>
@@ -2658,19 +2672,69 @@ def test_check_favicon_parent_elements(html, expected):
             </div>
             """,
             [
-                "Non-SVG favicon found: test.ico",
-                "Non-SVG favicon found: test.png",
+                "img.favicon found (should be svg.favicon with mask-url): test.svg",
+                "img.favicon found (should be svg.favicon with mask-url): test.ico",
+                "img.favicon found (should be svg.favicon with mask-url): test.png",
             ],
         ),
         # Non-favicon images should be ignored
         ('<img src="image.png">', []),
-        # Non-SVG favicon with query parameters
+        # img.favicon with query parameters (invalid)
         (
             '<img class="favicon" src="favicon.png?v=123">',
-            ["Non-SVG favicon found: favicon.png?v=123"],
+            [
+                "img.favicon found (should be svg.favicon with mask-url): "
+                "favicon.png?v=123"
+            ],
         ),
-        # SVG favicon with uppercase extension (valid)
-        ('<img class="favicon" src="test.SVG">', []),
+        # Mask-based SVG favicon (valid)
+        (
+            '<svg class="favicon" style="--mask-url: url(/static/images/external-favicons/example_com.svg);"></svg>',
+            [],
+        ),
+        # Mask-based SVG favicon with CDN URL (valid)
+        (
+            '<svg class="favicon" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/example_com.svg);"></svg>',
+            [],
+        ),
+        # Mask-based SVG favicon with non-SVG URL (invalid)
+        (
+            '<svg class="favicon" style="--mask-url: url(/static/images/favicon.png);"></svg>',
+            ["Non-SVG mask favicon found: /static/images/favicon.png"],
+        ),
+        # SVG favicon without style attribute (invalid)
+        (
+            '<svg class="favicon"></svg>',
+            [
+                'SVG favicon missing style attribute: <svg class="favicon"></svg>'
+            ],
+        ),
+        # SVG favicon with style but no --mask-url (invalid)
+        (
+            '<svg class="favicon" style="color: red;"></svg>',
+            ["SVG favicon missing --mask-url in style: color: red;"],
+        ),
+        # Mixed img and svg favicons (img invalid, svg with non-SVG mask invalid)
+        (
+            """
+            <div>
+                <img class="favicon" src="test.svg">
+                <svg class="favicon" style="--mask-url: url(example.svg);"></svg>
+                <img class="favicon" src="test.png">
+                <svg class="favicon" style="--mask-url: url(example.png);"></svg>
+            </div>
+            """,
+            [
+                "img.favicon found (should be svg.favicon with mask-url): test.svg",
+                "img.favicon found (should be svg.favicon with mask-url): test.png",
+                "Non-SVG mask favicon found: example.png",
+            ],
+        ),
+        # Mask-based SVG with whitespace in style (valid)
+        (
+            '<svg class="favicon" style="  --mask-url:  url(  /test.svg  )  ;"></svg>',
+            [],
+        ),
     ],
 )
 def test_check_favicons_are_svgs(html, expected):
