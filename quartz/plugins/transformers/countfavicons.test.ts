@@ -22,7 +22,7 @@ jest.mock("./logger_utils", () => ({
 import fs from "fs"
 
 import { specialFaviconPaths } from "../../components/constants"
-import { CountFavicons } from "./countfavicons"
+import { CountFavicons, getFaviconCounts } from "./countfavicons"
 import * as linkfavicons from "./linkfavicons"
 
 let tempDir: string
@@ -61,63 +61,44 @@ describe("CountFavicons plugin", () => {
     expect(typeof plugin.htmlPlugins).toBe("function")
   })
 
-  it("should count mailto links", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("div", [
-          h("a", { href: "mailto:test1@example.com" }),
-          h("a", { href: "mailto:test2@example.com" }),
-        ]),
+  it.each([
+    {
+      name: "mailto links",
+      links: [
+        h("a", { href: "mailto:test1@example.com" }),
+        h("a", { href: "mailto:test2@example.com" }),
       ],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    expect(content).toContain(specialFaviconPaths.mail)
-    const lines = content.split("\n").filter((line) => line.trim())
-    const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
-    expect(mailLine).toContain("2\t")
-  })
-
-  it("should count anchor links", () => {
+      expectedPath: specialFaviconPaths.mail,
+      expectedCount: 2,
+    },
+    {
+      name: "anchor links",
+      links: [h("a", { href: "#section-1" }), h("a", { href: "#section-2" })],
+      expectedPath: specialFaviconPaths.anchor,
+      expectedCount: 2,
+    },
+    {
+      name: "RSS links",
+      links: [h("a", { href: "/rss.xml" }), h("a", { href: "/rss.xml" })],
+      expectedPath: specialFaviconPaths.rss,
+      expectedCount: 2,
+    },
+  ])("should count $name", ({ links, expectedPath, expectedCount }) => {
     const transformFunction = createTransformFunction()
 
     const tree = {
       type: "root",
-      children: [h("div", [h("a", { href: "#section-1" }), h("a", { href: "#section-2" })])],
+      children: [h("div", links)],
     } as Root
 
     transformFunction(tree)
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
-    expect(content).toContain(specialFaviconPaths.anchor)
+    expect(content).toContain(expectedPath)
     const lines = content.split("\n").filter((line) => line.trim())
-    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
-    expect(anchorLine).toContain("2\t")
-  })
-
-  it("should count RSS links", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [h("div", [h("a", { href: "/rss.xml" }), h("a", { href: "/rss.xml" })])],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    expect(content).toContain(specialFaviconPaths.rss)
-    const lines = content.split("\n").filter((line) => line.trim())
-    const rssLine = lines.find((line) => line.includes(specialFaviconPaths.rss))
-    expect(rssLine).toContain("2\t")
+    const matchingLine = lines.find((line) => line.includes(expectedPath))
+    expect(matchingLine).toContain(`${expectedCount}\t`)
   })
 
   it("should count external URL links", () => {
@@ -148,68 +129,65 @@ describe("CountFavicons plugin", () => {
     expect(externalLine).toContain("3\t")
   })
 
-  it("should skip asset links", () => {
+  it.each([
+    {
+      name: "asset links",
+      tree: {
+        type: "root",
+        children: [
+          h("div", [
+            h("a", { href: "https://example.com/image.png" }),
+            h("a", { href: "https://example.com/video.mp4" }),
+            h("a", { href: "https://example.com/audio.mp3" }),
+          ]),
+        ],
+      } as Root,
+      check: (lines: string[]) => {
+        const assetLines = lines.filter(
+          (line) => line.includes("example_com.png") && line.includes("image.png"),
+        )
+        expect(assetLines.length).toBe(0)
+      },
+    },
+    {
+      name: "footnote links",
+      tree: {
+        type: "root",
+        children: [
+          h("div", [
+            h("a", { href: "#user-content-fn-1" }),
+            h("a", { href: "#user-content-fn-2" }),
+          ]),
+        ],
+      } as Root,
+      check: (lines: string[]) => {
+        const footnoteLines = lines.filter((line) => line.includes("#user-content-fn"))
+        expect(footnoteLines.length).toBe(0)
+      },
+    },
+    {
+      name: "anchor links in headings",
+      tree: {
+        type: "root",
+        children: [
+          h("h2", [h("a", { href: "#section-1" })]),
+          h("h3", [h("a", { href: "#section-2" })]),
+        ],
+      } as Root,
+      check: (lines: string[]) => {
+        const anchorLines = lines.filter((line) => line.includes("#section"))
+        expect(anchorLines.length).toBe(0)
+      },
+    },
+  ])("should skip $name", ({ tree, check }) => {
     const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("div", [
-          h("a", { href: "https://example.com/image.png" }),
-          h("a", { href: "https://example.com/video.mp4" }),
-          h("a", { href: "https://example.com/audio.mp3" }),
-        ]),
-      ],
-    } as Root
 
     transformFunction(tree)
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const content = getWrittenContent()
     const lines = content.split("\n").filter((line) => line.trim())
-    const assetLines = lines.filter(
-      (line) => line.includes("example_com.png") && line.includes("image.png"),
-    )
-    expect(assetLines.length).toBe(0)
-  })
-
-  it("should skip footnote links", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("div", [h("a", { href: "#user-content-fn-1" }), h("a", { href: "#user-content-fn-2" })]),
-      ],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    const lines = content.split("\n").filter((line) => line.trim())
-    const footnoteLines = lines.filter((line) => line.includes("#user-content-fn"))
-    expect(footnoteLines.length).toBe(0)
-  })
-
-  it("should skip anchor links in headings", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("h2", [h("a", { href: "#section-1" })]),
-        h("h3", [h("a", { href: "#section-2" })]),
-      ],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    const lines = content.split("\n").filter((line) => line.trim())
-    const anchorLines = lines.filter((line) => line.includes("#section"))
-    expect(anchorLines.length).toBe(0)
+    check(lines)
   })
 
   it("should count anchor links in non-heading elements", () => {
@@ -235,69 +213,44 @@ describe("CountFavicons plugin", () => {
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
-  it("should skip links without href", () => {
+  it.each([
+    {
+      name: "links without href",
+      tree: {
+        type: "root",
+        children: [h("div", [h("a"), h("span", { href: "https://example.com" })])],
+      } as Root,
+    },
+    {
+      name: "links with non-string href",
+      tree: {
+        type: "root",
+        children: [
+          h("div", [
+            h("a", { href: 123 as unknown as string }),
+            h("a", { href: ["https://example.com"] as unknown as string }),
+          ]),
+        ],
+      } as Root,
+    },
+    {
+      name: "invalid URLs",
+      tree: {
+        type: "root",
+        children: [
+          h("div", [h("a", { href: "not-a-url" }), h("a", { href: "http://[invalid-ipv6" })]),
+        ],
+      } as Root,
+    },
+    {
+      name: "nodes without parent",
+      tree: {
+        type: "root",
+        children: [h("a", { href: "mailto:test@example.com" })],
+      } as Root,
+    },
+  ])("should skip $name", ({ tree }) => {
     const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [h("div", [h("a"), h("span", { href: "https://example.com" })])],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    const lines = content.split("\n").filter((line) => line.trim())
-    expect(lines.length).toBeGreaterThanOrEqual(0)
-  })
-
-  it("should skip links with non-string href", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("div", [
-          h("a", { href: 123 as unknown as string }),
-          h("a", { href: ["https://example.com"] as unknown as string }),
-        ]),
-      ],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    const lines = content.split("\n").filter((line) => line.trim())
-    expect(lines.length).toBeGreaterThanOrEqual(0)
-  })
-
-  it("should skip invalid URLs", () => {
-    const transformFunction = createTransformFunction()
-
-    const tree = {
-      type: "root",
-      children: [
-        h("div", [h("a", { href: "not-a-url" }), h("a", { href: "http://[invalid-ipv6" })]),
-      ],
-    } as Root
-
-    transformFunction(tree)
-
-    expect(fs.writeFileSync).toHaveBeenCalled()
-    const content = getWrittenContent()
-    const lines = content.split("\n").filter((line) => line.trim())
-    expect(lines.length).toBeGreaterThanOrEqual(0)
-  })
-
-  it("should skip nodes without parent", () => {
-    const transformFunction = createTransformFunction()
-
-    const linkNode = h("a", { href: "mailto:test@example.com" })
-    const tree = {
-      type: "root",
-      children: [linkNode],
-    } as Root
 
     transformFunction(tree)
 
@@ -491,5 +444,50 @@ describe("CountFavicons plugin", () => {
     expect(exampleCount).toBeGreaterThanOrEqual(2)
     expect(testCount).toBeGreaterThanOrEqual(1)
     expect(exampleCount).toBeGreaterThan(testCount)
+  })
+
+  it("should reset counter at the start of each build run", () => {
+    // Simulate first build: process some files
+    const plugin1 = CountFavicons()
+    const htmlPlugins1 = (plugin1.htmlPlugins as () => Array<() => (tree: Root) => void>)()
+    const transformFunction1 = htmlPlugins1[0]()
+
+    const tree1 = {
+      type: "root",
+      children: [
+        h("div", [
+          h("a", { href: "mailto:test1@example.com" }),
+          h("a", { href: "mailto:test2@example.com" }),
+        ]),
+      ],
+    } as Root
+
+    transformFunction1(tree1)
+
+    // Verify counts accumulated in first build
+    const countsAfterFirstBuild = getFaviconCounts()
+    expect(countsAfterFirstBuild.get(specialFaviconPaths.mail)).toBe(2)
+
+    // Simulate second build: create new plugin instance and call htmlPlugins again
+    // This should reset the counter
+    const plugin2 = CountFavicons()
+    const htmlPlugins2 = (plugin2.htmlPlugins as () => Array<() => (tree: Root) => void>)()
+    const transformFunction2 = htmlPlugins2[0]()
+
+    // Verify counter was reset (should be empty or 0)
+    const countsAfterReset = getFaviconCounts()
+    expect(countsAfterReset.get(specialFaviconPaths.mail)).toBeUndefined()
+
+    // Process files in second build
+    const tree2 = {
+      type: "root",
+      children: [h("div", [h("a", { href: "mailto:test3@example.com" })])],
+    } as Root
+
+    transformFunction2(tree2)
+
+    // Verify counts start fresh in second build (should be 1, not 3)
+    const countsAfterSecondBuild = getFaviconCounts()
+    expect(countsAfterSecondBuild.get(specialFaviconPaths.mail)).toBe(1)
   })
 })

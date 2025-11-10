@@ -140,6 +140,8 @@ export const CountFavicons: QuartzTransformerPlugin = () => {
   return {
     name: "CountFavicons",
     htmlPlugins() {
+      // Reset counter at the start of each build to prevent counts from carrying over
+      faviconCounter.clear()
       return [
         () => {
           return (tree: Root) => {
