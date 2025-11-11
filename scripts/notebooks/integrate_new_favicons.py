@@ -10,8 +10,8 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Iterable
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+
+import requests
 
 # Add parent scripts directory to path for imports
 _SCRIPTS_DIR = Path(__file__).parent.parent
@@ -75,10 +75,9 @@ def check_exists_on_cdn(target_path: Path) -> bool:
         path_str = path_str[7:]  # Remove "quartz/" prefix
     cdn_url = f"https://assets.turntrout.com/{path_str}"
     try:
-        request = Request(cdn_url, method="HEAD")
-        with urlopen(request) as response:
-            return response.getcode() == 200
-    except (HTTPError, URLError):
+        response = requests.head(cdn_url, timeout=10)
+        return response.status_code == 200
+    except requests.RequestException:
         return False
 
 
