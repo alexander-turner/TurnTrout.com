@@ -3012,3 +3012,5 @@ spam5
 spam6
 spam7
 spam8
+Palform
+vectorize
