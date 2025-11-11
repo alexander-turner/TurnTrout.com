@@ -9,6 +9,7 @@ import {
   defaultTitle,
   appleTouchIconUrl,
   faviconUrl,
+  faviconMimeType,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
 import { escapeHTML } from "../escape"
@@ -106,7 +107,7 @@ describe("renderHead", () => {
       expect(result).toContain(`<title>${defaultTitle}</title>`)
       expect(result).toContain(`<meta name="description" content="${defaultDescription}">`)
       expect(result).toContain(
-        `<link rel="icon" href="${escapeHTML(faviconUrl)}" type="image/svg+xml" />`,
+        `<link rel="icon" href="${escapeHTML(faviconUrl)}" type="${escapeHTML(faviconMimeType)}" />`,
       )
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
@@ -148,7 +149,7 @@ describe("renderHead", () => {
       expect(result).toContain('<meta name="twitter:data1" content="Test Author" />')
 
       // Favicon tags
-      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/svg+xml" />`)
+      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="${faviconMimeType}" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
@@ -376,7 +377,7 @@ describe("renderHead", () => {
         slug: "test-page" as FullSlug,
       })
 
-      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="image/svg+xml" />`)
+      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="${faviconMimeType}" />`)
       expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
