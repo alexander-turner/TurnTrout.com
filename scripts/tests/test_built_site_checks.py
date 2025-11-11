@@ -2606,6 +2606,33 @@ def test_check_consecutive_periods(html, expected):
                 "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <span>: "
             ],
         ),
+        # Test favicon inside .no-favicon-span (should be ignored)
+        (
+            '<div class="no-favicon-span"><img class="favicon" src="test.ico"></div>',
+            [],
+        ),
+        # Test svg.favicon inside .no-favicon-span (should be ignored)
+        (
+            '<div class="no-favicon-span"><svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
+            [],
+        ),
+        # Test mixed: favicon in .no-favicon-span ignored, other favicon reported
+        (
+            """
+            <div>
+                <div class="no-favicon-span"><img class="favicon" src="ignored.ico"></div>
+                <div><img class="favicon" src="reported.ico"></div>
+            </div>
+            """,
+            [
+                "Favicon (reported.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
+            ],
+        ),
+        # Test nested .no-favicon-span (should be ignored)
+        (
+            '<div class="no-favicon-span"><span><img class="favicon" src="test.ico"></span></div>',
+            [],
+        ),
     ],
 )
 def test_check_favicon_parent_elements(html, expected):

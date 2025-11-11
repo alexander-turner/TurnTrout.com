@@ -902,6 +902,25 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
     return problematic_texts
 
 
+def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
+    """Check if favicon has an ancestor with .no-favicon-span class."""
+    return any(
+        "no-favicon-span" in script_utils.get_classes(parent)
+        for parent in favicon.parents
+        if isinstance(parent, Tag)
+    )
+
+
+def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
+    """Get all favicons that should be checked (excluding .no-favicon-span)."""
+    all_favicons = soup.select("img.favicon, svg.favicon")
+    return [
+        favicon
+        for favicon in all_favicons
+        if not _has_no_favicon_span_ancestor(favicon)
+    ]
+
+
 def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
     Check that all img.favicon and svg.favicon elements are direct children of
@@ -913,18 +932,19 @@ def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
     """
     problematic_favicons: list[str] = []
 
-    img_favicons = soup.select("img.favicon:not(.no-span)")
-    svg_favicons = soup.select("svg.favicon")
+    favicons_to_check = _get_favicons_to_check(soup)
+
     contexts = [
-        (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
-        for favicon in img_favicons
-    ] + [
         (
-            favicon.get("data-domain", "unknown domain"),
-            "SVG favicon ({ctx})",
-            favicon,
+            (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
+            if favicon.name == "img"
+            else (
+                favicon.get("data-domain", "unknown domain"),
+                "SVG favicon ({ctx})",
+                favicon,
+            )
         )
-        for favicon in svg_favicons
+        for favicon in favicons_to_check
     ]
 
     for context, info_template, favicon in contexts:
