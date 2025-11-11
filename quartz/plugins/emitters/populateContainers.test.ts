@@ -55,7 +55,7 @@ describe("PopulateContainers", () => {
     >
     populateContainers = await import("./populateContainers")
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
     jest.spyOn(fs, "readFileSync").mockReturnValue("")
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
@@ -79,7 +79,7 @@ describe("PopulateContainers", () => {
       .mockReturnValue(
         '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
       )
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
     mockCtx = {
       argv: {
@@ -244,7 +244,7 @@ describe("PopulateContainers", () => {
         () => {
           jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
         },
-        () => { },
+        () => {},
       ],
     ])("should not process %s", async (_, setupFn, additionalAssert) => {
       setupFn()
@@ -541,7 +541,7 @@ describe("PopulateContainers", () => {
       ])("%s", async (_, html, configs, assertFn) => {
         jest.spyOn(fs, "existsSync").mockReturnValue(true)
         jest.spyOn(fs, "readFileSync").mockReturnValue(html)
-        jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
         const result = await populateModule.populateElements(
           "/tmp/test.html",
@@ -618,7 +618,7 @@ describe("PopulateContainers", () => {
       ])("%s", async (_, html, configs, shouldModify, assertFn) => {
         jest.spyOn(fs, "existsSync").mockReturnValue(true)
         jest.spyOn(fs, "readFileSync").mockReturnValue(html)
-        jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
         const result = await populateModule.populateElements(
           "/tmp/test.html",
