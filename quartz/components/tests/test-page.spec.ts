@@ -193,6 +193,17 @@ test.describe("Unique content around the site", () => {
     await takeRegressionScreenshot(page, testInfo, "all-tags-dummy")
   })
 
+  test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
+    await page.goto("http://localhost:8080/design")
+    const bigFaviconDemo = page.locator("#big-favicon-demo")
+    await bigFaviconDemo.scrollIntoViewIfNeeded()
+    await expect(bigFaviconDemo).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "design-big-favicon-demo", {
+      elementToScreenshot: bigFaviconDemo,
+    })
+  })
+
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
     await page.goto(
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",

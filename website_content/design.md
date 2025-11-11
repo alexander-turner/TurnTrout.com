@@ -650,43 +650,33 @@ Instead, I filter favicons as follows:
 
 To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
+
 ### Enforcing a consistent color scheme using CSS masks
+
+
+  <figure class="float-right">
+    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
+  </figure>
+
 
 Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` attributes and gradients provide the colors.
 
-<figure style="display: flex; justify-content: center;" id="big-favicon-demo">
+<figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo">
   <div class="subfigure">
-    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>. At full saturation: <svg class="favicon" style=" --color-percentage: 100%;vertical-align: unset;" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement.">.</svg></figcaption>
-  </div>
-  <div class="subfigure">
-    <svg class="favicon" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>.</figcaption>
+    <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
+    <figcaption><code>slatestarcodex.com</code> graphic is a mask on top of solid color: <svg class="favicon" style="vertical-align: unset;margin-right: var(--shared-margin);" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg>.</figcaption>
   </div>
   <div class="subfigure">
-    <svg class="favicon" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg); --favicon-size: 4rem; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption><code>slatestarcodex.com</code><svg class="favicon" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg></figcaption>
+    <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" alt=""></svg>
+    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon" style="--color-percentage: 100%;vertical-align: unset; margin-right: var(--shared-margin);" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
   </div>
-</figure>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
+    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon" style="vertical-align: unset; margin-right: var(--shared-margin);" data-domain="amazon_com" alt="A disk of text color surrounded by yellow to form a square."></svg>.</figcaption>
+</div>
+  </figure>
 
-```scss
-svg.favicon[data-domain="google_com"] {
-  background: conic-gradient(
-    from -70deg at 45% 50%,
-    var(--attenuated-red) 0deg 120deg,
-    var(--attenuated-blue) 120deg 220deg,
-    var(--attenuated-green) 220deg 310deg,
-    var(--attenuated-yellow) 310deg 360deg
-  );
-}
-```
-
-Code: The Google favicon uses a [conic gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/gradient/conic-gradient) to approximate the brand's four-color logo through the SVG mask. The `--attenuated-*` color variables blend the brand colors with the foreground text color, automatically adjusting in dark mode while maintaining readability and brand recognition.
-
-<div class="float-right">
-    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
-    <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
-  </div>
 
 I showcase all included favicons on [the test page](/test-page#favicons) to verify that the favicons look good after several kinds of characters.
 
