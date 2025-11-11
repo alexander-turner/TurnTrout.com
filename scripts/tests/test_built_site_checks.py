@@ -4794,3 +4794,16 @@ def test_check_populate_elements_nonempty(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_populate_elements_nonempty(soup)
     assert sorted(result) == sorted(expected)
+
+
+def test_check_populate_elements_nonempty_non_string_id():
+    """Test check_populate_elements_nonempty with element id that is not a string."""
+    html = '<div id="populate-test"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    element = soup.find(id="populate-test")
+    if element:
+        # Manually set id to a list to test the type guard
+        element["id"] = ["populate-test"]
+    result = built_site_checks.check_populate_elements_nonempty(soup)
+    # Should skip the element with non-string id, so no errors
+    assert result == []
