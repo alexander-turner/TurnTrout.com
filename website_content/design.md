@@ -657,7 +657,7 @@ To avoid low-resolution images, I use vector graphics. In many cases, I found th
 
 ### Enforcing a consistent color scheme using CSS masks
 
-Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` attributes and gradients provide the colors.
+Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` and `*-gradient` attributes provide the color.
 
 <figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo">
   <div class="subfigure">
