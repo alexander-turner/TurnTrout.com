@@ -650,22 +650,19 @@ Instead, I filter favicons as follows:
 
 To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
-
-### Enforcing a consistent color scheme using CSS masks
-
-
   <figure class="float-right">
     <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
     <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
   </figure>
 
+### Enforcing a consistent color scheme using CSS masks
 
 Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` attributes and gradients provide the colors.
 
 <figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo">
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
-    <figcaption><code>slatestarcodex.com</code> graphic is a mask on top of solid color: <svg class="favicon" style="vertical-align: unset;margin-right: var(--shared-margin);" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg>.</figcaption>
+    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon" style="vertical-align: unset;margin-right: var(--shared-margin);" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg>.</figcaption>
   </div>
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" alt=""></svg>
@@ -676,7 +673,6 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
     <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon" style="vertical-align: unset; margin-right: var(--shared-margin);" data-domain="amazon_com" alt="A disk of text color surrounded by yellow to form a square."></svg>.</figcaption>
 </div>
   </figure>
-
 
 I showcase all included favicons on [the test page](/test-page#favicons) to verify that the favicons look good after several kinds of characters.
 

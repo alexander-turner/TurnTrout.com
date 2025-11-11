@@ -145,11 +145,8 @@ $domain-svg-colors: (
 
 // Yellow arrow on bottom
 svg.favicon[data-domain="amazon_com"] {
-  --yellow-target: var(--yellow);
-
-  :root[data-theme="dark"] & {
-    --yellow-target: color-mix(in srgb, var(--yellow) var(--color-percentage), var(--foreground));
-  }
+  --target-percentage: 70%;
+  --yellow-target: color-mix(in srgb, var(--gold) var(--target-percentage), var(--foreground));
 
   background: radial-gradient(
     circle at 50% 40%,

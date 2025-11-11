@@ -325,7 +325,7 @@ h6,
     font-weight: lighter;
   }
 
-  &[id] > a {
+  &[id] * {
     text-decoration: none;
     color: var(--foreground);
   }

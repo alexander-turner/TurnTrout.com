@@ -29,7 +29,7 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 ### The number 1: is large before a title colon
 
-### Header 3
+### Enforcing a consistent color scheme using CSS masks
 
 #### Header 4
 
