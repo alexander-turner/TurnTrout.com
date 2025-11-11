@@ -659,18 +659,18 @@ To avoid low-resolution images, I use vector graphics. In many cases, I found th
 
 Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` and `*-gradient` attributes provide the color.
 
-<figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo" class="no-favicon-span">
+<figure style="display:flex;justify-content:center;" id="big-favicon-demo" class="no-favicon-span">
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
-    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon no-mask" style="vertical-align: unset;margin-right: .125rem;" data-domain="slatestarcodex_com" alt="A filled-in square."></svg>.</figcaption>
+    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon no-mask favicon-demo-inline" data-domain="slatestarcodex_com" alt="A filled-in square."></svg>.</figcaption>
   </div>
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" alt=""></svg>
-    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon no-mask" style="--color-percentage: 100%;vertical-align: unset; margin-right: var(--shared-margin);" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
+    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
   </div>
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
-    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask" style="vertical-align: unset; margin-right: var(--shared-margin);" data-domain="amazon_com" alt="A disk of text color surrounded by yellow to form a square."></svg>.</figcaption>
+    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" alt="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
 </div>
   </figure>
 

@@ -163,3 +163,12 @@ svg.favicon[data-domain="amazon_com"] {
   display: block;
   margin: 0 auto 1rem;
 }
+
+.favicon-demo-inline {
+  vertical-align: unset;
+  margin-right: 0.125rem;
+
+  &.full-color {
+    --color-percentage: 100%;
+  }
+}
