@@ -15,7 +15,7 @@ export default ((opts?: Options) => {
   const Footer: QuartzComponent = ({ displayClass }: QuartzComponentProps) => {
     const links = opts?.links ?? []
     return (
-      <footer className={`${displayClass ?? ""}`}>
+      <footer className={displayClass as string}>
         <p></p>
         <ul>
           {Object.entries(links).map(([text, link]) => (

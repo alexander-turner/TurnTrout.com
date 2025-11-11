@@ -3,7 +3,7 @@ import process from "process"
 import { isMainThread } from "workerpool"
 
 const rootFile = /.*at file:/
-export function trace(msg: string, err: Error) {
+export function trace(msg: string, err: Error): never {
   const stack = err.stack ?? ""
 
   const lines: string[] = []
