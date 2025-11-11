@@ -55,7 +55,7 @@ describe("PopulateContainers", () => {
     >
     populateContainers = await import("./populateContainers")
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
     jest.spyOn(fs, "readFileSync").mockReturnValue("")
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
@@ -79,7 +79,7 @@ describe("PopulateContainers", () => {
       .mockReturnValue(
         '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
       )
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
     mockCtx = {
       argv: {
@@ -181,10 +181,9 @@ describe("PopulateContainers", () => {
       // Extract domain names in order of appearance (each appears 3 times, so get first occurrence)
       const domainPattern = /data-domain="([^"]+)"/g
       const domains: string[] = []
-      let match
-      while ((match = domainPattern.exec(writtenContent)) !== null) {
-        if (!domains.includes(match[1])) {
-          domains.push(match[1])
+      for (const match of writtenContent.matchAll(domainPattern)) {
+        if (!domains.includes(match[1] ?? "")) {
+          domains.push(match[1] ?? "")
         }
       }
       // Verify order: x_com (20) > apple_com (15) > openai_com (10)
@@ -244,7 +243,7 @@ describe("PopulateContainers", () => {
         () => {
           jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
         },
-        () => { },
+        () => {},
       ],
     ])("should not process %s", async (_, setupFn, additionalAssert) => {
       setupFn()
@@ -305,7 +304,10 @@ describe("PopulateContainers", () => {
         (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
       )
       expect(designPageCall).toBeDefined()
-      const writtenContent = designPageCall![1] as string
+      if (!designPageCall) {
+        throw new Error("designPageCall not found")
+      }
+      const writtenContent = designPageCall[1] as string
       expect(writtenContent).toContain('id="populate-favicon-threshold"')
       expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
     })
@@ -326,7 +328,10 @@ describe("PopulateContainers", () => {
         (call: unknown[]) => typeof call[0] === "string" && call[0].includes("Test-page.html"),
       )
       expect(testPageCall).toBeDefined()
-      const testPageContent = testPageCall![1] as string
+      if (!testPageCall) {
+        throw new Error("testPageCall not found")
+      }
+      const testPageContent = testPageCall[1] as string
       expect(testPageContent).toContain('id="populate-favicon-container"')
       expect(testPageContent).toContain("example_com")
 
@@ -335,7 +340,10 @@ describe("PopulateContainers", () => {
         (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
       )
       expect(designPageCall).toBeDefined()
-      const designPageContent = designPageCall![1] as string
+      if (!designPageCall) {
+        throw new Error("designPageCall not found")
+      }
+      const designPageContent = designPageCall[1] as string
       expect(designPageContent).toContain('id="populate-favicon-threshold"')
       expect(designPageContent).toContain(`<span>${minFaviconCount}</span>`)
     })
@@ -541,7 +549,7 @@ describe("PopulateContainers", () => {
       ])("%s", async (_, html, configs, assertFn) => {
         jest.spyOn(fs, "existsSync").mockReturnValue(true)
         jest.spyOn(fs, "readFileSync").mockReturnValue(html)
-        jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
         const result = await populateModule.populateElements(
           "/tmp/test.html",
@@ -618,7 +626,7 @@ describe("PopulateContainers", () => {
       ])("%s", async (_, html, configs, shouldModify, assertFn) => {
         jest.spyOn(fs, "existsSync").mockReturnValue(true)
         jest.spyOn(fs, "readFileSync").mockReturnValue(html)
-        jest.spyOn(fs, "writeFileSync").mockImplementation(() => { })
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
         const result = await populateModule.populateElements(
           "/tmp/test.html",

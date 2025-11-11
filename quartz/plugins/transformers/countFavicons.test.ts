@@ -23,7 +23,7 @@ import type { FilePath } from "../../util/path"
 
 import { specialFaviconPaths } from "../../components/constants"
 import { countAllFavicons, getFaviconCounts } from "./countFavicons"
-import * as linkfavicons from "./linkfavicons"
+import { getQuartzPath, FAVICON_COUNTS_FILE } from "./linkfavicons"
 
 let tempDir: string
 let mockCtx: BuildCtx
@@ -65,7 +65,10 @@ function getWrittenContent(): string {
     (call[0] as string).toString().endsWith(".tmp"),
   )
   expect(writeCall).toBeDefined()
-  return writeCall![1] as string
+  if (!writeCall) {
+    throw new Error("writeCall not found")
+  }
+  return writeCall[1] as string
 }
 
 async function createTestFile(content: string, filename = "test.md"): Promise<FilePath> {
@@ -108,7 +111,7 @@ describe("countAllLinks", () => {
 
   it("should count external URL links", async () => {
     const hostname = "example.com"
-    const faviconPath = linkfavicons.getQuartzPath(hostname)
+    const faviconPath = getQuartzPath(hostname)
     const content = `[page1](https://${hostname}/page1)\n[page2](https://${hostname}/page2)\n[page3](https://${hostname}/page3)`
 
     const filePath = await createTestFile(content)
@@ -173,7 +176,10 @@ describe("countAllLinks", () => {
     const lines = writtenContent.split("\n").filter((line) => line.trim())
     const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
     expect(anchorLine).toBeDefined()
-    const count = parseInt(anchorLine!.split("\t")[0], 10)
+    if (!anchorLine) {
+      throw new Error("anchorLine not found")
+    }
+    const count = parseInt(anchorLine.split("\t")[0], 10)
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
@@ -219,7 +225,10 @@ describe("countAllLinks", () => {
     const lines = writtenContent.split("\n").filter((line) => line.trim())
     const turntroutLine = lines.find((line) => line.includes(specialFaviconPaths.turntrout))
     expect(turntroutLine).toBeDefined()
-    const count = parseInt(turntroutLine!.split("\t")[0], 10)
+    if (!turntroutLine) {
+      throw new Error("turntroutLine not found")
+    }
+    const count = parseInt(turntroutLine.split("\t")[0], 10)
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
@@ -239,9 +248,12 @@ describe("countAllLinks", () => {
 
     expect(exampleLine).toBeDefined()
     expect(testLine).toBeDefined()
+    if (!exampleLine || !testLine) {
+      throw new Error("exampleLine or testLine not found")
+    }
 
-    const exampleCount = parseInt(exampleLine!.split("\t")[0], 10)
-    const testCount = parseInt(testLine!.split("\t")[0], 10)
+    const exampleCount = parseInt(exampleLine.split("\t")[0], 10)
+    const testCount = parseInt(testLine.split("\t")[0], 10)
 
     expect(exampleCount).toBeGreaterThanOrEqual(2)
     expect(testCount).toBeGreaterThanOrEqual(1)
@@ -264,15 +276,18 @@ describe("countAllLinks", () => {
 
     expect(mailLine).toBeDefined()
     expect(anchorLine).toBeDefined()
+    if (!mailLine || !anchorLine) {
+      throw new Error("mailLine or anchorLine not found")
+    }
 
-    const mailCount = parseInt(mailLine!.split("\t")[0], 10)
-    const anchorCount = parseInt(anchorLine!.split("\t")[0], 10)
+    const mailCount = parseInt(mailLine.split("\t")[0], 10)
+    const anchorCount = parseInt(anchorLine.split("\t")[0], 10)
 
     expect(mailCount).toBeGreaterThanOrEqual(3)
     expect(anchorCount).toBeGreaterThanOrEqual(2)
 
-    const mailIndex = lines.indexOf(mailLine!)
-    const anchorIndex = lines.indexOf(anchorLine!)
+    const mailIndex = lines.indexOf(mailLine)
+    const anchorIndex = lines.indexOf(anchorLine)
 
     const countsEqual = mailCount === anchorCount
     const mailAfterAnchor = mailIndex > anchorIndex
@@ -290,9 +305,9 @@ describe("countAllLinks", () => {
     const writtenContent = getWrittenContent()
     const lines = writtenContent.split("\n").filter((line) => line.trim())
 
-    const applePath = linkfavicons.getQuartzPath("apple.com")
+    const applePath = getQuartzPath("apple.com")
     const applePathWithoutExt = applePath.replace(/\.png$/, "")
-    const examplePath = linkfavicons.getQuartzPath("example.com")
+    const examplePath = getQuartzPath("example.com")
     const examplePathWithoutExt = examplePath.replace(/\.png$/, "")
 
     const appleLine = lines.find((line) => line.includes(applePathWithoutExt))
@@ -300,15 +315,18 @@ describe("countAllLinks", () => {
 
     expect(appleLine).toBeDefined()
     expect(exampleLine).toBeDefined()
+    if (!appleLine || !exampleLine) {
+      throw new Error("appleLine or exampleLine not found")
+    }
 
-    const appleCount = parseInt(appleLine!.split("\t")[0], 10)
-    const exampleCount = parseInt(exampleLine!.split("\t")[0], 10)
+    const appleCount = parseInt(appleLine.split("\t")[0], 10)
+    const exampleCount = parseInt(exampleLine.split("\t")[0], 10)
 
     expect(appleCount).toBe(2)
     expect(exampleCount).toBe(2)
 
-    const appleIndex = lines.indexOf(appleLine!)
-    const exampleIndex = lines.indexOf(exampleLine!)
+    const appleIndex = lines.indexOf(appleLine)
+    const exampleIndex = lines.indexOf(exampleLine)
     expect(appleIndex).toBeLessThan(exampleIndex)
   })
 
@@ -323,7 +341,10 @@ describe("countAllLinks", () => {
     const lines = writtenContent.split("\n").filter((line) => line.trim())
     const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
     expect(mailLine).toBeDefined()
-    const count = parseInt(mailLine!.split("\t")[0], 10)
+    if (!mailLine) {
+      throw new Error("mailLine not found")
+    }
+    const count = parseInt(mailLine.split("\t")[0], 10)
     expect(count).toBe(2)
   })
 
@@ -342,7 +363,7 @@ describe("countAllLinks", () => {
 
     expect(writeCall![0]).toContain(".tmp")
     expect(renameCall[0]).toContain(".tmp")
-    expect(renameCall[1]).toBe(linkfavicons.FAVICON_COUNTS_FILE)
+    expect(renameCall[1]).toBe(FAVICON_COUNTS_FILE)
   })
 
   it("should handle write errors gracefully", async () => {

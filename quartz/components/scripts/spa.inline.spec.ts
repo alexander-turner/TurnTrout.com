@@ -740,61 +740,61 @@ test.describe("Document Head & Body Updates", () => {
   interface MetaTagTest {
     name: string
     selector: string
-    getAttribute: (el: Element | null) => string | null
+    attributeName: string
   }
 
   const metaTagTests: MetaTagTest[] = [
     {
       name: "meta description",
       selector: 'meta[name="description"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
     {
       name: "Open Graph title",
       selector: 'meta[property="og:title"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
     {
       name: "Open Graph description",
       selector: 'meta[property="og:description"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
     {
       name: "Open Graph URL",
       selector: 'meta[property="og:url"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
     {
       name: "Twitter Card title",
       selector: 'meta[name="twitter:title"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
     {
       name: "Twitter Card description",
       selector: 'meta[name="twitter:description"]',
-      getAttribute: (el) => el?.getAttribute("content") ?? null,
+      attributeName: "content",
     },
   ]
 
   for (const testCase of metaTagTests) {
     test(`updates ${testCase.name} during navigation`, async ({ page }) => {
       const initialValue = await page.evaluate(
-        ({ selector, getAttribute }) => {
+        ({ selector, attributeName }) => {
           const el = document.querySelector(selector)
-          return eval(`(${getAttribute})`)(el)
+          return el ? el.getAttribute(attributeName) : null
         },
-        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+        { selector: testCase.selector, attributeName: testCase.attributeName },
       )
 
       await ensureAboutLinkVisible(page)
       await navigateAndWait(page, "/about")
 
       const newValue = await page.evaluate(
-        ({ selector, getAttribute }) => {
+        ({ selector, attributeName }) => {
           const el = document.querySelector(selector)
-          return eval(`(${getAttribute})`)(el)
+          return el ? el.getAttribute(attributeName) : null
         },
-        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+        { selector: testCase.selector, attributeName: testCase.attributeName },
       )
 
       expect(newValue).toBeTruthy()
@@ -805,30 +805,30 @@ test.describe("Document Head & Body Updates", () => {
   interface PreservedElementTest {
     name: string
     selector: string
-    getAttribute: (el: Element | null) => string | null
+    attributeName: string
   }
 
   const preservedElementTests: PreservedElementTest[] = [
     {
       name: "spa-preserve script elements",
       selector: "script[data-website-id]",
-      getAttribute: (el) => el?.getAttribute("src") ?? null,
+      attributeName: "src",
     },
     {
       name: "spa-preserve link elements",
       selector: 'link[rel="stylesheet"][href="/index.css"]',
-      getAttribute: (el) => el?.getAttribute("href") ?? null,
+      attributeName: "href",
     },
   ]
 
   for (const testCase of preservedElementTests) {
     test(`preserves ${testCase.name} during navigation`, async ({ page }) => {
       const initialValue = await page.evaluate(
-        ({ selector, getAttribute }) => {
+        ({ selector, attributeName }) => {
           const el = document.querySelector(selector)
-          return eval(`(${getAttribute})`)(el)
+          return el ? el.getAttribute(attributeName) : null
         },
-        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+        { selector: testCase.selector, attributeName: testCase.attributeName },
       )
       expect(initialValue).toBeTruthy()
 
@@ -836,11 +836,11 @@ test.describe("Document Head & Body Updates", () => {
       await navigateAndWait(page, "/about")
 
       const newValue = await page.evaluate(
-        ({ selector, getAttribute }) => {
+        ({ selector, attributeName }) => {
           const el = document.querySelector(selector)
-          return eval(`(${getAttribute})`)(el)
+          return el ? el.getAttribute(attributeName) : null
         },
-        { selector: testCase.selector, getAttribute: testCase.getAttribute.toString() },
+        { selector: testCase.selector, attributeName: testCase.attributeName },
       )
       expect(newValue).toBe(initialValue)
     })

@@ -5,7 +5,7 @@ import gitRoot from "find-git-root"
 import fs from "fs"
 import mime from "mime-types"
 import path from "path"
-import * as psl from "psl"
+import { parse as parseDomain } from "psl"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
@@ -176,7 +176,7 @@ function normalizeHostname(hostname: string): string {
   }
 
   // Use psl library to extract root domain (handles multi-part TLDs correctly)
-  const parsed = psl.parse(hostname)
+  const parsed = parseDomain(hostname)
   // Return the registered domain if valid, otherwise return original hostname
   if ("error" in parsed || !parsed.domain) {
     return hostname
