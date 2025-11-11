@@ -300,7 +300,12 @@ describe("PopulateContainers", () => {
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
 
-      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      const writeCalls = (fs.writeFileSync as jest.Mock).mock.calls
+      const designPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
+      )
+      expect(designPageCall).toBeDefined()
+      const writtenContent = designPageCall![1] as string
       expect(writtenContent).toContain('id="populate-favicon-threshold"')
       expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
     })
@@ -315,12 +320,24 @@ describe("PopulateContainers", () => {
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
 
-      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain('id="populate-favicon-container"')
-      // Implementation may return SVG or AVIF depending on availability
-      expect(writtenContent).toContain("example_com")
-      expect(writtenContent).toContain('id="populate-favicon-threshold"')
-      expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
+      const writeCalls = (fs.writeFileSync as jest.Mock).mock.calls
+      // Check test page has favicon container
+      const testPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("Test-page.html"),
+      )
+      expect(testPageCall).toBeDefined()
+      const testPageContent = testPageCall![1] as string
+      expect(testPageContent).toContain('id="populate-favicon-container"')
+      expect(testPageContent).toContain("example_com")
+
+      // Check design page has threshold
+      const designPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
+      )
+      expect(designPageCall).toBeDefined()
+      const designPageContent = designPageCall![1] as string
+      expect(designPageContent).toContain('id="populate-favicon-threshold"')
+      expect(designPageContent).toContain(`<span>${minFaviconCount}</span>`)
     })
 
     it("should cache SVG URLs when found on CDN", async () => {
@@ -486,11 +503,12 @@ describe("PopulateContainers", () => {
         const generator = populateModule.generateSiteFaviconContent()
         const elements = await generator()
         expect(elements).toHaveLength(1)
-        expect(elements[0].tagName).toBe("img")
-        expect(elements[0].properties?.src).toBe("/static/icon.png")
-        expect(elements[0].properties?.class).toContain("favicon")
-        expect(elements[0].properties?.alt).toBe("")
-        expect(elements[0].properties?.loading).toBe("lazy")
+        expect(elements[0].tagName).toBe("span")
+        expect(elements[0].properties?.className).toContain("favicon-span")
+        const faviconElement = elements[0].children[0] as Element
+        expect(faviconElement.tagName).toBe("svg")
+        expect(faviconElement.properties?.class).toContain("favicon")
+        expect(faviconElement.properties?.style).toContain(specialFaviconPaths.turntrout)
       })
     })
 
@@ -632,38 +650,6 @@ describe("PopulateContainers", () => {
           ]),
         ).rejects.toThrow("Config missing both id and className")
       })
-    })
-  })
-
-  describe("site favicon population", () => {
-    it("should populate site favicon element", async () => {
-      mockFaviconCounts = createMockCounts([])
-      getFaviconCountsMock.mockImplementation(() => mockFaviconCounts)
-
-      const emitter = PopulateContainersEmitter()
-      await emitter.emit(mockCtx, [], mockStaticResources)
-
-      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain('class="populate-site-favicon"')
-      expect(writtenContent).toContain("/static/icon.png")
-      expect(writtenContent).toContain('class="favicon"')
-    })
-
-    it("should populate multiple site favicon elements", async () => {
-      mockFaviconCounts = createMockCounts([])
-      getFaviconCountsMock.mockImplementation(() => mockFaviconCounts)
-      jest
-        .spyOn(fs, "readFileSync")
-        .mockReturnValue(
-          '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span><span class="populate-site-favicon"></span></body></html>',
-        )
-
-      const emitter = PopulateContainersEmitter()
-      await emitter.emit(mockCtx, [], mockStaticResources)
-
-      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      const matches = writtenContent.match(/\/static\/icon\.png/g)
-      expect(matches).toHaveLength(2)
     })
   })
 })

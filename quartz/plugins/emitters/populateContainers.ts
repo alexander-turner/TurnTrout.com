@@ -6,7 +6,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
-import { minFaviconCount } from "../../components/constants"
+import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
@@ -119,7 +119,8 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
  */
 export const generateSiteFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    return [createFaviconElement("/static/icon.png")]
+    const faviconElement = createFaviconElement(specialFaviconPaths.turntrout)
+    return [h("span", { className: "favicon-span" }, [faviconElement])]
   }
 }
 
