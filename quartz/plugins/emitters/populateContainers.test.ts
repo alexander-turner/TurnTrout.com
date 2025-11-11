@@ -77,7 +77,7 @@ describe("PopulateContainers", () => {
     jest
       .spyOn(fs, "readFileSync")
       .mockReturnValue(
-        '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
+        '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
       )
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
 
@@ -226,7 +226,7 @@ describe("PopulateContainers", () => {
       await emitter.emit(mockCtx, [], mockStaticResources)
 
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain('id="favicon-container"')
+      expect(writtenContent).toContain('id="populate-favicon-container"')
     })
 
     it.each([
@@ -240,7 +240,7 @@ describe("PopulateContainers", () => {
         },
       ],
       [
-        "when #favicon-container does not exist",
+        "when #populate-favicon-container does not exist",
         () => {
           jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
         },
@@ -265,7 +265,7 @@ describe("PopulateContainers", () => {
       jest
         .spyOn(fs, "readFileSync")
         .mockReturnValue(
-          '<html><body><div id="favicon-container"><span>existing</span><p>content</p></div></body></html>',
+          '<html><body><div id="populate-favicon-container"><span>existing</span><p>content</p></div></body></html>',
         )
 
       const emitter = PopulateContainersEmitter()
@@ -316,7 +316,7 @@ describe("PopulateContainers", () => {
       await emitter.emit(mockCtx, [], mockStaticResources)
 
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
-      expect(writtenContent).toContain('id="favicon-container"')
+      expect(writtenContent).toContain('id="populate-favicon-container"')
       // Implementation may return SVG or AVIF depending on availability
       expect(writtenContent).toContain("example_com")
       expect(writtenContent).toContain('id="populate-favicon-threshold"')
@@ -655,7 +655,7 @@ describe("PopulateContainers", () => {
       jest
         .spyOn(fs, "readFileSync")
         .mockReturnValue(
-          '<html><body><div id="favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span><span class="populate-site-favicon"></span></body></html>',
+          '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span><span class="populate-site-favicon"></span></body></html>',
         )
 
       const emitter = PopulateContainersEmitter()

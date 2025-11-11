@@ -659,7 +659,7 @@ To avoid low-resolution images, I use vector graphics. In many cases, I found th
 
 Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` and `*-gradient` attributes provide the color.
 
-<figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo">
+<figure style="--shared-margin: .125rem; display:flex;justify-content:center;" id="big-favicon-demo" class="no-favicon-span">
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
     <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon" style="vertical-align: unset;margin-right: var(--shared-margin);" data-domain="slatestarcodex_com" alt="A filled-in cube."></svg>.</figcaption>

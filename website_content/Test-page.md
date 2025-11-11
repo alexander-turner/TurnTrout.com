@@ -432,7 +432,7 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons)
 
-<div id="favicon-container"></div>
+<div id="populate-favicon-container" class="no-favicon-span"></div>
 
 # Typography
 

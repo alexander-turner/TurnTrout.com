@@ -157,23 +157,8 @@ export const generateFaviconContent = (): ContentGenerator => {
       .filter((item): item is { url: string; count: number } => item !== null)
       .sort((a, b) => b.count - a.count)
 
-    // Create table
-    const tableRows: Element[] = [
-      h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Exclamation")]),
-    ]
-
-    for (const { url } of validFavicons) {
-      const faviconElement = createFaviconElement(url)
-      tableRows.push(
-        h("tr", [
-          h("td", [h("span", ["test", faviconElement])]),
-          h("td", [h("span", ["test.", faviconElement])]),
-          h("td", [h("span", ["test!", faviconElement])]),
-        ]),
-      )
-    }
-
-    return [h("table", { class: "center-table-headings" }, tableRows)]
+    // Create individual favicon elements
+    return validFavicons.map(({ url }) => createFaviconElement(url))
   }
 }
 
@@ -266,7 +251,7 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
 
       return await populateElements(testPagePath, [
         {
-          id: "favicon-container",
+          id: "populate-favicon-container",
           generator: generateFaviconContent(),
         },
         {
