@@ -20,7 +20,10 @@
   user-select: none;
 
   .subtitle & {
-    --favicon-size: calc(var(--favicon-size) * 0.65);
+    --subtitle-size: calc(var(--favicon-size) / $font-scale-factor);
+
+    width: var(--subtitle-size);
+    height: var(--subtitle-size);
   }
 
   // Make favicons align properly with headings
@@ -154,4 +157,11 @@ svg.favicon[data-domain="amazon_com"] {
     var(--foreground) 60%,
     var(--yellow-target) 60%
   );
+}
+
+.favicon-big {
+  --favicon-size: 4rem;
+
+  display: block;
+  margin: 0 auto 1rem;
 }
