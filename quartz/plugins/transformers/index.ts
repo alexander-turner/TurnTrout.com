@@ -1,5 +1,6 @@
 export { FrontMatter } from "./frontmatter"
 export { GitHubFlavoredMarkdown } from "./gfm"
+export { FixFootnotes } from "./fixFootnotes"
 export { CreatedModifiedDate } from "./lastmod"
 export { Latex } from "./latex"
 export { CrawlLinks } from "./links"
