@@ -14,7 +14,7 @@ jest.mock("../transformers/logger_utils", () => ({
 }))
 let mockFaviconCounts: Map<string, number> = new Map()
 const getFaviconCountsMock = jest.fn(() => mockFaviconCounts)
-jest.unstable_mockModule("../transformers/countfavicons", () => ({
+jest.unstable_mockModule("../transformers/countFavicons", () => ({
   getFaviconCounts: getFaviconCountsMock,
 }))
 jest.unstable_mockModule("globby", () => ({
@@ -44,13 +44,13 @@ describe("PopulateContainers", () => {
   let PopulateContainersEmitter: QuartzEmitterPlugin
   let urlCache: Map<string, string>
   let DEFAULT_PATH: string
-  let countfavicons: typeof import("../transformers/countfavicons")
+  let countFavicons: typeof import("../transformers/countFavicons")
   let populateContainers: typeof import("./populateContainers")
   let getFaviconCountsMock: jest.MockedFunction<() => Map<string, number>>
 
   beforeAll(async () => {
-    countfavicons = await import("../transformers/countfavicons")
-    getFaviconCountsMock = countfavicons.getFaviconCounts as jest.MockedFunction<
+    countFavicons = await import("../transformers/countFavicons")
+    getFaviconCountsMock = countFavicons.getFaviconCounts as jest.MockedFunction<
       () => Map<string, number>
     >
     populateContainers = await import("./populateContainers")

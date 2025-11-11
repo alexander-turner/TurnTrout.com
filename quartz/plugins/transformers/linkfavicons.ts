@@ -921,7 +921,7 @@ async function handleLink(
     }
 
     // transformUrl already handles whitelist/blacklist, so we only need to check count
-    // Use getQuartzPath as the lookup key, but normalize it (remove extension) to match countfavicons.ts
+    // Use getQuartzPath as the lookup key, but normalize it (remove extension) to match countFavicons.ts
     const countKey = normalizePathForCounting(getQuartzPath(finalURL.hostname))
     const count = faviconCounts.get(countKey) || 0
 

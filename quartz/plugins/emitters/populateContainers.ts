@@ -8,7 +8,7 @@ import { visit } from "unist-util-visit"
 
 import { minFaviconCount } from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
-import { getFaviconCounts } from "../transformers/countfavicons"
+import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
   getFaviconUrl,

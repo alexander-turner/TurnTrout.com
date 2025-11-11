@@ -15,6 +15,7 @@ import type { FilePath, FullSlug } from "./util/path"
 import cfg from "../quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
+import { countAllFavicons } from "./plugins/transformers/countFavicons"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
 import { parseMarkdown } from "./processors/parse"
@@ -85,6 +86,11 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
 
   const filePaths = fps.map((fp) => joinSegments(argv.directory, fp) as FilePath)
   ctx.allSlugs = allFiles.map((fp) => slugifyFilePath(fp as FilePath))
+
+  // Count links across all files before any HTML processing
+  perf.addEvent("count-links")
+  await countAllFavicons(ctx, filePaths)
+  console.log(`Counted links in ${perf.timeSince("count-links")}`)
 
   const parsedFiles = await parseMarkdown(ctx, filePaths)
   const filteredContent = filterContent(ctx, parsedFiles)
