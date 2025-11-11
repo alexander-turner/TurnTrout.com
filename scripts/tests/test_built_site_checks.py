@@ -2762,6 +2762,26 @@ def test_check_favicon_parent_elements(html, expected):
             '<svg class="favicon" style="  --mask-url:  url(  /test.svg  )  ;"></svg>',
             [],
         ),
+        # SVG favicon with no-mask class (exempt from mask-url requirement)
+        (
+            '<svg class="favicon no-mask" style="color: red;"></svg>',
+            [],
+        ),
+        # SVG favicon with no-mask class and no style (exempt)
+        (
+            '<svg class="favicon no-mask"></svg>',
+            [],
+        ),
+        # Mixed: SVG with no-mask (exempt) and SVG without mask-url (invalid)
+        (
+            """
+            <div>
+                <svg class="favicon no-mask" style="color: red;"></svg>
+                <svg class="favicon" style="color: blue;"></svg>
+            </div>
+            """,
+            ["SVG favicon missing --mask-url in style: color: blue;"],
+        ),
     ],
 )
 def test_check_favicons_are_svgs(html, expected):
