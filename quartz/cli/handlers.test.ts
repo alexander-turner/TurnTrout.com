@@ -13,6 +13,14 @@ jest.mock("critical", () => {
   return { generate }
 })
 
+// Mock puppeteer to prevent it from launching
+jest.mock("puppeteer", () => ({
+  launch: jest.fn(),
+  default: {
+    launch: jest.fn(),
+  },
+}))
+
 import fs from "fs"
 // skipcq: JS-W1028
 import fsExtra, { ensureDir, remove } from "fs-extra"
