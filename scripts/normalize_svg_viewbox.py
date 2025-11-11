@@ -3,6 +3,7 @@
 content filling the space."""
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,30 @@ from xml.etree import ElementTree as ET
 def check_inkscape() -> bool:
     """Check if Inkscape is available."""
     return shutil.which("inkscape") is not None
+
+
+def is_already_normalized(svg_path: Path, target_size: int) -> bool:
+    """Check if SVG is already normalized to target_size."""
+    try:
+        content = svg_path.read_text(encoding="utf-8")
+
+        # Check for square viewBox matching target size
+        if not re.search(
+            rf'viewBox=["\']0\s+0\s+{target_size}\s+{target_size}["\']',
+            content,
+        ):
+            return False
+
+        # Check that root <svg> tag has no width/height attributes
+        svg_tag_match = re.search(r"<svg[^>]*>", content, re.IGNORECASE)
+        if svg_tag_match and re.search(
+            r"\b(width|height)\s*=", svg_tag_match.group(0), re.IGNORECASE
+        ):
+            return False
+
+        return True
+    except (OSError, UnicodeDecodeError):
+        return False
 
 
 def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
@@ -139,6 +164,10 @@ def main() -> int:
             continue
 
         try:
+            if is_already_normalized(svg_path, args.size):
+                print(f"⊘ Already normalized: {svg_path.name}")
+                continue
+
             if args.dry_run:
                 print(f"Would normalize {svg_path.name}")
             else:
