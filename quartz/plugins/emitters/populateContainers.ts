@@ -24,6 +24,7 @@ import { type QuartzEmitterPlugin } from "../types"
 const logger = createWinstonLogger("populateContainers")
 
 const TEST_PAGE_SLUG = "Test-page" as FullSlug
+const DESIGN_PAGE_SLUG = "design" as FullSlug
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
@@ -157,8 +158,23 @@ export const generateFaviconContent = (): ContentGenerator => {
       .filter((item): item is { url: string; count: number } => item !== null)
       .sort((a, b) => b.count - a.count)
 
-    // Create individual favicon elements
-    return validFavicons.map(({ url }) => createFaviconElement(url))
+    // Create table
+    const tableRows: Element[] = [
+      h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Exclamation")]),
+    ]
+
+    for (const { url } of validFavicons) {
+      const faviconElement = createFaviconElement(url)
+      tableRows.push(
+        h("tr", [
+          h("td", [h("span", ["test", faviconElement])]),
+          h("td", [h("span", ["test.", faviconElement])]),
+          h("td", [h("span", ["test!", faviconElement])]),
+        ]),
+      )
+    }
+
+    return [h("table", { class: "center-table-headings" }, tableRows)]
   }
 }
 
@@ -249,20 +265,26 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
     async emit(ctx) {
       const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
 
-      return await populateElements(testPagePath, [
+      const testPageFiles = await populateElements(testPagePath, [
         {
           id: "populate-favicon-container",
           generator: generateFaviconContent(),
+        },
+      ])
+
+      const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`)
+      const designPageFiles = await populateElements(designPagePath, [
+        {
+          className: "populate-site-favicon",
+          generator: generateSiteFaviconContent(),
         },
         {
           id: "populate-favicon-threshold",
           generator: generateConstantContent(minFaviconCount),
         },
-        {
-          className: "populate-site-favicon",
-          generator: generateSiteFaviconContent(),
-        },
       ])
+
+      return [...testPageFiles, ...designPageFiles]
     },
   }
 }
