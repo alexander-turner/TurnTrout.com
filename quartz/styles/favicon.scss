@@ -39,6 +39,7 @@
 
 // SVG-specific styling using masks for color control
 svg.favicon {
+  --mask-url: none; // Overridden by inline styles
   --color-percentage: 40%;
   --svg-color: var(--foreground);
   --attenuated-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
