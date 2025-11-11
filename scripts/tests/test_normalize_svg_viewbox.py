@@ -164,14 +164,20 @@ def test_fix_svg_viewbox_custom_size(sample_svg: Path):
 
 def test_normalize_svg_viewbox_success(sample_svg: Path, mock_subprocess_run):
     """Test normalize_svg_viewbox when Inkscape is available."""
-    with patch("normalize_svg_viewbox.check_inkscape", return_value=True):
-        with patch("builtins.print") as mock_print:
-            normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
+    with (
+        patch("normalize_svg_viewbox.check_inkscape", return_value=True),
+        patch("builtins.print") as mock_print,
+    ):
+        normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
 
     # Check that Inkscape was called
     mock_subprocess_run.assert_called_once()
     call_args = mock_subprocess_run.call_args[0][0]
-    assert call_args[0] == "inkscape"
+    assert (
+        call_args[0].endswith("inkscape")
+        or call_args[0] == "/usr/bin/inkscape"
+        or call_args[0] == "/usr/local/bin/inkscape"
+    )
     assert str(sample_svg) in call_args
 
     # Check that fix_svg_viewbox was called (viewBox should be set)
@@ -194,9 +200,11 @@ def test_normalize_svg_viewbox_default_size(
     sample_svg: Path, mock_subprocess_run
 ):
     """Test normalize_svg_viewbox with default size."""
-    with patch("normalize_svg_viewbox.check_inkscape", return_value=True):
-        with patch("builtins.print"):
-            normalize_svg_viewbox.normalize_svg_viewbox(sample_svg)
+    with (
+        patch("normalize_svg_viewbox.check_inkscape", return_value=True),
+        patch("builtins.print"),
+    ):
+        normalize_svg_viewbox.normalize_svg_viewbox(sample_svg)
 
     content = sample_svg.read_text(encoding="utf-8")
     assert 'viewBox="0 0 24 24"' in content

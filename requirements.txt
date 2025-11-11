@@ -12,6 +12,8 @@ certifi==2025.8.3
     # via requests
 charset-normalizer==3.4.3
     # via requests
+defusedxml==0.7.1
+    # via -r requirements.in
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44

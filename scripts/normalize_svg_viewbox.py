@@ -8,7 +8,13 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from xml.etree import ElementTree as ET
+from xml.etree import ElementTree as xml_etree
+
+from defusedxml import ElementTree as ET
+
+# Use xml.etree for Element creation and namespace registration
+# while using defusedxml for parsing (security)
+Element = xml_etree.Element
 
 
 def check_inkscape() -> bool:
@@ -43,7 +49,7 @@ def is_already_normalized(svg_path: Path, target_size: int) -> bool:
 def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     """Set viewBox to square target_size, scale content to fill, and remove
     width/height attributes."""
-    ET.register_namespace("", "http://www.w3.org/2000/svg")
+    xml_etree.register_namespace("", "http://www.w3.org/2000/svg")
     tree = ET.parse(svg_path)
     root = tree.getroot()
 
@@ -64,7 +70,7 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     # Wrap all children in a scaled and translated group
     children = list(root)
     if children:
-        group = ET.Element("g")
+        group = Element("g")
         group.set(
             "transform",
             f"translate({translate_x:.6f},{translate_y:.6f})"
@@ -101,9 +107,12 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
         )
 
     # Use Inkscape to crop to content bounds and export
+    inkscape_path = shutil.which("inkscape")
+    if not inkscape_path:
+        raise RuntimeError("Inkscape executable not found in PATH")
     subprocess.run(
         [
-            "inkscape",
+            inkscape_path,
             str(svg_path),
             "--export-type=svg",
             "--export-plain-svg",

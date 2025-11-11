@@ -3,6 +3,7 @@
 
 # Production dependencies (auto-detected from scripts/)
 beautifulsoup4
+defusedxml
 GitPython
 google_auth
 numpy
