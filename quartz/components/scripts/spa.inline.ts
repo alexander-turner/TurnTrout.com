@@ -152,15 +152,28 @@ function updateHeadElements(html: Document): void {
   const newHead = html.head
   const currentHead = document.head
 
+  console.debug(`[updateHeadElements] Starting head update`)
+  console.debug(
+    `[updateHeadElements] Current head meta count: ${currentHead.querySelectorAll("meta").length}`,
+  )
+  console.debug(
+    `[updateHeadElements] New head meta count: ${newHead.querySelectorAll("meta").length}`,
+  )
+
   const newTitle = newHead.querySelector("title")?.textContent
   if (newTitle) {
+    console.debug(`[updateHeadElements] Updating title to: ${newTitle}`)
     document.title = newTitle
   }
 
   // Update or create meta tags (excluding spa-preserve ones)
-  const metaTags = newHead.querySelectorAll("meta:not([spa-preserve])")
+  const allMetaTags = newHead.querySelectorAll("meta")
+  const metaTags = Array.from(allMetaTags).filter((meta) => !meta.hasAttribute("spa-preserve"))
+  console.debug(
+    `[updateHeadElements] Found ${metaTags.length} meta tags to process (excluding spa-preserve)`,
+  )
 
-  for (const newMeta of Array.from(metaTags)) {
+  for (const newMeta of metaTags) {
     const name = newMeta.getAttribute("name")
     const property = newMeta.getAttribute("property")
     const httpEquiv = newMeta.getAttribute("http-equiv")
@@ -170,32 +183,48 @@ function updateHeadElements(html: Document): void {
     let existingMeta: HTMLMetaElement | null = null
     let selector = ""
     if (name) {
-      selector = `meta[name="${name}"]:not([spa-preserve])`
+      selector = `meta[name="${name}"]`
     } else if (property) {
-      selector = `meta[property="${property}"]:not([spa-preserve])`
+      selector = `meta[property="${property}"]`
     } else if (httpEquiv) {
-      selector = `meta[http-equiv="${httpEquiv}"]:not([spa-preserve])`
+      selector = `meta[http-equiv="${httpEquiv}"]`
     }
 
-    existingMeta = currentHead.querySelector(selector) as HTMLMetaElement | null
+    if (selector) {
+      const candidates = currentHead.querySelectorAll(selector)
+      // Find the first one without spa-preserve
+      for (const candidate of Array.from(candidates)) {
+        if (!candidate.hasAttribute("spa-preserve")) {
+          existingMeta = candidate as HTMLMetaElement
+          break
+        }
+      }
+    }
     if (existingMeta) {
+      console.debug(
+        `[updateHeadElements] Updating meta tag: selector="${selector}", old content="${existingMeta.getAttribute("content")}", new content="${content}"`,
+      )
       existingMeta.setAttribute("content", content)
     } else {
       console.warn(
-        `[updateHeadElements] No existing meta tag found for name: ${name}, property: ${property}, http-equiv: ${httpEquiv}. Creating new meta tag.`,
+        `[updateHeadElements] No existing meta tag found for selector: "${selector}". Creating new meta tag.`,
       )
-      const newMeta = document.createElement("meta")
-      if (name) newMeta.name = name
-      if (property) newMeta.setAttribute("property", property)
-      if (httpEquiv) newMeta.httpEquiv = httpEquiv
-      newMeta.setAttribute("content", content)
-      currentHead.appendChild(newMeta)
+      const newMetaElement = document.createElement("meta")
+      if (name) newMetaElement.name = name
+      if (property) newMetaElement.setAttribute("property", property)
+      if (httpEquiv) newMetaElement.httpEquiv = httpEquiv
+      newMetaElement.setAttribute("content", content)
+      currentHead.appendChild(newMetaElement)
     }
   }
 
   // Remove meta tags that are no longer in the new head (excluding spa-preserve)
-  const currentMetas = currentHead.querySelectorAll("meta:not([spa-preserve])")
+  const currentMetas = currentHead.querySelectorAll("meta")
   for (const currentMeta of Array.from(currentMetas)) {
+    if (currentMeta.hasAttribute("spa-preserve")) {
+      continue
+    }
+
     const name = currentMeta.getAttribute("name")
     const property = currentMeta.getAttribute("property")
     const httpEquiv = currentMeta.getAttribute("http-equiv")
