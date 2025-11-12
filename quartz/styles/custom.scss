@@ -316,13 +316,6 @@ figure:has(> .subfigure) {
   justify-content: center;
 }
 
-#big-favicon-demo {
-  @media all and (max-width: $max-mobile-width) {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
 figure {
   margin: 0; // Use maximal space
 }
