@@ -20,7 +20,7 @@
   user-select: none;
 
   .subtitle & {
-    --subtitle-size: calc(var(--favicon-size) / $font-scale-factor);
+    --subtitle-size: calc(var(--favicon-size) / #{$font-scale-factor});
 
     width: var(--subtitle-size);
     height: var(--subtitle-size);
