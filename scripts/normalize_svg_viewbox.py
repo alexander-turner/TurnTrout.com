@@ -12,10 +12,6 @@ from xml.etree import ElementTree as xml_etree
 
 from defusedxml import ElementTree as ET
 
-# Use xml.etree for Element creation and namespace registration
-# while using defusedxml for parsing (security)
-Element = xml_etree.Element
-
 
 def check_inkscape() -> bool:
     """Check if Inkscape is available."""
@@ -70,7 +66,7 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     # Wrap all children in a scaled and translated group
     children = list(root)
     if children:
-        group = Element("g")
+        group = xml_etree.Element("g")
         group.set(
             "transform",
             f"translate({translate_x:.6f},{translate_y:.6f})"

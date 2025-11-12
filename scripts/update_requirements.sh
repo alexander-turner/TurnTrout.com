@@ -34,6 +34,7 @@ cat >> requirements.in << 'EOF'
 pytest
 
 # Type stubs for mypy
+types-defusedxml
 types-pyyaml
 types-requests
 pandas-stubs

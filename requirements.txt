@@ -83,6 +83,8 @@ soupsieve==2.8
     # via beautifulsoup4
 tqdm==4.67.1
     # via -r requirements.in
+types-defusedxml==0.7.0.20250822
+    # via -r requirements.in
 types-pytz==2025.2.0.20250809
     # via pandas-stubs
 types-pyyaml==6.0.12.20250402
