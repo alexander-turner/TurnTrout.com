@@ -471,7 +471,14 @@ def get_check_steps(
         ),
         CheckStep(
             name="Cleaning up SCSS",
-            command=["npx", "stylelint", "--fix", "quartz/**/*.scss"],
+            command=[
+                "npx",
+                "stylelint",
+                "--config",
+                "config/stylelint/.stylelintrc.json",
+                "--fix",
+                "quartz/**/*.scss",
+            ],
         ),
         # skipcq: BAN-B604
         CheckStep(
