@@ -5,8 +5,8 @@
 }
 
 :root {
-  @for $i from -3 through -1 {
-    --font-size-minus-#{abs($i)}: #{calculate-scale($i)};
+  @for $i from 1 through 3 {
+    --font-size-minus-#{$i}: #{calculate-scale(-$i)};
   }
 
   @for $i from 0 through 4 {
