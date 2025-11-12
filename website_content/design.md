@@ -649,7 +649,7 @@ Instead, I filter favicons as follows:
 3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
 4. I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
 
-To avoid low-resolution images, I use vector graphics. In many cases, I found the vector on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
+To avoid low-resolution images, I use SVGs. In many cases, I found the brand's SVG on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
   <figure class="float-right no-favicon-span">
     <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
