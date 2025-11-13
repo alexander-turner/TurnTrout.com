@@ -82,9 +82,8 @@ def update_markdown_references(
         verbose: Whether to print verbose output.
     """
     relative_original_path = script_utils.path_relative_to_quartz_parent(file_path)
-    relative_subpath = Path(
-        *relative_original_path.parts[relative_original_path.parts.index("static") :]
-    )
+    static_index = relative_original_path.parts.index("static")
+    relative_subpath = Path(*relative_original_path.parts[static_index:])
 
     escaped_relative_subpath: str = re.escape(str(relative_subpath))
     source_regex: str = rf"(?<=[\(\"\[])((quartz|\.)?/)?{escaped_relative_subpath}"
