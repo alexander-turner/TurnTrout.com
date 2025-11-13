@@ -65,9 +65,9 @@ export default defineConfig({
   workers: 1, // Parallelism causes flakiness
 
   retries: process.env.CI ? 3 : 1,
-  testDir: "./quartz/",
+  testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
-  snapshotPathTemplate: "lost-pixel/{arg}.png",
+  snapshotPathTemplate: "../../lost-pixel/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
     command: "npm run start",
