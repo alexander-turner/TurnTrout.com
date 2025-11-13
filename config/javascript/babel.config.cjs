@@ -1,6 +1,6 @@
 /* global module */
 /* eslint-env node */
-"use strict"
+"use strict";
 
 // babel.config.cjs
 
@@ -10,4 +10,4 @@ module.exports = {
     "@babel/preset-typescript",
     ["@babel/preset-react", { runtime: "automatic", importSource: "preact" }],
   ],
-}
+};

@@ -27,6 +27,7 @@ pytest <path>               # Python tests (NOT python -m pytest)
 ```
 
 **Python environment**: Always activate conda environment before running Python scripts:
+
 ```bash
 conda init && conda activate website
 ```
@@ -45,6 +46,7 @@ npm run check       # Lint and type check
 The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Transformers** (`quartz/plugins/transformers/`): Process Markdown/HTML content
+
 - Operate on MDAST (Markdown AST) and HAST (HTML AST) trees
 - Examples: twemoji rendering, color variables, link favicons, table captions, spoilers, subtitles
 
@@ -81,6 +83,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
 **Pre-push** (main branch only):
+
 - Stashes uncommitted changes
 - Runs comprehensive validation (tests, linting, spellcheck, link validation)
 - Compresses/uploads assets to CDN
@@ -103,6 +106,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 ## Key Technical Details
 
 ### Build Pipeline
+
 1. Parse Markdown files with frontmatter
 2. Apply transformer plugins to MDAST/HAST
 3. Filter content
@@ -111,18 +115,21 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 6. Generate RSS/sitemap
 
 ### Asset Management
+
 - Assets staged in `asset_staging/` during editing
 - Build pipeline: compress → strip EXIF → upload to Cloudflare R2 → update Markdown refs
 - Images converted to AVIF (10x compression vs PNG)
 - Videos: WEBM for most browsers, MP4 for Safari
 
 ### Text Processing
+
 - Smart quotes conversion (custom regex, 45 unit tests)
 - Automatic smallcaps for 3+ consecutive capitals (excluding Roman numerals)
 - Hyphen → en-dash/em-dash conversion
 - Dropcaps using EB Garamond with CSS pseudo-elements
 
 ### Site Features
+
 - Server-side KaTeX math rendering
 - Inline favicons next to external links
 - Popovers for internal links
@@ -133,6 +140,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 ## Pre-push Validation Pipeline
 
 When pushing to main, these checks run automatically:
+
 1. TypeScript: ESLint, type checking, 100% branch coverage tests
 2. Python: mypy, pylint (10/10), ruff, 100% line coverage
 3. Spellcheck with whitelisting
@@ -148,6 +156,7 @@ When pushing to main, these checks run automatically:
 ## GitHub Actions (Post-push)
 
 After pushing to main:
+
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
 - Tests run on ~40 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
@@ -157,6 +166,7 @@ After pushing to main:
 ## Design Philosophy
 
 Per `.cursorrules` and `design.md`:
+
 - Minimal, targeted changes only
 - Verify all information before generating code
 - Derive style from existing codebase
