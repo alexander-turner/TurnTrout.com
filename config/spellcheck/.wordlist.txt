@@ -3014,3 +3014,5 @@ spam7
 spam8
 Palform
 vectorize
+SVGs
+dereference
