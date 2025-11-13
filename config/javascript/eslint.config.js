@@ -1,11 +1,11 @@
-import pluginJs from "@eslint/js"
-import eslintConfigPrettier from "eslint-config-prettier"
-import jestPlugin from "eslint-plugin-jest"
-import perfectionist from "eslint-plugin-perfectionist"
-import playwright from "eslint-plugin-playwright"
-import pluginReact from "eslint-plugin-react"
-import globals from "globals"
-import { configs as tseslintConfigs } from "typescript-eslint"
+import pluginJs from "@eslint/js";
+import eslintConfigPrettier from "eslint-config-prettier";
+import jestPlugin from "eslint-plugin-jest";
+import perfectionist from "eslint-plugin-perfectionist";
+import playwright from "eslint-plugin-playwright";
+import pluginReact from "eslint-plugin-react";
+import globals from "globals";
+import { configs as tseslintConfigs } from "typescript-eslint";
 
 export default [
   // Global rules and plugins
@@ -85,4 +85,4 @@ export default [
   },
   // Turn off rules that might conflict with Prettier formatting
   eslintConfigPrettier,
-]
+];
