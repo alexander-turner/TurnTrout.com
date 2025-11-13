@@ -54,9 +54,7 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
             check=False,
         )
     except subprocess.CalledProcessError as e:  # pragma: no cover
-        raise RuntimeError(
-            f"Failed to check existence of file in R2: {e}"
-        ) from e
+        raise RuntimeError(f"Failed to check existence of file in R2: {e}") from e
 
     if result.returncode == 0 and key in result.stdout:
         if verbose:
@@ -83,19 +81,13 @@ def update_markdown_references(
         references_dir: Dir to search for files to update references.
         verbose: Whether to print verbose output.
     """
-    relative_original_path = script_utils.path_relative_to_quartz_parent(
-        file_path
-    )
+    relative_original_path = script_utils.path_relative_to_quartz_parent(file_path)
     relative_subpath = Path(
-        *relative_original_path.parts[
-            relative_original_path.parts.index("static") :
-        ]
+        *relative_original_path.parts[relative_original_path.parts.index("static") :]
     )
 
     escaped_relative_subpath: str = re.escape(str(relative_subpath))
-    source_regex: str = (
-        rf"(?<=[\(\"\[])((quartz|\.)?/)?{escaped_relative_subpath}"
-    )
+    source_regex: str = rf"(?<=[\(\"\[])((quartz|\.)?/)?{escaped_relative_subpath}"
 
     if verbose:
         print(f'Changing "{relative_subpath}" references to "{r2_address}"')
@@ -113,9 +105,7 @@ def update_markdown_references(
             f.write(new_content)
 
 
-def _download_from_r2(
-    upload_target: str, target: Path
-) -> None:  # pragma: no cover
+def _download_from_r2(upload_target: str, target: Path) -> None:  # pragma: no cover
     rclone_args = ["rclone", "copyto", upload_target, str(target)]
     subprocess.run(rclone_args, check=True)
 
@@ -176,8 +166,7 @@ def upload_to_r2(
         print(f"Uploading {file_path} to R2 with key: {r2_key}")
 
     rclone_args = ["rclone", "copyto", str(file_path), upload_target]
-    # Add metadata option for SVG files
-    # otherwise CORS will deny the request by the client
+    # Set content-type for SVG files to ensure proper serving
     if file_path.suffix.lower() == ".svg":
         rclone_args.extend(["--metadata-set", "content-type=image/svg+xml"])
     try:
@@ -251,9 +240,7 @@ def upload_and_move(
         if not move_to_dir.exists():
             print(f"Warning: Directory does not exist: {move_to_dir}")
         else:
-            move_uploaded_file(
-                file_path, move_to_dir=move_to_dir, verbose=verbose
-            )
+            move_uploaded_file(file_path, move_to_dir=move_to_dir, verbose=verbose)
 
 
 def main() -> None:
@@ -271,9 +258,7 @@ def main() -> None:
         default=None,
         help="Move file to directory after upload",
     )
-    parser.add_argument(
-        "--verbose", action="store_true", help="Enable verbose output"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
         "--upload-from-directory",
         type=Path,
@@ -309,15 +294,11 @@ def main() -> None:
             use_git_ignore=False,  # several image dirs are git ignored
         )
         # Filter out ignored files
-        files_to_upload = [
-            f for f in all_files if f.name not in args.ignore_files
-        ]
+        files_to_upload = [f for f in all_files if f.name not in args.ignore_files]
     elif args.file:
         files_to_upload = [args.file]
     else:
-        parser.error(
-            "Either --upload_from_directory or a file must be specified"
-        )
+        parser.error("Either --upload_from_directory or a file must be specified")
 
     for file_to_upload in files_to_upload:
         upload_and_move(
