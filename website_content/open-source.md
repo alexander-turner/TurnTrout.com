@@ -5,7 +5,8 @@ no_dropcap: true
 tags:
   - personal
   - open-source
-description: "My open-source projects include this website's infrastructure, AI-powered
+description:
+  "My open-source projects include this website's infrastructure, AI-powered
   alt text generation, and dataset protection utilities."
 authors: Alex Turner
 hideSubscriptionLinks: false
@@ -35,7 +36,7 @@ SITE_DIR=/tmp/TurnTrout.com
 git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
 cd "$SITE_DIR"
 yes | npm ci
-npx quartz build --serve 
+npx quartz build --serve
 ```
 
 # Automatic alt text generation
@@ -54,7 +55,7 @@ Figure: Generating alt text for maze diagrams from [Understanding and Controllin
 ![[https://assets.turntrout.com/static/images/posts/open-source-20251004181624.avif]]
 Figure: Generating alt text for my meme from [Against Shoggoth](/against-shoggoth).
 
-In the end, I got the job done for about \$12.50 using Gemini 2.5 Pro. My `alt-text-llm` addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com)  is now friendlier to the millions of people who browse the web with the help of screen readers.
+In the end, I got the job done for about \$12.50 using Gemini 2.5 Pro. My `alt-text-llm` addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com) is now friendlier to the millions of people who browse the web with the help of screen readers.
 
 If you want to improve accessibility for your content, go ahead and [check out my repository](https://github.com/alexander-turner/alt-text-llm)!
 
@@ -63,16 +64,18 @@ If you want to improve accessibility for your content, go ahead and [check out m
 Subtitle: Install with `pip install easy-dataset-share`.
 
 I helped fund this project.
+
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
-> ![[dataset-protection#]]  
+> ![[dataset-protection#]]
 
 # Minor contributions
 
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:
+
 1. I defined a CSS `--property`.
 2. I define `--property` using the SCSS variable `$var`.
-3. In this specific context, [browsers will not dereference `$var`](https://sass-lang.com/documentation/style-rules/declarations/#custom-properties) which means the final CSS contains the literal "`$var`".
+3. In this specific context, [browsers will not interpolate `$var`](https://sass-lang.com/documentation/style-rules/declarations/#custom-properties) which means the final CSS contains the literal "`$var`".
 
-To fix the problem, `$var` must be _interpolated_ into `#{$var}`. My [`custom-property-no-missing-interpolation`](https://github.com/stylelint-scss/stylelint-scss/pull/1195) rule catches and automatically fixes this mistake.
+To fix the problem, `$var` must be interpolated into `#{$var}`. My [`custom-property-no-missing-interpolation`](https://github.com/stylelint-scss/stylelint-scss/pull/1195) rule catches and automatically fixes this mistake.
