@@ -8,6 +8,8 @@ import {
   shouldCapitalizeNodeText,
   gatherTextBeforeIndex,
   hasClass,
+  hasAncestor,
+  type ElementMaybeWithParent,
 } from "../utils"
 
 const acceptAll = () => false
@@ -231,6 +233,7 @@ describe("nodeBeginsWithCapital", () => {
       ["period not at end", "end. middle", false],
       ["empty value", "", false],
       ["undefined value", undefined, false],
+      ["null value", null, false],
     ])("should handle %s", (_case, previousValue, expected) => {
       const previousNode =
         previousValue !== undefined
@@ -381,5 +384,94 @@ describe("hasClass", () => {
     ["null class", h("div", { class: null }), "any-class", false],
   ])("handles %s", (_type, node, className, expected) => {
     expect(hasClass(node, className)).toBe(expected)
+  })
+})
+
+describe("hasAncestor", () => {
+  const createNode = (
+    tagName: string,
+    parent: ElementMaybeWithParent | null = null,
+    properties = {},
+  ): ElementMaybeWithParent => ({
+    type: "element",
+    tagName,
+    properties,
+    children: [],
+    parent,
+  })
+
+  it.each([
+    [
+      "node itself matches predicate",
+      () => createNode("div", null, { className: "target" }),
+      (anc: Element) => anc.tagName === "div",
+      true,
+    ],
+    [
+      "grandparent matches predicate",
+      () => {
+        const grandparent = createNode("article")
+        const parent = createNode("section", grandparent)
+        return createNode("div", parent)
+      },
+      (anc: Element) => anc.tagName === "article",
+      true,
+    ],
+    [
+      "no ancestor matches predicate",
+      () => {
+        const grandparent = createNode("article")
+        const parent = createNode("section", grandparent)
+        return createNode("div", parent)
+      },
+      (anc: Element) => anc.tagName === "main",
+      false,
+    ],
+    [
+      "node has no parent and does not match",
+      () => createNode("div"),
+      (anc: Element) => anc.tagName === "article",
+      false,
+    ],
+    [
+      "immediate parent matches predicate",
+      () => {
+        const parent = createNode("article")
+        return createNode("div", parent)
+      },
+      (anc: Element) => anc.tagName === "article",
+      true,
+    ],
+    [
+      "predicate matches based on class name",
+      () => {
+        const parent = createNode("div", null, { className: ["special-container"] })
+        return createNode("span", parent)
+      },
+      (anc: Element) => {
+        const className = anc.properties?.className
+        return Array.isArray(className) && className.includes("special-container")
+      },
+      true,
+    ],
+  ])("returns %s", (_case, nodeFactory, predicate, expected) => {
+    const node = nodeFactory()
+    expect(hasAncestor(node, predicate)).toBe(expected)
+  })
+
+  it("stops at first matching ancestor", () => {
+    const grandparent = createNode("article")
+    const parent = createNode("article", grandparent)
+    const node = createNode("div", parent)
+
+    let callCount = 0
+    const predicate = (anc: Element): boolean => {
+      callCount++
+      return anc.tagName === "article"
+    }
+
+    expect(hasAncestor(node, predicate)).toBe(true)
+    // once for the node itself, and once for the grandparent
+    expect(callCount).toBe(2)
   })
 })

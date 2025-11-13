@@ -51,6 +51,7 @@ export const replaceRegex = (
   parent: Parent,
   regex: RegExp,
   replaceFn: (match: RegExpMatchArray) => ReplaceFnResult,
+  // istanbul ignore next
   ignorePredicate: (node: Text, index: number, parent: Parent) => boolean = () => false,
   newNodeStyle = "span",
 ): void => {
