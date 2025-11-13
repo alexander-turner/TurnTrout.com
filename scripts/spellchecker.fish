@@ -29,8 +29,4 @@ if test $status -ne 0
 
     # Run spellcheck again with the updated dictionary
     npx spellchecker $SPELLCHECK_PARAMS; or exit
-
-    # Amend the commit with the updated dictionary
-    git add $PERM_DICT
-    git commit -m "chore: add words to dictionary"
 end

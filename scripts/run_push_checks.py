@@ -119,9 +119,7 @@ class ServerManager:
         self.cleanup()
         sys.exit(1)
 
-    def set_server_pid(
-        self, pid: int, created_by_script: bool = False
-    ) -> None:
+    def set_server_pid(self, pid: int, created_by_script: bool = False) -> None:
         """
         Set the server PID to track for cleanup.
 
@@ -227,9 +225,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
             if is_port_in_use(8080):
                 progress.remove_task(task_id)
                 progress.stop()
-                console.log(
-                    "[green]Quartz server successfully started[/green]"
-                )
+                console.log("[green]Quartz server successfully started[/green]")
                 return ServerInfo(server_pid, True)
             progress.update(
                 task_id,
@@ -294,6 +290,7 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
 
             if success:
                 console.log(f"[green]✓[/green] {step.name}")
+                commit_step_changes(_GIT_ROOT, step.name)
                 save_state(step.name)
             else:
                 console.log(f"[red]✗[/red] {step.name}")
@@ -333,6 +330,45 @@ def run_interactive_command(
         return True, "", ""
     except subprocess.CalledProcessError as e:
         return False, "", f"Command failed with exit code {e.returncode}"
+
+
+def commit_step_changes(git_root_path: Path, step_name: str) -> None:
+    """Commit any changes made by a step."""
+    # Check if there are any changes
+    git_path = shutil.which("git") or "git"
+    result = subprocess.run(
+        [git_path, "diff", "--name-only"],
+        cwd=git_root_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    changed_files = result.stdout.strip().split("\n")
+    filtered_changed_files = [f for f in changed_files if f]
+    if not filtered_changed_files:
+        return
+
+    subprocess.run(
+        [git_path, "add"] + filtered_changed_files,
+        cwd=git_root_path,
+        check=True,
+        capture_output=True,
+    )
+
+    commit_message = f"chore: apply {step_name.lower()} fixes"
+    try:
+        subprocess.run(
+            [git_path, "commit", "-m", commit_message],
+            cwd=git_root_path,
+            check=True,
+            capture_output=True,
+        )
+        console.log(f"[green]Committed {step_name.lower()} fixes[/green]")
+    except subprocess.CalledProcessError as e:
+        console.log(
+            f"[yellow]Warning: Failed to commit {step_name.lower()} fixes: {e}[/yellow]"
+        )
 
 
 def run_command(
@@ -603,9 +639,7 @@ def main() -> None:
                 console.log(f"[grey]Skipping step: {step.name}[/grey]")
 
         server_info = create_server(_GIT_ROOT)
-        server_manager.set_server_pid(
-            server_info.pid, server_info.created_by_script
-        )
+        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
         run_checks(steps_after_server, args.resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")

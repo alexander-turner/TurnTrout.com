@@ -54,12 +54,3 @@ python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_R
 # Upload assets to R2 bucket (ignore pond files - they're needed locally for tests)
 LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
 python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" --ignore-files "${IGNORE_FILES[@]}" 
-
-# Commit changes to the moved-to local dir
-# (NOTE will also commit current changes)
-cd "$LOCAL_ASSET_DIR" || exit
-if [ "$(git status --porcelain | wc -l)" -gt 0 ]; then
-    git add -A
-    git commit -m "chore: added assets which were transferred from main repo"
-fi
-cd - || exit
