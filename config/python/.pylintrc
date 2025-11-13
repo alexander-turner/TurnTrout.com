@@ -117,7 +117,8 @@ disable = raw-checker-failed,
 	deprecated-pragma,
 	use-symbolic-message-instead,
 	use-implicit-booleaness-not-comparison-to-string,
-	use-implicit-booleaness-not-comparison-to-zero
+	use-implicit-booleaness-not-comparison-to-zero,
+	line-too-long
 enable = 
 
 [METHOD_ARGS]

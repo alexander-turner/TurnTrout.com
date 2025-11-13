@@ -54,7 +54,8 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
             check=False,
         )
     except subprocess.CalledProcessError as e:  # pragma: no cover
-        raise RuntimeError(f"Failed to check existence of file in R2: {e}") from e
+        error_msg = f"Failed to check existence of file in R2: {e}"
+        raise RuntimeError(error_msg) from e
 
     if result.returncode == 0 and key in result.stdout:
         if verbose:
@@ -86,7 +87,8 @@ def update_markdown_references(
     relative_subpath = Path(*relative_original_path.parts[static_index:])
 
     escaped_relative_subpath: str = re.escape(str(relative_subpath))
-    source_regex: str = rf"(?<=[\(\"\[])((quartz|\.)?/)?{escaped_relative_subpath}"
+    pattern_prefix = r"(?<=[\(\"\[])((quartz|\.)?/)?"
+    source_regex: str = rf"{pattern_prefix}{escaped_relative_subpath}"
 
     if verbose:
         print(f'Changing "{relative_subpath}" references to "{r2_address}"')
@@ -297,7 +299,8 @@ def main() -> None:
     elif args.file:
         files_to_upload = [args.file]
     else:
-        parser.error("Either --upload_from_directory or a file must be specified")
+        error_msg = "Either --upload_from_directory or a file must be specified"
+        parser.error(error_msg)
 
     for file_to_upload in files_to_upload:
         upload_and_move(

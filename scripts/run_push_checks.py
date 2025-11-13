@@ -79,7 +79,8 @@ def get_last_step(
 
         last_step = state.get("last_successful_step")
         if last_step is None:
-            err_console.print(f"No 'last_successful_step' key in {STATE_FILE_PATH}")
+            error_msg = f"No 'last_successful_step' key in {STATE_FILE_PATH}"
+            err_console.print(error_msg)
             return None
 
         if available_steps is not None and last_step not in available_steps:
@@ -153,8 +154,10 @@ def find_quartz_process() -> int | None:
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
             cmdline = proc.info.get("cmdline")
-            if cmdline is not None and any("quartz" in cmd.lower() for cmd in cmdline):
-                return proc.pid
+            if cmdline is not None:
+                has_quartz = any("quartz" in cmd.lower() for cmd in cmdline)
+                if has_quartz:
+                    return proc.pid
         except (psutil.NoSuchProcess, psutil.AccessDenied):  # pragma: no cover
             continue
     return None
@@ -186,9 +189,8 @@ def create_server(git_root_path: Path) -> ServerInfo:
     # First check if there's already a quartz process running
     existing_pid = find_quartz_process()
     if existing_pid:
-        console.log(
-            "[green]Using existing quartz server " f"(PID: {existing_pid})[/green]"
-        )
+        msg = f"[green]Using existing quartz server (PID: {existing_pid})[/green]"
+        console.log(msg)
         return ServerInfo(existing_pid, False)
 
     # If no existing process found, check if the port is in use
@@ -340,9 +342,8 @@ def run_command(
         Tuple of (success, stdout, stderr) where success is a boolean and
         stdout/stderr are strings containing the complete output.
     """
-    if any(
-        task in str(step.command) for task in ["spellchecker", "linkchecker", "vale"]
-    ):
+    interactive_tasks = ["spellchecker", "linkchecker", "vale"]
+    if any(task in str(step.command) for task in interactive_tasks):
         return run_interactive_command(step, progress, task_id)
 
     try:
