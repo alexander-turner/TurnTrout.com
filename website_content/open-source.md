@@ -65,3 +65,14 @@ Subtitle: Install with `pip install easy-dataset-share`.
 I helped fund this project.
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
 > ![[dataset-protection#]]  
+
+# Minor contributions
+
+## SCSS linting rule
+
+I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:
+1. I defined a CSS `--property`.
+2. I define `--property` using the SCSS variable `$var`.
+3. In this specific context, [browsers will not dereference `$var`](https://sass-lang.com/documentation/style-rules/declarations/#custom-properties) which means the final CSS contains the literal "`$var`".
+
+To fix the problem, `$var` must be _interpolated_ into `#{$var}`. My [`custom-property-no-missing-interpolation`](https://github.com/stylelint-scss/stylelint-scss/pull/1195) rule catches and automatically fixes this mistake.
