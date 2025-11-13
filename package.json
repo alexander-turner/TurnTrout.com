@@ -50,7 +50,6 @@
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
     ]
   },
-  "prettier": "config/prettier/.prettierrc",
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"

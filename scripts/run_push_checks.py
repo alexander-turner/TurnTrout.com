@@ -119,7 +119,9 @@ class ServerManager:
         self.cleanup()
         sys.exit(1)
 
-    def set_server_pid(self, pid: int, created_by_script: bool = False) -> None:
+    def set_server_pid(
+        self, pid: int, created_by_script: bool = False
+    ) -> None:
         """
         Set the server PID to track for cleanup.
 
@@ -225,7 +227,9 @@ def create_server(git_root_path: Path) -> ServerInfo:
             if is_port_in_use(8080):
                 progress.remove_task(task_id)
                 progress.stop()
-                console.log("[green]Quartz server successfully started[/green]")
+                console.log(
+                    "[green]Quartz server successfully started[/green]"
+                )
                 return ServerInfo(server_pid, True)
             progress.update(
                 task_id,
@@ -477,9 +481,9 @@ def get_check_steps(
                 "npx",
                 "stylelint",
                 "--config",
-                "config/stylelint/.stylelintrc.json",
+                f"{git_root_path}/config/stylelint/.stylelintrc.json",
                 "--fix",
-                "quartz/**/*.scss",
+                f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
         # skipcq: BAN-B604
@@ -599,7 +603,9 @@ def main() -> None:
                 console.log(f"[grey]Skipping step: {step.name}[/grey]")
 
         server_info = create_server(_GIT_ROOT)
-        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
+        server_manager.set_server_pid(
+            server_info.pid, server_info.created_by_script
+        )
         run_checks(steps_after_server, args.resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
