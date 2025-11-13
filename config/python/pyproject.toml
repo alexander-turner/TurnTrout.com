@@ -40,8 +40,11 @@ exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "if __name__ == .__main__.:",
+    "^\\s+main\\(\\)$",
+    "^\\s+sys\\.exit\\(main\\(\\)\\)$",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
     "^except ImportError:",
+    "^\\s+import .*  # type: ignore$",
     "if verbose:",
 ]

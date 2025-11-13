@@ -196,9 +196,7 @@ def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
             normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
 
 
-def test_normalize_svg_viewbox_default_size(
-    sample_svg: Path, mock_subprocess_run
-):
+def test_normalize_svg_viewbox_default_size(sample_svg: Path, mock_subprocess_run):
     """Test normalize_svg_viewbox with default size."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
@@ -214,9 +212,7 @@ def test_main_success(
     sample_svg: Path, mock_subprocess_run, monkeypatch: pytest.MonkeyPatch
 ):
     """Test main() with successful normalization."""
-    monkeypatch.setattr(
-        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
-    )
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
@@ -229,9 +225,7 @@ def test_main_inkscape_not_found(
     sample_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys
 ):
     """Test main() when Inkscape is not found."""
-    monkeypatch.setattr(
-        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
-    )
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: False)
 
     result = normalize_svg_viewbox.main()
@@ -240,14 +234,10 @@ def test_main_inkscape_not_found(
     assert "Inkscape not found" in captured.err
 
 
-def test_main_file_not_found(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
-):
+def test_main_file_not_found(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys):
     """Test main() when file does not exist."""
     nonexistent_file = tmp_path / "nonexistent.svg"
-    monkeypatch.setattr(
-        "sys.argv", ["normalize_svg_viewbox.py", str(nonexistent_file)]
-    )
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(nonexistent_file)])
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
 
     result = normalize_svg_viewbox.main()
@@ -256,15 +246,11 @@ def test_main_file_not_found(
     assert "does not exist" in captured.err
 
 
-def test_main_non_svg_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
-):
+def test_main_non_svg_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys):
     """Test main() with a non-SVG file."""
     txt_file = tmp_path / "test.txt"
     txt_file.write_text("not an svg")
-    monkeypatch.setattr(
-        "sys.argv", ["normalize_svg_viewbox.py", str(txt_file)]
-    )
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(txt_file)])
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
 
     result = normalize_svg_viewbox.main()
@@ -273,9 +259,7 @@ def test_main_non_svg_file(
     assert "is not an SVG file" in captured.out
 
 
-def test_main_dry_run(
-    sample_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys
-):
+def test_main_dry_run(sample_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys):
     """Test main() with --dry-run flag."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", "--dry-run", str(sample_svg)]
@@ -329,20 +313,60 @@ def test_main_multiple_files(
     assert mock_subprocess_run.call_count == 2
 
 
-def test_main_runtime_error(
-    sample_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys
-):
+def test_main_runtime_error(sample_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys):
     """Test main() when normalize_svg_viewbox raises RuntimeError."""
-    monkeypatch.setattr(
-        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
-    )
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
     # Mock normalize_svg_viewbox to raise RuntimeError directly
-    with patch(
-        "normalize_svg_viewbox.normalize_svg_viewbox"
-    ) as mock_normalize:
+    with patch("normalize_svg_viewbox.normalize_svg_viewbox") as mock_normalize:
         mock_normalize.side_effect = RuntimeError("Inkscape failed")
         result = normalize_svg_viewbox.main()
         assert result == 0  # Continues processing
         captured = capsys.readouterr()
         assert "Error processing" in captured.err
+
+
+def test_is_already_normalized_oserror(tmp_path: Path):
+    """Test is_already_normalized when file read raises OSError."""
+    svg_path = tmp_path / "test.svg"
+    svg_path.write_text("test", encoding="utf-8")
+    # Make file unreadable to trigger OSError
+    svg_path.chmod(0o000)
+    try:
+        result = normalize_svg_viewbox.is_already_normalized(svg_path, 24)
+        assert result is False
+    finally:
+        svg_path.chmod(0o644)
+
+
+def test_is_already_normalized_unicode_decode_error(tmp_path: Path):
+    """Test is_already_normalized when file read raises UnicodeDecodeError."""
+    svg_path = tmp_path / "test.svg"
+    # Write binary data that can't be decoded as UTF-8
+    svg_path.write_bytes(b"\xff\xfe\x00\x00")
+    result = normalize_svg_viewbox.is_already_normalized(svg_path, 24)
+    assert result is False
+
+
+def test_main_already_normalized(
+    square_svg: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    """Test main() when SVG is already normalized."""
+    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(square_svg)])
+    monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
+    monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
+
+    result = normalize_svg_viewbox.main()
+    assert result == 0
+    captured = capsys.readouterr()
+    assert "Already normalized" in captured.out
+
+
+def test_normalize_svg_viewbox_inkscape_path_not_found(sample_svg: Path):
+    """Test normalize_svg_viewbox when check_inkscape passes but which fails."""
+    with (
+        patch("normalize_svg_viewbox.check_inkscape", return_value=True),
+        patch("shutil.which", return_value=None),
+    ):
+        with pytest.raises(RuntimeError, match="Inkscape executable not found"):
+            normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
