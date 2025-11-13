@@ -24,6 +24,7 @@ jest.mock("puppeteer", () => ({
 import fs from "fs"
 // skipcq: JS-W1028
 import fsExtra, { ensureDir, remove } from "fs-extra"
+import http from "http"
 import os from "os"
 import path from "path"
 
@@ -33,6 +34,7 @@ import {
   maybeGenerateCriticalCSS,
   injectCriticalCSSIntoHTMLFiles,
   resetCriticalCSSCache,
+  checkPortAvailability,
 } from "./handlers"
 
 const loadOptions = {
@@ -209,4 +211,56 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     expect(writtenHtml).not.toContain("$base-margin")
     readFileSpy.mockRestore()
   }, 10000)
+})
+
+describe("checkPortAvailability", () => {
+  let processExitSpy: jest.SpiedFunction<typeof process.exit>
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>
+  let blockingServer: http.Server | null = null
+
+  beforeEach(() => {
+    processExitSpy = jest.spyOn(process, "exit").mockImplementation(() => undefined as never)
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {})
+  })
+
+  afterEach(async () => {
+    if (blockingServer) {
+      await new Promise<void>((resolve) => {
+        blockingServer!.close(() => resolve())
+      })
+      blockingServer = null
+    }
+    processExitSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+    consoleLogSpy.mockRestore()
+  })
+
+  it("should proceed when port is available", async () => {
+    const testPort = 9876
+
+    await checkPortAvailability(testPort)
+
+    expect(processExitSpy).not.toHaveBeenCalled()
+  })
+
+  it("should exit with error message when port is in use", async () => {
+    const testPort = 9876
+
+    blockingServer = http.createServer()
+    await new Promise<void>((resolve) => {
+      blockingServer!.listen(testPort, resolve)
+    })
+
+    await checkPortAvailability(testPort)
+
+    expect(processExitSpy).toHaveBeenCalledWith(1)
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Port ${testPort} is already in use`),
+    )
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`lsof -ti:${testPort} | xargs kill`),
+    )
+  })
 })

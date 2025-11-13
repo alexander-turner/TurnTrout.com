@@ -43,15 +43,43 @@ export function resetCriticalCSSCache(): void {
 }
 
 /**
+ * Checks if a port is available by attempting to listen on it
+ */
+export async function checkPortAvailability(port: number): Promise<void> {
+  const testServer = http.createServer()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      testServer.once("error", reject)
+      testServer.once("listening", () => {
+        testServer.close()
+        resolve()
+      })
+      testServer.listen(port)
+    })
+  } catch {
+    console.error(
+      chalk.red(
+        `\nError: Port ${port} is already in use. Please free the port or use a different one.`,
+      ),
+    )
+    console.log(chalk.yellow(`Hint: Kill the process using: lsof -ti:${port} | xargs kill`))
+    process.exit(1)
+  }
+}
+
+/**
  * Handles `npx quartz build`
  */
 export async function handleBuild(argv: BuildArguments): Promise<void> {
   console.log(chalk.bgGreen.black(`\n turntrout.com v${version} \n`))
 
+  if (argv.serve) {
+    await checkPortAvailability(argv.port)
+  }
+
   // Generate SCSS variables before building
-  console.log(chalk.blue("Generating SCSS variables..."))
   generateScss()
-  console.log(chalk.green("SCSS variables generated successfully!"))
+  console.log("SCSS variables generated successfully!")
 
   const ctx: Context = await context({
     entryPoints: [fp],
