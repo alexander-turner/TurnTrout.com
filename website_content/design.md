@@ -829,7 +829,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
     ],
     "!(*.vale-styles)/**/*.md": [
       "prettier --write",
-      "markdownlint --config .markdownlint.jsonc --fix"
+      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
     ]
 ```
 

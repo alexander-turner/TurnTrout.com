@@ -1,4 +1,4 @@
-import { QuartzConfig } from "./quartz/cfg"
+import { QuartzConfig } from "../../quartz/cfg"
 import {
   AddFavicons,
   AfterArticle,
@@ -33,7 +33,7 @@ import {
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
   PopulateContainers,
-} from "./quartz/plugins"
+} from "../../quartz/plugins"
 
 const config: QuartzConfig = {
   configuration: {

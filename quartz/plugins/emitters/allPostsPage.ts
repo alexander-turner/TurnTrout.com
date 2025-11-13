@@ -1,4 +1,4 @@
-import { defaultListPageLayout, sharedPageComponents } from "../../../quartz.layout"
+import { defaultListPageLayout, sharedPageComponents } from "../../../config/quartz/quartz.layout"
 import BodyConstructor from "../../components/Body"
 import HeaderConstructor from "../../components/Header"
 import AllPosts, { allDescription, allSlug, allTitle } from "../../components/pages/AllPosts"

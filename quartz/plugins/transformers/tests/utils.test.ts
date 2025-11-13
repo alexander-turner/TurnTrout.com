@@ -236,9 +236,9 @@ describe("nodeBeginsWithCapital", () => {
       ["null value", null, false],
     ])("should handle %s", (_case, previousValue, expected) => {
       const previousNode =
-        previousValue !== undefined
+        previousValue !== undefined && previousValue !== null
           ? { type: "text", value: previousValue }
-          : ({ type: "text" } as Text)
+          : ({ type: "text", value: previousValue } as unknown as Text)
       const children = [previousNode, { type: "text", value: "test" }]
       const parent = { type: "root", children } as Parent
       expect(shouldCapitalizeNodeText(1, parent)).toBe(expected)

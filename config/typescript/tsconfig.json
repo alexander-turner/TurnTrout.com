@@ -16,9 +16,9 @@
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["../../node_modules/@types"],
     "types": []
   },
-  "include": ["**/*.ts", "**/*.tsx", "./package.json"],
-  "exclude": ["build/**/*.d.ts"]
+  "include": ["../../**/*.ts", "../../**/*.tsx", "../../package.json"],
+  "exclude": ["../../build/**/*.d.ts", "../../config/**/*.ts"]
 }

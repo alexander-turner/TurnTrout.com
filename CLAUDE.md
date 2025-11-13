@@ -68,10 +68,10 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ### Configuration Files
 
-- **`quartz.config.ts`**: Main configuration defining transformer/emitter/filter pipeline
-- **`quartz.layout.ts`**: Page layout and component arrangement
-- **`tsconfig.json`**: Strict TypeScript config with Preact JSX
-- **`jest.config.js`**: Test config enforcing 100% coverage thresholds
+- **`config/quartz/quartz.config.ts`**: Main configuration defining transformer/emitter/filter pipeline
+- **`config/quartz/quartz.layout.ts`**: Page layout and component arrangement
+- **`config/typescript/tsconfig.json`**: Strict TypeScript config with Preact JSX
+- **`jest.config.js`**: Test config enforcing 100% coverage thresholds (at root due to Jest's module resolution requirements)
 - **`.cursorrules`**: Coding guidelines (minimal diffs, derive style from context, security-first)
 
 ## Git Workflow

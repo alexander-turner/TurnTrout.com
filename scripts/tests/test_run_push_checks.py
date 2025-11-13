@@ -72,9 +72,7 @@ def test_is_port_in_use(monkeypatch):
     with patch("socket.socket") as mock_socket_cls:
         mock_sock_instance = MagicMock()
         mock_sock_instance.connect_ex.return_value = 1
-        mock_socket_cls.return_value.__enter__.return_value = (
-            mock_sock_instance
-        )
+        mock_socket_cls.return_value.__enter__.return_value = mock_sock_instance
         assert run_push_checks.is_port_in_use(8080) is False
 
 
@@ -113,9 +111,7 @@ def test_create_server():
     """Test server creation logic."""
     with (
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
-        patch(
-            "scripts.run_push_checks.find_quartz_process"
-        ) as mock_find_process,
+        patch("scripts.run_push_checks.find_quartz_process") as mock_find_process,
         patch("subprocess.Popen") as mock_popen,
         patch("scripts.run_push_checks.Progress") as mock_progress,
     ):
@@ -207,15 +203,9 @@ def test_server_manager_cleanup():
 def test_steps():
     """Fixture providing test check steps."""
     return [
-        run_push_checks.CheckStep(
-            name="Test Step 1", command=["echo", "test1"]
-        ),
-        run_push_checks.CheckStep(
-            name="Test Step 2", command=["echo", "test2"]
-        ),
-        run_push_checks.CheckStep(
-            name="Test Step 3", command=["echo", "test3"]
-        ),
+        run_push_checks.CheckStep(name="Test Step 1", command=["echo", "test1"]),
+        run_push_checks.CheckStep(name="Test Step 2", command=["echo", "test2"]),
+        run_push_checks.CheckStep(name="Test Step 3", command=["echo", "test3"]),
     ]
 
 
@@ -228,9 +218,7 @@ def test_run_checks_all_success(test_steps, temp_state_dir):
 
 
 @pytest.mark.parametrize("failing_step_index", [0, 1, 2])
-def test_run_checks_exits_on_failure(
-    test_steps, failing_step_index, temp_state_dir
-):
+def test_run_checks_exits_on_failure(test_steps, failing_step_index, temp_state_dir):
     """Test that run_checks exits immediately when a check fails."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         # Create a list of results where one step fails
@@ -295,9 +283,7 @@ def test_cleanup_handler():
 
 def test_run_command_success():
     """Test successful command execution."""
-    step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"]
-    )
+    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -317,9 +303,7 @@ def test_run_command_success():
 
 def test_run_command_failure():
     """Test command execution failure."""
-    step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"]
-    )
+    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 1
@@ -363,9 +347,7 @@ def test_run_command_shell_handling():
 
 def test_progress_bar_updates():
     """Test that progress bar updates correctly with output."""
-    step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"]
-    )
+    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -400,9 +382,7 @@ def test_progress_bar_updates():
 
         # Last update with description should show lines2..6
         last_desc = update_calls[-1][1]["description"]
-        assert (
-            "line1" not in last_desc
-        )  # line1 should be dropped due to maxlen=5
+        assert "line1" not in last_desc  # line1 should be dropped due to maxlen=5
         assert "line2" in last_desc
         assert "line3" in last_desc
         assert "line4" in last_desc
@@ -412,9 +392,7 @@ def test_progress_bar_updates():
 
 def test_progress_bar_stderr_updates():
     """Test that progress bar updates correctly with stderr output."""
-    step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"]
-    )
+    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 1
@@ -439,9 +417,7 @@ def test_progress_bar_stderr_updates():
 
 def test_progress_bar_mixed_output():
     """Test that progress bar handles mixed stdout/stderr correctly."""
-    step = run_push_checks.CheckStep(
-        name="Test Command", command=["echo", "test"]
-    )
+    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -686,9 +662,7 @@ def test_run_checks_skips_until_last_step(temp_state_dir):
         patch("scripts.run_push_checks.console.log") as mock_log,
     ):
         mock_run.return_value = (True, "", "")
-        run_push_checks.save_state(
-            "Step 2"
-        )  # Pretend we completed up to Step 2
+        run_push_checks.save_state("Step 2")  # Pretend we completed up to Step 2
 
         run_push_checks.run_checks(test_steps, resume=True)
 
@@ -759,25 +733,24 @@ def test_get_check_steps():
     assert len(steps_after) >= 2
 
     # Verify some key steps exist and are properly configured
+    assert any(step.name.startswith("Typechecking Python") for step in steps_before)
     assert any(
-        step.name.startswith("Typechecking Python") for step in steps_before
+        step.name == "Compressing and uploading local assets" for step in steps_before
     )
-    assert any(
-        step.name == "Compressing and uploading local assets"
-        for step in steps_before
-    )
-    assert any(
-        step.name.startswith("Checking HTML files") for step in steps_after
-    )
+    assert any(step.name.startswith("Checking HTML files") for step in steps_after)
 
     # Verify paths are properly configured
     for step in steps_before + steps_after:
         if ".pylintrc" in str(step.command):
             assert "--rcfile" in step.command
-            assert str(test_root / ".pylintrc") in str(step.command)
+            assert str(test_root / "config" / "python" / ".pylintrc") in str(
+                step.command
+            )
         if "eslint.config.js" in str(step.command):
             assert "--config" in step.command
-            assert str(test_root / "eslint.config.js") in str(step.command)
+            assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
+                step.command
+            )
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):
@@ -848,9 +821,7 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
 
         # State should be preserved
         assert run_push_checks.get_last_step() == "test"
-        mock_log.assert_any_call(
-            "\n[yellow]Process interrupted by user.[/yellow]"
-        )
+        mock_log.assert_any_call("\n[yellow]Process interrupted by user.[/yellow]")
 
 
 def test_create_server_progress_bar():
@@ -860,9 +831,7 @@ def test_create_server_progress_bar():
         patch("scripts.run_push_checks.Progress") as mock_progress_cls,
         patch("subprocess.Popen") as mock_popen,
         patch("time.sleep"),  # Don't actually sleep in tests
-        patch(
-            "scripts.run_push_checks.find_quartz_process", return_value=None
-        ),
+        patch("scripts.run_push_checks.find_quartz_process", return_value=None),
     ):
         # Set up mocks
         # First two checks are for the initial port check and first loop iteration
@@ -977,9 +946,7 @@ def test_run_interactive_command():
 )
 def test_run_command_delegates_to_interactive(step):
     """Test that run_command correctly delegates to interactive runner."""
-    with patch(
-        "scripts.run_push_checks.run_interactive_command"
-    ) as mock_interactive:
+    with patch("scripts.run_push_checks.run_interactive_command") as mock_interactive:
         mock_interactive.return_value = (True, "test", "")
 
         mock_progress = MagicMock()
@@ -990,9 +957,7 @@ def test_run_command_delegates_to_interactive(step):
         )
 
         # Verify interactive runner was called
-        mock_interactive.assert_called_once_with(
-            step, mock_progress, mock_task_id
-        )
+        mock_interactive.assert_called_once_with(step, mock_progress, mock_task_id)
         assert success is True
         assert stdout == "test"
         assert stderr == ""
@@ -1005,9 +970,7 @@ def test_server_process_continues_running():
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
         patch("subprocess.Popen") as mock_popen,
         patch("time.sleep"),  # Don't actually sleep in tests
-        patch(
-            "scripts.run_push_checks.find_quartz_process", return_value=None
-        ),
+        patch("scripts.run_push_checks.find_quartz_process", return_value=None),
         patch(
             "shutil.which", return_value="npx"
         ),  # Mock shutil.which to return just "npx"
@@ -1045,9 +1008,7 @@ def test_server_process_continues_running():
 def test_reused_server_not_killed():
     """Test that reused server isn't killed on cleanup."""
     with (
-        patch(
-            "scripts.run_push_checks.find_quartz_process"
-        ) as mock_find_process,
+        patch("scripts.run_push_checks.find_quartz_process") as mock_find_process,
         patch("scripts.run_push_checks.kill_process") as mock_kill,
     ):
         # Set up an existing quartz process
@@ -1057,9 +1018,7 @@ def test_reused_server_not_killed():
 
         # Get server info and set it in manager
         server_info = run_push_checks.create_server(Path("/test"))
-        server_manager.set_server_pid(
-            server_info.pid, server_info.created_by_script
-        )
+        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
 
         # Cleanup should NOT kill the server
         server_manager.cleanup()

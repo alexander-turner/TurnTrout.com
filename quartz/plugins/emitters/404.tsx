@@ -1,4 +1,4 @@
-import { sharedPageComponents } from "../../../quartz.layout"
+import { sharedPageComponents } from "../../../config/quartz/quartz.layout"
 import { type FullPageLayout } from "../../cfg"
 import { ContentMeta, NotFound } from "../../components"
 import BodyConstructor from "../../components/Body"

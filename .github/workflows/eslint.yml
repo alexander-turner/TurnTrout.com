@@ -42,4 +42,4 @@ jobs:
 
       - name: Run ESLint
         run: npx eslint .
-          --config eslint.config.js
+          --config config/javascript/eslint.config.js

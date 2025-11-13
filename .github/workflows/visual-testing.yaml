@@ -150,7 +150,7 @@ jobs:
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
-          LOST_PIXEL_CONFIG_PATH: lostpixel.config.ts
+          LOST_PIXEL_CONFIG_PATH: config/lostpixel/lostpixel.config.ts
 
       - name: Clean up downloaded shards
         run: rm -rf ./all-lost-pixel-shards

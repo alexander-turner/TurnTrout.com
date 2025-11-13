@@ -4,7 +4,10 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
-import { defaultContentPageLayout, sharedPageComponents } from "../../../quartz.layout"
+import {
+  defaultContentPageLayout,
+  sharedPageComponents,
+} from "../../../config/quartz/quartz.layout"
 import { type FullPageLayout } from "../../cfg"
 import { Content } from "../../components"
 import BodyConstructor from "../../components/Body"

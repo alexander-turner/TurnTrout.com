@@ -79,9 +79,7 @@ def get_last_step(
 
         last_step = state.get("last_successful_step")
         if last_step is None:
-            err_console.print(
-                f"No 'last_successful_step' key in {STATE_FILE_PATH}"
-            )
+            err_console.print(f"No 'last_successful_step' key in {STATE_FILE_PATH}")
             return None
 
         if available_steps is not None and last_step not in available_steps:
@@ -120,9 +118,7 @@ class ServerManager:
         self.cleanup()
         sys.exit(1)
 
-    def set_server_pid(
-        self, pid: int, created_by_script: bool = False
-    ) -> None:
+    def set_server_pid(self, pid: int, created_by_script: bool = False) -> None:
         """
         Set the server PID to track for cleanup.
 
@@ -157,9 +153,7 @@ def find_quartz_process() -> int | None:
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
             cmdline = proc.info.get("cmdline")
-            if cmdline is not None and any(
-                "quartz" in cmd.lower() for cmd in cmdline
-            ):
+            if cmdline is not None and any("quartz" in cmd.lower() for cmd in cmdline):
                 return proc.pid
         except (psutil.NoSuchProcess, psutil.AccessDenied):  # pragma: no cover
             continue
@@ -193,8 +187,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
     existing_pid = find_quartz_process()
     if existing_pid:
         console.log(
-            "[green]Using existing quartz server "
-            f"(PID: {existing_pid})[/green]"
+            "[green]Using existing quartz server " f"(PID: {existing_pid})[/green]"
         )
         return ServerInfo(existing_pid, False)
 
@@ -230,9 +223,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
             if is_port_in_use(8080):
                 progress.remove_task(task_id)
                 progress.stop()
-                console.log(
-                    "[green]Quartz server successfully started[/green]"
-                )
+                console.log("[green]Quartz server successfully started[/green]")
                 return ServerInfo(server_pid, True)
             progress.update(
                 task_id,
@@ -350,8 +341,7 @@ def run_command(
         stdout/stderr are strings containing the complete output.
     """
     if any(
-        task in str(step.command)
-        for task in ["spellchecker", "linkchecker", "vale"]
+        task in str(step.command) for task in ["spellchecker", "linkchecker", "vale"]
     ):
         return run_interactive_command(step, progress, task_id)
 
@@ -429,7 +419,13 @@ def get_check_steps(
         ),
         CheckStep(
             name="Typechecking TypeScript",
-            command=["npx", "tsc", "--noEmit"],
+            command=[
+                "npx",
+                "tsc",
+                "--noEmit",
+                "-p",
+                "config/typescript/tsconfig.json",
+            ],
         ),
         CheckStep(
             name="Linting TypeScript",
@@ -439,7 +435,7 @@ def get_check_steps(
                 "--fix",
                 str(git_root_path),
                 "--config",
-                f"{git_root_path}/eslint.config.js",
+                f"{git_root_path}/config/javascript/eslint.config.js",
             ],
         ),
         CheckStep(  # Reduce chance of pylint errors by formatting docstrings
@@ -451,7 +447,7 @@ def get_check_steps(
                 "--in-place",
                 *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
                 "--config",
-                f"{git_root_path}/pyproject.toml",
+                f"{git_root_path}/config/python/pyproject.toml",
             ],
         ),
         CheckStep(
@@ -462,12 +458,17 @@ def get_check_steps(
                 "pylint",
                 str(git_root_path),
                 "--rcfile",
-                f"{git_root_path}/.pylintrc",
+                f"{git_root_path}/config/python/.pylintrc",
             ],
         ),
         CheckStep(
             name="Linting prose",
-            command=["vale", f"{git_root_path}/website_content"],
+            command=[
+                "vale",
+                "--config",
+                f"{git_root_path}/config/vale/.vale.ini",
+                f"{git_root_path}/website_content",
+            ],
         ),
         CheckStep(
             name="Cleaning up SCSS",
@@ -597,9 +598,7 @@ def main() -> None:
                 console.log(f"[grey]Skipping step: {step.name}[/grey]")
 
         server_info = create_server(_GIT_ROOT)
-        server_manager.set_server_pid(
-            server_info.pid, server_info.created_by_script
-        )
+        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
         run_checks(steps_after_server, args.resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")

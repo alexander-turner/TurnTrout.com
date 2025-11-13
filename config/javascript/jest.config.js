@@ -1,5 +1,14 @@
+import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const rootDir = resolve(__dirname, "../..")
+
 /** @type {import('jest').Config} */
 const config = {
+  rootDir,
+
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
 
@@ -40,17 +49,14 @@ const config = {
     "^.+\\.(ts|tsx)$": [
       "ts-jest",
       {
-        tsconfig: "tsconfig.json",
+        tsconfig: resolve(rootDir, "config/typescript/tsconfig.json"),
         useESM: true,
       },
     ],
     "^.+\\.(js|jsx)$": [
       "babel-jest",
       {
-        presets: [
-          ["@babel/preset-env", { targets: { node: "current" } }],
-          ["@babel/preset-react", { runtime: "automatic", importSource: "preact" }],
-        ],
+        configFile: resolve(rootDir, "config/javascript/babel.config.cjs"),
       },
     ],
   },

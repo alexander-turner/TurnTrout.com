@@ -50,7 +50,7 @@ jest.unstable_mockModule("../../components/renderPage", () => ({
   pageResources: jest.fn(() => ({ css: [], js: [] })),
 }))
 
-jest.unstable_mockModule("../../../quartz.layout", () => ({
+jest.unstable_mockModule("../../../config/quartz/quartz.layout", () => ({
   defaultContentPageLayout: {},
   sharedPageComponents: {},
 }))

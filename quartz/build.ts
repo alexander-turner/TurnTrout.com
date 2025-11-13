@@ -12,7 +12,7 @@ import type { ProcessedContent } from "./plugins/vfile"
 import type { Argv, BuildCtx } from "./util/ctx"
 import type { FilePath, FullSlug } from "./util/path"
 
-import cfg from "../quartz.config"
+import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"

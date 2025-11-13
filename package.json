@@ -12,25 +12,25 @@
   },
   "scripts": {
     "docs": "npx quartz build --serve -d docs",
-    "check": "tsc --noEmit && npx prettier . --check",
-    "format": "npx prettier . --write",
-    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --coverage",
+    "check": "tsc --noEmit -p config/typescript/tsconfig.json && npx prettier . --check --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+    "format": "npx prettier . --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --coverage --config config/javascript/jest.config.js",
     "dev": "npx quartz build --serve",
     "build": "npx quartz build",
     "preview": "npx quartz build && npx serve public",
     "start": "npx quartz build && npx serve public -l 8080",
     "profile": "NODE_OPTIONS='--enable-source-maps' 0x --output-dir ./prof/ ./node_modules/.bin/tsx ./quartz/bootstrap-cli.ts build --concurrency=1",
     "postinstall": "npx playwright install && patch-package",
-    "test:visual": "npx playwright test --config playwright.config.ts --grep '(lostpixel)'",
-    "test:a11y": "npx pa11y-ci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
+    "test:visual": "npx playwright test --config config/playwright/playwright.config.ts --grep '(lostpixel)'",
+    "test:a11y": "npx pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
     "generate:scss": "tsx quartz/styles/generate-variables.ts",
     "setup:python": "pip install pyupgrade autoflake isort autopep8 black ruff"
   },
   "lint-staged": {
-    "*.{css,scss,json}": "prettier --write",
+    "*.{css,scss,json}": "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
     "*.{js,jsx,ts,tsx}": [
-      "npx eslint --fix",
-      "prettier --write"
+      "npx eslint --fix --config config/javascript/eslint.config.js",
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
     "*.fish": "fish_indent",
     "{*.sh,.hooks/*}": [
@@ -46,9 +46,16 @@
       "ruff check --fix"
     ],
     "!(*.vale-styles)/**/*.md": [
-      "prettier --write",
-      "markdownlint --config .markdownlint.jsonc --fix"
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
     ]
+  },
+  "prettier": "config/prettier/.prettierrc",
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "config": "config/javascript/commitlint.config.js"
   },
   "engines": {
     "npm": ">=9.3.1",
