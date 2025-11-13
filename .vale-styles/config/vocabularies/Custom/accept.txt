@@ -1,1 +1,1 @@
-/Users/turntrout/Downloads/turntrout.com/.wordlist.txt
+../../../../config/spellcheck/.wordlist.txt
