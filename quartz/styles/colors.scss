@@ -32,13 +32,41 @@
   --dark-gray: var(--midground-faint);
 
   // Dropcap background colors
-  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
-  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
-  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
-  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
-  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
-  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+  --dropcap-background-red: color-mix(
+    in srgb,
+    55% var(--red),
+    var(--midground-fainter)
+  );
+  --dropcap-background-orange: color-mix(
+    in srgb,
+    55% var(--orange),
+    var(--midground-fainter)
+  );
+  --dropcap-background-yellow: color-mix(
+    in srgb,
+    65% var(--yellow),
+    var(--midground-fainter)
+  );
+  --dropcap-background-green: color-mix(
+    in srgb,
+    65% var(--green),
+    var(--midground-fainter)
+  );
+  --dropcap-background-blue: color-mix(
+    in srgb,
+    65% var(--blue),
+    var(--midground-fainter)
+  );
+  --dropcap-background-purple: color-mix(
+    in srgb,
+    65% var(--purple),
+    var(--midground-fainter)
+  );
+  --dropcap-background-pink: color-mix(
+    in srgb,
+    45% var(--pink),
+    var(--midground-fainter)
+  );
 
   & img,
   & video:not(:has(::backdrop)),
@@ -78,13 +106,41 @@
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   // Dropcap background colors
-  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
-  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
-  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
-  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
-  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
-  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+  --dropcap-background-red: color-mix(
+    in srgb,
+    55% var(--red),
+    var(--midground-fainter)
+  );
+  --dropcap-background-orange: color-mix(
+    in srgb,
+    55% var(--orange),
+    var(--midground-fainter)
+  );
+  --dropcap-background-yellow: color-mix(
+    in srgb,
+    65% var(--yellow),
+    var(--midground-fainter)
+  );
+  --dropcap-background-green: color-mix(
+    in srgb,
+    65% var(--green),
+    var(--midground-fainter)
+  );
+  --dropcap-background-blue: color-mix(
+    in srgb,
+    65% var(--blue),
+    var(--midground-fainter)
+  );
+  --dropcap-background-purple: color-mix(
+    in srgb,
+    65% var(--purple),
+    var(--midground-fainter)
+  );
+  --dropcap-background-pink: color-mix(
+    in srgb,
+    45% var(--pink),
+    var(--midground-fainter)
+  );
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
   & video:not(:has(::backdrop)),
@@ -98,8 +154,16 @@
 }
 
 :root {
-  --midground-fainter: color-mix(in srgb, var(--background) 70%, var(--midground-faint));
-  --midground-faintest: color-mix(in srgb, var(--background) 90%, var(--midground-faint));
+  --midground-fainter: color-mix(
+    in srgb,
+    var(--background) 70%,
+    var(--midground-faint)
+  );
+  --midground-faintest: color-mix(
+    in srgb,
+    var(--background) 90%,
+    var(--midground-faint)
+  );
   --color-link: light-dark(
     color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
     var(--secondary)
@@ -113,9 +177,19 @@
     color-mix(in srgb, var(--sky) 35%, var(--color-link))
   );
 
-  @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
-    --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
-    --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--background));
+  @each $color
+    in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow")
+  {
+    --background-#{$color}: color-mix(
+      in srgb,
+      var(--#{$color}) 30%,
+      var(--background)
+    );
+    --border-#{$color}: color-mix(
+      in srgb,
+      var(--#{$color}) 50%,
+      var(--background)
+    );
   }
 }
 
@@ -223,5 +297,7 @@ a {
 a:hover,
 a:hover *,
 #toc-title button:hover {
-  color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
+  color: var(
+    --color-link-hover
+  ) !important; // otherwise eg #content-meta a would override
 }

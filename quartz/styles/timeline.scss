@@ -31,13 +31,15 @@
 
   // Odd child styles
   &:nth-child(odd) {
-    padding: calc(2 * $base-margin) 0 calc(2 * $base-margin) calc(2 * $base-margin);
+    padding: calc(2 * $base-margin) 0 calc(2 * $base-margin)
+      calc(2 * $base-margin);
 
     &::before {
       left: 0;
       top: 0;
       bottom: 0;
-      border-width: calc(0.5 * $base-margin) 0 calc(0.5 * $base-margin) calc(0.5 * $base-margin);
+      border-width: calc(0.5 * $base-margin) 0 calc(0.5 * $base-margin)
+        calc(0.5 * $base-margin);
       border-radius: $base-margin 0 0 $base-margin;
     }
 
@@ -54,14 +56,16 @@
 
   // Even child styles
   &:nth-child(even) {
-    padding: calc(2 * $base-margin) calc(2 * $base-margin) calc(2 * $base-margin) 0;
+    padding: calc(2 * $base-margin) calc(2 * $base-margin)
+      calc(2 * $base-margin) 0;
     text-align: right;
 
     &::before {
       right: 0;
       top: 0;
       bottom: 0;
-      border-width: calc(0.5 * $base-margin) calc(0.5 * $base-margin) calc(0.5 * $base-margin) 0;
+      border-width: calc(0.5 * $base-margin) calc(0.5 * $base-margin)
+        calc(0.5 * $base-margin) 0;
       border-radius: 0 $base-margin $base-margin 0;
     }
 

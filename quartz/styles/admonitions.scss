@@ -156,7 +156,10 @@
     --admonition-icon: var(--admonition-icon-math);
   }
 
-  &[data-admonition="quote"] > .admonition-title > .admonition-title-inner > .admonition-icon {
+  &[data-admonition="quote"]
+    > .admonition-title
+    > .admonition-title-inner
+    > .admonition-icon {
     transform: scale(-1); // Flip across the y-axis
   }
 

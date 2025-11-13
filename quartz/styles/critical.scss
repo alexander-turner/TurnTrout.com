@@ -28,8 +28,10 @@ article[data-use-dropcap="true"] {
   --font-main: "EBGaramond__subset", "EBGaramond";
   --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
   --font-italic-situational: var(--font-italic);
-  --font-dropcap-foreground: "EBGaramondInitialsF2__subset", "EBGaramondInitialsF2";
-  --font-dropcap-background: "EBGaramondInitialsF1__subset", "EBGaramondInitialsF1";
+  --font-dropcap-foreground:
+    "EBGaramondInitialsF2__subset", "EBGaramondInitialsF2";
+  --font-dropcap-background:
+    "EBGaramondInitialsF1__subset", "EBGaramondInitialsF1";
 }
 
 article[data-use-dropcap="true"] > p:first-of-type {

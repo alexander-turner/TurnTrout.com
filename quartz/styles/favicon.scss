@@ -7,7 +7,9 @@
 .favicon {
   --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
   --base-vertical-adjustment: calc(0.5 * #{$base-margin});
-  --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
+  --vertical-adjustment: calc(
+    var(--base-vertical-adjustment) + 0.5 * var(--size-decrease)
+  );
   --favicon-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
 
   display: inline;
@@ -42,17 +44,41 @@ svg.favicon {
   --mask-url: none; // Overridden by inline styles
   --color-percentage: 40%;
   --svg-color: var(--foreground);
-  --attenuated-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
-  --attenuated-blue: color-mix(in srgb, var(--blue) var(--color-percentage), var(--svg-color));
-  --attenuated-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
-  --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
-  --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
+  --attenuated-red: color-mix(
+    in srgb,
+    var(--red) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-blue: color-mix(
+    in srgb,
+    var(--blue) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-green: color-mix(
+    in srgb,
+    var(--green) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-yellow: color-mix(
+    in srgb,
+    var(--gold) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-orange: color-mix(
+    in srgb,
+    var(--orange) var(--color-percentage),
+    var(--svg-color)
+  );
 
   mask: var(--mask-url) no-repeat center / contain;
   filter: none; // Don't apply img filters to masks
 
   // Per-domain colors using color-mix
-  background-color: color-mix(in srgb, var(--foreground), var(--svg-color) var(--color-percentage));
+  background-color: color-mix(
+    in srgb,
+    var(--foreground),
+    var(--svg-color) var(--color-percentage)
+  );
 
   :root[data-theme="dark"] & {
     --color-percentage: 30%;
@@ -147,7 +173,11 @@ $domain-svg-colors: (
 // Yellow arrow on bottom
 svg.favicon[data-domain="amazon_com"] {
   --target-percentage: 70%;
-  --yellow-target: color-mix(in srgb, var(--gold) var(--target-percentage), var(--foreground));
+  --yellow-target: color-mix(
+    in srgb,
+    var(--gold) var(--target-percentage),
+    var(--foreground)
+  );
 
   background: radial-gradient(
     circle at 50% 40%,
