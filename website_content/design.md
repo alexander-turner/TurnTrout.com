@@ -17,7 +17,6 @@ date_updated: 2025-11-11 15:14:52.802932
 no_dropcap: false
 ---
 
-
 When I decided to design my own website, I had no experience with web development. After 202 days, 2,220+ commits,[^commits] and 1,008 unit tests, I present `turntrout.com` - the result of my inexperience.
 
 I'm proud of this website and its design. Indulge me and let me explain the choices I made along the way.
@@ -49,16 +48,16 @@ The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site genera
 > _Text transformations_ operate on the raw text content of each page. For example:
 >
 > ```typescript
-> const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim
-> 
+> const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim;
+>
 > /**
 >  * Converts note patterns to admonition blocks.
 >  * @param text - The input text to process.
 >  * @returns The text with note patterns converted to admonitions.
 >  */
 > export function noteAdmonition(text: string): string {
->   text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>")
->   return text
+>   text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>");
+>   return text;
 > }
 > ```
 >
@@ -71,14 +70,17 @@ The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site genera
 >  * Replaces hyphens with en dashes in number ranges
 >  *  Number ranges should use en dashes, not hyphens.
 >  *  Allows for page numbers in the form "p.206-207"
->  * 
+>  *
 >  * @returns The text with en dashes in number ranges
 >  */
 > export function enDashNumberRange(text: string): string {
 >   return text.replace(
->     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
+>     new RegExp(
+>       `\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`,
+>       "g",
+>     ),
 >     "$1–$2",
->   )
+>   );
 > }
 > ```
 >
@@ -180,7 +182,7 @@ I color [inline favicons](#inline-favicons) using muted shades from the site's p
 
 As a static webpage, my life is much simpler than the lives of most web developers. However, by default, users would have to wait a few seconds for each page to load, which I consider unacceptable. I want my site to be responsive even on mobile on slow connections.
 
-Quartz offers basic optimizations, such as [lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading) of assets and [minifying](https://en.wikipedia.org/wiki/Minification_(programming)) JavaScript and CSS files. I further marked the core CSS files for preloading. However, there are a range of more interesting optimizations which Quartz and I implement.
+Quartz offers basic optimizations, such as [lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading) of assets and [minifying](<https://en.wikipedia.org/wiki/Minification_(programming)>) JavaScript and CSS files. I further marked the core CSS files for preloading. However, there are a range of more interesting optimizations which Quartz and I implement.
 
 ## Asset compression
 
@@ -198,7 +200,7 @@ To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF fi
 
 <img alt="Compression ratios: (PNG size) / (AVIF size). A left-skew histogram with tails reaching out to 75x." src="https://assets.turntrout.com/static/images/posts/compression_ratio.svg" class="compression-ratio-graph"/>
 
-Figure: At first blush, most of the compression ratios seem unimpressive. However, back when I made this graph, the vast majority of the "images" were [favicons](#inline-favicons) which show up next to URLs. These images were already tiny as PNGs (e.g. 2KB), so AVIF could only compress them so much.  
+Figure: At first blush, most of the compression ratios seem unimpressive. However, back when I made this graph, the vast majority of the "images" were [favicons](#inline-favicons) which show up next to URLs. These images were already tiny as PNGs (e.g. 2KB), so AVIF could only compress them so much.
 
 <figure><img src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." style="max-width: 85%;"> <figcaption>This friendly <abbr class="small-caps">avif</abbr> goose clocks in below <abbr class="small-caps">45kb</abbr>, while its <abbr class="small-caps">png</abbr> equivalent weighs <abbr class="small-caps">450kb</abbr>—a 10× increase!</figcaption></figure>
 
@@ -207,21 +209,21 @@ Figure: Now the huge savings of AVIF are clearer.
 
 [^colab]: I used a [publicly accessible Colab](https://colab.research.google.com/drive/1XScXuubpzcyhjU6uYRN0ikHVzLFmJj6X?usp=sharing) to generate the AVIF -> PNG compression graphs.
 
-| Metric | Value |
-|:-:|:--|
-| Total PNG size | 280MB |
-| Total AVIF size | 25MB |
-| Overall space savings | 91% |
+|         Metric         | Value  |
+| :--------------------: | :----- |
+|     Total PNG size     | 280MB  |
+|    Total AVIF size     |  25MB  |
+| Overall space savings  | 91%    |
 
 ### Videos
 
 Among modern formats, there appear to be two serious contenders: h265 MP4 ("HEVC") and WEBM (via the VP9 codec). [Reportedly,](https://bitmovin.com/blog/vp9-vs-hevc-h265/) HEVC has better compression than VP9 WEBM. In practice, I've found the opposite.
 
-| Metric | Value |
-|:-:|:--|
-| Total MP4 size | 76MB |
-| Total WEBM size | 61MB |
-| Overall space savings from MP4 -> WEBM | 20% |
+|                 Metric                  | Value  |
+| :-------------------------------------: | :----- |
+|             Total MP4 size              | 76MB   |
+|             Total WEBM size             |  61MB  |
+| Overall space savings from MP4 -> WEBM  | 20%    |
 
 Both of these formats are good compared to GIFs. My WEBM files were 10x lighter than my GIFs! For example: [the "goose in a pond" video](https://assets.turntrout.com/static/pond.webm) weighed 561KB in GIF format. The MP4 weighs 260KB while the WEBM weighs 58KB.
 
@@ -229,10 +231,11 @@ So why not just always use WEBM? While [Safari technically "supports" WEBM](http
 
 ```html
 <video [attributes]>
-    // Only Safari should support hvc1
-    <source src="video.mp4" type="video/mp4; codecs=hvc1">
-    // All other browsers skip the MP4 and use the second source
-    <source src="video.webm" type="video/webm">
+  // Only Safari should support hvc1
+  <source src="video.mp4" type="video/mp4; codecs=hvc1" />
+  // All other browsers skip the MP4 and use the second source
+  <source src="video.webm" type="video/webm" />
+</video>
 ```
 
 However, it was quite difficult to produce a transparent MP4 (as required by Safari). I eventually used `ffmpeg` to convert a non-transparent MP4 into a ProRes 444 file. I then used my Mac Finder's built-in encoding tool to convert the ProRes 444 to a MOV with transparency... Phew.
@@ -250,15 +253,17 @@ By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve th
 Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
 
 <!-- spellchecker-disable -->
+
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
-> In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
+> In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, *then* it was animated.
 >
 > \[...\]
 >
 > I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
 >
-> I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
+> I'm reminded of a *Family Guy* meme I re-ran into recently: why does Peter Griffin dislike *The Godfather*? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over *everything* to learn more or focus on some things.
+
 <!-- spellchecker-enable -->
 
 ## Preventing layout shift
@@ -331,6 +336,7 @@ Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
 My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Annatar" renders Elvish glyphs.
 
 <!-- spellchecker-disable -->
+
 > [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
 >
 > Subtitle: Hover over a line to translate
@@ -384,7 +390,7 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 
 I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/articles/illluminated-manuscript-calligraphy-guide) In particular, a [dropcap](https://en.wikipedia.org/wiki/Initial) lends gravity and elegance to a text. Furthermore, EB Garamond dropcaps are available.
 
-However, implementation was tricky. As shown with the figure's "A",  CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
+However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
 <div class="centered" style="font-size:4rem;line-height:1.4 !important;">
 <span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
@@ -403,18 +409,18 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 >
 > ```scss
 > .dropcap {
->    font-family: var(--font-dropcap-background);
->    color: var(--before-color);
->    position: relative;
->    text-transform: uppercase;
->  
->    &::before {
->    font-family: var(--font-dropcap-foreground);
->      color: var(--foreground);
->      content: attr(data-first-letter);
->      position: absolute;
->    }
->  }
+>   font-family: var(--font-dropcap-background);
+>   color: var(--before-color);
+>   position: relative;
+>   text-transform: uppercase;
+>
+>   &::before {
+>     font-family: var(--font-dropcap-foreground);
+>     color: var(--foreground);
+>     content: attr(data-first-letter);
+>     position: absolute;
+>   }
+> }
 > ```
 
 A less theme-disciplined man than myself might even flaunt dropcap colorings!
@@ -432,15 +438,15 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ## Formatting enhancement
 
-| Before | After |
-| --: | :-- |
-| <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span>|"We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009)|
+|                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
 
 ### Automatic conversion of quotation marks
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
 
-Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy.  So I wrote a bit of code.
+Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
 
 > [!note]- Regex for smart quotes
 >
@@ -452,48 +458,48 @@ Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestl
 > export function niceQuotes(text: string): string {
 >   // Single quotes //
 >   // Ending comes first so as to not mess with the open quote
->   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s\\.!?;,\\)—\\-]|$))`
->   text = text.replace(new RegExp(endingSingle, "gm"), "’")
->   
+>   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s\\.!?;,\\)—\\-]|$))`;
+>   text = text.replace(new RegExp(endingSingle, "gm"), "’");
+>
 >   // Contractions are sandwiched between two letters
->   const contraction = `(?<=[A-Za-z])['](?=[a-zA-Z])`
->   text = text.replace(new RegExp(contraction, "gm"), "’")
+>   const contraction = `(?<=[A-Za-z])['](?=[a-zA-Z])`;
+>   text = text.replace(new RegExp(contraction, "gm"), "’");
 >
 >   // Apostrophes always point down
 >   //  Convert to apostrophe if not followed by an end quote
->   const apostrophe = `(?<=^|[^\\w])'(?![^‘]*’${afterEndingSingle})`
->   text = text.replace(new RegExp(apostrophe, "gm"), "’")
-> 
+>   const apostrophe = `(?<=^|[^\\w])'(?![^‘]*’${afterEndingSingle})`;
+>   text = text.replace(new RegExp(apostrophe, "gm"), "’");
+>
 >   // Beginning single quotes
->   const beginningSingle = `(^|[\\s“"])['](?=\\S)`
->   text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
-> 
+>   const beginningSingle = `(^|[\\s“"])['](?=\\S)`;
+>   text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘");
+>
 >   // Double quotes //
 >   const beginningDouble = new RegExp(
 >     `(?<=^|\\s|[\\(\\/\\[\\{\\-—])["](?=\\.{3}|[^\\s\\)\\—,!?;:/.\\}])`,
 >     "gm",
->   )
->   text = text.replace(beginningDouble, "“")
+>   );
+>   text = text.replace(beginningDouble, "“");
 >   // Open quote after brace (generally in math mode)
->   text = text.replace(new RegExp(`(?<=\\{)( )?["]`, "g"), "$1“")
-> 
->   const endingDouble = `([^\\s\\(])["](?=[\\s/\\).,;—:\\-\\}!?]|$)`
->   text = text.replace(new RegExp(endingDouble, "g"), "$1”")
-> 
+>   text = text.replace(new RegExp(`(?<=\\{)( )?["]`, "g"), "$1“");
+>
+>   const endingDouble = `([^\\s\\(])["](?=[\\s/\\).,;—:\\-\\}!?]|$)`;
+>   text = text.replace(new RegExp(endingDouble, "g"), "$1”");
+>
 >   // If end of line, replace with right double quote
->   text = text.replace(new RegExp(`["]$`, "g"), "”")
+>   text = text.replace(new RegExp(`["]$`, "g"), "”");
 >   // If single quote has a right double quote after it, replace with right single and then double
->   text = text.replace(new RegExp(`'(?=”)`, "g"), "’")
-> 
+>   text = text.replace(new RegExp(`'(?=”)`, "g"), "’");
+>
 >   // Periods inside quotes
->   const periodRegex = new RegExp(`(?<![!?])([’”])(?!\\.\\.\\.)\\.`, "g")
->   text = text.replace(periodRegex, ".$1")
-> 
+>   const periodRegex = new RegExp(`(?<![!?])([’”])(?!\\.\\.\\.)\\.`, "g");
+>   text = text.replace(periodRegex, ".$1");
+>
 >   // Commas outside of quotes
->   const commaRegex = new RegExp(`(?<![!?]),([”’])`, "g")
->   text = text.replace(commaRegex, "$1,")
-> 
->   return text
+>   const commaRegex = new RegExp(`(?<![!?]),([”’])`, "g");
+>   text = text.replace(commaRegex, "$1,");
+>
+>   return text;
 > }
 > ```
 >
@@ -535,7 +541,7 @@ Typographically, capital letters are designed to be used one or two at a time - 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
-> The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
+> The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): *Tratado de Libre Comercio de América del Norte*, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): *Accord de libre-échange nord-américain*, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
 
 ### Hyphen replacement
 
@@ -557,7 +563,7 @@ Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
 
 Detecting multipliers
-: Multipliers  like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>."
+: Multipliers like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>."
 
 Spaced slashes
 : Used for separators like "cat" / "dog" in place of "cat"<span class="no-formatting">/</span>"dog".
@@ -644,6 +650,7 @@ To tackle this, the favicon transformation doesn't _just_ append an `<img>` elem
 I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
 
 Instead, I filter favicons as follows:
+
 1. I whitelist favicons which are definitely recognizable.
 2. I also include favicons for sites which I link to at least <span id="populate-favicon-threshold"></span> times.
 3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
@@ -682,6 +689,7 @@ I showcase all included favicons on [the test page](/Test-page#external-links-wi
 I love these "admonition" bubbles which contain information. When an admonition is collapsed by default, the reader can decide whether or not they _want_ more detail on a topic, reducing ambient frustration.
 
 > [!note]- All admonitions for my site
+>
 > > [!abstract]
 >
 > > [!note]
@@ -717,7 +725,7 @@ I love these "admonition" bubbles which contain information. When an admonition 
 > > [!success]
 >
 > > [!money]
-  
+
 ## Mermaid diagrams
 
 Often, websites embed diagrams as images. However, I find this unsatisfying for several reasons:
@@ -758,7 +766,7 @@ To meet accessibility standards, I also subtitled the 22-minute [AI Presidents D
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <span class="populate-site-favicon"></span> favicon appears for links to other pages on the site, while the <span class="populate-anchor-link-icon"></span>  icon is used for within-page links.
+: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <span class="populate-site-favicon"></span> favicon appears for links to other pages on the site, while the <span class="populate-anchor-link-icon"></span> icon is used for within-page links.
 
 Search
 : Also packaged in vanilla Quartz, my site is searchable with live content previews - rendering the entire page on the desktop view. To accord with classic keybindings, I ensured that the search window can be toggled by pressing `/`.
@@ -779,14 +787,14 @@ Server-side math rendering via $\KaTeX$
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
- | **Unsteered completions**| **Steered completions** |
-| :----------|:------|
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
 Table: A table with unbalanced columns.
 
- | **Unsteered completions**| **Steered completions** |
-| :----------|:------|  
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
 {.full-width .center-table-headings}
@@ -841,7 +849,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 Whenever I find a bug, I attempt to automatically detect it in the future. The result is a long pipeline of checks, designed to surface errors which would take a long time to notice manually. The `push` operation is aborted if any of this section's checks[^gauntlet] fail.
 
 ```plaintext
-╰─ git push                                                                                                   
+╰─ git push
 ✓ Typechecking Python with mypy
 ✓ ESLinting TypeScript
 ✓ Cleaning up SCSS
@@ -851,7 +859,7 @@ Whenever I find a bug, I attempt to automatically detect it in the future. The r
 ✓ Linting prose using Vale
 ✓ Running Javascript unit tests
 ⠹ Running Python unit tests...
-   scripts/tests/test_built_site_checks.py 
+   scripts/tests/test_built_site_checks.py
    .................. [  7%]
    .................. [ 23%]
    .................. [ 39%]
@@ -1011,10 +1019,11 @@ Cryptographic timestamping
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
 <!-- TODO: make this part of the <dd>-->
+
 ```shell
 git clone https://github.com/alexander-turner/.timestamps
 cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots" 
+ots --no-bitcoin verify "files/ABC012.txt.ots"
 ```
 
 # Github Actions
