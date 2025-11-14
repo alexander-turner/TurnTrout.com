@@ -13,7 +13,8 @@ import type { BuildCtx } from "../../util/ctx"
 import type { FullSlug } from "../../util/path"
 import type { QuartzComponentProps } from "../types"
 
-import Content from "../pages/Content"
+import { specialFaviconPaths } from "../constants"
+import Content, { createLinkWithFavicon } from "../pages/Content"
 
 const mockConfig = {
   pageTitle: "Test",
@@ -211,5 +212,83 @@ describe("Content component - mobile ToC rendering", () => {
     expect(children.length).toBe(4)
     expect(children[1]).toBeFalsy()
     expect(children[2]).toBeFalsy()
+  })
+})
+
+describe("createLinkWithFavicon", () => {
+  it("should create a link with favicon using default props", () => {
+    const result = createLinkWithFavicon("Test Link", "/test-page", specialFaviconPaths.turntrout)
+
+    assertJSXElement(result)
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("/test-page")
+  })
+
+  it("should create a link with custom props", () => {
+    const result = createLinkWithFavicon("External Link", "https://example.com", "/favicon.svg", {
+      class: "external",
+      target: "_blank",
+      rel: "noopener noreferrer",
+    })
+
+    assertJSXElement(result)
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("https://example.com")
+    expect(result.props.class).toBe("external")
+    expect(result.props.target).toBe("_blank")
+    expect(result.props.rel).toBe("noopener noreferrer")
+  })
+
+  it("should create internal link with popover props", () => {
+    const result = createLinkWithFavicon(
+      "Internal Link",
+      "./another-page",
+      specialFaviconPaths.turntrout,
+      {
+        class: "internal can-trigger-popover",
+        "data-slug": "another-page",
+      },
+    )
+
+    assertJSXElement(result)
+    expect(result.type).toBe("a")
+    expect(result.props.href).toBe("./another-page")
+    expect(result.props.class).toBe("internal can-trigger-popover")
+    expect(result.props["data-slug"]).toBe("another-page")
+  })
+
+  it("should include favicon-span in link children", () => {
+    const result = createLinkWithFavicon(
+      "Link with favicon",
+      "/page",
+      specialFaviconPaths.lesswrong,
+    )
+
+    assertJSXElement(result)
+    const children = result.props.children as unknown[]
+    expect(children.length).toBeGreaterThan(0)
+
+    // The last child should be a span.favicon-span containing the favicon
+    const lastChild = children[children.length - 1]
+    assertJSXElement(lastChild)
+    expect(lastChild.type).toBe("span")
+    expect(lastChild.props.class).toBe("favicon-span")
+  })
+
+  it("should handle text splicing correctly with maybeSpliceText", () => {
+    const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
+
+    assertJSXElement(result)
+    const children = result.props.children as unknown[]
+
+    // Should have text before the favicon-span
+    expect(children.length).toBeGreaterThan(1)
+    expect(typeof children[0]).toBe("string")
+
+    // Last child should be the favicon-span with spliced text + favicon
+    const faviconSpan = children[children.length - 1]
+    assertJSXElement(faviconSpan)
+    expect(faviconSpan.type).toBe("span")
+    expect(faviconSpan.props.class).toBe("favicon-span")
   })
 })

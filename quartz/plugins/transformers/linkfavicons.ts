@@ -603,10 +603,12 @@ export interface FaviconNode extends Element {
   properties: {
     src?: string
     class: string
-    alt: string
     style?: string
     loading?: "lazy" | "eager"
+    alt?: string
     "data-domain"?: string
+    "aria-hidden"?: "true" | "false"
+    "aria-focusable"?: "true" | "false"
   }
 }
 
@@ -632,7 +634,8 @@ export function createFaviconElement(urlString: string, description = ""): Favic
         class: "favicon",
         "data-domain": domain,
         style: `--mask-url: url(${urlString});`,
-        alt: description,
+        "aria-hidden": "true",
+        "aria-focusable": "false",
       },
     }
   }

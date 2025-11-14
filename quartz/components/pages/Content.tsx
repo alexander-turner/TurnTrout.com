@@ -1,36 +1,36 @@
+import { h } from "hastscript"
 // skipcq: JS-W1028
 import { JSX } from "preact"
 // skipcq: JS-C1003
 import * as React from "react"
 
+import type { FilePath } from "../../util/path"
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 
-import { createFaviconElement } from "../../plugins/transformers/linkfavicons"
+import { insertFavicon } from "../../plugins/transformers/linkfavicons"
 import { htmlToJsx } from "../../util/jsx"
 import { specialFaviconPaths } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
-const turntroutFaviconNode = createFaviconElement(specialFaviconPaths.turntrout, "")
-const turntroutFavicon = (
-  <span
-    className={turntroutFaviconNode.properties.class}
-    data-domain={turntroutFaviconNode.properties["data-domain"]}
-    style={turntroutFaviconNode.properties.style}
-  />
-)
+export function createLinkWithFavicon(
+  text: string,
+  href: string,
+  faviconPath: string,
+  props: Record<string, unknown> = {},
+): JSX.Element {
+  const linkNode = h("a", { href, ...props }, text)
+  insertFavicon(faviconPath, linkNode)
+  return htmlToJsx("" as FilePath, linkNode) as JSX.Element
+}
 
-const WarningLink = (
-  <a
-    href="./reward-is-not-the-optimization-target"
-    className="internal can-trigger-popover"
-    data-slug="reward-is-not-the-optimization-target"
-  >
-    Reward is not the optimization ta
-    <span className="favicon-span">
-      rget
-      {turntroutFavicon}
-    </span>
-  </a>
+const WarningLink = createLinkWithFavicon(
+  "Reward is not the optimization target",
+  "./reward-is-not-the-optimization-target",
+  specialFaviconPaths.turntrout,
+  {
+    class: "internal can-trigger-popover",
+    "data-slug": "reward-is-not-the-optimization-target",
+  },
 )
 
 // istanbul ignore next
@@ -43,29 +43,28 @@ const WarningTitle = () => (
   </div>
 )
 
+const RewardTargetLink = createLinkWithFavicon(
+  "Reward Is Not The Optimization Target,",
+  "/reward-is-not-the-optimization-target",
+  specialFaviconPaths.turntrout,
+  {
+    class: "internal can-trigger-popover",
+    "data-slug": "reward-is-not-the-optimization-target",
+  },
+)
+
 const rewardPostWarning = (
   <blockquote className="admonition warning" data-admonition="warning">
     <WarningTitle />
     <p>
-      This post treats reward functions as “specifying goals”, in some sense. As I explained in{" "}
-      <a
-        href="/reward-is-not-the-optimization-target"
-        className="internal can-trigger-popover"
-        data-slug="reward-is-not-the-optimization-target"
-      >
-        Reward Is Not The Optimization Tar
-        <span className="favicon-span">
-          get,
-          {turntroutFavicon}
-        </span>
-      </a>{" "}
-      this is a misconception that can seriously damage your ability to understand how AI works.
-      Rather than “incentivizing” behavior, reward signals are (in many cases) akin to a
-      per-datapoint learning rate. Reward chisels circuits into the AI. That’s it!
+      This post treats reward functions as &ldquo;specifying goals&rdquo;, in some sense. As I
+      explained in {RewardTargetLink} this is a misconception that can seriously damage your ability
+      to understand how AI works. Rather than &ldquo;incentivizing&rdquo; behavior, reward signals
+      are (in many cases) akin to a per-datapoint learning rate. Reward chisels circuits into the
+      AI. That&rsquo;s it!
     </p>
   </blockquote>
 )
-
 const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
   const useDropcap =
     fileData?.frontmatter?.no_dropcap !== true && fileData?.frontmatter?.no_dropcap !== "true"
@@ -116,17 +115,19 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
   )
 }
 
-const lessWrongFaviconNode = createFaviconElement(specialFaviconPaths.lesswrong, "")
-const lessWrongFavicon = (
-  <span
-    className={lessWrongFaviconNode.properties.class}
-    data-domain={lessWrongFaviconNode.properties["data-domain"]}
-    style={lessWrongFaviconNode.properties.style}
-  />
-)
-
 // istanbul ignore next
 function lessWrongQuestion(url: string): JSX.Element {
+  const lessWrongLink = createLinkWithFavicon(
+    "originally posted as a question on LessWrong.",
+    url,
+    specialFaviconPaths.lesswrong,
+    {
+      class: "external",
+      target: "_blank",
+      rel: "noopener noreferrer",
+    },
+  )
+
   return (
     <blockquote className="admonition question" data-admonition="question">
       <div className="admonition-title">
@@ -135,13 +136,7 @@ function lessWrongQuestion(url: string): JSX.Element {
           Question
         </span>
       </div>
-      <p>
-        This was{" "}
-        <a href={url} className="external" target="_blank" rel="noopener noreferrer">
-          originally posted as a question on LessWr
-          <span className="favicon-span">ong.{lessWrongFavicon}</span>
-        </a>
-      </p>
+      <p>This was {lessWrongLink}</p>
     </blockquote>
   )
 }
