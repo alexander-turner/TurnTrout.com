@@ -249,6 +249,7 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
   const navbar = page.locator("#navbar")
 
   const takeNavbarScreenshot = async (suffix: string) => {
+    await expect(navbar).toBeVisible()
     const box = await navbar.boundingBox()
     test.fail(!box, "Could not find navbar")
     // skipcq: JS-0339 - box is checked for nullability above

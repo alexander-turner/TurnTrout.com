@@ -14,6 +14,7 @@ import {
   getH1Screenshots,
   getScreenshotName,
   wrapH1SectionsInSpans,
+  getAllWithWait,
 } from "./visual_utils"
 
 test.describe("wrapH1SectionsInSpans", () => {
@@ -666,4 +667,80 @@ test.describe("showingPreview", () => {
       expect(showingPreview(page)).toBe(expected)
     })
   }
+})
+
+test.describe("getAllWithWait", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <div class="item">Item 1</div>
+          <div class="item">Item 2</div>
+          <div class="item">Item 3</div>
+        </body>
+      </html>
+    `)
+  })
+
+  test("returns all matching elements when visible", async ({ page }) => {
+    const items = await getAllWithWait(page.locator(".item"))
+    expect(items).toHaveLength(3)
+
+    const texts = await Promise.all(items.map((item) => item.textContent()))
+    expect(texts).toEqual(["Item 1", "Item 2", "Item 3"])
+  })
+
+  test("waits for elements to become visible before returning", async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <div class="delayed" style="display: none;">Delayed 1</div>
+          <div class="delayed" style="display: none;">Delayed 2</div>
+        </body>
+      </html>
+    `)
+
+    // Show elements after a delay
+    setTimeout(async () => {
+      await page.evaluate(() => {
+        document.querySelectorAll(".delayed").forEach((el) => {
+          ;(el as HTMLElement).style.display = "block"
+        })
+      })
+    }, 100)
+
+    const items = await getAllWithWait(page.locator(".delayed"))
+    expect(items).toHaveLength(2)
+
+    const texts = await Promise.all(items.map((item) => item.textContent()))
+    expect(texts).toEqual(["Delayed 1", "Delayed 2"])
+  })
+
+  test("handles dynamically added elements", async ({ page }) => {
+    await page.setContent("<html><body></body></html>")
+
+    // Add elements after a delay
+    setTimeout(async () => {
+      await page.evaluate(() => {
+        const body = document.body
+        for (let i = 1; i <= 3; i++) {
+          const div = document.createElement("div")
+          div.className = "dynamic"
+          div.textContent = `Dynamic ${i}`
+          body.appendChild(div)
+        }
+      })
+    }, 100)
+
+    const items = await getAllWithWait(page.locator(".dynamic"))
+    expect(items).toHaveLength(3)
+  })
+
+  test("throws timeout error when no elements exist", async ({ page }) => {
+    await page.setContent("<html><body></body></html>")
+
+    await expect(async () => {
+      await getAllWithWait(page.locator(".nonexistent"))
+    }).rejects.toThrow()
+  })
 })

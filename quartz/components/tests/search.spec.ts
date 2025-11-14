@@ -6,7 +6,13 @@ import {
   searchPlaceholderMobile,
   mouseFocusDelay,
 } from "../scripts/search"
-import { takeRegressionScreenshot, setTheme, search, showingPreview } from "./visual_utils"
+import {
+  takeRegressionScreenshot,
+  setTheme,
+  search,
+  showingPreview,
+  getAllWithWait,
+} from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
   // Log any console errors
@@ -151,7 +157,7 @@ test("Search bar is focused after typing", async ({ page }) => {
 test("Search results work for a single character", async ({ page }) => {
   await search(page, "t")
 
-  const results = await page.locator(".result-card").all()
+  const results = await getAllWithWait(page.locator(".result-card"))
 
   // If there's only one result, it's probably just "nothing found"
   expect(results).not.toHaveLength(1)
@@ -182,6 +188,7 @@ test.describe("Search accuracy", () => {
       await search(page, term)
 
       const firstResult = page.locator(".result-card").first()
+      await expect(firstResult).toBeVisible()
       const firstText = await firstResult.textContent()
       expect(firstText?.toLowerCase()).toContain(term.toLowerCase())
       expect(firstText?.startsWith("...")).toBe(false)
@@ -418,6 +425,7 @@ test("Preview container click navigates to the correct page", async ({ page }) =
 
   // Get the URL of the first result for comparison
   const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
   const expectedUrl = await firstResult.getAttribute("href")
 
   // Click the preview container
@@ -459,6 +467,7 @@ test("should not select a search result on initial render, even if the mouse is 
 
   // Figure out where the second result is, and hover over it
   const secondResult = page.locator(".result-card").nth(1)
+  await expect(secondResult).toBeVisible()
   const secondResultPos = await secondResult.boundingBox()
   expect(secondResultPos).not.toBeNull()
 

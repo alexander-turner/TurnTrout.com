@@ -5,6 +5,19 @@ import sanitize from "sanitize-filename"
 import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
+/**
+ * Safely gets all elements matching a locator, with proper waiting.
+ * Ensures at least one element is visible before returning the array.
+ * Use this instead of `.all()` when elements might not be immediately available.
+ *
+ * @param locator - The Playwright locator to get all elements from
+ * @returns Promise resolving to an array of locators for all matching elements
+ */
+export async function getAllWithWait(locator: Locator): Promise<Locator[]> {
+  await expect(locator.first()).toBeVisible()
+  return await locator.all()
+}
+
 // skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
   await page.evaluate((t) => {

@@ -2,7 +2,12 @@ import { test as base, expect, type Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { POPOVER_SCROLL_OFFSET } from "../scripts/popover_helpers"
-import { takeRegressionScreenshot, isDesktopViewport, showingPreview } from "./visual_utils"
+import {
+  takeRegressionScreenshot,
+  isDesktopViewport,
+  showingPreview,
+  getAllWithWait,
+} from "./visual_utils"
 
 type TestFixtures = {
   dummyLink: Locator
@@ -95,7 +100,7 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack with wait", async ({ page }) => {
-  const allLinks = await page.locator("#center-content .can-trigger-popover").all()
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await link.scrollIntoViewIfNeeded()
@@ -111,7 +116,7 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
-  const allLinks = await page.locator("#center-content .can-trigger-popover").all()
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await expect(link).toBeAttached()

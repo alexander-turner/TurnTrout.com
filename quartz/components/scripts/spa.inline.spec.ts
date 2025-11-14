@@ -10,7 +10,7 @@
 import { type Page, test, expect } from "@playwright/test"
 
 import { pondVideoId } from "../component_utils"
-import { isDesktopViewport } from "../tests/visual_utils"
+import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
 const testingPageSlug = "test-page"
@@ -410,8 +410,8 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
 test.describe("Same-page navigation", () => {
   async function clickToc(page: Page): Promise<void> {
     const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
-    const toc = await page.locator(tocSelector).all()
-    await toc[10].click()
+    await expect(page.locator(tocSelector).nth(10)).toBeVisible()
+    await page.locator(tocSelector).nth(10).click()
   }
 
   test("click same-page link, go back, check scroll is reset to top", async ({ page }) => {
@@ -431,7 +431,7 @@ test.describe("Same-page navigation", () => {
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
     // Scroll to some of the middle headings
     const scrollPositions: number[] = []
-    const headings = await page.locator("h1 > a").all()
+    const headings = await getAllWithWait(page.locator("h1 > a"))
     for (const heading of headings.slice(2, 5)) {
       // Don't click the heading, just navigate to it
       const headingId = await heading.getAttribute("href")
