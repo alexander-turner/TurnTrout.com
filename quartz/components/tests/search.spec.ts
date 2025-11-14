@@ -127,11 +127,13 @@ test("Highlighted search terms appear in results", async ({ page }) => {
 
 test("Search results are case-insensitive", async ({ page }) => {
   await search(page, "TEST")
+  await expect(page.locator(".result-card").first()).toBeVisible()
   const uppercaseResults = await page
     .locator(".result-card")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href")))
 
   await search(page, "test")
+  await expect(page.locator(".result-card").first()).toBeVisible()
   const lowerCaseResults = await page
     .locator(".result-card")
     .evaluateAll((links) => links.map((link) => link.getAttribute("href")))
@@ -512,6 +514,6 @@ navigationMethods.forEach(({ down, description }) => {
 
     await page.keyboard.press(down)
     await page.keyboard.press("Enter")
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await page.waitForURL((url) => url.toString() !== initialUrl.toString())
   })
 })
