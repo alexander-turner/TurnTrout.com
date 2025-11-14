@@ -144,13 +144,16 @@ jobs:
             echo "Screenshots found in ./lost-pixel."
           fi
 
+      - name: Symlink LostPixel config to root
+        if: steps.combine.outputs.screenshots_found == 'true'
+        run: ln -s config/lostpixel/lostpixel.config.ts lostpixel.config.ts
+
       - name: Run LostPixel on combined screenshots
         if: steps.combine.outputs.screenshots_found == 'true'
         uses: lost-pixel/lost-pixel@v3.16.0
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
-          LOST_PIXEL_CONFIG_PATH: config/lostpixel/lostpixel.config.ts
 
       - name: Clean up downloaded shards
         run: rm -rf ./all-lost-pixel-shards
