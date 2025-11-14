@@ -101,7 +101,7 @@ Complete this section whether you're on a new GrapheneOS installation or whether
 
 Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
-To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-osmand-your-map-of-choice)):
+To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-magic-earth-your-map-of-choice)):
         1. Open the "Add app" tab in Obtainium.
         2. Search for the name of the app (e.g. "Transportr") using the field "Search (some sources only)".
         3. Select the search sources "GitHub", "GitLab", and "Forgejo".
@@ -125,15 +125,16 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 > - [ ] Home Assistant,
 > - [ ] Mastodon,
 > - [ ] Obsidian,
-> - [ ] OsmAnd,
 > - [ ] Proton Calendar,
 > - [ ] Proton Drive,
 > - [ ] Signal, and
 > - [ ] Tor Browser.
 
-The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and more anonymous. Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
+The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and downloads applications anonymously (even Google won't know). Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
 
-- [ ] If you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
+For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN via Aurora. Once behind a VPN, the rest of your mobile installation activity will be more private.
+
+- [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
 
 #### The rest of the switch to GrapheneOS
 
