@@ -24,7 +24,3 @@ enabled = true
 [[analyzers]]
 name = "python"
 enabled = true
-
-[[transformers]]
-name = "prettier"
-enabled = true
