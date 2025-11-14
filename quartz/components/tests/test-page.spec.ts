@@ -456,7 +456,6 @@ test.describe("Right sidebar", () => {
         const { initialScrollTop, tolerance } = args
         const rightSidebar = document.querySelector("#right-sidebar")
         if (!rightSidebar) return false
-        console.error("rightSidebar.scrollTop", rightSidebar.scrollTop, initialScrollTop)
         return Math.abs(rightSidebar.scrollTop - (initialScrollTop + 100)) < tolerance
       },
       { initialScrollTop: initialSidebarScrollTop, tolerance: TIGHT_SCROLL_TOLERANCE },
@@ -510,7 +509,6 @@ test.describe("Right sidebar", () => {
     )
 
     const hoverColor = await firstLink.evaluate((el) => getComputedStyle(el).color)
-    console.log("hoverColor", hoverColor)
 
     expect(hoverColor).toEqual(expectedHoverColor)
   })
@@ -746,8 +744,6 @@ test.describe("List alignment", () => {
         return rect.left + paddingLeft
       })
 
-      console.log("olPositionLeft", olPositionLeft)
-      console.log("ulPositionLeft", ulPositionLeft)
       expect(Math.abs(olPositionLeft - ulPositionLeft)).toBeLessThan(LIST_TOLERANCE)
     })
   }

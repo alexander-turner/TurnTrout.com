@@ -310,21 +310,10 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    // Add console logging to see what's happening
-    page.on("console", (msg) => {
-      if (msg.text().includes("InstantScrollRestoration")) {
-        console.log("BROWSER:", msg.text())
-      }
-    })
-
     await page.reload({ waitUntil: "domcontentloaded" })
-
-    // Check if script was requested
-    console.log("Script requests:", requests)
 
     // Check final scroll position
     const finalScroll = await page.evaluate(() => window.scrollY)
-    console.log("Final scroll position:", finalScroll, "Expected:", scrollPos)
 
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
@@ -354,7 +343,6 @@ test.describe("Instant Scroll Restoration", () => {
     await page.waitForFunction(() => window.scrollY > 0)
 
     const finalScroll = await page.evaluate(() => window.scrollY)
-    console.log("Hash test - Final scroll position:", finalScroll)
 
     expect(finalScroll).toBeGreaterThan(0)
   })
