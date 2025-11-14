@@ -256,13 +256,13 @@ Previously, I followed `gwern`'s suggestion and arranged the video to only play 
 
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
-> In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, *then* it was animated.
+> In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
 >
 > \[...\]
 >
 > I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
 >
-> I'm reminded of a *Family Guy* meme I re-ran into recently: why does Peter Griffin dislike *The Godfather*? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over *everything* to learn more or focus on some things.
+> I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
 
 <!-- spellchecker-enable -->
 
@@ -295,6 +295,37 @@ Instead, I hooked [the `critical` package](https://github.com/addyosmani/critica
 ## Deduplicating HTML requests
 
 When loading a new page, the [`micromorph` package](https://github.com/natemoo-re/micromorph) selectively loads the new elements in the page. The shared elements are not updated, cutting load times.
+
+## Seamless scroll restoration
+
+Picture this: you're reading an article, click a link, hit the back button, and the browser dumps you at the top of the page. You have to scroll back down to find where you were. Or perhaps you reload a page mid-article and watch it jump around chaotically as images load -- never quite settling where you left off. I refuse to subject my readers to this nonsense.
+
+### The core challenge
+
+Browsers provide [native scroll restoration](https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration), but it's unreliable.
+
+0. The browser briefly shows the top of the page before restoring the correct position. Disorienting.
+1. Also, the browser restores position before layout shifts complete. Despite my [significant efforts](#preventing-layout-shift), a few layout shifts still pollute the user experience. Late-loading media cause the page to jump around.
+
+### Solution: Pre-empt the page paint
+
+Subtitle: Implemented by [`instantScrollRestoration.js`](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/static/scripts/instantScrollRestoration.js).
+
+To avoid disorienting the reader, I need to move _fast_ -- before the browser has painted the page even a single time!
+
+This inline script executes immediately, checking multiple possible storage locations for the user's last position. To accommodate late-loading content, the script then uses `requestAnimationFrame` to adjust the position over the next 3 seconds -- all without the user noticing!
+
+A complication: how does the script know whether a scroll event came from the user or from a late-loading image shifting the layout? Get this wrong, and the page annoyingly fights the user. I decided to cancel the adjustment period given user movement indicated by certain events:
+
+```javascript
+let userInteracted = false
+const markInteraction = () => { userInteracted = true }
+for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+  window.addEventListener(event, markInteraction, { passive: true, once: true })
+}
+```
+
+As a result of this finagling, while you're hanging out by The Pond, you never lose your place.
 
 # Text presentation
 
@@ -541,7 +572,7 @@ Typographically, capital letters are designed to be used one or two at a time - 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
-> The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): *Tratado de Libre Comercio de América del Norte*, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): *Accord de libre-échange nord-américain*, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
+> The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
 
 ### Hyphen replacement
 
