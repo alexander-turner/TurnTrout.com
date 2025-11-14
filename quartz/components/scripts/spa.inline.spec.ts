@@ -13,6 +13,7 @@ import { pondVideoId } from "../component_utils"
 import { isDesktopViewport } from "../tests/visual_utils"
 
 const TIGHT_SCROLL_TOLERANCE = 10
+const testingPageSlug = "test-page"
 
 /*
  * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.
@@ -117,7 +118,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
   // Navigate to a page that uses the SPA inline logic
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await page.goto(`http://localhost:8080/${testingPageSlug}`, { waitUntil: "domcontentloaded" })
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
   await page.evaluate(() => {
@@ -194,7 +195,7 @@ test.describe("Local Link Navigation", () => {
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
       waitUntil: "domcontentloaded",
     })
     await waitForHistoryScrollNotEquals(page, undefined)
@@ -208,10 +209,10 @@ test.describe("Scroll Behavior", () => {
 
     // Scroll down the page
     const finalAnchor = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${finalAnchor}`, {
+    await page.goto(`http://localhost:8080/${testingPageSlug}#${finalAnchor}`, {
       waitUntil: "domcontentloaded",
     })
-    await page.waitForURL(`**/test-page#${finalAnchor}`)
+    await page.waitForURL(`**/${testingPageSlug}#${finalAnchor}`)
     await waitForHistoryScrollNotEquals(page, undefined)
 
     const tocTitle = page.locator("#toc-title button")
@@ -219,7 +220,7 @@ test.describe("Scroll Behavior", () => {
     await tocTitle.click()
 
     // Verify the URL is no longer the anchor
-    await page.waitForURL("**/test-page")
+    await page.waitForURL(`**/${testingPageSlug}`)
   })
 
   test("even when the page is scrolled down, clicking the TOC title scrolls to the top", async ({
@@ -253,7 +254,7 @@ test.describe("Scroll Behavior", () => {
       page,
     }) => {
       const anchorId = await createFinalAnchor(page)
-      await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+      await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
         waitUntil: "domcontentloaded",
       })
 
@@ -284,7 +285,7 @@ test.describe("Scroll Behavior", () => {
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
       waitUntil: "domcontentloaded",
     })
     await page.waitForFunction(() => window.history.state?.scroll)
@@ -322,19 +323,12 @@ test.describe("Instant Scroll Restoration", () => {
     const anchorId = "lists"
 
     // Navigate to hash and record position
-    await page.goto(`http://localhost:8080/test-page#${anchorId}`, {
+    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
       waitUntil: "domcontentloaded",
     })
     await page.waitForLoadState("load")
     const expectedScrollY = await page.evaluate(() => window.scrollY)
     expect(expectedScrollY).toBeGreaterThan(0)
-
-    // Add console logging to see what's happening
-    page.on("console", (msg) => {
-      if (msg.text().includes("InstantScrollRestoration")) {
-        console.log("BROWSER:", msg.text())
-      }
-    })
 
     // Reload and wait for completion
     await page.reload({ waitUntil: "domcontentloaded" })
@@ -442,7 +436,7 @@ test.describe("Same-page navigation", () => {
       // Don't click the heading, just navigate to it
       const headingId = await heading.getAttribute("href")
       expect(headingId?.startsWith("#")).toBe(true)
-      await page.goto(`http://localhost:8080/test-page${headingId}`, {
+      await page.goto(`http://localhost:8080/${testingPageSlug}${headingId}`, {
         waitUntil: "domcontentloaded",
       })
 
@@ -592,8 +586,10 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
 
     const hash = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/test-page#${hash}`, { waitUntil: "domcontentloaded" })
-    await page.waitForURL(`**/test-page#${hash}`)
+    await page.goto(`http://localhost:8080/${testingPageSlug}#${hash}`, {
+      waitUntil: "domcontentloaded",
+    })
+    await page.waitForURL(`**/${testingPageSlug}#${hash}`)
 
     await expect(cssLocator).toHaveCount(0)
   })
@@ -623,7 +619,7 @@ test.describe("Network Behavior", () => {
     let requestMade = false
 
     // Intercept requests for the same page.
-    await page.route("**/test-page", (route) => {
+    await page.route(`**/${testingPageSlug}`, (route) => {
       requestMade = true
       route.continue()
     })
@@ -716,7 +712,7 @@ test.describe("Document Head & Body Updates", () => {
     // Go back
     const awaitNav = await waitForNavigation(page)
     await page.goBack()
-    await page.waitForURL("**/")
+    await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
     await page.waitForFunction(() => document.title !== "")
 
@@ -865,7 +861,7 @@ test.describe("Document Head & Body Updates", () => {
     // Navigate back to home
     let awaitNav = await waitForNavigation(page)
     await page.goBack()
-    await page.waitForURL("**/")
+    await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
 
     // Navigate forward to about again
