@@ -59,7 +59,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          npx playwright test --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
+          npx playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
