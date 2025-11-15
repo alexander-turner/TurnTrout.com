@@ -40,11 +40,11 @@ test.beforeEach(async ({ page }) => {
     window.dispatchEvent(new Event("nav"))
   })
 
-  // Hide all video controls
+  // Hide all video and audio controls
   await page.evaluate(() => {
-    const videos = document.querySelectorAll("video")
-    videos.forEach((video) => {
-      video.removeAttribute("controls")
+    const mediaElements = document.querySelectorAll("video, audio")
+    mediaElements.forEach((media) => {
+      media.removeAttribute("controls")
     })
   })
 })
