@@ -24,9 +24,28 @@ const logger = createWinstonLogger("countlinks")
 // Module-level counter to accumulate link counts across all files
 const faviconCounter = new Map<string, number>()
 
-// istanbul ignore next
+/**
+ * Gets favicon counts from memory, or reads from file if memory is empty.
+ * This handles cases where counts are needed in a different process than where they were generated.
+ * @returns A Map of favicon path to count
+ */
 export function getFaviconCounts(): Map<string, number> {
-  return new Map(faviconCounter)
+  // If in-memory map has data, use it (normal build-time usage)
+  if (faviconCounter.size > 0) {
+    return new Map(faviconCounter)
+  }
+
+  // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
+  if (!fs.existsSync(FAVICON_COUNTS_FILE)) {
+    logger.warn(`Favicon counts file not found at ${FAVICON_COUNTS_FILE}`)
+    return new Map<string, number>()
+  }
+
+  const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
+  const entries = JSON.parse(data) as Array<[string, number]>
+  const countMap = new Map<string, number>(entries)
+  logger.debug(`Read ${countMap.size} favicon counts from ${FAVICON_COUNTS_FILE}`)
+  return countMap
 }
 
 /**
@@ -81,19 +100,15 @@ function shouldSkipMarkdownLink(url: string, parent: MDParent | undefined): bool
 }
 
 /**
- * Writes favicon counts to the output file.
+ * Writes favicon counts to the output file as JSON.
  * Note: This writes after all files are processed. The final write will contain
  * all accumulated counts across all files.
  */
 function writeCountsToFile(): void {
-  const sortedCounts = Array.from(faviconCounter.entries()).sort(
-    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
-  )
-
-  const lines = sortedCounts.map(([path, count]) => `${count}\t${path}`)
-  const content = lines.join("\n")
-
   try {
+    const entries = Array.from(faviconCounter.entries())
+    const content = JSON.stringify(entries, null, 2)
+
     // Write atomically using a temporary file then rename
     const tempFile = `${FAVICON_COUNTS_FILE}.tmp`
     fs.writeFileSync(tempFile, content, { flag: "w" })

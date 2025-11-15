@@ -60,7 +60,7 @@ afterEach(async () => {
   await fsExtra.remove(tempDir)
 })
 
-function getWrittenContent(): string {
+function getWrittenCounts(): Map<string, number> {
   const writeCall = (fs.writeFileSync as jest.Mock).mock.calls.find((call) =>
     (call[0] as string).toString().endsWith(".tmp"),
   )
@@ -68,7 +68,9 @@ function getWrittenContent(): string {
   if (!writeCall) {
     throw new Error("writeCall not found")
   }
-  return writeCall[1] as string
+  const jsonContent = writeCall[1] as string
+  const entries = JSON.parse(jsonContent) as Array<[string, number]>
+  return new Map(entries)
 }
 
 async function createTestFile(content: string, filename = "test.md"): Promise<FilePath> {
@@ -102,11 +104,8 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    expect(writtenContent).toContain(expectedPath)
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    const matchingLine = lines.find((line) => line.includes(expectedPath))
-    expect(matchingLine).toContain(`${expectedCount}\t`)
+    const counts = getWrittenCounts()
+    expect(counts.get(expectedPath)).toBe(expectedCount)
   })
 
   it("should count external URL links", async () => {
@@ -118,12 +117,9 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
+    const counts = getWrittenCounts()
     const pathWithoutExt = faviconPath.replace(/\.png$/, "")
-    expect(writtenContent).toContain(pathWithoutExt)
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    const externalLine = lines.find((line) => line.includes(pathWithoutExt))
-    expect(externalLine).toContain("3\t")
+    expect(counts.get(pathWithoutExt)).toBe(3)
   })
 
   it.each([
@@ -131,27 +127,25 @@ describe("countAllLinks", () => {
       name: "asset links",
       content:
         "[image](https://example.com/image.png)\n[video](https://example.com/video.mp4)\n[audio](https://example.com/audio.mp3)",
-      check: (lines: string[]) => {
-        const assetLines = lines.filter(
-          (line) => line.includes("example_com") && line.includes("image.png"),
-        )
-        expect(assetLines.length).toBe(0)
+      check: (paths: string[]) => {
+        const assetPaths = paths.filter((path) => path.includes("image.png"))
+        expect(assetPaths.length).toBe(0)
       },
     },
     {
       name: "footnote links",
       content: "[fn1](#user-content-fn-1)\n[fn2](#user-content-fn-2)",
-      check: (lines: string[]) => {
-        const footnoteLines = lines.filter((line) => line.includes("#user-content-fn"))
-        expect(footnoteLines.length).toBe(0)
+      check: (paths: string[]) => {
+        const footnotePaths = paths.filter((path) => path.includes("#user-content-fn"))
+        expect(footnotePaths.length).toBe(0)
       },
     },
     {
       name: "anchor links in headings",
       content: "## [Section 1](#section-1)\n### [Section 2](#section-2)",
-      check: (lines: string[]) => {
-        const anchorLines = lines.filter((line) => line.includes("#section"))
-        expect(anchorLines.length).toBe(0)
+      check: (paths: string[]) => {
+        const anchorPaths = paths.filter((path) => path.includes("#section"))
+        expect(anchorPaths.length).toBe(0)
       },
     },
   ])("should skip $name", async ({ content, check }) => {
@@ -159,9 +153,8 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    check(lines)
+    const counts = getWrittenCounts()
+    check(Array.from(counts.keys()))
   })
 
   it("should count anchor links in non-heading elements", async () => {
@@ -171,15 +164,9 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    expect(writtenContent).toContain(specialFaviconPaths.anchor)
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
-    expect(anchorLine).toBeDefined()
-    if (!anchorLine) {
-      throw new Error("anchorLine not found")
-    }
-    const count = parseInt(anchorLine.split("\t")[0], 10)
+    const counts = getWrittenCounts()
+    const count = counts.get(specialFaviconPaths.anchor)
+    expect(count).toBeDefined()
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
@@ -187,20 +174,20 @@ describe("countAllLinks", () => {
     {
       name: "invalid URLs",
       content: "[link](not-a-url)\n[link2](http://[invalid-ipv6)",
-      check: (lines: string[]) => {
+      check: (paths: string[]) => {
         // Invalid URLs should be skipped, so they shouldn't appear in counts
-        const invalidLines = lines.filter(
-          (line) => line.includes("not-a-url") || line.includes("invalid-ipv6"),
+        const invalidPaths = paths.filter(
+          (path) => path.includes("not-a-url") || path.includes("invalid-ipv6"),
         )
-        expect(invalidLines.length).toBe(0)
+        expect(invalidPaths.length).toBe(0)
       },
     },
     {
       name: "empty link URLs",
       content: "[link]()",
-      check: (lines: string[]) => {
+      check: (paths: string[]) => {
         // Empty URLs should be skipped
-        expect(lines.length).toBe(0)
+        expect(paths.length).toBe(0)
       },
     },
   ])("should skip $name", async ({ content, check }) => {
@@ -208,9 +195,8 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    check(lines)
+    const counts = getWrittenCounts()
+    check(Array.from(counts.keys()))
   })
 
   it("should count relative URLs correctly", async () => {
@@ -220,15 +206,9 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    expect(writtenContent).toContain(specialFaviconPaths.turntrout)
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    const turntroutLine = lines.find((line) => line.includes(specialFaviconPaths.turntrout))
-    expect(turntroutLine).toBeDefined()
-    if (!turntroutLine) {
-      throw new Error("turntroutLine not found")
-    }
-    const count = parseInt(turntroutLine.split("\t")[0], 10)
+    const counts = getWrittenCounts()
+    const count = counts.get(specialFaviconPaths.turntrout)
+    expect(count).toBeDefined()
     expect(count).toBeGreaterThanOrEqual(2)
   })
 
@@ -239,95 +219,62 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    expect(lines.length).toBeGreaterThanOrEqual(2)
+    const counts = getWrittenCounts()
+    expect(counts.size).toBeGreaterThanOrEqual(2)
 
-    const exampleLine = lines.find((line) => line.includes("example_com"))
-    const testLine = lines.find((line) => line.includes("test_com"))
+    const examplePath = getQuartzPath("example.com").replace(/\.png$/, "")
+    const testPath = getQuartzPath("test.com").replace(/\.png$/, "")
 
-    expect(exampleLine).toBeDefined()
-    expect(testLine).toBeDefined()
-    if (!exampleLine || !testLine) {
-      throw new Error("exampleLine or testLine not found")
-    }
+    const exampleCount = counts.get(examplePath)
+    const testCount = counts.get(testPath)
 
-    const exampleCount = parseInt(exampleLine.split("\t")[0], 10)
-    const testCount = parseInt(testLine.split("\t")[0], 10)
-
+    expect(exampleCount).toBeDefined()
+    expect(testCount).toBeDefined()
     expect(exampleCount).toBeGreaterThanOrEqual(2)
     expect(testCount).toBeGreaterThanOrEqual(1)
-    expect(exampleCount).toBeGreaterThan(testCount)
+    expect(exampleCount).toBeGreaterThan(testCount!)
   })
 
-  it("should write counts sorted by count descending, then alphabetically", async () => {
+  it("should write counts", async () => {
     const content = `[test1](mailto:test1@example.com)\n[test2](mailto:test2@example.com)\n[test3](mailto:test3@example.com)\n[section 1](#section-1)\n[section 2](#section-2)`
 
     const filePath = await createTestFile(content)
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    expect(lines.length).toBeGreaterThanOrEqual(2)
+    const counts = getWrittenCounts()
+    expect(counts.size).toBeGreaterThanOrEqual(2)
 
-    const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
-    const anchorLine = lines.find((line) => line.includes(specialFaviconPaths.anchor))
+    const mailCount = counts.get(specialFaviconPaths.mail)
+    const anchorCount = counts.get(specialFaviconPaths.anchor)
 
-    expect(mailLine).toBeDefined()
-    expect(anchorLine).toBeDefined()
-    if (!mailLine || !anchorLine) {
-      throw new Error("mailLine or anchorLine not found")
-    }
-
-    const mailCount = parseInt(mailLine.split("\t")[0], 10)
-    const anchorCount = parseInt(anchorLine.split("\t")[0], 10)
-
+    expect(mailCount).toBeDefined()
+    expect(anchorCount).toBeDefined()
     expect(mailCount).toBeGreaterThanOrEqual(3)
     expect(anchorCount).toBeGreaterThanOrEqual(2)
-
-    const mailIndex = lines.indexOf(mailLine)
-    const anchorIndex = lines.indexOf(anchorLine)
-
-    const countsEqual = mailCount === anchorCount
-    const mailAfterAnchor = mailIndex > anchorIndex
-
-    expect(countsEqual ? mailAfterAnchor : mailCount > anchorCount).toBe(true)
   })
 
-  it("should sort alphabetically when counts are equal", async () => {
+  it("should count when hostnames have equal counts", async () => {
     const content = `[page1](https://example.com/page1)\n[page2](https://example.com/page2)\n[page1](https://apple.com/page1)\n[page2](https://apple.com/page2)`
 
     const filePath = await createTestFile(content)
     await countAllFavicons(mockCtx, [filePath])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
+    const counts = getWrittenCounts()
 
     const applePath = getQuartzPath("apple.com")
     const applePathWithoutExt = applePath.replace(/\.png$/, "")
     const examplePath = getQuartzPath("example.com")
     const examplePathWithoutExt = examplePath.replace(/\.png$/, "")
 
-    const appleLine = lines.find((line) => line.includes(applePathWithoutExt))
-    const exampleLine = lines.find((line) => line.includes(examplePathWithoutExt))
+    const appleCount = counts.get(applePathWithoutExt)
+    const exampleCount = counts.get(examplePathWithoutExt)
 
-    expect(appleLine).toBeDefined()
-    expect(exampleLine).toBeDefined()
-    if (!appleLine || !exampleLine) {
-      throw new Error("appleLine or exampleLine not found")
-    }
-
-    const appleCount = parseInt(appleLine.split("\t")[0], 10)
-    const exampleCount = parseInt(exampleLine.split("\t")[0], 10)
-
+    expect(appleCount).toBeDefined()
+    expect(exampleCount).toBeDefined()
     expect(appleCount).toBe(2)
     expect(exampleCount).toBe(2)
-
-    const appleIndex = lines.indexOf(appleLine)
-    const exampleIndex = lines.indexOf(exampleLine)
-    expect(appleIndex).toBeLessThan(exampleIndex)
   })
 
   it("should accumulate counts across multiple files", async () => {
@@ -337,14 +284,9 @@ describe("countAllLinks", () => {
     await countAllFavicons(mockCtx, [file1, file2])
 
     expect(fs.writeFileSync).toHaveBeenCalled()
-    const writtenContent = getWrittenContent()
-    const lines = writtenContent.split("\n").filter((line) => line.trim())
-    const mailLine = lines.find((line) => line.includes(specialFaviconPaths.mail))
-    expect(mailLine).toBeDefined()
-    if (!mailLine) {
-      throw new Error("mailLine not found")
-    }
-    const count = parseInt(mailLine.split("\t")[0], 10)
+    const counts = getWrittenCounts()
+    const count = counts.get(specialFaviconPaths.mail)
+    expect(count).toBeDefined()
     expect(count).toBe(2)
   })
 
@@ -404,5 +346,31 @@ describe("countAllLinks", () => {
     await expect(countAllFavicons(mockCtx, [invalidPath])).resolves.not.toThrow()
 
     errorSpy.mockRestore()
+  })
+})
+
+describe("getFaviconCounts", () => {
+  it("should read from file when in-memory map is empty", () => {
+    // Mock file system to return valid favicon counts as JSON
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    const jsonData = JSON.stringify([
+      ["quartz/static/images/external-favicons/example_com", 10],
+      ["mail", 5],
+    ])
+    jest.spyOn(fs, "readFileSync").mockReturnValue(jsonData)
+
+    const counts = getFaviconCounts()
+
+    expect(counts.size).toBe(2)
+    expect(counts.get("quartz/static/images/external-favicons/example_com")).toBe(10)
+    expect(counts.get("mail")).toBe(5)
+  })
+
+  it("should return empty map when file does not exist", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(false)
+
+    const counts = getFaviconCounts()
+
+    expect(counts.size).toBe(0)
   })
 })
