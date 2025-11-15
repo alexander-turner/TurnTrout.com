@@ -48,7 +48,7 @@ const config: QuartzConfig = {
       pages: [
         { title: "About me", slug: "/about" },
         { title: "My research", slug: "/research" },
-        { title: "Posts", slug: "/posts" },
+        { title: "All posts", slug: "/posts" },
         { title: "Open source", slug: "/open-source" },
       ],
     },
