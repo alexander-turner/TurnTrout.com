@@ -560,8 +560,9 @@ describe("Favicon Utilities", () => {
       expect(element.properties.class).toBe("favicon")
       expect(element.properties["data-domain"]).toBe(expectedDomain)
       expect(element.properties.style).toBe(`--mask-url: url(${urlString});`)
-      expect(element.properties.alt).toBe("")
       expect(element.children).toEqual([])
+      expect(element.properties["aria-hidden"]).toBe("true")
+      expect(element.properties["aria-focusable"]).toBe("false")
     })
   })
 

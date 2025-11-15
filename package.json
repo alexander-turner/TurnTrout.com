@@ -14,7 +14,7 @@
     "docs": "npx quartz build --serve -d docs",
     "check": "tsc --noEmit -p config/typescript/tsconfig.json && npx prettier . --check --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
     "format": "npx prettier . --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
-    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --coverage --config config/javascript/jest.config.js",
+    "test": "node --experimental-vm-modules --no-warnings --localstorage-file=/tmp/jest-localstorage.json node_modules/jest/bin/jest.js --coverage --config config/javascript/jest.config.js",
     "dev": "npx quartz build --serve",
     "build": "npx quartz build",
     "preview": "npx quartz build && npx serve public",
