@@ -117,12 +117,12 @@ function shouldSkipMarkdownLink(url: string, parent: MDParent | undefined): bool
  * all accumulated counts across all files.
  */
 function writeCountsToFile(): void {
-  try {
-    const entries = Array.from(faviconCounter.entries())
-    const content = JSON.stringify(entries, null, 2)
+  const entries = Array.from(faviconCounter.entries())
+  const content = JSON.stringify(entries, null, 2)
 
-    // Write atomically using a temporary file then rename
-    const tempFile = `${FAVICON_COUNTS_FILE}.tmp`
+  // Write atomically using a temporary file then rename
+  const tempFile = `${FAVICON_COUNTS_FILE}.tmp`
+  try {
     fs.writeFileSync(tempFile, content, { flag: "w" })
     fs.renameSync(tempFile, FAVICON_COUNTS_FILE)
     logger.debug(`Wrote ${faviconCounter.size} favicon counts to ${FAVICON_COUNTS_FILE}`)
