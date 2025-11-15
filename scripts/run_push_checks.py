@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Pretty-print progress bars for all pre-push checks."""
+"""
+Pretty-print progress bars for all pre-push checks.
+
+Expected environment variables (used by scripts this orchestrates):
+    - ACCESS_KEY_ID_TURNTROUT_MEDIA (for R2 upload via handle_local_assets.sh)
+    - SECRET_ACCESS_TURNTROUT_MEDIA (for R2 upload via handle_local_assets.sh)
+    - S3_ENDPOINT_ID_TURNTROUT_MEDIA (for R2 upload via handle_local_assets.sh)
+"""
 
 import argparse
 import glob

@@ -1,4 +1,11 @@
-"""Upload files to R2 storage and update references in markdown files."""
+"""
+Upload files to R2 storage and update references in markdown files.
+
+Expected environment variables:
+    - ACCESS_KEY_ID_TURNTROUT_MEDIA
+    - SECRET_ACCESS_TURNTROUT_MEDIA
+    - S3_ENDPOINT_ID_TURNTROUT_MEDIA
+"""
 
 import argparse
 import os

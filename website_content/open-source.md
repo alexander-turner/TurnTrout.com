@@ -68,6 +68,66 @@ I helped fund this project.
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
 > ![[dataset-protection#]]
 
+# Automated setup
+
+Subtitle: One command to set up your shell, editor, and secret management.
+
+My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides a comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
+
+- **Fish shell** with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
+- **Neovim** configured with LazyVim, providing a full-fledged IDE with Copilot support,
+- **tmux** with automatic session saving and restoration (`tmux-continuum` and `tmux-restore`),
+- **`envchain`** for hardware-encrypted secret management via macOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in config files,
+- **`autojump`** for quick directory navigation,
+- **Reversible file deletion by default** via `trash-put` instead of `rm`,
+- **Git aliases** and other productivity shortcuts, and -- drumroll ---
+- **`goosesay`** --- because every terminal needs more geese.  
+
+```plaintext
+  ______________________________________
+ / Find out just what any people will   \
+ | quietly submit to and you have the   |
+ | exact measure of the injustice and   |
+ | wrong which will be imposed on them. |
+ \ --- Frederick Douglass               /
+  --------------------------------------
+    \
+     \
+      \     ___
+          .´   ""-⹁
+      _.-´)  e  _  '⹁
+     '-===.<_.-´ '⹁  \
+                   \  \
+                    ;  \
+                    ;   \          _
+                    |    '⹁__..--"" ""-._    _.´)
+                   /                     ""-´  _>
+                  :                          -´/
+                  ;                  .__<   __)
+                   \    '._      .__.-'   .-´
+                    '⹁_    '-⹁__.-´      /
+                       '-⹁__/    ⹁    _.´
+                      ____< /'⹁__/_.""
+                    .´.----´  | |
+                  .´ /        | |
+                 ´´-/      ___| ;
+                          <_    /
+                            `.'´
+```
+
+Each time I open the `fish` shell, a rainbow goose blurts out an interesting phrase. I spent several hours to achieve this modern luxury.
+
+```fish
+if status is-interactive 
+    fortune 5% computers 5% linuxcookie 2% startrek 88% wisdom | cowsay -f ~/.dotfiles/apps/goose.cow | lolcat -S 6
+end
+```
+
+The way this works is that:
+1. I sample a saying by calling the `fortune` command,
+2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
+3. The `lolcat` command splays the text 'cross the rainbow.
+
 # Minor contributions
 
 ## SCSS linting rule
