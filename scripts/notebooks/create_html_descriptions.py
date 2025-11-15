@@ -1,10 +1,19 @@
 """
 This script creates HTML descriptions for blog posts by generating them using
-the Gemini 1.5 Pro model from Google Generative AI.
+the Gemini 2.5 Pro model from Google Generative AI.
 
 It reads the content of each Markdown file, extracts the YAML front matter, and
 if no description is found, generates one. The generated description is then
 saved back to the file.
+
+Expected environment variables:
+    - GEMINI_API_KEY (or API key for whatever model you're using)
+
+Usage with envchain:
+    envchain services GEMINI_API_KEY python scripts/notebooks/create_html_descriptions.py
+
+    To set up the key in envchain (first time only):
+    envchain --set services GEMINI_API_KEY
 """
 
 import os
@@ -69,8 +78,8 @@ safety_settings = {
 
 
 def get_gemini_description(content: str) -> str:
-    """Generate a description for a blog post using the Gemini 1.5 Pro model."""
-    model = genai.GenerativeModel("gemini-1.5-pro")
+    """Generate a description for a blog post using the Gemini 2.5 Pro model."""
+    model = genai.GenerativeModel("gemini-2.5-pro")
     prompt = """
     Based on the following content, write a concise description for a blog post. Offer a factual, neutral summary of the content. 
 
