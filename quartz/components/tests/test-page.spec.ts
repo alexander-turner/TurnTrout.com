@@ -204,6 +204,16 @@ test.describe("Unique content around the site", () => {
     })
   })
 
+  test("Favicon table (lostpixel)", async ({ page }, testInfo) => {
+    const faviconTable = page.locator("#populate-favicon-container")
+    await faviconTable.scrollIntoViewIfNeeded()
+    await expect(faviconTable).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "favicon-table", {
+      elementToScreenshot: faviconTable,
+    })
+  })
+
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
     await page.goto(
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
