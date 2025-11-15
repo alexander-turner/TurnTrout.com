@@ -1,4 +1,4 @@
-import { QuartzConfig } from "../../quartz/cfg";
+import { QuartzConfig } from "../../quartz/cfg"
 import {
   AddFavicons,
   AfterArticle,
@@ -33,7 +33,7 @@ import {
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
   PopulateContainers,
-} from "../../quartz/plugins";
+} from "../../quartz/plugins"
 
 const config: QuartzConfig = {
   configuration: {
@@ -49,6 +49,7 @@ const config: QuartzConfig = {
         { title: "About me", slug: "/about" },
         { title: "My research", slug: "/research" },
         { title: "Posts", slug: "/posts" },
+        { title: "Open source", slug: "/open-source" },
       ],
     },
   },
@@ -106,6 +107,6 @@ const config: QuartzConfig = {
       NotFoundPage(),
     ],
   },
-};
+}
 
-export default config;
+export default config
