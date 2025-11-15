@@ -1,9 +1,9 @@
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const rootDir = resolve(__dirname, "../..");
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const rootDir = resolve(__dirname, "../..")
 
 /** @type {import('jest').Config} */
 const config = {
@@ -25,7 +25,6 @@ const config = {
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
-    "quartz/plugins/transformers/logger_utils\\.ts",
   ],
 
   coverageThreshold: {
@@ -64,8 +63,7 @@ const config = {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-    "\\.inline$":
-      "<rootDir>/quartz/components/scripts/__mocks__/inlineScriptMock.ts",
+    "\\.inline$": "<rootDir>/quartz/components/scripts/__mocks__/inlineScriptMock.ts",
   },
   testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(test).ts(x|)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
@@ -74,6 +72,6 @@ const config = {
   transformIgnorePatterns: [
     "/node_modules/(?!preact|preact-render-to-string|preact-context-provider|hastscript|rehype|unist-util-visit-parents).+\\.js$",
   ],
-};
+}
 
-export default config;
+export default config

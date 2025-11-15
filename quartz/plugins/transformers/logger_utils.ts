@@ -1,3 +1,5 @@
+import type TransportStream from "winston-transport"
+
 import { execSync } from "child_process"
 import fs from "fs"
 import path from "path"
@@ -37,19 +39,33 @@ transports.DailyRotateFile = DailyRotateFile
  * Creates a Winston logger with daily rotation and a 7-day retention policy.
  */
 export const createWinstonLogger = (logName: string) => {
+  const loggerTransports: TransportStream[] = [
+    new transports.DailyRotateFile({
+      filename: path.join(logDir, `${logName}.log`),
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "20m",
+      maxFiles: "7d", // Keep logs for 7 days using the correct 'd' suffix
+      auditFile: path.join(logDir, `${logName}-audit.json`), // Track rotated files
+      frequency: "daily",
+    }),
+  ]
+
+  // Add console transport in CI environments so logs appear in GitHub Actions
+  if (process.env.CI === "true") {
+    loggerTransports.push(
+      new transports.Console({
+        format: format.combine(
+          format.colorize(),
+          format.simple(),
+          format.printf(({ level, message }) => `[${logName}] ${level}: ${message}`),
+        ),
+      }),
+    )
+  }
+
   return createLogger({
     format: format.combine(format.timestamp({ format: timezoneFormat }), format.prettyPrint()),
-
-    transports: [
-      new transports.DailyRotateFile({
-        filename: path.join(logDir, `${logName}.log`),
-        datePattern: "YYYY-MM-DD",
-        zippedArchive: true,
-        maxSize: "20m",
-        maxFiles: "7d", // Keep logs for 7 days using the correct 'd' suffix
-        auditFile: path.join(logDir, `${logName}-audit.json`), // Track rotated files
-        frequency: "daily",
-      }),
-    ],
+    transports: loggerTransports,
   })
 }

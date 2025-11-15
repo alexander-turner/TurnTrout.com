@@ -32,20 +32,32 @@ const faviconCounter = new Map<string, number>()
 export function getFaviconCounts(): Map<string, number> {
   // If in-memory map has data, use it (normal build-time usage)
   if (faviconCounter.size > 0) {
+    logger.info(`Using in-memory favicon counts: ${faviconCounter.size} entries`)
     return new Map(faviconCounter)
   }
 
   // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
+  logger.info(`In-memory favicon counter is empty, attempting to read from ${FAVICON_COUNTS_FILE}`)
+
   if (!fs.existsSync(FAVICON_COUNTS_FILE)) {
     logger.warn(`Favicon counts file not found at ${FAVICON_COUNTS_FILE}`)
     return new Map<string, number>()
   }
 
-  const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
-  const entries = JSON.parse(data) as Array<[string, number]>
-  const countMap = new Map<string, number>(entries)
-  logger.debug(`Read ${countMap.size} favicon counts from ${FAVICON_COUNTS_FILE}`)
-  return countMap
+  try {
+    const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
+    if (!data.trim()) {
+      logger.warn(`Favicon counts file is empty at ${FAVICON_COUNTS_FILE}`)
+      return new Map<string, number>()
+    }
+    const entries = JSON.parse(data) as Array<[string, number]>
+    const countMap = new Map<string, number>(entries)
+    logger.info(`Read ${countMap.size} favicon counts from ${FAVICON_COUNTS_FILE}`)
+    return countMap
+  } catch (error) {
+    logger.error(`Failed to read or parse favicon counts file: ${error}`)
+    return new Map<string, number>()
+  }
 }
 
 /**

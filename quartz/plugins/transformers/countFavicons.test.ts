@@ -373,4 +373,33 @@ describe("getFaviconCounts", () => {
 
     expect(counts.size).toBe(0)
   })
+
+  it("should handle invalid JSON content gracefully", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockReturnValue("invalid json {]")
+
+    const counts = getFaviconCounts()
+
+    expect(counts.size).toBe(0)
+  })
+
+  it("should handle read errors gracefully", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw new Error("Read error")
+    })
+
+    const counts = getFaviconCounts()
+
+    expect(counts.size).toBe(0)
+  })
+
+  it("should return empty map when file is empty", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockReturnValue("")
+
+    const counts = getFaviconCounts()
+
+    expect(counts.size).toBe(0)
+  })
 })
