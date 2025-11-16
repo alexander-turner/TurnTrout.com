@@ -213,11 +213,21 @@ export const populateElements = async (
   const root = fromHtml(html)
   let modified = false
 
+  // Debug: collect all IDs in the document
+  const allIds: string[] = []
+  visit(root, "element", (node) => {
+    if (node.properties?.id) {
+      allIds.push(String(node.properties.id))
+    }
+  })
+
   for (const config of configs) {
     if (config.id) {
       const element = findElementById(root, config.id)
       if (!element) {
-        logger.warn(`No element with id "${config.id}" found in ${htmlPath}`)
+        logger.warn(
+          `No element with id "${config.id}" found in ${htmlPath}. Available IDs: ${allIds.join(", ") || "none"}`,
+        )
         continue
       }
 
