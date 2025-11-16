@@ -39,6 +39,12 @@ transports.DailyRotateFile = DailyRotateFile
  * Creates a Winston logger with daily rotation and a 7-day retention policy.
  */
 export const createWinstonLogger = (logName: string) => {
+  // Ensure log directory exists (safety check in case module initialization failed)
+  // istanbul ignore if
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true })
+  }
+
   const loggerTransports: TransportStream[] = [
     new transports.DailyRotateFile({
       filename: path.join(logDir, `${logName}.log`),
