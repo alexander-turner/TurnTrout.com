@@ -1,16 +1,16 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test"
 
 interface DeviceConfig {
-  name: string;
+  name: string
   config: {
-    viewport?: { width: number; height: number };
-    [key: string]: unknown;
-  };
+    viewport?: { width: number; height: number }
+    [key: string]: unknown
+  }
 }
 
 interface Browser {
-  name: string;
-  engine: "chromium" | "firefox" | "webkit";
+  name: string
+  engine: "chromium" | "firefox" | "webkit"
 }
 
 // Use robust device presets that include stable layout-affecting fields only
@@ -36,13 +36,13 @@ const deviceList: DeviceConfig[] = [
       ...devices["iPhone 12"],
     },
   },
-];
+]
 
 const browsers: Browser[] = [
   { name: "Chrome", engine: "chromium" },
   { name: "Firefox", engine: "firefox" },
   { name: "Safari", engine: "webkit" },
-];
+]
 
 /**
  * Remove or adjust device options that are not supported by a given browser engine.
@@ -55,12 +55,12 @@ function sanitizeConfigForBrowser(
     // Firefox does not support isMobile
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isMobile: _unused, ...rest } = config as {
-      isMobile?: unknown;
-      [k: string]: unknown;
-    };
-    return rest;
+      isMobile?: unknown
+      [k: string]: unknown
+    }
+    return rest
   }
-  return config;
+  return config
 }
 
 export default defineConfig({
@@ -77,6 +77,8 @@ export default defineConfig({
     url: "http://localhost:8080",
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 3 minutes
+    stdout: "pipe",
+    stderr: "pipe",
   },
   use: {
     baseURL: "http://localhost:8080",
@@ -93,12 +95,9 @@ export default defineConfig({
     browsers.map((browser) => ({
       name: `${device.name} ${browser.name}`,
       use: {
-        ...sanitizeConfigForBrowser(
-          device.config as Record<string, unknown>,
-          browser.engine,
-        ),
+        ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
       },
     })),
   ),
-});
+})
