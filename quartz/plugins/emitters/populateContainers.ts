@@ -205,9 +205,6 @@ export const populateElements = async (
   configs: ElementPopulatorConfig[],
 ): Promise<FilePath[]> => {
   const html = fs.readFileSync(htmlPath, "utf-8")
-  if (htmlPath.includes("est-page")) {
-    console.log(html)
-  }
   const root = fromHtml(html)
   let modified = false
 
