@@ -963,7 +963,7 @@ export async function ModifyNode(
   parent: Parent,
   faviconCounts: Map<string, number>,
 ): Promise<void> {
-  logger.info(`Modifying node: ${node.tagName}`)
+  logger.debug(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
     logger.debug("Node is not an anchor or has no href, skipping")
     return
@@ -1026,9 +1026,9 @@ export const AddFavicons = () => {
       return [
         () => {
           return async (tree: Root) => {
-            logger.info("Starting favicon processing")
+            logger.debug("Starting favicon processing")
             const faviconCounts = readFaviconCounts()
-            logger.info(`Loaded ${faviconCounts.size} favicon counts`)
+            logger.debug(`Loaded ${faviconCounts.size} favicon counts`)
 
             const nodesToProcess: [Element, Parent][] = []
 
@@ -1045,11 +1045,11 @@ export const AddFavicons = () => {
               },
             )
 
-            logger.info(`Processing ${nodesToProcess.length} nodes`)
+            logger.debug(`Processing ${nodesToProcess.length} nodes`)
             await Promise.all(
               nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
             )
-            logger.info("Finished processing favicons")
+            logger.debug("Finished processing favicons")
 
             writeCacheToFile()
           }

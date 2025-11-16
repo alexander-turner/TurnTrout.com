@@ -120,14 +120,12 @@ function writeCountsToFile(): void {
   const entries = Array.from(faviconCounter.entries())
   const content = JSON.stringify(entries, null, 2)
 
-  logger.info(`Writing ${faviconCounter.size} favicon counts to ${FAVICON_COUNTS_FILE}`)
-
   // Write atomically using a temporary file then rename
   const tempFile = `${FAVICON_COUNTS_FILE}.tmp`
   try {
     fs.writeFileSync(tempFile, content, { flag: "w" })
     fs.renameSync(tempFile, FAVICON_COUNTS_FILE)
-    logger.info(`Successfully wrote favicon counts to ${FAVICON_COUNTS_FILE}`)
+    logger.info(`Wrote ${faviconCounter.size} favicon counts to ${FAVICON_COUNTS_FILE}`)
   } catch (error) {
     logger.error(`Failed to write favicon counts file: ${error}`)
   }
@@ -160,7 +158,7 @@ function countLinksInMarkdownTree(tree: MDRoot): void {
  * This must complete before AddFavicons processes any files.
  */
 export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Promise<void> {
-  logger.info(`Counting links across ${filePaths.length} files`)
+  logger.debug(`Counting links across ${filePaths.length} files`)
   faviconCounter.clear()
 
   const processor = unified().use(remarkParse)
@@ -171,10 +169,10 @@ export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Pr
       const tree = processor.parse(file) as MDRoot
       countLinksInMarkdownTree(tree)
     } catch (error) {
-      logger.warn(`Failed to count links in ${filePath}: ${error}`)
+      logger.error(`Failed to count links in ${filePath}: ${error}`)
     }
   }
 
   writeCountsToFile()
-  logger.info(`Finished counting links: ${faviconCounter.size} unique link destinations`)
+  logger.debug(`Finished counting links: ${faviconCounter.size} unique link destinations`)
 }

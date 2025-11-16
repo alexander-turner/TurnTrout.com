@@ -218,11 +218,11 @@ export const populateElements = async (
         continue
       }
 
-      logger.info(`Populating element #${config.id}`)
+      logger.debug(`Populating element #${config.id}`)
       const content = await config.generator()
       element.children = content
       modified = true
-      logger.info(`Added ${content.length} elements to #${config.id}`)
+      logger.debug(`Added ${content.length} elements to #${config.id}`)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -230,13 +230,13 @@ export const populateElements = async (
         continue
       }
 
-      logger.info(`Populating ${elements.length} element(s) with class .${config.className}`)
+      logger.debug(`Populating ${elements.length} element(s) with class .${config.className}`)
       const content = await config.generator()
       for (const element of elements) {
         element.children = content
       }
       modified = true
-      logger.info(`Added ${content.length} elements to each .${config.className}`)
+      logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
       throw new Error(`Config missing both id and className`)
     }

@@ -86,7 +86,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
   userOpts,
 ) => {
   const opts = { ...defaultOptions, ...userOpts }
-  logger.info(`TableOfContents plugin initialized with options: ${JSON.stringify(opts)}`)
+  logger.debug(`TableOfContents plugin initialized with options: ${JSON.stringify(opts)}`)
 
   return {
     name: "TableOfContents",
@@ -124,7 +124,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                     text,
                     slug,
                   })
-                  logger.info(
+                  logger.debug(
                     `Added TOC entry: depth=${heading.depth}, text="${text}", slug="${slug}"`,
                   )
                 } else if (node.type === "footnoteDefinition") {
@@ -138,7 +138,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                   text: "Footnotes",
                   slug: "footnote-label",
                 })
-                logger.info("Added Footnotes to TOC")
+                logger.debug("Added Footnotes to TOC")
               }
 
               if (toc.length > 0 && toc.length >= opts.minEntries) {
@@ -148,13 +148,13 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 }))
                 file.data.toc = adjustedToc
                 file.data.collapseToc = opts.collapseByDefault
-                logger.info(`Generated TOC for ${file.path} with ${adjustedToc.length} entries`)
+                logger.debug(`Generated TOC for ${file.path} with ${adjustedToc.length} entries`)
                 adjustedToc.forEach(logTocEntry)
               } else {
-                logger.info(`Skipped TOC generation for ${file.path}: not enough entries`)
+                logger.warn(`Skipped TOC generation for ${file.path}: not enough entries`)
               }
             } else {
-              logger.info(`TOC generation skipped for ${file.path}: display is false`)
+              logger.warn(`TOC generation skipped for ${file.path}: display is false`)
             }
           }
         },
