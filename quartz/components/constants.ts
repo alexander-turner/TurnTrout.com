@@ -112,14 +112,8 @@ export const uiStrings = {
       lightMode: "Light mode",
       darkMode: "Dark mode",
     },
-    explorer: {
-      title: "Articles",
-    },
     footer: {
       createdWith: "Created with",
-    },
-    graph: {
-      title: "Graph View",
     },
     recentNotes: {
       title: "Recent Notes",
@@ -148,11 +142,6 @@ export const uiStrings = {
     error: {
       title: "Not found",
       notFound: "Either this page is private or doesn't exist.",
-    },
-    folderContent: {
-      folder: "Folder",
-      itemsUnderFolder: (count: number) =>
-        count === 1 ? "1 item under this folder." : `${count} items under this folder.`,
     },
     tagContent: {
       tag: "Tag",
