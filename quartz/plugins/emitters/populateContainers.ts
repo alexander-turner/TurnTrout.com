@@ -210,6 +210,15 @@ export const populateElements = async (
   }
 
   const html = fs.readFileSync(htmlPath, "utf-8")
+
+  // Check if file has meaningful content (not just empty or whitespace)
+  if (!html.trim() || html.trim().length < 100) {
+    logger.warn(
+      `HTML file at ${htmlPath} appears to be empty or incomplete (${html.length} chars), skipping element population`,
+    )
+    return []
+  }
+
   const root = fromHtml(html)
   let modified = false
 
@@ -221,13 +230,60 @@ export const populateElements = async (
     }
   })
 
+  // Debug: check if the div exists but wrapped differently
+  let foundDivWithClass = false
+  let divWithoutId: { className: string; id: string | undefined } | null = null
+  visit(root, "element", (node) => {
+    if (node.tagName === "div" && node.properties?.className) {
+      const className = Array.isArray(node.properties.className)
+        ? node.properties.className.join(" ")
+        : String(node.properties.className)
+      if (className.includes("no-favicon-span")) {
+        foundDivWithClass = true
+        divWithoutId = {
+          className,
+          id: node.properties.id ? String(node.properties.id) : undefined,
+        }
+      }
+    }
+  })
+
   for (const config of configs) {
     if (config.id) {
       const element = findElementById(root, config.id)
       if (!element) {
-        logger.warn(
-          `No element with id "${config.id}" found in ${htmlPath}. Available IDs: ${allIds.join(", ") || "none"}`,
-        )
+        // Enhanced debug logging for populate-favicon-container specifically
+        const isFaviconContainer = config.id === "populate-favicon-container"
+        let debugInfo = `No element with id "${config.id}" found in ${htmlPath}. Available IDs: ${allIds.join(", ") || "none"}`
+
+        if (isFaviconContainer) {
+          debugInfo += `. Found div with no-favicon-span class: ${foundDivWithClass}`
+          if (divWithoutId) {
+            debugInfo += ` (id="${divWithoutId.id || "missing"}")`
+          }
+
+          // Search for the div in the raw HTML and log context around it
+          const divIndex = html.indexOf("populate-favicon-container")
+          if (divIndex !== -1) {
+            const start = Math.max(0, divIndex - 200)
+            const end = Math.min(html.length, divIndex + 300)
+            const context = html.substring(start, end)
+            debugInfo += `. Found "populate-favicon-container" in HTML at position ${divIndex}. Context: ${context}`
+          } else {
+            // Search for the class instead
+            const classIndex = html.indexOf("no-favicon-span")
+            if (classIndex !== -1) {
+              const start = Math.max(0, classIndex - 200)
+              const end = Math.min(html.length, classIndex + 300)
+              const context = html.substring(start, end)
+              debugInfo += `. Found "no-favicon-span" class in HTML at position ${classIndex} but no id. Context: ${context}`
+            } else {
+              debugInfo += `. Neither "populate-favicon-container" nor "no-favicon-span" found in raw HTML. File size: ${html.length} chars. First 1000 chars: ${html.substring(0, Math.min(1000, html.length))}`
+            }
+          }
+        }
+
+        logger.warn(debugInfo)
         continue
       }
 
