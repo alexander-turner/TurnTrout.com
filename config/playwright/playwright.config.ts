@@ -73,12 +73,10 @@ export default defineConfig({
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
-    command: "npm run start",
+    command: process.env.CI ? "npm run start > /tmp/webserver.log 2>&1" : "npm run start",
     url: "http://localhost:8080",
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 3 minutes
-    stdout: "pipe",
-    stderr: "pipe",
   },
   use: {
     baseURL: "http://localhost:8080",

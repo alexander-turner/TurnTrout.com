@@ -89,6 +89,24 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Upload Playwright traces
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@v4

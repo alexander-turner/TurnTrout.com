@@ -130,6 +130,7 @@ export const generateSiteFaviconContent = (): ContentGenerator => {
 export const generateFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconCounts = getFaviconCounts()
+    logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
 
     // Find PNG paths that need SVG CDN checking
     const pngPathsToCheck = Array.from(faviconCounts.keys())
@@ -158,6 +159,8 @@ export const generateFaviconContent = (): ContentGenerator => {
       })
       .filter((item): item is { url: string; count: number } => item !== null)
       .sort((a, b) => b.count - a.count)
+
+    logger.info(`After filtering, ${validFavicons.length} valid favicons for table`)
 
     // Create table
     const tableRows: Element[] = [
