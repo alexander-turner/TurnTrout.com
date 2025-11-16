@@ -200,149 +200,25 @@ export interface ElementPopulatorConfig {
  * @param configs - Array of element populator configurations
  * @returns Array of file paths that were modified
  */
-/**
- * Waits for a file to be fully written by checking if its size stabilizes.
- * Returns true if file appears complete, false if timeout.
- */
-const waitForFileComplete = async (
-  filePath: string,
-  maxWaitMs = 2000,
-  checkIntervalMs = 50,
-): Promise<boolean> => {
-  const startTime = Date.now()
-  let lastSize = 0
-  let stableCount = 0
-  const requiredStableChecks = 3 // File size must be stable for 3 consecutive checks
-
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-  while (Date.now() - startTime < maxWaitMs) {
-    if (!fs.existsSync(filePath)) {
-      // File doesn't exist yet, keep waiting
-
-      await sleep(checkIntervalMs)
-      continue
-    }
-
-    const currentSize = fs.statSync(filePath).size
-    if (currentSize === lastSize) {
-      stableCount++
-      if (stableCount >= requiredStableChecks) {
-        return true // File size is stable, likely complete
-      }
-    } else {
-      stableCount = 0 // Reset counter if size changed
-    }
-    lastSize = currentSize
-
-    await sleep(checkIntervalMs)
-  }
-
-  return false // Timeout
-}
-
 export const populateElements = async (
   htmlPath: string,
   configs: ElementPopulatorConfig[],
 ): Promise<FilePath[]> => {
-  // Wait for file to be written and stabilized
-  const isComplete = await waitForFileComplete(htmlPath)
-  if (!isComplete) {
-    logger.warn(
-      `HTML file at ${htmlPath} did not stabilize within timeout, attempting to read anyway`,
-    )
-  }
-
-  if (!fs.existsSync(htmlPath)) {
-    logger.debug(`HTML file not found at ${htmlPath}, skipping element population`)
-    return []
-  }
-
   const html = fs.readFileSync(htmlPath, "utf-8")
-
-  // Check if file has meaningful content (not just empty or whitespace)
-  // A complete HTML page should be at least several KB
-  if (!html.trim() || html.trim().length < 5000) {
-    logger.warn(
-      `HTML file at ${htmlPath} appears to be empty or incomplete (${html.length} chars), skipping element population`,
-    )
-    return []
-  }
-
   const root = fromHtml(html)
   let modified = false
-
-  // Debug: collect all IDs in the document
-  const allIds: string[] = []
-  visit(root, "element", (node) => {
-    if (node.properties?.id) {
-      allIds.push(String(node.properties.id))
-    }
-  })
-
-  // Debug: check if the div exists but wrapped differently
-  let foundDivWithClass = false
-  let divWithoutId: { className: string; id: string | undefined } | null = null
-  visit(root, "element", (node: Element) => {
-    if (node.tagName === "div" && node.properties?.className) {
-      const className = Array.isArray(node.properties.className)
-        ? node.properties.className.join(" ")
-        : String(node.properties.className)
-      if (className.includes("no-favicon-span")) {
-        foundDivWithClass = true
-        divWithoutId = {
-          className,
-          id: node.properties.id ? String(node.properties.id) : undefined,
-        }
-      }
-    }
-  })
 
   for (const config of configs) {
     if (config.id) {
       const element = findElementById(root, config.id)
       if (!element) {
-        // Enhanced debug logging for populate-favicon-container specifically
-        const isFaviconContainer = config.id === "populate-favicon-container"
-        let debugInfo = `No element with id "${config.id}" found in ${htmlPath}. Available IDs: ${allIds.join(", ") || "none"}`
-
-        if (isFaviconContainer) {
-          debugInfo += `. Found div with no-favicon-span class: ${foundDivWithClass}`
-          if (divWithoutId) {
-            const divInfo: { className: string; id: string | undefined } = divWithoutId
-            debugInfo += ` (id="${divInfo.id || "missing"}")`
-          }
-
-          // Search for the div in the raw HTML and log context around it
-          const divIndex = html.indexOf("populate-favicon-container")
-          if (divIndex !== -1) {
-            const start = Math.max(0, divIndex - 200)
-            const end = Math.min(html.length, divIndex + 300)
-            const context = html.substring(start, end)
-            debugInfo += `. Found "populate-favicon-container" in HTML at position ${divIndex}. Context: ${context}`
-          } else {
-            // Search for the class instead
-            const classIndex = html.indexOf("no-favicon-span")
-            if (classIndex !== -1) {
-              const start = Math.max(0, classIndex - 200)
-              const end = Math.min(html.length, classIndex + 300)
-              const context = html.substring(start, end)
-              debugInfo += `. Found "no-favicon-span" class in HTML at position ${classIndex} but no id. Context: ${context}`
-            } else {
-              debugInfo += `. Neither "populate-favicon-container" nor "no-favicon-span" found in raw HTML. File size: ${html.length} chars. First 1000 chars: ${html.substring(0, Math.min(1000, html.length))}`
-            }
-          }
-        }
-
-        logger.warn(debugInfo)
+        logger.warn(`No element with id "${config.id}" found in ${htmlPath}`)
         continue
       }
 
-      logger.debug(`Populating element #${config.id}`)
       const content = await config.generator()
       element.children = content
       modified = true
-      logger.debug(`Added ${content.length} elements to #${config.id}`)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -379,9 +255,30 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    async getDependencyGraph() {
+    async getDependencyGraph(ctx, content) {
       const DepGraph = (await import("../../depgraph")).default
-      return new DepGraph<FilePath>()
+      const graph = new DepGraph<FilePath>()
+
+      // Declare that PopulateContainers depends on ContentPage's output files
+      // This ensures ContentPage completes before PopulateContainers runs
+      const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`) as FilePath
+      const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`) as FilePath
+
+      // Find the source files for these pages
+      for (const [, file] of content) {
+        const slug = file.data.slug as FullSlug
+        if (slug === TEST_PAGE_SLUG || slug === DESIGN_PAGE_SLUG) {
+          const sourcePath = file.data.filePath || ("" as FilePath)
+          if (slug === TEST_PAGE_SLUG) {
+            graph.addEdge(sourcePath, testPagePath)
+          }
+          if (slug === DESIGN_PAGE_SLUG) {
+            graph.addEdge(sourcePath, designPagePath)
+          }
+        }
+      }
+
+      return graph
     },
     async emit(ctx) {
       const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)

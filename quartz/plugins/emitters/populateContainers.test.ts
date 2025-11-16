@@ -32,10 +32,12 @@ import { fromHtml } from "hast-util-from-html"
 
 import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
+import { type FilePath } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
 // skipcq: JS-C1003
 import * as linkfavicons from "../transformers/linkfavicons"
 import { type QuartzEmitterPlugin } from "../types"
+import { type ProcessedContent } from "../vfile"
 
 describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
@@ -57,7 +59,6 @@ describe("PopulateContainers", () => {
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
     jest.spyOn(fs, "readFileSync").mockReturnValue("")
-    jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
     PopulateContainersEmitter = populateContainers.PopulateContainers
     urlCache = linkfavicons.urlCache
@@ -105,13 +106,107 @@ describe("PopulateContainers", () => {
       expect(emitter.getQuartzComponents(mockCtx)).toEqual([])
     })
 
-    it("should return dependency graph", async () => {
+    it.each([
+      ["empty content", [], [], []],
+      [
+        "other pages",
+        [{ slug: "other-page", filePath: "content/other-page.md" as FilePath }],
+        [],
+        [],
+      ],
+    ])("should return empty graph for %s", async (_, files, expectedNodes, expectedEdges) => {
+      const content: ProcessedContent[] = files.map((f) => [{} as never, { data: f } as never])
       const emitter = PopulateContainersEmitter()
       if (!emitter.getDependencyGraph) {
         throw new Error("getDependencyGraph is not defined")
       }
-      const graph = await emitter.getDependencyGraph(mockCtx, [], mockStaticResources)
-      expect(graph).toBeDefined()
+      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
+      expect(graph.nodes).toEqual(expectedNodes)
+      expect(graph.edges).toEqual(expectedEdges)
+    })
+
+    it.each([
+      ["Test-page", "content/Test-page.md", `${mockOutputDir}/Test-page.html`],
+      ["design", "content/design.md", `${mockOutputDir}/design.html`],
+    ])("should add edge for %s source file", async (slug, sourcePath, outputPath) => {
+      const file = {
+        data: {
+          slug,
+          filePath: sourcePath as FilePath,
+        },
+      }
+      const content: ProcessedContent[] = [[{} as never, file as never]]
+
+      const emitter = PopulateContainersEmitter()
+      if (!emitter.getDependencyGraph) {
+        throw new Error("getDependencyGraph is not defined")
+      }
+      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
+
+      expect(graph.nodes).toContain(sourcePath)
+      expect(graph.nodes).toContain(outputPath)
+      expect(graph.hasEdge(sourcePath as FilePath, outputPath as FilePath)).toBe(true)
+    })
+
+    it("should add edges for both Test-page and design", async () => {
+      const testPageFile = {
+        data: {
+          slug: "Test-page",
+          filePath: "content/Test-page.md" as FilePath,
+        },
+      }
+      const designPageFile = {
+        data: {
+          slug: "design",
+          filePath: "content/design.md" as FilePath,
+        },
+      }
+      const content: ProcessedContent[] = [
+        [{} as never, testPageFile as never],
+        [{} as never, designPageFile as never],
+      ]
+
+      const emitter = PopulateContainersEmitter()
+      if (!emitter.getDependencyGraph) {
+        throw new Error("getDependencyGraph is not defined")
+      }
+      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
+
+      expect(graph.nodes).toContain("content/Test-page.md")
+      expect(graph.nodes).toContain(`${mockOutputDir}/Test-page.html`)
+      expect(graph.nodes).toContain("content/design.md")
+      expect(graph.nodes).toContain(`${mockOutputDir}/design.html`)
+      expect(
+        graph.hasEdge(
+          "content/Test-page.md" as FilePath,
+          `${mockOutputDir}/Test-page.html` as FilePath,
+        ),
+      ).toBe(true)
+      expect(
+        graph.hasEdge("content/design.md" as FilePath, `${mockOutputDir}/design.html` as FilePath),
+      ).toBe(true)
+    })
+
+    it("should handle files without filePath", async () => {
+      const testPageFile = {
+        data: {
+          slug: "Test-page",
+          filePath: undefined,
+        },
+      }
+      const content: ProcessedContent[] = [[{} as never, testPageFile as never]]
+
+      const emitter = PopulateContainersEmitter()
+      if (!emitter.getDependencyGraph) {
+        throw new Error("getDependencyGraph is not defined")
+      }
+      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
+
+      expect(graph.nodes).toContain("")
+      expect(graph.nodes).toContain(`${mockOutputDir}/Test-page.html`)
+      expect(graph.hasEdge("" as FilePath, `${mockOutputDir}/Test-page.html` as FilePath)).toBe(
+        true,
+      )
     })
   })
 
@@ -228,32 +323,25 @@ describe("PopulateContainers", () => {
       expect(writtenContent).toContain('id="populate-favicon-container"')
     })
 
-    it.each([
-      [
-        "when test page does not exist",
-        () => {
-          jest.spyOn(fs, "existsSync").mockReturnValue(false)
-        },
-        () => {
-          expect(fs.readFileSync).not.toHaveBeenCalled()
-        },
-      ],
-      [
-        "when #populate-favicon-container does not exist",
-        () => {
-          jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
-        },
-        () => {},
-      ],
-    ])("should not process %s", async (_, setupFn, additionalAssert) => {
-      setupFn()
+    it("should not process when #populate-favicon-container does not exist", async () => {
+      jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
 
       const emitter = PopulateContainersEmitter()
       const result = await emitter.emit(mockCtx, [], mockStaticResources)
 
       expect(result).toEqual([])
       expect(fs.writeFileSync).not.toHaveBeenCalled()
-      additionalAssert()
+    })
+
+    it("should throw when test page does not exist", async () => {
+      jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+        const error = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException
+        error.code = "ENOENT"
+        throw error
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow("ENOENT")
     })
 
     it("should replace existing container children", async () => {
@@ -564,18 +652,21 @@ describe("PopulateContainers", () => {
         assertFn(writtenContent)
       })
 
-      it("should return empty array when file does not exist", async () => {
-        jest.spyOn(fs, "existsSync").mockReturnValue(false)
+      it("should throw when file does not exist", async () => {
+        jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+          const error = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException
+          error.code = "ENOENT"
+          throw error
+        })
 
-        const result = await populateModule.populateElements("/tmp/nonexistent.html", [
-          {
-            id: "id1",
-            generator: populateModule.generateConstantContent("value"),
-          },
-        ])
-
-        expect(result).toEqual([])
-        expect(fs.readFileSync).not.toHaveBeenCalled()
+        await expect(
+          populateModule.populateElements("/tmp/nonexistent.html", [
+            {
+              id: "id1",
+              generator: populateModule.generateConstantContent("value"),
+            },
+          ]),
+        ).rejects.toThrow("ENOENT")
         expect(fs.writeFileSync).not.toHaveBeenCalled()
       })
 
