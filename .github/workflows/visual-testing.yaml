@@ -54,6 +54,9 @@ jobs:
       - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
 
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true

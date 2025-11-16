@@ -67,6 +67,9 @@ jobs:
         with:
           install-playwright: "true"
 
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
