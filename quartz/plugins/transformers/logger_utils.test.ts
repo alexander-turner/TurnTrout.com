@@ -87,7 +87,7 @@ describe("logger_utils", () => {
 
       // Importing should throw because findGitRoot returns null
       await expect(async () => {
-        await import("./logger_utils?t=" + Date.now())
+        await import(`./logger_utils?t=${Date.now()}`)
       }).rejects.toThrow("Git root not found.")
 
       consoleErrorSpy.mockRestore()
