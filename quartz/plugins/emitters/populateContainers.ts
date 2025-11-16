@@ -200,10 +200,59 @@ export interface ElementPopulatorConfig {
  * @param configs - Array of element populator configurations
  * @returns Array of file paths that were modified
  */
+/**
+ * Waits for a file to be fully written by checking if its size stabilizes.
+ * Returns true if file appears complete, false if timeout.
+ */
+const waitForFileComplete = async (
+  filePath: string,
+  maxWaitMs = 2000,
+  checkIntervalMs = 50,
+): Promise<boolean> => {
+  const startTime = Date.now()
+  let lastSize = 0
+  let stableCount = 0
+  const requiredStableChecks = 3 // File size must be stable for 3 consecutive checks
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  while (Date.now() - startTime < maxWaitMs) {
+    if (!fs.existsSync(filePath)) {
+      // File doesn't exist yet, keep waiting
+
+      await sleep(checkIntervalMs)
+      continue
+    }
+
+    const currentSize = fs.statSync(filePath).size
+    if (currentSize === lastSize) {
+      stableCount++
+      if (stableCount >= requiredStableChecks) {
+        return true // File size is stable, likely complete
+      }
+    } else {
+      stableCount = 0 // Reset counter if size changed
+    }
+    lastSize = currentSize
+
+    await sleep(checkIntervalMs)
+  }
+
+  return false // Timeout
+}
+
 export const populateElements = async (
   htmlPath: string,
   configs: ElementPopulatorConfig[],
 ): Promise<FilePath[]> => {
+  // Wait for file to be written and stabilized
+  const isComplete = await waitForFileComplete(htmlPath)
+  if (!isComplete) {
+    logger.warn(
+      `HTML file at ${htmlPath} did not stabilize within timeout, attempting to read anyway`,
+    )
+  }
+
   if (!fs.existsSync(htmlPath)) {
     logger.debug(`HTML file not found at ${htmlPath}, skipping element population`)
     return []
@@ -212,7 +261,8 @@ export const populateElements = async (
   const html = fs.readFileSync(htmlPath, "utf-8")
 
   // Check if file has meaningful content (not just empty or whitespace)
-  if (!html.trim() || html.trim().length < 100) {
+  // A complete HTML page should be at least several KB
+  if (!html.trim() || html.trim().length < 5000) {
     logger.warn(
       `HTML file at ${htmlPath} appears to be empty or incomplete (${html.length} chars), skipping element population`,
     )
@@ -233,7 +283,7 @@ export const populateElements = async (
   // Debug: check if the div exists but wrapped differently
   let foundDivWithClass = false
   let divWithoutId: { className: string; id: string | undefined } | null = null
-  visit(root, "element", (node) => {
+  visit(root, "element", (node: Element) => {
     if (node.tagName === "div" && node.properties?.className) {
       const className = Array.isArray(node.properties.className)
         ? node.properties.className.join(" ")
@@ -259,7 +309,8 @@ export const populateElements = async (
         if (isFaviconContainer) {
           debugInfo += `. Found div with no-favicon-span class: ${foundDivWithClass}`
           if (divWithoutId) {
-            debugInfo += ` (id="${divWithoutId.id || "missing"}")`
+            const divInfo: { className: string; id: string | undefined } = divWithoutId
+            debugInfo += ` (id="${divInfo.id || "missing"}")`
           }
 
           // Search for the div in the raw HTML and log context around it
