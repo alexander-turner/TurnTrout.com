@@ -52,7 +52,9 @@ export const createWinstonLogger = (logName: string) => {
   ]
 
   // Add console transport in CI environments so logs appear in GitHub Actions
+  // Skip in test environments to avoid setImmediate issues
   // Only log warnings and above to reduce verbosity
+  // istanbul ignore if
   if (process.env.CI === "true") {
     loggerTransports.push(
       new transports.Console({

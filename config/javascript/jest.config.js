@@ -42,6 +42,9 @@ const config = {
   // The test environment that will be used for testing
   testEnvironment: "jsdom",
 
+  // Setup files to run before tests
+  setupFilesAfterEnv: ["<rootDir>/config/javascript/jest.setup.js"],
+
   // A map from regular expressions to paths to transformers
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {
