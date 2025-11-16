@@ -15,7 +15,6 @@ import type { FilePath, FullSlug } from "./util/path"
 import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
-import { PopulateContainers } from "./plugins/emitters/populateContainers"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
@@ -27,8 +26,6 @@ import { options } from "./util/sourcemap"
 import { trace } from "./util/trace"
 
 install(options)
-
-const POPULATE_CONTAINERS_NAME = PopulateContainers.name
 
 type Dependencies = Record<string, DepGraph<FilePath> | null>
 
@@ -278,11 +275,6 @@ async function partialRebuildFromEntrypoint(
   const emittedPaths: FilePath[] = [] // Track emitted file paths
 
   for (const emitter of cfg.plugins.emitters) {
-    // Skip PopulateContainers in main loop - runs after all files are emitted
-    if (emitter.name === POPULATE_CONTAINERS_NAME) {
-      continue
-    }
-
     const depGraph = dependencies[emitter.name]
 
     // emitter hasn't defined a dependency graph. call it with all processed files
@@ -343,33 +335,6 @@ async function partialRebuildFromEntrypoint(
 
       emittedFiles += emittedFps.length
       emittedPaths.push(...emittedFps)
-    }
-  }
-
-  // Post-process specific HTML files after all other emitters complete
-  const populateContainersEmitter = cfg.plugins.emitters.find(
-    (e) => e.name === POPULATE_CONTAINERS_NAME,
-  )
-  if (populateContainersEmitter) {
-    const depGraph = dependencies[POPULATE_CONTAINERS_NAME]
-    // Check if PopulateContainers needs to run based on the changed file
-    if (depGraph === null || depGraph.hasNode(fp)) {
-      const files = [...contentMap.values()].filter(
-        ([, vfile]) => !toRemove.has(vfile.data.filePath || ("" as FilePath)),
-      )
-
-      try {
-        const populatedFps = await populateContainersEmitter.emit(ctx, files, staticResources)
-        if (populatedFps.length > 0 && argv.verbose) {
-          console.log(
-            `[emit:${POPULATE_CONTAINERS_NAME}] Post-processed ${populatedFps.length} HTML file(s)`,
-          )
-        }
-        emittedFiles += populatedFps.length
-        emittedPaths.push(...populatedFps)
-      } catch (err) {
-        console.error(`[emit:${POPULATE_CONTAINERS_NAME}] Failed to post-process: ${err}`)
-      }
     }
   }
 

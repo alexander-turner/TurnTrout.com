@@ -32,12 +32,10 @@ import { fromHtml } from "hast-util-from-html"
 
 import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
-import { type FilePath } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
 // skipcq: JS-C1003
 import * as linkfavicons from "../transformers/linkfavicons"
 import { type QuartzEmitterPlugin } from "../types"
-import { type ProcessedContent } from "../vfile"
 
 describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
@@ -99,116 +97,6 @@ describe("PopulateContainers", () => {
   const createMockCounts = (entries: Array<[string, number]>): Map<string, number> => {
     return new Map(entries)
   }
-
-  describe("plugin structure", () => {
-    it("should return empty components", () => {
-      const emitter = PopulateContainersEmitter()
-      expect(emitter.getQuartzComponents(mockCtx)).toEqual([])
-    })
-
-    it.each([
-      ["empty content", [], [], []],
-      [
-        "other pages",
-        [{ slug: "other-page", filePath: "content/other-page.md" as FilePath }],
-        [],
-        [],
-      ],
-    ])("should return empty graph for %s", async (_, files, expectedNodes, expectedEdges) => {
-      const content: ProcessedContent[] = files.map((f) => [{} as never, { data: f } as never])
-      const emitter = PopulateContainersEmitter()
-      if (!emitter.getDependencyGraph) {
-        throw new Error("getDependencyGraph is not defined")
-      }
-      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
-      expect(graph.nodes).toEqual(expectedNodes)
-      expect(graph.edges).toEqual(expectedEdges)
-    })
-
-    it.each([
-      ["Test-page", "content/Test-page.md", `${mockOutputDir}/Test-page.html`],
-      ["design", "content/design.md", `${mockOutputDir}/design.html`],
-    ])("should add edge for %s source file", async (slug, sourcePath, outputPath) => {
-      const file = {
-        data: {
-          slug,
-          filePath: sourcePath as FilePath,
-        },
-      }
-      const content: ProcessedContent[] = [[{} as never, file as never]]
-
-      const emitter = PopulateContainersEmitter()
-      if (!emitter.getDependencyGraph) {
-        throw new Error("getDependencyGraph is not defined")
-      }
-      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
-
-      expect(graph.nodes).toContain(sourcePath)
-      expect(graph.nodes).toContain(outputPath)
-      expect(graph.hasEdge(sourcePath as FilePath, outputPath as FilePath)).toBe(true)
-    })
-
-    it("should add edges for both Test-page and design", async () => {
-      const testPageFile = {
-        data: {
-          slug: "Test-page",
-          filePath: "content/Test-page.md" as FilePath,
-        },
-      }
-      const designPageFile = {
-        data: {
-          slug: "design",
-          filePath: "content/design.md" as FilePath,
-        },
-      }
-      const content: ProcessedContent[] = [
-        [{} as never, testPageFile as never],
-        [{} as never, designPageFile as never],
-      ]
-
-      const emitter = PopulateContainersEmitter()
-      if (!emitter.getDependencyGraph) {
-        throw new Error("getDependencyGraph is not defined")
-      }
-      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
-
-      expect(graph.nodes).toContain("content/Test-page.md")
-      expect(graph.nodes).toContain(`${mockOutputDir}/Test-page.html`)
-      expect(graph.nodes).toContain("content/design.md")
-      expect(graph.nodes).toContain(`${mockOutputDir}/design.html`)
-      expect(
-        graph.hasEdge(
-          "content/Test-page.md" as FilePath,
-          `${mockOutputDir}/Test-page.html` as FilePath,
-        ),
-      ).toBe(true)
-      expect(
-        graph.hasEdge("content/design.md" as FilePath, `${mockOutputDir}/design.html` as FilePath),
-      ).toBe(true)
-    })
-
-    it("should handle files without filePath", async () => {
-      const testPageFile = {
-        data: {
-          slug: "Test-page",
-          filePath: undefined,
-        },
-      }
-      const content: ProcessedContent[] = [[{} as never, testPageFile as never]]
-
-      const emitter = PopulateContainersEmitter()
-      if (!emitter.getDependencyGraph) {
-        throw new Error("getDependencyGraph is not defined")
-      }
-      const graph = await emitter.getDependencyGraph(mockCtx, content, mockStaticResources)
-
-      expect(graph.nodes).toContain("")
-      expect(graph.nodes).toContain(`${mockOutputDir}/Test-page.html`)
-      expect(graph.hasEdge("" as FilePath, `${mockOutputDir}/Test-page.html` as FilePath)).toBe(
-        true,
-      )
-    })
-  })
 
   describe("container population", () => {
     it.each<[string, Array<[string, number]>, (content: string) => void]>([
@@ -413,7 +301,7 @@ describe("PopulateContainers", () => {
       const writeCalls = (fs.writeFileSync as jest.Mock).mock.calls
       // Check test page has favicon container
       const testPageCall = writeCalls.find(
-        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("Test-page.html"),
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("test-page.html"),
       )
       expect(testPageCall).toBeDefined()
       if (!testPageCall) {

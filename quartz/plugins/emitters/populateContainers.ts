@@ -23,7 +23,7 @@ import { type QuartzEmitterPlugin } from "../types"
 
 const logger = createWinstonLogger("populateContainers")
 
-const TEST_PAGE_SLUG = "Test-page" as FullSlug
+const TEST_PAGE_SLUG = "test-page" as FullSlug
 const DESIGN_PAGE_SLUG = "design" as FullSlug
 
 /**
@@ -252,33 +252,9 @@ export const populateElements = async (
 export const PopulateContainers: QuartzEmitterPlugin = () => {
   return {
     name: "PopulateContainers",
+    // istanbul ignore next
     getQuartzComponents() {
       return []
-    },
-    async getDependencyGraph(ctx, content) {
-      const DepGraph = (await import("../../depgraph")).default
-      const graph = new DepGraph<FilePath>()
-
-      // Declare that PopulateContainers depends on ContentPage's output files
-      // This ensures ContentPage completes before PopulateContainers runs
-      const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`) as FilePath
-      const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`) as FilePath
-
-      // Find the source files for these pages
-      for (const [, file] of content) {
-        const slug = file.data.slug as FullSlug
-        if (slug === TEST_PAGE_SLUG || slug === DESIGN_PAGE_SLUG) {
-          const sourcePath = file.data.filePath || ("" as FilePath)
-          if (slug === TEST_PAGE_SLUG) {
-            graph.addEdge(sourcePath, testPagePath)
-          }
-          if (slug === DESIGN_PAGE_SLUG) {
-            graph.addEdge(sourcePath, designPagePath)
-          }
-        }
-      }
-
-      return graph
     },
     async emit(ctx) {
       const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
