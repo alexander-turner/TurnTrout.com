@@ -1,6 +1,7 @@
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
+from scripts import utils as script_utils
 import re
 import shutil
 import subprocess
@@ -14,7 +15,6 @@ import requests  # type: ignore[import]
 # pylint: disable=wrong-import-position
 sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
-from scripts import utils as script_utils
 
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
@@ -134,9 +134,7 @@ def check_invalid_md_links(text: str, file_path: Path) -> List[str]:
         ):  # pragma: no cover
             continue  # I mention this checker, not a real broken link
         line_num = text[: match.start()].count("\n") + 1
-        errors.append(
-            f"Invalid markdown link at line {line_num}: {match.group()}"
-        )
+        errors.append(f"Invalid markdown link at line {line_num}: {match.group()}")
 
     return errors
 
@@ -169,9 +167,7 @@ def check_latex_tags(text: str, file_path: Path) -> List[str]:
 
 
 def _slug_in_metadata(slug: str, target_metadata: dict) -> bool:
-    is_alias = (
-        target_metadata.get("aliases") and slug in target_metadata["aliases"]
-    )
+    is_alias = target_metadata.get("aliases") and slug in target_metadata["aliases"]
     return slug == target_metadata["permalink"] or bool(is_alias)
 
 
@@ -285,8 +281,7 @@ def check_card_image_extension(metadata: dict) -> List[str]:
 
     if not card_image_url.lower().endswith((".png", ".jpg", ".jpeg")):
         errors.append(
-            f"Card image URL '{card_image_url}' must end in"
-            " .png, .jpg, or .jpeg"
+            f"Card image URL '{card_image_url}' must end in" " .png, .jpg, or .jpeg"
         )
     return errors
 
@@ -299,9 +294,7 @@ def check_card_image(metadata: dict) -> List[str]:
         return errors
 
     if not card_image_url.startswith(("http://", "https://")):
-        errors.append(
-            f"Card image URL '{card_image_url}' must be a remote URL"
-        )
+        errors.append(f"Card image URL '{card_image_url}' must be a remote URL")
         return errors
 
     try:
@@ -319,9 +312,7 @@ def check_card_image(metadata: dict) -> List[str]:
                 f"status {response.status_code}"
             )
     except requests.RequestException as e:
-        errors.append(
-            f"Failed to load card image URL '{card_image_url}': {str(e)}"
-        )
+        errors.append(f"Failed to load card image URL '{card_image_url}': {str(e)}")
 
     errors.extend(check_card_image_extension(metadata))
     return errors
@@ -368,12 +359,8 @@ def remove_code(text: str, mark_boundaries: bool = False) -> str:
     """
     replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
 
-    no_code_block_text = re.sub(
-        r"```.*?```", replacement_char, text, flags=re.DOTALL
-    )
-    return re.sub(
-        r"(?<!\\)`[^`]*(?<!\\)`", replacement_char, no_code_block_text
-    )
+    no_code_block_text = re.sub(r"```.*?```", replacement_char, text, flags=re.DOTALL)
+    return re.sub(r"(?<!\\)`[^`]*(?<!\\)`", replacement_char, no_code_block_text)
 
 
 def remove_math(text: str, mark_boundaries: bool = False) -> str:
@@ -387,12 +374,8 @@ def remove_math(text: str, mark_boundaries: bool = False) -> str:
     """
     replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
 
-    no_math_block_text = re.sub(
-        r"\$\$.*?\$\$", replacement_char, text, flags=re.DOTALL
-    )
-    return re.sub(
-        r"(?<!\\)\$[^$]*?(?<!\\)\$", replacement_char, no_math_block_text
-    )
+    no_math_block_text = re.sub(r"\$\$.*?\$\$", replacement_char, text, flags=re.DOTALL)
+    return re.sub(r"(?<!\\)\$[^$]*?(?<!\\)\$", replacement_char, no_math_block_text)
 
 
 # Either preceded by two backslashes or none, and then a brace.
@@ -501,6 +484,81 @@ def check_html_with_braces(text: str) -> List[str]:
     return errors
 
 
+def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
+    """
+    Extract all footnote definitions from text, excluding code and math blocks.
+
+    Returns:
+        Dictionary mapping footnote names to their line numbers.
+        If a footnote is defined multiple times, only the first occurrence
+        is recorded.
+    """
+    # Remove code and math blocks to avoid false positives
+    stripped_text = remove_code(text)
+    stripped_text = remove_math(stripped_text)
+
+    definition_pattern = r"\[\^([^\]]+)\]:"
+    definitions: Dict[str, int] = {}
+    for match in re.finditer(definition_pattern, stripped_text):
+        footnote_name = match.group(1)
+        # Only record the first occurrence of each footnote definition
+        if footnote_name not in definitions:
+            definitions[footnote_name] = stripped_text[: match.start()].count("\n") + 1
+    return definitions
+
+
+def extract_footnote_references(text: str) -> Dict[str, int]:
+    """
+    Extract all footnote references from text, excluding definitions and content
+    in code/math blocks.
+
+    Returns:
+        Dictionary mapping footnote names to their reference counts
+    """
+    # Remove code and math blocks to avoid false positives
+    stripped_text = remove_code(text)
+    stripped_text = remove_math(stripped_text)
+
+    reference_pattern = r"\[\^([^\]]+)\]"
+    references: Dict[str, int] = {}
+    for match in re.finditer(reference_pattern, stripped_text):
+        footnote_name = match.group(1)
+        # Skip if this is a definition (has colon after it)
+        match_end = match.end()
+        if match_end < len(stripped_text) and stripped_text[match_end] == ":":
+            continue
+        references[footnote_name] = references.get(footnote_name, 0) + 1
+    return references
+
+
+def check_footnote_references(text: str) -> List[str]:
+    """Check that each footnote is referenced exactly once."""
+    errors = []
+    definitions = extract_footnote_line_numbers(text)
+    references = extract_footnote_references(text)
+
+    # Check each definition is referenced exactly once
+    for footnote_name, line_num in definitions.items():
+        ref_count = references.get(footnote_name, 0)
+        if ref_count == 0:
+            errors.append(
+                f"Footnote '{footnote_name}' is defined but never referenced "
+                f"(line {line_num})"
+            )
+        elif ref_count > 1:
+            errors.append(
+                f"Footnote '{footnote_name}' is referenced {ref_count} times "
+                f"(should be exactly once, defined at line {line_num})"
+            )
+
+    # Check for references to undefined footnotes
+    for footnote_name in references:
+        if footnote_name not in definitions:
+            errors.append(f"Footnote '{footnote_name}' is referenced but never defined")
+
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -530,6 +588,7 @@ def check_file_data(
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
         "html_braces": check_html_with_braces(text),
+        "footnote_references": check_footnote_references(text),
         "invalid_filename": check_spaces_in_path(file_path),
     }
 
@@ -737,9 +796,7 @@ def main() -> None:
     )
 
     # mapping from permalink or alias to its forward and prev post slugs
-    all_sequence_data: Dict[str, dict] = build_sequence_data(
-        list(markdown_files)
-    )
+    all_sequence_data: Dict[str, dict] = build_sequence_data(list(markdown_files))
 
     for file_path in markdown_files:
         metadata, _ = script_utils.split_yaml(file_path)

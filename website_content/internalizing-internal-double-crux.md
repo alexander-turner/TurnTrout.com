@@ -70,6 +70,7 @@ I feel great, and I love it. Actually, most of the time I don't feel amazingly c
 - [Focusing](https://radimentary.wordpress.com/2018/02/25/focusing/) is an important (and probably necessary) sub-skill.
 - Don't interrupt or otherwise obstruct one of your voices because it's "stupid" or "talked long enough" - be respectful. The outcome should not feel pre-ordained - you should be having two of your sub-agents / identities sharing their emotional and mental models to come to a fixed point of harmonious agreement.
 - Some beliefs aren't explicitly advocated by any part of you, and are instead propped up by certain memories. You can use Focusing to hone in on the memories, and then employ IDC to resolve your ongoing reaction to it.
+- Resolution cannot happen if any part of you isn't _fully_ on board with whatever agreement you've come to - this feels like a small emptiness in the pit of my stomach, in my experience.
 - Most importantly, the arguments being made should be _emotionally salient_ and not just detached, "empty" words. In my experience, if I'm totally "in my head", any modification of my System 1 feelings is impossible.
 
 _Note_: this entire exchange took place internally over the course of 2 minutes, via a 50-50 mix of words and emotions. Unpacking it took significantly longer.
@@ -100,13 +101,13 @@ Fire
 <dd>I guess the main thrust here is that although that would be a data point against our being able to have a tectonic impact <em>right now</em>, we simply don't have enough evidence to responsibly generalize. I'm worried that you're overly pessimistic, and it's pulling down our chances of <em>actually</em> being able to <em>do something</em>.</dd>
 
 Realist
-: I definitely hear you that we've made lots of great progress, but is it enough? I'm so nervous about timelines, and the universe isn't magically calibrated to what we can do now.[^crux] We either succeed, or we don't - and pay the price. Do we really have time to tolerate _almost_ being extraordinary? How is that going to do the impossible? I'm scared.
+: I definitely hear you that we've made lots of great progress, but is it enough? I'm so nervous about timelines, and the universe isn't magically calibrated to what we can do now. We either succeed, or we don't - and pay the price. Do we really have time to tolerate _almost_ being extraordinary? How is that going to do the impossible? I'm scared.
 
 Fire
 : Yup. I'm definitely scared too (in a sense), but also excited. This journey is a great chance to learn, grow, have fun, and work with people we really admire and appreciate! Let's "detach the grim-o-meter", since that's better than being worried and insecure about whether we're doing enough.
 
 Realist
-: I agree that detaching the grim-o-meter is the right thing to do, but... it makes me feel _guilty_.[^crux] I guess there's a part of me that believes that feeling bad when things could go really wrong is important.
+: I agree that detaching the grim-o-meter is the right thing to do, but... it makes me feel _guilty_. I guess there's a part of me that believes that feeling bad when things could go really wrong is important.
 
 Concern
 : Hey, that's me! Yeah, I'm really worried that if we detach that grim-o-meter, we'll become callous and flippant and carefree. I don't know if that's a reasonable concern, but the prospect makes me feel really queasy. _Shouldn't_ we be really worried?
@@ -116,5 +117,3 @@ Realist
 
 Fire
 : Hell yeah it will! What are we optimizing for here - an arbitrary deontological rule about feeling bad, or the actual world? We aren't discarding morality – we're discarding the idea that we should worry when the world is in a probably precarious position. We'll still fight just as hard.
-
-[^crux]: Notice how related cruxes can (and should) be resolved in the same session. Resolution cannot happen if any part of you isn't _fully_ on board with whatever agreement you've come to - this feels like a small emptiness in the pit of my stomach, in my experience.
