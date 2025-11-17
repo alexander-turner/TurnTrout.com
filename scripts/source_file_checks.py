@@ -359,8 +359,17 @@ def remove_code(text: str, mark_boundaries: bool = False) -> str:
     """
     replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
 
-    no_code_block_text = re.sub(r"```.*?```", replacement_char, text, flags=re.DOTALL)
-    return re.sub(r"(?<!\\)`[^`]*(?<!\\)`", replacement_char, no_code_block_text)
+    # Preserve newlines in code blocks to maintain line structure
+    def replace_preserving_newlines(match: re.Match) -> str:
+        content = match.group(0)
+        newline_count = content.count("\n")
+        return "\n" * newline_count if newline_count > 0 else replacement_char
+
+    no_code_block_text = re.sub(
+        r"```.*?```", replace_preserving_newlines, text, flags=re.DOTALL
+    )
+    # Match inline code but don't cross newlines
+    return re.sub(r"(?<!\\)`[^`\n]*(?<!\\)`", replacement_char, no_code_block_text)
 
 
 def remove_math(text: str, mark_boundaries: bool = False) -> str:
@@ -374,8 +383,17 @@ def remove_math(text: str, mark_boundaries: bool = False) -> str:
     """
     replacement_char = _REPLACEMENT_CHAR if mark_boundaries else ""
 
-    no_math_block_text = re.sub(r"\$\$.*?\$\$", replacement_char, text, flags=re.DOTALL)
-    return re.sub(r"(?<!\\)\$[^$]*?(?<!\\)\$", replacement_char, no_math_block_text)
+    # Preserve newlines in math blocks to maintain line structure
+    def replace_preserving_newlines(match: re.Match) -> str:
+        content = match.group(0)
+        newline_count = content.count("\n")
+        return "\n" * newline_count if newline_count > 0 else replacement_char
+
+    no_math_block_text = re.sub(
+        r"\$\$.*?\$\$", replace_preserving_newlines, text, flags=re.DOTALL
+    )
+    # Match inline math but don't cross newlines
+    return re.sub(r"(?<!\\)\$[^$\n]*?(?<!\\)\$", replacement_char, no_math_block_text)
 
 
 # Either preceded by two backslashes or none, and then a brace.
@@ -452,8 +470,7 @@ def check_no_forbidden_patterns(text: str) -> List[str]:
 
 def check_stray_katex(text: str) -> List[str]:
     """Check for stray LaTeX commands outside of math/code blocks."""
-    no_code_text = remove_code(text)
-    stripped_text = remove_math(no_code_text)
+    stripped_text = remove_math(remove_code(text))
     errors = []
     # This pattern finds a space followed by a backslash and a word.
     # e.g. " \command"
@@ -467,8 +484,7 @@ def check_html_with_braces(text: str) -> List[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
     errors = []
-    no_code_text = remove_code(text)
-    stripped_text = remove_math(no_code_text)
+    stripped_text = remove_math(remove_code(text))
 
     # Pattern to match HTML closing tag followed by {[^}]*="..."}
     # e.g. </video>{style="width:50%;"}
@@ -486,24 +502,21 @@ def check_html_with_braces(text: str) -> List[str]:
 
 def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
     """
-    Extract all footnote definitions from text, excluding code and math blocks.
+    Extract all footnote definitions from text.
 
     Returns:
         Dictionary mapping footnote names to their line numbers.
         If a footnote is defined multiple times, only the first occurrence
         is recorded.
     """
-    # Remove code and math blocks to avoid false positives
-    stripped_text = remove_code(text)
-    stripped_text = remove_math(stripped_text)
-
+    # Extract from original text since definitions can contain code
     definition_pattern = r"\[\^([^\]]+)\]:"
     definitions: Dict[str, int] = {}
-    for match in re.finditer(definition_pattern, stripped_text):
+    for match in re.finditer(definition_pattern, text):
         footnote_name = match.group(1)
         # Only record the first occurrence of each footnote definition
         if footnote_name not in definitions:
-            definitions[footnote_name] = stripped_text[: match.start()].count("\n") + 1
+            definitions[footnote_name] = text[: match.start()].count("\n") + 1
     return definitions
 
 
@@ -516,8 +529,7 @@ def extract_footnote_references(text: str) -> Dict[str, int]:
         Dictionary mapping footnote names to their reference counts
     """
     # Remove code and math blocks to avoid false positives
-    stripped_text = remove_code(text)
-    stripped_text = remove_math(stripped_text)
+    stripped_text = remove_math(remove_code(text))
 
     reference_pattern = r"\[\^([^\]]+)\]"
     references: Dict[str, int] = {}

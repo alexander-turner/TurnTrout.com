@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 from unittest.mock import patch
 
 import git  # type: ignore[import]
@@ -1327,10 +1326,10 @@ Some math: $x^2 + {y^2}$ and more {text}.
         ("`entire line is code`", ""),
         # Empty patterns
         ("Empty code ``", "Empty code "),
-        # Block code
+        # Block code (preserves newlines)
         (
             "```\nMulti-line\ncode\n```",
-            "",
+            "\n\n\n",
         ),
         # Edge cases
         ("`code` at the `end`", " at the "),
@@ -1367,8 +1366,8 @@ def test_remove_code(input_text: str, expected_output: str) -> None:
         ("$entire line is math$", ""),
         # Empty patterns
         ("Empty math $$", "Empty math "),
-        # Block math
-        ("$$\nMulti-line\nmath\n$$", ""),
+        # Block math (preserves newlines)
+        ("$$\nMulti-line\nmath\n$$", "\n\n\n"),
         # Edge cases
         ("$math$ at the $end$", " at the "),
         ("Text with \\$escaped\\$ symbols", "Text with \\$escaped\\$ symbols"),
@@ -1397,7 +1396,7 @@ def test_remove_math(input_text: str, expected_output: str) -> None:
         ("`x^2`", source_file_checks._REPLACEMENT_CHAR),
         (
             "```python\nprint('Hello, world!')\n```",
-            source_file_checks._REPLACEMENT_CHAR,
+            "\n\n",  # Preserves newlines even with mark_boundaries
         ),
         (
             "This is a test of `x^2`",
@@ -1466,7 +1465,7 @@ def test_remove_code_with_fenced_blocks() -> None:
             """```typescript
 >     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
 > ```""",
-            "",
+            "\n\n",
         ),
     ],
 )
@@ -1482,14 +1481,14 @@ def test_remove_code_with_complex_blocks(input_text: str, expected_output: str) 
         ("Normal text.", "Normal text."),
         (
             "$$f(x) = \\int_{-\\infty}^{\\infty} \\hat{f}(\\xi)\\,e^{2 \\pi i \\xi x} \\,d\\xi$$",
-            "",
+            "",  # Single line, no newlines to preserve
         ),
         # Test case with internal $ signs
         (
             """$$
             > \\overset{\\text{# of permutations of $u$ for which $f_1>f_2$}}{\\big|\\{u_\\phi \\in {S_d \\cdot u}\\mid f_1(u_\\phi)>f_2(u_\\phi)\\}\\big|}
             $$""",
-            "",
+            "\n\n",
         ),
     ],
 )
@@ -1497,6 +1496,96 @@ def test_remove_math_with_complex_blocks(input_text: str, expected_output: str) 
     """Test stripping complex multi-line math blocks."""
     result = source_file_checks.remove_math(input_text)
     assert result == expected_output
+
+
+@pytest.mark.parametrize(
+    "text,expected_line_count",
+    [
+        # Code blocks preserve newlines
+        (
+            "Line 1\n```\ncode\nmore\n```\nLine 2",
+            6,
+        ),  # 6 lines: Line 1, ```, code, more, ```, Line 2
+        ("```\ncode\n```", 3),  # 3 lines: ```, code, ```
+        # Inline code doesn't affect line count
+        ("Line 1\n`code`\nLine 2", 3),
+        # Multiple code blocks
+        (
+            "L1\n```\na\n```\nL2\n```\nb\n```\nL3",
+            9,
+        ),  # 9 lines: L1, ```, a, ```, L2, ```, b, ```, L3
+    ],
+)
+def test_remove_code_preserves_lines(text: str, expected_line_count: int) -> None:
+    """Test that remove_code preserves line structure."""
+    result = source_file_checks.remove_code(text)
+    assert result.count("\n") == text.count("\n")
+    assert len(result.split("\n")) == expected_line_count
+
+
+@pytest.mark.parametrize(
+    "text,expected_line_count",
+    [
+        # Math blocks preserve newlines
+        (
+            "Line 1\n$$\nmath\nmore\n$$\nLine 2",
+            6,
+        ),  # 6 lines: Line 1, $$, math, more, $$, Line 2
+        ("$$\nmath\n$$", 3),  # 3 lines: $$, math, $$
+        # Inline math doesn't affect line count
+        ("Line 1\n$x$\nLine 2", 3),
+        # Multiple math blocks
+        (
+            "L1\n$$\na\n$$\nL2\n$$\nb\n$$\nL3",
+            9,
+        ),  # 9 lines: L1, $$, a, $$, L2, $$, b, $$, L3
+    ],
+)
+def test_remove_math_preserves_lines(text: str, expected_line_count: int) -> None:
+    """Test that remove_math preserves line structure."""
+    result = source_file_checks.remove_math(text)
+    assert result.count("\n") == text.count("\n")
+    assert len(result.split("\n")) == expected_line_count
+
+
+@pytest.mark.parametrize(
+    "text,line_with_content,content_present",
+    [
+        # Unmatched backtick doesn't consume across lines
+        ("Line 1 with `unmatched\nLine 2 with [^test]\nLine 3", 1, "[^test]"),
+        # Multiple unmatched backticks
+        ("`Line 1\nLine 2 [^note]\n`Line 3", 1, "[^note]"),
+        # Backticks on same line work normally
+        ("Line 1\nLine 2 `code` [^test]\nLine 3", 1, "[^test]"),
+    ],
+)
+def test_remove_code_no_cross_line_matching(
+    text: str, line_with_content: int, content_present: str
+) -> None:
+    """Test that inline code patterns don't match across newlines."""
+    result = source_file_checks.remove_code(text)
+    lines = result.split("\n")
+    assert content_present in lines[line_with_content]
+
+
+@pytest.mark.parametrize(
+    "text,line_with_content,content_present",
+    [
+        # Unmatched dollar doesn't consume across lines
+        ("Line 1 with $unmatched\nLine 2 with [^test]\nLine 3", 1, "[^test]"),
+        # Multiple unmatched dollars
+        ("$Line 1\nLine 2 [^note]\n$Line 3", 1, "[^note]"),
+        # Dollars on same line work normally
+        ("Line 1\nLine 2 $x$ [^test]\nLine 3", 1, "[^test]"),
+    ],
+)
+def test_remove_math_no_cross_line_matching(
+    text: str, line_with_content: int, content_present: str
+) -> None:
+    """Test that inline math patterns don't match across newlines."""
+    result = source_file_checks.remove_math(text)
+    lines = result.split("\n")
+    assert content_present in lines[line_with_content]
 
 
 @pytest.mark.parametrize(
@@ -1878,6 +1967,65 @@ def test_extract_footnote_references(
         # Regex patterns in code should not be treated as footnotes
         ("`[^\\s\"']`", []),
         ("```\n[^\\w]\n```", []),
+        # Footnote at end of line with markdown links (real-world case)
+        (
+            "Text with [link](url) and more [links](url2).[^test]\n[^test]: Definition",
+            [],
+        ),
+        # Footnote before iframe in blockquote
+        (
+            "Text with footnote.[^test]\n"
+            "> [!info]- Title\n"
+            '> <iframe src="/url"></iframe>\n'
+            "\n"
+            "[^test]: Definition",
+            [],
+        ),
+        # Unmatched backtick before footnote
+        (
+            "Line 1 with `unmatched backtick\n"
+            "Line 2 has more text\n"
+            "Line 3 with footnote.[^test]\n"
+            "\n"
+            "[^test]: Definition",
+            [],
+        ),
+        # Unmatched dollar sign before footnote
+        (
+            "Line 1 with $unmatched dollar\n"
+            "Line 2 has more text\n"
+            "Line 3 with footnote.[^note]\n"
+            "\n"
+            "[^note]: Definition",
+            [],
+        ),
+        # Multiple unmatched backticks
+        (
+            "`Line 1\n"
+            "Line 2 with `another\n"
+            "Line 3 with footnote.[^ref]\n"
+            "\n"
+            "[^ref]: Definition",
+            [],
+        ),
+        # Multiple unmatched dollars
+        (
+            "$Line 1\n"
+            "Line 2 with $another\n"
+            "Line 3 with footnote.[^math]\n"
+            "\n"
+            "[^math]: Definition",
+            [],
+        ),
+        # Unmatched backtick and dollar combined
+        (
+            "Line 1 with `backtick\n"
+            "Line 2 with $dollar\n"
+            "Line 3 with footnote.[^combo]\n"
+            "\n"
+            "[^combo]: Definition",
+            [],
+        ),
     ],
 )
 def test_check_footnote_references(text: str, expected_errors: List[str]) -> None:
