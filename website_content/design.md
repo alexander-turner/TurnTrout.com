@@ -713,7 +713,7 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
 </div>
   </figure>
 
-I showcase all included favicons on [the test page](/Test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
+I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
 
 ## Admonitions encapsulate information
 

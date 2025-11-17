@@ -123,7 +123,7 @@ In contrast, the flipped number system uses a single pass. You start reading on 
 
 #### The rough magnitude
 
-When reading "320,000", your visual system perceives the entire word at once[^magnitude] and you quickly grasp the magnitude of the number. The most significant digit is on the left (e.g. the "3" in "320,000"). These two facts establish the important information: the rough magnitude ("three hundred thousand" in 320,000).
+When reading "320,000", your visual system perceives the entire word at once and you quickly grasp the magnitude of the number. The most significant digit is on the left (e.g. the "3" in "320,000"). These two facts establish the important information: the rough magnitude ("three hundred thousand" in 320,000).
 
 In contrast, when reading "↗000,023", you first land upon the "↗" and then the "0". As before, you immediately grasp that this number is in the hundreds of thousands. However, you have to move your eye _again_ over to the right-most digit ("3") in order to know _how many_ hundred thousand. The flipped number system apparently complicates magnitude estimation.
 
