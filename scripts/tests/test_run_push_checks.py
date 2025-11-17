@@ -258,7 +258,8 @@ def test_cleanup_handler():
         patch("sys.exit") as mock_exit,
     ):
         # Test cleanup with no server
-        server_manager._signal_handler(signal.SIGINT, None)
+        server_manager.cleanup()
+        server_manager.handle_signal(signal.SIGINT)
         mock_kill.assert_not_called()
         mock_exit.assert_called_once_with(1)
 
@@ -267,7 +268,8 @@ def test_cleanup_handler():
 
         # Test cleanup with active server not created by script
         server_manager.set_server_pid(12345, created_by_script=False)
-        server_manager._signal_handler(signal.SIGINT, None)
+        server_manager.cleanup()
+        server_manager.handle_signal(signal.SIGINT)
         mock_kill.assert_not_called()
         mock_exit.assert_called_once_with(1)
 
@@ -276,7 +278,8 @@ def test_cleanup_handler():
 
         # Test cleanup with active server created by script
         server_manager.set_server_pid(54321, created_by_script=True)
-        server_manager._signal_handler(signal.SIGINT, None)
+        server_manager.cleanup()
+        server_manager.handle_signal(signal.SIGINT)
         mock_kill.assert_called_once_with(54321)
         mock_exit.assert_called_once_with(1)
 

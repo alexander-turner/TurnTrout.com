@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from xml.etree import ElementTree as xml_etree
 
 from defusedxml import ElementTree as ET
 
@@ -45,7 +44,7 @@ def is_already_normalized(svg_path: Path, target_size: int) -> bool:
 def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     """Set viewBox to square target_size, scale content to fill, and remove
     width/height attributes."""
-    xml_etree.register_namespace("", "http://www.w3.org/2000/svg")
+    ET.register_namespace("", "http://www.w3.org/2000/svg")
     tree = ET.parse(svg_path)
     root = tree.getroot()
 
@@ -66,11 +65,10 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     # Wrap all children in a scaled and translated group
     children = list(root)
     if children:
-        group = xml_etree.Element("g")
+        group = ET.Element("g")
         group.set(
             "transform",
-            f"translate({translate_x:.6f},{translate_y:.6f})"
-            f"scale({scale:.6f})",
+            f"translate({translate_x:.6f},{translate_y:.6f})" f"scale({scale:.6f})",
         )
         for child in children:
             root.remove(child)
@@ -98,9 +96,7 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
         target_size: Target viewBox dimension (default 24)
     """
     if not check_inkscape():
-        raise RuntimeError(
-            "Inkscape not found. Install with: brew install inkscape"
-        )
+        raise RuntimeError("Inkscape not found. Install with: brew install inkscape")
 
     # Use Inkscape to crop to content bounds and export
     inkscape_path = shutil.which("inkscape")

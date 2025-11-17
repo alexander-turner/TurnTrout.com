@@ -126,6 +126,10 @@ class ServerManager:
         self.cleanup()
         sys.exit(1)
 
+    def handle_signal(self, sig: int) -> None:
+        """Public method to handle signals (for testing)."""
+        self._signal_handler(sig, None)
+
     def set_server_pid(self, pid: int, created_by_script: bool = False) -> None:
         """
         Set the server PID to track for cleanup.
