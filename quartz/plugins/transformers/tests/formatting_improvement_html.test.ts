@@ -425,6 +425,7 @@ describe("HTMLFormattingImprovement", () => {
       ["This is a - hyphen.", "This is a—hyphen."],
       ["This is an — em dash.", "This is an—em dash."],
       ["word — word", "word—word"],
+      ["word ---", "word—"],
       ["word— word", "word—word"],
       ["word —word", "word—word"],
       ['"I love dogs." - Me', '"I love dogs." — Me'],
