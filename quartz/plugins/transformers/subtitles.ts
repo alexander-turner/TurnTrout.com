@@ -49,7 +49,7 @@ export function processParagraph(paragraph: Element): boolean {
   if (paragraph.children.length > 0) {
     const firstChild = paragraph.children[0]
     if (firstChild.type === "text") {
-      const match = firstChild.value.match(SUBTITLE_REGEX)
+      const match = SUBTITLE_REGEX.exec(firstChild.value)
       if (match) {
         firstChild.value = match[1].trimStart()
         return true

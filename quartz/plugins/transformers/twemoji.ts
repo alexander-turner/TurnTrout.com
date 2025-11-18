@@ -30,7 +30,12 @@ export function constructTwemojiUrl(icon: string, options: TwemojiOptions): stri
  * @returns Object containing parsed attribute key-value pairs
  */
 export function parseAttributes(imgTag: string): Record<string, string> {
-  const attrs = imgTag.match(/(\w+)="([^"]*)"?/g) || []
+  const regex = /(\w+)="([^"]*)"?/g
+  const attrs: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(imgTag)) !== null) {
+    attrs.push(match[0])
+  }
   return attrs.reduce(
     (acc, attr) => {
       const [key, value] = attr.split("=")
@@ -72,7 +77,12 @@ export function replaceEmoji(content: string): string {
 export function createNodes(twemojiContent: string): (Text | Element)[] {
   const newNodes: (Text | Element)[] = []
   const parts = twemojiContent.split(/<img.*?>/g)
-  const matches = twemojiContent.match(/<img.*?>/g) || []
+  const imgRegex = /<img.*?>/g
+  const matches: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = imgRegex.exec(twemojiContent)) !== null) {
+    matches.push(match[0])
+  }
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]

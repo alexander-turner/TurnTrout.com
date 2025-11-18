@@ -411,7 +411,8 @@ function _hasFileExtension(s: string): boolean {
  * @returns The file extension (including the "."), or undefined if not found.
  */
 function _getFileExtension(s: string): string | undefined {
-  return s.match(/\.[A-Za-z0-9]+$/)?.[0]
+  const match = /\.[A-Za-z0-9]+$/.exec(s)
+  return match?.[0]
 }
 
 /**

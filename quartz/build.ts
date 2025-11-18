@@ -464,7 +464,7 @@ export default async (argv: Argv, mut: Mutex, clientRefresh: () => void) => {
     return await buildQuartz(argv, mut, clientRefresh)
   } catch (err) {
     trace("\nExiting Quartz due to a fatal error", err as Error)
+    // skipcq: JS-0321
+    return () => {}
   }
-  // skipcq: JS-0321
-  return () => {}
 }

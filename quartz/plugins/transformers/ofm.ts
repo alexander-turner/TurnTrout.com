@@ -219,15 +219,14 @@ const processAdmonitionBlockquote = (node: Blockquote): void => {
   const [firstLine, ...remainingLines] = text.split("\n")
   const remainingText = remainingLines.join("\n")
 
-  // skipcq: JS-0357
-  const match = firstLine.match(admonitionRegex)
-  if (!match?.input) return
+  const match = admonitionRegex.exec(firstLine)
+  if (!match) return
 
   const [admonitionDirective, typeString, collapseChar] = match
   const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
   const collapse = collapseChar === "+" || collapseChar === "-"
   const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
-  const titleContent = match.input.slice(admonitionDirective.length).trim()
+  const titleContent = firstLine.slice(admonitionDirective.length).trim()
   /* istanbul ignore next -- admonition title detection edge case */
   const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
   const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
@@ -586,9 +585,10 @@ function parseBlockReferences(tree: HtmlRoot, file: VFile): void {
     if (node.tagName === "p" || node.tagName === "li") {
       const last = node.children.at(-1)
       if (last?.type === "text" && typeof last.value === "string") {
-        const matches = last.value.match(blockReferenceRegex)
-        if (matches && matches.length >= 1) {
-          const blockId = matches[0].slice(1)
+        blockReferenceRegex.lastIndex = 0
+        const match = blockReferenceRegex.exec(last.value)
+        if (match) {
+          const blockId = match[1]
           if (file.data.blocks && !file.data.blocks[blockId]) {
             // Remove the block reference from the text
             last.value = last.value.replace(blockReferenceRegex, "")
@@ -611,9 +611,10 @@ function parseBlockReferences(tree: HtmlRoot, file: VFile): void {
 function convertImagesToYouTubeEmbeds(tree: HtmlRoot): void {
   visit(tree, "element", (node) => {
     if (node.tagName === "img" && typeof node.properties.src === "string") {
-      const match = node.properties.src.match(ytLinkRegex)
+      const match = ytLinkRegex.exec(node.properties.src)
       const videoId = match && match[2].length === 11 ? match[2] : null
-      const playlistId = node.properties.src.match(ytPlaylistLinkRegex)?.[1]
+      const playlistMatch = ytPlaylistLinkRegex.exec(node.properties.src)
+      const playlistId = playlistMatch?.[1]
       if (videoId) {
         node.tagName = "iframe"
         node.properties = createYouTubeEmbed(videoId, playlistId)
@@ -744,7 +745,7 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
           const displayAlias = rawAlias ?? ""
 
           /* istanbul ignore next -- external link wikilink edge case */
-          if (rawFp?.match(externalLinkRegex)) {
+          if (rawFp && externalLinkRegex.test(rawFp)) {
             return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
           }
 

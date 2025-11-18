@@ -15,7 +15,7 @@ const SPOILER_REGEX = /^!\s*(.*)/
  * @returns Spoiler text or null if not a spoiler
  */
 export function matchSpoilerText(text: string): string | null {
-  const match = text.match(SPOILER_REGEX)
+  const match = SPOILER_REGEX.exec(text)
   return match ? match[1] : null
 }
 
