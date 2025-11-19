@@ -17,9 +17,7 @@ import requests
 _SCRIPTS_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(_SCRIPTS_DIR))
 
-from normalize_svg_viewbox import (  # type: ignore  # noqa: E402
-    normalize_svg_viewbox,
-)
+from normalize_svg_viewbox import normalize_svg_viewbox  # type: ignore  # noqa: E402
 
 # Mapping from source filename to target domain-based filename
 # Format: source_filename -> target_filename (domain_com.ext)

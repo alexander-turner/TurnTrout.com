@@ -1,7 +1,6 @@
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
-from scripts import utils as script_utils
 import re
 import shutil
 import subprocess
@@ -10,6 +9,8 @@ from pathlib import Path
 from typing import Dict, List, Literal, Set, TypedDict
 
 import requests  # type: ignore[import]
+
+from scripts import utils as script_utils
 
 # Add the project root to sys.path
 # pylint: disable=wrong-import-position
