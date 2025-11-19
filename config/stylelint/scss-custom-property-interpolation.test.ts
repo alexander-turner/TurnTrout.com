@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { describe, expect, it } from "@jest/globals"
 import path from "path"
 import stylelint, { type LinterResult } from "stylelint"

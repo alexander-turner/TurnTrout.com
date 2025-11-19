@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import type { Root, Element as HastElement } from "hast"
 
 import { describe, expect, beforeEach, it } from "@jest/globals"

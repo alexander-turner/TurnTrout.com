@@ -1,8 +1,8 @@
-import type { Root, Element as HastElement } from "hast"
-
 /**
  * @jest-environment jsdom
  */
+import type { Root, Element as HastElement } from "hast"
+
 import { describe, it, expect } from "@jest/globals"
 import { h } from "hastscript"
 import { h as preactH } from "preact"
