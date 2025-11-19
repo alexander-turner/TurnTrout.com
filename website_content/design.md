@@ -307,7 +307,7 @@ Browsers provide [native scroll restoration](https://developer.mozilla.org/en-US
 0. The browser briefly shows the top of the page before restoring the correct position. Disorienting.
 1. Also, the browser restores position before layout shifts complete. Despite my [significant efforts](#preventing-layout-shift), a few layout shifts still pollute the user experience. Late-loading media cause the page to jump around.
 
-### Solution: Pre-empt the page paint
+### Solution: Preempt the page paint
 
 Subtitle: Implemented by [`instantScrollRestoration.js`](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/static/scripts/instantScrollRestoration.js).
 

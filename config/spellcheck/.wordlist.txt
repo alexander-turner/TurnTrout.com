@@ -3016,3 +3016,7 @@ Palform
 vectorize
 SVGs
 dereference
+LazyVim
+ProtonVPN
+autocomplete
+tmux

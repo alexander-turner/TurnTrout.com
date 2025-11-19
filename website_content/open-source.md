@@ -75,13 +75,13 @@ Subtitle: One command to set up your shell, editor, and secret management.
 My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides a comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
 
 - **Fish shell** with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
-- **Neovim** configured with LazyVim, providing a full-fledged IDE with Copilot support,
-- **tmux** with automatic session saving and restoration (`tmux-continuum` and `tmux-restore`),
-- **`envchain`** for hardware-encrypted secret management via macOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in config files,
+- **`neovim`** configured with LazyVim, providing a full-fledged IDE with Copilot support,
+- **`tmux`** with automatic session saving and restoration (`tmux-continuum` and `tmux-restore`),
+- **`envchain`** for hardware-encrypted secret management via MacOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in configuration files,
 - **Open source AI tool setup**,
 - **`autojump`** for quick directory navigation,
 - **Reversible file deletion by default** via `trash-put` instead of `rm`,
-- **Git aliases** and other productivity shortcuts, and -- drumroll ---
+- **`git` aliases** and other productivity shortcuts, and -- drum roll ---
 - **`goosesay`**, because every terminal needs more geese.  
 
 ```plaintext
