@@ -149,9 +149,11 @@ svg.favicon[data-domain="amazon_com"] {
   :root[data-theme="dark"] & {
     --target-percentage: var(--color-percentage);
   }
+
   :root[data-theme="light"] & {
     --target-percentage: 60%;
   }
+
   --yellow-target: color-mix(in srgb, var(--gold) var(--target-percentage), var(--foreground));
 
   background: radial-gradient(
