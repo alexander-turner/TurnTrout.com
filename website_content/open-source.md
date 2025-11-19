@@ -78,10 +78,11 @@ My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provi
 - **Neovim** configured with LazyVim, providing a full-fledged IDE with Copilot support,
 - **tmux** with automatic session saving and restoration (`tmux-continuum` and `tmux-restore`),
 - **`envchain`** for hardware-encrypted secret management via macOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in config files,
+- **Open source AI tool setup**,
 - **`autojump`** for quick directory navigation,
 - **Reversible file deletion by default** via `trash-put` instead of `rm`,
 - **Git aliases** and other productivity shortcuts, and -- drumroll ---
-- **`goosesay`** --- because every terminal needs more geese.  
+- **`goosesay`**, because every terminal needs more geese.  
 
 ```plaintext
   ______________________________________
