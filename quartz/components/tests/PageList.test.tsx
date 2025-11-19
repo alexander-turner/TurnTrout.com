@@ -23,7 +23,6 @@ import {
   createPageItemElement,
 } from "../PageList"
 
-// Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
   ({
     slug: "test" as FullSlug,

@@ -1,7 +1,6 @@
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
-from scripts import utils as script_utils
 import re
 import shutil
 import subprocess
@@ -15,6 +14,7 @@ import requests  # type: ignore[import]
 # pylint: disable=wrong-import-position
 sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
+from scripts import utils as script_utils  # noqa: E402
 
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files

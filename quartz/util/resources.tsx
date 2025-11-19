@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unknown-property */
-// (For the spa-preserve attribute)
+/* eslint-disable react/react-in-jsx-scope */
+// (For the spa-preserve attribute and React import)
 
 import { randomUUID } from "crypto"
 import { JSX } from "preact/jsx-runtime"
-import React from "react"
 
 export type JSResource = {
   loadTime: "beforeDOMReady" | "afterDOMReady"
