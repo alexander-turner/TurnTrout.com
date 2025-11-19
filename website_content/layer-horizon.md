@@ -59,7 +59,7 @@ Lastly, slower norm growth probably causes the effective layer horizon to be low
 
 To measure the importance of sublayer contributions originating much earlier in the forward pass, Joseph Miller modified the forward pass so that each sublayer reads a residual stream formed from the outputs form the previous $k$ sublayers. He then measured how loss changes as a function of enforced layer horizon $k$. A larger loss spike means that that information was more important. On the other hand, if you can remove all but the last three layers and suffer minimal loss increase, the earlier outputs evidently aren't important beyond a few layers.
 
-[Joseph Miller reports that GPT-2 small seems too small to exhibit an effective layer horizon.](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=sppiZhHDwjYJXDdsn) However, he then ran experiments on GPT-2-XL.
+[Joseph Miller reports that GPT-2-small seems too small to exhibit an effective layer horizon.](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=sppiZhHDwjYJXDdsn) However, he then ran experiments on GPT-2-XL.
 
 > [!quote] [Joseph Miller](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=DpKyPSqGCBw3erajH)
 >
