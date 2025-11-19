@@ -354,11 +354,9 @@ nested:
 Test content here
 """
 
-    with (
-        tempfile.TemporaryDirectory() as tmp_dir,
-        open((test_file := Path(tmp_dir) / "test.md"), "w") as f,
-    ):
-        f.write(test_content)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        test_file = Path(tmp_dir) / "test.md"
+        test_file.write_text(test_content, encoding="utf-8")
 
         # Read and write back the file
         metadata, content = script_utils.split_yaml(test_file)
@@ -386,26 +384,22 @@ title: "Test Post"
 Content here
 """
 
-    with (
-        tempfile.TemporaryDirectory() as tmp_dir,
-        open((test_file := Path(tmp_dir) / "test.md"), "w") as f,
-    ):
-        f.write(test_content)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        test_file = Path(tmp_dir) / "test.md"
+        test_file.write_text(test_content, encoding="utf-8")
 
         # Read, modify a date, and write back
         metadata, content = script_utils.split_yaml(test_file)
         metadata["date_updated"] = "05/22/2024"
         update_lib.write_to_yaml(test_file, metadata, content)
 
-        # Read the result and verify
-        with open(test_file) as f:
-            result = f.read()
+        result = test_file.read_text()
 
-        # Check that quotes and comments are preserved
-        assert 'date_published: "05/20/2024"' in result
-        assert "# Original publish date" in result
-        assert "# Last update" in result
-        assert 'title: "Test Post"' in result
+    # Check that quotes and comments are preserved
+    assert 'date_published: "05/20/2024"' in result
+    assert "# Original publish date" in result
+    assert "# Last update" in result
+    assert 'title: "Test Post"' in result
 
 
 @pytest.mark.parametrize(
