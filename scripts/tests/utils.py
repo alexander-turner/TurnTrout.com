@@ -183,7 +183,7 @@ def _create_test_gif(
         raise ValueError("File extension must be .gif")
 
     frames: list[Image.Image] = []
-    for i in range(int(length_in_seconds * framerate)):
+    for _ in range(int(length_in_seconds * framerate)):
         array = np.random.rand(size[1], size[0], 3) * 255
         image = Image.fromarray(array.astype("uint8")).convert("RGB")
         frames.append(image)

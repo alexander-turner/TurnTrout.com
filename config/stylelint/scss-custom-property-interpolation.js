@@ -42,7 +42,7 @@ function fixValue(value) {
 
     if (isInsideInterpolationBlock(value, varIndex)) continue
 
-    fixed = fixed.slice(0, varIndex) + `#{${variable}}` + fixed.slice(varIndex + variable.length)
+    fixed = `${fixed.slice(0, varIndex)}#{${variable}}${fixed.slice(varIndex + variable.length)}`
   }
 
   return fixed

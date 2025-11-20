@@ -50,7 +50,9 @@ def mock_git(temp_content_dir):
                         return f"website_content/{file_path.name}"
                 # If no specific file check but we have modified files, return them all
                 elif modified_files:
-                    return "\n".join(f"website_content/{f}" for f in modified_files)
+                    return "\n".join(
+                        f"website_content/{f}" for f in modified_files
+                    )
             return ""  # Default: no changes
 
         return _git_command
@@ -106,9 +108,9 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
     )
 
     with patch("subprocess.check_output", side_effect=mock_git):
-        metadata, content = script_utils.split_yaml(test_file)
+        metadata, _ = script_utils.split_yaml(test_file)
         update_lib.maybe_update_publish_date(metadata)
-        update_lib.write_to_yaml(test_file, metadata, content)
+        update_lib.write_to_yaml(test_file, metadata, _)
 
     with test_file.open("r", encoding="utf-8") as f:
         metadata = yaml.safe_load(f.read().split("---")[1])
@@ -132,7 +134,9 @@ def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
     )
 
     # Fix: Use the mock_git fixture with modified files
-    with patch("subprocess.check_output", side_effect=mock_git([test_file.name])):
+    with patch(
+        "subprocess.check_output", side_effect=mock_git([test_file.name])
+    ):
         metadata, content = script_utils.split_yaml(test_file)
         if update_lib.is_file_modified(test_file):
             metadata["date_updated"] = (
@@ -158,7 +162,9 @@ def test_preserves_dates_when_not_modified(temp_content_dir, mock_git):
         content="Test content",
     )
 
-    with patch("subprocess.check_output", side_effect=mock_git()):  # No modified files
+    with patch(
+        "subprocess.check_output", side_effect=mock_git()
+    ):  # No modified files
         metadata, content = script_utils.split_yaml(test_file)
         if update_lib.is_file_modified(test_file):
             metadata["date_updated"] = "02/01/2024"
@@ -195,7 +201,9 @@ def test_split_yaml_empty_frontmatter(temp_content_dir):
 def test_split_yaml_malformed_yaml(temp_content_dir):
     """Test handling of malformed YAML."""
     file_path = temp_content_dir / "malformed.md"
-    file_path.write_text('---\ntitle: "Unclosed quote\n---\nContent', encoding="utf-8")
+    file_path.write_text(
+        '---\ntitle: "Unclosed quote\n---\nContent', encoding="utf-8"
+    )
 
     # Expect split_yaml to return empty metadata and content for malformed files
     metadata, content = script_utils.split_yaml(file_path, verbose=True)
@@ -252,7 +260,9 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
             content="Test content",
         )
 
-    with patch("subprocess.check_output", side_effect=mock_git(["modified.md"])):
+    with patch(
+        "subprocess.check_output", side_effect=mock_git(["modified.md"])
+    ):
         update_lib.main(temp_content_dir)
 
     expected_new_date = create_timestamp(datetime(2024, 2, 1))
@@ -528,7 +538,9 @@ def test_git_modified_date_update(temp_content_dir, mock_git):
         content="Test content",
     )
 
-    with patch("subprocess.check_output", side_effect=mock_git([test_file.name])):
+    with patch(
+        "subprocess.check_output", side_effect=mock_git([test_file.name])
+    ):
         metadata, content = script_utils.split_yaml(test_file)
         if update_lib.is_file_modified(test_file):
             metadata["date_updated"] = "02/01/2024"
@@ -659,7 +671,9 @@ def test_update_readme_copyright_year_updates_needed(
 ):
     """Test updating the copyright year when it's outdated."""
     mock_readme_path.write_text(initial_content, encoding="utf-8")
-    mock_current_datetime = datetime(current_year, 1, 1)  # Month/day don't matter
+    mock_current_datetime = datetime(
+        current_year, 1, 1
+    )  # Month/day don't matter
 
     update_lib.update_readme_copyright_year(mock_current_datetime)
 
@@ -730,7 +744,9 @@ def test_commit_changes():
         mock_run.assert_has_calls(expected_calls, any_order=False)
 
 
-def test_main_no_changes_no_modifications(temp_content_dir, mock_datetime, mock_git):
+def test_main_no_changes_no_modifications(
+    temp_content_dir, mock_datetime, mock_git
+):
     """Test that main doesn't modify files when no changes are needed."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
     files = [
@@ -760,7 +776,9 @@ def test_main_no_changes_no_modifications(temp_content_dir, mock_datetime, mock_
         )
 
     # Get initial file modification times
-    initial_mtimes = {f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")}
+    initial_mtimes = {
+        f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")
+    }
 
     with (
         patch("subprocess.check_output", side_effect=mock_git()),
@@ -772,5 +790,7 @@ def test_main_no_changes_no_modifications(temp_content_dir, mock_datetime, mock_
         update_lib.main(temp_content_dir)
 
     # Check that files weren't modified
-    final_mtimes = {f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")}
+    final_mtimes = {
+        f.name: f.stat().st_mtime for f in temp_content_dir.glob("*.md")
+    }
     assert initial_mtimes == final_mtimes

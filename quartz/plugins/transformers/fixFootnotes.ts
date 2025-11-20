@@ -37,6 +37,7 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
       footnoteLocation = { node, parent, index }
       return SKIP
     }
+    return null
   })
 
   return footnoteLocation

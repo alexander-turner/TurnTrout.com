@@ -197,7 +197,7 @@ export function normalizePathForCounting(faviconPath: string): string {
     return faviconPath
   }
   // Special paths like mail.svg and anchor.svg should be preserved as-is
-  if (faviconPath.match(/\.(svg|ico)$/)) {
+  if (/\.(svg|ico)$/.test(faviconPath)) {
     return faviconPath
   }
   // Remove .png, .svg, .avif extensions for counting (domain-based paths)

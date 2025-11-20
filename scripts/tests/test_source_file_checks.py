@@ -82,7 +82,9 @@ def test_check_required_fields(
     assert set(errors) == set(expected_errors)
 
 
-def test_main_workflow(git_repo_setup, quartz_project_structure, monkeypatch) -> None:
+def test_main_workflow(
+    git_repo_setup, quartz_project_structure, monkeypatch
+) -> None:
     """
     Integration test for the main workflow. Tests both valid and invalid
     markdown files in the content directory.
@@ -123,7 +125,9 @@ def test_main_workflow(git_repo_setup, quartz_project_structure, monkeypatch) ->
     )
 
     # Mock git root to use our temporary directory
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     # Main should raise a ValueError due to missing permalink
     with pytest.raises(ValueError):
@@ -235,7 +239,9 @@ def test_url_uniqueness(
         create_markdown_file(content_dir / filename, content=content)
 
     # Mock git root to use our temporary directory
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     if test_case["should_fail"]:
         with pytest.raises(SystemExit, match="1"):
@@ -268,7 +274,9 @@ Valid external: [Link](https://example.com)
     create_markdown_file(test_file, content=content)
 
     # Mock git root
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     # Should exit with code 1 due to invalid links
     with pytest.raises(SystemExit, match="1"):
@@ -387,7 +395,9 @@ def test_font_file_scenarios(
         test_case["website_content"], test_case["files"]
     )
 
-    missing_fonts = source_file_checks.check_scss_font_files(fonts_scss, tmp_path)
+    missing_fonts = source_file_checks.check_scss_font_files(
+        fonts_scss, tmp_path
+    )
     assert missing_fonts == test_case["expected_missing"]
 
 
@@ -399,7 +409,9 @@ def test_scss_compilation_error(
     test_case = scss_scenarios["scss_error"]
     fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
 
-    missing_fonts = source_file_checks.check_scss_font_files(fonts_scss, tmp_path)
+    missing_fonts = source_file_checks.check_scss_font_files(
+        fonts_scss, tmp_path
+    )
     assert len(missing_fonts) == 1
     assert test_case["expected_error"] in missing_fonts[0]
 
@@ -412,7 +424,7 @@ def test_integration_with_main(
     """Integration test including font file checks."""
     # Set up test environment with missing fonts scenario
     test_case = scss_scenarios["missing"]
-    fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
+    _, tmp_path = setup_font_test(test_case["website_content"], [])
 
     # Create content directory (needed for main())
     content_dir = tmp_path / "website_content"
@@ -422,7 +434,9 @@ def test_integration_with_main(
     git.Repo.init(tmp_path)
 
     # Mock git root
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     # Main should exit with code 1 due to missing font
     with pytest.raises(SystemExit) as exc_info:
@@ -592,7 +606,9 @@ def test_latex_tags_variations(
                 },
             },
             "check_permalink": "/post1",
-            "expected_errors": ["Could not find post with permalink /nonexistent"],
+            "expected_errors": [
+                "Could not find post with permalink /nonexistent"
+            ],
             "description": "non-existent target post",
         },
         # Test case 5: Both prev and next relationships valid
@@ -918,7 +934,9 @@ def test_build_sequence_data_no_files() -> None:
         (
             {"card_image": "https://example.com/missing.jpg"},
             type("Response", (), {"ok": False, "status_code": 404}),
-            ["Card image URL 'https://example.com/missing.jpg' returned status 404"],
+            [
+                "Card image URL 'https://example.com/missing.jpg' returned status 404"
+            ],
         ),
     ],
 )
@@ -990,7 +1008,9 @@ def test_check_card_image_sends_user_agent() -> None:
         ({"card_image": "https://example.com/image.PNG"}, []),
     ],
 )
-def test_check_card_image_extension(metadata: dict, expected_errors: List[str]) -> None:
+def test_check_card_image_extension(
+    metadata: dict, expected_errors: List[str]
+) -> None:
     """Test checking card image URL extensions in metadata."""
     errors = source_file_checks.check_card_image_extension(metadata)
     assert errors == expected_errors
@@ -1107,7 +1127,9 @@ def test_check_table_alignments(
     assert errors == expected_errors
 
 
-def test_check_table_alignments_integration(tmp_path: Path, monkeypatch) -> None:
+def test_check_table_alignments_integration(
+    tmp_path: Path, monkeypatch
+) -> None:
     """Integration test for table alignment checking within the main
     workflow."""
     content_dir = tmp_path / "website_content"
@@ -1130,7 +1152,9 @@ permalink: /test
     create_markdown_file(test_file, content=content)
 
     # Mock git root
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     # Should exit with code 1 due to missing table alignments
     with pytest.raises(SystemExit, match="1"):
@@ -1306,7 +1330,9 @@ Some math: $x^2 + {y^2}$ and more {text}.
     test_file.write_text(content)
 
     # Mock git root
-    monkeypatch.setattr(script_utils, "get_git_root", lambda *args, **kwargs: tmp_path)
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
 
     # Should exit with code 1 due to unescaped braces
     with pytest.raises(SystemExit, match="1"):
@@ -1469,7 +1495,9 @@ def test_remove_code_with_fenced_blocks() -> None:
         ),
     ],
 )
-def test_remove_code_with_complex_blocks(input_text: str, expected_output: str) -> None:
+def test_remove_code_with_complex_blocks(
+    input_text: str, expected_output: str
+) -> None:
     """Test stripping complex multi-line code blocks."""
     result = source_file_checks.remove_code(input_text)
     assert result == expected_output
@@ -1492,7 +1520,9 @@ def test_remove_code_with_complex_blocks(input_text: str, expected_output: str) 
         ),
     ],
 )
-def test_remove_math_with_complex_blocks(input_text: str, expected_output: str) -> None:
+def test_remove_math_with_complex_blocks(
+    input_text: str, expected_output: str
+) -> None:
     """Test stripping complex multi-line math blocks."""
     result = source_file_checks.remove_math(input_text)
     assert result == expected_output
@@ -1516,7 +1546,9 @@ def test_remove_math_with_complex_blocks(input_text: str, expected_output: str) 
         ),  # 9 lines: L1, ```, a, ```, L2, ```, b, ```, L3
     ],
 )
-def test_remove_code_preserves_lines(text: str, expected_line_count: int) -> None:
+def test_remove_code_preserves_lines(
+    text: str, expected_line_count: int
+) -> None:
     """Test that remove_code preserves line structure."""
     result = source_file_checks.remove_code(text)
     assert result.count("\n") == text.count("\n")
@@ -1541,7 +1573,9 @@ def test_remove_code_preserves_lines(text: str, expected_line_count: int) -> Non
         ),  # 9 lines: L1, $$, a, $$, L2, $$, b, $$, L3
     ],
 )
-def test_remove_math_preserves_lines(text: str, expected_line_count: int) -> None:
+def test_remove_math_preserves_lines(
+    text: str, expected_line_count: int
+) -> None:
     """Test that remove_math preserves line structure."""
     result = source_file_checks.remove_math(text)
     assert result.count("\n") == text.count("\n")
@@ -1655,7 +1689,9 @@ def test_slug_in_metadata(slug: str, metadata: dict, expected: bool) -> None:
 )
 def test_validate_video_tag(video_tag: str, should_raise: bool):
     """Tests the validate_video_tags function."""
-    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(
+        "w", suffix=".md", delete=False
+    ) as tmp_file:
         tmp_file.write(video_tag)
     tmp_path = Path(tmp_file.name)
 
@@ -1668,7 +1704,9 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
         assert issues, f"Expected errors for tag: {video_tag}, but got none."
         assert "forbidden 'src' or 'type' attribute" in issues[0]
     else:
-        assert not issues, f"Expected no errors for tag: {video_tag}, but got: {issues}"
+        assert (
+            not issues
+        ), f"Expected no errors for tag: {video_tag}, but got: {issues}"
 
 
 @pytest.mark.parametrize(
@@ -1827,7 +1865,9 @@ def test_check_stray_katex(text: str, expected_errors: List[str]):
         # HTML with style braces (should error)
         (
             '</video>{style="width:50%"}',
-            ['HTML element with style braces at line 1: </video>{style="width:50%"}'],
+            [
+                'HTML element with style braces at line 1: </video>{style="width:50%"}'
+            ],
         ),
         (
             "</div>{.container}",
@@ -1943,7 +1983,10 @@ def test_extract_footnote_references(
             ["Footnote 'note' is defined but never referenced (line 2)"],
         ),
         # Only reference, no definition
-        ("Some text [^note]", ["Footnote 'note' is referenced but never defined"]),
+        (
+            "Some text [^note]",
+            ["Footnote 'note' is referenced but never defined"],
+        ),
         # Reference in code block should be ignored, but definition without real reference is an error
         (
             "`[^code]`\n[^code]: In code",
@@ -2028,7 +2071,9 @@ def test_extract_footnote_references(
         ),
     ],
 )
-def test_check_footnote_references(text: str, expected_errors: List[str]) -> None:
+def test_check_footnote_references(
+    text: str, expected_errors: List[str]
+) -> None:
     """Test checking footnote references."""
     errors = source_file_checks.check_footnote_references(text)
     # Sort both lists for comparison since order may vary
