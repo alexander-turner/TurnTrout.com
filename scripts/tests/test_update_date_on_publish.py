@@ -441,7 +441,7 @@ def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
         f.write(test_case)
 
     expected_date = create_timestamp(mock_datetime)
-    metadata, content = script_utils.split_yaml(test_file)
+    metadata, _ = script_utils.split_yaml(test_file)
     update_lib.maybe_update_publish_date(metadata)
 
     assert metadata["date_published"] == expected_date

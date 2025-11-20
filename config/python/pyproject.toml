@@ -15,6 +15,9 @@ line_length = 80
 [tool.pytest.ini_options]
 addopts = "--cov=scripts --cov-report=html -n auto"
 testpaths = ["scripts/tests"]
+markers = [
+    "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)"
+]
 
 [tool.docformatter]
 wrap-summaries = 80

@@ -17,9 +17,7 @@ from scripts import run_push_checks
 @pytest.fixture(autouse=True)
 def reset_global_state():
     """Reset global state before each test."""
-    import scripts.run_push_checks
-
-    scripts.run_push_checks._server_to_cleanup = None
+    run_push_checks._server_to_cleanup = None
     yield
 
 

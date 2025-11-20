@@ -29,14 +29,14 @@ def r2_cleanup():
 
 
 @pytest.fixture
-# Needs to initialize a repo for integration testing
-@pytest.mark.allow_git_operations
 def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
     """
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
         - Markdown files with image references.
         - Git initialization to simulate a real project.
+
+    Must be accompanied by @pytest.mark.allow_git_operations.
     """
     tmp_path = quartz_project_structure["public"].parent
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -245,6 +245,7 @@ def test_main_function(
             r2_upload.main()
 
 
+@pytest.mark.allow_git_operations
 def test_upload_and_move(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     tmp_path: Path,
@@ -295,6 +296,7 @@ def test_upload_and_move(
         assert file_path.read_text().strip() == expected_content.strip()
 
 
+@pytest.mark.allow_git_operations
 def test_main_upload_all_custom_filetypes(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     mock_git_root: Path,
