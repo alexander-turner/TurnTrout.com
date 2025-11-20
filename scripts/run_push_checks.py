@@ -468,6 +468,8 @@ def get_check_steps(
                 "python",
                 "-m",
                 "mypy",
+                "--config-file",
+                f"{git_root_path}/config/python/mypy.ini",
             ]
             + script_files,
         ),
