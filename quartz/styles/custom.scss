@@ -20,7 +20,7 @@ li[id^="user-content-fn-"] > * {
   }
 
   &:not(blockquote):nth-last-child(2) {
-    margin-bottom: 0; // Don't have unnecessary space before the <li>
+    margin-bottom: 0; /* Do not have unnecessary space before the list item */
   }
 }
 

@@ -206,6 +206,59 @@ const createPlaylistEmbed = (playlistId: string): Properties => ({
   src: `https://www.youtube.com/embed/videoseries?list=${playlistId}`,
 })
 
+/** Regular expression to match external URLs (http/https) */
+export const externalLinkRegex = /^https?:\/\//i
+
+/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
+export const wikilinkRegex = new RegExp(
+  /!?\[\[([^[\]|#\\]+)?(#+(?:[^[\]|#\\]+)?)?(\\?\|[^[\]#]+)?\]\]/,
+  "g",
+)
+
+/** Matches Markdown tables with header, separator, and body rows. */
+export const tableRegex = new RegExp(
+  /^\|([^\n])+\|\n(\|)( ?:?-{3,}:? ?\|)+\n(\|([^\n])+\|\n?)+/,
+  "gm",
+)
+
+/** Regular expression to match wikilinks within tables for escaping purposes */
+export const tableWikilinkRegex = new RegExp(/(!?\[\[[^\]]*?\]\])/, "g")
+
+/** Regular expression to match highlight syntax (==text==) */
+const highlightRegex = new RegExp(/[=]{2}([^=]+)[=]{2}/, "g")
+
+/** Regular expression to match Obsidian-style comments (%%comment%%) */
+const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
+
+/** Regular expression to match admonition syntax ([!type][fold]) */
+const admonitionRegex = new RegExp(/^\[!(\w+)\]([+-]?)/)
+
+/** Regular expression to match admonition lines in blockquotes */
+const admonitionLineRegex = new RegExp(/^> *\[!\w+\][+-]?.*$/, "gm")
+
+/** Matches tags with Unicode support: #tag, #tag/subtag */
+const tagRegex = new RegExp(
+  /(?:^| )#((?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
+  "gu",
+)
+
+/** Regular expression to match block references (^blockid) */
+const blockReferenceRegex = new RegExp(/\^([-_A-Za-z0-9]+)$/, "g")
+
+/** Regular expression to match YouTube video URLs */
+const ytLinkRegex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+
+/** Regular expression to match YouTube playlist parameters */
+const ytPlaylistLinkRegex = /[?&]list=([^#?&]*)/
+
+/** Regular expression to match video file extensions */
+const videoExtensionRegex = new RegExp(/\.(mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
+
+/** Regular expression to parse image embed dimensions and alt text */
+const wikilinkImageEmbedRegex = new RegExp(
+  /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
+)
+
 /** Processes blockquotes and converts them to admonitions. */
 const processAdmonitionBlockquote = (node: Blockquote): void => {
   if (node.children.length === 0) return
@@ -346,59 +399,6 @@ function canonicalizeAdmonition(admonitionName: string): keyof typeof admonition
   const normalizedAdmonition = admonitionName.toLowerCase() as keyof typeof admonitionMapping
   return admonitionMapping[normalizedAdmonition] ?? admonitionName
 }
-
-/** Regular expression to match external URLs (http/https) */
-export const externalLinkRegex = /^https?:\/\//i
-
-/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
-export const wikilinkRegex = new RegExp(
-  /!?\[\[([^[\]|#\\]+)?(#+(?:[^[\]|#\\]+)?)?(\\?\|[^[\]#]+)?\]\]/,
-  "g",
-)
-
-/** Matches Markdown tables with header, separator, and body rows. */
-export const tableRegex = new RegExp(
-  /^\|([^\n])+\|\n(\|)( ?:?-{3,}:? ?\|)+\n(\|([^\n])+\|\n?)+/,
-  "gm",
-)
-
-/** Regular expression to match wikilinks within tables for escaping purposes */
-export const tableWikilinkRegex = new RegExp(/(!?\[\[[^\]]*?\]\])/, "g")
-
-/** Regular expression to match highlight syntax (==text==) */
-const highlightRegex = new RegExp(/[=]{2}([^=]+)[=]{2}/, "g")
-
-/** Regular expression to match Obsidian-style comments (%%comment%%) */
-const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
-
-/** Regular expression to match admonition syntax ([!type][fold]) */
-const admonitionRegex = new RegExp(/^\[!(\w+)\]([+-]?)/)
-
-/** Regular expression to match admonition lines in blockquotes */
-const admonitionLineRegex = new RegExp(/^> *\[!\w+\][+-]?.*$/, "gm")
-
-/** Matches tags with Unicode support: #tag, #tag/subtag */
-const tagRegex = new RegExp(
-  /(?:^| )#((?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
-  "gu",
-)
-
-/** Regular expression to match block references (^blockid) */
-const blockReferenceRegex = new RegExp(/\^([-_A-Za-z0-9]+)$/, "g")
-
-/** Regular expression to match YouTube video URLs */
-const ytLinkRegex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-
-/** Regular expression to match YouTube playlist parameters */
-const ytPlaylistLinkRegex = /[?&]list=([^#?&]*)/
-
-/** Regular expression to match video file extensions */
-const videoExtensionRegex = new RegExp(/\.(mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
-
-/** Regular expression to parse image embed dimensions and alt text */
-const wikilinkImageEmbedRegex = new RegExp(
-  /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
-)
 
 /** Converts MDAST nodes to HTML strings. */
 const mdastToHtml = (ast: PhrasingContent | Paragraph): string => {

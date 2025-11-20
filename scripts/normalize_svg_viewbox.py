@@ -10,7 +10,10 @@ import sys
 from pathlib import Path
 
 # Safe because we're using defusedxml to parse the XML
-from xml.etree.ElementTree import Element, register_namespace  # noqa: BAN-B405
+from xml.etree.ElementTree import (  # skipcq: BAN-B405
+    Element,
+    register_namespace,
+)
 
 from defusedxml import ElementTree as ET
 
@@ -71,7 +74,8 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
         group = Element("g")
         group.set(
             "transform",
-            f"translate({translate_x:.6f},{translate_y:.6f})" f"scale({scale:.6f})",
+            f"translate({translate_x:.6f},{translate_y:.6f})"
+            f"scale({scale:.6f})",
         )
         for child in children:
             root.remove(child)
@@ -99,7 +103,9 @@ def normalize_svg_viewbox(svg_path: Path, target_size: int = 24) -> None:
         target_size: Target viewBox dimension (default 24)
     """
     if not check_inkscape():
-        raise RuntimeError("Inkscape not found. Install with: brew install inkscape")
+        raise RuntimeError(
+            "Inkscape not found. Install with: brew install inkscape"
+        )
 
     # Use Inkscape to crop to content bounds and export
     inkscape_path = shutil.which("inkscape")
