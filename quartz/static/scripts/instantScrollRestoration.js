@@ -145,6 +145,7 @@
     // movement as user input. After the first few frames—or after some time has elapsed—
     // large deltas are treated as user-driven again.
     let largeDriftForgiven = false
+    let scrollHandler
     const monitoringStart = performance.now()
     const cancelMonitoringDueToUser = () => {
       userHasScrolled = true
@@ -153,7 +154,7 @@
     }
 
     // Scroll handler for monitoring drift
-    const scrollHandler = () => {
+    scrollHandler = () => {
       if (programmaticScroll) return
 
       const currentScroll = window.scrollY
