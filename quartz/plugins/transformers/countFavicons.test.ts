@@ -233,7 +233,8 @@ describe("countAllLinks", () => {
     expect(testCount).toBeDefined()
     expect(exampleCount).toBeGreaterThanOrEqual(2)
     expect(testCount).toBeGreaterThanOrEqual(1)
-    expect(exampleCount).toBeGreaterThan(testCount!)
+    // Type assertion is safe here because we've already verified testCount is defined
+    expect(exampleCount).toBeGreaterThan(testCount as number)
   })
 
   it("should write counts", async () => {
@@ -306,7 +307,8 @@ describe("countAllLinks", () => {
     expect(writeCall).toBeDefined()
     const renameCall = (fs.renameSync as jest.Mock).mock.calls[0]
 
-    expect(writeCall![0]).toContain(".tmp")
+    // Type assertion is safe here because we've already verified writeCall is defined
+    expect((writeCall as unknown[])[0]).toContain(".tmp")
     expect(renameCall[0]).toContain(".tmp")
     expect(renameCall[1]).toBe(FAVICON_COUNTS_FILE)
   })

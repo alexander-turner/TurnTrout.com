@@ -237,8 +237,9 @@ describe("checkPortAvailability", () => {
 
   afterEach(async () => {
     if (blockingServer) {
+      const server = blockingServer
       await new Promise<void>((resolve) => {
-        blockingServer!.close(() => resolve())
+        server.close(() => resolve())
       })
       blockingServer = null
     }
@@ -252,8 +253,9 @@ describe("checkPortAvailability", () => {
 
   it("should throw error with message when port is in use", async () => {
     blockingServer = http.createServer()
+    const server = blockingServer
     await new Promise<void>((resolve) => {
-      blockingServer!.listen(testPort, resolve)
+      server.listen(testPort, resolve)
     })
 
     await expect(checkPortAvailability(testPort)).rejects.toThrow(
