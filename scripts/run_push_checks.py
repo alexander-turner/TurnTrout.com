@@ -200,7 +200,9 @@ def create_server(git_root_path: Path) -> ServerInfo:
     # First check if there's already a quartz process running
     existing_pid = find_quartz_process()
     if existing_pid:
-        msg = f"[green]Using existing quartz server (PID: {existing_pid})[/green]"
+        msg = (
+            f"[green]Using existing quartz server (PID: {existing_pid})[/green]"
+        )
         console.log(msg)
         return ServerInfo(existing_pid, False)
 
@@ -556,6 +558,8 @@ def get_check_steps(
                 "--cov=scripts",
                 "--cov-report=html",
                 "--cov-fail-under=100",
+                "--config",
+                f"{git_root_path}/python/pyproject.toml",
             ],
         ),
         # skipcq: BAN-B604
@@ -650,7 +654,9 @@ def main() -> None:
                 console.log(f"[grey]Skipping step: {step.name}[/grey]")
 
         server_info = create_server(_GIT_ROOT)
-        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
+        server_manager.set_server_pid(
+            server_info.pid, server_info.created_by_script
+        )
         run_checks(steps_after_server, args.resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
