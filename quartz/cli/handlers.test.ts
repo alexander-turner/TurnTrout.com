@@ -221,13 +221,12 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
 })
 
 describe("checkPortAvailability", () => {
-  let processExitSpy: jest.SpiedFunction<typeof process.exit>
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>
   let blockingServer: http.Server | null = null
+  const testPort = 9876
 
   beforeEach(() => {
-    processExitSpy = jest.spyOn(process, "exit").mockImplementation(() => undefined as never)
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {
       // Mock to suppress console.error output during tests
     })
@@ -243,30 +242,24 @@ describe("checkPortAvailability", () => {
       })
       blockingServer = null
     }
-    processExitSpy.mockRestore()
     consoleErrorSpy.mockRestore()
     consoleLogSpy.mockRestore()
   })
 
   it("should proceed when port is available", async () => {
-    const testPort = 9876
-
-    await checkPortAvailability(testPort)
-
-    expect(processExitSpy).not.toHaveBeenCalled()
+    await expect(checkPortAvailability(testPort)).resolves.not.toThrow()
   })
 
-  it("should exit with error message when port is in use", async () => {
-    const testPort = 9876
-
+  it("should throw error with message when port is in use", async () => {
     blockingServer = http.createServer()
     await new Promise<void>((resolve) => {
       blockingServer!.listen(testPort, resolve)
     })
 
-    await checkPortAvailability(testPort)
+    await expect(checkPortAvailability(testPort)).rejects.toThrow(
+      `Port ${testPort} is already in use`,
+    )
 
-    expect(processExitSpy).toHaveBeenCalledWith(1)
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining(`Port ${testPort} is already in use`),
     )

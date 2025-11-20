@@ -63,7 +63,7 @@ export async function checkPortAvailability(port: number): Promise<void> {
       ),
     )
     console.log(chalk.yellow(`Hint: Kill the process using: lsof -ti:${port} | xargs kill`))
-    process.exit(1)
+    throw new Error(`Port ${port} is already in use`)
   }
 }
 
