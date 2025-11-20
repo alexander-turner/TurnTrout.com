@@ -196,7 +196,22 @@ def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
             normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
 
 
-def test_normalize_svg_viewbox_default_size(sample_svg: Path, mock_subprocess_run):
+def test_is_already_normalized_with_width_height_attributes(tmp_path: Path):
+    """Test is_already_normalized returns False when root svg has width/height attributes."""
+    svg_content = """<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" fill="blue"/>
+</svg>"""
+    svg_file = tmp_path / "with_dimensions.svg"
+    svg_file.write_text(svg_content, encoding="utf-8")
+
+    # Should return False because width/height attributes are present
+    assert normalize_svg_viewbox.is_already_normalized(svg_file, 24) is False
+
+
+def test_normalize_svg_viewbox_default_size(
+    sample_svg: Path, mock_subprocess_run
+):
     """Test normalize_svg_viewbox with default size."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
@@ -212,7 +227,9 @@ def test_main_success(
     sample_svg: Path, mock_subprocess_run, monkeypatch: pytest.MonkeyPatch
 ):
     """Test main() with successful normalization."""
-    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
+    monkeypatch.setattr(
+        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
+    )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
@@ -227,7 +244,9 @@ def test_main_inkscape_not_found(
     capsys: pytest.CaptureFixture[str],
 ):
     """Test main() when Inkscape is not found."""
-    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
+    monkeypatch.setattr(
+        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
+    )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: False)
 
     result = normalize_svg_viewbox.main()
@@ -237,11 +256,15 @@ def test_main_inkscape_not_found(
 
 
 def test_main_file_not_found(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ):
     """Test main() when file does not exist."""
     nonexistent_file = tmp_path / "nonexistent.svg"
-    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(nonexistent_file)])
+    monkeypatch.setattr(
+        "sys.argv", ["normalize_svg_viewbox.py", str(nonexistent_file)]
+    )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
 
     result = normalize_svg_viewbox.main()
@@ -251,7 +274,9 @@ def test_main_file_not_found(
 
 
 def test_main_non_svg_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ):
     """Test main() with a non-SVG file."""
     txt_file = tmp_path / "test.txt"
@@ -329,7 +354,9 @@ def test_main_runtime_error(
     capsys: pytest.CaptureFixture[str],
 ):
     """Test main() when normalize_svg_viewbox raises RuntimeError."""
-    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)])
+    monkeypatch.setattr(
+        "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
+    )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
     # Mock normalize_svg_viewbox to raise RuntimeError directly
     with patch("normalize_svg_viewbox.normalize_svg_viewbox") as mock_normalize:
@@ -368,7 +395,9 @@ def test_main_already_normalized(
     capsys: pytest.CaptureFixture[str],
 ):
     """Test main() when SVG is already normalized."""
-    monkeypatch.setattr("sys.argv", ["normalize_svg_viewbox.py", str(square_svg)])
+    monkeypatch.setattr(
+        "sys.argv", ["normalize_svg_viewbox.py", str(square_svg)]
+    )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
 
     result = normalize_svg_viewbox.main()
