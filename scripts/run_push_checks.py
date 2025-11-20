@@ -573,7 +573,7 @@ def get_check_steps(
                 "--cov=scripts",
                 "--cov-report=html",
                 "--cov-fail-under=100",
-                "--config",
+                "--config-file",
                 f"{git_root_path}/config/python/pyproject.toml",
             ],
         ),
