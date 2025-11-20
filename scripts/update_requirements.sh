@@ -15,6 +15,9 @@ cat > requirements.in << 'EOF'
 # Auto-generated from actual code usage in scripts/
 # To regenerate: ./scripts/update_requirements.sh
 
+# Build tools (pinned for compatibility)
+pip<25.3
+
 # Production dependencies (auto-detected from scripts/)
 EOF
 
@@ -43,9 +46,9 @@ EOF
 echo "Generated requirements.in"
 
 # Generate pinned requirements.txt using pip-compile
-# Use --resolver=backtracking to avoid pip-tools 7.5.x bug with pip 24.x
+# Use --allow-unsafe to include pip constraint in requirements.txt
 echo "Compiling requirements.txt with pinned versions..."
-pip-compile --resolver=backtracking requirements.in
+pip-compile --allow-unsafe requirements.in
 
 echo "Requirements files updated successfully!"
 echo "- requirements.in: high-level dependencies"
