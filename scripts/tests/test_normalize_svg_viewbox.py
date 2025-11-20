@@ -191,9 +191,11 @@ def test_normalize_svg_viewbox_success(sample_svg: Path, mock_subprocess_run):
 
 def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
     """Test normalize_svg_viewbox when Inkscape is not available."""
-    with patch("normalize_svg_viewbox.check_inkscape", return_value=False):
-        with pytest.raises(RuntimeError, match="Inkscape not found"):
-            normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
+    with (
+        patch("normalize_svg_viewbox.check_inkscape", return_value=False),
+        pytest.raises(RuntimeError, match="Inkscape not found"),
+    ):
+        normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
 
 
 def test_is_already_normalized_with_width_height_attributes(tmp_path: Path):
