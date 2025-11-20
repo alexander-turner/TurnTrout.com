@@ -111,7 +111,9 @@ def test_create_server():
     """Test server creation logic."""
     with (
         patch("scripts.run_push_checks.is_port_in_use") as mock_port_check,
-        patch("scripts.run_push_checks.find_quartz_process") as mock_find_process,
+        patch(
+            "scripts.run_push_checks.find_quartz_process"
+        ) as mock_find_process,
         patch("subprocess.Popen") as mock_popen,
         patch("scripts.run_push_checks.Progress") as mock_progress,
     ):
@@ -203,24 +205,38 @@ def test_server_manager_cleanup():
 def test_steps():
     """Fixture providing test check steps."""
     return [
-        run_push_checks.CheckStep(name="Test Step 1", command=["echo", "test1"]),
-        run_push_checks.CheckStep(name="Test Step 2", command=["echo", "test2"]),
-        run_push_checks.CheckStep(name="Test Step 3", command=["echo", "test3"]),
+        run_push_checks.CheckStep(
+            name="Test Step 1", command=["echo", "test1"]
+        ),
+        run_push_checks.CheckStep(
+            name="Test Step 2", command=["echo", "test2"]
+        ),
+        run_push_checks.CheckStep(
+            name="Test Step 3", command=["echo", "test3"]
+        ),
     ]
 
 
 def test_run_checks_all_success(test_steps, temp_state_dir):
     """Test that all checks run successfully when there are no failures."""
-    with patch("scripts.run_push_checks.run_command") as mock_run:
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
         mock_run.return_value = (True, "", "")
         run_push_checks.run_checks(test_steps)
         assert mock_run.call_count == 3
 
 
 @pytest.mark.parametrize("failing_step_index", [0, 1, 2])
-def test_run_checks_exits_on_failure(test_steps, failing_step_index, temp_state_dir):
+def test_run_checks_exits_on_failure(
+    test_steps, failing_step_index, temp_state_dir
+):
     """Test that run_checks exits immediately when a check fails."""
-    with patch("scripts.run_push_checks.run_command") as mock_run:
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
         # Create a list of results where one step fails
         results = [(True, "", "")] * len(test_steps)
         results[failing_step_index] = (False, "Failed output", "Error")
@@ -286,7 +302,9 @@ def test_cleanup_handler():
 
 def test_run_command_success():
     """Test successful command execution."""
-    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -306,7 +324,9 @@ def test_run_command_success():
 
 def test_run_command_failure():
     """Test command execution failure."""
-    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 1
@@ -350,7 +370,9 @@ def test_run_command_shell_handling():
 
 def test_progress_bar_updates():
     """Test that progress bar updates correctly with output."""
-    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -385,7 +407,9 @@ def test_progress_bar_updates():
 
         # Last update with description should show lines2..6
         last_desc = update_calls[-1][1]["description"]
-        assert "line1" not in last_desc  # line1 should be dropped due to maxlen=5
+        assert (
+            "line1" not in last_desc
+        )  # line1 should be dropped due to maxlen=5
         assert "line2" in last_desc
         assert "line3" in last_desc
         assert "line4" in last_desc
@@ -395,7 +419,9 @@ def test_progress_bar_updates():
 
 def test_progress_bar_stderr_updates():
     """Test that progress bar updates correctly with stderr output."""
-    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 1
@@ -420,7 +446,9 @@ def test_progress_bar_stderr_updates():
 
 def test_progress_bar_mixed_output():
     """Test that progress bar handles mixed stdout/stderr correctly."""
-    step = run_push_checks.CheckStep(name="Test Command", command=["echo", "test"])
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
     with patch("subprocess.Popen") as mock_popen:
         proc = mock_popen.return_value.__enter__.return_value
         proc.wait.return_value = 0
@@ -465,7 +493,10 @@ def test_reset_saved_progress(temp_state_dir):
 
 def test_run_checks_with_resume(test_steps, temp_state_dir):
     """Test resuming from a previous step."""
-    with patch("scripts.run_push_checks.run_command") as mock_run:
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
         mock_run.return_value = (True, "", "")
 
         # Save state as if we completed the first step
@@ -737,11 +768,16 @@ def test_get_check_steps():
     assert len(steps_after) >= 2
 
     # Verify some key steps exist and are properly configured
-    assert any(step.name.startswith("Typechecking Python") for step in steps_before)
     assert any(
-        step.name == "Compressing and uploading local assets" for step in steps_before
+        step.name.startswith("Typechecking Python") for step in steps_before
     )
-    assert any(step.name.startswith("Checking HTML files") for step in steps_after)
+    assert any(
+        step.name == "Compressing and uploading local assets"
+        for step in steps_before
+    )
+    assert any(
+        step.name.startswith("Checking HTML files") for step in steps_after
+    )
 
     # Verify paths are properly configured
     for step in steps_before + steps_after:
@@ -752,9 +788,9 @@ def test_get_check_steps():
             )
         if "eslint.config.js" in str(step.command):
             assert "--config" in step.command
-            assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
-                step.command
-            )
+            assert str(
+                test_root / "config" / "javascript" / "eslint.config.js"
+            ) in str(step.command)
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):
@@ -825,7 +861,9 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
 
         # State should be preserved
         assert run_push_checks.get_last_step() == "test"
-        mock_log.assert_any_call("\n[yellow]Process interrupted by user.[/yellow]")
+        mock_log.assert_any_call(
+            "\n[yellow]Process interrupted by user.[/yellow]"
+        )
 
 
 def test_create_server_progress_bar():
@@ -950,7 +988,9 @@ def test_run_interactive_command():
 )
 def test_run_command_delegates_to_interactive(step):
     """Test that run_command correctly delegates to interactive runner."""
-    with patch("scripts.run_push_checks.run_interactive_command") as mock_interactive:
+    with patch(
+        "scripts.run_push_checks.run_interactive_command"
+    ) as mock_interactive:
         mock_interactive.return_value = (True, "test", "")
 
         mock_progress = MagicMock()
@@ -961,7 +1001,9 @@ def test_run_command_delegates_to_interactive(step):
         )
 
         # Verify interactive runner was called
-        mock_interactive.assert_called_once_with(step, mock_progress, mock_task_id)
+        mock_interactive.assert_called_once_with(
+            step, mock_progress, mock_task_id
+        )
         assert success is True
         assert stdout == "test"
         assert stderr == ""
@@ -1012,7 +1054,9 @@ def test_server_process_continues_running():
 def test_reused_server_not_killed():
     """Test that reused server isn't killed on cleanup."""
     with (
-        patch("scripts.run_push_checks.find_quartz_process") as mock_find_process,
+        patch(
+            "scripts.run_push_checks.find_quartz_process"
+        ) as mock_find_process,
         patch("scripts.run_push_checks.kill_process") as mock_kill,
     ):
         # Set up an existing quartz process
@@ -1022,7 +1066,9 @@ def test_reused_server_not_killed():
 
         # Get server info and set it in manager
         server_info = run_push_checks.create_server(Path("/test"))
-        server_manager.set_server_pid(server_info.pid, server_info.created_by_script)
+        server_manager.set_server_pid(
+            server_info.pid, server_info.created_by_script
+        )
 
         # Cleanup should NOT kill the server
         server_manager.cleanup()
@@ -1092,7 +1138,9 @@ def test_commit_step_changes_with_various_outputs(
             ]
 
             # Verify success message
-            mock_log.assert_called_with("[green]Committed test step fixes[/green]")
+            mock_log.assert_called_with(
+                "[green]Committed test step fixes[/green]"
+            )
 
 
 def test_commit_step_changes_commit_failure():
@@ -1137,7 +1185,9 @@ def test_commit_step_changes_failures(failure_step, failure_index):
     ):
         if failure_index == 0:
             # git diff fails
-            mock_run.side_effect = subprocess.CalledProcessError(1, failure_step)
+            mock_run.side_effect = subprocess.CalledProcessError(
+                1, failure_step
+            )
         else:
             # git diff succeeds, git add fails
             mock_run.side_effect = [
@@ -1191,10 +1241,17 @@ def test_run_checks_always_commits_changes(temp_state_dir):
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_run.return_value = (True, "", "")
+        # Mock subprocess.run to prevent any real git operations
+        mock_subprocess.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
 
         run_push_checks.run_checks([step])
 
         # Verify commit_step_changes was called
-        mock_commit.assert_called_once_with(run_push_checks._GIT_ROOT, "Test Step")
+        mock_commit.assert_called_once_with(
+            run_push_checks._GIT_ROOT, "Test Step"
+        )
