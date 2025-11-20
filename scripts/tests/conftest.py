@@ -151,3 +151,76 @@ def mock_rclone():
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0)
         yield mock_run
+
+
+def _is_git_command(cmd: list | str) -> bool:
+    """Check if command is a git executable."""
+    if not isinstance(cmd, list) or not cmd:
+        return False
+
+    git_paths = ("git", "/usr/bin/git", "/opt/homebrew/bin/git")
+    first_arg = cmd[0]
+    return first_arg in git_paths or (
+        isinstance(first_arg, str) and first_arg.endswith("/git")
+    )
+
+
+def _is_blocked_git_operation(cmd: list) -> tuple[bool, str]:
+    """
+    Check if command is a blocked git write operation.
+
+    Returns:
+        Tuple of (is_blocked, subcommand_name)
+    """
+    blocked_operations = {
+        "add",
+        "commit",
+        "push",
+        "pull",
+        "fetch",
+        "merge",
+        "rebase",
+    }
+
+    if not _is_git_command(cmd) or len(cmd) < 2:
+        return False, ""
+
+    subcommand = cmd[1]
+    return subcommand in blocked_operations, subcommand
+
+
+@pytest.fixture(autouse=True)
+def prevent_real_git_operations(monkeypatch: pytest.MonkeyPatch, request):
+    """
+    Automatically prevent real git operations in all tests.
+
+    This fixture wraps subprocess.run to detect and fail on any real git
+    commands (add, commit, push, etc.) that aren't properly mocked.
+    Tests can opt out by using the 'allow_git_operations' marker.
+
+    Usage to opt out:
+        @pytest.mark.allow_git_operations
+        def test_that_needs_real_git():
+            ...
+    """
+    if "allow_git_operations" in request.keywords:
+        return
+
+    original_run = __import__("subprocess").run
+
+    def guarded_run(*args, **kwargs):
+        """Wrapper that fails if real git write operations are attempted."""
+        cmd = args[0] if args else kwargs.get("args", [])
+        is_blocked, subcommand = _is_blocked_git_operation(cmd)
+
+        if is_blocked:
+            pytest.fail(
+                f"Test attempted real git operation: git {subcommand}\n"
+                f"Full command: {cmd}\n"
+                f"Tests should mock git operations to avoid modifying the real repository.\n"
+                f"Use @pytest.mark.allow_git_operations to opt out of this check."
+            )
+
+        return original_run(*args, **kwargs)
+
+    monkeypatch.setattr("subprocess.run", guarded_run)
