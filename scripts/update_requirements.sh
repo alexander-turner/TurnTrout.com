@@ -43,8 +43,9 @@ EOF
 echo "Generated requirements.in"
 
 # Generate pinned requirements.txt using pip-compile
+# Use --resolver=backtracking to avoid pip-tools 7.5.x bug with pip 24.x
 echo "Compiling requirements.txt with pinned versions..."
-pip-compile requirements.in
+pip-compile --resolver=backtracking requirements.in
 
 echo "Requirements files updated successfully!"
 echo "- requirements.in: high-level dependencies"
