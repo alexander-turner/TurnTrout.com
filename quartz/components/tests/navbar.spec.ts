@@ -81,12 +81,12 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   // Set currentTime and wait for seeked event (which fires when seeking completes)
   await video.evaluate((videoElement: HTMLVideoElement, timestamp: number) => {
     return new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        videoElement.removeEventListener("seeked", onSeeked)
-        reject(new Error(`Seek to ${timestamp} timed out`))
-      }, 5000)
-
       const onSeeked = () => {
+        const timeout = setTimeout(() => {
+          videoElement.removeEventListener("seeked", onSeeked)
+          reject(new Error(`Seek to ${timestamp} timed out`))
+        }, 5000)
+
         clearTimeout(timeout)
         videoElement.pause()
         // Trigger timeupdate to ensure sessionStorage is saved
