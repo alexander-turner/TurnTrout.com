@@ -114,8 +114,9 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   if (argv.serve) {
     return startServing(ctx, mut, parsedFiles, clientRefresh, dependencies)
   }
-  // skipcq: JS-0321
-  return () => {}
+  return () => {
+    // No cleanup needed in build-only mode (no resources to clean up)
+  }
 }
 
 /**
@@ -464,7 +465,8 @@ export default async (argv: Argv, mut: Mutex, clientRefresh: () => void) => {
     return await buildQuartz(argv, mut, clientRefresh)
   } catch (err) {
     trace("\nExiting Quartz due to a fatal error", err as Error)
-    // skipcq: JS-0321
-    return () => {}
+    return () => {
+      // No cleanup needed on fatal error (process will exit)
+    }
   }
 }

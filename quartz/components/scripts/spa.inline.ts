@@ -152,7 +152,7 @@ function updateHeadElements(html: Document): void {
   const newHead = html.head
   const currentHead = document.head
 
-  console.debug(`[updateHeadElements] Starting head update`)
+  console.debug("[updateHeadElements] Starting head update")
   console.debug(
     `[updateHeadElements] Current head meta count: ${currentHead.querySelectorAll("meta").length}`,
   )

@@ -410,8 +410,13 @@ describe("animate", () => {
     const duration = 100
     const startTime = performance.now()
 
-    // skipcq: JS-0321
-    animate(duration, () => {}, onComplete)
+    animate(
+      duration,
+      () => {
+        // Empty update callback - testing only the completion callback behavior
+      },
+      onComplete,
+    )
 
     // Advance to just after duration and trigger the callback
     jest.setSystemTime(startTime + 100)
@@ -439,8 +444,13 @@ describe("animate", () => {
     const onComplete = jest.fn()
     const duration = 100
 
-    // skipcq: JS-0321
-    const cleanup = animate(duration, () => {}, onComplete)
+    const cleanup = animate(
+      duration,
+      () => {
+        // Empty update callback - testing animation cancellation behavior
+      },
+      onComplete,
+    )
 
     // Cancel halfway through
     jest.advanceTimersByTime(50)

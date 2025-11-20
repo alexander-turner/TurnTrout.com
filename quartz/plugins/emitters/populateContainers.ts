@@ -234,7 +234,7 @@ export const populateElements = async (
       modified = true
       logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
-      throw new Error(`Config missing both id and className`)
+      throw new Error("Config missing both id and className")
     }
   }
 

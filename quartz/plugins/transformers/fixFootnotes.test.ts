@@ -42,12 +42,12 @@ const processHtmlWithPlugin = async (html: string): Promise<string> => {
   return String(await processor.process(html))
 }
 
-const footnoteListItem = (id: string = "user-content-fn-1") =>
+const footnoteListItem = (id = "user-content-fn-1") =>
   h("li", { id }, ["Content"]) as ElementContent
 
 const footnoteList = () => h("ol", [footnoteListItem()]) as Element
 
-const footnoteSection = (hasHeading: boolean = true) =>
+const footnoteSection = (hasHeading = true) =>
   h("section", { dataFootnotes: true, className: ["footnotes"] }, [
     ...(hasHeading ? [h("h2", { id: "footnote-label" }, ["Footnotes"])] : []),
     footnoteList(),

@@ -213,7 +213,8 @@ describe("countAllLinks", () => {
   })
 
   it("should count multiple different hostnames separately", async () => {
-    const content = `[page1](https://example.com/page1)\n[page2](https://example.com/page2)\n[page3](https://test.com/page1)`
+    const content =
+      "[page1](https://example.com/page1)\n[page2](https://example.com/page2)\n[page3](https://test.com/page1)"
 
     const filePath = await createTestFile(content)
     await countAllFavicons(mockCtx, [filePath])
@@ -236,7 +237,8 @@ describe("countAllLinks", () => {
   })
 
   it("should write counts", async () => {
-    const content = `[test1](mailto:test1@example.com)\n[test2](mailto:test2@example.com)\n[test3](mailto:test3@example.com)\n[section 1](#section-1)\n[section 2](#section-2)`
+    const content =
+      "[test1](mailto:test1@example.com)\n[test2](mailto:test2@example.com)\n[test3](mailto:test3@example.com)\n[section 1](#section-1)\n[section 2](#section-2)"
 
     const filePath = await createTestFile(content)
     await countAllFavicons(mockCtx, [filePath])
@@ -255,7 +257,8 @@ describe("countAllLinks", () => {
   })
 
   it("should count when hostnames have equal counts", async () => {
-    const content = `[page1](https://example.com/page1)\n[page2](https://example.com/page2)\n[page1](https://apple.com/page1)\n[page2](https://apple.com/page2)`
+    const content =
+      "[page1](https://example.com/page1)\n[page2](https://example.com/page2)\n[page1](https://apple.com/page1)\n[page2](https://apple.com/page2)"
 
     const filePath = await createTestFile(content)
     await countAllFavicons(mockCtx, [filePath])

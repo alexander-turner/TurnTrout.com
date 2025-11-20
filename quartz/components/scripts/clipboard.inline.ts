@@ -19,8 +19,9 @@ document.addEventListener("nav", () => {
             button.innerHTML = svgCheck
             animate(
               2000,
-              // skipcq: JS-0321
-              () => {},
+              () => {
+                // No per-frame updates needed, only completion callback to restore button state
+              },
               () => {
                 button.innerHTML = svgCopy
                 button.style.borderColor = ""
