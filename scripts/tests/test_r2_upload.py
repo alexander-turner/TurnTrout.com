@@ -29,9 +29,9 @@ def r2_cleanup():
 
 
 @pytest.fixture
-def test_media_setup(
-    quartz_project_structure, monkeypatch: pytest.MonkeyPatch
-):
+# Needs to initialize a repo for integration testing
+@pytest.mark.allow_git_operations
+def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
     """
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
@@ -112,9 +112,7 @@ def test_verbose_output(
     test_file.touch()
 
     with patch("subprocess.run"), patch("shutil.move"):
-        r2_upload.upload_and_move(
-            test_file, verbose=True, move_to_dir=tmp_path
-        )
+        r2_upload.upload_and_move(test_file, verbose=True, move_to_dir=tmp_path)
 
     captured = capsys.readouterr()
     assert f"Uploading {test_file}" in captured.out
@@ -516,9 +514,7 @@ def test_upload_non_existing_file(mock_git_root: Path, tmp_path: Path):
         patch("shutil.move") as mock_move,
     ):
 
-        r2_upload.upload_and_move(
-            test_file, verbose=True, move_to_dir=tmp_path
-        )
+        r2_upload.upload_and_move(test_file, verbose=True, move_to_dir=tmp_path)
 
         mock_check.assert_called_once_with(
             f"r2:{r2_upload.R2_BUCKET_NAME}/static/test_non_existing.jpg", True
@@ -572,9 +568,7 @@ def test_upload_to_r2_overwrite_print(
         patch("scripts.r2_upload.check_exists_on_r2", return_value=True),
         patch("scripts.r2_upload._download_from_r2"),
     ):
-        r2_upload.upload_to_r2(
-            test_file, verbose=True, overwrite_existing=True
-        )
+        r2_upload.upload_to_r2(test_file, verbose=True, overwrite_existing=True)
 
     captured = capsys.readouterr()
     # Check for the red color ANSI escape codes in the output
@@ -653,9 +647,7 @@ def test_move_uploaded_file(mock_git_root: Path, tmp_path: Path):
     assert not source_file.exists()
 
 
-def test_move_uploaded_file_error_handling(
-    mock_git_root: Path, tmp_path: Path
-):
+def test_move_uploaded_file_error_handling(mock_git_root: Path, tmp_path: Path):
     """Test error handling when move operation fails."""
     source_file = mock_git_root / "quartz" / "static" / "test.jpg"
     source_file.parent.mkdir(parents=True)

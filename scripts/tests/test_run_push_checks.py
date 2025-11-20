@@ -694,6 +694,7 @@ def test_run_checks_skips_until_last_step(temp_state_dir):
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("scripts.run_push_checks.commit_step_changes"),
     ):
         mock_run.return_value = (True, "", "")
         # Pretend we completed up to Step 2
