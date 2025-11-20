@@ -2,8 +2,10 @@ function collapseHandler() {
   const foldIcon = this.querySelector(".fold-icon")
   const content = this.querySelector(".content")
 
-  content?.classList.toggle("active")
-  foldIcon.setAttribute("aria-expanded", content.classList.contains("active"))
+  if (content && foldIcon) {
+    content.classList.toggle("active")
+    foldIcon.setAttribute("aria-expanded", content.classList.contains("active"))
+  }
 }
 
 document.addEventListener("nav", function () {

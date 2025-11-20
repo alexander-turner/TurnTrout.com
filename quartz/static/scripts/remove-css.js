@@ -3,9 +3,6 @@
     const style = document.getElementById("critical-css")
     if (style) {
       style.remove()
-      console.debug("Removed critical styles")
-    } else {
-      console.warn("Critical style element not found")
     }
   }
 

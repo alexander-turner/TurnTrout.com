@@ -29,22 +29,11 @@
   )
 
   // Pre-load checkbox states
+  // Use Object.keys for better performance than iterating localStorage.length
   window.__quartz_checkbox_states = new Map()
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key?.includes("-checkbox-")) {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.includes("-checkbox-")) {
       window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
     }
-  }
-
-  console.debug(
-    "[DetectInitialState] Theme mode:",
-    themeMode,
-    "Actual theme:",
-    actualTheme,
-    "Video autoplay enabled:",
-    autoplayEnabled,
-    "Checkbox states loaded:",
-    window.__quartz_checkbox_states.size,
-  )
+  })
 })()

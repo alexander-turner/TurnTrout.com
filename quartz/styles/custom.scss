@@ -163,9 +163,7 @@ ol {
         }
 
         &:first-child {
-          margin-top: var(
-            --li-margin-bottom
-          ); // Remove top margin from the first nested list item
+          margin-top: var(--li-margin-bottom); // Remove top margin from the first nested list item
         }
       }
     }
@@ -407,8 +405,7 @@ figcaption,
 }
 
 .float-right {
-  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin)
-    calc(2 * $base-margin);
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(2 * $base-margin);
 
   & img,
   img.float-right {
@@ -507,6 +504,9 @@ hr {
   & p {
     color: var(--midground);
     margin-top: 0;
+    text-indent: -0.2rem;
+    padding-left: 0.2rem;
+    line-height: 1.25rem;
 
     & a {
       color: inherit;

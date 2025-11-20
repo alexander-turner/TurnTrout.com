@@ -21,7 +21,7 @@ const Authors: QuartzComponent = ({ fileData, cfg }: QuartzComponentProps) => {
 
   return (
     <div className="authors">
-      <p style={{ textIndent: "-.2rem", paddingLeft: ".2rem", lineHeight: "1.25rem" }}>{authors}</p>
+      <p>{authors}</p>
       {publicationInfo && <p>{publicationInfo}</p>}
     </div>
   )

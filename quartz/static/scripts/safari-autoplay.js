@@ -5,8 +5,8 @@ function attemptPlayVideos() {
     video.muted = true
     const playPromise = video.play()
     if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        console.log("Autoplay prevented:", error)
+      playPromise.catch(() => {
+        // Autoplay prevented - silently handle
       })
     }
   })
