@@ -369,6 +369,19 @@ def commit_step_changes(git_root_path: Path, step_name: str) -> None:
         capture_output=True,
     )
 
+    # Verify there are staged changes before attempting to commit
+    staged_result = subprocess.run(
+        [git_path, "diff", "--cached", "--name-only"],
+        cwd=git_root_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    if not staged_result.stdout.strip():
+        # No staged changes, nothing to commit
+        return
+
     commit_message = f"chore: apply {step_name.lower()} fixes"
     try:
         subprocess.run(
@@ -561,7 +574,7 @@ def get_check_steps(
                 "--cov-report=html",
                 "--cov-fail-under=100",
                 "--config",
-                f"{git_root_path}/python/pyproject.toml",
+                f"{git_root_path}/config/python/pyproject.toml",
             ],
         ),
         # skipcq: BAN-B604

@@ -1081,12 +1081,12 @@ def test_reused_server_not_killed():
         (
             "file1.py\nfile2.ts\n",
             ["file1.py", "file2.ts"],
-            3,
-        ),  # Changes - diff, add, commit
+            4,
+        ),  # Changes - diff, add, diff --cached, commit
         (
             "file1.py\n\nfile2.ts\n\n",
             ["file1.py", "file2.ts"],
-            3,
+            4,
         ),  # Changes with empty lines filtered
     ],
 )
@@ -1105,10 +1105,13 @@ def test_commit_step_changes_with_various_outputs(
                 returncode=0, stdout=diff_output, stderr="", text=True
             )
         else:
-            # Changes case
+            # Changes case - git diff, git add, git diff --cached, git commit
             mock_run.side_effect = [
                 MagicMock(returncode=0, stdout=diff_output, stderr=""),
                 MagicMock(returncode=0, stdout="", stderr=""),
+                MagicMock(
+                    returncode=0, stdout="file1.py\n", stderr=""
+                ),  # staged changes
                 MagicMock(returncode=0, stdout="", stderr=""),
             ]
 
@@ -1128,8 +1131,16 @@ def test_commit_step_changes_with_various_outputs(
             assert set(git_add_call[2:]) == set(expected_files)
             assert "" not in git_add_call
 
-            # Verify git commit call
+            # Verify git diff --cached call
             assert mock_run.call_args_list[2][0][0] == [
+                "git",
+                "diff",
+                "--cached",
+                "--name-only",
+            ]
+
+            # Verify git commit call
+            assert mock_run.call_args_list[3][0][0] == [
                 "git",
                 "commit",
                 "-m",
@@ -1149,10 +1160,13 @@ def test_commit_step_changes_commit_failure():
         patch("scripts.run_push_checks.console.log") as mock_log,
         patch("shutil.which", return_value="git"),
     ):
-        # git diff succeeds, git add succeeds, git commit fails
+        # git diff succeeds, git add succeeds, git diff --cached succeeds, git commit fails
         mock_run.side_effect = [
             MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
             MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(
+                returncode=0, stdout="file1.py\n", stderr=""
+            ),  # staged changes
             subprocess.CalledProcessError(1, "git commit", stderr="Error"),
         ]
 
@@ -1167,6 +1181,41 @@ def test_commit_step_changes_commit_failure():
             if "Warning" in str(call) and "Failed to commit" in str(call)
         ]
         assert len(warning_call) == 1
+
+
+def test_commit_step_changes_no_staged_changes():
+    """Test commit_step_changes returns early when no staged changes exist."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("shutil.which", return_value="git"),
+    ):
+        # git diff shows changes, git add succeeds, but git diff --cached shows no staged changes
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),  # no staged changes
+        ]
+
+        run_push_checks.commit_step_changes(Path("/test"), "Test Step")
+
+        # Should only call git diff, git add, and git diff --cached (not git commit)
+        assert mock_run.call_count == 3
+        assert mock_run.call_args_list[0][0][0] == [
+            "git",
+            "diff",
+            "--name-only",
+        ]
+        assert mock_run.call_args_list[1][0][0][:2] == ["git", "add"]
+        assert mock_run.call_args_list[2][0][0] == [
+            "git",
+            "diff",
+            "--cached",
+            "--name-only",
+        ]
+
+        # Should not log any commit message
+        mock_log.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -1220,13 +1269,16 @@ def test_commit_step_changes_commit_message_format(step_name, expected_message):
         mock_run.side_effect = [
             MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
             MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(
+                returncode=0, stdout="file1.py\n", stderr=""
+            ),  # staged changes
             MagicMock(returncode=0, stdout="", stderr=""),
         ]
 
         run_push_checks.commit_step_changes(Path("/test"), step_name)
 
         # Verify commit message
-        commit_call = mock_run.call_args_list[2][0][0]
+        commit_call = mock_run.call_args_list[3][0][0]
         assert commit_call == ["git", "commit", "-m", expected_message]
 
 
