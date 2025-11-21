@@ -5946,5 +5946,29 @@
   "/static/images/external-favicons/mozilla_org.png": {
     "width": 64,
     "height": 64
+  },
+  "https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif": {
+    "width": 810,
+    "height": 455
+  },
+  "https://assets.turntrout.com/static/images/posts/a0b1c416dee5510f6545862717da16c7565fd429e549dab2.avif": {
+    "width": 810,
+    "height": 455
+  },
+  "https://assets.turntrout.com/static/images/posts/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.avif": {
+    "width": 502,
+    "height": 308
+  },
+  "https://assets.turntrout.com/static/images/posts/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.avif": {
+    "width": 502,
+    "height": 308
+  },
+  "https://assets.turntrout.com/static/images/posts/1444701d5a08f21806348d2d239473a4db26b89114054941.avif": {
+    "width": 502,
+    "height": 308
+  },
+  "https://assets.turntrout.com/static/images/posts/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.avif": {
+    "width": 502,
+    "height": 308
   }
 }

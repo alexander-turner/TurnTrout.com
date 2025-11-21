@@ -267,20 +267,20 @@ export function readFaviconCounts(): Map<string, number> {
     return new Map<string, number>()
   }
 
-  const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
-  const lines = data.split("\n")
   const countMap = new Map<string, number>()
 
-  for (const line of lines) {
-    if (!line.trim()) continue
-    const parts = line.split("\t")
-    if (parts.length >= 2) {
-      const count = parseInt(parts[0], 10)
-      const faviconPath = parts[1]
-      if (!isNaN(count) && faviconPath) {
+  try {
+    const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
+    // Parse JSON array of [path, count] pairs
+    const countsArray = JSON.parse(data) as Array<[string, number]>
+    for (const [faviconPath, count] of countsArray) {
+      if (faviconPath && typeof count === "number" && !isNaN(count)) {
         countMap.set(faviconPath, count)
       }
     }
+  } catch (error) {
+    logger.error(`Error reading or parsing favicon counts file: ${error}`)
+    return new Map<string, number>()
   }
 
   return countMap

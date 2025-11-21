@@ -1345,31 +1345,41 @@ describe("linkfavicons.readFaviconCounts", () => {
 
   it.each([
     [
-      "10\t/static/images/external-favicons/example_com.png\n5\t/static/images/external-favicons/test_com.png",
-      new Map([
-        ["/static/images/external-favicons/example_com.png", 10],
-        ["/static/images/external-favicons/test_com.png", 5],
+      JSON.stringify([
+        ["/static/images/external-favicons/example_com", 10],
+        ["/static/images/external-favicons/test_com", 5],
       ]),
-      "valid file content",
-    ],
-    ["", new Map(), "empty file"],
-    [
-      "10\t/static/images/external-favicons/example_com.png\ninvalid_line\n5\t/static/images/external-favicons/test_com.png",
       new Map([
-        ["/static/images/external-favicons/example_com.png", 10],
-        ["/static/images/external-favicons/test_com.png", 5],
+        ["/static/images/external-favicons/example_com", 10],
+        ["/static/images/external-favicons/test_com", 5],
       ]),
-      "file with invalid lines",
+      "valid JSON array format",
     ],
     [
-      "10\t/static/images/external-favicons/example_com.png\n\n5\t/static/images/external-favicons/test_com.png",
-      new Map([
-        ["/static/images/external-favicons/example_com.png", 10],
-        ["/static/images/external-favicons/test_com.png", 5],
+      JSON.stringify([
+        ["/static/images/external-favicons/github_com", 93],
+        ["/static/images/external-favicons/openai_com", 42],
       ]),
-      "file with empty lines",
+      new Map([
+        ["/static/images/external-favicons/github_com", 93],
+        ["/static/images/external-favicons/openai_com", 42],
+      ]),
+      "JSON with high count values (regression test for parsing bug)",
     ],
-  ])("should handle $description", (fileContent, expectedMap) => {
+    ["[]", new Map(), "empty JSON array"],
+    [
+      JSON.stringify([
+        ["/static/images/external-favicons/example_com", 10],
+        ["invalid", "not_a_number"],
+        ["/static/images/external-favicons/test_com", 5],
+      ]),
+      new Map([
+        ["/static/images/external-favicons/example_com", 10],
+        ["/static/images/external-favicons/test_com", 5],
+      ]),
+      "JSON with invalid entries (should skip them)",
+    ],
+  ])("should handle %s", (fileContent, expectedMap) => {
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
     jest.spyOn(fs, "readFileSync").mockReturnValue(fileContent)
 
@@ -1382,13 +1392,50 @@ describe("linkfavicons.readFaviconCounts", () => {
     })
   })
 
-  it("should throw when file read fails", () => {
+  it("should return empty Map when JSON parsing fails", () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockReturnValue("invalid json {")
+
+    const result = linkfavicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(0)
+  })
+
+  it("should return empty Map when file read fails", () => {
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
     jest.spyOn(fs, "readFileSync").mockImplementation(() => {
       throw new Error("File read error")
     })
 
-    expect(() => linkfavicons.readFaviconCounts()).toThrow("File read error")
+    const result = linkfavicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(0)
+  })
+
+  it("should correctly read data written by countFavicons.ts writeCountsToFile format", () => {
+    // Simulate the exact format that countFavicons.ts writes:
+    // JSON.stringify(Array.from(faviconCounter.entries()), null, 2)
+    const mockData = new Map([
+      ["/static/images/external-favicons/github_com", 93],
+      ["/static/images/external-favicons/openai_com", 42],
+      ["https://assets.turntrout.com/static/images/external-favicons/mail.svg", 15],
+    ])
+    const jsonContent = JSON.stringify(Array.from(mockData.entries()), null, 2)
+
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readFileSync").mockReturnValue(jsonContent)
+
+    const result = linkfavicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(3)
+    expect(result.get("/static/images/external-favicons/github_com")).toBe(93)
+    expect(result.get("/static/images/external-favicons/openai_com")).toBe(42)
+    expect(
+      result.get("https://assets.turntrout.com/static/images/external-favicons/mail.svg"),
+    ).toBe(15)
   })
 })
 
