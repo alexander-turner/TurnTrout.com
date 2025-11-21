@@ -27,7 +27,6 @@ import {
   PUNCTUATION_BEFORE_MATCH,
 } from "../tagSmallcaps"
 
-// Helper function for all HTML processing tests
 function testTagSmallcapsHTML(inputHTML: string) {
   return rehype()
     .data("settings", { fragment: true })

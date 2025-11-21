@@ -18,13 +18,34 @@ export function isRomanNumeral(str: string): boolean {
 
 // Regex for acronyms and abbreviations
 //  E.g. "IID" is technically a roman numeral
-export const allowAcronyms = ["IF", "CCC", "IL", "TL;DR", "LLM", "MP4", "mp4", "IID"]
+export const allowAcronyms = [
+  "IF",
+  "CCC",
+  "IL",
+  "TL;DR",
+  "LLM",
+  "MP4",
+  "mp4",
+  "IID",
+  // Creative Commons licenses
+  "CC BY",
+  "CC BY-SA",
+  "CC BY-NC",
+  "CC BY-NC-SA",
+  "CC BY-ND",
+  "CC BY-NC-ND",
+  "CC0",
+]
 // Ignore these words if included in a potential acronym
 export const ignoreList = ["th", "hz", "st", "nd", "rd"]
 
 // Escaped and joined allowAcronyms as an intermediate variable
-const escapedAllowAcronyms = allowAcronyms
-  .map((acronym) => acronym.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"))
+const escapedAllowAcronyms = allowAcronyms.map((acronym) =>
+  acronym.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"),
+)
+
+const boundaryAllowAcronyms = escapedAllowAcronyms
+  .map((acronym) => `\\b${acronym}(?!-)\\b`)
   .join("|")
 
 export const smallCapsSeparators = "-'’"
@@ -44,7 +65,7 @@ const upperOrDigit = `[${upperCapsChars}\\d]`
 // Optional continuation after the required 3 uppercase letters
 const continuation = `(?:${sep}${upperOrDigit}+)*`
 
-const threeUppercasePatterns = [
+const allowedUppercasePatterns = [
   `${upper}{3,}${continuation}`, // ABC, ABCD, ABC-2, etc.
   `${upper}{2}${sep}${upper}${upperOrDigit}*${continuation}`, // AB-C, AB-C2, etc.
   `${upper}${sep}${upper}{2,}${continuation}`, // A-BC, A-BCD, etc.
@@ -53,7 +74,7 @@ const threeUppercasePatterns = [
 
 // Update REGEX_ACRONYM to match sequences with uppercase characters (allowing digits/separators)
 export const REGEX_ACRONYM = new RegExp(
-  `${beforeWordBoundary}(?<acronym>${escapedAllowAcronyms}|${threeUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
+  `${beforeWordBoundary}(?<acronym>${boundaryAllowAcronyms}|${allowedUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
 )
 
 export const REGEX_ABBREVIATION =
