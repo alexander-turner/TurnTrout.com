@@ -127,22 +127,14 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
     return asset_urls
 
 
-def main(markdown_directory: Path | None = None) -> None:
-    """
-    Download external media files to asset_staging and update references.
-
-    Args:
-        markdown_directory: Directory containing markdown files.
-                          Defaults to website_content in git root.
-    """
+def main() -> None:
+    """Download external media files to asset_staging and update references."""
     # Kill Obsidian to prevent it from renaming downloaded files
     subprocess.run(["pkill", "-x", "Obsidian"], check=False)
     time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
-
-    if markdown_directory is None:
-        markdown_directory = git_root / "website_content"
+    markdown_directory = git_root / "website_content"
 
     markdown_files = list(markdown_directory.rglob("*.md"))
     if not markdown_files:
@@ -182,8 +174,4 @@ def main(markdown_directory: Path | None = None) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        markdown_dir = Path(sys.argv[1])
-        main(markdown_dir)
-    else:
-        main()
+    main()
