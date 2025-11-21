@@ -3020,3 +3020,10 @@ LazyVim
 ProtonVPN
 autocomplete
 tmux
+Kokotajlo
+Mitigations
+Qwen3-4B
+monitorability
+monitorable
+n-gon's
+verifier

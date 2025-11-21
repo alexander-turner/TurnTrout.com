@@ -18,7 +18,7 @@ date_updated: 2025-01-21 00:00:00
 no_dropcap: false
 ---
 
-We show that training against a monitor that only sees outputs (*not* CoTs) can cause obfuscated[^ncr4r9q7s3] CoTs! The obfuscation happens in two ways:
+We show that training against a monitor that only sees outputs (*not* CoTs) can cause obfuscated[^contradiction] CoTs! The obfuscation happens in two ways:
 
 1. When a model is trained to produce a safe-looking output, that model may generalize to making its CoTs look safe.
 2. Since later tokens are conditioned on earlier ones, safe‑looking CoTs may increase the likelihood of safe outputs, causing safe-looking CoTs to be reinforced.
@@ -30,7 +30,7 @@ We introduce two mitigations and they work reasonably well. Compared to regular 
 In our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note), we demonstrated *feedback spillover*: penalizing some property of a reasoning model's output can suppress that property in its CoT. This post summarizes our new preprint, which extends our previous work in two ways:
 
 1. We demonstrate spillover in new, more interesting environments.
-2. We introduce *reward targeting*, a second mitigation which combines effectively with the mind & face[^o65ktsh1spg] mitigation from our first post (which was [originally proposed by Daniel Kokotajlo](https://www.lesswrong.com/posts/Tzdwetw55JNqFTkzK/why-don-t-we-just-shoggoth-face-paraphraser)).
+2. We introduce *reward targeting*, a second mitigation which combines effectively with the mind & face[^rename] mitigation from our first post (which was [originally proposed by Daniel Kokotajlo](https://www.lesswrong.com/posts/Tzdwetw55JNqFTkzK/why-don-t-we-just-shoggoth-face-paraphraser)).
 
 ![](https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif)
 Figure: Overview of feedback spillover mechanisms.
@@ -136,6 +136,6 @@ We believe these results are strong evidence that output-based training generall
 > [!thanks] Acknowledgments
 > Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
 
-[^ncr4r9q7s3]: Our results do not contradict prior work showing that CoT obfuscation doesn't seem to happen when the CoT is necessary for task completion. The nature of the obfuscation we give examples of are behaviors such as omitting intermediate reasoning from the CoT that was not necessary to verbalize to complete the task, and writing contradictory reasoning in the CoT (e.g., writing "I used method A to solve the problem" when method B was clearly used).
+[^contradiction]: Our results do not contradict prior work showing that CoT obfuscation doesn't seem to happen when the CoT is necessary for task completion. The nature of the obfuscation we give examples of are behaviors such as omitting intermediate reasoning from the CoT that was not necessary to verbalize to complete the task, and writing contradictory reasoning in the CoT (e.g., writing "I used method A to solve the problem" when method B was clearly used).
 
-[^o65ktsh1spg]: Previously called "Shoggoth + Face." Daniel Kokotajlo agrees the new name is [clearer](/against-shoggoth).
+[^rename]: Previously called "Shoggoth + Face." Daniel Kokotajlo agrees the new name is [clearer](/against-shoggoth).
