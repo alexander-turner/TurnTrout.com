@@ -19,7 +19,7 @@ python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_R
 # Download external media files (non-assets.turntrout.com) to asset_staging
 python "$GIT_ROOT"/scripts/download_external_media.py
 
-# Normalize any new SVG files added since last push
+# Normalize any new SVG files added since last push TODO include downloaded? 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 NEW_SVG_FILES=$(git diff --name-only --diff-filter=A "origin/$CURRENT_BRANCH" 2>/dev/null | grep '\.svg$' || true)
 
@@ -33,22 +33,11 @@ if [ -n "$NEW_SVG_FILES" ]; then
 fi
 
 STATIC_DIR="$GIT_ROOT"/quartz/static
-IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif)
 
-# If asset_staging isn't empty
-if [ -n "$(ls -A "$GIT_ROOT"/website_content/asset_staging)" ]; then
-
-    # Update references
-    find "$GIT_ROOT"/website_content/asset_staging -type f -print0 | while IFS= read -r -d '' FILE; do
-        NAME=$(basename "$FILE")
-        echo "$NAME"
-        sed -i ''.bak -E "s|${NAME}|static/images/posts/${NAME}|g" "$GIT_ROOT"/website_content/**{,/*}.md
-    done
-
-    mv "$GIT_ROOT"/website_content/asset_staging/* "$STATIC_DIR"/images/posts 
-fi
+mv "$GIT_ROOT"/website_content/asset_staging/* "$STATIC_DIR"/images/posts 
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
+IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif)
 python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" "${IGNORE_FILES[@]}" --remove-originals
 
 # Left over original files

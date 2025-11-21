@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Sequence
 
@@ -110,18 +111,18 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
     Returns:
         Set of external media URLs (excluding assets.turntrout.com)
     """
-    asset_urls: set[str] = set()
     # Create pattern that matches URLs ending with any of our media extensions
     # Use word boundary \b to ensure we match complete extensions (e.g., "avif" not "avi")
     extensions_pattern = "|".join(MEDIA_EXTENSIONS)
     url_pattern = rf"https?://[^\s\)\"]+\.(?:{extensions_pattern})\b"
 
+    asset_urls: set[str] = set()
     for file in markdown_files:
         with open(file, encoding="utf-8") as f:
             content = f.read()
-            urls = re.findall(url_pattern, content, re.IGNORECASE)
-            external_urls = {url for url in urls if EXCLUDED_DOMAIN not in url}
-            asset_urls.update(external_urls)
+        urls = re.findall(url_pattern, content, re.IGNORECASE)
+        external_urls = {url for url in urls if EXCLUDED_DOMAIN not in url}
+        asset_urls.update(external_urls)
 
     return asset_urls
 
@@ -134,19 +135,19 @@ def main(markdown_directory: Path | None = None) -> None:
         markdown_directory: Directory containing markdown files.
                           Defaults to website_content in git root.
     """
+    # Kill Obsidian to prevent it from renaming downloaded files
+    subprocess.run(["pkill", "-x", "Obsidian"], check=False)
+    time.sleep(0.5)
+
     git_root = script_utils.get_git_root()
 
     if markdown_directory is None:
         markdown_directory = git_root / "website_content"
 
-    # Find all markdown files
     markdown_files = list(markdown_directory.rglob("*.md"))
-
     if not markdown_files:
-        print("No markdown files found.")
-        return
+        raise ValueError("No markdown files found.")
 
-    # Find all external media URLs (excluding CDN)
     asset_urls = find_external_media_urls(markdown_files)
 
     if not asset_urls:
@@ -155,26 +156,29 @@ def main(markdown_directory: Path | None = None) -> None:
 
     print(f"Found {len(asset_urls)} external media URLs to download.")
 
-    # Create asset_staging directory
-    asset_staging_dir = git_root / "website_content" / "asset_staging"
+    asset_staging_dir = markdown_directory / "asset_staging"
     os.makedirs(asset_staging_dir, exist_ok=True)
 
     # Download each media file and update references
     successful_downloads = 0
     for url in asset_urls:
-        if download_media(url, asset_staging_dir):
-            filename = os.path.basename(url)
-            new_url = f"asset_staging/{filename}"
+        if not download_media(url, asset_staging_dir):
+            continue
 
-            # Update references in all markdown files
-            for file in markdown_files:
-                replace_url_in_file(file, url, new_url)
+        filename = os.path.basename(url)
+        new_url = f"asset_staging/{filename}"
+        print(f"Downloaded to {new_url}")
 
-            successful_downloads += 1
+        for file in markdown_files:
+            replace_url_in_file(file, url, new_url)
+
+        successful_downloads += 1
 
     print(
         f"Successfully downloaded {successful_downloads}/{len(asset_urls)} files to asset_staging."
     )
+
+    subprocess.run(["open", "-g", "-a", "Obsidian"], check=False)
 
 
 if __name__ == "__main__":

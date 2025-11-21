@@ -181,12 +181,13 @@ def test_replace_url_in_file_outside_content_dir(mock_git_root, tmp_path):
         )
 
 
-def test_main_no_markdown_files(mock_git_root, capsys):
+def test_main_no_markdown_files(mock_git_root):
     """Test main function with no markdown files."""
-    download_external_media.main(mock_git_root / "website_content")
-
-    captured = capsys.readouterr()
-    assert "No markdown files found" in captured.out
+    with (
+        mock.patch("subprocess.run"),
+        pytest.raises(ValueError, match="No markdown files found"),
+    ):
+        download_external_media.main(mock_git_root / "website_content")
 
 
 def test_main_no_external_urls(mock_git_root, capsys):
@@ -194,10 +195,15 @@ def test_main_no_external_urls(mock_git_root, capsys):
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("# Just text, no external media")
 
-    download_external_media.main(mock_git_root / "website_content")
+    with mock.patch("subprocess.run") as mock_run:
+        download_external_media.main(mock_git_root / "website_content")
 
-    captured = capsys.readouterr()
-    assert "No external media URLs found" in captured.out
+        captured = capsys.readouterr()
+        assert "No external media URLs found" in captured.out
+
+        # Verify Obsidian was killed (but not restarted since no downloads)
+        calls = mock_run.call_args_list
+        assert any("pkill" in str(call) for call in calls)
 
 
 def test_main_downloads_and_updates(mock_git_root, capsys):
@@ -210,8 +216,15 @@ def test_main_downloads_and_updates(mock_git_root, capsys):
 
         download_external_media.main(mock_git_root / "website_content")
 
-        # Check that download was attempted
-        mock_run.assert_called_once()
+        # Check that subprocess.run was called multiple times (pkill, curl, open)
+        assert mock_run.call_count >= 3
+
+        # Check that curl download was attempted
+        curl_calls = [
+            call for call in mock_run.call_args_list if "curl" in str(call)
+        ]
+        assert len(curl_calls) == 1
+        assert "https://example.com/image.png" in str(curl_calls[0])
 
         # Check that URL was updated in markdown
         updated_content = md_file.read_text()
@@ -230,9 +243,14 @@ def test_main_handles_download_failures(mock_git_root, capsys):
     md_file.write_text("![Image](https://example.com/image.png)")
 
     with mock.patch("subprocess.run") as mock_run:
-        mock_run.side_effect = subprocess.CalledProcessError(
-            1, "curl", stderr=b"Error"
-        )
+        # First call (pkill) succeeds, second call (curl) fails, third call (open) succeeds
+        mock_run.side_effect = [
+            mock.Mock(returncode=0),  # pkill
+            subprocess.CalledProcessError(
+                1, "curl", stderr=b"Error"
+            ),  # curl fails
+            mock.Mock(returncode=0),  # open
+        ]
 
         download_external_media.main(mock_git_root / "website_content")
 
