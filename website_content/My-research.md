@@ -364,3 +364,11 @@ Subtitle: Winter 2025 (MATS 7.0)
 > ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif]]
 >
 > Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
+
+## Output supervision can obfuscate the CoT
+
+Subtitle: Summer 2025 (MATS 8.0)
+
+> [!summary] [Output supervision can obfuscate the CoT](/output-feedback-can-obfuscate-chain-of-thought)
+>
+> ![[output-feedback-can-obfuscate-chain-of-thought#]]

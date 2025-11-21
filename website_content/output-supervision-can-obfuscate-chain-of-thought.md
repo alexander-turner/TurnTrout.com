@@ -5,12 +5,10 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
-description: We challenge the assumption that output supervision preserves Chain-of-Thought
-  faithfulness. Instead, reinforcing final outputs warps the CoTs.
-authors: Jacob Drori, Luke Marks, Alex Cloud, and Alex Turner
+description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
+authors: Jacob Drori* and Luke Marks*, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: 
-  https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
+card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
 aliases:
   - cot-obfuscation
   - output-cot
@@ -27,9 +25,6 @@ We show that training against a monitor that only sees outputs (*not* CoTs) can 
 
 We introduce two mitigations and they work reasonably well. Compared to regular training, our mitigations improve monitorability with comparable or better task performance in two of our three settings. Overall, our work suggests that preserving CoT monitorability is harder than previously thought.
 
-> [!note]
-> Read our paper [on Arxiv](https://arxiv.org/abs/2511.11584). Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
-
 # What's new in this post
 
 In our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note), we demonstrated *feedback spillover*: penalizing some property of a reasoning model's output can suppress that property in its CoT. This post summarizes our new preprint, which extends our previous work in two ways:
@@ -39,6 +34,9 @@ In our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimiz
 
 ![](https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif)
 Figure: Overview of feedback spillover mechanisms.
+
+> [!note]
+> Read our paper [on Arxiv](https://arxiv.org/abs/2511.11584).
 
 # Mitigations for spillover
 
@@ -134,6 +132,9 @@ We believe these results are strong evidence that output-based training generall
       url={https://arxiv.org/abs/2511.11584}, 
 }
 ```
+
+> [!thanks] Acknowledgments
+> Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
 
 [^ncr4r9q7s3]: Our results do not contradict prior work showing that CoT obfuscation doesn't seem to happen when the CoT is necessary for task completion. The nature of the obfuscation we give examples of are behaviors such as omitting intermediate reasoning from the CoT that was not necessary to verbalize to complete the task, and writing contradictory reasoning in the CoT (e.g., writing "I used method A to solve the problem" when method B was clearly used).
 
