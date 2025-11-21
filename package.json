@@ -291,6 +291,7 @@
     "html-minifier": "npm:@minify-html/node@^0.15.0",
     "lodash.template": "^4.5.0",
     "micromatch": "^4.0.8",
-    "trim": "^1.0.1"
+    "trim": "^1.0.1",
+    "jest-worker": "^30.2.0"
   }
 }

@@ -42,6 +42,11 @@ const config = {
   // The test environment that will be used for testing
   testEnvironment: "jsdom",
 
+  // Configure test environment to properly handle ESM with experimental VM modules
+  testEnvironmentOptions: {
+    customExportConditions: ["node", "node-addons"],
+  },
+
   // Setup files to run before tests
   setupFilesAfterEnv: ["<rootDir>/config/javascript/jest.setup.js"],
 
