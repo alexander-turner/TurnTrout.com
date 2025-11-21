@@ -13,6 +13,12 @@ trap cleanup EXIT
 
 bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
 
+# Convert card images in markdown files
+python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
+
+# Download external media files (non-assets.turntrout.com) to asset_staging
+python "$GIT_ROOT"/scripts/download_external_media.py
+
 # Normalize any new SVG files added since last push
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 NEW_SVG_FILES=$(git diff --name-only --diff-filter=A "origin/$CURRENT_BRANCH" 2>/dev/null | grep '\.svg$' || true)
@@ -47,9 +53,6 @@ python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory 
 
 # Left over original files
 cleanup
-
-# Convert card images in markdown files
-python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
 
 # Upload assets to R2 bucket (ignore pond files - they're needed locally for tests)
 LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/

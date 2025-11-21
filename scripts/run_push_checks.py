@@ -582,7 +582,7 @@ def get_check_steps(
             name="Compressing and uploading local assets",
             command=[
                 "bash",
-                f"{git_root_path}/scripts/handle_local_assets.sh",
+                f"{git_root_path}/scripts/handle_assets.sh",
             ],
             # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,

@@ -19,11 +19,26 @@ except ImportError:
     import utils as script_utils  # type: ignore
 
 
-SUFFIX_REGEX = (
-    r"\.(jpg|jpeg|png|gif|mov|mp4|webm|avi|mpeg|webp|avif|svg|mp3|m4a|wav|ogg)"
+MEDIA_EXTENSIONS = (
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "mov",
+    "mp4",
+    "ico",
+    "webm",
+    "avi",
+    "mpeg",
+    "webp",
+    "avif",
+    "svg",
+    "mp3",
+    "m4a",
+    "wav",
+    "ogg",
 )
 
-# Domain to exclude from downloads (already on CDN)
 EXCLUDED_DOMAIN = "assets.turntrout.com"
 
 
@@ -68,14 +83,7 @@ def download_media(url: str, target_dir: Path) -> bool:
 
 
 def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
-    """
-    Replace URL in a markdown file.
-
-    Args:
-        file_path: Path to the markdown file
-        old_url: URL to replace
-        new_url: New URL to use
-    """
+    """Replace URL in a markdown file."""
     git_root = script_utils.get_git_root()
     content_dir = git_root / "website_content"
     if not file_path.resolve().is_relative_to(content_dir):
@@ -83,12 +91,12 @@ def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
             f"File path {file_path} is not in the website_content directory."
         )
 
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     new_content = content.replace(old_url, new_url)
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
 
@@ -103,16 +111,16 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
         Set of external media URLs (excluding assets.turntrout.com)
     """
     asset_urls: set[str] = set()
-    url_pattern = r"(https?://.*?\." + SUFFIX_REGEX + r")"
+    # Create pattern that matches URLs ending with any of our media extensions
+    # Use word boundary \b to ensure we match complete extensions (e.g., "avif" not "avi")
+    extensions_pattern = "|".join(MEDIA_EXTENSIONS)
+    url_pattern = rf"https?://[^\s\)\"]+\.(?:{extensions_pattern})\b"
 
     for file in markdown_files:
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             content = f.read()
-            urls = re.findall(url_pattern, content)
-            # Filter out URLs from the excluded domain
-            external_urls = {
-                url for url, _ in urls if EXCLUDED_DOMAIN not in url
-            }
+            urls = re.findall(url_pattern, content, re.IGNORECASE)
+            external_urls = {url for url in urls if EXCLUDED_DOMAIN not in url}
             asset_urls.update(external_urls)
 
     return asset_urls
