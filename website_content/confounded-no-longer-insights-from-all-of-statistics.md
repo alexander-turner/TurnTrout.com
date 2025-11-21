@@ -171,8 +171,10 @@ Fairly straightforward.
 
 A similar [^1] geometric intuition:
 
-![](https://assets.turntrout.com/static/images/posts/Archimedes_pi.svg)
-_Note:_ The continuity requirement is important. Imagine we distribute points uniformly on $(0,\frac{1}{n})$; we see that $X_n \rightsquigarrow 0$. However, $F_n$ is $0$ when $x \leq 0$, but $F(0)=1$. Thus CDF convergence does not occur at $x=0$.
+![A pentagon, hexagon, and octagon which each contain an inscribed circle barely touching their borders. As the number of sides n grows, the n-gon's area approaches that of the inscribed circle (which remains the same size).](https://assets.turntrout.com/static/images/posts/Archimedes_pi.svg)
+
+> [!note]
+> The continuity requirement is important. Imagine we distribute points uniformly on $(0,\frac{1}{n})$; we see that $X_n \rightsquigarrow 0$. However, $F_n$ is $0$ when $x \leq 0$, but $F(0)=1$. Thus CDF convergence does not occur at $x=0$.
 
 #### In Quadratic Mean
 
