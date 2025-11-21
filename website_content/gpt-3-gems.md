@@ -647,7 +647,7 @@ No rerolls, excepting the restarts marked by **\[...\]**.
 >
 > **Sensationalized:** "Mesaro-what? AI learned optimizers might be endangering us!
 >
-> The AI Alignment Forum \[_it knows about AF?!\]_ was aware of this risk and had been trying to minimize sensationalist coverage through offering media passes only to those they believed would produce accurate and balanced reporting. Unfortunately, some of those media organizations were the ones that ended up closing the most eyes to the public. "The New York Times" was one such prominent example. In a 2018 article "Expert Calls For Calm In The Debate Over Artificial Intelligence,“ ”The New York Times" failed to cover any of the substance of the AAAI letter.
+> The AI Alignment Forum \[_it knows about AF?!\]_ was aware of this risk and had been trying to minimize sensationalist coverage through offering media passes only to those they believed would produce accurate and balanced reporting. Unfortunately, some of those media organizations were the ones that ended up closing the most eyes to the public. "The New York Times" was one such prominent example. In a 2018 article "Expert Calls For Calm In The Debate Over Artificial Intelligence," "The New York Times" failed to cover any of the substance of the AAAI letter.
 >
 > Even worse, they used the word "alarmist" and shortly after the article was published, the paper closed its eyes.
 >
