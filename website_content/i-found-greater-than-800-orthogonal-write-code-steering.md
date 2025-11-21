@@ -18,7 +18,6 @@ lw-base-score: 88
 lw-vote-count: 66
 af-base-score: 51
 af-num-comments-on-upload: 0
-publish: true
 title: I found >800 orthogonal 'write code' steering vectors
 lw-latest-edit: 2024-07-17T21:40:13.035000Z
 lw-is-linkpost: 'true'

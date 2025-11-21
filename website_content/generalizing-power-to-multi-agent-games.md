@@ -17,7 +17,6 @@ lw-base-score: 52
 lw-vote-count: 14
 af-base-score: 23
 af-num-comments-on-upload: 10
-publish: true
 title: Generalizing POWER to multi-agent games
 lw-latest-edit: 2021-06-06T14:23:13.010000Z
 lw-is-linkpost: 'false'

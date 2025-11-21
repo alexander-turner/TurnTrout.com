@@ -17,7 +17,6 @@ lw-base-score: 97
 lw-vote-count: 75
 af-base-score: 34
 af-num-comments-on-upload: 0
-publish: true
 title: "Dreams of AI alignment: The danger of suggestive names"
 lw-latest-edit: 2024-02-10T02:01:47.447000Z
 lw-is-linkpost: "false"

@@ -17,7 +17,6 @@ lw-base-score: 20
 lw-vote-count: 7
 af-base-score: 14
 af-num-comments-on-upload: 1
-publish: true
 title: Game-theoretic Alignment in terms of Attainable Utility
 lw-latest-edit: 2021-06-08T12:36:09.299000Z
 lw-is-linkpost: 'false'

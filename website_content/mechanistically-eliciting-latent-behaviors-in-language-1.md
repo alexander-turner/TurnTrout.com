@@ -17,7 +17,6 @@ lw-base-score: 200
 lw-vote-count: 78
 af-base-score: 97
 af-num-comments-on-upload: 20
-publish: true
 title: Mechanistically Eliciting Latent Behaviors in Language Models
 lw-latest-edit: 2024-05-23T20:29:09.224000Z
 lw-is-linkpost: "false"

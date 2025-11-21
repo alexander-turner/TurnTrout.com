@@ -16,7 +16,6 @@ lw-base-score: 70
 lw-vote-count: 28
 af-base-score: 22
 af-num-comments-on-upload: 3
-publish: true
 title: Value Impact
 lw-latest-edit: 2019-09-23T00:47:13.121000Z
 lw-is-linkpost: 'false'

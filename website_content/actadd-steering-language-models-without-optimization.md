@@ -18,7 +18,6 @@ lw-base-score: 105
 lw-vote-count: 31
 af-base-score: 45
 af-num-comments-on-upload: 2
-publish: true
 title: "ActAdd: Steering Language Models without Optimization"
 lw-latest-edit: 2023-11-06T16:33:20.505000Z
 lw-is-linkpost: "true"

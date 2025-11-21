@@ -17,7 +17,6 @@ lw-base-score: 331
 lw-vote-count: 149
 af-base-score: 101
 af-num-comments-on-upload: 0
-publish: true
 title: Looking back on my alignment PhD
 lw-latest-edit: 2023-08-10T01:35:59.613000Z
 lw-is-linkpost: "false"

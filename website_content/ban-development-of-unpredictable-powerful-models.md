@@ -17,7 +17,6 @@ lw-base-score: 46
 lw-vote-count: 30
 af-base-score: 22
 af-num-comments-on-upload: 9
-publish: true
 title: Ban development of unpredictable powerful models?
 lw-latest-edit: 2024-03-27T02:58:00.187000Z
 lw-is-linkpost: 'false'

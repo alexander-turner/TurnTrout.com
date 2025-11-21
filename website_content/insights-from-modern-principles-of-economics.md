@@ -17,7 +17,6 @@ lw-base-score: 79
 lw-vote-count: 41
 af-base-score: 27
 af-num-comments-on-upload: 0
-publish: true
 title: Insights from Modern Principles of Economics
 lw-latest-edit: 2023-08-28T21:29:32.804000Z
 lw-is-linkpost: 'false'

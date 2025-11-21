@@ -1,7 +1,6 @@
 ---
 title: Breaking Free with Dr. Stone
 permalink: doctor-stone
-publish: true
 no_dropcap: "false"
 tags:
   - fiction

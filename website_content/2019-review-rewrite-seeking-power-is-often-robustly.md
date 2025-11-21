@@ -19,7 +19,6 @@ lw-base-score: 35
 lw-vote-count: 9
 af-base-score: 19
 af-num-comments-on-upload: 0
-publish: true
 title: '2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs'
 lw-latest-edit: 2021-01-02T01:12:51.101000Z
 lw-is-linkpost: 'true'

@@ -17,7 +17,6 @@ lw-base-score: 68
 lw-vote-count: 19
 af-base-score: 33
 af-num-comments-on-upload: 4
-publish: true
 title: Some of my disagreements with List of Lethalities
 lw-latest-edit: 2024-01-09T22:19:50.402000Z
 lw-is-linkpost: 'false'

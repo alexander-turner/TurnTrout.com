@@ -17,7 +17,6 @@ lw-base-score: 28
 lw-vote-count: 22
 af-base-score: 8
 af-num-comments-on-upload: 0
-publish: true
 title: "Into the Kiln: Insights from Tao's 'Analysis I'"
 lw-latest-edit: 2018-06-01T18:16:32.616000Z
 lw-is-linkpost: "false"

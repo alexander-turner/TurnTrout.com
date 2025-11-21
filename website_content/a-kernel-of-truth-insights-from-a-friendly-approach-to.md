@@ -17,7 +17,6 @@ lw-base-score: 32
 lw-vote-count: 7
 af-base-score: 12
 af-num-comments-on-upload: 0
-publish: true
 title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
 lw-latest-edit: 2020-04-04T13:18:43.104000Z
 lw-is-linkpost: 'false'

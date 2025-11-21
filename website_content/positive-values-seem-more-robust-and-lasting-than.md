@@ -17,7 +17,6 @@ lw-base-score: 52
 lw-vote-count: 23
 af-base-score: 25
 af-num-comments-on-upload: 8
-publish: true
 title: Positive values seem more robust and lasting than prohibitions
 lw-latest-edit: 2022-12-17T21:43:31.826000Z
 lw-is-linkpost: 'false'

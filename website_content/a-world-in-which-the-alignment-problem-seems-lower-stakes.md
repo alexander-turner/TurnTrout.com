@@ -17,7 +17,6 @@ lw-base-score: 20
 lw-vote-count: 9
 af-base-score: 8
 af-num-comments-on-upload: 8
-publish: true
 title: A world in which the alignment problem seems lower-stakes
 lw-latest-edit: 2021-07-08T15:16:27.530000Z
 lw-is-linkpost: 'false'

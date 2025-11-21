@@ -17,7 +17,6 @@ lw-base-score: 35
 lw-vote-count: 10
 af-base-score: 20
 af-num-comments-on-upload: 8
-publish: true
 title: Instrumental Convergence For Realistic Agent Objectives
 lw-latest-edit: 2023-05-16T20:37:13.911000Z
 lw-is-linkpost: 'false'

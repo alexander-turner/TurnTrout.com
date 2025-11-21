@@ -1,7 +1,6 @@
 ---
 title: "Gradient Routing: Masking Gradients to Localize Computation in Neural Networks"
 permalink: gradient-routing
-publish: true
 draft: true
 no_dropcap: "false"
 tags:

@@ -16,7 +16,6 @@ lw-base-score: 54
 lw-vote-count: 18
 af-base-score: 18
 af-num-comments-on-upload: 0
-publish: true
 title: The Gears of Impact
 lw-latest-edit: 2024-08-15T22:30:43.246000Z
 lw-is-linkpost: 'false'

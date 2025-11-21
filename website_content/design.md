@@ -1,7 +1,6 @@
 ---
 title: The design of this website
 permalink: design
-publish: true
 tags:
   - website
   - open-source

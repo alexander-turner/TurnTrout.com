@@ -17,7 +17,6 @@ lw-base-score: 73
 lw-vote-count: 20
 af-base-score: 11
 af-num-comments-on-upload: 2
-publish: true
 title: "Worrying about the Vase: Whitelisting"
 lw-latest-edit: 2018-06-16T02:17:08.890000Z
 lw-is-linkpost: "false"

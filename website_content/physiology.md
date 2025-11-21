@@ -1,7 +1,6 @@
 ---
 title: Insights from "The Manga Guide to Physiology"
 permalink: insights-from-physiology
-publish: true
 no_dropcap: "false"
 tags:
   - understanding-the-world

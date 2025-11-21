@@ -17,7 +17,6 @@ lw-base-score: 126
 lw-vote-count: 57
 af-base-score: 32
 af-num-comments-on-upload: 0
-publish: true
 title: Insights from Euclid's 'Elements'
 lw-latest-edit: 2021-02-15T03:50:14.043000Z
 lw-is-linkpost: 'false'

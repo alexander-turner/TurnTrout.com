@@ -17,7 +17,6 @@ lw-base-score: 31
 lw-vote-count: 9
 af-base-score: 18
 af-num-comments-on-upload: 0
-publish: true
 title: Conservative Agency with Multiple Stakeholders
 lw-latest-edit: 2021-06-08T01:34:42.979000Z
 lw-is-linkpost: "false"

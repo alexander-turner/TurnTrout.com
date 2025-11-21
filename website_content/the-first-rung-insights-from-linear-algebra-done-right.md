@@ -17,7 +17,6 @@ lw-base-score: 40
 lw-vote-count: 27
 af-base-score: 9
 af-num-comments-on-upload: 0
-publish: true
 title: "The First Rung: Insights from 'Linear Algebra Done Right'"
 lw-latest-edit: 2018-04-22T05:23:49.024000Z
 lw-is-linkpost: 'false'

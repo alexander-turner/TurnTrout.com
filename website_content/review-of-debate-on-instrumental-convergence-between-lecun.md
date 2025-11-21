@@ -17,7 +17,6 @@ lw-base-score: 40
 lw-vote-count: 13
 af-base-score: 16
 af-num-comments-on-upload: 1
-publish: true
 title: Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio,
   Zador, and More'
 lw-latest-edit: 2021-01-12T17:05:56.148000Z

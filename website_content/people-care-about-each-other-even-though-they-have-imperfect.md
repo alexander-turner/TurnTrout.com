@@ -17,7 +17,6 @@ lw-base-score: 33
 lw-vote-count: 17
 af-base-score: 19
 af-num-comments-on-upload: 5
-publish: true
 title: People care about each other even though they have imperfect motivational pointers?
 lw-latest-edit: 2022-11-08T18:30:04.445000Z
 lw-is-linkpost: 'false'

@@ -16,7 +16,6 @@ lw-base-score: 100
 lw-vote-count: 43
 af-base-score: 24
 af-num-comments-on-upload: 119
-publish: true
 title: Towards a New Impact Measure
 lw-latest-edit: 2019-03-08T16:52:10.693000Z
 lw-is-linkpost: 'false'

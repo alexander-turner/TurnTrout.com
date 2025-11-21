@@ -17,7 +17,6 @@ lw-base-score: 76
 lw-vote-count: 48
 af-base-score: 18
 af-num-comments-on-upload: 0
-publish: true
 title: "Swimming Upstream: A Case Study in Instrumental Rationality"
 lw-latest-edit: 2018-06-03T03:16:21.613000Z
 lw-is-linkpost: "false"

@@ -17,7 +17,6 @@ lw-base-score: 101
 lw-vote-count: 37
 af-base-score: 37
 af-num-comments-on-upload: 7
-publish: true
 title: 'Maze-solving agents: Add a top-right vector, make the agent go to the top-right'
 lw-latest-edit: 2023-04-17T00:53:43.463000Z
 lw-is-linkpost: 'false'

@@ -1,5 +1,4 @@
 ---
-publish: "true"
 permalink: date-me
 title: I'm that "other fish in the sea"
 authors: Alex

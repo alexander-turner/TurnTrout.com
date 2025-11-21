@@ -17,7 +17,6 @@ lw-base-score: 23
 lw-vote-count: 8
 af-base-score: 15
 af-num-comments-on-upload: 29
-publish: true
 title: "MDP models are determined by the agent architecture and the environmental
   dynamics"
 lw-latest-edit: 2021-06-02T18:31:04.668000Z

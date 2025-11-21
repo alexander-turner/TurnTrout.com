@@ -16,7 +16,6 @@ lw-base-score: 81
 lw-vote-count: 23
 af-base-score: 34
 af-num-comments-on-upload: 9
-publish: true
 title: Formalizing “defection” using game theory
 lw-latest-edit: 2021-03-18T22:20:25.138000Z
 lw-is-linkpost: 'false'

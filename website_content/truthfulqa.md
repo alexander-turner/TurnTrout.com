@@ -1,7 +1,6 @@
 ---
 title: "Gaming TruthfulQA: Simple Heuristics Exposed Dataset Weaknesses"
 permalink: original-truthfulqa-weaknesses
-publish: true
 no_dropcap: "false"
 tags:
   - AI

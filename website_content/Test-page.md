@@ -1,7 +1,6 @@
 ---
 title: Testing site features
 permalink: test-page
-publish: true
 no_dropcap: "false"
 tags:
   - website

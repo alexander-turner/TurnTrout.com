@@ -17,7 +17,6 @@ lw-base-score: 328
 lw-vote-count: 129
 af-base-score: 139
 af-num-comments-on-upload: 22
-publish: true
 title: Understanding and controlling a maze-solving policy network
 lw-latest-edit: 2023-06-07T01:47:42.456000Z
 lw-is-linkpost: "false"

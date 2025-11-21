@@ -17,7 +17,6 @@ lw-base-score: 197
 lw-vote-count: 103
 af-base-score: 47
 af-num-comments-on-upload: 0
-publish: true
 title: Do a cost-benefit analysis of your technology usage
 lw-latest-edit: 2022-08-04T17:57:36.569000Z
 lw-is-linkpost: 'false'

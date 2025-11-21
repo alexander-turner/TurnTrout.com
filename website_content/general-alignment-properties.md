@@ -16,7 +16,6 @@ lw-base-score: 50
 lw-vote-count: 23
 af-base-score: 26
 af-num-comments-on-upload: 2
-publish: true
 title: General alignment properties
 lw-latest-edit: 2022-08-08T23:46:29.764000Z
 lw-is-linkpost: 'false'

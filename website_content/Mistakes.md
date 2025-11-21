@@ -1,7 +1,6 @@
 ---
 title: Mistaken claims I've made
 permalink: mistakes
-publish: true
 draft: false
 no_dropcap: "true"
 tags:

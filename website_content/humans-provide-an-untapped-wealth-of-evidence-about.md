@@ -17,7 +17,6 @@ lw-base-score: 204
 lw-vote-count: 92
 af-base-score: 57
 af-num-comments-on-upload: 42
-publish: true
 title: Humans provide an untapped wealth of evidence about alignment
 lw-latest-edit: 2023-01-01T19:52:16.131000Z
 lw-is-linkpost: "false"

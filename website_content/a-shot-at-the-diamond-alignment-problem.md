@@ -17,7 +17,6 @@ lw-base-score: 95
 lw-vote-count: 46
 af-base-score: 36
 af-num-comments-on-upload: 45
-publish: true
 title: A shot at the diamond-alignment problem
 lw-latest-edit: 2023-02-01T19:19:45.945000Z
 lw-is-linkpost: 'false'

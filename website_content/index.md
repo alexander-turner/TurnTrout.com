@@ -1,6 +1,5 @@
 ---
 permalink: welcome
-publish: "true"
 hide_metadata: "true"
 title: The Pond
 hide_title: "true"

@@ -16,7 +16,6 @@ lw-base-score: 36
 lw-vote-count: 15
 af-base-score: 19
 af-num-comments-on-upload: 10
-publish: true
 title: Corrigibility as outside view
 lw-latest-edit: 2020-05-12T17:22:13.849000Z
 lw-is-linkpost: 'false'

@@ -18,7 +18,6 @@ lw-base-score: 172
 lw-vote-count: 61
 af-base-score: 68
 af-num-comments-on-upload: 4
-publish: true
 title: Parametrically retargetable decision-makers tend to seek power
 lw-latest-edit: 2023-02-21T17:23:07.903000Z
 lw-is-linkpost: 'true'

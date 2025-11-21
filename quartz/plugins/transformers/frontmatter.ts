@@ -136,7 +136,6 @@ declare module "vfile" {
         tags: string[]
         aliases: string[]
         description: string
-        publish: boolean
         draft: boolean
         lang: string
         enableToc: string

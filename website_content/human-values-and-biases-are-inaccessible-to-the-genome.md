@@ -17,7 +17,6 @@ lw-base-score: 93
 lw-vote-count: 52
 af-base-score: 42
 af-num-comments-on-upload: 38
-publish: true
 title: Human values & biases are inaccessible to the genome
 lw-latest-edit: 2022-08-30T00:01:07.814000Z
 lw-is-linkpost: "false"

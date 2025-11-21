@@ -17,7 +17,6 @@ lw-base-score: 42
 lw-vote-count: 10
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: And My Axiom! Insights from 'Computability and Logic'
 lw-latest-edit: 2020-05-07T23:08:28.107000Z
 lw-is-linkpost: 'false'

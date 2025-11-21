@@ -17,7 +17,6 @@ lw-base-score: 35
 lw-vote-count: 25
 af-base-score: 7
 af-num-comments-on-upload: 0
-publish: true
 title: Internalizing Internal Double Crux
 lw-latest-edit: 2020-04-11T17:25:47.908000Z
 lw-is-linkpost: "false"

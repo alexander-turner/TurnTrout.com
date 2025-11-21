@@ -16,7 +16,6 @@ lw-base-score: 36
 lw-vote-count: 11
 af-base-score: 10
 af-num-comments-on-upload: 38
-publish: true
 title: Impact Measure Desiderata
 lw-latest-edit: 2020-07-31T23:58:43.318000Z
 lw-is-linkpost: 'false'

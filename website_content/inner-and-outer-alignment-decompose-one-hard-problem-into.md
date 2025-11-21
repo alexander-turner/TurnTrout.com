@@ -17,7 +17,6 @@ lw-base-score: 141
 lw-vote-count: 73
 af-base-score: 45
 af-num-comments-on-upload: 14
-publish: true
 title: "Inner and outer alignment decompose one hard problem into two extremely hard
   problems"
 lw-latest-edit: 2023-01-24T00:43:58.097000Z

@@ -17,7 +17,6 @@ lw-base-score: 151
 lw-vote-count: 67
 af-base-score: 47
 af-num-comments-on-upload: 0
-publish: true
 title: Emotionally Confronting Doom
 lw-latest-edit: 2022-04-17T17:24:53.405000Z
 lw-is-linkpost: "false"

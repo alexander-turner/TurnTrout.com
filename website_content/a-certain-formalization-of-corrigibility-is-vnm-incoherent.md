@@ -17,7 +17,6 @@ lw-base-score: 67
 lw-vote-count: 24
 af-base-score: 35
 af-num-comments-on-upload: 21
-publish: true
 title: A Certain Formalization of Corrigibility Is VNM-Incoherent
 lw-latest-edit: 2023-05-16T20:35:50.264000Z
 lw-is-linkpost: 'false'

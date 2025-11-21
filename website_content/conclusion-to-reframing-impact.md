@@ -16,7 +16,6 @@ lw-base-score: 40
 lw-vote-count: 14
 af-base-score: 17
 af-num-comments-on-upload: 18
-publish: true
 title: Conclusion to 'Reframing Impact'
 lw-latest-edit: 2023-02-17T09:29:58.232000Z
 lw-is-linkpost: "false"

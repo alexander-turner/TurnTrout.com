@@ -16,7 +16,6 @@ lw-base-score: 24
 lw-vote-count: 18
 af-base-score: 9
 af-num-comments-on-upload: 0
-publish: true
 title: How to Dissolve It
 lw-latest-edit: 2018-03-07T06:19:22.923000Z
 lw-is-linkpost: 'false'

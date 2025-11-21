@@ -17,7 +17,6 @@ lw-base-score: 45
 lw-vote-count: 13
 af-base-score: 29
 af-num-comments-on-upload: 1
-publish: true
 title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal
   Policies
 lw-latest-edit: 2023-05-16T20:26:02.342000Z

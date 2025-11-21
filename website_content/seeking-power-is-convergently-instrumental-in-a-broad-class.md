@@ -17,7 +17,6 @@ lw-base-score: 44
 lw-vote-count: 16
 af-base-score: 24
 af-num-comments-on-upload: 10
-publish: true
 title: Seeking Power is Convergently Instrumental in a Broad Class of Environments
 lw-latest-edit: 2023-05-16T20:31:56.719000Z
 lw-is-linkpost: 'false'

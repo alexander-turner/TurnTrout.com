@@ -17,7 +17,6 @@ lw-base-score: 39
 lw-vote-count: 11
 af-base-score: 16
 af-num-comments-on-upload: 0
-publish: true
 title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
 lw-latest-edit: 2020-03-25T22:12:25.494000Z
 lw-is-linkpost: 'false'

@@ -18,7 +18,6 @@ lw-base-score: 69
 lw-vote-count: 25
 af-base-score: 37
 af-num-comments-on-upload: 0
-publish: true
 title: 'Paper: Understanding and Controlling a Maze-Solving Policy Network'
 lw-latest-edit: 2023-10-13T02:22:44.726000Z
 lw-is-linkpost: 'true'

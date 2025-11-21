@@ -17,7 +17,6 @@ lw-base-score: 87
 lw-vote-count: 50
 af-base-score: 40
 af-num-comments-on-upload: 13
-publish: true
 title: Seriously, what goes wrong with 'reward the agent when it makes you smile'?
 lw-latest-edit: 2022-08-11T22:23:09.276000Z
 lw-is-linkpost: 'false'

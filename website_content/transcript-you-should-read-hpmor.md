@@ -17,7 +17,6 @@ lw-base-score: 124
 lw-vote-count: 59
 af-base-score: 34
 af-num-comments-on-upload: 0
-publish: true
 title: You Should Read 'Harry Potter and the Methods of Rationality'
 lw-latest-edit: 2023-08-27T21:04:29.890000Z
 lw-is-linkpost: "false"

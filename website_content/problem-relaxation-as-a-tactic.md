@@ -16,7 +16,6 @@ lw-base-score: 119
 lw-vote-count: 53
 af-base-score: 28
 af-num-comments-on-upload: 2
-publish: true
 title: Problem relaxation as a tactic
 lw-latest-edit: 2020-04-23T12:08:57.953000Z
 lw-is-linkpost: 'false'

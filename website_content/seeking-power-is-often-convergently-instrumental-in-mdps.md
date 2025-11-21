@@ -18,7 +18,6 @@ lw-base-score: 162
 lw-vote-count: 60
 af-base-score: 55
 af-num-comments-on-upload: 34
-publish: true
 title: Seeking Power is Often Convergently Instrumental in MDPs
 lw-latest-edit: 2023-05-16T20:14:29.355000Z
 lw-is-linkpost: 'true'

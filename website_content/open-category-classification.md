@@ -16,7 +16,6 @@ lw-base-score: 14
 lw-vote-count: 11
 af-base-score: 5
 af-num-comments-on-upload: 0
-publish: true
 title: Open-Category Classification
 lw-latest-edit: 2018-03-28T14:49:23.665000Z
 lw-is-linkpost: 'false'

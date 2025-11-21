@@ -17,7 +17,6 @@ lw-base-score: 31
 lw-vote-count: 26
 af-base-score: 8
 af-num-comments-on-upload: 0
-publish: true
 title: "Set Up for Success: Insights from 'Naïve Set Theory'"
 lw-latest-edit: 2018-02-28T02:01:43.790000Z
 lw-is-linkpost: 'false'

@@ -17,7 +17,6 @@ lw-base-score: 30
 lw-vote-count: 9
 af-base-score: 10
 af-num-comments-on-upload: 0
-publish: true
 title: "Continuous Improvement: Insights from 'Topology'"
 lw-latest-edit: 2020-02-25T19:34:03.925000Z
 lw-is-linkpost: "false"

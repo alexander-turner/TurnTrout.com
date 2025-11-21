@@ -18,7 +18,6 @@ lw-base-score: 62
 lw-vote-count: 21
 af-base-score: 26
 af-num-comments-on-upload: 8
-publish: true
 title: Avoiding Side Effects in Complex Environments
 lw-latest-edit: 2020-12-12T00:43:10.508000Z
 lw-is-linkpost: "true"

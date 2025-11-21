@@ -17,7 +17,6 @@ lw-base-score: 28
 lw-vote-count: 9
 af-base-score: 12
 af-num-comments-on-upload: 6
-publish: true
 title: Choosing the strength of the impact penalty term
 lw-latest-edit: 2020-05-20T13:03:59.233000Z
 lw-is-linkpost: 'false'

@@ -17,7 +17,6 @@ lw-base-score: 36
 lw-vote-count: 11
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: "Turning Up the Heat: Insights from Tao's 'Analysis II'"
 lw-latest-edit: 2018-08-24T17:54:54.344000Z
 lw-is-linkpost: 'false'

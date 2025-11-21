@@ -17,7 +17,6 @@ lw-base-score: 53
 lw-vote-count: 10
 af-base-score: 30
 af-num-comments-on-upload: 4
-publish: true
 title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 lw-latest-edit: 2023-05-16T20:32:55.143000Z
 lw-is-linkpost: 'false'

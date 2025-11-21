@@ -1,7 +1,6 @@
 ---
 title: "Intrinsic power-seeking: AI might seek power for power's sake"
 permalink: dangers-of-intrinsic-power-seeking
-publish: true
 description: "Seeking power helps reach lots of goals, so that circuitry will be reinforced
   a lot. Possible result: the AI reflexively tries to seek power."
 tags:

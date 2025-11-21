@@ -16,7 +16,6 @@ lw-base-score: 59
 lw-vote-count: 28
 af-base-score: 20
 af-num-comments-on-upload: 0
-publish: true
 title: How I do research
 lw-latest-edit: 2019-11-20T21:28:11.835000Z
 lw-is-linkpost: 'false'

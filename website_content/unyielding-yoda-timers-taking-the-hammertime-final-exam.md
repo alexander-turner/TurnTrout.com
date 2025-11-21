@@ -17,7 +17,6 @@ lw-base-score: 16
 lw-vote-count: 12
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: 'Unyielding Yoda Timers: Taking the Hammertime Final Exam'
 lw-latest-edit: 2018-04-03T02:38:48.327000Z
 lw-is-linkpost: 'false'

@@ -1,5 +1,4 @@
 ---
-publish: "true"
 hide_authors: "true"
 hide_metadata: "true"
 no_dropcap: "true"

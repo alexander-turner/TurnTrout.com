@@ -17,7 +17,6 @@ lw-base-score: 48
 lw-vote-count: 20
 af-base-score: 23
 af-num-comments-on-upload: 7
-publish: true
 title: Understanding and avoiding value drift
 lw-latest-edit: 2022-09-09T18:05:11.849000Z
 lw-is-linkpost: 'false'

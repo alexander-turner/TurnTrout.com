@@ -16,7 +16,6 @@ lw-base-score: 31
 lw-vote-count: 22
 af-base-score: 9
 af-num-comments-on-upload: 0
-publish: true
 title: Lightness and Unease
 lw-latest-edit: 2018-03-21T05:24:26.289000Z
 lw-is-linkpost: "false"

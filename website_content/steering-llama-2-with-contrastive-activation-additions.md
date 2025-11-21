@@ -18,7 +18,6 @@ lw-base-score: 123
 lw-vote-count: 57
 af-base-score: 49
 af-num-comments-on-upload: 23
-publish: true
 title: Steering Llama-2 with contrastive activation additions
 lw-latest-edit: 2024-02-13T03:16:20.193000Z
 lw-is-linkpost: "true"

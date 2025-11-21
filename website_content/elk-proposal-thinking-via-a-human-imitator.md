@@ -17,7 +17,6 @@ lw-base-score: 31
 lw-vote-count: 13
 af-base-score: 20
 af-num-comments-on-upload: 6
-publish: true
 title: 'ELK Proposal: Thinking Via A Human Imitator'
 lw-latest-edit: 2022-02-22T01:56:03.083000Z
 lw-is-linkpost: 'false'

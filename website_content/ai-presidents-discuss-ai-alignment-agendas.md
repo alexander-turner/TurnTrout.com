@@ -18,7 +18,6 @@ lw-base-score: 218
 lw-vote-count: 115
 af-base-score: 67
 af-num-comments-on-upload: 0
-publish: true
 title: "AI presidents discuss AI alignment agendas"
 lw-latest-edit: 2023-09-09T18:55:38.346000Z
 lw-is-linkpost: "true"

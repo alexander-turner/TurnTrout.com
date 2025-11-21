@@ -17,7 +17,6 @@ lw-base-score: 25
 lw-vote-count: 9
 af-base-score: 14
 af-num-comments-on-upload: 6
-publish: true
 title: Formalizing Policy-Modification Corrigibility
 lw-latest-edit: 2021-12-03T19:13:00.523000Z
 lw-is-linkpost: 'false'

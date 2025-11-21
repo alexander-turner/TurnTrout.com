@@ -17,7 +17,6 @@ lw-base-score: 30
 lw-vote-count: 14
 af-base-score: 10
 af-num-comments-on-upload: 6
-publish: true
 title: "Overcoming Clinginess in Impact Measures"
 lw-latest-edit: 2018-06-30T22:51:29.065000Z
 lw-is-linkpost: "false"

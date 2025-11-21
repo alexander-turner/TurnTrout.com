@@ -17,7 +17,6 @@ lw-base-score: 60
 lw-vote-count: 17
 af-base-score: 28
 af-num-comments-on-upload: 31
-publish: true
 title: Alignment allows 'non-robust' decision-influences and doesn't require robust
   grading
 lw-latest-edit: 2022-11-30T16:37:57.412000Z

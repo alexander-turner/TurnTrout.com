@@ -1,7 +1,6 @@
 ---
 title: Creating Interpretable Latent Spaces with Gradient Routing
 permalink: gradient-routing-demo
-publish: true
 no_dropcap: "false"
 tags:
   - AI

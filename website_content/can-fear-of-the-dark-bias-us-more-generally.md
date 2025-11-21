@@ -17,7 +17,6 @@ lw-base-score: 21
 lw-vote-count: 5
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: Can fear of the dark bias us more generally?
 lw-latest-edit: 2019-12-22T22:11:52.198000Z
 lw-is-linkpost: "false"

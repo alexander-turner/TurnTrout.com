@@ -2,7 +2,6 @@
 title: "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent
   Behaviors in Language Models"
 permalink: deep-causal-transcoding
-publish: true
 no_dropcap: "false"
 tags:
   - activation-engineering

@@ -17,7 +17,6 @@ lw-base-score: 74
 lw-vote-count: 24
 af-base-score: 32
 af-num-comments-on-upload: 18
-publish: true
 title: 'Non-Obstruction: A Simple Concept Motivating Corrigibility'
 lw-latest-edit: 2021-11-11T23:20:03.125000Z
 lw-is-linkpost: 'false'

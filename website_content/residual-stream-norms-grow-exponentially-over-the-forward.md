@@ -17,7 +17,6 @@ lw-base-score: 75
 lw-vote-count: 33
 af-base-score: 32
 af-num-comments-on-upload: 6
-publish: true
 title: "Residual stream norms grow exponentially over the forward pass"
 lw-latest-edit: 2023-05-08T16:36:55.402000Z
 lw-is-linkpost: "false"

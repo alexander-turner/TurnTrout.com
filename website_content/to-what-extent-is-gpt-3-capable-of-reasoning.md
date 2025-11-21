@@ -17,7 +17,6 @@ lw-base-score: 70
 lw-vote-count: 41
 af-base-score: 24
 af-num-comments-on-upload: 26
-publish: true
 title: To what extent is GPT-3 capable of reasoning?
 lw-latest-edit: 2020-08-19T17:37:22.246000Z
 lw-is-linkpost: 'false'

@@ -16,7 +16,6 @@ lw-base-score: 72
 lw-vote-count: 21
 af-base-score: 19
 af-num-comments-on-upload: 18
-publish: true
 title: Deducing Impact
 lw-latest-edit: 2019-09-24T21:56:15.111000Z
 lw-is-linkpost: 'false'

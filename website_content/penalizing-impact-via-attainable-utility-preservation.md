@@ -18,7 +18,6 @@ lw-base-score: 24
 lw-vote-count: 10
 af-base-score: 9
 af-num-comments-on-upload: 0
-publish: true
 title: Penalizing Impact via Attainable Utility Preservation
 lw-latest-edit: 2019-03-08T16:55:24.259000Z
 lw-is-linkpost: 'true'

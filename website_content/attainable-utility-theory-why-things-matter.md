@@ -17,7 +17,6 @@ lw-base-score: 72
 lw-vote-count: 22
 af-base-score: 23
 af-num-comments-on-upload: 11
-publish: true
 title: 'Attainable Utility Theory: Why Things Matter'
 lw-latest-edit: 2019-10-02T04:41:15.243000Z
 lw-is-linkpost: 'false'

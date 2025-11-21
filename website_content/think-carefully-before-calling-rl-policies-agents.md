@@ -17,7 +17,6 @@ lw-base-score: 133
 lw-vote-count: 67
 af-base-score: 50
 af-num-comments-on-upload: 9
-publish: true
 title: Think carefully before calling RL policies  'agents'
 lw-latest-edit: 2024-03-27T15:51:32.955000Z
 lw-is-linkpost: 'false'

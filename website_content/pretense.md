@@ -16,7 +16,6 @@ lw-base-score: 30
 lw-vote-count: 14
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: "I want to take off the coat"
 lw-latest-edit: 2018-07-29T00:35:24.674000Z
 lw-is-linkpost: "false"

@@ -17,7 +17,6 @@ lw-base-score: 21
 lw-vote-count: 17
 af-base-score: 7
 af-num-comments-on-upload: 0
-publish: true
 title: "Confounded No Longer: Insights from 'All of Statistics'"
 lw-latest-edit: 2018-05-03T22:56:27.057000Z
 lw-is-linkpost: 'false'

@@ -18,7 +18,6 @@ lw-base-score: 85
 lw-vote-count: 28
 af-base-score: 41
 af-num-comments-on-upload: 8
-publish: true
 title: 'Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability'
 lw-latest-edit: 2023-05-16T20:34:42.721000Z
 lw-is-linkpost: 'true'

@@ -16,7 +16,6 @@ lw-base-score: 64
 lw-vote-count: 34
 af-base-score: 20
 af-num-comments-on-upload: 15
-publish: true
 title: Thoughts on 'Human-Compatible'
 lw-latest-edit: 2019-12-17T22:27:13.803000Z
 lw-is-linkpost: 'false'

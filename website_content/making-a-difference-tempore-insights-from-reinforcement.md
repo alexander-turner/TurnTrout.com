@@ -17,7 +17,6 @@ lw-base-score: 33
 lw-vote-count: 11
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
 lw-latest-edit: 2018-07-05T00:34:59.249000Z
 lw-is-linkpost: "false"

@@ -17,7 +17,6 @@ lw-base-score: 57
 lw-vote-count: 21
 af-base-score: 27
 af-num-comments-on-upload: 0
-publish: true
 title: Review of 'But exactly how complex and fragile?'
 lw-latest-edit: 2021-01-07T19:03:57.411000Z
 lw-is-linkpost: 'false'

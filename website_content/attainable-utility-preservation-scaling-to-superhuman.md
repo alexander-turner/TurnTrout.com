@@ -17,7 +17,6 @@ lw-base-score: 28
 lw-vote-count: 11
 af-base-score: 14
 af-num-comments-on-upload: 16
-publish: true
 title: "Attainable Utility Preservation: Scaling to Superhuman"
 lw-latest-edit: 2020-02-27T00:57:35.521000Z
 lw-is-linkpost: "false"

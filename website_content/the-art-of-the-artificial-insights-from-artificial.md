@@ -17,7 +17,6 @@ lw-base-score: 31
 lw-vote-count: 20
 af-base-score: 13
 af-num-comments-on-upload: 0
-publish: true
 title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern
   Approach'"
 lw-latest-edit: 2018-03-25T06:55:46.204000Z

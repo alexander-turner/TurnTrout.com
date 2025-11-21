@@ -16,7 +16,6 @@ lw-base-score: 61
 lw-vote-count: 21
 af-base-score: 28
 af-num-comments-on-upload: 0
-publish: true
 title: How should TurnTrout handle his DeepMind equity situation?
 lw-latest-edit: 2023-10-26T00:56:40.898000Z
 lw-is-linkpost: "false"

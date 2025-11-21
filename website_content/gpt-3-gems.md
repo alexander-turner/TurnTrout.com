@@ -16,7 +16,6 @@ lw-base-score: 33
 lw-vote-count: 20
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: GPT-3 Gems
 lw-latest-edit: 2021-09-07T18:18:27.363000Z
 lw-is-linkpost: 'false'

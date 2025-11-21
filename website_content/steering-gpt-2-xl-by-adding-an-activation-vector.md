@@ -17,7 +17,6 @@ lw-base-score: 429
 lw-vote-count: 202
 af-base-score: 117
 af-num-comments-on-upload: 63
-publish: true
 title: Steering GPT-2-XL by adding an activation vector
 lw-latest-edit: 2024-02-19T23:31:07.877000Z
 lw-is-linkpost: "false"

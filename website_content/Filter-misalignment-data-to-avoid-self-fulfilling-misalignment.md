@@ -1,7 +1,6 @@
 ---
 title: Self-fulfilling misalignment data might be poisoning our AI models
 permalink: self-fulfilling-misalignment
-publish: true
 no_dropcap: "false"
 tags:
   - AI

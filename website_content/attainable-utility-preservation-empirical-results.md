@@ -17,7 +17,6 @@ lw-base-score: 65
 lw-vote-count: 15
 af-base-score: 25
 af-num-comments-on-upload: 6
-publish: true
 title: "Attainable Utility Preservation: Empirical Results"
 lw-latest-edit: 2021-06-15T16:55:30.263000Z
 lw-is-linkpost: "false"

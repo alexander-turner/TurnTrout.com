@@ -17,7 +17,6 @@ lw-base-score: 23
 lw-vote-count: 9
 af-base-score: 15
 af-num-comments-on-upload: 32
-publish: true
 title: How can we quantify player alignment in 2×2 normal-form games?
 lw-latest-edit: 2021-06-18T18:47:49.115000Z
 lw-is-linkpost: "false"

@@ -1,7 +1,6 @@
 ---
 title: "Site launch: Come relax by The Pond!"
 permalink: launch
-publish: true
 description: Celebrating the launch of the website after months of work.
 aliases:
   - relax-by-the-pond

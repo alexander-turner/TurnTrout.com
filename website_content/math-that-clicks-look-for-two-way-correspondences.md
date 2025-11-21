@@ -17,7 +17,6 @@ lw-base-score: 35
 lw-vote-count: 12
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: 'Math That Clicks: Look for Two-Way Correspondences'
 lw-latest-edit: 2020-10-02T17:19:27.318000Z
 lw-is-linkpost: 'false'

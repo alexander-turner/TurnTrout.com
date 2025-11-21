@@ -17,7 +17,6 @@ lw-base-score: 60
 lw-vote-count: 17
 af-base-score: 20
 af-num-comments-on-upload: 45
-publish: true
 title: Best reasons for pessimism about impact of impact measures?
 lw-latest-edit: 2019-04-10T17:30:38.988000Z
 lw-is-linkpost: 'false'

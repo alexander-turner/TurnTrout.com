@@ -17,7 +17,6 @@ lw-base-score: 38
 lw-vote-count: 11
 af-base-score: 17
 af-num-comments-on-upload: 11
-publish: true
 title: "Attainable Utility Preservation: Concepts"
 lw-latest-edit: 2020-02-17T05:22:28.687000Z
 lw-is-linkpost: "false"

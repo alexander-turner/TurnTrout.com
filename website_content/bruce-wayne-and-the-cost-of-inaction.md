@@ -17,7 +17,6 @@ lw-base-score: 89
 lw-vote-count: 43
 af-base-score: 28
 af-num-comments-on-upload: 0
-publish: true
 title: Bruce Wayne and the Cost of Inaction
 lw-latest-edit: 2022-10-03T21:46:11.379000Z
 lw-is-linkpost: "false"

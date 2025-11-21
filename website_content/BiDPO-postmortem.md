@@ -1,7 +1,6 @@
 ---
 title: Steering Gemini using BIDPO vectors
 permalink: gemini-steering
-publish: true
 no_dropcap: "false"
 tags:
   - AI

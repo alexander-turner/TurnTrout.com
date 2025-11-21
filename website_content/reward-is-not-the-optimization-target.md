@@ -17,7 +17,6 @@ lw-base-score: 369
 lw-vote-count: 202
 af-base-score: 94
 af-num-comments-on-upload: 88
-publish: true
 title: Reward is not the optimization target
 lw-latest-edit: 2023-09-18T16:54:05.492000Z
 lw-is-linkpost: "false"

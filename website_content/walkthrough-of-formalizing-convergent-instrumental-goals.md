@@ -17,7 +17,6 @@ lw-base-score: 13
 lw-vote-count: 7
 af-base-score: 6
 af-num-comments-on-upload: 0
-publish: true
 title: Walkthrough of 'Formalizing Convergent Instrumental Goals'
 lw-latest-edit: 2018-02-26T02:20:09.294000Z
 lw-is-linkpost: 'false'

@@ -17,7 +17,6 @@ lw-base-score: 162
 lw-vote-count: 135
 af-base-score: 48
 af-num-comments-on-upload: 46
-publish: true
 title: Many arguments for AI x-risk are wrong
 lw-latest-edit: 2024-03-11T21:57:55.185000Z
 lw-is-linkpost: 'false'

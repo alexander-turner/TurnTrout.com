@@ -17,7 +17,6 @@ lw-base-score: 45
 lw-vote-count: 15
 af-base-score: 23
 af-num-comments-on-upload: 11
-publish: true
 title: The Catastrophic Convergence Conjecture
 lw-latest-edit: 2020-11-22T18:06:16.099000Z
 lw-is-linkpost: "false"

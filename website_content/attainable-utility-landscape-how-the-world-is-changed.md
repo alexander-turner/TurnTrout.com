@@ -17,7 +17,6 @@ lw-base-score: 52
 lw-vote-count: 17
 af-base-score: 22
 af-num-comments-on-upload: 5
-publish: true
 title: 'Attainable Utility Landscape: How The World Is Changed'
 lw-latest-edit: 2020-07-10T22:41:11.251000Z
 lw-is-linkpost: 'false'

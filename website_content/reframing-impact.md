@@ -16,7 +16,6 @@ lw-base-score: 98
 lw-vote-count: 45
 af-base-score: 29
 af-num-comments-on-upload: 4
-publish: true
 title: Reframing Impact
 lw-latest-edit: 2021-08-25T18:32:59.440000Z
 lw-is-linkpost: 'false'

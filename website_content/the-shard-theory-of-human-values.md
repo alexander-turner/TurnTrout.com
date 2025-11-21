@@ -17,7 +17,6 @@ lw-base-score: 241
 lw-vote-count: 128
 af-base-score: 70
 af-num-comments-on-upload: 33
-publish: true
 title: The shard theory of human values
 lw-latest-edit: 2023-06-05T21:14:25.014000Z
 lw-is-linkpost: "false"

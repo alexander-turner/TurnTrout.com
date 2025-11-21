@@ -17,7 +17,6 @@ lw-base-score: 166
 lw-vote-count: 105
 af-base-score: 57
 af-num-comments-on-upload: 0
-publish: true
 title: Definitive confirmation of shard theory
 lw-latest-edit: 2023-04-03T16:23:51.143000Z
 lw-is-linkpost: "false"

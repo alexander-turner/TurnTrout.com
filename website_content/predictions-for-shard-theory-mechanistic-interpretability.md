@@ -17,7 +17,6 @@ lw-base-score: 105
 lw-vote-count: 34
 af-base-score: 47
 af-num-comments-on-upload: 6
-publish: true
 title: Predictions for shard theory mechanistic interpretability results
 lw-latest-edit: 2023-03-03T21:31:03.903000Z
 lw-is-linkpost: 'false'

@@ -17,7 +17,6 @@ lw-base-score: 46
 lw-vote-count: 13
 af-base-score: 22
 af-num-comments-on-upload: 10
-publish: true
 title: Behavioural statistics for a maze-solving agent
 lw-latest-edit: 2023-06-07T01:24:40.249000Z
 lw-is-linkpost: 'false'

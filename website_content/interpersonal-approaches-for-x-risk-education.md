@@ -17,7 +17,6 @@ lw-base-score: 10
 lw-vote-count: 8
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: Interpersonal Approaches for X-Risk Education
 lw-latest-edit: 2018-01-24T00:47:44.183000Z
 lw-is-linkpost: "false"

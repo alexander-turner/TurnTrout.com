@@ -17,7 +17,6 @@ lw-base-score: 33
 lw-vote-count: 12
 af-base-score: 13
 af-num-comments-on-upload: 8
-publish: true
 title: Reasons for Excitement about Impact of Impact Measure Research
 lw-latest-edit: 2020-09-16T18:14:18.659000Z
 lw-is-linkpost: 'false'

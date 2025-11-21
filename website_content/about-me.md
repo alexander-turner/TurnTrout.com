@@ -1,6 +1,5 @@
 ---
 permalink: about
-publish: true
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/about-me.png
 description: I'm TurnTrout, but the United States government insists on calling me

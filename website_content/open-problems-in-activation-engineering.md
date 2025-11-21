@@ -18,7 +18,6 @@ lw-base-score: 51
 lw-vote-count: 21
 af-base-score: 24
 af-num-comments-on-upload: 2
-publish: true
 title: Open problems in activation engineering
 lw-latest-edit: 2023-07-24T21:19:09.733000Z
 lw-is-linkpost: 'true'

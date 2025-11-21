@@ -17,7 +17,6 @@ lw-base-score: 67
 lw-vote-count: 21
 af-base-score: 22
 af-num-comments-on-upload: 6
-publish: true
 title: World State is the Wrong Abstraction for Impact
 lw-latest-edit: 2020-04-22T21:42:10.102000Z
 lw-is-linkpost: 'false'

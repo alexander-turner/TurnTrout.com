@@ -17,7 +17,6 @@ lw-base-score: 24
 lw-vote-count: 8
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
 lw-latest-edit: 2019-12-30T00:31:36.289000Z
 lw-is-linkpost: 'false'

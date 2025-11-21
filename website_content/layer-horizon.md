@@ -1,7 +1,6 @@
 ---
 title: Can transformers act on information beyond an effective layer horizon?
 permalink: effective-layer-horizon
-publish: true
 draft: false
 no_dropcap: "false"
 tags:

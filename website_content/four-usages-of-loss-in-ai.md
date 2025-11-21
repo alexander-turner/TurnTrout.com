@@ -16,7 +16,6 @@ lw-base-score: 44
 lw-vote-count: 18
 af-base-score: 20
 af-num-comments-on-upload: 16
-publish: true
 title: Four usages of 'loss' in AI
 lw-latest-edit: 2023-01-24T00:26:35.060000Z
 lw-is-linkpost: 'false'

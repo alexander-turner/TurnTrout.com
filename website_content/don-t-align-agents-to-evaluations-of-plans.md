@@ -16,7 +16,6 @@ lw-base-score: 45
 lw-vote-count: 22
 af-base-score: 23
 af-num-comments-on-upload: 32
-publish: true
 title: Don't align agents to evaluations of plans
 lw-latest-edit: 2022-11-30T23:18:44.203000Z
 lw-is-linkpost: "false"

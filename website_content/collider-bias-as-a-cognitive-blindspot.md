@@ -17,7 +17,6 @@ lw-base-score: 54
 lw-vote-count: 21
 af-base-score: 0
 af-num-comments-on-upload: 0
-publish: true
 title: "Collider bias as a cognitive blindspot?"
 lw-latest-edit: 2020-12-30T02:54:15.755000Z
 lw-is-linkpost: "false"

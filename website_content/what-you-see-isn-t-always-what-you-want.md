@@ -17,7 +17,6 @@ lw-base-score: 30
 lw-vote-count: 10
 af-base-score: 11
 af-num-comments-on-upload: 8
-publish: true
 title: "What You See Isn't Always What You Want"
 lw-latest-edit: 2024-08-15T22:29:06.757000Z
 lw-is-linkpost: "false"

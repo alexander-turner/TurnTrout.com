@@ -18,7 +18,6 @@ lw-base-score: 71
 lw-vote-count: 25
 af-base-score: 32
 af-num-comments-on-upload: 38
-publish: true
 title: Environmental Structure Can Cause Instrumental Convergence
 lw-latest-edit: 2023-05-16T20:23:50.626000Z
 lw-is-linkpost: 'true'
