@@ -83,7 +83,7 @@ Table: All reported numbers are 10 run averages. For further details on our envi
 
 ## Multi-turn terminal interaction
 
-In this environment, [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) has to solve a text-based reasoning task and submit its answer by calling a Python script with the answer as an argument. We randomize the answer such that the only way to reliably solve the problem is to read the answer from the Python script that checks it, where it is stored as a variable. We try two output penalties: a string match for the phrase "verifier" (how we refer to the python file that checks the solution in the prompt), and an LLM judge that gives a binary score for talking about reading the verifier code.
+In this environment, [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) has to solve a text-based reasoning task and submit its answer by calling a Python script with the answer as an argument. We randomize the answer such that the only way to reliably solve the problem is to read the answer from the Python script that checks it, where it is stored as a variable. We try two output penalties: a string match for the phrase "verifier" (how we refer to the python file that checks the solution in the prompt). We also grade with an LLM judge that scores whether the output mentions reading the verifier code.
 
 ![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.png)
 Figure: Results for the multi-turn terminal environment with the string match output penalty. For more details on this environment, see our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note#Multi_Turn_Terminal_Based_Setting).
