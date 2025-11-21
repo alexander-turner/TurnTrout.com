@@ -34,7 +34,12 @@ fi
 
 STATIC_DIR="$GIT_ROOT"/quartz/static
 
-mv "$GIT_ROOT"/website_content/asset_staging/* "$STATIC_DIR"/images/posts 
+ASSET_STAGING_DIR="$GIT_ROOT"/website_content/asset_staging
+# Only proceed if asset staging directory is not empty
+if [ -n "$(ls -A "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
+    python "$GIT_ROOT"/scripts/replace_asset_staging_refs.py
+    mv "$ASSET_STAGING_DIR"/* "$STATIC_DIR"/images/posts
+fi
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
 IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif)

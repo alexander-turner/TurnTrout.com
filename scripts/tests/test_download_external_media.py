@@ -231,7 +231,6 @@ def test_main_downloads_and_updates(mock_git_root, capsys):
         assert "asset_staging/image.png" in updated_content
         assert "https://example.com/image.png" not in updated_content
 
-        # Check output
         captured = capsys.readouterr()
         assert "Found 1 external media URLs" in captured.out
         assert "Successfully downloaded 1/1 files" in captured.out

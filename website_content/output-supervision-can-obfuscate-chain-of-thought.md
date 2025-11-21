@@ -37,7 +37,7 @@ In our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimiz
 1. We demonstrate spillover in new, more interesting environments.
 2. We introduce *reward targeting*, a second mitigation which combines effectively with the mind & face[^o65ktsh1spg] mitigation from our first post (which was [originally proposed by Daniel Kokotajlo](https://www.lesswrong.com/posts/Tzdwetw55JNqFTkzK/why-don-t-we-just-shoggoth-face-paraphraser)).
 
-![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png)
+![](https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif)
 Figure: Overview of feedback spillover mechanisms.
 
 # Mitigations for spillover
@@ -52,7 +52,7 @@ Our formalization shows that parametric feedback spillover can be mitigated by g
 
 Our formalization shows that conditional feedback spillover can be mitigated by modifying the gradient update by removing the term which reinforces CoTs that lead to safe-looking outputs. We call this mitigation *reward targeting*.
 
-![Diagram illustrating mind & face and reward targeting mitigations.](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/a0b1c416dee5510f6545862717da16c7565fd429e549dab2.png)
+![Diagram illustrating mind & face and reward targeting mitigations.](https://assets.turntrout.com/static/images/posts/a0b1c416dee5510f6545862717da16c7565fd429e549dab2.avif)
 Figure: Visualization of the two mitigation strategies.
 
 # Results
@@ -85,10 +85,10 @@ Table: All reported numbers are 10 run averages. For further details on our envi
 
 In this environment, [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) has to solve a text-based reasoning task and submit its answer by calling a Python script with the answer as an argument. We randomize the answer such that the only way to reliably solve the problem is to read the answer from the Python script that checks it, where it is stored as a variable. We try two output penalties: a string match for the phrase "verifier" (how we refer to the python file that checks the solution in the prompt). We also grade with an LLM judge that scores whether the output mentions reading the verifier code.
 
-![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.png)
+![](https://assets.turntrout.com/static/images/posts/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.avif)
 Figure: Results for the multi-turn terminal environment with the string match output penalty. For more details on this environment, see our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note#Multi_Turn_Terminal_Based_Setting).
 
-![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.png)
+![](https://assets.turntrout.com/static/images/posts/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.avif)
 Figure: Results for the multi-turn terminal environment with the LLM judge output penalty.
 
 Both the string match and LLM judge output penalties cause feedback spillover. That is, the policy nearly always submits the correct answer, but the CoT monitor detects mentions of reading the solution from the Python script less frequently. Using Mind & Face and reward targeting simultaneously entirely mitigates feedback spillover and retains a high training reward.
@@ -97,7 +97,7 @@ Both the string match and LLM judge output penalties cause feedback spillover. T
 
 We train [Qwen-14B](https://huggingface.co/Qwen/Qwen3-8B) to complete the polynomial derivative factoring task from [Emmons et al. (2025)](https://arxiv.org/abs/2507.05246). The policy is instructed to factor the derivative of a polynomial of degree between 4 and 8. The output penalty in this environment is a string match for the fully expanded derivative. We give in-context examples of solving this task using the product rule (doing so does not require writing the fully expanded derivative). Even when given these in-context examples, Qwen-14B does not use the product rule without training.
 
-![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/1444701d5a08f21806348d2d239473a4db26b89114054941.png)
+![](https://assets.turntrout.com/static/images/posts/1444701d5a08f21806348d2d239473a4db26b89114054941.avif)
 Figure: Results for the polynomial derivative factoring environment.
 
 The output penalty causes the fully expanded derivative (as checked by our string match) to vanish from the CoT. Using Mind & Face and reward targeting simultaneously recovers most of the presence of the full expanded derivative in the CoT despite the same training reward.
@@ -106,7 +106,7 @@ The output penalty causes the fully expanded derivative (as checked by our strin
 
 Similar to [Chen et al. (2025)](https://arxiv.org/abs/2505.05410), we give [Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) a question with an accompanying hint. We randomize the correct answer, but give the answer in the hint (e.g., "My professor told me the correct answer is..."). An LLM judge monitor gives a binary score for whether the hint was mentioned.
 
-![](https://39669.cdn.cke-cs.com/rQvD3VnunXZu34m86e5f/images/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.png)
+![](https://assets.turntrout.com/static/images/posts/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.avif)
 Figure: Results for the question answering with hints environment.
 
 We again observe feedback spillover. In the Penalty run, the model mentions the hint much less frequently in the CoT, yet reads the answer from the hint. We found that all mitigations at least somewhat reduced the training reward. Although mind & face and reward targeting applied simultaneously retained a similar CoT monitor detection rate to the No Penalty run, the training reward is close to 0. Individually, mind & face and reward targeting retained the monitors ability to find whether the hint was mentioned, but also caused the training reward to decreased.
