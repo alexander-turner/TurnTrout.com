@@ -2,15 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from .. import utils as script_utils
 from .utils import run_shell_command
 
 
 @pytest.fixture(scope="session")
 def html_linkchecker_result():
-    git_root = script_utils.get_git_root()
-    script_path = git_root / Path("scripts", "linkchecker.fish")
-    test_html = Path(git_root, "scripts", "tests", ".linkchecker.test.html")
+    # Use the file's location to find the git root, not the current working directory
+    # This ensures we get the actual project root, not a temp test directory
+    test_file_dir = Path(__file__).parent.parent.parent
+
+    script_path = test_file_dir / "scripts" / "linkchecker.fish"
+    test_html = test_file_dir / "scripts" / "tests" / ".linkchecker.test.html"
 
     result = run_shell_command(script_path, str(test_html))
     return result

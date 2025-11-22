@@ -31,7 +31,8 @@ def test_git_root_is_ancestor(
 def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
     expected_output = "/path/to/git/root"
 
-    def mock_subprocess_run(*args, **_kwargs) -> subprocess.CompletedProcess:
+    def mock_subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
+        # Handle check=True parameter - don't raise on success
         return subprocess.CompletedProcess(
             args=args,
             returncode=0,
@@ -43,16 +44,17 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_get_git_root_raises_error():
-    def mock_subprocess_run(*args, **_kwargs) -> subprocess.CompletedProcess:
-        return subprocess.CompletedProcess(
-            args=args,
+    def mock_subprocess_run(*args, **kwargs):
+        # Since check=True is used, raise CalledProcessError on failure
+        raise subprocess.CalledProcessError(
             returncode=1,
-            stdout="",
+            cmd=args,
+            output="",
         )
 
     with (
         mock.patch.object(script_utils.subprocess, "run", mock_subprocess_run),
-        pytest.raises(RuntimeError),
+        pytest.raises(subprocess.CalledProcessError),
     ):
         script_utils.get_git_root()
 
@@ -202,24 +204,21 @@ def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
 
 def test_get_files_gitignore(tmp_path):
     """Test with a .gitignore file."""
-    try:
-        # Create a git repository in tmp_path
-        repo = git.Repo.init(tmp_path)
-        (tmp_path / ".gitignore").write_text("*.txt\n")  # Ignore text files
+    # Create a git repository in tmp_path
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / ".gitignore").write_text("*.txt\n")  # Ignore text files
 
-        md_file = tmp_path / "test.md"
-        txt_file = tmp_path / "test.txt"
-        md_file.write_text("Markdown content")
-        txt_file.write_text("Text content")
-        repo.index.add([".gitignore", "test.md", "test.txt"])
-        repo.index.commit("Initial commit")
+    md_file = tmp_path / "test.md"
+    txt_file = tmp_path / "test.txt"
+    md_file.write_text("Markdown content")
+    txt_file.write_text("Text content")
+    repo.index.add([".gitignore", "test.md", "test.txt"])
+    repo.index.commit("Initial commit")
 
-        # Test getting files with gitignore
-        result = script_utils.get_files(dir_to_search=tmp_path)
-        assert len(result) == 1
-        assert result[0] == md_file
-    except git.GitCommandError:
-        pytest.skip("Git not installed or not in PATH")
+    # Test getting files with gitignore
+    result = script_utils.get_files(dir_to_search=tmp_path)
+    assert len(result) == 1
+    assert result[0] == md_file
 
 
 def test_get_files_ignore_dirs(tmp_path):
@@ -1041,7 +1040,15 @@ def test_collect_aliases(
     for file_path_str, content in md_contents.items():
         create_markdown_file(tmp_path / file_path_str, content=content)
 
-    result = script_utils.collect_aliases(tmp_path)
+    # Mock get_files to avoid git operations in temp directory
+    def mock_get_files(dir_to_search, **kwargs):
+        files = []
+        if dir_to_search:
+            files = list(dir_to_search.rglob("*.md"))
+        return tuple(files)
+
+    with mock.patch.object(script_utils, "get_files", mock_get_files):
+        result = script_utils.collect_aliases(tmp_path)
 
     assert result == expected_aliases
 

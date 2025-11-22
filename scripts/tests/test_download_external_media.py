@@ -181,22 +181,30 @@ def test_replace_url_in_file_outside_content_dir(mock_git_root, tmp_path):
         )
 
 
-def test_main_no_markdown_files(mock_git_root):
+def test_main_no_markdown_files(mock_git_root, monkeypatch):
     """Test main function with no markdown files."""
+    monkeypatch.setattr(
+        "scripts.download_external_media.script_utils.get_git_root",
+        lambda: mock_git_root,
+    )
     with (
         mock.patch("subprocess.run"),
         pytest.raises(ValueError, match="No markdown files found"),
     ):
-        download_external_media.main(mock_git_root / "website_content")
+        download_external_media.main()
 
 
-def test_main_no_external_urls(mock_git_root, capsys):
+def test_main_no_external_urls(mock_git_root, capsys, monkeypatch):
     """Test main function with no external URLs."""
+    monkeypatch.setattr(
+        "scripts.download_external_media.script_utils.get_git_root",
+        lambda: mock_git_root,
+    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("# Just text, no external media")
 
     with mock.patch("subprocess.run") as mock_run:
-        download_external_media.main(mock_git_root / "website_content")
+        download_external_media.main()
 
         captured = capsys.readouterr()
         assert "No external media URLs found" in captured.out
@@ -206,15 +214,19 @@ def test_main_no_external_urls(mock_git_root, capsys):
         assert any("pkill" in str(call) for call in calls)
 
 
-def test_main_downloads_and_updates(mock_git_root, capsys):
+def test_main_downloads_and_updates(mock_git_root, capsys, monkeypatch):
     """Test main function downloads files and updates references."""
+    monkeypatch.setattr(
+        "scripts.download_external_media.script_utils.get_git_root",
+        lambda: mock_git_root,
+    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 
     with mock.patch("subprocess.run") as mock_run:
         mock_run.return_value = mock.Mock(returncode=0)
 
-        download_external_media.main(mock_git_root / "website_content")
+        download_external_media.main()
 
         # Check that subprocess.run was called multiple times (pkill, curl, open)
         assert mock_run.call_count >= 3
@@ -236,8 +248,12 @@ def test_main_downloads_and_updates(mock_git_root, capsys):
         assert "Successfully downloaded 1/1 files" in captured.out
 
 
-def test_main_handles_download_failures(mock_git_root, capsys):
+def test_main_handles_download_failures(mock_git_root, capsys, monkeypatch):
     """Test main function handles download failures gracefully."""
+    monkeypatch.setattr(
+        "scripts.download_external_media.script_utils.get_git_root",
+        lambda: mock_git_root,
+    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 
@@ -251,7 +267,7 @@ def test_main_handles_download_failures(mock_git_root, capsys):
             mock.Mock(returncode=0),  # open
         ]
 
-        download_external_media.main(mock_git_root / "website_content")
+        download_external_media.main()
 
         # URL should not be updated if download failed
         content = md_file.read_text()
