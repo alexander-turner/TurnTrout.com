@@ -144,6 +144,10 @@ $domain-svg-colors: (
   }
 }
 
+svg.favicon[data-domain="huggingface_co"] {
+  --target-percentage: 100%;
+}
+
 // Yellow arrow on bottom
 svg.favicon[data-domain="amazon_com"] {
   :root[data-theme="dark"] & {
