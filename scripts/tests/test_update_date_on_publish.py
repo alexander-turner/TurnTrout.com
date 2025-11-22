@@ -238,6 +238,38 @@ def test_write_to_yaml_preserves_order(temp_content_dir):
     assert list(field_positions.keys()) == list(original_metadata.keys())
 
 
+def test_long_urls_not_wrapped(temp_content_dir, mock_git):
+    """Test that long URLs in lists are not wrapped across multiple lines."""
+    long_url = "https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9"
+    test_file = create_markdown_file(
+        temp_content_dir / "url_test.md",
+        frontmatter={
+            "title": "Test Post",
+            "date_published": "2024-01-01",
+            "other_urls": [long_url],
+        },
+        content="Test content",
+    )
+
+    with patch("subprocess.check_output", side_effect=mock_git()):
+        metadata, content = script_utils.split_yaml(test_file)
+        update_lib.write_to_yaml(test_file, metadata, content)
+
+    # Read the raw file content to check formatting
+    with test_file.open("r", encoding="utf-8") as f:
+        file_content = f.read()
+
+    # Verify the URL is on the same line as the dash
+    assert f"  - {long_url}" in file_content, (
+        "Long URL should be on the same line as the list dash, "
+        "not wrapped to a new line"
+    )
+
+    # Also verify it parses correctly
+    metadata_check, _ = script_utils.split_yaml(test_file)
+    assert metadata_check["other_urls"] == [long_url]
+
+
 def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     """Test the main function's integration."""
     initial_date = create_timestamp(datetime(2024, 1, 1))

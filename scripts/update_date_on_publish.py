@@ -18,6 +18,7 @@ import scripts.utils as script_utils
 yaml_parser = YAML(typ="rt")  # Use Round-Trip to preserve formatting
 yaml_parser.preserve_quotes = True  # Preserve existing quotes
 yaml_parser.indent(mapping=2, sequence=2, offset=2)
+yaml_parser.width = 4096  # Prevent line wrapping for long URLs
 
 now = datetime.now()
 current_date = TimeStamp(
