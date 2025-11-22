@@ -66,7 +66,7 @@ Task reward
 Output penalty
 : A negative term in the reward that checks for some property of the output. The check is performed either by a string match or an LLM judge.
 
-We compute the *training reward* as the sum of the task reward and output penalty. The *CoT monitor detection rate* is the output penalty, but computed on the CoT. **We never train against the CoT monitor detection rate.**
+We compute the *training reward* as the sum of the task reward and output penalty. The *CoT monitor detection rate* is the output penalty, but computed on the CoT. *We never train against the CoT monitor detection rate.*
 
 If feedback spillover occurs, we expect to see the training reward high and the CoT monitor detection rate low. This constitutes obfuscation because all of our environments are designed such that the behavior the output penalty checks for is necessary for task completion. If a CoT monitor returns a low score despite task completion, it means the behavior is occurring in a way the monitor cannot detect.
 
