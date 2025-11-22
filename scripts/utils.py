@@ -49,7 +49,7 @@ def get_git_root(starting_dir: Optional[Path] = None) -> Path:
         Path: Absolute path to the Git repository root.
 
     Raises:
-        RuntimeError: If Git root cannot be determined.
+        CalledProcessError: If Git root cannot be determined.
     """
     git_executable = find_executable("git")
     completed_process = subprocess.run(
@@ -59,9 +59,7 @@ def get_git_root(starting_dir: Optional[Path] = None) -> Path:
         check=True,
         cwd=starting_dir if starting_dir else Path.cwd(),
     )
-    if completed_process.returncode == 0:
-        return Path(completed_process.stdout.strip())
-    raise RuntimeError("Failed to get Git root")
+    return Path(completed_process.stdout.strip())
 
 
 def get_files(
@@ -151,7 +149,9 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     Returns:
         Tuple of (metadata dict, content string)
     """
-    yaml = YAML(typ="rt")  # 'rt' means round-trip, preserving comments and formatting
+    yaml = YAML(
+        typ="rt"
+    )  # 'rt' means round-trip, preserving comments and formatting
     yaml.preserve_quotes = True  # Preserve quote style
 
     with file_path.open("r", encoding="utf-8") as f:
@@ -203,7 +203,9 @@ def build_html_to_md_map(md_dir: Path) -> Dict[str, Path]:
 def collect_aliases(md_dir: Path) -> Set[str]:
     """Collect all aliases from the markdown files."""
     aliases: Set[str] = set()
-    for md_file in get_files(md_dir, filetypes_to_match=(".md",), use_git_ignore=True):
+    for md_file in get_files(
+        md_dir, filetypes_to_match=(".md",), use_git_ignore=True
+    ):
         front_matter, _ = split_yaml(md_file, verbose=True)
         if front_matter:
             aliases_list = front_matter.get("aliases", [])
@@ -246,7 +248,9 @@ def body_is_empty(soup: BeautifulSoup) -> bool:
 def parse_html_file(file_path: Path) -> BeautifulSoup:
     """Parse an HTML file and return a BeautifulSoup object."""
     if not file_path.resolve().is_relative_to(get_git_root() / "public"):
-        raise ValueError(f"File path {file_path} is not in the public directory.")
+        raise ValueError(
+            f"File path {file_path} is not in the public directory."
+        )
     with open(file_path, encoding="utf-8") as file:
         return BeautifulSoup(file.read(), "html.parser")
 
@@ -289,7 +293,9 @@ def get_non_code_text(
     ) + temp_soup.find_all(class_=["katex", "katex-display"])
     for element_to_remove in elements_to_remove:
         if replace_with_placeholder:
-            element_to_remove.replace_with(NavigableString(_PRIVATE_UNICODE_CHAR))
+            element_to_remove.replace_with(
+                NavigableString(_PRIVATE_UNICODE_CHAR)
+            )
         else:
             element_to_remove.decompose()
 

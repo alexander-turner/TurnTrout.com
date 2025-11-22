@@ -111,8 +111,9 @@ We again observe feedback spillover. In the Penalty run, the model mentions the 
 
 # Concrete recommendations
 
-We believe these results are strong evidence that output-based training generally causes feedback spillover. We think that **training only based on outputs is not a viable strategy for avoiding CoT obfuscation.** In our [preprint](https://arxiv.org/abs/2511.11584), we make the following recommendations:
+We believe these results are strong evidence that output-based training generally causes feedback spillover. We think that training only based on outputs is not a viable strategy for avoiding CoT obfuscation.
 
+> [!quote] [Recommendations from our preprint](https://arxiv.org/abs/2511.11584)
 > **Do not assume that training against output-only monitors preserves CoT monitorability!** In all tested environments, we observed strong feedback spillover. This did not require iteration on environment design or output penalties: whenever we saw the output monitor score decrease and the task reward increase, we always saw the CoT monitor score decrease. Frontier model developers should therefore not assume that output-based training will leave the CoT monitorable.
 >
 > **Study feedback spillover in frontier models.** Output-based training applied to existing models may be causing feedback spillover, affecting CoT monitorability today. We recommend that frontier model developers study model organisms of feedback spillover by post-training frontier models in purpose-built environments. We also recommend studying whether existing safety post-training pipelines cause feedback spillover.
@@ -120,6 +121,9 @@ We believe these results are strong evidence that output-based training generall
 > **Test spillover mitigations on frontier models.** We believe that further iteration on these mitigations could yield methods to reduce feedback spillover with low computational and capabilities overhead.
 >
 > **Consider feedback spillover in safety cases.** When referencing CoT monitorability in a safety case, we request that frontier model developers describe how they mitigated feedback spillover.
+
+> [!thanks] Acknowledgments
+> Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
 
 ```bibtex
 @misc{drori2025outputsupervisionobfuscatechain,
@@ -132,9 +136,6 @@ We believe these results are strong evidence that output-based training generall
       url={https://arxiv.org/abs/2511.11584}, 
 }
 ```
-
-> [!thanks] Acknowledgments
-> Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
 
 [^contradiction]: Our results do not contradict prior work showing that CoT obfuscation doesn't seem to happen when the CoT is necessary for task completion. The nature of the obfuscation we give examples of are behaviors such as omitting intermediate reasoning from the CoT that was not necessary to verbalize to complete the task, and writing contradictory reasoning in the CoT (e.g., writing "I used method A to solve the problem" when method B was clearly used).
 
