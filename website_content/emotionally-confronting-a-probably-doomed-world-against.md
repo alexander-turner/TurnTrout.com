@@ -34,8 +34,9 @@ original_url:
 skip_import: true
 description: Rejecting defeatism in the face of potential AI doom.  We shouldn't seek
   a “dignified” death—let's fight for a future worth living.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

@@ -35,8 +35,9 @@ skip_import: true
 card_image:
 description: Experts clash on the dangers of "instrumental convergence" in AI, but
   clear definitions and formal thought are sorely needed.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

@@ -41,8 +41,9 @@ original_url:
   https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

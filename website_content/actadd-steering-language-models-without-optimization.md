@@ -35,8 +35,9 @@ original_url:
 skip_import: true
 description: "Activation additions: steering language models by adding a bias to the
   forward pass. Surprisingly broad control, small impact on off-target capabilities."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
  

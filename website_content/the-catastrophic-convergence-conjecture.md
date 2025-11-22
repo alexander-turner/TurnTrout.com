@@ -43,8 +43,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.png
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking
   power."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

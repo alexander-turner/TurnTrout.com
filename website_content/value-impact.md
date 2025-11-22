@@ -40,8 +40,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/D6Bhmv6.png
 description: Impact is objectively important to agents, no matter their goals. Even
   robots hoarding pebbles care about a meteor strike.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

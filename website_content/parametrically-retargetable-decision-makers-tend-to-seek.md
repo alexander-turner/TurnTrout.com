@@ -40,8 +40,9 @@ original_url:
 skip_import: true
 description: "New theoretical results uncover a surprising truth: the ability to change
   an agent's goals can lead them to seek power."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

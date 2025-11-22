@@ -43,8 +43,9 @@ original_url:
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over
   possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

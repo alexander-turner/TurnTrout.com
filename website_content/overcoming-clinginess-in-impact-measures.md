@@ -32,8 +32,9 @@ original_url:
 skip_import: true
 description: Impact measures incentivize agents to avoid side effects, but what about
   the side effects of ★other agents★?
-date_updated: 2025-06-29 16:49:07.944742
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

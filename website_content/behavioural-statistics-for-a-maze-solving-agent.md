@@ -42,8 +42,9 @@ card_image:
   https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.png
 description: Closeness to cheese and the top-right corner both influence a maze-solving
   AI, suggesting a "shard-like" decision-making process.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

@@ -37,8 +37,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/QBOtBED.png
 description: Christopher Nolan's Batman Begins, but more rationalist and severe. Looking
   right at the pain you ignore whenever you walk by a homeless person.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

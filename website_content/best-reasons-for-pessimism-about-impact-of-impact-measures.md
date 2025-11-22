@@ -32,8 +32,9 @@ original_url:
 skip_import: true
 description: 'Impact measures: Can they make AI safer, or are they a dangerous distraction
   from more promising approaches?'
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

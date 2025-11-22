@@ -42,8 +42,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.png
 description: How to choose an AI's impact limit to get the best results without triggering
   a catastrophe.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

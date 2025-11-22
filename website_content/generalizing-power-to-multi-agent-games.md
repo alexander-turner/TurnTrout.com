@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: Formalizing "power" in multi-agent games, showing that increased agent
   capabilities can lead to power scarcity and increased competition for resources.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

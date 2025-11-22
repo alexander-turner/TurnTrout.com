@@ -32,8 +32,9 @@ skip_import: true
 hideSubscriptionLinks: false
 description: "The author's unorthodox approach to AI safety research: Ignore existing
   work, simplify relentlessly, and break your own solutions."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

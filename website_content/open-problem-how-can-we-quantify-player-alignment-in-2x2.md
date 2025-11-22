@@ -33,8 +33,9 @@ original_url:
 skip_import: true
 description: "Quantifying player alignment in game theory: how aligned are the players'
   incentives in a given game? "
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

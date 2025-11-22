@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: "This post explores a hypothetical scenario where the AI alignment problem
   seems lower-stakes due to a unique universe structure. "
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

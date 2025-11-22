@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: My review of "Artificial Intelligence, A Modern Approach" & how I read
   hundreds of pages in 3 days.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

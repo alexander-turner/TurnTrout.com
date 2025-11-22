@@ -42,8 +42,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hqEX2r1.png
 description: "Description: Impact isn't about changing the world; it's about changing
   our ability to achieve goals within it."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

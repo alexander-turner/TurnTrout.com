@@ -38,8 +38,9 @@ original_url:
 skip_import: true
 description: Functions are static sets; families are functions; Zorn's Lemma is hard.
   I reflect on my set theory learnings and effective self-study strategies.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

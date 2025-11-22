@@ -41,8 +41,9 @@ original_url:
 skip_import: true
 description: "A shard theory analysis of value drift: what it is, how it happens,
   and how to avoid it, even without controlling your experiences. "
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

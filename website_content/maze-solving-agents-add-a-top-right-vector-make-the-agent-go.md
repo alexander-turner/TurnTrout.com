@@ -43,8 +43,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.png
 description: Adding a "top-right vector" makes a maze-solver go to the top-right.
   We show composition with other vectors, like the "cheese vector."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

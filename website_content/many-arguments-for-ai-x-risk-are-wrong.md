@@ -33,8 +33,9 @@ original_url:
 skip_import: true
 description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing.
   Deep learning defies naive predictions, and better arguments are needed.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

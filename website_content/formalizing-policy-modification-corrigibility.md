@@ -39,8 +39,9 @@ original_url:
 skip_import: true
 description: "Formalizing one aspect of corrigibility: How much can a human change
   an AI's policy, measured using mutual information."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

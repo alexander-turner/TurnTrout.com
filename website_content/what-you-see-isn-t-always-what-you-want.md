@@ -34,8 +34,9 @@ skip_import: true
 description: Markovian reward functions are underdefined. Aligning AI isn't about
   designing the "right" reward, but designing rewards compatible with how the world
   is.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

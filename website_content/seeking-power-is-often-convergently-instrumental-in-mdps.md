@@ -43,8 +43,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.png
 description: A mathematical exploration of why goal-directed AI, regardless of its
   programmed goal, might be driven to seek power.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

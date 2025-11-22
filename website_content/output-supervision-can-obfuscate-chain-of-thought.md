@@ -5,18 +5,21 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
-description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
+description: We challenge the assumption that output supervision preserves Chain-of-Thought
+  faithfulness. Instead, reinforcing final outputs warps the CoTs.
 authors: Jacob Drori* and Luke Marks*, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
 aliases:
   - cot-obfuscation
   - output-cot
   - output-feedback-can-obfuscate-chain-of-thought
 date_published: 2025-01-21 00:00:00
-date_updated: 2025-01-21 00:00:00
+date_updated: 2025-11-22 00:21:52.667251
 no_dropcap: false
 ---
+
 
 We show that training against a monitor that only sees outputs (*not* CoTs) can cause obfuscated[^contradiction] CoTs! The obfuscation happens in two ways:
 

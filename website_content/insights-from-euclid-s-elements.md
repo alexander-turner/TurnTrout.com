@@ -42,8 +42,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/XbacNSL.png
 description: Euclid's "Elements", but made beautiful. A colorful exploration of geometric
   proofs and the power of visual learning.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

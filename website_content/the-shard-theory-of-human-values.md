@@ -48,8 +48,9 @@ skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.png
 description: Human values are shaped by simple reward circuitry. Shard theory explains
   how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

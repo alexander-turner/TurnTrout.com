@@ -33,8 +33,9 @@ no_dropcap: true
 skip_import: true
 description: Three short essays written against the clock on instrumental rationality,
   confusion identification, and emotion propagation.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

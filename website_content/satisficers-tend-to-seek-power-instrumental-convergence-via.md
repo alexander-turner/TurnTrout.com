@@ -43,8 +43,9 @@ original_url:
 skip_import: true
 description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making
   processes, including satisficers. This is a problem for AI alignment.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

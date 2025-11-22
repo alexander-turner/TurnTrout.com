@@ -32,8 +32,9 @@ original_url:
 skip_import: true
 description: A review of Katja Grace's post questioning the "value is fragile" argument,
   arguing it sparked valuable but confused debate.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

@@ -42,8 +42,9 @@ original_url:
 skip_import: true
 description: "Agent architecture and environmental dynamics determine Markov Decision
   Processes. Power-seeking tendencies are not subjective."
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

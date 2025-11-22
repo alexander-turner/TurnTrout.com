@@ -33,8 +33,9 @@ skip_import: true
 no_dropcap: true
 description: "Fear of the dark increases our perception of risk. I ask: does this
   apply to decision-making more broadly?"
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

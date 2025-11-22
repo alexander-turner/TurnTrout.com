@@ -30,8 +30,9 @@ original_url: https://www.lesswrong.com/posts/txGJZAPjraYEQfHq2/open-category-cl
 skip_import: '"true"'
 description: 'Open-category classification: How can we penalize classifiers which
   overgeneralize from their training data?'
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

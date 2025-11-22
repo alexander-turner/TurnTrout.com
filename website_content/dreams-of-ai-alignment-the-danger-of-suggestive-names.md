@@ -37,8 +37,9 @@ original_url:
 skip_import: true
 description: 'AI alignment plagued by imprecise language. Ex: "reward" and "shoggoth"
   are suggestive words that obstruct clear thought.'
-date_updated: 2025-11-11 15:14:52.802932
+date_updated: 2025-11-22 00:21:52.667251
 ---
+
 
 
 

@@ -48,10 +48,11 @@ card_image:
   https://assets.turntrout.com/static/images/card_images/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.png
 description: The mistakes made, the lessons learned, and the drive to solve a hilariously
   neglected super-problem.
-date_updated: 2025-06-03 22:57:00.423836
+date_updated: 2025-11-22 00:21:52.667251
 next-post-slug: insights-from-physiology
 next-post-title: Insights from "The Manga Guide to Physiology"
 ---
+
 
 
 
