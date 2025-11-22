@@ -130,7 +130,7 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
 def main() -> None:
     """Download external media files to asset_staging and update references."""
     # Kill Obsidian to prevent it from renaming downloaded files
-    subprocess.run(["pkill", "-x", "Obsidian"], check=False)
+    subprocess.run(["/usr/bin/pkill", "-x", "Obsidian"], check=False)
     time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
@@ -170,7 +170,7 @@ def main() -> None:
         f"Successfully downloaded {successful_downloads}/{len(asset_urls)} files to asset_staging."
     )
 
-    subprocess.run(["open", "-g", "-a", "Obsidian"], check=False)
+    subprocess.run(["/usr/bin/open", "-g", "-a", "Obsidian"], check=False)
 
 
 if __name__ == "__main__":
