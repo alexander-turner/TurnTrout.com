@@ -594,6 +594,16 @@ def get_check_steps(
                 f"{git_root_path}/scripts/source_file_checks.py",
             ],
         ),
+        # skipcq: BAN-B604
+        CheckStep(
+            name="Labeling alt text",
+            command=[
+                "fish",
+                f"{git_root_path}/scripts/label_alt_text.fish",
+            ],
+            # skipcq: BAN-B604 (a local command, assume safe)
+            shell=True,
+        ),
     ]
 
     steps_after_server = [
