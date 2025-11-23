@@ -1,22 +1,17 @@
 #!/usr/bin/env fish
 
-# If there are no arguments passed, use the live server to resolve relative links
-# Otherwise use the provided files
-set -l TARGET_FILES $argv
-if test -z "$TARGET_FILES"
-    set TARGET_FILES "http://localhost:8080"
-    set -x no_proxy "http://localhost:8080"
-end
-
+set -l LOCAL_SERVER "http://localhost:8080"
+set -x no_proxy $LOCAL_SERVER
 
 # Internal links should NEVER 404! Check links which start with a dot or slash
-linkchecker $TARGET_FILES --threads 50 
+linkchecker $LOCAL_SERVER --threads 50 
 set -l INTERNAL_STATUS $status
 
 # Check external links which I control
-linkchecker $TARGET_FILES \
+set -l GIT_ROOT (git rev-parse --show-toplevel)
+set TARGET_FILES_EXTERNAL $GIT_ROOT/public/**html
+linkchecker $TARGET_FILES_EXTERNAL \
     --ignore-url="!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)" \
-    --no-warnings \
     --check-extern \
     --threads 30 \
     --user-agent "linkchecker" \
