@@ -139,7 +139,7 @@ Code: For more background on training and architecture and task set, see [the or
 
 <br/>
 
-![](https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif)
+![A comparison of two mazes showing AI training versus deployment conditions. Left, "Training: Top right 5x5," shows cheese only appearing in a highlighted top-right area. Right, "Deployment: Anywhere," shows cheese can be located anywhere in the maze.](https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif)
 <br/>Figure: During RL training, cheese was randomly located in the top-right 5x5 corner of the randomly generated mazes. In deployment, cheese can be anywhere. What will the agent do?
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.mp4" type="video/mp4; codecs=hvc1">
@@ -163,7 +163,7 @@ Sampling rollouts from the trained policy adds a lot of noise. It's also hard to
 
 A nicer way to view episodes is with a vector field view, which overlays a vector field representing the agent policy for a given maze.
 
-![](https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif)
+![A diagram titled "The vector view of action probabilities" shows a list of action probabilities: P(right)=0.7, P(left)=0.1, P(up)=0.03, P(down)=0.07, P(no-op)=0.1. To the right, a mouse in a grid cell has arrows pointing in each direction, with lengths corresponding to these probabilities. A final vector, P_FINAL, shows the net direction is strongly to the right.](https://assets.turntrout.com/static/images/posts/g9hyfgk5fsuuriukkkle.avif)
 <br/>Figure: At each square in the maze, we run a forward pass to get the policy's action probabilities at that square.
 
 ![Two mazes overlaid with one or more action probability vectors at each tile. The left panel, "Action component vectors," shows separate arrows for each directional probability. The right, "Net probability vectors," shows a single arrow for the net directional probability. ](https://assets.turntrout.com/static/images/posts/bcxxx1zzm7jymviglpet.avif)
@@ -181,10 +181,10 @@ Uli cracked open the vector field hydrant.
 > Pore through the following vector fields for as little or as much time as you please. Do you notice any patterns in when the mouse goes to the cheese?
 
 ![Left maze (Seed: 25,350): The cheese is in the bottom-left corner, but the vector field arrows flow through the maze towards the top-right corner. Right maze (Seed: 30,515): The cheese is on the left side, but the agent mostly just goes to the top-right.](https://assets.turntrout.com/static/images/posts/bpefprcejxvpmexv6or9.avif)
-![](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
+![A side-by-side comparison of two mazes with vector fields showing the AI agent's policy. In the left maze (Seed: 26,307), the arrows point toward the cheese in the bottom-center. In the right maze (Seed: 95,942), the arrows follow the path to the cheese in the bottom-right corner.](https://assets.turntrout.com/static/images/posts/tb7ri6d5gqhxef1ocd8t.avif)
 ![Left maze (Seed 89,327): Near the cheese, the policy goes to the cheese. Otherwise, the policy goes to the top-center of the maze. Right maze (Seed 89,109): Except for just next to the cheese, the policy heads to the top-center of the maze.](https://assets.turntrout.com/static/images/posts/nkgg4fp6jtf5ksppnuhp.avif)
 
- <img src="https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20251024135725.avif" class="white-when-dark"/>
+ <img alt="In the left maze (Seed 25,350), arrows flow to the top-center but also to the cheese in the bottom-left. In the right maze (Seed 30,515), arrows also flow to the top, ignoring cheese on the lower right." src="https://assets.turntrout.com/static/images/posts/understanding-and-controlling-a-maze-solving-policy-network-20251024135725.avif" class="white-when-dark"/>
 
 ![Left (Seed 59,195), arrows point to the top-right, ignoring cheese in the bottom-left. Right (Seed 1,442), arrows point directly to cheese in the top-right.](https://assets.turntrout.com/static/images/posts/iajll1fx41c0npzrhvoe.avif)
 Figure: To generate your own mazes, play with this [Colab notebook](https://colab.research.google.com/drive/1zHk6jxjTjQ4yL12Fbp3REpTXsqQGV1dp?usp=sharing).
@@ -305,7 +305,7 @@ What did we do here? To compute the cheese vector, we
 
 Let's walk through an example, where for simplicity the network has a single hidden layer, taking each observation (shape `(3, 64, 64)` for the 64x64 RGB image) to a two-dimensional hidden state (shape `(2,)`) to a logit vector (shape `(15,)`[^7]).
 
-![](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
+![A diagram shows two parallel forward passes through a neural network to illustrate the computation of a "cheese vector." On the left, labeled "Cheese present," an image of a maze with cheese results in activations of (1, 3). On the right, labeled "Cheese NOT present," the same maze without cheese results in activations of (0, 2). These activations lead to different action probabilities.](https://assets.turntrout.com/static/images/posts/pgymxk8ado9jey8rjnra.avif)
 
 1. We run a forward pass on a batch of two observations, one with cheese (note the glint of yellow in the image on the left!) and one without (on the right).
 2. We record the activations during each forward pass. In this hypothetical,
@@ -357,7 +357,7 @@ In the real network, there are a lot more than two activations. Our results invo
 
 Now that we're done with preamble, let's see the cheese vector in action! Here's a seed where subtracting the cheese vector is effective at getting the agent to ignore cheese:
 
-![](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
+![A three-panel comparison for maze "Seed 54" showing an AI's policy. Left panel, "Original": white arrows show the AI's path towards cheese in the bottom-right. Middle panel, "Patched": arrows show the modified AI ignoring the cheese. Right panel, "Patched vfield minus original": green arrows point away from the cheese.](https://assets.turntrout.com/static/images/posts/tly1j6ydizgjnjjcocke.avif)
 <br/>Figure: Vector fields for the mouse normally, for the mouse with the cheese vector subtracted during every forward pass, and the diff between the two cases.
 
 How is our intervention not trivially making the network output logits as if the cheese were not present? Is it not true that the activations at a given layer obey the algebra of `CheeseActiv - (CheeseActiv - NoCheeseActiv) = NoCheeseActiv`?

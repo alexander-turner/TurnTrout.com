@@ -57,7 +57,7 @@ The first part of my talk summarized my existing results on avoiding negative si
 
 # Existing work on side effects
 
-![](https://assets.turntrout.com/static/images/posts/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.avif)
+![A drawing titled "Importance of Avoiding Side Effects" shows a figure running toward a checkered finish line. As it runs, it kicks aside delicately arranged blocks, damaging its path and illustrating an agent causing negative side effects while pursuing its goal.](https://assets.turntrout.com/static/images/posts/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.avif)
 <br/>Figure: Agents only care about the parts of the environment relevant to their specified reward function.
 
 ![](https://assets.turntrout.com/static/images/posts/11973d84ffe3b4c8b56ebfe90261e336e126ad93cdda39a5.avif)
@@ -66,10 +66,10 @@ The first part of my talk summarized my existing results on avoiding negative si
 ![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif)
 <br/>Figure: AUP penalizes the agent for changing its ability to achieve a wide range of goals. Even though we can't specify our "true objective" to the agent, we hope that the agent stays able to do the right thing, as a result of staying able to do many things.
 
-![](https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif)
+![A slide titled "Prior Work: AI Safety Gridworlds" shows five examples of simple grid-based environments. Below is the Attainable Utility Preservation formula: R_AUP(s, a) := R_gridworld(s, a) - (λ/n) * sum over i of |Q*_Ri(s, a) - Q*_Ri(s, inaction)|.](https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif)
 <br/>Figure: We first demonstrated that AUP avoids side effects in tiny tabular domains.
 
-![](https://assets.turntrout.com/static/images/posts/2b563e34fa6fa1f80fcf5992515e3911668f03e0297e547b.avif)
+![Diagram for Conway's Game of Life showing a rule for cell death. At 'Time t', a grid has two live cells. An arrow notes that having '≤2 alive neighbors' leads to 'Cell death', resulting in an empty grid at 'Time t+1'.](https://assets.turntrout.com/static/images/posts/2b563e34fa6fa1f80fcf5992515e3911668f03e0297e547b.avif)
 <br/>Figure: Conway's _Game of Life_ has simple, local dynamics which add up to complex long-term consequences.
 
 ![](https://assets.turntrout.com/static/images/posts/bc36232e143377cc3fb23ec0eaf31d162c17fa41698f8356.avif)

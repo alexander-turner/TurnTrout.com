@@ -5970,5 +5970,9 @@
   "https://assets.turntrout.com/static/images/posts/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.avif": {
     "width": 502,
     "height": 308
+  },
+  "./asset_staging/open-source-20251122162738.png": {
+    "width": 1024,
+    "height": 674
   }
 }

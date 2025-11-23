@@ -166,7 +166,7 @@ For example, you probably care more about people you can see. Shard theory predi
 
 Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-without-total-robustness). The stronger their "aligned shards", the more human welfare weighs on their decision-making. We're playing a game of inches, so let's play to win.
 
-![](https://assets.turntrout.com/static/images/posts/human_shards.avif)
+![A silhouette of a human head in profile, its brain depicted as a complex cluster of vibrant, glowing, multi-colored crystalline shards.](https://assets.turntrout.com/static/images/posts/human_shards.avif)
 
 1. [Humans Provide an Untapped Wealth of Evidence About Alignment](./humans-provide-alignment-evidence)
 2. [Human Values & Biases Are Inaccessible to the Genome](./human-values-and-biases-are-inaccessible-to-the-genome)

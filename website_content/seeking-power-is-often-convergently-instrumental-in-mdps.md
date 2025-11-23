@@ -280,7 +280,7 @@ Starting on the left, all but one move leads to ending the game, but the second-
 
 Remember how, as the agent cares more about the future, more of its POWER comes from its ability to wait, while _also_ waiting becomes more probable under optimality?
 
-![](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
+![A choice tree for an agent. From a "Start" node, one arrow points to a terminal state represented by candy. A second arrow points to a "Wait!" node. From "Wait!", arrows point to two more terminal states: a chocolate bar and two stick figures hugging.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
 
 The same thing happens in Tic-Tac-Toe as the agent cares more about the future.
 

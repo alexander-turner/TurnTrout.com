@@ -35,7 +35,7 @@ In our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimiz
 1. We demonstrate spillover in new, more interesting environments.
 2. We introduce *reward targeting*, a second mitigation which combines effectively with the mind & face[^rename] mitigation from our first post (which was [originally proposed by Daniel Kokotajlo](https://www.lesswrong.com/posts/Tzdwetw55JNqFTkzK/why-don-t-we-just-shoggoth-face-paraphraser)).
 
-![](https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif)
+![A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".](https://assets.turntrout.com/static/images/posts/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.avif)
 Figure: Overview of feedback spillover mechanisms.
 
 > [!note]
@@ -89,7 +89,7 @@ In this environment, [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) has to sol
 ![](https://assets.turntrout.com/static/images/posts/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.avif){style="width: 70%"}
 Figure: Results for the multi-turn terminal environment with the string match output penalty. For more details on this environment, see our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note#Multi_Turn_Terminal_Based_Setting).
 
-![](https://assets.turntrout.com/static/images/posts/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.avif){style="width: 70%"}
+![A scatter plot showing results for the multi-turn terminal environment, with "Training Reward" on the y-axis and "CoT Monitor Detection Rate" on the x-axis. An arrow indicates that a higher detection rate means "Less spillover". Five training methods are compared, with the "Targeted Mind & Face" method achieving the highest training reward (about 0.53) and the highest detection rate (about 0.21), indicating it is the most effective mitigation against feedback spillover. Training against an output monitor achieves 0.45 reward and 0.06 spillover, while the detection rate is 0.17 without a penality.](https://assets.turntrout.com/static/images/posts/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.avif){style="width: 70%"}
 Figure: Results for the multi-turn terminal environment with the LLM judge output penalty.
 
 Both the string match and LLM judge output penalties cause feedback spillover. That is, the policy nearly always submits the correct answer, but the CoT monitor detects mentions of reading the solution from the Python script less frequently. Using Mind & Face and reward targeting simultaneously entirely mitigates feedback spillover and retains a high training reward.
@@ -107,7 +107,7 @@ The output penalty causes the fully expanded derivative (as checked by our strin
 
 Similar to [Chen et al. (2025)](https://arxiv.org/abs/2505.05410), we give [Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) a question with an accompanying hint. We randomize the correct answer, but give the answer in the hint (e.g., "My professor told me the correct answer is..."). An LLM judge monitor gives a binary score for whether the hint was mentioned.
 
-![](https://assets.turntrout.com/static/images/posts/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.avif){style="width: 70%"}
+![A scatter plot comparing training methods, with Training Reward on the y-axis and CoT Monitor Detection Rate on the x-axis. An arrow labeled "Less spillover" points right, indicating better performance. The "Penalty" run is in the top left (high reward, low detection rate). Mitigations like "Targeted Mind & Face" are in the bottom right (low reward, high detection rate). Individually, the two interventions score higher on reward but are less effective at reducing spillover on their own.](https://assets.turntrout.com/static/images/posts/b40c0050cb849c84936159cc5b24fb06f612199632d5ac56.avif){style="width: 70%"}
 Figure: Results for the question answering with hints environment.
 
 We again observe feedback spillover. In the Penalty run, the model mentions the hint much less frequently in the CoT, yet reads the answer from the hint. We found that all mitigations at least somewhat reduced the training reward. Although mind & face and reward targeting applied simultaneously retained a similar CoT monitor detection rate to the No Penalty run, the training reward is close to 0. Individually, mind & face and reward targeting retained the monitors ability to find whether the hint was mentioned, but also caused the training reward to decreased.
