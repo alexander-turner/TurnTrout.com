@@ -53,7 +53,7 @@ To implement [accessibility best practices](https://www.section508.gov/create/al
 
 Figure: Generating alt text for maze diagrams from [Understanding and Controlling a Maze-solving Policy Network](/understanding-and-controlling-a-maze-solving-policy-network). `alt-text-llm` displays the surrounding text (above the image), the image itself in the terminal using [`imgcat`](https://github.com/eddieantonio/imgcat), and the LLM-generated alt suggestion. The user interactively edits or approves the text.
 
-In the end, I got the job done for about \$12.50 using Gemini 2.5 Pro. With `alt-text-llm`, I addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com) is now friendlier to the millions of people who browse the web with the help of screen readers.
+In the end, I generated over 550 high-quality alt-text suggestions for about \$12.50 using Gemini 2.5 Pro. With `alt-text-llm`, I addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com) is now friendlier to the millions of people who browse the web with the help of screen readers.
 
 If you want to improve accessibility for your content, go ahead and [check out my repository](https://github.com/alexander-turner/alt-text-llm)!
 
@@ -61,7 +61,7 @@ If you want to improve accessibility for your content, go ahead and [check out m
 
 Subtitle: Install with `pip install easy-dataset-share`.
 
-I helped fund this project.
+I helped fund this project. Here's the introduction to an article I wrote:
 
 > [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
 > ![[dataset-protection#]]
@@ -70,7 +70,7 @@ I helped fund this project.
 
 Subtitle: One command to set up your shell, editor, and secret management.
 
-My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides a comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
+My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
 
 1. Fish shell with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
 2. `neovim` configured with LazyVim, providing a full-fledged IDE with Copilot support,
@@ -82,37 +82,35 @@ My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provi
 8. `git` aliases and other productivity shortcuts, and -- drum roll ---
 9. `goosesay`, because every terminal needs more geese.  
 
-```plaintext
-  ______________________________________
- / Find out just what any people will   \
- | quietly submit to and you have the   |
- | exact measure of the injustice and   |
- | wrong which will be imposed on them. |
- \ --- Frederick Douglass               /
-  --------------------------------------
-    \
-     \
-      \     ___
-          .´   ""-⹁
-      _.-´)  e  _  '⹁
-     '-===.<_.-´ '⹁  \
-                   \  \
-                    ;  \
-                    ;   \          _
-                    |    '⹁__..--"" ""-._    _.´)
-                   /                     ""-´  _>
-                  :                          -´/
-                  ;                  .__<   __)
-                   \    '._      .__.-'   .-´
-                    '⹁_    '-⹁__.-´      /
-                       '-⹁__/    ⹁    _.´
-                      ____< /'⹁__/_.""
-                    .´.----´  | |
-                  .´ /        | |
-                 ´´-/      ___| ;
-                          <_    /
-                            `.'´
-```
+<figure data-rehype-pretty-code-figure="" id="goose-terminal"><pre tabindex="0" data-language="plaintext" data-theme="github-light github-dark"><button class="clipboard-button" type="button" aria-label="Copy source"><svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path></svg></button><code data-language="plaintext" data-theme="github-light github-dark" style="display:grid;"><span data-line=""><span>  ______________________________________</span></span>
+<span data-line=""><span> / Find out just what any people will   \</span></span>
+<span data-line=""><span> | quietly submit to and you have the   |</span></span>
+<span data-line=""><span> | exact measure of the injustice and   |</span></span>
+<span data-line=""><span> | wrong which will be imposed on them. |</span></span>
+<span data-line=""><span> \ --- Frederick Douglass               /</span></span>
+<span data-line=""><span>  --------------------------------------</span></span>
+<span data-line=""><span>    \</span></span>
+<span data-line=""><span>     \</span></span>
+<span data-line=""><span>      \     ___</span></span>
+<span data-line=""><span>          .´   ""-⹁</span></span>
+<span data-line=""><span>      _.-´)  e  _  '⹁</span></span>
+<span data-line=""><span>     '-===.&lt;_.-´ '⹁  \</span></span>
+<span data-line=""><span>                   \  \</span></span>
+<span data-line=""><span>                    ;  \</span></span>
+<span data-line=""><span>                    ;   \          _</span></span>
+<span data-line=""><span>                    |    '⹁__..--"" ""-._    _.´)</span></span>
+<span data-line=""><span>                   /                     ""-´  _&gt;</span></span>
+<span data-line=""><span>                  :                          -´/</span></span>
+<span data-line=""><span>                  ;                  .__&lt;   __)</span></span>
+<span data-line=""><span>                   \    '._      .__.-'   .-´</span></span>
+<span data-line=""><span>                    '⹁_    '-⹁__.-´      /</span></span>
+<span data-line=""><span>                       '-⹁__/    ⹁    _.´</span></span>
+<span data-line=""><span>                      ____&lt; /'⹁__/_.""</span></span>
+<span data-line=""><span>                    .´.----´  | |</span></span>
+<span data-line=""><span>                  .´ /        | |</span></span>
+<span data-line=""><span>                 ´´-/      ___| ;</span></span>
+<span data-line=""><span>                          &lt;_    /</span></span>
+<span data-line=""><span>                            `.'´</span></span></code></pre></figure>
 
 Each time I open the `fish` shell, a rainbow goose blurts out an interesting phrase. I spent several hours to achieve this modern luxury.
 

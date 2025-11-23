@@ -231,6 +231,19 @@ test.describe("Unique content around the site", () => {
       elementToScreenshot: questionAdmonition,
     })
   })
+
+  test("Goose code block (lostpixel)", async ({ page }, testInfo) => {
+    await page.goto("http://localhost:8080/open-source")
+    await page.locator("body").waitFor({ state: "visible" })
+
+    const gooseCodeBlock = page.locator("#goose-terminal").first()
+    await gooseCodeBlock.scrollIntoViewIfNeeded()
+    await expect(gooseCodeBlock).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "open-source-goose-terminal", {
+      elementToScreenshot: gooseCodeBlock,
+    })
+  })
 })
 
 test.describe("Table of contents", () => {

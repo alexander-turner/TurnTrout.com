@@ -942,3 +942,12 @@ iframe {
   vertical-align: calc(-0.25 * $base-margin);
   line-height: 100%; // Prevent the lines from being more spaced
 }
+
+figure#goose-terminal {
+  line-height: 1.1rem;
+
+  &[data-line] {
+    overflow-x: auto;
+    text-wrap: unset;
+  }
+}
