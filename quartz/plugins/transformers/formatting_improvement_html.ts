@@ -729,6 +729,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/\.{3}/g, "…"], // Ellipsis
   [/…(?=\w)/gu, "… "], // Space after ellipsis
   [/\b([Oo])pen-source\b/g, "$1pen source"],
+  [/\bmarkdown\b/g, "Markdown"],
 ]
 
 export function massTransformText(text: string): string {

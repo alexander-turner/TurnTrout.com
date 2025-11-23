@@ -384,6 +384,7 @@ describe("HTMLFormattingImprovement", () => {
       ["Connect to the wi-fi network", "Connect to the Wi-Fi network"],
       ["The wi-fi is down", "The Wi-Fi is down"],
       ["My open-source", "My open source"],
+      ["I wrote the markdown file", "I wrote the Markdown file"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
