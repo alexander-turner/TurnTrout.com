@@ -103,5 +103,5 @@ validators==0.35.0
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-pip==25.2
+pip==25.3
     # via -r requirements.in

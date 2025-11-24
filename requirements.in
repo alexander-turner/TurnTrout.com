@@ -2,7 +2,7 @@
 # To regenerate: ./scripts/update_requirements.sh
 
 # Build tools (pinned for compatibility)
-pip<25.3
+pip<25.4
 
 # Production dependencies (auto-detected from scripts/)
 beautifulsoup4
