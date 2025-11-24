@@ -47,6 +47,17 @@ const CALLOUT_ICONS = [
 /*
  * Render the meta JSX for the head of the page.
  */
+function generateScriptElement(id: string, src: string): JSX.Element {
+  return (
+    <script
+      data-cfasync="false" // Prevent Cloudflare Rocketloader from delaying the script
+      id={id}
+      src={src}
+      spa-preserve
+    />
+  )
+}
+
 export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginData): JSX.Element {
   const headHtml = renderHead({
     cfg,
@@ -128,22 +139,17 @@ export default (() => {
       )
     })
 
-    // Inline the detect-initial-state script to prevent FOUC
+    const staticScripts = [
+      // Inline the detect-initial-state script to prevent FOUC
+      { id: "detect-initial-state", src: "/static/scripts/detectInitialState.js" },
+      { id: "instant-scroll-restoration", src: "/static/scripts/instantScrollRestoration.js" },
+      { id: "lock-video-playback-rate", src: "/static/scripts/lockVideoPlaybackRate.js" },
+    ]
+
     return (
       <head>
         <meta charSet="utf-8" />
-        <script
-          data-cfasync="false" // Otherwise rocketloader delays the script
-          id="detect-initial-state"
-          src="/static/scripts/detectInitialState.js"
-          spa-preserve
-        />
-        <script
-          data-cfasync="false"
-          id="instant-scroll-restoration"
-          src="/static/scripts/instantScrollRestoration.js"
-          spa-preserve
-        />
+        {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <meta name="viewport" content="width=device-width" />
         {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />

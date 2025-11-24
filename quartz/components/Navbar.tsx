@@ -104,6 +104,25 @@ type Page = {
   title: string
 }
 
+const headerVideoSpan = (
+  <span id="header-video-container" className="video-container" data-persist-video="true">
+    <video
+      id={pondVideoId}
+      className="no-select no-vsc"
+      loop
+      muted
+      playsInline
+      data-persist
+      preload="auto"
+      poster="/static/pond_frame.avif"
+      aria-hidden="true"
+    >
+      <source src="/static/pond.mov" type="video/mp4; codecs=hvc1" />
+      <source src="/static/pond.webm" type="video/webm" />
+    </video>
+  </span>
+)
+
 /**
  * Renders the navigation bar based on provided configuration and file data.
  *
@@ -126,25 +145,6 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
 
   const title = cfg?.pageTitle ?? defaultTitle
   const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
-
-  const headerVideoSpan = (
-    <span id="header-video-container" className="video-container" data-persist-video="true">
-      <video
-        id={pondVideoId}
-        className="no-select no-vsc"
-        loop
-        muted
-        playsInline
-        data-persist
-        preload="auto"
-        poster="/static/pond_frame.avif"
-        aria-hidden="true"
-      >
-        <source src="/static/pond.mov" type="video/mp4; codecs=hvc1" />
-        <source src="/static/pond.webm" type="video/webm" />
-      </video>
-    </span>
-  )
 
   const pageLinks = (
     <nav className="menu">

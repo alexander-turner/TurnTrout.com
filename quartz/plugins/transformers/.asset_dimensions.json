@@ -5974,5 +5974,9 @@
   "./asset_staging/open-source-20251122162738.png": {
     "width": 1024,
     "height": 674
+  },
+  "/static/pond.mov": {
+    "width": 384,
+    "height": 384
   }
 }

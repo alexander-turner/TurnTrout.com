@@ -307,14 +307,10 @@ test.describe("Table of contents", () => {
     await spoilerHeading.scrollIntoViewIfNeeded()
 
     // Wait for scroll event to fire and TOC to update
-    await page.waitForFunction(
-      (initialText) => {
-        const activeElement = document.querySelector("#table-of-contents .active")
-        return activeElement && activeElement.textContent !== initialText
-      },
-      initialHighlightText,
-      { timeout: 5000 },
-    )
+    await page.waitForFunction((initialText) => {
+      const activeElement = document.querySelector("#table-of-contents .active")
+      return activeElement && activeElement.textContent !== initialText
+    }, initialHighlightText)
 
     const highlightText = await tocHighlightLocator.textContent()
     expect(highlightText).not.toBeNull()
@@ -667,6 +663,52 @@ test.describe("Video Speed Controller visibility", () => {
     const vscController = page.locator(".vsc-controller")
     await expect(vscController).toBeVisible()
   })
+
+  async function getVideoPlaybackRate(page: Page, videoId: string): Promise<number> {
+    return await page.evaluate((id) => {
+      const video = document.getElementById(id) as HTMLVideoElement
+      return video.playbackRate
+    }, videoId)
+  }
+
+  const testCases = [
+    { name: "no-vsc videos", html: '<video class="no-vsc" id="test-video"></video>' },
+    { name: "loop+autoplay videos", html: '<video loop autoplay id="test-video"></video>' },
+  ]
+
+  for (const testCase of testCases) {
+    test(`locks playback rate to 1.0 for ${testCase.name}`, async ({ page }) => {
+      await page.addScriptTag({ path: "quartz/static/scripts/lockVideoPlaybackRate.js" })
+
+      await page.evaluate((html: string) => {
+        document.body.innerHTML = html
+        // Trigger DOMContentLoaded to run the lockVideoPlaybackRate script
+        // @ts-expect-error - DOMContentLoaded is a standard Event, not a CustomEvent
+        document.dispatchEvent(new Event("DOMContentLoaded"))
+      }, testCase.html)
+
+      const playbackRate = await getVideoPlaybackRate(page, "test-video")
+      expect(playbackRate).toBe(1.0)
+
+      // Try to change the playback rate
+      await page.evaluate(() => {
+        const video = document.getElementById("test-video") as HTMLVideoElement
+        video.playbackRate = 2.0
+      })
+
+      // Wait for the ratechange event and requestAnimationFrame to reset it back to 1.0
+      await expect
+        .poll(async () => await getVideoPlaybackRate(page, "test-video"), {
+          intervals: [50, 100, 100, 100],
+          timeout: 500,
+        })
+        .toBe(1.0)
+
+      // Verify it was reset back to 1.0
+      const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
+      expect(resetPlaybackRate).toBe(1.0)
+    })
+  }
 })
 
 test("First paragraph is the same before and after clicking on a heading", async ({
