@@ -46,7 +46,7 @@ def mock_process():
     """Mock psutil.Process for testing process management functions."""
     mock = MagicMock()
     mock.pid = 12345
-    mock.info = {"cmdline": ["npx", "quartz", "build", "--serve"]}
+    mock.info = {"cmdline": ["pnpm", "quartz", "build", "--serve"]}
     mock.terminate = MagicMock()
     mock.wait = MagicMock()
     mock.kill = MagicMock()
@@ -1017,8 +1017,8 @@ def test_server_process_continues_running():
         patch("time.sleep"),  # Don't actually sleep in tests
         patch("scripts.run_push_checks.find_quartz_process", return_value=None),
         patch(
-            "shutil.which", return_value="npx"
-        ),  # Mock shutil.which to return just "npx"
+            "shutil.which", return_value="pnpm"
+        ),  # Mock shutil.which to return just "pnpm"
     ):
         # Set up port check to return False initially, then True after server "starts"
         mock_port_check.side_effect = [False, False, True]
@@ -1043,7 +1043,7 @@ def test_server_process_continues_running():
         # Verify Popen was called with the correct arguments
         mock_popen.assert_called_once()
         popen_args = mock_popen.call_args[0][0]
-        assert popen_args == ["npx", "quartz", "build", "--serve"]
+        assert popen_args == ["pnpm", "quartz", "build", "--serve"]
         popen_kwargs = mock_popen.call_args[1]
         assert popen_kwargs["start_new_session"] is True
         assert popen_kwargs["stdout"] == subprocess.DEVNULL

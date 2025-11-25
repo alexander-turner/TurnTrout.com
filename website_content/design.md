@@ -1073,7 +1073,7 @@ Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
 Rerunning some local tests
-: I run `eslint` and `npm test` Actions on GitHub to help test for environmental inconsistencies.
+: I run `eslint` and `pnpm test` Actions on GitHub to help test for environmental inconsistencies.
 
 DeepSource
 : I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource serves multiple roles:

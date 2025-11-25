@@ -11,18 +11,18 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 ### Building & Running
 
 ```bash
-npm run dev          # Development server with hot reload
-npm run build        # Production build
-npm start            # Build and serve locally on port 8080
-npm run preview      # Build and serve
+pnpm dev          # Development server with hot reload
+pnpm build        # Production build
+pnpm start        # Build and serve locally on port 8080
+pnpm preview      # Build and serve
 ```
 
 ### Testing
 
 ```bash
-npm test                    # TypeScript tests with coverage (requires 100% branch coverage)
-npm run check               # Type checking without emitting files
-npm run test:visual         # Visual regression tests with Playwright
+pnpm test                   # TypeScript tests with coverage (requires 100% branch coverage)
+pnpm check                  # Type checking without emitting files
+pnpm test:visual            # Visual regression tests with Playwright
 pytest <path>               # Python tests (NOT python -m pytest)
 ```
 
@@ -35,8 +35,8 @@ conda init && conda activate website
 ### Code Quality
 
 ```bash
-npm run format      # Format all code
-npm run check       # Lint and type check
+pnpm format         # Format all code
+pnpm check          # Lint and type check
 ```
 
 ## Architecture

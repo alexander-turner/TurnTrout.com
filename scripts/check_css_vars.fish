@@ -15,9 +15,9 @@ end
 
 set -l IGNORE_PATTERNS 'shiki|problems|public/index.css'
 
-# Run stylelint, filter output (ignoring patterns and empty/whitespace lines), 
+# Run stylelint, filter output (ignoring patterns and empty/whitespace lines),
 # and capture potential errors
-set -l warnings_found (npx stylelint "$css_file" \
+set -l warnings_found (pnpm exec stylelint "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
             &| grep -vE $IGNORE_PATTERNS \
             | grep .)
@@ -25,7 +25,7 @@ set -l warnings_found (npx stylelint "$css_file" \
 if test -n "$warnings_found"
     echo "Error: Found unknown CSS variable(s):"
 
-    set -l formatted_errors (npx stylelint "$css_file" \
+    set -l formatted_errors (pnpm exec stylelint "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
             &| grep -vE $IGNORE_PATTERNS)
     echo "$formatted_errors"

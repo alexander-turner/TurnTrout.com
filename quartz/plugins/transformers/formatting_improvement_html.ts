@@ -1,6 +1,5 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
-import assert from "assert"
 import { h } from "hastscript"
 import { type Transformer } from "unified"
 import { visit } from "unist-util-visit"
@@ -151,7 +150,12 @@ export function transformElement(
   if (checkTransformInvariance) {
     const strippedContent = markedContent.replace(markerChar, "")
     const strippedTransformed = transformedContent.replace(markerChar, "")
-    assert.strictEqual(transform(strippedContent), strippedTransformed)
+    const expected = transform(strippedContent)
+    if (expected !== strippedTransformed) {
+      throw new Error(
+        `Transform invariance check failed: expected "${expected}" but got "${strippedTransformed}"`,
+      )
+    }
   }
 }
 

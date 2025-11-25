@@ -8,8 +8,8 @@
 SITE_DIR=/tmp/TurnTrout.com
 git clone https://github.com/alexander-turner/TurnTrout.com.git "$SITE_DIR" --depth 1
 cd "$SITE_DIR"
-yes | npm ci
-npx quartz build --serve 
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 # Cryptographic timestamp verification

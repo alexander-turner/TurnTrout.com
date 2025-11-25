@@ -645,6 +645,21 @@ describe("PopulateContainers", () => {
           ]),
         ).rejects.toThrow("Config missing both id and className")
       })
+
+      it("should throw when config has both id and className", async () => {
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+
+        await expect(
+          populateModule.populateElements("/tmp/test.html", [
+            {
+              id: "test-id",
+              className: "test-class",
+              generator: populateModule.generateConstantContent("value"),
+            },
+          ]),
+        ).rejects.toThrow("Config cannot have both id and className")
+      })
     })
   })
 })

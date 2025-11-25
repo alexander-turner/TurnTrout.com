@@ -461,7 +461,6 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
       el.type === "tag" && (el.tagName === "meta" || el.tagName === "title"),
   )
 
-  // Check if an element is critical CSS
   const isCriticalCSS = (_i: number, el: CheerioElement): boolean =>
     el.type === "style" && el.attribs.id === "critical-css"
   const criticalCSS = headChildren.filter(isCriticalCSS)

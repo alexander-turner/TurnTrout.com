@@ -34,9 +34,10 @@ const DESIGN_PAGE_SLUG = "design" as FullSlug
  */
 export const findElementById = (root: Root, id: string): Element | null => {
   let found: Element | null = null
-  visit(root, "element", (node) => {
+  visit(root, "element", (node: Element) => {
     if (node.properties?.id === id) {
       found = node
+      return false // Stop traversal once found
     }
   })
   return found
@@ -50,7 +51,7 @@ export const findElementById = (root: Root, id: string): Element | null => {
  */
 export const findElementsByClass = (root: Root, className: string): Element[] => {
   const found: Element[] = []
-  visit(root, "element", (node) => {
+  visit(root, "element", (node: Element) => {
     if (hasClass(node, className)) {
       found.push(node)
     }
@@ -73,7 +74,7 @@ export const generateConstantContent = (value: string | number): ContentGenerato
 }
 
 /**
- * Generates content showing the count of npm test files (.test.ts and .test.tsx).
+ * Generates content showing the count of test files (.test.ts and .test.tsx).
  */
 export const generateTestCountContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
@@ -97,18 +98,23 @@ const addPngExtension = (path: string): string => {
 
 /**
  * Checks CDN for SVG version of PNG paths and caches results.
+ * @param pngPaths - Array of PNG paths to check for SVG alternatives
  */
 const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
+  if (pngPaths.length === 0) return
+
   await Promise.all(
     pngPaths.map(async (pngPath) => {
       const svgUrl = `https://assets.turntrout.com${pngPath.replace(".png", ".svg")}`
       try {
-        const response = await fetch(svgUrl)
+        const response = await fetch(svgUrl, { method: "HEAD" })
         if (response.ok) {
           urlCache.set(pngPath, svgUrl)
+          logger.debug(`Found SVG alternative for ${pngPath}`)
         }
       } catch {
         // SVG doesn't exist on CDN, that's fine
+        logger.debug(`No SVG alternative for ${pngPath}`)
       }
     }),
   )
@@ -199,15 +205,35 @@ export interface ElementPopulatorConfig {
  * @param htmlPath - Path to the HTML file
  * @param configs - Array of element populator configurations
  * @returns Array of file paths that were modified
+ * @throws Error if file cannot be read or written, or if config is invalid
  */
 export const populateElements = async (
   htmlPath: string,
   configs: ElementPopulatorConfig[],
 ): Promise<FilePath[]> => {
-  const html = fs.readFileSync(htmlPath, "utf-8")
+  // Validate configs before processing
+  for (const config of configs) {
+    if (!config.id && !config.className) {
+      throw new Error("Config missing both id and className")
+    }
+    if (config.id && config.className) {
+      throw new Error("Config cannot have both id and className")
+    }
+  }
+
+  // Read and parse HTML
+  let html: string
+  try {
+    html = fs.readFileSync(htmlPath, "utf-8")
+  } catch (error) {
+    logger.error(`Failed to read file ${htmlPath}: ${error}`)
+    throw error
+  }
+
   const root = fromHtml(html)
   let modified = false
 
+  // Process each configuration
   for (const config of configs) {
     if (config.id) {
       const element = findElementById(root, config.id)
@@ -219,6 +245,7 @@ export const populateElements = async (
       const content = await config.generator()
       element.children = content
       modified = true
+      logger.debug(`Populated element #${config.id} with ${content.length} child(ren)`)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -232,22 +259,31 @@ export const populateElements = async (
         element.children = content
       }
       modified = true
-      logger.debug(`Added ${content.length} elements to each .${config.className}`)
-    } else {
-      throw new Error("Config missing both id and className")
+      logger.debug(`Added ${content.length} child(ren) to each .${config.className}`)
     }
   }
 
+  // Write modified HTML back to file
   if (modified) {
-    fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
-    return [htmlPath as FilePath]
+    try {
+      fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
+      logger.info(`Successfully updated ${htmlPath}`)
+      return [htmlPath as FilePath]
+    } catch (error) {
+      logger.error(`Failed to write file ${htmlPath}: ${error}`)
+      throw error
+    }
   }
 
   return []
 }
 
 /**
- * Emitter that populates the containers on the test page after all files have been processed.
+ * Emitter that populates the containers on the test page and design page after all files have been processed.
+ * This plugin:
+ * - Populates the favicon container on the test page with a table of all favicons
+ * - Populates the site favicon on the design page
+ * - Populates the favicon threshold value on the design page
  */
 export const PopulateContainers: QuartzEmitterPlugin = () => {
   return {
@@ -257,28 +293,43 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       return []
     },
     async emit(ctx) {
-      const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
+      logger.info("Starting container population")
+      const modifiedFiles: FilePath[] = []
 
-      const testPageFiles = await populateElements(testPagePath, [
-        {
-          id: "populate-favicon-container",
-          generator: generateFaviconContent(),
-        },
-      ])
+      // Populate test page
+      try {
+        const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
+        const testPageFiles = await populateElements(testPagePath, [
+          {
+            id: "populate-favicon-container",
+            generator: generateFaviconContent(),
+          },
+        ])
+        modifiedFiles.push(...testPageFiles)
+      } catch (error) {
+        logger.error(`Failed to populate test page: ${error}`)
+      }
 
-      const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`)
-      const designPageFiles = await populateElements(designPagePath, [
-        {
-          className: "populate-site-favicon",
-          generator: generateSiteFaviconContent(),
-        },
-        {
-          id: "populate-favicon-threshold",
-          generator: generateConstantContent(minFaviconCount),
-        },
-      ])
+      // Populate design page
+      try {
+        const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`)
+        const designPageFiles = await populateElements(designPagePath, [
+          {
+            className: "populate-site-favicon",
+            generator: generateSiteFaviconContent(),
+          },
+          {
+            id: "populate-favicon-threshold",
+            generator: generateConstantContent(minFaviconCount),
+          },
+        ])
+        modifiedFiles.push(...designPageFiles)
+      } catch (error) {
+        logger.error(`Failed to populate design page: ${error}`)
+      }
 
-      return [...testPageFiles, ...designPageFiles]
+      logger.info(`Container population complete. Modified ${modifiedFiles.length} file(s)`)
+      return modifiedFiles
     },
   }
 }

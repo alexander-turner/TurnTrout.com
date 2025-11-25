@@ -24,5 +24,5 @@ find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/
 # Compare and stage only modified files
 diff /tmp/before_format /tmp/after_format | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
 
-# Run normal lint-staged
-npx lint-staged
+# Run normal lint-staged using pnpm instead of npx to avoid npm warnings
+pnpm exec lint-staged

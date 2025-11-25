@@ -7,7 +7,6 @@ import rehypeMermaid from "rehype-mermaid"
 import remarkAttributes from "remark-attributes"
 import { remarkDefinitionList, defListHastHandlers } from "remark-definition-list"
 import remarkParse from "remark-parse"
-import { type Root as MDRoot } from "remark-parse/lib"
 import remarkRehype from "remark-rehype"
 import { read } from "to-vfile"
 import { Processor, unified, type Plugin } from "unified"
@@ -33,7 +32,7 @@ const remarkCaptionsCodeFix = () => (tree: HTMLRoot) => {
   })
 }
 
-export type QuartzProcessor = Processor<MDRoot, MDRoot, HTMLRoot>
+export type QuartzProcessor = Processor<Root, Root, HTMLRoot>
 export function createProcessor(ctx: BuildCtx): QuartzProcessor {
   const transformers = ctx.cfg.plugins.transformers
 

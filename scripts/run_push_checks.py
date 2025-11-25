@@ -215,7 +215,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
 
     # Start new server
     console.log("Starting new quartz server...")
-    npx_path = shutil.which("npx") or "npx"
+    pnpm_path = shutil.which("pnpm") or "pnpm"
     with Progress(
         SpinnerColumn(),
         TextColumn(" {task.description}"),
@@ -224,7 +224,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
     ) as progress:
         # pylint: disable=consider-using-with
         new_server = subprocess.Popen(
-            [npx_path, "quartz", "build", "--serve"],
+            [pnpm_path, "quartz", "build", "--serve"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             cwd=git_root_path,
@@ -489,7 +489,8 @@ def get_check_steps(
         CheckStep(
             name="Typechecking TypeScript",
             command=[
-                "npx",
+                "pnpm",
+                "exec",
                 "tsc",
                 "--noEmit",
                 "-p",
@@ -499,7 +500,8 @@ def get_check_steps(
         CheckStep(
             name="Linting TypeScript",
             command=[
-                "npx",
+                "pnpm",
+                "exec",
                 "eslint",
                 "--fix",
                 str(git_root_path),
@@ -542,7 +544,8 @@ def get_check_steps(
         CheckStep(
             name="Cleaning up SCSS",
             command=[
-                "npx",
+                "pnpm",
+                "exec",
                 "stylelint",
                 "--config",
                 f"{git_root_path}/config/stylelint/.stylelintrc.json",
@@ -559,7 +562,7 @@ def get_check_steps(
         ),
         CheckStep(
             name="Running Javascript unit tests",
-            command=["npm", "run", "test"],
+            command=["pnpm", "test"],
         ),
         CheckStep(
             name="Running Python unit tests",

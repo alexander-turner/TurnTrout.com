@@ -1,4 +1,4 @@
-import type TransportStream from "winston-transport"
+import type Transport from "winston-transport"
 
 import { execSync } from "child_process"
 import fs from "fs"
@@ -45,7 +45,7 @@ export const createWinstonLogger = (logName: string) => {
     fs.mkdirSync(logDir, { recursive: true })
   }
 
-  const loggerTransports: TransportStream[] = [
+  const loggerTransports: Transport[] = [
     new transports.DailyRotateFile({
       filename: path.join(logDir, `${logName}.log`),
       datePattern: "YYYY-MM-DD",

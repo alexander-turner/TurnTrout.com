@@ -6,7 +6,7 @@ set -l PLUGINS spell indefinite-article repeated-words syntax-urls frontmatter
 
 set -l SPELLCHECK_PARAMS --no-suggestions --quiet --dictionaries $PERM_DICT --files $FILES --ignore $SLUG_REGEX --plugins $PLUGINS
 
-npx spellchecker $SPELLCHECK_PARAMS --generate-dictionary $TEMP_DICT
+pnpm exec spellchecker $SPELLCHECK_PARAMS --generate-dictionary $TEMP_DICT
 
 # Check if spellchecker found errors
 if test $status -ne 0
@@ -28,5 +28,5 @@ if test $status -ne 0
     trash-put $TEMP_DICT
 
     # Run spellcheck again with the updated dictionary
-    npx spellchecker $SPELLCHECK_PARAMS; or exit
+    pnpm exec spellchecker $SPELLCHECK_PARAMS; or exit
 end
