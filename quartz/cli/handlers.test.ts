@@ -4,38 +4,21 @@
 import type { CheerioAPI } from "cheerio"
 import type { Element as CheerioElement } from "domhandler"
 
-import { describe, it, expect, jest, beforeEach, afterEach } from "@jest/globals"
+import { describe, it, expect, jest, beforeEach, afterEach, beforeAll } from "@jest/globals"
 import { load as cheerioLoad } from "cheerio"
 
-// Mock critical CSS generator before importing handlers
-jest.mock("critical", () => {
-  const generate = jest.fn(() => Promise.resolve({ css: "/* critical */" })) as unknown as jest.Mock
-  return { generate }
-})
-
-// Mock puppeteer to prevent it from launching
-jest.mock("puppeteer", () => ({
-  launch: jest.fn(),
-  default: {
-    launch: jest.fn(),
-  },
+const mockGenerate = jest.fn(() => Promise.resolve({ css: "/* critical */" }))
+jest.unstable_mockModule("critical", () => ({
+  generate: mockGenerate,
 }))
 
 import fs from "fs"
-// skipcq: JS-W1028
 import fsExtra, { ensureDir, remove } from "fs-extra"
 import http from "http"
 import os from "os"
 import path from "path"
 
 import { variables as styleVars } from "../styles/variables"
-import {
-  reorderHead,
-  maybeGenerateCriticalCSS,
-  injectCriticalCSSIntoHTMLFiles,
-  resetCriticalCSSCache,
-  checkPortAvailability,
-} from "./handlers"
 
 const loadOptions = {
   xml: false,
@@ -44,7 +27,13 @@ const loadOptions = {
 }
 
 describe("reorderHead", () => {
-  // Helper functions
+  let reorderHead: typeof import("./handlers").reorderHead
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    reorderHead = handlers.reorderHead
+  })
+
   const createHtml = (headContent: string): CheerioAPI =>
     cheerioLoad(`<!DOCTYPE html><html><head>${headContent}</head><body></html>`, loadOptions)
 
@@ -78,7 +67,7 @@ describe("reorderHead", () => {
         <title>Test</title>
         <script id="detect-initial-state">/* initial state */</script>
       `,
-      expectedOrder: ["script", "meta", "title", "style", "link", "script"], // initial state, meta, title, critical, link, other script
+      expectedOrder: ["script", "meta", "title", "style", "link", "script"],
     },
     {
       name: "minimal elements",
@@ -161,11 +150,22 @@ describe("reorderHead", () => {
 
 describe("maybeGenerateCriticalCSS variable replacement", () => {
   let outputDir: string
+  let maybeGenerateCriticalCSS: typeof import("./handlers").maybeGenerateCriticalCSS
+  let injectCriticalCSSIntoHTMLFiles: typeof import("./handlers").injectCriticalCSSIntoHTMLFiles
+  let resetCriticalCSSCache: typeof import("./handlers").resetCriticalCSSCache
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    maybeGenerateCriticalCSS = handlers.maybeGenerateCriticalCSS
+    injectCriticalCSSIntoHTMLFiles = handlers.injectCriticalCSSIntoHTMLFiles
+    resetCriticalCSSCache = handlers.resetCriticalCSSCache
+  })
 
   beforeEach(async () => {
-    // skipcq: JS-P1003
     outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
     resetCriticalCSSCache()
+    mockGenerate.mockClear()
+    mockGenerate.mockResolvedValue({ css: "/* critical */" })
   })
 
   afterEach(async () => {
@@ -173,7 +173,6 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
   })
 
   it("should replace SCSS variable placeholders with actual values in cached CSS", async () => {
-    // Arrange mock variables
     Object.assign(styleVars, {
       baseMargin: "8px",
       pageWidth: 720,
@@ -182,13 +181,10 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     const manualCriticalCss = "body{margin: $base-margin; color: $page-width;}"
     const criticalScssPath = path.resolve("quartz/styles/critical.scss")
     const htmlPath = path.join(outputDir, "index.html")
-    // skipcq: JS-P1003
     await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
-    // skipcq: JS-P1003
     await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
     const katexDir = path.join(outputDir, "static", "styles")
     await ensureDir(katexDir)
-    // skipcq: JS-P1003
     await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
 
     const realReadFile = fs.promises.readFile
@@ -203,20 +199,15 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
 
     const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
-    // Act
     await maybeGenerateCriticalCSS(outputDir)
-    try {
-      await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
-    } catch {
-      // Catch inner error
-    }
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
 
-    // Assert
     const writtenHtml = writeSpy.mock.calls[0][1] as string
     expect(writtenHtml).toContain("margin: 8px")
     expect(writtenHtml).toContain("color: 720px")
     expect(writtenHtml).not.toContain("$base-margin")
     readFileSpy.mockRestore()
+    writeSpy.mockRestore()
   }, 10000)
 })
 
@@ -224,7 +215,13 @@ describe("checkPortAvailability", () => {
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>
   let blockingServer: http.Server | null = null
+  let checkPortAvailability: typeof import("./handlers").checkPortAvailability
   const testPort = 9876
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    checkPortAvailability = handlers.checkPortAvailability
+  })
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {

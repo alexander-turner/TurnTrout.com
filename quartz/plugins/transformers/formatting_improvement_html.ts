@@ -151,6 +151,8 @@ export function transformElement(
     const strippedContent = markedContent.replace(markerChar, "")
     const strippedTransformed = transformedContent.replace(markerChar, "")
     const expected = transform(strippedContent)
+
+    // istanbul ignore next
     if (expected !== strippedTransformed) {
       throw new Error(
         `Transform invariance check failed: expected "${expected}" but got "${strippedTransformed}"`,

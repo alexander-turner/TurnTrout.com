@@ -261,6 +261,7 @@
     "playwright": "1.50.1",
     "preact": "10.26.0",
     "prettier": "3.5.3",
+    "puppeteer": "24.15.0",
     "rehype-parse": "9.0.1",
     "rehype-stringify": "10.0.1",
     "remark-definition-list": "2.0.0",

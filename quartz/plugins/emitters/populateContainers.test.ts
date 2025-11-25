@@ -633,8 +633,8 @@ describe("PopulateContainers", () => {
       })
 
       it("should throw when config has neither id nor className", async () => {
-        jest.spyOn(fs, "existsSync").mockReturnValue(true)
-        jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+        const existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        const readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
 
         type ElementPopulatorConfig = Parameters<typeof populateModule.populateElements>[1][number]
         await expect(
@@ -644,11 +644,14 @@ describe("PopulateContainers", () => {
             } as ElementPopulatorConfig,
           ]),
         ).rejects.toThrow("Config missing both id and className")
+
+        existsSpy.mockRestore()
+        readSpy.mockRestore()
       })
 
       it("should throw when config has both id and className", async () => {
-        jest.spyOn(fs, "existsSync").mockReturnValue(true)
-        jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+        const existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        const readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
 
         await expect(
           populateModule.populateElements("/tmp/test.html", [
@@ -659,6 +662,9 @@ describe("PopulateContainers", () => {
             },
           ]),
         ).rejects.toThrow("Config cannot have both id and className")
+
+        existsSpy.mockRestore()
+        readSpy.mockRestore()
       })
     })
   })

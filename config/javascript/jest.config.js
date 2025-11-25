@@ -19,12 +19,15 @@ const config = {
   coverageDirectory: "coverage",
 
   coveragePathIgnorePatterns: [
-    "quartz/cli/.*",
+    "/node_modules/",
+    "quartz/cli/",
     "quartz/depgraph\\.ts",
     "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
+    "\\.test\\.(ts|tsx|js|jsx)$",
+    "/__tests__/",
   ],
 
   coverageThreshold: {
