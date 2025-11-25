@@ -87,7 +87,6 @@ class AssetProcessor {
     try {
       const data = await fs.readFile(paths.assetDimensions, "utf-8")
       this.assetDimensionsCache = JSON.parse(data) as AssetDimensionMap
-      console.log("Asset dimensions cache loaded.")
     } catch (error) {
       console.warn(
         `Could not load asset dimension cache from ${paths.assetDimensions}: ${error}. Starting fresh.`,

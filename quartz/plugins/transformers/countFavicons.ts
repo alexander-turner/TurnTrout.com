@@ -23,7 +23,8 @@ import { createWinstonLogger } from "./logger_utils"
 const logger = createWinstonLogger("countlinks")
 
 // Module-level counter to accumulate link counts across all files
-const faviconCounter = new Map<string, number>()
+// Exported for testing purposes
+export const faviconCounter = new Map<string, number>()
 
 /**
  * Gets favicon counts from memory, or reads from file if memory is empty.

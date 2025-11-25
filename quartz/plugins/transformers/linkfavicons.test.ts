@@ -47,14 +47,6 @@ afterEach(async () => {
   await fsExtra.remove(tempDir)
 })
 
-jest.mock("./linkfavicons", () => {
-  const actual = jest.requireActual("./linkfavicons")
-  return {
-    ...(actual as unknown as Record<string, unknown>),
-    urlCache: new Map(),
-  }
-})
-
 const createExpectedSpan = (
   text: string,
   imgPath: string,
@@ -736,11 +728,28 @@ describe("Favicon Utilities", () => {
     const faviconCounts = new Map<string, number>()
 
     beforeEach(() => {
+      // Clear and reset urlCache to prevent test pollution
+      linkfavicons.urlCache.clear()
+      linkfavicons.urlCache.set(specialFaviconPaths.turntrout, specialFaviconPaths.turntrout)
+
       faviconCounts.clear()
       // Set up counts for common favicons
       faviconCounts.set(specialFaviconPaths.turntrout, minFaviconCount + 1)
       faviconCounts.set(specialFaviconPaths.mail, minFaviconCount + 1)
       faviconCounts.set(specialFaviconPaths.anchor, minFaviconCount + 1)
+
+      // Mock fetch to prevent actual network calls during MaybeSaveFavicon
+      // Return 404 for all fetches so MaybeSaveFavicon returns DEFAULT_PATH for unknown hosts
+      jest.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 404,
+      } as Response)
+
+      // Mock fs.promises.stat to simulate that local favicon files don't exist
+      // This prevents MaybeSaveFavicon from trying to read local files
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
     })
 
     it.each([
