@@ -178,7 +178,7 @@ function normalizeHostname(hostname: string): string {
   // Use psl library to extract root domain (handles multi-part TLDs correctly)
   const parsed = parseDomain(hostname)
   // Return the registered domain if valid, otherwise return original hostname
-  if ("error" in parsed || !parsed.domain) {
+  if (parsed.error !== undefined || !parsed.domain) {
     return hostname
   }
   return parsed.domain

@@ -1,6 +1,7 @@
 // SPA Inline Module
 // Handles navigation between pages without full page reloads
 
+// @ts-expect-error: micromorph types not properly exported with bundler resolution
 import micromorph from "micromorph"
 import { escape } from "validator"
 
