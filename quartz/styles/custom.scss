@@ -949,8 +949,7 @@ iframe {
 figure#goose-terminal {
   line-height: 1.1rem;
 
-  &[data-line] {
-    overflow-x: auto;
-    text-wrap: unset;
+  & pre > code > [data-line] {
+    text-wrap: nowrap;
   }
 }

@@ -73,8 +73,8 @@ Subtitle: One command to set up your shell, editor, and secret management.
 My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
 
 1. Fish shell with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
-2. `neovim` configured with LazyVim, providing a full-fledged IDE with Copilot support,
-3. `tmux` with automatic session saving and restoration (`tmux-continuum` and `tmux-restore`),
+2. `neovim` via LazyVim, providing a full IDE experience,
+3. `tmux` with automatic session saving and restoration,
 4. `envchain` for hardware-encrypted secret management via MacOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in configuration files,
 5. Open source AI tool setup,
 6. `autojump` for quick directory navigation,
