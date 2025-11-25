@@ -295,7 +295,8 @@
       "lodash.template": "4.5.0",
       "micromatch": "4.0.8",
       "trim": "1.0.1",
-      "jest-worker": "30.2.0"
+      "jest-worker": "30.2.0",
+      "puppeteer": "$puppeteer"
     }
   }
 }
