@@ -46,6 +46,21 @@ def check_required_fields(metadata: dict) -> List[str]:
     return errors
 
 
+def check_cover_image_alt(metadata: dict) -> List[str]:
+    """If a card_image is specified, card_image_alt must also be provided."""
+    errors: List[str] = []
+    card_url = metadata.get("card_image")
+    if not metadata or not metadata.get("card_image"):
+        return errors
+
+    # Check if there's a custom card_image
+    card_image_alt = metadata.get("card_image_alt", "")
+    if not card_image_alt.strip():
+        errors.append(f"Custom card_image ({card_url}) requires card_image_alt")
+
+    return errors
+
+
 def validate_video_tags(text: str) -> List[str]:
     """
     Validate that the video tag is valid.
@@ -134,7 +149,9 @@ def check_invalid_md_links(text: str, file_path: Path) -> List[str]:
         ):  # pragma: no cover
             continue  # I mention this checker, not a real broken link
         line_num = text[: match.start()].count("\n") + 1
-        errors.append(f"Invalid markdown link at line {line_num}: {match.group()}")
+        errors.append(
+            f"Invalid markdown link at line {line_num}: {match.group()}"
+        )
 
     return errors
 
@@ -167,7 +184,9 @@ def check_latex_tags(text: str, file_path: Path) -> List[str]:
 
 
 def _slug_in_metadata(slug: str, target_metadata: dict) -> bool:
-    is_alias = target_metadata.get("aliases") and slug in target_metadata["aliases"]
+    is_alias = (
+        target_metadata.get("aliases") and slug in target_metadata["aliases"]
+    )
     return slug == target_metadata["permalink"] or bool(is_alias)
 
 
@@ -281,7 +300,8 @@ def check_card_image_extension(metadata: dict) -> List[str]:
 
     if not card_image_url.lower().endswith((".png", ".jpg", ".jpeg")):
         errors.append(
-            f"Card image URL '{card_image_url}' must end in" " .png, .jpg, or .jpeg"
+            f"Card image URL '{card_image_url}' must end in"
+            " .png, .jpg, or .jpeg"
         )
     return errors
 
@@ -312,7 +332,9 @@ def check_card_image(metadata: dict) -> List[str]:
                 f"status {response.status_code}"
             )
     except requests.RequestException as e:
-        errors.append(f"Failed to load card image URL '{card_image_url}': {str(e)}")
+        errors.append(
+            f"Failed to load card image URL '{card_image_url}': {str(e)}"
+        )
 
     errors.extend(check_card_image_extension(metadata))
     return errors
@@ -369,7 +391,9 @@ def remove_code(text: str, mark_boundaries: bool = False) -> str:
         r"```.*?```", replace_preserving_newlines, text, flags=re.DOTALL
     )
     # Match inline code but don't cross newlines
-    return re.sub(r"(?<!\\)`[^`\n]*(?<!\\)`", replacement_char, no_code_block_text)
+    return re.sub(
+        r"(?<!\\)`[^`\n]*(?<!\\)`", replacement_char, no_code_block_text
+    )
 
 
 def remove_math(text: str, mark_boundaries: bool = False) -> str:
@@ -393,7 +417,9 @@ def remove_math(text: str, mark_boundaries: bool = False) -> str:
         r"\$\$.*?\$\$", replace_preserving_newlines, text, flags=re.DOTALL
     )
     # Match inline math but don't cross newlines
-    return re.sub(r"(?<!\\)\$[^$\n]*?(?<!\\)\$", replacement_char, no_math_block_text)
+    return re.sub(
+        r"(?<!\\)\$[^$\n]*?(?<!\\)\$", replacement_char, no_math_block_text
+    )
 
 
 # Either preceded by two backslashes or none, and then a brace.
@@ -566,7 +592,9 @@ def check_footnote_references(text: str) -> List[str]:
     # Check for references to undefined footnotes
     for footnote_name in references:
         if footnote_name not in definitions:
-            errors.append(f"Footnote '{footnote_name}' is referenced but never defined")
+            errors.append(
+                f"Footnote '{footnote_name}' is referenced but never defined"
+            )
 
     return errors
 
@@ -592,6 +620,7 @@ def check_file_data(
     text = file_path.read_text()
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
+        "cover_image_alt": check_cover_image_alt(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),
@@ -808,7 +837,9 @@ def main() -> None:
     )
 
     # mapping from permalink or alias to its forward and prev post slugs
-    all_sequence_data: Dict[str, dict] = build_sequence_data(list(markdown_files))
+    all_sequence_data: Dict[str, dict] = build_sequence_data(
+        list(markdown_files)
+    )
 
     for file_path in markdown_files:
         metadata, _ = script_utils.split_yaml(file_path)

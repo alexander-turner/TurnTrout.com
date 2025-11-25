@@ -7,6 +7,7 @@ import {
   appleTouchIconUrl,
   faviconUrl,
   faviconMimeType,
+  defaultCardAlt,
 } from "../components/constants"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { escapeHTML } from "./escape"
@@ -62,12 +63,14 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     ? resolveRelative(redirect.slug, redirect.to)
     : (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || pageUrl
 
-  const cardImage = (fileData.frontmatter?.card_image as string) ?? defaultCardUrl
-  const altText =
-    cardImage === defaultCardUrl
-      ? "A pond containing a trout and a goose peacefully swimming near a castle."
-      : description // Use description as alt text for custom images
-  const imageTags = renderImageTags(cardImage, altText)
+  const cardImageString = fileData.frontmatter?.card_image as string
+  const cardImageUrl = cardImageString ?? defaultCardUrl
+  const hasCustomCardImage = cardImageUrl !== defaultCardUrl
+  let altCardText = defaultCardAlt
+  if (hasCustomCardImage) {
+    altCardText = (fileData.frontmatter?.card_image_alt as string | undefined) ?? description
+  }
+  const imageTags = renderImageTags(cardImageUrl, altCardText)
 
   const authors = fileData.frontmatter?.authors as string | undefined
   const videoPreview = fileData.frontmatter?.video_preview_link as string | undefined
@@ -90,7 +93,7 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
       name="twitter:description"
       content="${escapeHTML(description)}"
     />
-    <meta name="twitter:image" content="${escapeHTML(cardImage)}" />
+    <meta name="twitter:image" content="${escapeHTML(cardImageUrl)}" />
     <meta name="twitter:site" content="@Turn_Trout" />
     ${maybeRenderAuthorTags(authors)}
 

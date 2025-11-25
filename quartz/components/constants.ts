@@ -1,4 +1,6 @@
 export const defaultCardUrl = "https://assets.turntrout.com/static/images/fb_preview.png"
+export const defaultCardAlt =
+  "A pond containing a trout and a goose peacefully swimming near a castle."
 export const defaultTitle = "The Pond"
 export const defaultDescription = "Writings about doing good, thinking well, and living happily."
 export const locale = "en-US"

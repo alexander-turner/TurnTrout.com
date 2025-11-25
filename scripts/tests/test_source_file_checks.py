@@ -82,6 +82,77 @@ def test_check_required_fields(
     assert set(errors) == set(expected_errors)
 
 
+@pytest.mark.parametrize(
+    "metadata,expected_errors",
+    [
+        # Test case 1: No card_image - should pass
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+            },
+            [],
+        ),
+        # Test case 2: Custom card_image with alt text - should pass
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+                "card_image_alt": "A custom image description",
+            },
+            [],
+        ),
+        # Test case 3: Custom card_image without alt text - should fail
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+            },
+            ["Custom card_image (/custom-image.png) requires card_image_alt"],
+        ),
+        # Test case 4: Custom card_image with empty alt text - should fail
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+                "card_image_alt": "",
+            },
+            ["Custom card_image (/custom-image.png) requires card_image_alt"],
+        ),
+        # Test case 5: Custom card_image with whitespace-only alt text - should fail
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+                "card_image_alt": "   ",
+            },
+            ["Custom card_image (/custom-image.png) requires card_image_alt"],
+        ),
+        # Test case 6: No metadata - should pass (handled elsewhere)
+        (
+            {},
+            [],
+        ),
+    ],
+)
+def test_check_cover_image_alt(
+    metadata: Dict[str, str | List[str]], expected_errors: List[str]
+) -> None:
+    """
+    Test the cover image alt text checker with various metadata configurations.
+
+    Args:
+        metadata: Test metadata to check
+        expected_errors: List of expected error messages
+    """
+    errors = source_file_checks.check_cover_image_alt(metadata)
+    assert set(errors) == set(expected_errors)
+
+
 def test_main_workflow(
     git_repo_setup, quartz_project_structure, monkeypatch
 ) -> None:
