@@ -34,12 +34,17 @@ jobs:
         with:
           node-version: ">=22"
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Install ESLint
         run: |
-          npm install eslint@9.12.0
+          pnpm add eslint@9.12.0
         env:
           PUPPETEER_SKIP_DOWNLOAD: "true"
 
       - name: Run ESLint
-        run: npx eslint .
+        run: pnpm eslint .
           --config config/javascript/eslint.config.js

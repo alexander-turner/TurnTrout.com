@@ -25,10 +25,10 @@ jobs:
         uses: ./.github/actions/setup-build-env
 
       - name: Build Quartz
-        run: npx quartz build
+        run: pnpm build
 
       - name: Install Wrangler
-        run: npm install -g wrangler
+        run: pnpm add -g wrangler
 
       - name: Publish to Cloudflare Pages for Lighthouse testing
         id: deploy_cf_pages
@@ -37,7 +37,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)
-          DEPLOY_OUTPUT=$(npx wrangler pages deploy ./public --project-name=turntrout --branch=commit-${SHORT_SHA} --commit-dirty=true)
+          DEPLOY_OUTPUT=$(pnpm exec wrangler pages deploy ./public --project-name=turntrout --branch=commit-${SHORT_SHA} --commit-dirty=true)
 
           echo "Wrangler deployment output:"
           echo "${DEPLOY_OUTPUT}"

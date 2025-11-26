@@ -75,7 +75,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          npx playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV

@@ -21,4 +21,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
-      - run: npm test -- -u
+      - run: pnpm test -- -u

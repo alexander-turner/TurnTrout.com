@@ -7,7 +7,24 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: 22.5.1
-        cache: "npm"
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
     - name: Cache asset dimensions
       id: asset-dimensions-cache
@@ -19,14 +36,14 @@ runs:
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
     - name: Install Node Dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
         PUPPETEER_SKIP_DOWNLOAD: "true"
 
     - name: Install sharp
-      run: npm install --os=linux --cpu=x64 sharp
+      run: pnpm install --os=linux --cpu=x64 sharp
       shell: bash
 
     - name: Set up Python

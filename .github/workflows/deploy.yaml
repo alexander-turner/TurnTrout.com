@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-build-env
 
       - name: Build Quartz and generate critical CSS
-        run: npx quartz build
+        run: pnpm build
 
       - name: Deploy to Cloudflare Pages (fast feedback for dev)
         if: github.ref_name == 'dev'
@@ -36,7 +36,7 @@ jobs:
           branch: ${{ github.ref_name }}
 
       - name: Install subfont
-        run: npm install -g subfont
+        run: pnpm add -g subfont
       - name: Make script executable
         run: chmod +x ./scripts/subfont.sh
       - name: Subset fonts

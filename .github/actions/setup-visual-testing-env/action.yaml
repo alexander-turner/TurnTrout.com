@@ -12,7 +12,24 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version: ">=22"
-        cache: "npm"
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
     - name: Cache asset dimensions
       id: asset-dimensions-cache
@@ -27,7 +44,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
 
@@ -39,7 +56,7 @@ runs:
         key: ffmpeg-${{ runner.os }}-master-latest
 
     - name: Install Node Dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
@@ -47,7 +64,7 @@ runs:
 
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
-      run: npx playwright install --with-deps chromium webkit firefox
+      run: pnpm exec playwright install --with-deps chromium webkit firefox
       shell: bash
 
     - name: Download and install ffmpeg
