@@ -1,3 +1,31 @@
+[project]
+name = "turntrout-com"
+version = "1.4"
+description = "TurnTrout.com website build scripts and utilities"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4",
+    "defusedxml",
+    "gitpython",
+    "google-auth",
+    "numpy",
+    "pandas",
+    "pillow",
+    "protobuf",
+    "psutil",
+    "pytest",
+    "pyyaml",
+    "requests",
+    "rich",
+    "ruamel-yaml",
+    "tqdm",
+    "validators",
+    "types-defusedxml",
+    "types-pyyaml",
+    "types-requests",
+    "pandas-stubs",
+]
+
 [tool.black]
 line-length = 80
 target-version = ['py311']

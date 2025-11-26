@@ -46,14 +46,18 @@ runs:
       run: pnpm install --os=linux --cpu=x64 sharp
       shell: bash
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v3
       with:
-        python-version: "3.11"
-        cache: "pip"
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      run: uv python install 3.11
+      shell: bash
 
     - name: Install Python Dependencies
-      run: pip install -r requirements.txt
+      run: uv sync --frozen
       shell: bash
 
     - name: Install Build Dependencies

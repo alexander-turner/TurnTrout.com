@@ -1041,11 +1041,9 @@ Updating page metadata
        </blockquote>
 </dd>
 
-Automated Python dependency management
+Python dependency management
 
-: I used to periodically run `pip freeze > requirements.txt`, but that led to a bloated `requirements.txt` which included random packages from my `pip` environment. I automated the workflow to follow best practices.
-
-: [`pipreqs`](https://github.com/bndr/pipreqs) scans my `scripts` directory to detect which packages are actually imported and used in the codebase. The detected packages populate `requirements.in` with unpinned, readable dependency names. Finally, [`pip-compile`](https://pip-tools.readthedocs.io/) generates `requirements.txt` with exact version pins for reproducible builds.
+: I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.
 
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.

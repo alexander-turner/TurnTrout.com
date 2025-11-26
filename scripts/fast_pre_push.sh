@@ -45,15 +45,14 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
   exit 0
 fi
 
-sh "$GIT_ROOT/scripts/update_requirements.sh"
-python "$GIT_ROOT/scripts/update_date_on_publish.py"
+uv run python "$GIT_ROOT/scripts/update_date_on_publish.py"
 
 # Check if there are changes to commit and push
 GIT_STATUS=$(git status --porcelain | wc -l)
 if [ "$GIT_STATUS" -gt 0 ]; then
   echo "Committing changes..."
   git add -A
-  git commit -m "chore: updated publication dates and/or requirements.txt"
+  git commit -m "chore: updated publication dates"
   echo "Pushing commit..."
   git push
 fi
