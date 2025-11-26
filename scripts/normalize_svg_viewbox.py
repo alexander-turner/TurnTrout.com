@@ -53,9 +53,11 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     register_namespace("", "http://www.w3.org/2000/svg")
     tree = ET.parse(svg_path)
     root = tree.getroot()
+    if root is None:
+        raise ValueError(f"Failed to parse SVG root element from {svg_path}")
 
     # Get current viewBox to calculate scale
-    viewbox = root.get("viewBox", "0 0 100 100")
+    viewbox = root.get("viewBox") or "0 0 100 100"
     current_width = float(viewbox.split()[2])
     current_height = float(viewbox.split()[3])
 
