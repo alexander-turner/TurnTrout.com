@@ -1,17 +1,16 @@
 ---
 permalink: statistics-of-a-maze-solving-network
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
-lw-is-question: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
+lw-is-question: "false"
 lw-posted-at: 2023-04-20T22:26:08.810000Z
 lw-last-modification: 2023-06-07T01:24:39.295000Z
 lw-curation-date: None
 lw-frontpage-date: 2023-04-21T00:09:39.906000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 11
 lw-base-score: 46
 lw-vote-count: 13
@@ -19,7 +18,7 @@ af-base-score: 22
 af-num-comments-on-upload: 10
 title: Behavioural statistics for a maze-solving agent
 lw-latest-edit: 2023-06-07T01:24:40.249000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 authors: Peli Grietzer and Alex Turner
 tags:
   - AI
@@ -30,21 +29,17 @@ aliases:
 sequence-link: posts#interpreting-a-maze-solving-network
 lw-sequence-title: Interpreting a Maze-Solving Network
 prev-post-slug: top-right-steering-vector
-prev-post-title: 'Maze-Solving Agents: Add a Top-Right Vector, Make the Agent Go to
-  the Top-Right'
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+prev-post-title: "Maze-Solving Agents: Add a Top-Right Vector, Make the Agent Go to the Top-Right"
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2023-04-20 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
+original_url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
 skip_import: true
-card_image: 
-  https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.png
-description: Closeness to cheese and the top-right corner both influence a maze-solving
-  AI, suggesting a "shard-like" decision-making process.
+card_image: https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.png
+description: Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a "shard-like" decision-making process.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."
 ---
-
 
 
 
@@ -200,7 +195,7 @@ As we move on to multiple regressions to try finding out which variables drive t
 
 Two of our highly predictive variables are indeed strongly correlated:
 
-![A scatter plot showing a strong positive correlation (0.886) between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."](https://assets.turntrout.com/static/images/posts/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.avif)
+![A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."](https://assets.turntrout.com/static/images/posts/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.avif)
 <br/>Figure: $d_\text{step}(\text{decision-square},\text{cheese})$ and $d_\text{Euclidean}(\text{decision-square},\text{cheese})$ have correlation of .886.
 
 We then computed the [variation inflation factors](https://corporatefinanceinstitute.com/resources/data-science/variance-inflation-factor-vif/) for the three predictive variables we end up analyzing in detail. VIF measures how collinearity increases the variance of the regression coefficients. A score exceeding 4 is considered to be a warning sign of multicollinearity.

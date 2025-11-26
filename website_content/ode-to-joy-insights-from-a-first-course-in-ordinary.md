@@ -1,17 +1,16 @@
 ---
 permalink: ordinary-differential-equations-textbook-review
-lw-was-draft-post: 'false'
-lw-is-af: 'false'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
-lw-is-question: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "false"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
+lw-is-question: "false"
 lw-posted-at: 2020-03-25T20:03:39.590000Z
 lw-last-modification: 2020-03-25T22:12:25.074000Z
 lw-curation-date: None
 lw-frontpage-date: 2020-03-25T21:35:28.420000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 5
 lw-base-score: 39
 lw-vote-count: 11
@@ -19,7 +18,7 @@ af-base-score: 16
 af-num-comments-on-upload: 0
 title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
 lw-latest-edit: 2020-03-25T22:12:25.494000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - scholarship-&-learning
   - understanding-the-world
@@ -32,18 +31,16 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: topology-textbook-review
 prev-post-title: "Continuous Improvement: Insights from 'Topology'"
 next-post-slug: functional-analysis-textbook-review
-next-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional
-  Analysis'"
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+next-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2020-03-25 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
+original_url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/eb2E5Eg.png
-description: "Textbook insights into differential equations: how to express systems
-  in terms of change, equilibria and stability, resonance, and more. "
+description: "Textbook insights into differential equations: how to express systems in terms of change, equilibria and stability, resonance, and more. "
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.'
 ---
 
 
