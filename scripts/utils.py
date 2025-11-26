@@ -1,5 +1,6 @@
 """Utility functions for scripts/ directory."""
 
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -8,6 +9,16 @@ from typing import Collection, Dict, Optional, Set
 import git
 from bs4 import BeautifulSoup, NavigableString, Tag
 from ruamel.yaml import YAML, YAMLError
+
+
+def load_shared_constants() -> dict:  # pragma: no cover
+    """Load shared constants from config/constants.json."""
+    git_root = get_git_root()
+    constants_path = git_root / "config" / "constants.json"
+
+    with open(constants_path, encoding="utf-8") as f:
+        return json.load(f)
+
 
 _executable_cache: Dict[str, str] = {}
 
