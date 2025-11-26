@@ -211,7 +211,7 @@ export const populateElements = async (
   for (const config of configs) {
     // Validate that config has exactly one of id or className
     if (config.id && config.className) {
-      throw new Error(`Config cannot have both id and className`)
+      throw new Error("Config cannot have both id and className")
     }
 
     if (config.id) {
@@ -239,7 +239,7 @@ export const populateElements = async (
       modified = true
       logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
-      throw new Error(`Config missing both id and className`)
+      throw new Error("Config missing both id and className")
     }
   }
 

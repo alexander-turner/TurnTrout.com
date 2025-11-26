@@ -49,7 +49,9 @@ describe("PopulateContainers", () => {
 
     // Mock fs methods
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+      /* don't want a real write*/
+    })
     jest
       .spyOn(fs, "readFileSync")
       .mockReturnValue(
