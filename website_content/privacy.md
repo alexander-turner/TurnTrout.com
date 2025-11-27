@@ -551,7 +551,7 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 Subtitle: Time: 10 minutes.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251022164131.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif]]
 
 - [ ] Download [Magic Earth](https://www.magicearth.com/).
     - [ ] As a sanity check, verify that familiar local addresses are present in the application.
