@@ -76,7 +76,7 @@ Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and 
 > Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
 
 I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
- ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif]]
+ ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif|A user asks "But you trust @GrapheneOS right?". Edward Snowden replies "I use GrapheneOS every day."]]
 
 I'm going to be real with you: the switch will be inconvenient at first. It took me an entire evening to get all my apps set up again. If you want to invest in avoiding a surveillance state, this is a good investment. You'll end up with a phone that has nearly all the functionality you'd expect of an Android. Everything should just work, with a few exceptions:
 
@@ -278,7 +278,7 @@ If you use aliases, you make it harder for scammers and surveillance to track yo
 
 - [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif|Step 1 shows using an alias in a signup form. Step 2 shows emails being forwarded to your real inbox. Step 3 explains that replying sends from the alias, keeping your real email hidden.]]
 
 - [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate email aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
@@ -327,7 +327,7 @@ Subtitle: Time: 30 minutes plus a few more hours depending on how much you use P
 
 [PayPal just got hacked and 16 million customers had their _passwords_ leaked, meaning PayPal wasn't following even the most basic security precautions.](https://www.tomsguide.com/computing/online-security/over-16-million-hit-with-paypal-data-breach-what-to-do-right-now) To add ad to insecurity, in 2025, PayPal started sharing your data with a _lot_ of companies:
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251019145510.avif|A Sankey diagram titled "How does PayPal share your data?" shows five categories like "Commercial Partnerships" on the left. Lines flow from these categories to an overwhelmingly large list of dozens of third-party companies on the right, illustrating the vast scale of PayPal's user data sharing.]]
 Figure: [Fewer than half of the companies PayPal shares your data with](https://rebecca-ricks.com/paypal-data/).
 
 I recommend deleting your PayPal.
@@ -410,7 +410,7 @@ Subtitle: Time: 10 minutes.
 
 Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a private front-end for X, displaying posts about machine learning. ]]
 
 The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable, so be ready to ask the extension to redirect you to the original site.
 
@@ -425,7 +425,7 @@ If you want to browse the original site again, you can disable the extension or 
 Subtitle: Time: 20 minutes.
 
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
-> ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif]]
+> ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif|An isometric diagram of a grocery store aisle illustrates how beacons track shoppers. An annotation points to a beacon on a shelf, explaining: "The beacons are like little lighthouses that emit one-way messages to nearby devices." A close-up of a phone shows an app icon highlighted.]]
 >
 > Most people aren’t aware they are being watched with beacons, but the “beacosystem” tracks millions of people every day. Beacons are placed at [airports](https://www.post-gazette.com/business/tech-news/2018/04/19/CMU-inks-deal-to-help-create-smartest-airport-on-the-planet-allegheny-technology/stories/201804190126), [malls](https://www.bluetooth.com/bluetooth-resources?video=moa), [subways](https://www.citylab.com/life/2015/06/how-to-get-your-bearings-when-exiting-a-subway-station/395966/), [buses](https://www.nfcworld.com/2016/10/11/347767/proxama-to-create-uks-biggest-ble-beacon-advertising-network/), [taxis](https://www.mobileeurope.co.uk/press-wire/proxama-aims-for-ubiquitous-ble-coverage-with-uk-taxi-deal), [sporting arenas](https://adage.com/article/datadriven-marketing/location-trackers-bigger-sports-arenas/305211/), [gyms](https://www.ymcalouisville.org/healthy-living/health-well-being-fitness/humana-vitality.html), [hotels](https://www.mobilemarketer.com/ex/mobilemarketer/cms/news/software-technology/23565.html), [hospitals](https://unacast.s3.amazonaws.com/7a7f44d764d14917aed62e80039cb688.pdf), [music festivals](https://kontakt.io/blog/beacons-at-music-festivals/), [cinemas](https://geomarketing.com/beacons-at-the-movies-screenvision-and-mobiquity-networks-add-proximity-marketing-to-cinema-network) and [museums](https://www.rfidjournal.com/news/asian-art-museum-enhances-visitor-experience-with-ble-beacons/70523/), and even on [billboards](https://www.fastcompany.com/3033242/these-new-billboards-talk-to-your-smartphone).
 >
@@ -569,7 +569,7 @@ Subtitle: Time: 5 minutes.
 
 If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost is small  -- just connect in a less ambiguous environment.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif|A screenshot of the MacOS "About" settings. The device's name is set to the generic "MacBook Pro".]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif|A screenshot of the macOS "About" settings. The device's name is set to the generic "MacBook Pro".]]
 Figure: My laptop's generic name.
 
 - [ ] Rename your devices to have generic names.
@@ -710,10 +710,10 @@ Later, [I propose](#x-migration-plan) a two-month migration during which you cro
 
 Mastodon's structure is resilient against censorship. Mastodon can't "chicken out" like Bluesky seems to have done because Mastodon operates on a _federated_ model. The "Fediverse" is a collection of interlinked servers which use a shared protocol. The servers can interoperate seamlessly. Users can easily port their data from one server to another. Censorship becomes hard -- more like "whack a mole" with a million moles, where the moles may be using _quite_ sophisticated VPNs. :)
 
-![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif]]
+![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251025204759.avif|On the left, a centralized network is shown as a single central orb with lines radiating outwards. On the right, a federated network is depicted as a web of interconnected, unique orbs resembling planets and stars, with no single center.]]
 Figure: A _centralized_ network on the left versus a _federated_ network on the right. The federated network is robust to the censorship of individual servers. Users can export their data and migrate to a new server.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251015092239.avif|Three user testimonials for Mastodon. First: "I'm personally addicted to Mastodon... I've got one profile for sharing art, another one for casual conversation and another one for politics," from @guedes@mastodon.social. Second: "I've made so many friends on Mastodon because I can actually talk to people instead of getting buried by algorithms that reward meaningless numbers over actual interaction," from @trwnh@mastodon.social. Third: "Mastodon does an amazing job at giving communities the autonomy necessary to thrive by giving them the keys to federate and moderate their own servers... it simply does features that the major social networks try to do (e.g. image captioning, content warnings) astoundingly better," from @jenn@pixel.kitchen.]]
 
 Sadly, Mastodon isn't too popular, boasting [only 750,000 active users sprinkled across dozens of major servers in October 2025.](https://mastodon-analytics.com/) In contrast, Bluesky houses 4.1 million daily users. X stacks up about 260 million. In particular, Bluesky has [a more vibrant AI research scene](https://bsky.app/starter-pack/chris.bsky.social/3lbefurb2xh2u) -- many of my readers care about this.
 
@@ -758,7 +758,7 @@ The government tracks your car movements with exquisite attention. They use Auto
 
 The remedy is to support data retention limits, restrict inter-agency sharing, demand transparency, organize community opposition, and support organizations like the [Electronic Frontier Foundation](https://www.eff.org/) and the [American Civil Liberties Union](https://www.aclu.org/) which legally challenge this surveillance system. For a privacy-respecting jurisdiction, look no further than New Hampshire: [ALPR data must be deleted within 180 seconds unless the data match against an active person of interest.](https://gc.nh.gov/rsa/html/XXI/261/261-75-b.htm)
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251018230933.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251018230933.avif|A map from deflock.me showing the locations of known Automated License Plate Readers in California and Nevada. Colored circles indicate numerous camera clusters, with high concentrations in major cities like Los Angeles and the San Francisco Bay Area, and along highways.]]
 
 Figure: Map of known ALPRs provided by [`deflock.me`](https://www.deflock.me/).
 

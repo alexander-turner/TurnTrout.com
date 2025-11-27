@@ -25,11 +25,11 @@ date_updated: *id001
 
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill some models before deployment, our work implies they might achieve robust unlearning "for free" on those models by simply applying an unlearning step before distillation.
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif|A diagram shows unlearning suppresses a model's undesired capabilities, but distilling it removes them. A chart shows the Unlearn and Distill method maintains a lower Forget Domain Performance (CE Loss) during relearning, indicating it is more robust than other methods.]]
 
 Figure: Unlearn-and-Distill applies unlearning to a bad behavior and then distills the unlearned model into a new model. Distillation makes it way harder to retrain the new model to do the bad thing.
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613145643.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613145643.avif|A watercolor of a lab setup where a flask of mixed red and blue liquid is distilled. A tube transfers vapor to a second flask, which collects only blue liquid, leaving the red behind.]]
 Figure: Distilling the good while leaving behind the bad.
 
 > [!thanks]
@@ -67,7 +67,7 @@ We show this limitation persists even in the idealized setting of finetuning a m
 
 Despite minimal initial differences in behavior (i.e. logits), the student model initialized from the full pretrained model (trained on both retain and forget data) relearns the “unlearned” capability much faster than either the oracle or a randomly initialized student on which we performed oracle distillation.
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250613141405.avif|Three charts comparing a Pretrained Student, a Random-Init Student, and an Oracle Teacher. Chart (a) shows both students successfully distill to match the oracle. Charts (b) and (c) show that when retrained on a forgotten task, the Pretrained Student relearns much faster (loss drops/accuracy rises) than the more robust Random-Init Student and Oracle Teacher.]]
 
 Figure: _Matching oracle behavior doesn’t guarantee robust unlearning._ Graph (a) shows the loss during distillation of the oracle into the pretrained and randomly initialized students. Graphs (b) and (c) show forget performance through retraining for Language and Arithmetic settings, respectively.
 
@@ -99,7 +99,7 @@ On both language and arithmetic tasks, we apply Unlearn-and-Distill using three 
 | Language   | English text CE loss                       | Korean text CE loss                           |
 | Arithmetic | Addition and subtraction problems accuracy | Multiplication and division problems accuracy |
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153120.avif|Two rows of graphs show performance on the Language (CE loss) and Arithmetic (accuracy) tasks. Three columns of graphs combine Unlearn-and-Distill with the GradDiff, MaxEnt, and RMU methods. Each graph plots performance on forget data vs. retraining steps, showing Unlearn-and-Distill is consistently more robust.]]
 
 Figure: _Comparing unlearning methods._ Each graph depicts the relearning trends on forget data for the initial unlearning method (Unlearn), Unlearn-and-Distill, and Data Filtering (Gold Standard). The rows separate the settings (language and arithmetic), and the columns separate the initial unlearning methods (GradDiff, Maxent, and RMU).
 
@@ -121,7 +121,7 @@ We introduce UNDO (Unlearn-Noise-Distill-on-Outputs), a generalization of our ea
 
 To inject noise, we use a shrink-and-perturb procedure that controls damage via a parameter $\alpha$ (higher $\alpha$ means more damage). We then distill until the student recovers 95% of the teacher model’s retain performance.
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153132.avif|Four charts showing unlearning robustness scales with compute. For language and arithmetic tasks, plots (a) and (c) show a linear trade-off: more compute invested in the UNDO method results in greater robustness. Plots (b) and (d) show that with more perturbation, the model relearns a forgotten task more slowly, indicating more robust unlearning that approaches the gold standard of data filtering.]]
 
 Figure: _Unlearning robustness scales with more perturbation._ (a, c) show the trade-off between robustness and compute. (b) shows relearning trends for language with  $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$. (d) shows relearning trends for arithmetic with $\alpha \in \{0.55, 0.65, 0.7, 0.75\}$.
 
@@ -131,7 +131,7 @@ In plots (a) and (c), as $\alpha$ increases, training takes longer and the final
 
 What we ultimately want from a robust unlearning method is to push the Pareto frontier of initial retain performance vs. forget performance. The frontier must hold up against an adversary who is trying to maximize forget performance given a certain compute budget.  
 
-![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif]]
+![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612153140.avif|Six scatter plots comparing unlearning methods on Language and Arithmetic tasks after 0, 40, and 500 relearning steps. As relearning increases, most methods degrade, while Unlearn-Noise-Distill-on-Outputs and Data Filtering remain robustly in the optimal performance corner.]]
 
 Figure: _Comparing unlearning methods across different adversarial strengths._ We vary each method's hyperparameters and plot their retain and relearned forget performance.<br/><br/>_Column 1:_ Initial performance after unlearning but before adversarial attacks. <br/>_Column 2:_ Relearned forget performance after moderate relearning (40 steps). <br/>_Column 3:_ Performance after extensive relearning (500 steps).
 

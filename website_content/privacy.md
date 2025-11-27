@@ -356,7 +356,7 @@ I thoroughly ran available browsers against my criteria for you:
 
 I settled on [Brave](https://brave.com/), based on Chromium. The browser is a *huge* privacy upgrade from normal browsers, especially in the context of recent restrictions on popular ad blockers. I also found it straightforward to migrate to Brave.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251010145522.avif|A chart comparing the default privacy settings of Brave and Safari browsers. Brave enables all 10 listed protections by default. Safari offers full protection for blocking cross-site trackers, third-party cookies, and auto-upgrading to HTTPS, but has no default protection against third-party ads, cross-site trackers, cookie-consent banners, and filtering query parameters. Brave also better protects against fingerprinting and enables an option called "global privacy control."]]
 Figure:  For a more granular comparison, see [`privacytests.org`](https://privacytests.org/).
 
 Brave's company has made [a few shady moves](https://www.xda-developers.com/brave-most-overrated-browser-dont-recommend/) in the past. But Brave is the *only* browser which met my six criteria. In terms of privacy, Brave is [far better out of the box than its competitors.](https://privacytests.org/)  Your account information and browsing history is E2EE, meaning you don't have to trust the company itself. Even if you don't like some of the actions taken by the company, you don't have to pay anything to use the browser. You don't have to trust them that the code is secure because people [can just look at that code.](https://github.com/brave/brave-browser)
@@ -426,7 +426,7 @@ Subtitle: Time: 5 minutes to order & 40 minutes to secure your most important ac
 
 YubiKeys are physical devices which guarantee "these accounts *cannot* get hacked remotely". They constitute the strongest form of 2FA. To log into an account protected by your YubiKey, you physically tap the key. Accounts like your email or Bitwarden are extremely valuable and worth protecting. The security ordering is: YubiKey > authenticator app > text- / email-based 2FA.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251008204055.avif|A person's finger taps the gold activation sensor on a black YubiKey, a physical security key, which is plugged into a laptop's USB-C port for two-factor authentication.]]{.float-right}
 
 You buy two of these little USB-C boys for \$55 each. Use these as two-factor authentication for your most sensitive accounts. You really, really don't want hackers to compromise your Bitwarden.
 
@@ -537,7 +537,7 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
  Plus, now all of my 23,000 photos are in one place.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif|Ente photo storage pricing. Free forever: 10GB with end-to-end encryption & on-device AI. Paid monthly plans: Starter (50GB, \$2.99), Popular (200GB, \$5.99), Pro (1TB, \$11.99), and Pro+ (2TB, \$23.99).]]
 
 - [ ] Download [Ente](https://ente.io).
 - [ ] Import your photos.
@@ -551,7 +551,7 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 Subtitle: Time: 10 minutes.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif|Three screenshots of the Magic Earth app. The first, "Download Offline Maps," lists regions for offline use. The second, "Multiple Transport Modes," displays options for bicycle, pedestrian, car, and public transit. The third, "Explore the world map," shows a planned route through Berlin.]]
 
 - [ ] Download [Magic Earth](https://www.magicearth.com/).
     - [ ] As a sanity check, verify that familiar local addresses are present in the application.

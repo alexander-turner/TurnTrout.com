@@ -26,7 +26,7 @@ I've had the tests practically finalized for a while. Problem was, they were <sp
 
 I was on my own, but hopefully I can transfer some of my painful learning. Here are the tricks I learned to keep my code clean, my tests reliable, and my site not visually regressed.
 
-![[https://assets.turntrout.com/static/images/posts/playwright-tips-20250810165347.avif]]
+![[https://assets.turntrout.com/static/images/posts/playwright-tips-20250810165347.avif|A visual regression testing tool showing a side-by-side comparison. The left panel displays the expected webpage with clear text. The right panel highlights a regression by showing the pixel-level diff. A toolbar at the bottom provides options to approve or reject the change.]]
 Figure: Using `lost-pixel` to examine and reject an unintended change.
 
 # Best practices
