@@ -88,3 +88,7 @@ exclude_lines = [
     "^\\s+import .*  # type: ignore$",
     "if verbose:",
 ]
+
+[tool.uv]
+# Make Python scripts executable via uv by default
+managed = true
