@@ -5,8 +5,7 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
-description: "Our eyes must scan to the end of a long number, then jump back to the
-  start in order to understand it. My modest proposal: flip how we write numbers."
+description: "Our eyes must scan to the end of a long number, then jump back to the start in order to understand it. My modest proposal: flip how we write numbers."
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/n4eFkTK.png
@@ -18,6 +17,7 @@ aliases:
   - rethinking-number-writing
 date_published: 2025-07-25 13:30:55.478301
 date_updated: 2025-08-14 23:57:58.815232
+card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
 
 

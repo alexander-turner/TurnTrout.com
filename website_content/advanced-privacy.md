@@ -7,8 +7,7 @@ tags:
   - understanding-the-world
   - practical
   - community
-description: In 2025, America is different. Reduce your chance of persecution via
-  smart technical choices.
+description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.png
@@ -16,8 +15,9 @@ aliases:
   - advanced-privacy-despite-authoritarianism
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
-date_published: &id001 2025-11-06 14:34:13.304738
-date_updated: *id001
+date_published: 2025-11-06 14:34:13.304738
+date_updated: 2025-11-06 14:34:13.304738
+card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
 As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide seems most appropriate for people at higher risk, like opposition politicians, immigrants, and investigative journalists. However, the Trump regime gives little respect to legal boundaries. I think everyone should gear up for the potentially darker days ahead.

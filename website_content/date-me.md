@@ -9,6 +9,7 @@ date_published: 2024-10-27 19:14:04.653922
 date_updated: 2025-11-22 00:21:52.667251
 tags:
   - personal
+card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
 ---
 
 
@@ -173,7 +174,7 @@ If this sounds like a nice potential connection, I'd love to:
 3. Have a sunset picnic and eat blueberries.
 
 <figure>
-<img src="https://assets.turntrout.com/static/images/anime_sunset.avif" alt="An anime rendition of a beautiful orange sunset over the Bay skyline." style="margin-top: 1rem; width: 80%;"/>
+<img src="https://assets.turntrout.com/static/images/anime_sunset.avif" alt="An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic." style="margin-top: 1rem; width: 80%;"/>
 <figcaption>This could be us!</figcaption>
 </figure>
 

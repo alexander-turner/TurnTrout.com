@@ -16,6 +16,7 @@ aliases:
 date_published: 2025-11-22 00:21:52.667251
 date_updated: 2025-11-22 00:21:52.667251
 no_dropcap: false
+card_image_alt: A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".
 ---
 
 

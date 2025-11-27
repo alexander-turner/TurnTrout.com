@@ -1,16 +1,16 @@
 ---
 permalink: deducing-impact
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
 lw-page-url: https://www.lesswrong.com/posts/Qs88fvwnjBevMrbkK/deducing-impact
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2019-09-24T21:14:43.177000Z
 lw-last-modification: 2021-02-13T06:53:22.150000Z
 lw-curation-date: None
 lw-frontpage-date: 2019-09-24T21:29:03.172000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 28
 lw-base-score: 72
 lw-vote-count: 21
@@ -18,7 +18,7 @@ af-base-score: 19
 af-num-comments-on-upload: 18
 title: Deducing Impact
 lw-latest-edit: 2019-09-24T21:56:15.111000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - understanding-the-world
   - impact-regularization
@@ -31,16 +31,16 @@ sequence-link: posts#reframing-impact
 prev-post-slug: value-impact
 prev-post-title: Value Impact
 next-post-slug: attainable-utility-theory
-next-post-title: 'Attainable Utility Theory: Why Things Matter'
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+next-post-title: "Attainable Utility Theory: Why Things Matter"
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2019-09-24 00:00:00
 original_url: https://www.lesswrong.com/posts/Qs88fvwnjBevMrbkK/deducing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/FNVolSf.png
-description: Impact, viewed through the lens of humans and other agents, demands a
-  definition. How do we measure the mark we leave on the world?
+description: Impact, viewed through the lens of humans and other agents, demands a definition. How do we measure the mark we leave on the world?
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: 'Text: "Imagine that the sun goes supernova." An illustration shows the sun exploding into a brilliant supernova, sending a destructive wave of light that engulfs Earth.'
 ---
 
 

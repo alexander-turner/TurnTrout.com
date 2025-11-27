@@ -8,8 +8,7 @@ tags:
   - open-source
   - understanding-the-world
   - community
-description: In 2025, America is different. Reduce your chance of persecution via
-  smart technical choices.
+description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.png
@@ -17,10 +16,11 @@ aliases:
   - privacy
   - privacy-tips
 next-post-slug: advanced-privacy
-lw-sequence-title:
+lw-sequence-title: 
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28 10:05:55.881595
 date_updated: 2025-11-11 15:14:52.802932
+card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
 

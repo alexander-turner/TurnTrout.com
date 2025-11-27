@@ -36,9 +36,9 @@ date_published: 2020-02-28 00:00:00
 original_url: https://www.lesswrong.com/posts/sHpiiZS2gPgoPnijX/conclusion-to-reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/C0o5g91.png
-description: The "Reframing Impact" sequence concludes with probability estimates
-  for key claims.
+description: The "Reframing Impact" sequence concludes with probability estimates for key claims.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: 'Mt. Doom erupts in the distance, as viewed from the White Tower of Gondor. The White Tree begins to blossom. Text: "Thanks for reading."'
 ---
 
 

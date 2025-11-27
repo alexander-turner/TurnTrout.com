@@ -1,25 +1,24 @@
 ---
 permalink: attainable-utility-landscape
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
-lw-is-question: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
+lw-is-question: "false"
 lw-posted-at: 2020-02-10T00:58:01.453000Z
 lw-last-modification: 2020-07-25T21:12:42.735000Z
 lw-curation-date: None
 lw-frontpage-date: 2020-02-10T01:35:52.303000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 7
 lw-base-score: 52
 lw-vote-count: 17
 af-base-score: 22
 af-num-comments-on-upload: 5
-title: 'Attainable Utility Landscape: How The World Is Changed'
+title: "Attainable Utility Landscape: How The World Is Changed"
 lw-latest-edit: 2020-07-10T22:41:11.251000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - understanding-the-world
   - impact-regularization
@@ -33,16 +32,15 @@ prev-post-slug: seeking-power-is-often-convergently-instrumental-in-mdps
 prev-post-title: Seeking Power is Often Convergently Instrumental in MDPs
 next-post-slug: the-catastrophic-convergence-conjecture
 next-post-title: The Catastrophic Convergence Conjecture
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2020-02-10 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
+original_url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/k5K8m32.png
-description: Examining how our actions reshape the landscape of achievable goals,
-  highlighting opportunity costs and the structure of agency in shaping the future.
+description: Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: An illustration of environmental resources with corresponding meters. "How plentiful are trade goods?" next to a mountain with gems shows a full green meter. "How accessible is potable water?" shows a low red meter. "How fertile is the soil?" shows a full green meter.
 ---
 
 

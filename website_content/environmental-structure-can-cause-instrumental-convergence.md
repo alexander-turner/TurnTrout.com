@@ -1,18 +1,17 @@
 ---
 permalink: environmental-structure-can-cause-instrumental-convergence
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-structure-can-cause-instrumental-convergence
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-structure-can-cause-instrumental-convergence
 lw-linkpost-url: https://arxiv.org/abs/1912.01683
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2021-06-22T22:26:03.120000Z
 lw-last-modification: 2023-05-16T20:23:49.058000Z
 lw-curation-date: None
 lw-frontpage-date: 2021-06-22T22:27:16.747000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 43
 lw-base-score: 71
 lw-vote-count: 25
@@ -20,7 +19,7 @@ af-base-score: 32
 af-num-comments-on-upload: 38
 title: Environmental Structure Can Cause Instrumental Convergence
 lw-latest-edit: 2023-05-16T20:23:50.626000Z
-lw-is-linkpost: 'true'
+lw-is-linkpost: "true"
 tags:
   - instrumental-convergence
   - AI
@@ -31,21 +30,18 @@ lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: MDPs-are-not-subjective
-prev-post-title: MDP models are determined by the agent architecture and the environmental
-  dynamics
+prev-post-title: MDP models are determined by the agent architecture and the environmental dynamics
 next-post-slug: lower-stakes-alignment-scenario
 next-post-title: A world in which the alignment problem seems lower-stakes
-lw-reward-post-warning: 'true'
-use-full-width-images: 'false'
+lw-reward-post-warning: "true"
+use-full-width-images: "false"
 date_published: 2021-06-22 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-structure-can-cause-instrumental-convergence
+original_url: https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-structure-can-cause-instrumental-convergence
 skip_import: true
-card_image: 
-  https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
-description: The structure of environments, not just reward functions, contributes
-  to power-seeking in AI agents.
+card_image: https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
+description: The structure of environments, not just reward functions, contributes to power-seeking in AI agents.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.
 ---
 
 

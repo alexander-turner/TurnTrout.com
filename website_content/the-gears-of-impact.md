@@ -1,16 +1,16 @@
 ---
 permalink: the-gears-of-impact
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
 lw-page-url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-impact
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2019-10-07T14:44:51.212000Z
 lw-last-modification: None
 lw-curation-date: None
 lw-frontpage-date: 2019-10-07T06:10:45.213000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 16
 lw-base-score: 54
 lw-vote-count: 18
@@ -18,7 +18,7 @@ af-base-score: 18
 af-num-comments-on-upload: 0
 title: The Gears of Impact
 lw-latest-edit: 2024-08-15T22:30:43.246000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - understanding-the-world
   - impact-regularization
@@ -32,15 +32,15 @@ prev-post-slug: world-state-is-the-wrong-abstraction-for-impact
 prev-post-title: World State is the Wrong Abstraction for Impact
 next-post-slug: seeking-power-is-often-convergently-instrumental-in-mdps
 next-post-title: Seeking Power is Often Convergently Instrumental in MDPs
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2019-10-07 00:00:00
 original_url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/PFqi66W.png
-description: 'Impact reframed: a gears-level view of how and why some things seem
-  important to us.'
+description: "Impact reframed: a gears-level view of how and why some things seem important to us."
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).'
 ---
 
 
@@ -93,7 +93,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 !["An event impacts us exactly and only when it changes what we think can happen for us. Probability mass has to shift." ](https://assets.turntrout.com/static/images/posts/67uR5SE.avif)
 
-![#Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).](https://assets.turntrout.com/static/images/posts/PFqi66W.avif)
+![Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).](https://assets.turntrout.com/static/images/posts/PFqi66W.avif)
 
 !["The degree to which important outcomes are affected by the event is the degree of the impact." ](https://assets.turntrout.com/static/images/posts/GBVahyL.avif)
 

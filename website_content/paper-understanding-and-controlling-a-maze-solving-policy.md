@@ -1,28 +1,26 @@
 ---
 permalink: cheese-vector-paper
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/DKtWikjcdApRj3rWr/paper-understanding-and-controlling-a-maze-solving-policy
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/DKtWikjcdApRj3rWr/paper-understanding-and-controlling-a-maze-solving-policy
 lw-linkpost-url: https://arxiv.org/abs/2310.08043
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2023-10-13T01:38:09.147000Z
 lw-last-modification: 2023-10-13T17:37:49.828000Z
 lw-curation-date: None
 lw-frontpage-date: 2023-10-13T17:37:49.714000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 0
 lw-base-score: 69
 lw-vote-count: 25
 af-base-score: 37
 af-num-comments-on-upload: 0
-title: 'Paper: Understanding and Controlling a Maze-Solving Policy Network'
+title: "Paper: Understanding and Controlling a Maze-Solving Policy Network"
 lw-latest-edit: 2023-10-13T02:22:44.726000Z
-lw-is-linkpost: 'true'
-authors: Alex Turner, Ulisse Mini, Peli Grietzer, Mrinank Sharma, Austin Meek, Monte
-  MacDiarmid, and Lisa Thiergart
+lw-is-linkpost: "true"
+authors: Alex Turner, Ulisse Mini, Peli Grietzer, Mrinank Sharma, Austin Meek, Monte MacDiarmid, and Lisa Thiergart
 tags:
   - AI
   - shard-theory
@@ -30,16 +28,15 @@ tags:
 aliases:
   - paper-understanding-and-controlling-a-maze-solving-policy
   - cheese-vector-paper-announcement
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2023-10-13 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/DKtWikjcdApRj3rWr/paper-understanding-and-controlling-a-maze-solving-policy
+original_url: https://www.lesswrong.com/posts/DKtWikjcdApRj3rWr/paper-understanding-and-controlling-a-maze-solving-policy
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jbwksgzxm1h8hzspvypz.png
-description: My team published a paper on steering a maze-solving AI by manipulating
-  its internal goal representations.
+description: My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: A four-panel diagram showing how modifying a neural network's activations changes an AI's behavior. (a) A mouse in a maze ignores cheese to go top-right. (b) A heatmap shows activations peaking at the cheese's location. (c) A new activation peak is manually added in the top-right. (d) The mouse now follows a path to the top-right, retargeted by the modified activation.
 ---
 
 

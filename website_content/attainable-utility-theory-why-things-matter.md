@@ -1,25 +1,24 @@
 ---
 permalink: attainable-utility-theory
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
-lw-is-question: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
+lw-is-question: "false"
 lw-posted-at: 2019-09-27T16:48:22.015000Z
 lw-last-modification: None
 lw-curation-date: None
 lw-frontpage-date: 2019-09-27T18:41:02.391000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 24
 lw-base-score: 72
 lw-vote-count: 22
 af-base-score: 23
 af-num-comments-on-upload: 11
-title: 'Attainable Utility Theory: Why Things Matter'
+title: "Attainable Utility Theory: Why Things Matter"
 lw-latest-edit: 2019-10-02T04:41:15.243000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - understanding-the-world
   - impact-regularization
@@ -33,16 +32,15 @@ prev-post-slug: deducing-impact
 prev-post-title: Deducing Impact
 next-post-slug: world-state-is-the-wrong-abstraction-for-impact
 next-post-title: World State is the Wrong Abstraction for Impact
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2019-09-27 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
+original_url: https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hqEX2r1.png
-description: "Description: Impact isn't about changing the world; it's about changing
-  our ability to achieve goals within it."
+description: "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it."
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: Handwritten text asking, "How does this change my ability to get what I want?". The question is highlighted with a purple and yellow splash.
 ---
 
 
@@ -54,7 +52,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 ![A cartoon of two robots on a grassy field. A large robot looks surprised, with an exclamation mark above its head, as it looks at a smaller, smiling robot holding a pink ball. In the blue sky above, clouds spell out "Seriously."](https://assets.turntrout.com/static/images/posts/8sVtTT3.avif)
 
-![Handwritten text asking, "When thinking about whether something impacts us, we ask: How does this change my ability to get what I want?" The question is highlighted with a purple and yellow splash. Below, it concludes: "These are the big deals. This is what affects us. This is what matters to us. This is impact."](https://assets.turntrout.com/static/images/posts/KOgtb77.avif)
+![Handwritten text asking, "When thinking about whether something impacts us, we ask: How does this change my ability to get what I want?". The question is highlighted with a purple and yellow splash. Below, it concludes: "These are the big deals. This is what affects us. This is what matters to us. This is impact."](https://assets.turntrout.com/static/images/posts/KOgtb77.avif)
 
 ![Six oval illustrations depicting various scenarios: 1.  An asteroid hurtling towards a planet. 2.  A white void next to a red frowny-face. 3.  The Sun going supernova and ravaging Earth. 4. A robot looking at small obsidian blocks (which it considers worthless, unlike pebbles). 5. A traffic jam. 6. An alien relaxing as a distant star goes supernova.](https://assets.turntrout.com/static/images/posts/M5Ad0y3.avif)
 

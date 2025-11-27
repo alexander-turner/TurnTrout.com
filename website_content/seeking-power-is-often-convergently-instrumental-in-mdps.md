@@ -1,18 +1,17 @@
 ---
 permalink: seeking-power-is-often-convergently-instrumental-in-mdps
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
 lw-linkpost-url: https://arxiv.org/abs/1912.01683
-lw-is-question: 'false'
+lw-is-question: "false"
 lw-posted-at: 2019-12-05T02:33:34.321000Z
 lw-last-modification: 2024-03-02T01:17:28.210000Z
 lw-curation-date: None
 lw-frontpage-date: 2019-12-05T02:41:26.857000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 39
 lw-base-score: 162
 lw-vote-count: 60
@@ -20,12 +19,12 @@ af-base-score: 55
 af-num-comments-on-upload: 34
 title: Seeking Power is Often Convergently Instrumental in MDPs
 lw-latest-edit: 2023-05-16T20:14:29.355000Z
-lw-is-linkpost: 'true'
+lw-is-linkpost: "true"
 authors: Alex Turner and Logan Riggs
 tags:
   - AI
   - instrumental-convergence
-aliases:
+aliases: 
 lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/wrl3ovxbyttoztdxwmjb
 lw-sequence-image-banner: sequences/gv2nqrg0pb0srtodlgbg
@@ -33,17 +32,16 @@ sequence-link: posts#reframing-impact
 prev-post-slug: the-gears-of-impact
 prev-post-title: The Gears of Impact
 next-post-slug: attainable-utility-landscape
-next-post-title: 'Attainable Utility Landscape: How The World Is Changed'
-lw-reward-post-warning: 'true'
-use-full-width-images: 'false'
+next-post-title: "Attainable Utility Landscape: How The World Is Changed"
+lw-reward-post-warning: "true"
+use-full-width-images: "false"
 date_published: 2019-12-05 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
+original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.png
-description: A mathematical exploration of why goal-directed AI, regardless of its
-  programmed goal, might be driven to seek power.
+description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 ---
 
 

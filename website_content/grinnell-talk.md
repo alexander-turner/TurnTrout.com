@@ -6,8 +6,7 @@ tags:
   - AI
   - grinnell
   - talk-notes
-description: Could human-designed AI kill all humans? I spent my PhD on this and still
-  worry.
+description: Could human-designed AI kill all humans? I spent my PhD on this and still worry.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.png
@@ -17,6 +16,7 @@ aliases:
   - intro-agi-risk
 date_published: 2025-06-29 16:49:07.944742
 date_updated: 2025-08-19 20:19:47.849267
+card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
 
 

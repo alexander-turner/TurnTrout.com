@@ -1,17 +1,16 @@
 ---
 permalink: impact-penalty-strength
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
-lw-is-question: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
+lw-page-url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
+lw-is-question: "false"
 lw-posted-at: 2020-02-25T02:08:52.630000Z
 lw-last-modification: 2020-05-20T13:03:50.901000Z
 lw-curation-date: None
 lw-frontpage-date: 2020-02-24T19:24:20.123000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 9
 lw-base-score: 28
 lw-vote-count: 9
@@ -19,7 +18,7 @@ af-base-score: 12
 af-num-comments-on-upload: 6
 title: Choosing the strength of the impact penalty term
 lw-latest-edit: 2020-05-20T13:03:59.233000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - impact-regularization
   - AI
@@ -30,19 +29,18 @@ lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: attainable-utility-preservation-empirical-results
-prev-post-title: 'Attainable Utility Preservation: Empirical Results'
+prev-post-title: "Attainable Utility Preservation: Empirical Results"
 next-post-slug: attainable-utility-preservation-scaling-to-superhuman
-next-post-title: 'Attainable Utility Preservation: Scaling to Superhuman'
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+next-post-title: "Attainable Utility Preservation: Scaling to Superhuman"
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2020-02-25 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
+original_url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-fruit-hang-before-we-pick-it
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.png
-description: How to choose an AI's impact limit to get the best results without triggering
-  a catastrophe.
+description: How to choose an AI's impact limit to get the best results without triggering a catastrophe.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: A diagram illustrating how a search radius constrains an AI's choices. On the left, a cartoon AI is at the center of concentric circles representing increasing impact. Several pink circles (good plans) are at different distances—the farther a circle is, the darker its pink color (higher utility). A distant, mischievous pink smiley face represents a catastrophic plan. On the right, a line labeled "Search radius" shows that as the radius increases from "nothing," the AI can select progressively farther, higher-utility plans.
 ---
 
 

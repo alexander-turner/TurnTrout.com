@@ -5,8 +5,7 @@ no_dropcap: "false"
 tags:
   - fiction
   - personal
-description: Dr. Stone is an anime which blends science and altruistic determination.
-  Also, it slaps.
+description: Dr. Stone is an anime which blends science and altruistic determination. Also, it slaps.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/ibB0q34.png
@@ -16,6 +15,7 @@ aliases:
   - breaking-free-doctor-stone
 date_published: 2024-12-17 19:04:42.697213
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: Senku from Dr. Stone grins with fierce determination, his face lit by fire and sparks against a dark forest at night. He has spiky, light-colored hair with green tips, cracks on his face, and "E=mc²" written on his collar.
 ---
 
 

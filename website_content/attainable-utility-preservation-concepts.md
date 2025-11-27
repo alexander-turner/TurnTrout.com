@@ -3,8 +3,7 @@ permalink: attainable-utility-preservation-concepts
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
+lw-page-url: https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
 lw-is-question: "false"
 lw-posted-at: 2020-02-17T05:20:09.567000Z
 lw-last-modification: 2021-05-24T18:19:29.122000Z
@@ -21,28 +20,27 @@ title: "Attainable Utility Preservation: Concepts"
 lw-latest-edit: 2020-02-17T05:22:28.687000Z
 lw-is-linkpost: "false"
 tags:
-  - "impact-regularization"
-  - "AI"
+  - impact-regularization
+  - AI
 aliases:
-  - "attainable-utility-preservation-concepts"
-lw-sequence-title: "Reframing Impact"
+  - attainable-utility-preservation-concepts
+lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/izfzehxanx48hvf10lnl
 lw-sequence-image-banner: sequences/zpia9omq0zfhpeyshvev
 sequence-link: posts#reframing-impact
 prev-post-slug: the-catastrophic-convergence-conjecture
-prev-post-title: "The Catastrophic Convergence Conjecture"
+prev-post-title: The Catastrophic Convergence Conjecture
 next-post-slug: attainable-utility-preservation-empirical-results
 next-post-title: "Attainable Utility Preservation: Empirical Results"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2020-02-17 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
+original_url: https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/KPv2beS.png
-description: "Exploring the ideas behind Attainable Utility Preservation: penalize
-  the AI for gaining power to bound its impact."
+description: "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact."
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: "Title text reads: \"This approach is called Attainable Utility Preservation.\" A diagram shows a robot's reach being stopped by a blue energy field. Beside it, three status bars labeled \"Human\", \"Trout\", and \"AI\" all show high attainable utility levels."
 ---
 
 

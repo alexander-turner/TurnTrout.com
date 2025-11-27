@@ -3,8 +3,7 @@ permalink: mechanistically-eliciting-latent-behaviors
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+lw-page-url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 lw-is-question: "false"
 lw-posted-at: 2024-04-30T18:51:13.493000Z
 lw-last-modification: 2024-05-23T20:29:10.455000Z
@@ -33,13 +32,12 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2024-04-30 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
+original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.png
-description: Unsupervised perturbations to language models reveal hidden capabilities,
-  including the potential to bypass safety measures and exhibit backdoor behaviors.
+description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
 date_updated: 2025-11-22 00:21:52.667251
+card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 ---
 
 
@@ -98,7 +96,7 @@ I introduce a method for eliciting latent behaviors in language models by learni
 - I conclude with some concrete open research problems in unsupervised steering of language models.
   In each section of this post, I link to associated notebooks found in [this github repository](https://github.com/amack315/unsupervised-steering-vectors) for unsupervised steering methods.
 
-![results](https://assets.turntrout.com/static/images/posts/jwqnnwe15pr1vkvswuhf.avif)
+![Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.](https://assets.turntrout.com/static/images/posts/jwqnnwe15pr1vkvswuhf.avif)
 
 # Introduction
 
