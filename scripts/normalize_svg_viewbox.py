@@ -53,6 +53,7 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
     register_namespace("", "http://www.w3.org/2000/svg")
     tree = ET.parse(svg_path)
     root = tree.getroot()
+    # pragma no cover
     if root is None:
         raise ValueError(f"Failed to parse SVG root element from {svg_path}")
 
