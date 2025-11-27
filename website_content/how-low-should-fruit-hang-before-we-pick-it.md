@@ -123,7 +123,7 @@ Above, we have not yet chosen a task; the blocks represent the additional utilit
 
 Once you take a deal, you take the blocks off of the other scales (because the other marginal values change). For small $R$ (i.e. large valuations of one's time), mowing the lawn is optimal. We then have
 
-[​](​![A line drawing of a balance scale labeled "Newspaper" weighs the task's utility against its impact. Two pink blocks representing utility are on the left pan, balanced against three blue blocks representing impact on the right. The three blocks outweigh the two.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
+[​](​![A line drawing of a balance scale labeled "Newspaper." Two pink blocks represent marginal utility and are outweighed by three blue blocks representing marginal impact.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)![](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
 
 Since you've taken the juicier "lower-hanging fruit" of mowing the lawn, the new newspaper ratio is now _worse_! This always happens – Theorem 8: Deals get worse over time.
 
@@ -146,7 +146,7 @@ We say that the partition is _$\alpha$\-buffered_ if $R_2\geq (1+\alpha) R_1$ (f
 
 For the following, suppose that utility is bounded $[0,1]$. Below is a loose criterion guaranteeing $\alpha $\-buffering.
 
-[​](​![A handwritten formula titled "Simplified Criterion." The inequality states: (Smallest catastrophe / Biggest non-dominated reasonable plan) is greater than or equal to (1 + α) / (best - worst reasonable plan).](https://assets.turntrout.com/static/images/posts/El61MKB.avif)![](https://assets.turntrout.com/static/images/posts/El61MKB.avif)
+[​](​![The simplified criterion holds when the impact ratio of the (Smallest catastrophe / Biggest non-dominated reasonable plan) is greater than or equal to (1 + α) / utility difference of the best and worst reasonable plans.](https://assets.turntrout.com/static/images/posts/El61MKB.avif)![](https://assets.turntrout.com/static/images/posts/El61MKB.avif)
 
 For example, if we know that all catastrophes have at least 10 times the impact of reasonable plans, and there's a difference of at least .3 utility between the best and worst reasonable plans, then we can guarantee 2-buffering! If we use the refined criterion of Theorem 11 (and suppose the worst reasonable plan has .4 utility), this improves to _4.5_\-buffering (even 2-buffering is probably overkill).
 
@@ -331,7 +331,7 @@ For our purposes, we don't _need_ the whole partition – we just want to have g
 
 Unfortunately, Theorem 6's appearance bounds are ridiculous in realistic settings – if ${\color{Red}u}$ and ${\color{blue}I}$ return 32-bit floating-point numbers, the next-largest could easily be within $10^{-7},$ yielding an upper "bound" of ${\color{blue}I}(\bar{a})\times 10^{7}$. The reason: diminishing returns, just like in the case with the newspaper route.
 
-![A line drawing of a balance scale labeled "Newspaper" weighs the task's utility against its impact. Two pink blocks representing utility are on the left pan, balanced against three blue blocks representing impact on the right. The three blocks outweigh the two.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
+![A line drawing of a balance scale labeled "Newspaper." Two pink blocks represent marginal utility and are outweighed by three blue blocks representing marginal impact.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
 
 > [!math] Theorem 8: Deals get worse over time
 > Suppose that $\bar{a}$ is optimal on a subinterval, and $\bar{b},\bar{c}$ are such that ${\color{Red}u}(\bar{c})>{\color{Red}u}(\bar{b})$ but $\bar{b}$ dominates $\bar{a}$ strictly before $\bar{c}$ does. Then

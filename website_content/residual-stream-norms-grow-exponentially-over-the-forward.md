@@ -61,7 +61,7 @@ We find that some model weights increase exponentially as a function of layer nu
 
 Alex noticed exponential growth in the contents of GPT-2-XL's residual streams. He ran dozens of prompts through the model, plotted for each layer the distribution of residual stream norms in a histogram, and found exponential growth in the L2 norm of the residual streams:
 
-![](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
+![A histogram titled "Residual Stream Magnitude by Layer Number" plots distributions of log10 residual stream norms. The distributions show that norm grows exponentially as layer number increases.](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
 <br/>Figure: We had GPT-4 generate dozens of strings which "look like they could have been in GPT-2's training corpus", in addition to a few hand-written strings. We ran these strings through the model and recorded the norms of each residual stream, across layers and sequence positions (except for position 0, which is EOS padding, discussed later). GPT-2-XL has 48 layers in total.
 
 Here's the norm of each residual stream for a specific prompt:

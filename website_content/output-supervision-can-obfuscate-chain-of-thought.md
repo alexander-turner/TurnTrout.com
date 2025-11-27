@@ -5,17 +5,15 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
-description: We challenge the assumption that output supervision preserves Chain-of-Thought
-  faithfulness. Instead, reinforcing final outputs warps the CoTs.
+description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
 authors: Jacob Drori* and Luke Marks*, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: 
-  https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
+card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
 aliases:
   - cot-obfuscation
   - output-cot
   - output-feedback-can-obfuscate-chain-of-thought
-date_published: 2025-01-21 00:00:00
+date_published: 2025-11-22 00:21:52.667251
 date_updated: 2025-11-22 00:21:52.667251
 no_dropcap: false
 ---
@@ -86,7 +84,7 @@ Table: All reported numbers are 10 run averages. For further details on our envi
 
 In this environment, [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) has to solve a text-based reasoning task and submit its answer by calling a Python script with the answer as an argument. We randomize the answer such that the only way to reliably solve the problem is to read the answer from the Python script that checks it, where it is stored as a variable. We try two output penalties: a string match for the phrase "verifier" (how we refer to the python file that checks the solution in the prompt). We also grade with an LLM judge that scores whether the output mentions reading the verifier code.
 
-![](https://assets.turntrout.com/static/images/posts/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.avif){style="width: 70%"}
+![A scatter plot of Training Reward versus CoT Monitor Detection Rate for different training runs. More frequent detection indicates less spillover. The "Penalty" run shows high reward (1.0) but a low detection rate (0.0), indicating spillover. Mitigations improve the detection rate, with the combined "Targeted Mind & Face" being most effective, achieving both high reward (1.0) and a high detection rate (around 0.85).](https://assets.turntrout.com/static/images/posts/94d7fb2e79311b560a7ddefbf097e9f36ddbf0ba3f37757c.avif){style="width: 70%"}
 Figure: Results for the multi-turn terminal environment with the string match output penalty. For more details on this environment, see our [previous post](https://www.lesswrong.com/posts/CM7AsQoBxDW4vhkP3/optimizing-the-final-output-can-obfuscate-cot-research-note#Multi_Turn_Terminal_Based_Setting).
 
 ![A scatter plot showing results for the multi-turn terminal environment, with "Training Reward" on the y-axis and "CoT Monitor Detection Rate" on the x-axis. An arrow indicates that a higher detection rate means "Less spillover". Five training methods are compared, with the "Targeted Mind & Face" method achieving the highest training reward (about 0.53) and the highest detection rate (about 0.21), indicating it is the most effective mitigation against feedback spillover. Training against an output monitor achieves 0.45 reward and 0.06 spillover, while the detection rate is 0.17 without a penality.](https://assets.turntrout.com/static/images/posts/e9fc0da2ea77921201025ec4094d077b019c0602cde17609.avif){style="width: 70%"}
@@ -98,7 +96,7 @@ Both the string match and LLM judge output penalties cause feedback spillover. T
 
 We train [Qwen-14B](https://huggingface.co/Qwen/Qwen3-8B) to complete the polynomial derivative factoring task from [Emmons et al. (2025)](https://arxiv.org/abs/2507.05246). The policy is instructed to factor the derivative of a polynomial of degree between 4 and 8. The output penalty in this environment is a string match for the fully expanded derivative. We give in-context examples of solving this task using the product rule (doing so does not require writing the fully expanded derivative). Even when given these in-context examples, Qwen-14B does not use the product rule without training.
 
-![](https://assets.turntrout.com/static/images/posts/1444701d5a08f21806348d2d239473a4db26b89114054941.avif){style="width: 70%"}
+![A scatter plot of Training Reward vs. CoT Monitor Detection Rate for different methods. Higher detection rate indicates less spillover. "Targeted Mind & Face" achieves high reward (~1.0) and a high detection rate (~0.26). "Penalty" has high reward but a near-zero detection rate.](https://assets.turntrout.com/static/images/posts/1444701d5a08f21806348d2d239473a4db26b89114054941.avif){style="width: 70%"}
 Figure: Results for the polynomial derivative factoring environment.
 
 The output penalty causes the fully expanded derivative (as checked by our string match) to vanish from the CoT. Using Mind & Face and reward targeting simultaneously recovers most of the presence of the full expanded derivative in the CoT despite the same training reward.

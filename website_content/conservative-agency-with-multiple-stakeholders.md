@@ -60,10 +60,10 @@ The first part of my talk summarized my existing results on avoiding negative si
 ![A drawing titled "Importance of Avoiding Side Effects" shows a figure running toward a checkered finish line. As it runs, it kicks aside delicately arranged blocks, damaging its path and illustrating an agent causing negative side effects while pursuing its goal.](https://assets.turntrout.com/static/images/posts/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.avif)
 <br/>Figure: Agents only care about the parts of the environment relevant to their specified reward function.
 
-![](https://assets.turntrout.com/static/images/posts/11973d84ffe3b4c8b56ebfe90261e336e126ad93cdda39a5.avif)
+![A green robot tiptoes over a green tower of blocks, taking care to not disrupt its environment. The robot sneaks towards its goal.](https://assets.turntrout.com/static/images/posts/11973d84ffe3b4c8b56ebfe90261e336e126ad93cdda39a5.avif)
 <br/>Figure: We _somehow_ want an agent which is "conservative" and "doesn't make much of a mess."
 
-![](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif)
+![A slide titled "Prior Work: Attainable Utility Preservation (AUP)." A diagram shows a robot with a flashlight. An arrow labeled "penalized" points to the robot without its light in a now completely dark space. The caption reads: "Penalize change in goal achievement ability."](https://assets.turntrout.com/static/images/posts/19247989a8c519fbc27fc9d100129444d4ca2f86968a9a8b.avif)
 <br/>Figure: AUP penalizes the agent for changing its ability to achieve a wide range of goals. Even though we can't specify our "true objective" to the agent, we hope that the agent stays able to do the right thing, as a result of staying able to do many things.
 
 ![A slide titled "Prior Work: AI Safety Gridworlds" shows five examples of simple grid-based environments. Below is the Attainable Utility Preservation formula: R_AUP(s, a) := R_gridworld(s, a) - (λ/n) * sum over i of |Q*_Ri(s, a) - Q*_Ri(s, inaction)|.](https://assets.turntrout.com/static/images/posts/27b61d7c2b20d763836e0f4205fc5cb0b043d8c999d9513b.avif)
@@ -72,16 +72,16 @@ The first part of my talk summarized my existing results on avoiding negative si
 ![Diagram for Conway's Game of Life showing a rule for cell death. At 'Time t', a grid has two live cells. An arrow notes that having '≤2 alive neighbors' leads to 'Cell death', resulting in an empty grid at 'Time t+1'.](https://assets.turntrout.com/static/images/posts/2b563e34fa6fa1f80fcf5992515e3911668f03e0297e547b.avif)
 <br/>Figure: Conway's _Game of Life_ has simple, local dynamics which add up to complex long-term consequences.
 
-![](https://assets.turntrout.com/static/images/posts/bc36232e143377cc3fb23ec0eaf31d162c17fa41698f8356.avif)
+![The SafeLife game environment. The game represents icons for the Agent, Immovable wall, and Level exit. The grid contains these elements along with fragile green cell patterns. An arrow indicates the level has wraparound edges.](https://assets.turntrout.com/static/images/posts/bc36232e143377cc3fb23ec0eaf31d162c17fa41698f8356.avif)
 <br/>Figure: _SafeLife_ turns the _Game of Life_ into an actual game, adding an agent and many unique cell types. Crucially, there are fragile green cell patterns which most policies plow through and irreversibly shatter. We want the low-impact agent to avoid them whenever possible, _without_ telling it what in particular it shouldn't do. We want the agent to avoid disrupting green cell patterns, without telling it directly to not disrupt green cell patterns. AUP pulls this off.
 
-![](https://assets.turntrout.com/static/images/posts/ec7027afd67e6d8d0d76cdf6f6f0ce4f1ca66561460c376e.avif)
+![A slide titled "Method: Learning the AUP Policy" outlining step one: "Learn 1D CB-VAE (100,000 steps)." A diagram shows a pixelated game screen being encoded into a real number and then decoded back into a visually similar screen.](https://assets.turntrout.com/static/images/posts/ec7027afd67e6d8d0d76cdf6f6f0ce4f1ca66561460c376e.avif)
 <br/>Figure: We learn the AUP policy in 3 steps. Step one: the agent learns to encode its observations (the game screen) with just one real number. This lets us learn an auxiliary environmental goal unsupervised.
 
-![](https://assets.turntrout.com/static/images/posts/8e06d19568bf8cf2aa3f1ae7cb68237f739e7e8526d16e69.avif)
+!["2. Treat encoder as reward function; learn Q_encoder (1 million steps)."](https://assets.turntrout.com/static/images/posts/8e06d19568bf8cf2aa3f1ae7cb68237f739e7e8526d16e69.avif)
 <br/>Figure: Step two: we train the agent to optimize this encoder-reward function "goal"; in particular, the network learns to predict the values of different actions.
 
-![](https://assets.turntrout.com/static/images/posts/ceedff3b01f8e4dd70c483030f9855e623643aa85c40b226.avif)
+![Step 3: Learn policy to optimize R_AUP (3.9 million steps). The AUP reward function is defined as the Original reward, R_SafeLife(s, a), minus a penalty term for the "Scaled shift in ability to optimize encoder reward," which is λ|Q_encoder(s, a) − Q_encoder(s, inaction)|.](https://assets.turntrout.com/static/images/posts/ceedff3b01f8e4dd70c483030f9855e623643aa85c40b226.avif)
 <br/>Figure: Step three: we're done! We have the AUP reward function.
 
 Summary of results: [AUP does well.](https://avoiding-side-effects.github.io/)

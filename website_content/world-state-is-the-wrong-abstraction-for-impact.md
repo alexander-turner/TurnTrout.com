@@ -79,7 +79,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 !["Now pretend that you're back in your usual state of mind. Visualize receiving the bonus again; I predict it feels the same."](https://assets.turntrout.com/static/images/posts/1rVGIUj.avif)
 
-![](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
+![A minimalist drawing of a small pink cat nose with two curved black whiskers on each side.](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
 
 !["But perhaps the function doesn't change with the ontology. When people think seriously about reductionism, they can have an ontological crisis."](https://assets.turntrout.com/static/images/posts/LYNGAta.avif)
 
@@ -93,7 +93,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 >! These existential crises also muddle our impact algorithm. This isn't what you'd see if impact were primarily about the world state.
 
-![](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
+![A minimalist drawing of a small pink cat nose with two curved black whiskers on each side.](https://assets.turntrout.com/static/images/posts/WjTqF2y.avif)
 
 ![A two-panel comic. Top panel text: "Looking back, we see more evidence that impact doesn't hinge on an ontology" and "Did you stop to wonder how XYZ views the world?". A simple robot with a question mark looks at a pile of blocks. Bottom panel text: "Isn't it funny that the Pebblehoarders care so much about pebbles, while we care so much about suffering?". Beside it is a dark void with sad faces, representing suffering.](https://assets.turntrout.com/static/images/posts/q09LBrl.avif)
 

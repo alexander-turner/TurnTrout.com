@@ -218,7 +218,7 @@ Alex
 
 > [!info] Edited after posting
 > Back in my [_Topology_ review](/topology-textbook-review), I discussed a similar phenomenon: continuity in multiple input dimensions requires not just continuity in each input variable, but in _all_ sequences converging to the point in question:
-> ![](https://assets.turntrout.com/static/images/posts/k6b4WRE.avif)
+> ![A diagram illustrating the topological definition of continuity. A function f maps a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. In Y, the corresponding sequence f(x_n) converges to the point f(x).](https://assets.turntrout.com/static/images/posts/k6b4WRE.avif)
 >
 > > Continuity in the variables says that paths along the axes converge in the right way. But for continuity overall, we need all paths to converge in the right way. Directional continuity when the domain is $\mathbb{R}$ is a special case of this: continuity from below and from above if and only if continuity for all sequences converging topologically to $x$.
 >

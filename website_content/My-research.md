@@ -157,7 +157,7 @@ In 2019, [I had a keen sense](/problem-relaxation-as-a-tactic) that instrumental
 > [!thanks]- Personal recollections
 >
 > I spent an hour staring at a whiteboard and stabbing out different possible angles of the situation. During this time, I viewed the problem the standard way -- in terms of value functions $V^\pi(s)$ and transition functions $T(s,a,s')$. That's the wrong way to do it. I remembered a concept I'd read about while preparing for my PhD qualifying exam: state visit distributions. The distributions $\mathbf{f}^{\pi,s}_\gamma$ measure how long the agent spends in different states. If the agent is in state $s'$ at time $t$, then the distribution adds another $\gamma^t$ visit measure to $s'$.
-> ![](https://assets.turntrout.com/static/images/posts/beLDjAs.avif)
+> ![A diagram explaining state visit distributions ("f") with the text, "Each f is a possible path through time." Below, a maze represents the state space, and a dashed pink line shows a single trajectory, or 'f', moving through it.](https://assets.turntrout.com/static/images/posts/beLDjAs.avif)
 >
 > For more detail, see [_The attainable utility landscape_](/attainable-utility-landscape#appendix-au-landscape-and-world-state-contain-equal-information).
 

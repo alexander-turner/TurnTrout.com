@@ -569,7 +569,7 @@ Subtitle: Time: 5 minutes.
 
 If my AirPods are called "TurnTrout's AirPods", then anyone who scans for Bluetooth knows that TurnTrout is nearby. I don't need to be leaking that information, so I made my device names generic: "MacBook Pro", "AirPods", and so on.  True, generic names make it slightly harder to figure out which device to connect to, but the cost is small  -- just connect in a less ambiguous environment.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251013161427.avif|A screenshot of the macOS "About" settings. The device's name is set to the generic "MacBook Pro".]]
 Figure: My laptop's generic name.
 
 - [ ] Rename your devices to have generic names.

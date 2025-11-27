@@ -90,7 +90,7 @@ This guide is long. Don't try to complete it all at once. My website has long-la
    | Privacy basics | 90 minutes upfront + 45 minutes for YubiKey setup when it arrives    | \$110 + $13/month        | Significant privacy against mass surveillance. Govt. has a harder time seeing who you talk to and can't easily monitor what you say on the Signal app. |
    | End-to-end encrypt your data  | At least 4.5 hours  | \$14/month    |   Mass surveillance unlikely to capture your important data or communications.   |
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif]]{.float-right}
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023213135.avif|A World War II-era propaganda poster with the text "UNITED WE WIN." A black man and a white man work together on machinery in the foreground, with an American flag behind them.]]{.float-right}
 
 *Each tier builds on the previous, so do them in order.*
 
