@@ -42,7 +42,7 @@ const config: QuartzConfig = {
     analytics: null,
 
     baseUrl: "turntrout.com",
-    ignorePatterns: ["private", "templates", ".obsidian"],
+    ignorePatterns: ["private", "templates/**", ".obsidian"],
     defaultDateType: "published",
     navbar: {
       pages: [
