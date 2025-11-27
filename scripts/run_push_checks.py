@@ -478,6 +478,8 @@ def get_check_steps(
         CheckStep(
             name="Typechecking Python",
             command=[
+                "uv",
+                "run",
                 "python",
                 "-m",
                 "mypy",
@@ -599,6 +601,8 @@ def get_check_steps(
         CheckStep(
             name="Checking source files",
             command=[
+                "uv",
+                "run",
                 "python",
                 f"{git_root_path}/scripts/source_file_checks.py",
             ],
@@ -629,6 +633,8 @@ def get_check_steps(
         CheckStep(
             name="Checking HTML files",
             command=[
+                "uv",
+                "run",
                 "python",
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
