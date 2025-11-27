@@ -14,6 +14,8 @@ dependencies = [
     "protobuf",
     "psutil",
     "pytest",
+    "pytest-cov",
+    "pytest-xdist",
     "pyyaml",
     "requests",
     "rich",
