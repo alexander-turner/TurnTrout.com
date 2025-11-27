@@ -322,7 +322,8 @@ export function getFaviconUrl(faviconPath: string): string {
   if (faviconPath.startsWith("http")) {
     return faviconPath
   }
-  // SVG files don't need conversion, serve directly
+
+  // SVG files don't need conversion, serve directly via CDN
   if (faviconPath.endsWith(".svg")) {
     return `https://assets.turntrout.com${faviconPath}`
   }
@@ -373,7 +374,9 @@ export function getFaviconUrl(faviconPath: string): string {
  * @returns The favicon path, or DEFAULT_PATH if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry) => faviconPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) =>
+    faviconPath.includes(entry),
+  )
   if (isBlacklisted) {
     return DEFAULT_PATH
   }
@@ -882,7 +885,7 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: Map<string, number>,
 ): boolean {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry) => imgPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) => imgPath.includes(entry))
   if (isBlacklisted) return false
 
   // Normalize countKey (remove extension) to match format-agnostic counts

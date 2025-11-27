@@ -25,11 +25,11 @@ export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${
 
 // Special favicon paths for different link types
 export const specialFaviconPaths = {
-  turntrout: `/static/images/${localTroutFaviconBasename}`,
-  mail: "/static/svg/mail.svg",
-  anchor: "/static/svg/anchor.svg",
-  rss: "/static/svg/rss.svg",
-  lesswrong: "/static/images/external-favicons/lesswrong_com.png",
+  mail: `${faviconBasePath}/mail.svg`,
+  anchor: `${faviconBasePath}/anchor.svg`,
+  rss: `${faviconBasePath}/rss.svg`,
+  turntrout: `${faviconBasePath}/turntrout_com.svg`,
+  lesswrong: `${faviconBasePath}/lesswrong_com.svg`,
 } as const
 
 // UI strings for various components
@@ -39,7 +39,7 @@ export const uiStrings = {
   },
   components: {
     recentNotes: {
-      title: "Recent Notes",
+      title: "Recent notes",
       seeRemainingMore: (count: number) => `See ${count} more →`,
     },
   },
