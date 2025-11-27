@@ -31,6 +31,7 @@ dependencies = [
     "types-html5lib>=1.1.11.20251117",
     "types-psutil>=7.1.3.20251125",
     "types-tqdm>=4.67.0.20250809",
+    "docformatter>=1.7.7",
 ]
 
 [tool.black]

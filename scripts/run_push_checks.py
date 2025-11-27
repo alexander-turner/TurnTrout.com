@@ -512,6 +512,8 @@ def get_check_steps(
         CheckStep(  # Reduce chance of pylint errors by formatting docstrings
             name="Formatting Python docstrings",
             command=[
+                "uv",
+                "run",
                 "python",
                 "-m",
                 "docformatter",
