@@ -526,6 +526,8 @@ def get_check_steps(
         CheckStep(
             name="Linting Python",
             command=[
+                "uv",
+                "run",
                 "python",
                 "-m",
                 "pylint",
@@ -569,6 +571,8 @@ def get_check_steps(
         CheckStep(
             name="Running Python unit tests",
             command=[
+                "uv",
+                "run",
                 "python",
                 "-m",
                 "pytest",
