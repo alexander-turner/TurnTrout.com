@@ -34,9 +34,7 @@ def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
         - Markdown files with image references.
-        - Git initialization to simulate a real project.
-
-    Must be accompanied by @pytest.mark.allow_git_operations.
+        - Mocked git repository.
     """
     tmp_path = quartz_project_structure["public"].parent
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -73,24 +71,10 @@ def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
     for file_path, content in md_files:
         create_markdown_file(file_path, content=content)
 
-    git_executable = script_utils.find_executable("git")
-    subprocess.run([git_executable, "init", tmp_path], check=True)
-    subprocess.run(
-        [git_executable, "config", "user.email", "test@example.com"],
-        cwd=tmp_path,
-        check=True,
-    )
-    subprocess.run(
-        [git_executable, "config", "user.name", "Test User"],
-        cwd=tmp_path,
-        check=True,
-    )
-    subprocess.run([git_executable, "add", "."], cwd=tmp_path, check=True)
-    subprocess.run(
-        [git_executable, "commit", "-m", "Initial commit"],
-        cwd=tmp_path,
-        check=True,
-    )
+    mock_repo = MagicMock()
+    mock_repo.working_tree_dir = str(tmp_path)
+    mock_repo.ignored = MagicMock(return_value=False)
+    monkeypatch.setattr("git.Repo", lambda *args, **kwargs: mock_repo)
 
     yield tmp_path, dirs["static"] / "test.jpg", dirs[
         "website_content"
@@ -245,7 +229,6 @@ def test_main_function(
             r2_upload.main()
 
 
-@pytest.mark.allow_git_operations
 def test_upload_and_move(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     tmp_path: Path,
@@ -296,7 +279,6 @@ def test_upload_and_move(
         assert file_path.read_text().strip() == expected_content.strip()
 
 
-@pytest.mark.allow_git_operations
 def test_main_upload_all_custom_filetypes(
     test_media_setup: tuple[Path, Path, Path, list[tuple[Path, str]]],
     mock_git_root: Path,
