@@ -292,8 +292,11 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
             content="Test content",
         )
 
-    with patch(
-        "subprocess.check_output", side_effect=mock_git(["modified.md"])
+    with (
+        patch("subprocess.check_output", side_effect=mock_git(["modified.md"])),
+        patch.object(
+            update_lib, "update_readme_copyright_year", return_value=False
+        ),
     ):
         update_lib.main(temp_content_dir)
 
@@ -620,6 +623,9 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     with (
         patch.object(Path, "glob", mock_glob),
         patch("subprocess.check_output", side_effect=mock_git()),
+        patch.object(
+            update_lib, "update_readme_copyright_year", return_value=False
+        ),
     ):
         update_lib.main()
 
@@ -656,6 +662,9 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
         patch("scripts.utils.split_yaml", side_effect=mock_split_yaml),
         patch("subprocess.check_output", side_effect=mock_git()),
         patch.object(update_lib, "write_to_yaml") as mock_write,
+        patch.object(
+            update_lib, "update_readme_copyright_year", return_value=False
+        ),
     ):
         update_lib.main(temp_content_dir)
         # Assert write was called once (for the valid file), not twice
