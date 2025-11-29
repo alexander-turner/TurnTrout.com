@@ -1,0 +1,136 @@
+name: Playwright Tests
+
+concurrency:
+  group: playwright-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev", "jest-coverage"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  playwright-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            1/40,
+            2/40,
+            3/40,
+            4/40,
+            5/40,
+            6/40,
+            7/40,
+            8/40,
+            9/40,
+            10/40,
+            11/40,
+            12/40,
+            13/40,
+            14/40,
+            15/40,
+            16/40,
+            17/40,
+            18/40,
+            19/40,
+            20/40,
+            21/40,
+            22/40,
+            23/40,
+            24/40,
+            25/40,
+            26/40,
+            27/40,
+            28/40,
+            29/40,
+            30/40,
+            31/40,
+            32/40,
+            33/40,
+            34/40,
+            35/40,
+            36/40,
+            37/40,
+            38/40,
+            39/40,
+            40/40,
+          ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots | tee playwright-run.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-log-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  summarize-failures:
+    name: Summarize Failures
+    if: always() && needs.playwright-tests.result == 'failure'
+    needs: playwright-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: playwright-log-shard-*
+          final-log-name: playwright-failed-logs

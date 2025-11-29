@@ -1,0 +1,42 @@
+name: "Summarize Failed Shards"
+description: "Downloads log artifacts from failed shards, concatenates them, and uploads a summary."
+inputs:
+  log-pattern:
+    description: "Pattern for the log artifacts to download."
+    required: true
+  final-log-name:
+    description: "Name of the final concatenated log artifact."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Download all log artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: logs
+        pattern: ${{ inputs.log-pattern }}
+
+    - name: Concatenate logs
+      if: always()
+      shell: bash
+      working-directory: logs
+      run: |
+        {
+          echo "Concatenated logs from failed shards:";
+          shopt -s nullglob
+          for logfile in */playwright-run.log; do
+            shard_dir=$(dirname "$logfile")
+            echo ""
+            echo "=================================================="
+            echo "Logs from artifact: $shard_dir"
+            echo "=================================================="
+            cat "$logfile"
+          done
+        } > ../combined-logs.log
+
+    - name: Upload concatenated log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.final-log-name }}
+        path: combined-logs.log

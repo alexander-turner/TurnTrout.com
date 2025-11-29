@@ -1,0 +1,489 @@
+@use "./variables.scss" as *;
+@use "./syntax";
+@use "./admonitions";
+@use "./checkboxes";
+@use "./colors";
+@use "./fonts";
+@use "./timeline";
+
+html {
+  scroll-behavior: auto;
+  width: 100%;
+}
+
+body,
+section {
+  margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Define the scrollbar style */
+body,
+.right {
+  scrollbar-color: var(--midground-fainter) var(--background);
+}
+
+.right::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Define the thumb style */
+.right::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: var(--midground-fainter);
+  border-radius: 5px;
+}
+
+.text-highlight {
+  padding: 0 0.1rem;
+  border-radius: 5px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--tertiary) 30%, rgb(255 255 255 / 0%));
+}
+
+p,
+ul,
+text,
+a,
+tr,
+td,
+li,
+ol,
+.katex,
+.math {
+  overflow-wrap: anywhere;
+  hyphens: none;
+}
+
+.math {
+  &.math-display {
+    text-align: center;
+  }
+}
+
+.katex {
+  overflow: auto hidden;
+  font-size: 0.9em !important;
+  margin-left: auto; // Center katex
+  margin-right: auto;
+} // Override minified katex styles
+
+strong {
+  font-weight: $semi-bold-weight;
+}
+
+a {
+  text-decoration-thickness: 0.03em;
+
+  // Style same-page links, but exclude those inside headers
+  // This targets links with the 'same-page-link' class that are not direct children of h1-h6 elements
+  // The '&' in the :not() pseudo-class refers to the current selector (a.same-page-link)
+  &.same-page-link:not(h1 > &, h2 > &, h3 > &, h4 > &, h5 > &, h6 > &) {
+    // Add a '#' before tag links
+    &.tag-link {
+      &::before {
+        content: "#";
+      }
+    }
+  }
+
+  &.external .external-icon {
+    height: 1ex;
+    margin: 0 0.15em;
+
+    > path {
+      fill: var(--foreground);
+    }
+  }
+}
+
+.desktop-only {
+  display: initial;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+}
+
+.mobile-only {
+  display: none;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: initial;
+  }
+}
+
+#left-sidebar {
+  order: 1;
+}
+
+#center-content {
+  order: 2;
+}
+
+#right-sidebar {
+  order: 3;
+}
+
+.page {
+  @media all and (max-width: $max-mobile-width) {
+    margin: 0 auto;
+    padding: 0 calc(2 * $base-margin);
+    max-width: $page-width;
+  }
+
+  & article {
+    & li > *:first-child:not(blockquote) {
+      margin-top: 0;
+    }
+
+    & li > *:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  & > #quartz-body {
+    width: 100%;
+    display: flex;
+
+    @media all and (max-width: $max-mobile-width) {
+      flex-direction: column;
+      overflow-x: visible;
+      gap: 0;
+    }
+
+    @media all and (min-width: $min-desktop-width) {
+      flex-direction: row;
+      justify-content: center;
+      align-items: flex-start;
+      gap: calc(0.5 * #{$max-sidebar-gap});
+      margin: 0 auto;
+
+      @media all and (min-width: $wider-gap-breakpoint) {
+        gap: $max-sidebar-gap;
+      }
+    }
+
+    & .sidebar {
+      display: flex;
+      flex-direction: column;
+      margin-top: $top-spacing;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      height: fit-content;
+
+      @media all and (min-width: $min-desktop-width) {
+        position: sticky;
+        top: $top-spacing;
+        overflow-y: auto;
+        max-height: calc(100vh - #{$top-spacing});
+      }
+
+      &#left-sidebar {
+        z-index: 1;
+
+        @media all and (min-width: $min-desktop-width) {
+          flex-basis: $left-sidebar-width;
+          flex-shrink: 0.25;
+          margin-left: calc(0.25 * #{$max-sidebar-gap});
+
+          @media all and (min-width: $wider-gap-breakpoint) {
+            margin-left: 0;
+          }
+        }
+
+        @media all and (max-width: $max-mobile-width) {
+          gap: 0;
+          top: 0;
+          position: sticky;
+          margin-top: 0;
+          align-items: center;
+          width: 100%;
+          max-width: $page-width;
+          height: auto;
+          overflow-y: visible;
+        }
+      }
+
+      &#right-sidebar {
+        @media all and (max-width: $max-mobile-width) {
+          width: 100%;
+          height: auto;
+          overflow-y: visible;
+          margin-top: 0;
+        }
+
+        @media all and (min-width: $min-desktop-width) {
+          flex-basis: $right-sidebar-width;
+          flex-shrink: 1;
+          padding-right: calc(0.5 * #{$max-sidebar-gap});
+
+          @media all and (min-width: $wider-gap-breakpoint) {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+
+    & #center-content {
+      flex-grow: 1;
+      flex-shrink: 1;
+      max-width: $page-width;
+      overflow-x: hidden;
+      width: 100%;
+
+      @media all and (max-width: $max-mobile-width) {
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+      }
+    }
+  }
+
+  & .page-header {
+    width: $page-width;
+    margin: $top-spacing auto 0 auto;
+    max-width: $page-width;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media all and (max-width: $max-mobile-width) {
+      width: initial;
+      margin-top: calc(2 * $base-margin);
+      max-width: none;
+    }
+  }
+}
+
+blockquote {
+  margin: calc(2 * $base-margin) 0;
+  border-left: 3px solid var(--midground);
+  padding-left: calc(2 * $base-margin);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+thead {
+  position: relative; // For anchor links
+
+  article & > a[role="anchor"] {
+    color: var(--midground-faint);
+    background-color: transparent;
+
+    @media all and (min-width: $margins-begin) {
+      position: absolute;
+      left: -1.5rem;
+      top: 0;
+    }
+
+    .popover & {
+      display: none;
+    }
+  }
+}
+
+li {
+  width: fit-content;
+  max-width: fit-content;
+
+  // This is for the site nav menu
+  .menu & {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+#toc-content li,
+#toc-content-mobile li {
+  // Ensure headers are visible even when the navbar is present
+  scroll-margin-top: calc(6 * $base-margin);
+
+  // Oldstyle is too small for headers
+  &::first-letter,
+  & span,
+  .number-prefix {
+    font-variant-numeric: lining-nums;
+  }
+
+  & .small-caps {
+    font-weight: lighter;
+  }
+
+  &[id] * {
+    text-decoration: none;
+    color: var(--foreground);
+  }
+}
+
+figure[data-rehype-pretty-code-figure] {
+  margin: 0;
+  line-height: 1.6rem;
+  position: relative;
+
+  & > [data-rehype-pretty-code-title] {
+    font-family: var(--font-monospace);
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--midground-faint);
+    width: max-content;
+    border-radius: 5px;
+    margin-bottom: -0.5rem;
+  }
+
+  & > pre {
+    padding: 0;
+  }
+}
+
+pre {
+  font-family: var(--font-monospace);
+  padding: 0 0.5rem;
+  border-radius: 5px;
+  overflow-x: auto;
+  position: relative;
+
+  &:has(> code.mermaid) {
+    border: none;
+  }
+
+  & > code {
+    background: none;
+    font-size: var(--font-size-minus-2);
+    counter-reset: line;
+    counter-increment: line 0;
+    display: grid;
+    padding: 0.5rem 0;
+
+    & [data-highlighted-chars] {
+      border-radius: 5px;
+    }
+
+    & > [data-line] {
+      padding: 0 1rem;
+      margin-right: $base-margin;
+
+      // Want wrapped lines to indent
+      text-indent: calc(-4 * $base-margin);
+      padding-left: calc(4 * $base-margin);
+      padding-right: calc(2 * $base-margin);
+      text-wrap: pretty;
+      box-sizing: border-box;
+      border-left: 3px solid transparent;
+
+      &[data-highlighted-line] {
+        border-left: 3px solid var(--blue);
+      }
+
+      &::before {
+        content: counter(line);
+        counter-increment: line;
+        width: calc(2 * $base-margin);
+        display: inline-block;
+        text-align: right;
+
+        // Split between padding and margin for border
+        margin-left: calc(1 * $base-margin);
+        padding-right: calc(1 * $base-margin);
+        margin-right: calc(1 * $base-margin);
+        border-right: 1px solid var(--midground-fainter);
+      }
+    }
+
+    &[data-line-numbers-max-digits="2"] > [data-line]::before {
+      width: 2rem;
+    }
+
+    &[data-line-numbers-max-digits="3"] > [data-line]::before {
+      width: 3rem;
+    }
+  }
+}
+
+dt {
+  font-weight: $semi-bold-weight;
+  display: inline;
+}
+
+dd {
+  margin-bottom: calc(0.5 * $base-margin);
+  margin-top: calc(0.5 * $base-margin);
+}
+
+img {
+  max-width: 87.5%;
+  border-radius: 5px;
+  margin: calc(2 * $base-margin) 0;
+}
+
+blockquote > p:first-of-type {
+  margin-top: 0;
+}
+
+hr {
+  width: 100%;
+  margin: 2rem auto;
+  height: 1px;
+  border: none;
+}
+
+audio,
+video {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.transclude {
+  ul {
+    padding-left: calc(2 * $base-margin);
+  }
+}
+
+ul ul,
+ol ul {
+  margin-top: 0;
+}
+
+ol,
+ul {
+  margin-top: calc(1 * $base-margin);
+
+  // article &:not(#toc-content-mobile *) {
+  //   padding-left: calc(3.5 * $base-margin);
+
+  //   li {
+  //     padding-left: $base-margin;
+  //   }
+  // }
+}
+
+.katex-display {
+  overflow: auto hidden;
+}
+
+#quartz-root {
+  overflow-x: visible;
+}
+
+// Nested ol and ul should have margin before them
+ol:not(ol > ol, li > ol) {
+  margin-top: calc(1.5 * $base-margin);
+}

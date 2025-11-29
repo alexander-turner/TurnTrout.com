@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="rss" type="rss" />
+
+	<xsd:complexType name="rss">
+		<xsd:sequence>
+			<xsd:element name="channel" type="channel" maxOccurs="1"
+				minOccurs="1" />
+
+		</xsd:sequence>
+		<xsd:attribute name="version" type="version" />
+
+	</xsd:complexType>
+
+	<xsd:simpleType name="version">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="2.0" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:complexType name="channel">
+		<xsd:sequence>
+			<xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						The name of the channel. It's how people refer
+						to your service. If you have an HTML website
+						that contains the same information as your RSS
+						file, the title of your channel should be the
+						same as the title of your website.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="link" type="xsd:string" maxOccurs="1" minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						The URL to the HTML website corresponding to the
+						channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="xsd:string" maxOccurs="1"
+				minOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Phrase or sentence describing the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="language" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						The language the channel is written in. This
+						allows aggregators to group all Italian language
+						sites, for example, on a single page. A list of
+						allowable values for this element, as provided
+						by Netscape, is here
+						[http://www.rssboard.org/rss-language-codes].
+						You may also use values defined by the W3C
+						[http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes].
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="copyright" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Copyright notice for content in the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="managingEditor" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Email address for person responsible for
+						editorial content.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="webMaster" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Email address for person responsible for
+						technical issues relating to channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pubDate" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						The publication date for the content in the
+						channel. For example, the New York Times
+						publishes on a daily basis, the publication date
+						flips once every 24 hours. That's when the
+						pubDate of the channel changes. All date-times
+						in RSS conform to the Date and Time
+						Specification of RFC 822, with the exception
+						that the year may be expressed with two
+						characters or four characters (four preferred).
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="lastBuildDate" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						The last time the content of the channel
+						changed.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="category" type="category" maxOccurs="unbounded"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specify one or more categories that the channel
+						belongs to. Follows the same rules as the
+						&lt;item&gt;-level category element.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="generator" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						A string indicating the program used to generate
+						the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="docs" type="xsd:string" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						A URL that points to the documentation for the
+						format used in the RSS file. It's probably a
+						pointer to this page. It's for people who might
+						stumble across an RSS file on a Web server 25
+						years from now and wonder what it is.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cloud" type="cloud" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Allows processes to register with a cloud to be
+						notified of updates to the channel, implementing
+						a lightweight publish-subscribe protocol for RSS
+						feeds. More info here.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ttl" type="xsd:int" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						ttl stands for time to live. It's a number of
+						minutes that indicates how long a channel can be
+						cached before refreshing from the source.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="image" type="image" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies a GIF, JPEG or PNG image that can be
+						displayed with the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="rating" type="xsd:string" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						The PICS [http://www.w3.org/PICS/] rating for
+						the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="textInput" type="textInput" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies a text input box that can be displayed
+						with the channel.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="skipHours" type="skipHours" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						A hint for aggregators telling them which hours
+						they can skip. This element contains up to 24
+						&lt;hour&gt; sub-elements whose value is a
+						number between 0 and 23, representing a time in
+						GMT, when aggregators, if they support the
+						feature, may not read the channel on hours
+						listed in the &lt;skipHours&gt; element. The
+						hour beginning at midnight is hour zero.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="skipDays" type="skipDays" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						A hint for aggregators telling them which days
+						they can skip. This element contains up to seven
+						&lt;day&gt;
+						sub-elements whose value is Monday, Tuesday,
+						Wednesday, Thursday, Friday, Saturday or
+						Sunday. Aggregators may not read the channel
+						during days listed in the
+						&lt;skipDays&gt;element.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="item" type="item" maxOccurs="unbounded"
+				minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="cloud">
+		<xsd:attribute name="domain" type="xsd:string" />
+		<xsd:attribute name="port">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:int">
+					<xsd:maxInclusive value="65536" />
+					<xsd:minInclusive value="0" />
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="path" type="xsd:string" />
+		<xsd:attribute name="registerProcedure" type="xsd:string" />
+		<xsd:attribute name="protocol" type="xsd:string" />
+	</xsd:complexType>
+
+	<xsd:complexType name="image">
+		<xsd:sequence>
+			<xsd:element name="url" type="xsd:string" maxOccurs="1" minOccurs="1" />
+
+			<xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
+
+			<xsd:element name="link" type="xsd:string" maxOccurs="1" minOccurs="1" />
+
+			<xsd:element name="width" default="88" maxOccurs="1" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:int">
+						<xsd:minExclusive value="0" />
+						<xsd:maxInclusive value="144" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="height" default="31" maxOccurs="1" minOccurs="0">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:int">
+						<xsd:minExclusive value="0" />
+						<xsd:maxInclusive value="400" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:element name="description" type="xsd:string" maxOccurs="1"
+				minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="textInput">
+		<xsd:sequence>
+			<xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="1" />
+			<xsd:element name="description" type="xsd:string" maxOccurs="1"
+				minOccurs="1" />
+			<xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="1" />
+			<xsd:element name="link" type="xsd:string" maxOccurs="1" minOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="skipHours">
+		<xsd:sequence>
+			<xsd:element name="hour" minOccurs="1" maxOccurs="24">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:int">
+						<xsd:maxInclusive value="23" />
+						<xsd:minInclusive value="0" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="skipDays">
+		<xsd:sequence>
+			<xsd:element name="day" maxOccurs="7">
+				<xsd:simpleType>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="Monday" />
+						<xsd:enumeration value="Tuesday" />
+						<xsd:enumeration value="Wednesday" />
+						<xsd:enumeration value="Thursday" />
+						<xsd:enumeration value="Friday" />
+						<xsd:enumeration value="Saturday" />
+						<xsd:enumeration value="Sunday" />
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="item">
+		<xsd:sequence>
+			<xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						The title of the item.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="link" type="xsd:string" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The URL of the item.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="description" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>The item synopsis.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="author" type="xsd:string" maxOccurs="1" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Email address of the author of the item.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="category" type="category" maxOccurs="unbounded"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Includes the item in one or more categories.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="comments" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						URL of a page for comments relating to the item.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="enclosure" type="enclosure" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Describes a media object that is attached to the
+						item.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="guid" type="guid" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						A string that uniquely identifies the item.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pubDate" type="xsd:string" maxOccurs="1"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Indicates when the item was published.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="category">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="domain" type="xsd:string" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="enclosure">
+		<xsd:attribute name="url" type="xsd:string" use="required" />
+		<xsd:attribute name="length" use="required">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:int">
+					<xsd:minExclusive value="0" />
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="type" type="xsd:string" use="required" />
+	</xsd:complexType>
+
+
+	<xsd:complexType name="guid">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="isPermaLink" type="xsd:boolean" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="source">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="url" type="xsd:string" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

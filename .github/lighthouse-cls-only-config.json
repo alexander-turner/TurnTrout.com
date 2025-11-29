@@ -1,0 +1,32 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3,
+      "settings": {
+        "onlyCategories": ["performance"],
+        "onlyAudits": ["cumulative-layout-shift"],
+        "throttling": {
+          "cpuSlowdownMultiplier": 1,
+          "rttMs": 40,
+          "throughputKbps": 10240
+        },
+        "disableStorageReset": false,
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "width": 1440,
+          "height": 900,
+          "deviceScaleFactor": 1,
+          "mobile": false
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "defaults": {
+    "timeout": 10000,
+    "chromeLaunchConfig": {
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
+    },
+    "standard": "WCAG2AA",
+    "runners": [
+      "axe",
+      "htmlcs"
+    ],
+    "hideElements": [
+      ".ignore-pa11y"
+    ],
+    "ignore": [
+      "frame-tested"
+    ],
+    "concurrency": 1
+  }
+}

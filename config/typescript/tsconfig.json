@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext", "DOM", "DOM.Iterable"],
+    "experimentalDecorators": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "typeRoots": ["../../node_modules/@types"],
+    "types": []
+  },
+  "include": ["../../**/*.ts", "../../**/*.tsx", "../../package.json"],
+  "exclude": ["../../build/**/*.d.ts", "../../config/**/*.ts"]
+}

@@ -1,0 +1,307 @@
+@use "./variables.scss" as *;
+@use "sass:color";
+@use "./colors";
+
+.admonition,
+.timeline-card {
+  margin: 1rem 0;
+  overflow: hidden;
+  padding: 0 1rem;
+}
+
+.admonition {
+  --border: color-mix(in srgb, var(--color) 60%, var(--background));
+  --bg: light-dark(
+    color-mix(in srgb, var(--color) 4%, var(--background)),
+    color-mix(in srgb, var(--color) 2%, var(--background))
+  );
+  --admonition-icon-note: url("https://assets.turntrout.com/static/icons/note.svg");
+  --admonition-icon-abstract: url("https://assets.turntrout.com/static/icons/abstract.svg");
+  --admonition-icon-info: url("https://assets.turntrout.com/static/icons/info.svg");
+  --admonition-icon-todo: url("https://assets.turntrout.com/static/icons/todo.svg");
+  --admonition-icon-tip: url("https://assets.turntrout.com/static/icons/plus.svg");
+  --admonition-icon-success: url("https://assets.turntrout.com/static/icons/success.svg");
+  --admonition-icon-question: url("https://assets.turntrout.com/static/icons/question.svg");
+  --admonition-icon-warning: url("https://assets.turntrout.com/static/icons/warning.svg");
+  --admonition-icon-failure: url("https://assets.turntrout.com/static/icons/failure.svg");
+  --admonition-icon-danger: url("https://assets.turntrout.com/static/icons/danger.svg");
+  --admonition-icon-bug: url("https://assets.turntrout.com/static/icons/bug.svg");
+  --admonition-icon-example: url("https://assets.turntrout.com/static/icons/example.svg");
+  --admonition-icon-quote: url("https://assets.turntrout.com/static/icons/quote.svg");
+  --admonition-icon-idea: url("https://assets.turntrout.com/static/icons/lightbulb.svg");
+  --admonition-icon-goose: url("https://assets.turntrout.com/static/icons/goose.svg");
+  --admonition-icon-fold: url("https://assets.turntrout.com/static/icons/fold.svg");
+  --admonition-icon-thanks: url("https://assets.turntrout.com/static/icons/heart.svg");
+  --admonition-icon-tag: url("https://assets.turntrout.com/static/icons/tag.svg");
+  --admonition-icon-link: url("https://assets.turntrout.com/static/icons/link.svg");
+  --admonition-icon-math: url("https://assets.turntrout.com/static/icons/math.svg");
+  --admonition-icon-money: url("https://assets.turntrout.com/static/icons/dollar.svg");
+
+  border: 1px solid var(--border);
+  background-color: var(--bg);
+  scrollbar-color: var(--midground-fainter) var(--bg);
+  border-radius: 5px;
+  transition: max-height 0.3s ease;
+  box-sizing: border-box;
+
+  & blockquote {
+    border-left: 1px solid var(--border);
+  }
+
+  & > *:nth-child(2) {
+    margin-top: 0;
+  }
+
+  & .admonition-content {
+    margin-bottom: calc(2 * $base-margin);
+  }
+
+  // Gray by default
+  &[data-admonition] {
+    --color: color-mix(in srgb, var(--background) 15%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-note);
+  }
+
+  // Green
+  &[data-admonition="success"],
+  &[data-admonition="tip"],
+  &[data-admonition="money"] {
+    --color: color-mix(in srgb, var(--green) 65%, var(--foreground));
+  }
+
+  &[data-admonition="success"] {
+    --admonition-icon: var(--admonition-icon-success);
+  }
+
+  &[data-admonition="money"] {
+    --admonition-icon: var(--admonition-icon-money);
+  }
+
+  // Yellow
+  &[data-admonition="question"] {
+    --color: color-mix(in srgb, var(--yellow) 70%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-question);
+  }
+
+  &[data-admonition="todo"] {
+    --color: color-mix(in srgb, var(--yellow) 70%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-todo);
+  }
+
+  &[data-admonition="idea"] {
+    --color: color-mix(in srgb, var(--yellow) 70%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-idea);
+  }
+
+  // Orange
+  &[data-admonition="warning"] {
+    --color: color-mix(in srgb, var(--orange) 60%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-warning);
+  }
+
+  // Red
+  &[data-admonition="failure"],
+  &[data-admonition="bug"],
+  &[data-admonition="danger"] {
+    --color: color-mix(in srgb, var(--red) 70%, var(--foreground));
+  }
+
+  // Pink
+  &[data-admonition="thanks"] {
+    --color: color-mix(in srgb, var(--pink) 70%, var(--foreground));
+    --admonition-icon: var(--admonition-icon-thanks);
+  }
+
+  &[data-admonition="failure"] {
+    --admonition-icon: var(--admonition-icon-failure);
+  }
+
+  &[data-admonition="bug"] {
+    --admonition-icon: var(--admonition-icon-bug);
+  }
+
+  &[data-admonition="abstract"] {
+    --admonition-icon: var(--admonition-icon-abstract);
+  }
+
+  &[data-admonition="info"] {
+    --admonition-icon: var(--admonition-icon-info);
+  }
+
+  &[data-admonition="tip"] {
+    --admonition-icon: var(--admonition-icon-tip);
+  }
+
+  &[data-admonition="danger"] {
+    --admonition-icon: var(--admonition-icon-danger);
+  }
+
+  &[data-admonition="example"] {
+    --admonition-icon: var(--admonition-icon-example);
+  }
+
+  &[data-admonition="quote"] {
+    --admonition-icon: var(--admonition-icon-quote);
+  }
+
+  &[data-admonition="tag"] {
+    --admonition-icon: var(--admonition-icon-tag);
+  }
+
+  &[data-admonition="link"] {
+    --admonition-icon: var(--admonition-icon-link);
+  }
+
+  &[data-admonition="math"] {
+    --admonition-icon: var(--admonition-icon-math);
+  }
+
+  &[data-admonition="quote"]
+    > .admonition-title
+    > .admonition-title-inner
+    > .admonition-icon {
+    transform: scale(-1); // Flip across the y-axis
+  }
+
+  &[data-admonition="goose"] {
+    --admonition-icon: var(--admonition-icon-goose);
+  }
+
+  &.is-collapsed > .admonition-title > .fold-admonition-icon {
+    transform: rotateZ(-90deg);
+  }
+
+  &.is-collapsible {
+    > .admonition-content {
+      transition: max-height 0.3s ease;
+      overflow: hidden;
+    }
+  }
+
+  &.is-collapsed {
+    > .admonition-content {
+      display: none;
+      max-height: 0 !important;
+    }
+  }
+}
+
+#content-meta .admonition-metadata {
+  --admonition-margin-outer: 0.75rem;
+
+  // These tags should generally be less bright
+  background-color: var(--background); // "see-through"
+
+  --border: color-mix(in srgb, var(--color) 30%, var(--background));
+
+  &.is-collapsed .admonition-title {
+    margin-bottom: var(--admonition-margin-outer);
+  }
+
+  & > .admonition-title {
+    margin-top: var(--admonition-margin-outer);
+    margin-bottom: calc(0.75 * $base-margin);
+  }
+
+  & > .admonition-content {
+    margin-top: calc(0.75 * $base-margin);
+    margin-bottom: var(--admonition-margin-outer);
+
+    & > *:last-child {
+      margin-bottom: 0;
+    }
+
+    & > *:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+.admonition-title {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(0.5 * $base-margin);
+  margin: calc(1.5 * $base-margin) 0;
+
+  --icon-size: calc(1.5 * #{$base-margin});
+
+  #right-sidebar & {
+    gap: calc(0.75 * $base-margin);
+  }
+
+  & .fold-admonition-icon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    align-self: center;
+    flex-shrink: 0;
+    background-color: var(--color);
+    mask-image: var(--admonition-icon-fold);
+    mask-size: var(--icon-size) var(--icon-size);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    transition: transform 0.15s ease;
+    opacity: 0.8;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .admonition-title-inner {
+    margin: 0;
+    margin-right: calc(0.75 * $base-margin);
+    color: var(--color);
+    font-weight: $semi-bold-weight;
+    font-variant-numeric: lining-nums;
+    line-height: auto;
+
+    & .admonition-icon {
+      display: inline-block;
+      width: var(--icon-size);
+      height: var(--icon-size);
+      margin-right: calc(0.75 * $base-margin);
+      background-color: var(--color);
+      mask-image: var(--admonition-icon);
+      mask-size: var(--icon-size) var(--icon-size);
+      mask-position: center;
+      mask-repeat: no-repeat;
+      vertical-align: -6%;
+    }
+
+    .admonition-metadata & {
+      color: var(--midground);
+    }
+
+    & p {
+      margin: 0;
+    }
+
+    & * {
+      color: inherit !important;
+    }
+
+    & .small-caps,
+    & sup {
+      font-variant-numeric: normal;
+    }
+
+    & a {
+      font-weight: inherit;
+    }
+  }
+}
+
+.admonition-content,
+.timeline-info {
+  & > *:not(.subtitle):first-child,
+  & > .vsc-controller + p {
+    // vsc-controllers can be spawned ahead of the first paragraph
+    margin-top: 0;
+  }
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.footnotes .admonition {
+  margin-bottom: calc(2 * $base-margin);
+}

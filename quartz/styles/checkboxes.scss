@@ -1,0 +1,102 @@
+@use "./variables.scss" as *;
+
+li:has(> input.checkbox-toggle),
+li:has(> p > input.checkbox-toggle) {
+  list-style: none;
+  position: relative;
+
+  &::marker {
+    content: none;
+  }
+}
+
+input.checkbox-toggle {
+  --checkbox-size: 0.85rem;
+
+  // ol has extra padding-left
+  --ul-left: calc(-1 * var(--checkbox-size) - 0.75 * #{$base-margin});
+  --ol-left: calc(-1 * var(--checkbox-size) - 0.25 * #{$base-margin});
+
+  appearance: none;
+  position: absolute;
+  top: 0.3em;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  border-radius: 4px;
+  border: 1.5px solid var(--midground-faint);
+  background-color: transparent;
+
+  // Most recent list ancestor is ul
+  ul > li > &,
+  ul > li > p > & {
+    left: var(--ul-left);
+  }
+
+  // Most recent list ancestor is ol
+  ol > li > &,
+  ol > li > p > & {
+    left: var(--ol-left);
+
+    // Safari uses margin-left instead of padding-left on ol > li
+    // Need to compensate by shifting checkbox left by that amount
+    @supports (-webkit-hyphens: none) {
+      left: calc(var(--ol-left) - #{$li-padding-left});
+    }
+  }
+
+  &:focus-visible {
+    outline: 1.5px solid var(--color-link);
+    outline-offset: 1.5px;
+  }
+
+  // Checked boxes and their box children will be styled the same
+  &:checked,
+  li:has(> input.checkbox-toggle:checked) &,
+  li:has(> * > input.checkbox-toggle:checked) & {
+    --checkbox-color: light-dark(
+      color-mix(in srgb, var(--green), var(--light) 20%),
+      color-mix(in srgb, var(--green), var(--dark) 45%)
+    );
+
+    background-color: var(--checkbox-color);
+    border-color: var(--checkbox-color);
+
+    &::after {
+      content: "✓";
+      color: var(--light);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+// Make lighter in a way that includes eg favicons
+
+:is(
+    li:has(> input.checkbox-toggle:checked),
+    li:has(> * > input.checkbox-toggle:checked)
+  ):not(
+    li:has(> input.checkbox-toggle:checked) *,
+    li:has(> * > input.checkbox-toggle:checked) *
+  ) {
+  opacity: 0.75;
+}
+
+// Checked state
+li:has(> input.checkbox-toggle:checked),
+li:has(> * > input.checkbox-toggle:checked) {
+  &,
+  & p {
+    text-decoration: line-through;
+    text-decoration-color: var(--midground-faint);
+  }
+}

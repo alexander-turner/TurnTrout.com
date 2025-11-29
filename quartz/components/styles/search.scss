@@ -1,0 +1,282 @@
+@use "../../styles/variables.scss" as *;
+
+#navbar-right {
+  @media all and (max-width: $max-mobile-width) {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.search {
+  display: flex;
+  flex-direction: row-reverse;
+  min-width: fit-content;
+
+  @media all and (min-width: $min-desktop-width) {
+    margin-top: calc(2 * $base-margin);
+    margin-right: 0;
+    width: 5rem;
+  }
+
+  & > #search-icon {
+    border: 1px solid var(--midground-fainter);
+    border-radius: 5px;
+    height: calc(3 * $base-margin);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    white-space: nowrap;
+
+    & > div {
+      flex-grow: 1;
+    }
+
+    & > p {
+      font-size: var(--font-size-minus-1);
+      color: color-mix(in srgb, var(--midground) 75%, var(--foreground));
+      display: inline;
+      padding: 0;
+      margin: 0 $base-margin;
+
+      // Make it more centered for mobile
+      @media all and (max-width: $max-mobile-width) {
+        margin-right: calc(1.5 * $base-margin);
+      }
+    }
+
+    // The actual search icon
+    & svg {
+      cursor: pointer;
+      width: 0.625rem;
+      margin: 0 $base-margin;
+
+      .search-path {
+        stroke: var(--midground);
+        stroke-width: 2px;
+        transition: stroke 0.5s ease;
+      }
+    }
+  }
+}
+
+.search:has(> #search-container) {
+  position: absolute; // Don't interrupt the flow of the page
+}
+
+#search-container {
+  position: fixed;
+  contain: layout;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+  display: none;
+  backdrop-filter: blur(4px);
+
+  &.active {
+    display: inline-block;
+  }
+
+  & > #search-space {
+    width: 65%;
+    margin-top: 12vh;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media all and (max-width: $max-mobile-width) {
+      width: 90%;
+    }
+
+    & > * {
+      width: 100%;
+      border-radius: 7px;
+      background: var(--background);
+      box-shadow:
+        0 14px 50px rgb(27 33 48 / 12%),
+        0 10px 30px rgb(27 33 48 / 16%);
+      margin-bottom: calc(4 * $base-margin);
+    }
+
+    & > input {
+      box-sizing: border-box;
+      padding: $base-margin calc(2 * $base-margin);
+      font-family: EBGaramond, var(--font-main);
+      font-size: var(--font-size-plus-0);
+      border: 1px solid var(--midground-faint);
+      color: var(--foreground);
+
+      &::placeholder {
+        color: var(--foreground);
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    & > #search-layout {
+      display: none;
+      flex-direction: row;
+      border: 1px solid var(--midground-faint);
+      flex: 0 0 100%;
+      box-sizing: border-box;
+
+      &.display-results {
+        display: flex;
+      }
+
+      &[data-preview] > #results-container {
+        flex: 0 0 min(30%, $right-sidebar-width);
+      }
+
+      @media all and (min-width: $mobile-breakpoint) {
+        &[data-preview] {
+          & .result-card > p.preview {
+            display: none;
+          }
+
+          & > div {
+            &:first-child {
+              border-right: 1px solid var(--midground-faint);
+              border-top-right-radius: unset;
+              border-bottom-right-radius: unset;
+            }
+
+            &:last-child {
+              border-top-left-radius: unset;
+              border-bottom-left-radius: unset;
+            }
+          }
+        }
+      }
+
+      & > div {
+        height: calc(75vh - 12vh);
+        border-radius: 5px;
+      }
+
+      @media all and (max-width: $tablet-breakpoint) {
+        & > #preview-container {
+          display: none !important;
+        }
+
+        &[data-preview] > #results-container {
+          width: 100%;
+          height: auto;
+          flex: 0 0 100%;
+        }
+      }
+
+      & .highlight {
+        border-radius: 5px;
+        scroll-margin-top: 2rem;
+        color: var(--green);
+        text-shadow: 0 0 10px color-mix(in srgb, var(--green) 70%, transparent);
+      }
+
+      & > #preview-container {
+        display: block;
+        overflow: hidden;
+        font-family: inherit;
+        color: var(--foreground);
+        line-height: 1.5em;
+        font-weight: $normal-weight;
+        overflow-y: auto;
+        margin-left: calc(2 * $base-margin);
+
+        // Padding to keep scrollbar from hugging the right edge
+        padding-right: calc(2 * $base-margin);
+        cursor: pointer;
+
+        & .search-preview {
+          margin: 0 auto;
+          width: min($page-width, 100%);
+        }
+
+        & #article-title {
+          margin-top: 1.5vw;
+        }
+
+        a[role="anchor"] {
+          background-color: transparent;
+        }
+
+        & .dropcap {
+          line-height: 1.3;
+        }
+      }
+
+      & > #results-container {
+        overflow-y: auto;
+
+        & .result-card {
+          overflow: hidden;
+          text-decoration: none;
+          padding: 1em;
+          cursor: pointer;
+          transition: background 0.2s ease;
+          border-bottom: 1px solid var(--midground-faint);
+          width: 100%;
+          display: block;
+          box-sizing: border-box;
+
+          // normalize card props
+          font-family: inherit;
+          margin: 0;
+          text-transform: none;
+          text-align: left;
+          outline: none;
+          font-weight: inherit;
+
+          &:hover,
+          &:focus,
+          &.focus {
+            background: color-mix(
+              in srgb,
+              var(--midground-faint) 40%,
+              var(--background)
+            );
+          }
+
+          & > h3 {
+            margin: 0;
+          }
+
+          & #tags > ul {
+            margin-top: $base-margin;
+            margin-bottom: 0;
+          }
+
+          & > ul > li > p {
+            border-radius: 8px;
+            background-color: var(--highlight);
+            padding: 0.2rem 0.4rem;
+            line-height: 1.4rem;
+            font-weight: $bold-weight;
+            color: var(--midground);
+
+            &.match-tag {
+              color: var(--color-link);
+            }
+          }
+
+          & > p {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
+  & .vsc-controller {
+    display: none; // Don't show in search preview
+  }
+}
+
+@media all and (max-width: $tablet-breakpoint) {
+  .search > #search-icon > p {
+    padding: 0;
+  }
+}

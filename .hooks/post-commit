@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+# Get current commit hash and repository root directory
+commit_hash="$(git rev-parse HEAD)"
+git_root="$(git rev-parse --show-toplevel)"
+timestamps_dir="$git_root/.timestamps/files"
+
+# Create text file containing commit hash
+txt_file="$timestamps_dir/$commit_hash.txt"
+printf '%s' "$commit_hash" >"$txt_file"
+
+# Create OpenTimestamps proof for the commit hash
+ots stamp "$txt_file" 1>/dev/null 2>&1
+echo "Stamped $txt_file"
+
+# Add and commit the timestamp files if there are changes
+cd "$timestamps_dir" || exit 1
+if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+  git add --force "$commit_hash.txt" "$commit_hash.txt.ots"
+  git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet --no-verify
+  git push --quiet
+fi
+
+cd "$git_root" || exit 1

@@ -1,0 +1,75 @@
+@use "../../styles/variables.scss" as *;
+
+#content-meta {
+  margin-top: 0;
+  margin-bottom: $base-margin;
+  font-size: var(--font-size-minus-1);
+
+  & * {
+    color: var(--midground);
+  }
+
+  & .admonition-icon {
+    background-color: var(--midground);
+    vertical-align: text-top;
+  }
+
+  &[show-comma="true"] {
+    > span:not(:last-child) {
+      margin-right: 8px;
+
+      &::after {
+        content: ",";
+      }
+    }
+  }
+
+  & .ordinal-suffix {
+    margin-left: -0.01rem;
+    vertical-align: 0.25em; // Because not using full height numbers
+    text-decoration-thickness: 0.75px; // Underline is too heavy
+  }
+
+  & a {
+    color: inherit; // No link color
+  }
+}
+
+#backlinks-admonition,
+#post-statistics {
+  li {
+    margin-bottom: calc($base-margin);
+  }
+
+  ul {
+    padding-left: $base-margin;
+    margin-left: 0;
+  }
+}
+
+#tags ul {
+  color: var(--midground);
+  list-style: none;
+  display: block;
+  padding-left: 0;
+  overflow-wrap: normal;
+
+  & a.tag-link {
+    color: var(--midground);
+    border-radius: 5px; /* Add rounded corners to the tags box */
+    line-height: 1rem;
+    padding: 0;
+    padding-top: initial;
+    padding-bottom: initial;
+    background-color: transparent;
+    display: block;
+
+    #right-sidebar & {
+      text-decoration: none; // Prevent underline to reduce clutter
+    }
+  }
+}
+
+#content-meta:not(#table-of-contents ~ #content-meta) > *:first-child {
+  margin-top: 0;
+}

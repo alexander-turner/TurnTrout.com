@@ -1,0 +1,406 @@
+@use "../../styles/variables.scss" as *;
+@use "search.scss" as *;
+
+.menu {
+  // Applies to all links in the navbar
+  & ul {
+    list-style: none;
+    max-height: none;
+    padding-left: calc(0.5 * $base-margin);
+    background-color: var(--background);
+    margin: 0;
+
+    @media all and (min-width: $min-desktop-width) {
+      margin: $base-margin 0;
+    }
+
+    & li {
+      text-align: right;
+
+      & > a {
+        color: var(--midground);
+        transition: opacity 0.5s ease-out;
+        text-decoration: none;
+      }
+    }
+  }
+
+  // Desktop
+  @media (min-width: $min-desktop-width) {
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  @media (max-width: $max-mobile-width) {
+    position: absolute;
+    text-align: right;
+    background-color: transparent;
+    display: none;
+    right: 0;
+    top: 90%;
+
+    &.visible {
+      display: block;
+    }
+
+    li {
+      background-color: var(--background);
+    }
+
+    ul {
+      position: relative;
+      box-shadow: 0 2px 4px 0 rgb(0 0 0 / 10%);
+      clip-path: inset(0 0 -15px -15px);
+      width: max-content;
+      right: 0;
+    }
+  }
+}
+
+#menu-button {
+  vertical-align: middle;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  padding-left: calc(2 * $base-margin);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  & span {
+    display: block;
+    height: calc(0.25 * $base-margin);
+    background-color: var(--midground);
+
+    &:not(:last-child) {
+      margin-bottom: 5px;
+    }
+  }
+}
+
+.x:nth-of-type(1) {
+  transition: all 100ms ease-in-out;
+  transform: rotate(45deg);
+  transform-origin: top left;
+  width: 24px;
+
+  @media all and (max-width: $mobile-breakpoint) {
+    width: 23px;
+  }
+}
+
+.x:nth-of-type(2) {
+  transition: all 100ms ease-in-out;
+  transform-origin: center;
+  width: 0;
+}
+
+.x:nth-of-type(3) {
+  transition: all 100ms ease-in-out;
+  transform: rotate(-45deg);
+  transform-origin: bottom left;
+  width: 24px;
+
+  @media all and (max-width: $mobile-breakpoint) {
+    width: 23px;
+  }
+}
+
+@media all and (max-width: $mobile-breakpoint) {
+  .darkmode #night-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  #menu-button span {
+    height: 2.5px;
+  }
+}
+
+#page-title {
+  margin: 0;
+}
+
+/* Center the site name under the pond video */
+#page-title h2,
+#navbar-left h2 {
+  text-align: center;
+  color: var(--midground);
+
+  & a {
+    color: inherit;
+    text-decoration: none;
+
+    &:visited {
+      color: inherit;
+    }
+  }
+
+  @media all and (max-width: $max-mobile-width) {
+    margin-bottom: 0;
+    margin-top: calc(0.5 * $base-margin);
+    margin-right: calc(0.5 * $base-margin);
+  }
+
+  // Simulate an h3 on mobile. Prevent weird wrapping issues
+  @media all and (max-width: $mobile-breakpoint) {
+    font-size: var(--font-size-plus-2);
+  }
+
+  @media all and (min-width: $min-desktop-width) {
+    margin-bottom: 0;
+    margin-top: 0;
+    margin-right: calc(
+      0.25 * $base-margin
+    ); // Make it flush with the site links
+    font-size: var(--font-size-plus-2);
+  }
+}
+
+#navbar-left,
+.navbar-left,
+#navbar-right {
+  display: flex;
+  align-items: center;
+
+  @media all and (min-width: $min-desktop-width) {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+
+#navbar-left,
+.navbar-left {
+  position: relative;
+}
+
+#navbar-right {
+  @media all and (min-width: $min-desktop-width) {
+    margin-right: calc(0.25 * $base-margin);
+  }
+}
+
+@media all and (max-width: $max-mobile-width) {
+  #quartz-body #navbar {
+    opacity: 1;
+    transition:
+      transform 0.45s ease,
+      opacity 0.45s ease;
+    z-index: 910;
+    padding-top: calc(0.5 * $base-margin);
+
+    &.shadow {
+      box-shadow: 0 4px 4px 0 var(--background);
+      clip-path: inset(0 0 -1500px 0);
+    }
+
+    &.hide-above-screen {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+}
+
+#navbar {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--background);
+
+  @media all and (max-width: $max-mobile-width) {
+    justify-content: space-between;
+    width: 100.5%; // Prevent peek-through of other elements
+    flex-direction: row;
+    background-color: var(--background);
+  }
+}
+
+:root[data-theme="dark"] .shadow {
+  @media all and (max-width: $max-mobile-width) {
+    box-shadow: 0 4px 4px 0 var(--midground-faintest);
+    clip-path: inset(0 0 -1500px 0);
+  }
+}
+
+#pond-video {
+  // Consistent width and spacing for both img and video
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+  margin-top: 0;
+  object-fit: contain;
+}
+
+#header-video-container {
+  @media all and (min-width: $min-desktop-width) {
+    width: 188px;
+    height: 188px;
+    min-height: 188px;
+    aspect-ratio: 188 / 188;
+    display: block;
+  }
+
+  // Hide on mobile
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+}
+
+#video-toggle-span {
+  --video-toggle-icon-size: 15px;
+
+  position: absolute;
+  top: 2%;
+  left: 5%;
+
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+
+  & #video-toggle {
+    width: var(--video-toggle-icon-size);
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    padding: 0;
+
+    & svg {
+      width: inherit;
+      margin: 0;
+      color: var(--midground);
+    }
+
+    & #play-icon {
+      display: var(--video-play-display, block);
+    }
+
+    & #pause-icon {
+      display: var(--video-pause-display, none);
+    }
+  }
+}
+
+#darkmode-span {
+  --darkmode-icon-size: 25px;
+
+  z-index: 3;
+  position: absolute;
+  right: 0;
+  top: 1.75%;
+  text-align: right;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+
+  @media all and (max-width: $max-mobile-width) {
+    position: relative;
+    left: inherit;
+    top: inherit;
+    margin: 0 calc(1.5 * $base-margin);
+  }
+
+  & #theme-toggle {
+    display: inline-block;
+    width: var(--darkmode-icon-size);
+    min-width: var(--darkmode-icon-size); // Prevent flex collapse
+    height: var(--darkmode-icon-size);
+    position: relative;
+    border: none;
+    background-color: transparent;
+    margin-right: calc(0.25 * $base-margin);
+
+    @media all and (min-width: $min-desktop-width) {
+      --darkmode-icon-size: 15px;
+
+      margin-right: calc(0.5 * $base-margin);
+    }
+
+    @media all and (max-width: $max-mobile-width) {
+      margin-top: calc(0.125 * $base-margin);
+    }
+  }
+
+  & #theme-label {
+    color: var(--midground);
+    transition: opacity 0.5s ease;
+    margin: 0;
+    margin-right: calc(0.75 * $base-margin);
+    margin-top: calc(0.25 * $base-margin);
+    line-height: var(--darkmode-icon-size);
+    flex-shrink: 0; // Don't want it to wrap
+    font-size: var(--font-size-minus-2);
+    font-style: italic; // Differentiate from navbar links
+    user-select: all;
+    cursor: text;
+
+    &::after {
+      content: var(--theme-label-content, "Auto");
+    }
+
+    @media all and (max-width: $max-mobile-width) {
+      font-size: var(--font-size-minus-1); // Make easier to read on mobile
+      margin-right: $base-margin; // More space for the theme label
+    }
+  }
+
+  & svg {
+    cursor: pointer;
+    opacity: 0;
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    left: 0;
+    top: 0;
+    fill: var(--midground);
+    transition: opacity 0.1s ease;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  & #day-icon {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  & #night-icon {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  & #day-icon {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  & #night-icon {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+#nav-searchbar {
+  @media all and (min-width: $min-desktop-width) {
+    order: 2; // Search bar comes after other links
+    margin-top: calc(0.25 * $base-margin);
+  }
+}
+
+.theme-toggle-auto {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+:root[data-theme-mode="auto"] .theme-toggle-auto {
+  visibility: visible;
+  opacity: 1;
+}

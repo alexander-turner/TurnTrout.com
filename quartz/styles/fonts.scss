@@ -1,0 +1,379 @@
+@use "./variables.scss" as *;
+
+@function calculate-scale($steps) {
+  @return calc(1rem * pow($font-scale-factor, #{$steps}));
+}
+
+:root {
+  @for $i from 1 through 3 {
+    --font-size-minus-#{$i}: #{calculate-scale(-$i)};
+  }
+
+  @for $i from 0 through 4 {
+    --font-size-plus-#{$i}: #{calculate-scale($i)};
+  }
+
+  --base-line-height: 1.4;
+  --min-font-size: 0.875rem; // 14px
+  --max-font-size: 1.5rem; // 24px
+  --base-font-size: clamp(
+    var(--min-font-size),
+    calc(var(--min-font-size) + 1vw),
+    var(--max-font-size)
+  );
+
+  font-size: var(--base-font-size);
+  text-rendering: geometricprecision;
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  margin-top: calc(3 * #{$base-margin});
+  margin-bottom: 1rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+$heading-sizes: (
+  1: --font-size-plus-4,
+  2: --font-size-plus-3,
+  3: --font-size-plus-2,
+  4: --font-size-plus-1,
+  5: --font-size-plus-1,
+  6: --font-size-plus-1,
+);
+
+@each $level, $size-var in $heading-sizes {
+  h#{$level},
+  .h#{$level} {
+    font-size: var(#{$size-var});
+  }
+}
+
+// FONT SETUP
+$fonts-dir: "/static/styles/fonts";
+
+@mixin font-face(
+  $font-family,
+  $file-name,
+  $ext: ".woff2",
+  $font-features: none
+) {
+  @font-face {
+    font-family: $font-family;
+    font-optical-sizing: auto;
+    font-feature-settings: $font-features;
+    src: url("#{$fonts-dir}/#{$file-name}#{$ext}");
+    font-display: swap;
+  }
+}
+
+@include font-face("FiraCode", "firacode-vf", ".woff2");
+@include font-face("EBGaramond", "EBGaramond/EBGaramond08-Regular", ".woff2");
+
+@font-face {
+  font-family: "EBGaramondInitialsF1";
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2")
+    format("woff2");
+  font-display: block;
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
+}
+
+@font-face {
+  font-family: "EBGaramondInitialsF2";
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2")
+    format("woff2");
+  font-display: block;
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+}
+
+@font-face {
+  font-family: EBGaramondItalic;
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond08-Italic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: italic;
+  font-optical-sizing: auto;
+  font-display: swap;
+}
+
+@include font-face(
+  "EBGaramondOriginal",
+  "EBGaramond/EBGaramond08-Regular-original",
+  ".woff2"
+);
+@include font-face("EBGaramond12", "EBGaramond/EBGaramond12-Regular", ".woff2");
+@include font-face(
+  "EBGaramond12Italic",
+  "EBGaramond/EBGaramond12-Regular",
+  ".woff2"
+);
+
+// Less commonly used
+@include font-face(
+  "DejaVuSerifCondensed-Bold",
+  "DejaVuSerifCondensed-Bold-subset",
+  ".woff2"
+);
+@include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
+@include font-face("Scary", "DarkmodeRegular", ".woff2");
+@include font-face("Elvish", "tengwar_annatar/TengwarAnnatar", ".woff2");
+@include font-face(
+  "ElvishItalic",
+  "tengwar_annatar/TengwarAnnatar-Italic",
+  ".woff2"
+);
+
+body {
+  --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
+  --font-dropcap-background: "EBGaramondInitialsF1", serif;
+  --font-monospace: "FiraCode", "JetBrains Mono", "Courier New", monospace;
+  --font-main: "EBGaramond", garamond, "Times New Roman", serif;
+  --font-italic: "EBGaramondItalic", "EBGaramond";
+  --font-italic-situational: var(--font-italic);
+
+  font-family: var(--font-main);
+  line-height: var(--base-line-height);
+  font-feature-settings:
+    "liga" 1,
+    "cv11" 1;
+  font-variant-numeric: oldstyle-nums;
+
+  // Code should contain full-height numbers
+  & code,
+  & pre {
+    font-variant-numeric: lining-nums;
+  }
+}
+
+em {
+  // In first-line, we want to use the normal font in em, not the italic one
+  //  But we can't simply use ...::first-line em, since not supported by CSS
+  //  So we use a CSS variable to set the font family for the first-line
+  font-family: var(--font-italic-situational);
+  font-style: italic;
+}
+
+.elvish {
+  font-family: Elvish, serif;
+  line-height: 2.2;
+  position: relative;
+  cursor: text;
+
+  & a {
+    cursor: pointer;
+  }
+
+  & em,
+  em & {
+    font-family: ElvishItalic, serif;
+  }
+
+  // Show underlying English text
+  transition:
+    opacity 600ms,
+    color 300ms;
+
+  &:hover {
+    color: transparent;
+
+    &::after {
+      position: absolute;
+      left: 0;
+      width: max-content;
+      content: attr(data-content);
+      color: var(--foreground);
+      font-family: var(--font-main);
+      opacity: 1;
+      text-shadow: 0 0 10px color-mix(in srgb, var(--yellow) 50%, transparent);
+    }
+  }
+}
+
+.corrupted {
+  font-family: Scary, serif;
+  font-style: normal;
+}
+
+.fraction {
+  font-variant-numeric: stacked-fractions;
+  font-feature-settings: "frac" 1;
+  line-height: normal;
+  font-size: 1.2rem;
+  font-family: "EBGaramond12", serif;
+  vertical-align: -10%;
+}
+
+// Bolding text
+b,
+strong,
+.admonition-title-inner,
+dt {
+  text-shadow: 0.3px 0.3px;
+  font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
+
+  .right & {
+    text-shadow: 0 0; // No bolding needed on right sidebar; spacing works
+  }
+}
+
+.bad-handwriting {
+  font-family: BadHandwriting, serif;
+  text-align: center;
+  font-style: italic;
+  font-size: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.small-caps,
+article[data-use-dropcap="true"] > p:first-of-type::first-line,
+article[data-use-dropcap="true"] > p:first-of-type .small-caps {
+  --font-italic-situational: var(--font-main) !important;
+
+  font-style: inherit;
+  font-variant-caps: small-caps; // Fixes kerning in a few cases
+  -webkit-font-smoothing: antialiased; // Prevent excess bolding
+
+  dt &,
+  b &,
+  strong & {
+    font-weight: 500 !important;
+  }
+
+  // Not sure why, but outer scope var(--font-italic-situational) was not automatically refreshed with the new font from .small-caps scope
+  em & {
+    font-family: var(--font-italic-situational);
+  }
+}
+
+/* Set monospace font for code blocks, inline code, etc. */
+code,
+pre {
+  font-family: var(--font-monospace);
+  color: inherit;
+  font-size: 0.81em;
+  font-variant-caps: normal; // Ignore small-caps in code
+}
+
+code {
+  vertical-align: baseline;
+
+  a > & {
+    font-weight: $normal-weight;
+  }
+}
+
+// For usage in the middle of a paragraph
+.dropcap {
+  display: inline-block;
+  font-family: var(--font-dropcap-foreground);
+  color: var(--foreground);
+  position: relative;
+  text-transform: uppercase;
+  margin-right: 0.05rem;
+
+  // Inline dropcaps should be slightly higher than the baseline
+  p & {
+    vertical-align: -0.15rem;
+  }
+
+  --before-color: var(--midground-faint);
+
+  &::before {
+    font-family: var(--font-dropcap-background);
+    color: var(--before-color);
+    content: attr(data-first-letter);
+    text-transform: uppercase;
+    position: absolute;
+    cursor: text;
+  }
+}
+
+article[data-use-dropcap="true"] > p:first-of-type {
+  --dropcap-vertical-offset: 0.15rem;
+  --dropcap-font-size: 3.95rem;
+  --before-color: var(--midground-faint);
+
+  // Slanted smallcaps EB italic looks same as slanted normal smallcaps EB
+  //  so since real italics need a new font, just use that
+  font-family: var(--font-main);
+  position: relative;
+  min-height: 4.2rem;
+
+  &::before {
+    content: attr(data-first-letter);
+    text-transform: uppercase;
+    position: absolute;
+    top: var(--dropcap-vertical-offset);
+    left: 0;
+    font-size: var(--dropcap-font-size);
+    line-height: 1;
+    padding-right: 0.1em;
+    font-family: var(--font-dropcap-background);
+    color: var(--before-color);
+    cursor: text;
+  }
+
+  &::first-letter {
+    padding-top: var(--dropcap-vertical-offset);
+    text-transform: uppercase;
+    font-style: normal !important;
+    float: left;
+    pointer-events: none; /* Don't interfere with user interactions */
+    cursor: text;
+    color: var(--foreground);
+    font-size: var(--dropcap-font-size);
+    width: var(--dropcap-font-size);
+    line-height: 1;
+    padding-right: 0.1em;
+    font-family: var(--font-dropcap-foreground);
+    font-weight: 500 !important;
+
+    // Firefox-specific adjustments for dropcap
+    @supports (-moz-appearance: none) {
+      padding-top: $base-margin !important;
+    }
+  }
+}
+
+// EG 1st, 2nd, 3rd
+.ordinal-suffix {
+  vertical-align: calc(0.5 * $base-margin);
+  font-size: 0.75em; // Adapt to the font size
+
+  em & {
+    margin-left: calc(0.25 * $base-margin);
+  }
+}
+
+// Center only to avoid sidebars
+#center-content .ordinal-num {
+  font-variant-numeric: lining-nums;
+}
+
+#article-title {
+  margin-top: calc(-4 * $base-margin);
+}
+
+.tag-text {
+  font-family: var(--font-monospace);
+  font-size: smaller;
+}
+
+.gold-script {
+  font-feature-settings: "swsh" 1;
+  color: var(--gold);
+
+  // Make it easier to see on light themes
+  -webkit-text-stroke: 0.2px light-dark(black, transparent);
+}

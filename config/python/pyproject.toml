@@ -1,0 +1,96 @@
+[project]
+name = "turntrout-com"
+version = "1.4"
+description = "TurnTrout.com website build scripts and utilities"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4",
+    "defusedxml",
+    "gitpython",
+    "google-auth",
+    "numpy",
+    "pandas",
+    "pillow",
+    "protobuf",
+    "psutil",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pyyaml",
+    "requests",
+    "rich",
+    "ruamel-yaml",
+    "tqdm",
+    "validators",
+    "types-defusedxml",
+    "types-pyyaml",
+    "types-requests",
+    "pandas-stubs",
+    "mypy>=1.18.2",
+    "lxml-stubs>=0.5.1",
+    "types-pysocks>=1.7.1.20251001",
+    "types-pygments>=2.19.0.20251121",
+    "types-html5lib>=1.1.11.20251117",
+    "types-psutil>=7.1.3.20251125",
+    "types-tqdm>=4.67.0.20250809",
+    "docformatter>=1.7.7",
+    "pylint>=4.0.3",
+]
+
+[tool.black]
+line-length = 80
+target-version = ['py311']
+include = '\.pyw?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 80
+
+[tool.pytest.ini_options]
+addopts = "--cov=scripts --cov-report=html -n auto"
+testpaths = ["scripts/tests"]
+markers = [
+    "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)"
+]
+
+[tool.docformatter]
+wrap-summaries = 80
+wrap-descriptions = 80
+pre-summary-newline = true
+make-summary-multi-line = false
+black = true
+
+[tool.autoflake]
+exclude = ["node_modules/*"]
+remove-all-unused-imports = true
+remove-unused-variables = true
+
+[tool.autopep8]
+ignore = ["E402"]
+max_line_length = 80
+
+[tool.coverage.run]
+omit = ["scripts/tests/*", "scripts/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "^\\s+main\\(\\)$",
+    "^\\s+sys\\.exit\\(main\\(\\)\\)$",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "^except ImportError:",
+    "^\\s+import .*  # type: ignore$",
+    "if verbose:",
+]
+
+[tool.uv]
+# Make Python scripts executable via uv by default
+managed = true

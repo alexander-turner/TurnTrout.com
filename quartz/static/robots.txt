@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Allow crawling of static assets
+Allow: /static/
+
+# Sitemap location
+Sitemap: https://turntrout.com/sitemap.xml
+
+# Prevent AI training from scraping sensitive page
+User-agent: *
+Disallow: /self-fulfilling-misalignment
+
+User-agent: Googlebot
+Allow: /self-fulfilling-misalignment

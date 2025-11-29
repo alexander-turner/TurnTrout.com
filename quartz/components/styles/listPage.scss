@@ -1,0 +1,114 @@
+@use "../../styles/variables.scss" as *;
+
+ul.section-ul {
+  list-style: none;
+  margin-top: 0;
+  padding-left: 0;
+}
+
+li.section-li {
+  margin-bottom: 0;
+
+  & > .section {
+    display: grid;
+    grid-template-columns: 6em 3fr;
+
+    @media all and (max-width: $mobile-breakpoint) {
+      & > #tags ul {
+        display: none;
+      }
+    }
+
+    & > .desc > h3 > a {
+      background-color: transparent;
+    }
+
+    & > .meta {
+      margin: 0;
+      flex-basis: 6em;
+      opacity: 0.6;
+      text-align: right;
+      padding-right: calc(1.5 * $base-margin);
+    }
+  }
+}
+
+// modifications in popover context
+.popover .section {
+  grid-template-columns: 6em 1fr !important;
+
+  & > #tags ul {
+    display: none;
+  }
+}
+
+// AllTagsContent.tsx
+.all-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+
+  // Make the tag container look like a card
+  background-color: var(--midground-faintest);
+  border-radius: 5px;
+  padding: 15px;
+}
+
+.tag-container {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.tag-count {
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
+a.tag-link {
+  font-family: FiraCode, var(--font-monospace);
+  font-size: var(--font-size-minus-3);
+  margin: calc(0.25 * $base-margin) 0;
+}
+
+// RecentPosts.tsx
+.page-listing {
+  margin-top: calc(2 * $base-margin);
+
+  & .page-listing-title {
+    margin-top: 0;
+    margin-bottom: calc(0.5 * $base-margin);
+  }
+
+  & .tags {
+    margin-bottom: 0;
+    padding-left: 0;
+  }
+
+  & h1 a,
+  h2 a,
+  h3 a,
+  h4 a,
+  h5 a,
+  h6 a {
+    text-decoration: none;
+  }
+
+  & .section-li {
+    margin-bottom: calc($base-margin);
+
+    &:not(:first-child) {
+      margin-top: calc($base-margin);
+    }
+
+    & a.tag-link {
+      margin-right: $base-margin;
+      display: inline;
+    }
+  }
+
+  & hr {
+    margin: $base-margin 0;
+  }
+}

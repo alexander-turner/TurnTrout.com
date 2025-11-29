@@ -1,0 +1,15 @@
+code[data-theme*=" "] {
+  color: var(--shiki-light);
+}
+
+code[data-theme*=" "] span {
+  color: var(--shiki-light);
+}
+
+[data-theme="dark"] code[data-theme*=" "] {
+  color: var(--shiki-dark);
+}
+
+[data-theme="dark"] code[data-theme*=" "] span {
+  color: var(--shiki-dark);
+}

@@ -1,0 +1,27 @@
+.recent-notes {
+  & > h3 {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+  }
+
+  & > ul.recent-ul {
+    list-style: none;
+    margin-top: 1rem;
+    padding-left: 0;
+
+    & > li.recent-li {
+      margin: 1rem 0;
+
+      &.section {
+        h3 > a {
+          background-color: transparent;
+        }
+
+        .meta {
+          margin: 0 0 0.5rem;
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+}

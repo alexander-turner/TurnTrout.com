@@ -1,0 +1,182 @@
+#
+# Combine/group together PRs
+#
+# https://github.com/hrvey/combine-prs-workflow
+#
+
+name: "Combine PRs"
+
+# Controls inputs when the workflow is called
+on:
+  workflow_call:
+    inputs:
+      branchPrefix:
+        description: "Branch prefix to find combinable PRs based on"
+        required: false
+        type: string
+        default: "dependabot"
+      mustBeGreen:
+        description: "Only combine PRs that are green (status is success)"
+        required: false
+        type: boolean
+        default: true
+      combineBranchName:
+        description: "Name of the branch to combine PRs into"
+        required: false
+        type: string
+        default: "combine-prs-branch"
+      ignoreLabel:
+        description: "Exclude PRs with this label"
+        required: false
+        type: string
+        default: "nocombine"
+      runsOn:
+        description: "Machine to run the workflow on."
+        required: false
+        type: string
+    secrets:
+      githubToken:
+        required: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "combine-prs"
+  combine-prs:
+    runs-on: ${{ fromJson(inputs.runsOn) }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Create Combined PR
+        id: create-combined-pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.githubToken }}
+          script: |
+            const { owner, repo } = context.repo;
+            const inputs = ${{ toJSON(inputs) }};
+            const { combineBranchName, mustBeGreen, branchPrefix, ignoreLabel } = inputs || {};
+
+            if (!combineBranchName || !branchPrefix) {
+              console.log('Invalid input variables:', { combineBranchName, mustBeGreen, branchPrefix, ignoreLabel });
+              core.setFailed('Invalid input variables.');
+              return;
+            }
+
+            const pulls = await github.paginate('GET /repos/:owner/:repo/pulls', {
+              owner,
+              repo
+            });
+            const branchesAndPRStrings = [];
+            let baseBranch = null;
+            for (const pull of pulls) {
+              const branch = pull['head']['ref'];
+              console.log('Pull for branch: ' + branch);
+              if (branch.startsWith(branchPrefix)) {
+                console.log('Branch matched prefix: ' + branch);
+                let statusOK = true;
+                if (mustBeGreen) {
+                  console.log('Checking green status: ' + branch);
+                  const stateQuery = `query($owner: String!, $repo: String!, $pull_number: Int!) {
+                    repository(owner: $owner, name: $repo) {
+                      pullRequest(number:$pull_number) {
+                        commits(last: 1) {
+                          nodes {
+                            commit {
+                              statusCheckRollup {
+                                state
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }`
+                  const vars = {
+                    owner,
+                    repo,
+                    pull_number: pull['number']
+                  };
+                  const result = await github.graphql(stateQuery, vars);
+                  const [{ commit }] = result.repository.pullRequest.commits.nodes;
+                  const state = commit.statusCheckRollup.state
+                  console.log('Validating status: ' + state);
+                  if(state !== 'SUCCESS') {
+                    console.log('Discarding ' + branch + ' with status ' + state);
+                    statusOK = false;
+                  }
+                }
+                console.log('Checking labels: ' + branch);
+                const labels = pull['labels'];
+                for(const label of labels) {
+                  const labelName = label['name'];
+                  console.log('Checking label: ' + labelName);
+                  if(labelName === ignoreLabel) {
+                    console.log('Discarding ' + branch + ' with label ' + labelName);
+                    statusOK = false;
+                  }
+                }
+                if (statusOK) {
+                  console.log('Adding branch to array: ' + branch);
+                  const prString = '#' + pull['number'] + ' ' + pull['title'];
+                  branchesAndPRStrings.push({ branch, prString });
+                  baseBranch = pull['base']['ref'];
+                }
+              }
+            }
+            if (branchesAndPRStrings.length === 0) {
+              core.setFailed('No PRs/branches matched criteria');
+              return;
+            }
+            const { data: { default_branch } } = await github.request('GET /repos/:owner/:repo', {
+              owner,
+              repo
+            })
+            const { data: { commit: { sha: baseBranchSHA } } } = await github.request(`GET /repos/:owner/:repo/branches/${default_branch}`, {
+              owner,
+              repo
+            })
+            try {
+              await github.rest.git.createRef({
+                owner,
+                repo,
+                ref: 'refs/heads/' + combineBranchName,
+                sha: baseBranchSHA
+              });
+            } catch (error) {
+              console.log(error);
+              core.setFailed('Failed to create combined branch - maybe a branch by that name already exists?');
+              return;
+            }
+
+            let combinedPRs = [];
+            let mergeFailedPRs = [];
+            for(const { branch, prString } of branchesAndPRStrings) {
+              try {
+                await github.rest.repos.merge({
+                  owner,
+                  repo,
+                  base: combineBranchName,
+                  head: branch,
+                });
+                console.log('Merged branch ' + branch);
+                combinedPRs.push(prString);
+              } catch (error) {
+                console.log('Failed to merge branch ' + branch);
+                mergeFailedPRs.push(prString);
+              }
+            }
+
+            console.log('Creating combined PR');
+            const combinedPRsString = combinedPRs.join('\n');
+            let body = '✅ This PR was created by the Combine PRs action by combining the following PRs:\n' + combinedPRsString;
+            if(mergeFailedPRs.length > 0) {
+              const mergeFailedPRsString = mergeFailedPRs.join('\n');
+              body += '\n\n⚠️ The following PRs were left out due to merge conflicts:\n' + mergeFailedPRsString
+            }
+            await github.rest.pulls.create({
+              owner,
+              repo,
+              title: 'chore(NOJIRA-1): Combined PR',
+              head: combineBranchName,
+              base: baseBranch,
+              body: body
+            });

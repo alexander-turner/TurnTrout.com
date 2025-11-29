@@ -1,0 +1,216 @@
+@use "./variables.scss" as *;
+
+.favicon-span {
+  white-space: nowrap;
+}
+
+.favicon {
+  --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
+  --base-vertical-adjustment: calc(0.5 * #{$base-margin});
+  --vertical-adjustment: calc(
+    var(--base-vertical-adjustment) + 0.5 * var(--size-decrease)
+  );
+  --favicon-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+
+  display: inline;
+  width: var(--favicon-size);
+  height: var(--favicon-size);
+  margin: -20% auto -0.07em calc(0.125 * $base-margin);
+  vertical-align: var(--vertical-adjustment);
+
+  // Don't pollute copied text with favicon
+  user-select: none;
+
+  .subtitle & {
+    --subtitle-size: calc(var(--favicon-size) / #{$font-scale-factor});
+
+    width: var(--subtitle-size);
+    height: var(--subtitle-size);
+  }
+
+  // Make favicons align properly with headings
+  h1 &,
+  h2 &,
+  h3 &,
+  h4 &,
+  h5 &,
+  h6 & {
+    vertical-align: 65%;
+  }
+}
+
+// SVG-specific styling using masks for color control
+svg.favicon {
+  --mask-url: none; // Overridden by inline styles
+  --color-percentage: 40%;
+  --svg-color: var(--foreground);
+  --attenuated-red: color-mix(
+    in srgb,
+    var(--red) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-blue: color-mix(
+    in srgb,
+    var(--blue) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-green: color-mix(
+    in srgb,
+    var(--green) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-yellow: color-mix(
+    in srgb,
+    var(--gold) var(--color-percentage),
+    var(--svg-color)
+  );
+  --attenuated-orange: color-mix(
+    in srgb,
+    var(--orange) var(--color-percentage),
+    var(--svg-color)
+  );
+
+  mask: var(--mask-url) no-repeat center / contain;
+  filter: none; // Don't apply img filters to masks
+
+  // Per-domain colors using color-mix
+  background-color: color-mix(
+    in srgb,
+    var(--foreground),
+    var(--svg-color) var(--color-percentage)
+  );
+
+  :root[data-theme="dark"] & {
+    --color-percentage: 30%;
+  }
+
+  // Rotate and flip anchor icon to resemble the trout within-site icon
+  &[data-domain="anchor"] {
+    transform: rotate(-90deg) scaleX(-1);
+  }
+
+  &[data-domain="proton_me"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
+
+  &[data-domain="substack_com"],
+  &[data-domain="rss"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
+
+  &[data-domain="arbital_com"] {
+    --color-percentage: 25%;
+  }
+
+  &[data-domain="google_com"] {
+    background: conic-gradient(
+      from -70deg at 45% 50%,
+      var(--attenuated-red) 0deg 120deg,
+      var(--attenuated-blue) 120deg 220deg,
+      var(--attenuated-green) 220deg 310deg,
+      var(--attenuated-yellow) 310deg 360deg
+    );
+  }
+
+  &[data-domain="drive_google_com"] {
+    background: conic-gradient(
+      from -19deg at 50% 50%,
+      var(--attenuated-yellow) 0deg 129deg,
+      var(--attenuated-blue) 129deg 240deg,
+      var(--attenuated-green) 240deg 360deg
+    );
+  }
+
+  &[data-domain="play_google_com"] {
+    background: conic-gradient(
+      from -135deg at 50% 50%,
+      var(--attenuated-blue) 0deg 95deg,
+      var(--attenuated-green) 95deg 180deg,
+      var(--attenuated-yellow) 180deg 260deg,
+      var(--attenuated-red) 260deg 360deg
+    );
+  }
+
+  &[data-domain="intelligence_org"] {
+    background: conic-gradient(
+      from -90deg at 50% 50%,
+      var(--attenuated-orange) 0deg 25deg,
+      var(--attenuated-green) 25deg 35deg,
+      var(--attenuated-blue) 35deg 360deg
+    );
+  }
+}
+
+// Per-domain SVG colors
+$domain-svg-colors: (
+  "arbital_com": var(--green),
+  "arxiv_org": var(--red),
+  "cnn_com": var(--red),
+  "deepmind_com": var(--blue),
+  "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
+  "forum_effectivealtruism_org": var(--teal),
+  "colab_research_google_com": var(--gold),
+  "docs_google_com": var(--blue),
+  "scholar_google_com": var(--blue),
+  "huggingface_co": var(--yellow),
+  "matsprogram_org": var(--red),
+  "open_spotify_com": var(--green),
+  "overleaf_com": var(--green),
+  "proton_me": var(--purple),
+  "reddit_com": var(--red),
+  "rss": var(--orange),
+  "substack_com": var(--orange),
+  "youtube_com": var(--red),
+  "wordpress_com": var(--blue),
+);
+
+@each $domain, $color in $domain-svg-colors {
+  svg.favicon[data-domain="#{$domain}"] {
+    --svg-color: #{$color};
+  }
+}
+
+svg.favicon[data-domain="huggingface_co"] {
+  --target-percentage: 100%;
+}
+
+// Yellow arrow on bottom
+svg.favicon[data-domain="amazon_com"] {
+  :root[data-theme="dark"] & {
+    --target-percentage: var(--color-percentage);
+  }
+
+  :root[data-theme="light"] & {
+    --target-percentage: 60%;
+  }
+
+  --yellow-target: color-mix(
+    in srgb,
+    var(--gold) var(--target-percentage),
+    var(--foreground)
+  );
+
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--foreground) 0%,
+    var(--foreground) 60%,
+    var(--yellow-target) 60%
+  );
+}
+
+.favicon-big {
+  --favicon-size: 4rem;
+
+  display: block;
+  margin: 0 auto 1rem;
+  flex-flow: row wrap;
+}
+
+.favicon-demo-inline {
+  vertical-align: unset;
+  margin-right: 0.125rem;
+
+  &.full-color {
+    --color-percentage: 100%;
+  }
+}

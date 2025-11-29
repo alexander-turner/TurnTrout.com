@@ -1,0 +1,113 @@
+@use "../../styles/variables" as *;
+
+#table-of-contents {
+  @media all and (max-width: $max-mobile-width) {
+    display: none;
+  }
+}
+
+.search-preview blockquote:has(#toc-content-mobile) {
+  display: none;
+}
+
+#toc-title {
+  margin-top: 0;
+  margin-bottom: calc(0.5 * $base-margin);
+
+  & button {
+    color: var(--midground);
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-decoration: none;
+    text-align: left;
+    text-rendering: inherit;
+    cursor: pointer;
+  }
+}
+
+#toc-content {
+  margin-bottom: 0;
+}
+
+#toc-content,
+#toc-content-mobile,
+#backlinks-admonition,
+#post-statistics {
+  list-style: none;
+  max-height: none;
+  transition: max-height 0.5s ease;
+  position: relative;
+  font-size: var(--font-size-minus-1);
+
+  & li::marker {
+    content: unset;
+  }
+
+  & ol,
+  & ul {
+    --text-indent-multiplier: -0.75;
+
+    list-style: none;
+    padding-left: 0;
+    line-height: 1.05em;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    // Stagger wrapped text
+    text-indent: calc(var(--text-indent-multiplier) * $base-margin);
+    margin-left: 0;
+
+    & ol,
+    & ul {
+      font-size: calc(sqrt(calc(1 / $font-scale-factor)) * 1em);
+
+      & li {
+        padding-left: calc(1.5 * $base-margin);
+      }
+    }
+
+    &:not(:first-child) {
+      margin-bottom: 0;
+    }
+
+    & > li {
+      margin-bottom: calc(0.5 * $base-margin);
+      overflow-y: visible;
+
+      &:first-child {
+        margin-top: calc(0.5 * $base-margin);
+      }
+
+      &:last-child {
+        margin-bottom: calc(0.25 * $base-margin);
+      }
+
+      & > a {
+        text-decoration: none;
+        color: var(--midground);
+
+        &.active {
+          color: var(--midground-strong);
+          text-shadow: 0.3px 0.3px var(--midground-strong);
+        }
+      }
+    }
+  }
+}
+
+#toc-content > ol {
+  padding-left: calc(0.5 * $base-margin) !important;
+}
+
+#toc-content-mobile > ol {
+  padding-left: calc(0.3 * $base-margin) !important;
+}
+
+#center-content #toc-content-mobile {
+  & a,
+  & a:visited {
+    color: var(--foreground);
+  }
+}

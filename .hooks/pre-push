@@ -1,0 +1,72 @@
+#!/bin/sh
+set -e
+
+RESUME_FLAG=""
+if [ "$RESUME" = "true" ]; then
+  echo "Resuming from last failed step."
+  RESUME_FLAG="--resume"
+fi
+
+PUSHED_CHANGES=0
+trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
+
+# Main script logic first
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Handle cleanup function separately
+# shellcheck disable=SC2317
+handle_cleanup() {
+  _exit_code=$?
+
+  # Explicitly set error handling
+  set +e
+
+  _pushed_changes=$1
+  if [ "$_pushed_changes" -eq 1 ]; then
+    echo "Restoring stashed changes..."
+    git stash pop >>/dev/null || true
+  fi
+
+  return "$_exit_code"
+}
+
+# If there are any changes, stash them and return 1, otherwise return 0.
+stash_and_exit() {
+  PREV_NUM_STASHES=$(git stash list | wc -l)
+  git stash push --include-untracked >>/dev/null
+  # Check if anything was stashed
+  if [ "$(git stash list | wc -l)" -gt "$PREV_NUM_STASHES" ]; then
+    echo "1"
+  else
+    echo "0"
+  fi
+}
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+cd "$GIT_ROOT"
+
+if command -v conda >/dev/null 2>&1; then
+  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
+
+  if [ "$ACTIVE_ENV" != "website" ]; then
+    echo "Activating conda environment: website"
+
+    CONDA_BASE=$(conda info --base)
+    # shellcheck source=/dev/null
+    . "$CONDA_BASE/etc/profile.d/conda.sh"
+    conda activate website
+  fi
+fi
+
+if [ "$RESUME" != "true" ]; then
+  PUSHED_CHANGES=$(stash_and_exit)
+fi
+
+if [ "$CURRENT_BRANCH" != "main" ]; then
+  exit 0
+fi
+
+uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
+
+# Auto-compile requirements.txt and update publication dates
+sh "$GIT_ROOT/scripts/fast_pre_push.sh"

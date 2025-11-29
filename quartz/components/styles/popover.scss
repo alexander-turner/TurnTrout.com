@@ -1,0 +1,152 @@
+@use "../../styles/variables.scss" as *;
+
+@keyframes dropin {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  1% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+#article-title-popover {
+  margin-top: calc($base-margin);
+  margin-bottom: 0;
+}
+
+.popover {
+  z-index: 10;
+  position: absolute;
+  overflow: visible;
+
+  // Make there be the hand pointer when hovering over the popover
+  cursor: pointer;
+  padding: calc(2 * $base-margin);
+
+  & #not-found-div-popover {
+    margin-top: calc($base-margin);
+  }
+
+  & > .popover-inner {
+    position: relative;
+    width: 20rem;
+    max-height: 15rem;
+    padding: 0 1rem 1rem;
+    font-weight: initial;
+    font-style: initial;
+    line-height: var(--base-line-height);
+    font-size: var(--font-size-minus-1);
+    font-family: EBGaramond, var(--font-main);
+
+    & h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: var(--foreground);
+    }
+
+    & ol {
+      & li {
+        counter-increment: list-popover;
+
+        // Nested lists
+        & ol {
+          counter-reset: sublist-popover; // Each nested ordered list has its own sublist counter
+          & li {
+            counter-increment: sublist-popover; // Increment the sublist counter for nested list items
+            &::marker {
+              content: counters(list-popover, ".") "."
+                counters(sublist-popover, "."); // Display combined list and sublist counters for nested list items
+            }
+
+            &:first-child {
+              margin-top: 0; // Remove top margin from the first nested list item
+            }
+          }
+        }
+      }
+
+      & li::marker {
+        font-variant-numeric: lining-nums;
+        content: counter(list-popover) ".";
+      }
+
+      & li[id^="user-content-fn-"] {
+        counter-increment: footnote-popover;
+
+        &::marker {
+          font-size: var(--font-size-minus-1);
+          content: counter(footnote-popover) ".";
+        }
+
+        & ol {
+          counter-increment: footnote-popover-sublist;
+
+          & li::marker {
+            content: counters(footnote-popover, ".") "."
+              counters(footnote-popover-sublist, ".");
+          }
+        }
+      }
+    }
+
+    border: 1px solid var(--midground-faint);
+    background-color: var(--background);
+    border-radius: 5px;
+    box-shadow: 6px 6px 36px 0 rgb(0 0 0 / 25%);
+    overflow: auto;
+    white-space: normal;
+  }
+
+  & > .popover-inner[data-content-type] {
+    &[data-content-type*="pdf"],
+    &[data-content-type*="image"] {
+      padding: 0;
+      max-height: 100%;
+    }
+
+    &[data-content-type*="image"] {
+      img {
+        margin: 0;
+        border-radius: 0;
+        display: block;
+      }
+    }
+
+    &[data-content-type*="pdf"] {
+      iframe {
+        width: 100%;
+      }
+    }
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+
+  @media all and (width <= $max-mobile-width) {
+    display: none !important;
+  }
+}
+
+// The initial animation is more complicated and is handled via JS
+.popover-visible {
+  animation: dropin 0.3s ease;
+  animation-fill-mode: forwards;
+  animation-delay: 0.3s;
+}

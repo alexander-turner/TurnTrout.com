@@ -1,0 +1,180 @@
+name: Visual Testing
+
+concurrency:
+  group: visual-testing-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+on:
+  push:
+    branches: ["main", "dev", "jest-coverage"]
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  visual-testing:
+    # Using Ubuntu since it has the lowest per-minute rate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            1/20,
+            2/20,
+            3/20,
+            4/20,
+            5/20,
+            6/20,
+            7/20,
+            8/20,
+            9/20,
+            10/20,
+            11/20,
+            12/20,
+            13/20,
+            14/20,
+            15/20,
+            16/20,
+            17/20,
+            18/20,
+            19/20,
+            20/20,
+          ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Remove Safari autoplay script
+        run: rm -f ./quartz/static/scripts/safari-autoplay.js
+
+      - name: Make folder for screenshots
+        run: mkdir -p ./lost-pixel
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Create sanitized shard
+        if: always()
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          retention-days: 7
+
+      - name: Upload Lost Pixel screenshots shard
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
+          path: ./lost-pixel
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  summarize-failures:
+    name: Summarize Failures
+    if: always() && needs.visual-testing.result == 'failure'
+    needs: visual-testing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: visual-testing-log-shard-*
+          final-log-name: visual-testing-failed-logs
+
+  combine-and-upload:
+    needs: visual-testing
+    runs-on: ubuntu-latest
+    if: needs.visual-testing.result == 'success'
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+
+      - name: Download all Lost Pixel screenshot shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lost-pixel-screenshots-*
+          path: ./all-lost-pixel-shards
+          merge-multiple: true
+
+      - name: Combine screenshots into ./lost-pixel directory
+        id: combine
+        run: |
+          shopt -s globstar # Enable recursive globbing
+          mkdir -p ./lost-pixel
+          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
+          echo "Contents of ./lost-pixel after combining:"
+          ls -R ./lost-pixel
+          if [ -z "$(ls -A ./lost-pixel)" ]; then
+            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
+            echo "./lost-pixel directory is empty after combination attempt."
+          else
+            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
+            echo "Screenshots found in ./lost-pixel."
+          fi
+
+      - name: Symlink LostPixel config to root
+        if: steps.combine.outputs.screenshots_found == 'true'
+        run: ln -s config/lostpixel/lostpixel.config.ts lostpixel.config.ts
+
+      - name: Run LostPixel on combined screenshots
+        if: steps.combine.outputs.screenshots_found == 'true'
+        uses: lost-pixel/lost-pixel@v3.16.0
+        env:
+          LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
+          LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
+
+      - name: Clean up downloaded shards
+        run: rm -rf ./all-lost-pixel-shards

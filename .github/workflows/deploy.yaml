@@ -1,0 +1,89 @@
+name: Deploy to Cloudflare
+
+concurrency:
+  group: ${{ github.ref == 'refs/heads/main' && 'pages' || 'dev-pages' }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  prepare-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Build Quartz and generate critical CSS
+        run: pnpm build
+
+      - name: Deploy to Cloudflare Pages (fast feedback for dev)
+        if: github.ref_name == 'dev'
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ github.ref_name }}
+
+      - name: Install subfont
+        run: pnpm add -g subfont
+      - name: Make script executable
+        run: chmod +x ./scripts/subfont.sh
+      - name: Subset fonts
+        run: sh ./scripts/subfont.sh
+
+      - name: Run site checks
+        run: uv run python scripts/built_site_checks.py --check-fonts
+
+      - name: Upload prepared site after subfont
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-dir
+          path: public/
+
+  verify-tests:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Wait for all tests
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          check-regexp: '^(visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|Run eslint scanning|DeepSource:.*|lighthouse_(desktop|mobile)|build \(>=22\))$'
+          wait-interval: 10
+          allowed-conclusions: success,skipped
+          running-workflow-name: "Deploy to Cloudflare"
+
+  deploy:
+    needs: [prepare-deploy, verify-tests]
+    if: ${{ (always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download prepared site
+        uses: actions/download-artifact@v4
+        with:
+          name: public-dir
+          path: public/
+
+      - name: Deploy to Cloudflare Pages
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ github.ref_name }}

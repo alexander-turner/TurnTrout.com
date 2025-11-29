@@ -1,0 +1,44 @@
+@use "../../styles/variables.scss" as *;
+
+pre {
+  position: relative;
+
+  &:hover > .clipboard-button {
+    opacity: 1;
+    transition: opacity 0.2s;
+  }
+
+  & > code {
+    overflow: auto;
+  }
+}
+
+.clipboard-button {
+  display: flex;
+  position: absolute;
+  margin: $base-margin;
+  padding: 0;
+  color: var(--midground);
+  border: 1px solid var(--midground-faint);
+  background-color: var(--background);
+  border-radius: 5px;
+  opacity: 0;
+  transition: 0.2s;
+  right: 0;
+
+  & > svg {
+    fill: var(--midground);
+    filter: contrast(0.3);
+    padding: 0;
+    margin: calc(0.5 * $base-margin);
+  }
+
+  &:hover {
+    cursor: pointer;
+    border-color: var(--blue);
+  }
+
+  &:focus {
+    outline: 0;
+  }
+}

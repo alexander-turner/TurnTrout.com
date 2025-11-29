@@ -1,0 +1,32 @@
+# Auto-generated from actual code usage in scripts/
+# To regenerate: ./scripts/update_requirements.sh
+
+# Build tools (pinned for compatibility)
+pip<25.3
+
+# Production dependencies (auto-detected from scripts/)
+beautifulsoup4
+defusedxml
+GitPython
+google_auth
+numpy
+pandas
+Pillow
+protobuf
+psutil
+pytest
+PyYAML
+Requests
+rich
+ruamel.yaml
+tqdm
+validators
+
+# Testing dependencies
+pytest
+
+# Type stubs for mypy
+types-defusedxml
+types-pyyaml
+types-requests
+pandas-stubs
