@@ -1,6 +1,6 @@
+import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import git
@@ -92,7 +92,7 @@ def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def git_initialized_dir(tmp_path: Path) -> dict[str, Any]:
+def git_initialized_dir(tmp_path: Path) -> dict[str, git.Repo | Path | dict]:
     """
     Initialize a git repository with basic config in tmp_path.
 
@@ -206,7 +206,7 @@ def prevent_real_git_operations(monkeypatch: pytest.MonkeyPatch, request):
     if "allow_git_operations" in request.keywords:
         return
 
-    original_run = __import__("subprocess").run
+    original_run = subprocess.run
 
     def guarded_run(*args, **kwargs):
         """Wrapper that fails if real git write operations are attempted."""
