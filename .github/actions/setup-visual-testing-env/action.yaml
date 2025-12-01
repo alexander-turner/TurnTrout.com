@@ -58,7 +58,6 @@ runs:
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
-        PUPPETEER_SKIP_DOWNLOAD: "true"
 
     - name: Install Playwright and dependencies
       if: inputs.install-playwright == 'true'
