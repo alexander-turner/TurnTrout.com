@@ -46,6 +46,14 @@ runs:
         restore-keys: |
           playwright-${{ runner.os }}-
 
+    - name: Cache Puppeteer browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/puppeteer
+        key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          puppeteer-${{ runner.os }}-
+
     - name: Cache ffmpeg
       id: cache-ffmpeg
       uses: actions/cache@v4
