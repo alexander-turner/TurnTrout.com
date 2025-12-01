@@ -70,6 +70,9 @@ jobs:
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
+      - name: Install Puppeteer Chrome
+        run: pnpm exec puppeteer browsers install chrome
+
       - name: Build site
         run: pnpm build
 
