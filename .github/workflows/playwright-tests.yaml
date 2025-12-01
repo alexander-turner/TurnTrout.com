@@ -70,6 +70,9 @@ jobs:
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
+      - name: Build site
+        run: pnpm build
+
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
