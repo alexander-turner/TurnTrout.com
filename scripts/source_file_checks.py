@@ -526,6 +526,26 @@ def check_html_with_braces(text: str) -> List[str]:
     return errors
 
 
+def check_heading_links(text: str) -> List[str]:
+    """
+    Headings should not contain markdown links like [text](url).
+
+    Instead, links should be moved to a "Subtitle:" line below the heading.
+    """
+    errors = []
+    stripped_text = remove_code(text)
+    pattern = r"^#{1,6}\s+.*\[.*?\]\(.*$"
+
+    for match in re.finditer(pattern, stripped_text, re.MULTILINE):
+        line_num = stripped_text[: match.start()].count("\n") + 1
+        heading_text = match.group().strip()
+        errors.append(
+            f"Heading contains markdown link at line {line_num}: {heading_text}"
+        )
+
+    return errors
+
+
 def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
     """
     Extract all footnote definitions from text.
@@ -629,6 +649,7 @@ def check_file_data(
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
         "html_braces": check_html_with_braces(text),
+        "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),
         "invalid_filename": check_spaces_in_path(file_path),
     }

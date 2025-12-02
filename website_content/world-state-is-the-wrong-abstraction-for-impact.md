@@ -63,7 +63,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 !["How can you not be tempted by that assumption – things are changing in the world! The assumption's right there. It's so obvious. And actually, it's totally wrong."](https://assets.turntrout.com/static/images/posts/mrVMkSH.avif)
 
-## ![The top line reads, "Impact is not Primarily about World State." Below, a second line reads, "Ontologies account for the things we think the world is made of."](https://assets.turntrout.com/static/images/posts/T9MnkcK.avif)
+![The top line reads, "Impact is not Primarily about World State." Below, a second line reads, "Ontologies account for the things we think the world is made of."](https://assets.turntrout.com/static/images/posts/T9MnkcK.avif)
 
 ![A stick figure has a thought bubble containing a simple drawing of a car. Purple handwritten labels point to the "Car" itself, a "wheel," and the surrounding air, labeled "O₂ molecule."](https://assets.turntrout.com/static/images/posts/dmy8BTO.avif)
 

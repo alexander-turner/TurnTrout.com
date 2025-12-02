@@ -221,7 +221,9 @@ Thus: Shard theory _does not explain everything_, because shards are grown from 
 
 We think that simple reward circuitry leads to different cognition activating in different circumstances. Different circumstances can activate cognition that implements different values, and this can lead to inconsistent or biased behavior. We conjecture that many biases are convergent artifacts of the human training process and internal shard dynamics. People aren’t just randomly hardcoded to be more or less “rational” in different situations.
 
-### [Projection bias](https://thedecisionlab.com/biases/projection-bias)
+### Projection bias
+
+Subtitle: Learn more about [projection bias](https://thedecisionlab.com/biases/projection-bias).
 
 > [!quote] [Dynamic inconsistency](https://en.wikipedia.org/wiki/Dynamic_inconsistency)
 > Humans have a tendency to mispredict their future [marginal utilities](https://en.wikipedia.org/wiki/Marginal_utility) by assuming that they will remain at present levels. This leads to inconsistency as marginal utilities (for example, tastes) change over time in a way that the individual did not expect. For example, when individuals are asked to choose between a piece of fruit and an unhealthy snack (such as a candy bar) for a future meal, the choice is strongly affected by their "current" level of hunger.
@@ -235,7 +237,7 @@ Why are we hesitant to shift away from the course of action that we’re current
 1. The currently active shards are those that bid for the current course of action. Those shards probably bid for the current course. They also have more influence, since they’re currently active. Thus, the currently active shard coalition supports the current course of action more strongly, when compared to your “typical” shard coalitions. This can cause the you-that-is-pursuing-the-course-of-action to continue, even after your “otherwise” self would have stopped.
 2. Shards activate more strongly in concrete situations. Actually seeing a bear will activate self-preservation shards more strongly than simply imagining a bear. Thus, the concrete benefits of the current course of action will more easily activate shards than the abstract benefits of an imagined course of action. This can lead to overestimating the value of continuing the current activity relative to the value of other options.
 
-### [Time inconsistency](https://en.wikipedia.org/wiki/Dynamic_inconsistency)
+### Time inconsistency
 
 A person might deliberately avoid passing through the sweets aisle in a supermarket in order to avoid temptation. Avoiding the aisle is a strange thing to do, and it makes no sense from the perspective of an agent maximizing expected utility over quantities like "sweet food consumed" and "leisure time" and "health." Such an EU-maximizing agent would decide to buy sweets or not, but wouldn’t worry about entering the aisle itself.
 
@@ -248,7 +250,9 @@ Avoiding temptation makes perfect sense under shard theory. Shards are contextua
 
 [In such situations, people tend to choose \$500 in (A) but \$505 in (B)](https://scholar.google.com/scholar?cluster=16878679720519238129&hl=en&as_sd$t=0$,5), which is inconsistent with models in which the value of money is exponentially discounted over time. To explain this observed behavioral regularity using shard theory, consider the historical reinforcement contexts around immediate and delayed gratification. If contexts involving short-term opportunities activate different shards than contexts involving long-term opportunities, then it’s unsurprising that a person might choose 500 dollars in (A) but 505 dollars in (B).[^12] (Of course, a full shard theory explanation must explain _why_ those contexts activate different shards. We strongly intuit that there’s a good explanation, but do not think we have a satisfying story here yet.)
 
-### [Framing effect](https://thedecisionlab.com/biases/framing-effect)
+### Framing effect
+
+Subtitle: Learn more about the [framing effect](https://thedecisionlab.com/biases/framing-effect).
 
 The framing effect is another bias downstream of contextual shard activations. Asking the same question in different contexts can change which shards activate, and thus change how people answer the question. Consider also: [People are hesitant to drink from a cup labeled “poison”, even if they themselves were the one to put the label there](https://psycnet.apa.org/record/1986-21988-001).
 

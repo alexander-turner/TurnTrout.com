@@ -163,7 +163,9 @@ Imagine I'm standing in my bedroom. The door is open to my kitchen. Then I toss 
 
 Figure: Animation of cell division ([source](https://www.youtube.com/watch?v=7ybxaYhRpIA)). Look how jiggly the cytoplasm is!
 
-## An anime about your body: [Cells at Work](https://en.wikipedia.org/wiki/Cells_at_Work!)
+## An anime about your body
+
+Subtitle: Check out [Cells at Work](https://en.wikipedia.org/wiki/Cells_at_Work!).
 
 This anime is fun. Not as fun as [Doctor Stone](/doctor-stone), but fun. Its representations of cells are sometimes hard to forget.  
 
