@@ -953,3 +953,9 @@ figure#goose-terminal {
     text-wrap: nowrap;
   }
 }
+
+pre,
+figure#goose-terminal {
+  // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
+  font-variant-ligatures: none;
+}
