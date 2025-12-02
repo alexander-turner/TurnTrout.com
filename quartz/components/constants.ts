@@ -1,4 +1,4 @@
-import constantsJson from "../../config/constants.json"
+import constantsJson from "../../config/constants.json" assert { type: "json" }
 
 // Re-export simple constants from JSON
 export const {
