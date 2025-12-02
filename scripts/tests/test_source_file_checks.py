@@ -487,6 +487,82 @@ def test_scss_compilation_error(
     assert test_case["expected_error"] in missing_fonts[0]
 
 
+@pytest.mark.parametrize(
+    "text,expected_errors",
+    [
+        # Test case 1: Valid headings without links
+        (
+            """# Normal Heading
+## Another Heading
+### Third Level Heading
+Regular text with [a link](url) is fine.
+""",
+            [],
+        ),
+        # Test case 2: Heading with link at various levels
+        (
+            """# Heading with [link](url)
+## Another [link in heading](https://example.com)
+### Third [level](url) heading
+""",
+            [
+                "Heading contains markdown link at line 1: # Heading with [link](url)",
+                "Heading contains markdown link at line 2: ## Another [link in heading](https://example.com)",
+                "Heading contains markdown link at line 3: ### Third [level](url) heading",
+            ],
+        ),
+        # Test case 3: Heading with link and text after
+        (
+            """### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
+""",
+            [
+                "Heading contains markdown link at line 1: ### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework",
+            ],
+        ),
+        # Test case 4: Mixed valid and invalid headings
+        (
+            """# Valid Heading
+Some text here.
+## Invalid [Heading](url)
+More text.
+### Another Valid Heading
+""",
+            [
+                "Heading contains markdown link at line 3: ## Invalid [Heading](url)",
+            ],
+        ),
+        # Test case 5: Link in code block should be ignored
+        (
+            """# Valid Heading
+```markdown
+# This [link](url) is in code
+```
+## Another Valid Heading
+""",
+            [],
+        ),
+        # Test case 6: Multiple links in one heading
+        (
+            """## Heading with [first link](url1) and [second link](url2)
+""",
+            [
+                "Heading contains markdown link at line 1: ## Heading with [first link](url1) and [second link](url2)",
+            ],
+        ),
+    ],
+)
+def test_check_heading_links(text: str, expected_errors: List[str]) -> None:
+    """
+    Test the heading links checker with various markdown content.
+
+    Args:
+        text: Test markdown content to check
+        expected_errors: List of expected error messages
+    """
+    errors = source_file_checks.check_heading_links(text)
+    assert errors == expected_errors
+
+
 def test_integration_with_main(
     scss_scenarios: Dict[str, Dict[str, Any]],
     setup_font_test: Callable,

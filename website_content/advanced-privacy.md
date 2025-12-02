@@ -344,9 +344,9 @@ If you want to keep your PayPal, at least mitigate by opting out of their data s
 
 Minimize or avoid putting private information into cloud-based LLMs. Once you upload your data, assume it may be used for training or even [available on the Internet Archive](https://breached.company/the-ai-privacy-crisis-over-130-000-llm-conversations-exposed-on-archive-org/). But if you have a sensitive topic to get off your chest, what else can you do?
 
-### Apple's [private cloud compute](https://security.apple.com/blog/private-cloud-compute/) framework
+### Apple's private cloud compute framework
 
-The framework promises significantly more privacy than standard inference. If you have an Apple computer, consider using after maxing out the privacy settings.
+The [framework](https://security.apple.com/blog/private-cloud-compute/) promises significantly more privacy than standard inference. If you have an Apple computer, consider using after maxing out the privacy settings.
 
 ### Run an LLM on your local machine
 

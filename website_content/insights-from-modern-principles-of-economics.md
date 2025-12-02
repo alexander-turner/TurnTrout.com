@@ -141,7 +141,9 @@ Law of demand
 
 I significantly sharpened my understanding of incentives by internalizing how to shift supply/demand curves. So let's reason through a contentious question with this frame:
 
-## I think price gouging should usually be legal (and [most economists agree](https://www.igmchicago.org/surveys/price-gouging/))
+## I think price gouging should usually be legal
+
+Subtitle: [Most economists agree](https://www.igmchicago.org/surveys/price-gouging/).
 
 > [!info]
 > This section serves both as fact-checking and an explanation I wish I'd read when I started learning economics.

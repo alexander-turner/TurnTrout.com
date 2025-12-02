@@ -99,7 +99,9 @@ We want to ensure that the policy gradient updates from the diamond coalesce int
 > [!info] Definition
 > Sometimes, I'll refer to the agent's "world model", which means "the predictive machinery and concepts it learns via SSL."
 
-### Growing the proto-diamond [shard](/shard-theory)
+### Growing the proto-diamond shard
+
+Subtitle: See [shard theory](/shard-theory) for more on "shards".
 
 In situations where the AI knows it can reach a diamond, we want the AI to consider and execute plans which involve reaching the diamond. But why would the AI start being motivated _by_ diamonds? Consider the batch update structure of the policy gradient setup. The agent does a bunch of stuff while being able to directly observe the nearby diamond:
 

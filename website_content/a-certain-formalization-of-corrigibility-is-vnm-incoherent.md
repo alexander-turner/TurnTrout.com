@@ -117,7 +117,9 @@ In the limit of variety, an agent can "manipulate" us by getting us to correct i
 
 I currently don't see how to recover reasonable amounts of corrigibility from the optimal policies of non-constant utility functions, due to instrumental convergence.
 
-# Does broad corrigibility imply [VNM](https://en.wikipedia.org/wiki/Von_Neumann%E2%80%93Morgenstern_utility_theorem)\-incoherence?
+# Does broad corrigibility imply VNM-incoherence?
+
+Subtitle: In terms of the [Von Neumann–Morgenstern utility theorem](https://en.wikipedia.org/wiki/Von_Neumann%E2%80%93Morgenstern_utility_theorem).
 
 Yes, unless the state reward function is constant and we only demand weak corrigibility to all policies.
 

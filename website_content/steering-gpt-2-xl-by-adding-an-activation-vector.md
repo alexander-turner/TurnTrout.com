@@ -852,7 +852,9 @@ Aryan Bhatt offers the following summary:
 >
 > You've shown that there is a particular direction in embedding space that corresponds to love-hate, and that that direction stays the same across a broad class of inputs.
 
-### Activation additions give evidence of [compositional representations](https://transformer-circuits.pub/2023/superposition-composition/index.html)
+### Activation additions give evidence of compositional representations
+
+Subtitle: Read more at [`transformer-circuits.pub`](https://transformer-circuits.pub/2023/superposition-composition/index.html).
 
 We similarly intervened on the model to separately [induce more "loving"](/gpt2-steering-vectors#1-Love-Hate) and [more "wedding"-like outputs](/gpt2-steering-vectors#9-Talking-about-weddings), by adding in a _single steering vector_. Insofar as the "Love" − "Hate" and “ wedding” − “ ” vectors work, they seem to work composably (according to our rather brief qualitative tests).
 
@@ -1113,7 +1115,9 @@ In ["Understanding and controlling a maze-solving policy network"](/understandin
 
 Subtracting the cheese vector essentially [makes the agent behave as if the cheese is not present](/understanding-and-controlling-a-maze-solving-policy-network#Comparing-the-modified-network-against-behavior-when-cheese-isn-t-there), but [_adding_ the cheese vector doesn't do much](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector). Conversely, [adding the top-right vector attracts the agent to the top-right corner](/top-right-steering-vector#Adding-the-top-right-vector-with-different-coefficient-strengths), while [_subtracting_ the top-right vector doesn't do much](/top-right-steering-vector#Subtracting-the-top-right-vector-has-little-effect). These vectors not only transfer across agent positions in the maze in which the vector was computed, the vectors also exhibit substantial transfer across mazes themselves. The cheese vector intervention also [works for a range of differently pretrained maze-solving policy networks](/top-right-steering-vector#The-cheese-vector-technique-generalizes-to-other-pretrained-models). Finally, the vectors [compose, in that they can simultaneously modify behavior](/top-right-steering-vector#Composing-the-activation-additions). This allows substantial but limited customization of the policy network's behavioral goals.
 
-# Appendix 2: [Resolving prediction markets](/top-right-steering-vector#Predictions-for-algebraically-editing-LM-forward-passes)
+# Appendix 2: Resolving prediction markets
+
+Subtitle: Originally made at ["predictions for algebraically editing LM forward passes"](/top-right-steering-vector#Predictions-for-algebraically-editing-LM-forward-passes).
 
 <iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-for-a" title="Algebraic value editing works (for at least one "X vector") in language models" frameborder="0" class="manifold-embed"></iframe>
 
