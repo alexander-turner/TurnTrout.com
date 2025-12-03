@@ -13,12 +13,12 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v1
+        uses: dependabot/fetch-metadata@8348ea7f5d949b08c7f125a44b569c9626b05db3 # v1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Wait for other workflows to succeed
-        uses: lewagon/wait-on-check-action@v1.3.1
+        uses: lewagon/wait-on-check-action@e106e5c43e8ca1edea6383a39a01c5ca495fd812 # v1.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -26,7 +26,7 @@ jobs:
           running-workflow-name: "Dependabot Auto-merge"
 
       - name: Auto-merge Dependabot PRs
-        uses: ahmadnassri/action-dependabot-auto-merge@v2
+        uses: ahmadnassri/action-dependabot-auto-merge@45fc124d949b19b6b8bf6645b6c9d55f4f9ac61a # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target: minor
