@@ -6,6 +6,10 @@
 
 name: "Combine PRs"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 # Controls inputs when the workflow is called
 on:
   workflow_call:
