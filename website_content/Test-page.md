@@ -134,7 +134,7 @@ Header 1
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
       - [ ] Nested checked off should still be crossed out and same (diminished) opacity
-          - [ ] Third nested with a [link](#checkboxes)
+          - [ ] Third nested with a [test link](#checkboxes)
   - [ ] Not checked off
 - Normal bullet
 
@@ -426,6 +426,8 @@ $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \math
 # Link features
 
 ## Internal links
+
+Subtitle: [Test link](#link-features) in subtitle.
 
 Here's a link to [another page](/shard-theory) with popover preview. [This same-page link goes to the "smallcaps" section.](#smallcaps)
 
