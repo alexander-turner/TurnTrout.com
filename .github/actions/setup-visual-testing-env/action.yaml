@@ -67,9 +67,19 @@ runs:
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
 
-    - name: Install Playwright browsers
+    - name: Install Playwright browsers and system dependencies
       if: inputs.install-playwright == 'true'
-      run: pnpm exec playwright install chromium webkit firefox
+      run: |
+        set -euo pipefail
+        # Work around broken Microsoft / Azure APT repos on ubuntu-latest (noble).
+        # These repos are preconfigured on the runner image but can return 403
+        # and break `playwright install --with-deps` when it runs `apt-get update`.
+        if [ -d /etc/apt/sources.list.d ]; then
+          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f \
+            \( -name '*microsoft*' -o -name '*azure*' \) \
+            -print -exec sudo sed -i 's/^deb /# deb /' {} \;
+        fi
+        pnpm exec playwright install --with-deps chromium webkit firefox
       shell: bash
 
     - name: Download and install ffmpeg
