@@ -24,8 +24,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+
     - name: Install Wrangler
-      run: pnpm add -g wrangler
+      run: pnpm install wrangler@3.99.0
       shell: bash
 
     - name: Deploy to Cloudflare Pages
