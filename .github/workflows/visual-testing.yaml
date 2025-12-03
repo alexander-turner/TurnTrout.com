@@ -12,8 +12,8 @@ on:
 
 jobs:
   visual-testing:
-    # Using Ubuntu since it has the lowest per-minute rate
-    runs-on: ubuntu-latest
+    # Using Ubuntu 22.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:

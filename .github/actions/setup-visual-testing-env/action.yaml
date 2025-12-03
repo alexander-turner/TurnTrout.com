@@ -11,7 +11,7 @@ runs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ">=22"
+        node-version: "22.12.0"
 
     - name: Install pnpm
       uses: pnpm/action-setup@v4
@@ -69,17 +69,7 @@ runs:
 
     - name: Install Playwright browsers and system dependencies
       if: inputs.install-playwright == 'true'
-      run: |
-        set -euo pipefail
-        # Work around broken Microsoft / Azure APT repos on ubuntu-latest (noble).
-        # These repos are preconfigured on the runner image but can return 403
-        # and break `playwright install --with-deps` when it runs `apt-get update`.
-        if [ -d /etc/apt/sources.list.d ]; then
-          sudo find /etc/apt/sources.list.d -maxdepth 1 -type f \
-            \( -name '*microsoft*' -o -name '*azure*' \) \
-            -print -exec sudo sed -i 's/^deb /# deb /' {} \;
-        fi
-        pnpm exec playwright install --with-deps chromium webkit firefox
+      run: pnpm exec playwright install --with-deps chromium webkit firefox
       shell: bash
 
     - name: Download and install ffmpeg
