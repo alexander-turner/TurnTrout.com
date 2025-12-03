@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_and_deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
@@ -57,7 +57,7 @@ jobs:
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
   lighthouse_desktop:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@v4 # needed for config path
@@ -83,7 +83,7 @@ jobs:
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
 
   lighthouse_mobile:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@v4 # needed for config path
