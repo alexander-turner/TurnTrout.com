@@ -17,7 +17,7 @@ jobs:
   prepare-deploy:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
@@ -46,7 +46,7 @@ jobs:
         run: uv run python scripts/built_site_checks.py --check-fonts
 
       - name: Upload prepared site after subfont
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: public-dir
           path: public/
@@ -57,7 +57,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Wait for all tests
-        uses: lewagon/wait-on-check-action@v1.3.1
+        uses: lewagon/wait-on-check-action@e106e5c43e8ca1edea6383a39a01c5ca495fd812 # v1.3.1
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -71,10 +71,10 @@ jobs:
     if: ${{ (always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Download prepared site
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: public-dir
           path: public/

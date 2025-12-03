@@ -20,7 +20,7 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
 
@@ -60,10 +60,10 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build_and_deploy
     steps:
-      - uses: actions/checkout@v4 # needed for config path
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Run Lighthouse CI against Cloudflare deployment (Desktop)
         id: lighthouse_desktop
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
@@ -77,7 +77,7 @@ jobs:
 
       - name: Upload Lighthouse reports (Desktop)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: lighthouse-reports-desktop
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
@@ -86,10 +86,10 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build_and_deploy
     steps:
-      - uses: actions/checkout@v4 # needed for config path
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Run Lighthouse CI against Cloudflare deployment (Mobile)
         id: lighthouse_mobile
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload Lighthouse reports (Mobile)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: lighthouse-reports-mobile
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/

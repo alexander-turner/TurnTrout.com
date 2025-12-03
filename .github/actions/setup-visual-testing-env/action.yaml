@@ -9,12 +9,12 @@ runs:
   using: "composite"
   steps:
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: "22.12.0"
 
     - name: Install pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
     - name: Get pnpm store directory
       shell: bash
@@ -22,7 +22,7 @@ runs:
         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
     - name: Setup pnpm cache
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -31,7 +31,7 @@ runs:
 
     - name: Cache asset dimensions
       id: asset-dimensions-cache
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: quartz/plugins/transformers/.asset_dimensions.json
         key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
@@ -39,7 +39,7 @@ runs:
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
     - name: Cache Playwright browsers
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -47,7 +47,7 @@ runs:
           playwright-${{ runner.os }}-
 
     - name: Cache Puppeteer browsers
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/puppeteer
         key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -56,7 +56,7 @@ runs:
 
     - name: Cache ffmpeg
       id: cache-ffmpeg
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: /opt/ffmpeg
         key: ffmpeg-${{ runner.os }}-master-latest

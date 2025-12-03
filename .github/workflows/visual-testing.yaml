@@ -41,7 +41,7 @@ jobs:
             20/20,
           ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload Playwright logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload Winston logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -107,7 +107,7 @@ jobs:
           retention-days: 7
 
       - name: Upload Playwright traces
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:
           name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
@@ -115,7 +115,7 @@ jobs:
           retention-days: 7
 
       - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
@@ -132,7 +132,7 @@ jobs:
     needs: visual-testing
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: visual-testing-log-shard-*
@@ -144,12 +144,12 @@ jobs:
     if: needs.visual-testing.result == 'success'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
       - name: Download all Lost Pixel screenshot shards
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: lost-pixel-screenshots-*
           path: ./all-lost-pixel-shards
@@ -177,7 +177,7 @@ jobs:
 
       - name: Run LostPixel on combined screenshots
         if: steps.combine.outputs.screenshots_found == 'true'
-        uses: lost-pixel/lost-pixel@v3.16.0
+        uses: lost-pixel/lost-pixel@6db31948aef97f10ea9c7b1a8fa8dd3a0ce2dd49 # v3.16.0
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
