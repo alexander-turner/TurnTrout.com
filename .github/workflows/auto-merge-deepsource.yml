@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   deepsource-auto-merge:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # Check if PR is from DeepSource and is a style fix
     if: |
       (github.actor == 'deepsource-autofix[bot]' || github.actor == 'deepsource-io') &&

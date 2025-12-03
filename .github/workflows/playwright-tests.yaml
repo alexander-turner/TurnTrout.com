@@ -12,7 +12,7 @@ on:
 
 jobs:
   playwright-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -133,7 +133,7 @@ jobs:
     name: Summarize Failures
     if: always() && needs.playwright-tests.result == 'failure'
     needs: playwright-tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/summarize-failed-shards
