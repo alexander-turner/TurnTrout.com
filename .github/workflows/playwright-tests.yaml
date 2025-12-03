@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: ["main", "dev"]
 
+permissions:
+  contents: read
+
 jobs:
   playwright-tests:
     runs-on: ubuntu-24.04

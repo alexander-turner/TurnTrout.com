@@ -10,6 +10,9 @@ on:
   pull_request:
     branches: ["main", "dev"]
 
+permissions:
+  contents: read
+
 jobs:
   visual-testing:
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
