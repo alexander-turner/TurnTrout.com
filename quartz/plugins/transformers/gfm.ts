@@ -105,6 +105,159 @@ function footnoteBacklinkPlugin() {
 }
 
 /**
+ * Converts a <dd> element to a <p> element, preserving its children.
+ * Used when a <dd> is orphaned (not preceded by a <dt>).
+ *
+ * @param ddElement - The <dd> element to convert
+ * @returns A new <p> element with the same children
+ */
+export function convertDdToParagraph(ddElement: Element): Element {
+  return {
+    type: "element",
+    tagName: "p",
+    properties: {},
+    children: ddElement.children,
+  }
+}
+
+/**
+ * Processes a single child element within a definition list, determining whether
+ * to keep it as-is, convert it, or update state tracking.
+ *
+ * @param child - The child element to process
+ * @param lastWasDt - Whether the previous element was a <dt>
+ * @returns An object containing the processed element and the new state
+ */
+export function processDefinitionListChild(
+  child: Element["children"][number],
+  lastWasDt: boolean,
+): { element: Element["children"][number]; newLastWasDt: boolean } {
+  // Handle non-element nodes (text, comments, etc.)
+  if (child.type !== "element") {
+    return { element: child, newLastWasDt: false }
+  }
+
+  // Handle <dt> elements - set state for next <dd>
+  if (child.tagName === "dt") {
+    return { element: child, newLastWasDt: true }
+  }
+
+  // Handle <dd> elements - check if valid or orphaned
+  if (child.tagName === "dd") {
+    if (lastWasDt) {
+      // Valid <dd> following a <dt> - preserve it
+      return { element: child, newLastWasDt: false }
+    } else {
+      // Orphaned <dd> without preceding <dt> - convert to paragraph
+      return { element: convertDdToParagraph(child), newLastWasDt: false }
+    }
+  }
+
+  // Handle other elements (div, script, template are allowed in <dl>)
+  return { element: child, newLastWasDt: false }
+}
+
+/**
+ * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
+ *
+ * @param dlElement - The <dl> element to fix
+ * @returns The fixed <dl> element with updated children
+ */
+export function fixDefinitionList(dlElement: Element): Element {
+  if (!dlElement.children || dlElement.children.length === 0) {
+    return dlElement
+  }
+
+  const fixedChildren: Element["children"] = []
+  let lastWasDt = false
+
+  for (const child of dlElement.children) {
+    const result = processDefinitionListChild(child, lastWasDt)
+    fixedChildren.push(result.element)
+    lastWasDt = result.newLastWasDt
+  }
+
+  return {
+    ...dlElement,
+    children: fixedChildren,
+  }
+}
+
+/**
+ * Fixes malformed definition lists to comply with WCAG accessibility standards.
+ *
+ * PROBLEM:
+ * The remark-gfm plugin converts Markdown lines starting with ": " into HTML <dd> elements,
+ * which is intended for creating definition lists. However, when this syntax is used in
+ * contexts like blockquotes without a preceding term definition, it creates invalid HTML
+ * structure that violates accessibility standards.
+ *
+ * Example problematic Markdown:
+ * ```markdown
+ * > User
+ * >
+ * > : Develop a social media bot...
+ * ```
+ *
+ * Gets converted by remark-gfm to invalid HTML:
+ * ```html
+ * <blockquote>
+ *   <p>User</p>
+ *   <dl><dd>Develop a social media bot...</dd></dl>
+ * </blockquote>
+ * ```
+ *
+ * This violates WCAG 1.3.1 (Info and Relationships) because <dd> (description) elements
+ * must be preceded by <dt> (term) elements within <dl> containers. Pa11y accessibility
+ * checker flags these as errors:
+ * "<dl> elements must only directly contain properly-ordered <dt> and <dd> groups"
+ *
+ * SOLUTION:
+ * This plugin scans all <dl> elements and converts orphaned <dd> elements (those without
+ * a preceding <dt>) into <p> elements. This maintains semantic correctness while preserving
+ * the visual presentation and content structure.
+ *
+ * The plugin uses a state machine approach:
+ * - Tracks whether the last element was a <dt> using the `lastWasDt` flag
+ * - When encountering a <dd>:
+ *   - If lastWasDt is true: Keep as <dd> (valid pair)
+ *   - If lastWasDt is false: Convert to <p> (orphaned)
+ * - Resets the flag after processing each <dd> or non-<dt> element
+ *
+ * Valid structure (preserved):
+ * ```html
+ * <dl>
+ *   <dt>Term</dt>
+ *   <dd>Description</dd>
+ * </dl>
+ * ```
+ *
+ * Invalid structure (fixed):
+ * ```html
+ * <!-- Before -->
+ * <dl><dd>Orphaned description</dd></dl>
+ *
+ * <!-- After -->
+ * <dl><p>Orphaned description</p></dl>
+ * ```
+ *
+ * @returns A rehype plugin function that transforms the HTML tree
+ */
+export function fixDefinitionListsPlugin() {
+  return (tree: Root) => {
+    // istanbul ignore next --- defensive
+    if (!tree) return
+
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "dl") return
+
+      const fixed = fixDefinitionList(node)
+      node.children = fixed.children
+    })
+  }
+}
+
+/**
  * A plugin that transforms GitHub-flavored Markdown into HTML.
  *
  * @param userOpts - The user options for the plugin.
@@ -119,7 +272,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin()]
+      const plugins: PluggableList = [footnoteBacklinkPlugin(), fixDefinitionListsPlugin()]
 
       if (opts.linkHeadings) {
         plugins.push(returnAddIdsToHeadingsFn, [
