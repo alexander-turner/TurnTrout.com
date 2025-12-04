@@ -3,7 +3,14 @@
  * Supports wikilinks, admonitions, tags, highlights, embeds, and more.
  */
 
-import type { Element, Root as HtmlRoot, ElementContent, Properties, ElementData } from "hast"
+import type {
+  Element,
+  Root as HtmlRoot,
+  ElementContent,
+  Properties,
+  ElementData,
+  Parent,
+} from "hast"
 import type { Root, Html, BlockContent, Paragraph, PhrasingContent, Blockquote } from "mdast"
 import type { PluggableList } from "unified"
 
@@ -626,19 +633,107 @@ function convertImagesToYouTubeEmbeds(tree: HtmlRoot): void {
   })
 }
 
-/** Processes checkbox input elements and adds custom styling classes. */
+/** Checks if a checkbox is inside a list item with content after it. */
+function isCheckboxInListItemWithContent(
+  parent: Parent | undefined,
+  index: number | undefined,
+): boolean {
+  // istanbul ignore if -- defensive coding
+  if (!parent || index === undefined) {
+    return false
+  }
+  if (parent.type !== "element" || (parent as Element).tagName !== "li") {
+    return false
+  }
+  const siblingsAfterCheckbox = parent.children.slice(index + 1)
+  return siblingsAfterCheckbox.length > 0
+}
+
+/** Creates checkbox properties with appropriate accessibility attributes. */
+function createCheckboxProperties(
+  isChecked: boolean,
+  checkboxId: string,
+  willBeWrappedInLabel: boolean,
+): Properties {
+  return {
+    type: "checkbox",
+    disabled: false,
+    checked: isChecked,
+    class: "checkbox-toggle",
+    id: checkboxId,
+    ...(willBeWrappedInLabel ? {} : { ariaLabel: "checkbox" }),
+  }
+}
+
+interface CheckboxInfo {
+  node: Element
+  index: number
+  parent: Parent
+  checkboxId: string
+  willBeWrappedInLabel: boolean
+}
+
+/** Wraps a checkbox and its immediate text content in a label element. */
+function wrapCheckboxInLabel(
+  node: Element,
+  parent: Parent,
+  index: number,
+  checkboxId: string,
+): void {
+  const siblingsAfterCheckbox = parent.children.slice(index + 1)
+
+  // Find where text content ends (before any nested lists)
+  const textContentEndIndex = siblingsAfterCheckbox.findIndex(
+    (sibling) => sibling.type === "element" && (sibling as Element).tagName === "ul",
+  )
+  const endIndex = textContentEndIndex === -1 ? siblingsAfterCheckbox.length : textContentEndIndex
+
+  const label: Element = {
+    type: "element",
+    tagName: "label",
+    properties: { htmlFor: checkboxId },
+    children: [node, ...siblingsAfterCheckbox.slice(0, endIndex)] as ElementContent[],
+  }
+
+  // Replace checkbox and text content with label; nested lists remain as siblings
+  parent.children.splice(index, endIndex + 1, label)
+}
+
+/** Processes checkbox input elements and wraps them with their text in label elements. */
 function processCheckboxElements(tree: HtmlRoot): void {
-  visit(tree, "element", (node) => {
-    if (node.tagName === "input" && node.properties.type === "checkbox") {
-      const isChecked = node.properties?.checked ?? false
-      node.properties = {
-        type: "checkbox",
-        disabled: false,
-        checked: isChecked,
-        class: "checkbox-toggle",
-      }
+  const checkboxes: CheckboxInfo[] = []
+  let checkboxCounter = 0
+
+  visit(tree, "element", (node, index, parent) => {
+    if (
+      node.tagName !== "input" ||
+      node.properties.type !== "checkbox" ||
+      !parent ||
+      index === undefined
+    ) {
+      return
     }
+
+    // Skip checkboxes already inside a label
+    if (parent.type === "element" && (parent as Element).tagName === "label") {
+      return SKIP
+    }
+
+    const isChecked = Boolean(node.properties?.checked ?? false)
+    const checkboxId = `checkbox-${checkboxCounter++}`
+    const willBeWrappedInLabel = isCheckboxInListItemWithContent(parent, index)
+
+    node.properties = createCheckboxProperties(isChecked, checkboxId, willBeWrappedInLabel)
+    checkboxes.push({ node, index, parent, checkboxId, willBeWrappedInLabel })
   })
+
+  // Process in reverse order to avoid index shifting during tree modification
+  for (let i = checkboxes.length - 1; i >= 0; i--) {
+    const { node, index, parent, checkboxId, willBeWrappedInLabel } = checkboxes[i]
+    if (willBeWrappedInLabel) {
+      wrapCheckboxInLabel(node, parent, index, checkboxId)
+    }
+  }
 }
 
 /** Unwraps video elements that are the only child of a paragraph. */

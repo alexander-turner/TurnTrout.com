@@ -1,7 +1,8 @@
 @use "./variables.scss" as *;
 
 li:has(> input.checkbox-toggle),
-li:has(> p > input.checkbox-toggle) {
+li:has(> p > input.checkbox-toggle),
+li:has(> label > input.checkbox-toggle) {
   list-style: none;
   position: relative;
 
@@ -33,13 +34,15 @@ input.checkbox-toggle {
 
   // Most recent list ancestor is ul
   ul > li > &,
-  ul > li > p > & {
+  ul > li > p > &,
+  ul > li > label > & {
     left: var(--ul-left);
   }
 
   // Most recent list ancestor is ol
   ol > li > &,
-  ol > li > p > & {
+  ol > li > p > &,
+  ol > li > label > & {
     left: var(--ol-left);
 
     // Safari uses margin-left instead of padding-left on ol > li
@@ -57,7 +60,8 @@ input.checkbox-toggle {
   // Checked boxes and their box children will be styled the same
   &:checked,
   li:has(> input.checkbox-toggle:checked) &,
-  li:has(> * > input.checkbox-toggle:checked) & {
+  li:has(> * > input.checkbox-toggle:checked) &,
+  li:has(> label > input.checkbox-toggle:checked) & {
     --checkbox-color: light-dark(
       color-mix(in srgb, var(--green), var(--light) 20%),
       color-mix(in srgb, var(--green), var(--dark) 45%)
@@ -83,17 +87,20 @@ input.checkbox-toggle {
 
 :is(
     li:has(> input.checkbox-toggle:checked),
-    li:has(> * > input.checkbox-toggle:checked)
+    li:has(> * > input.checkbox-toggle:checked),
+    li:has(> label > input.checkbox-toggle:checked)
   ):not(
     li:has(> input.checkbox-toggle:checked) *,
-    li:has(> * > input.checkbox-toggle:checked) *
+    li:has(> * > input.checkbox-toggle:checked) *,
+    li:has(> label > input.checkbox-toggle:checked) *
   ) {
   opacity: 0.75;
 }
 
 // Checked state
 li:has(> input.checkbox-toggle:checked),
-li:has(> * > input.checkbox-toggle:checked) {
+li:has(> * > input.checkbox-toggle:checked),
+li:has(> label > input.checkbox-toggle:checked) {
   &,
   & p {
     text-decoration: line-through;
