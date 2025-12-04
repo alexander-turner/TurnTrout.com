@@ -20,6 +20,69 @@ import {
 jest.mock("fs")
 import fs from "fs"
 
+// Common test case interface for tests with string input
+interface BaseTestCase {
+  name: string
+  input: string
+}
+
+// Common test case interface for tests with name only
+interface NamedTestCase {
+  name: string
+}
+
+// Helper function to assert expected and not expected content
+const assertContent = (
+  output: string,
+  expectedContent: string[] = [],
+  notExpectedContent: string[] = [],
+) => {
+  expectedContent.forEach((content) => {
+    expect(output).toContain(content)
+  })
+  notExpectedContent.forEach((content) => {
+    expect(output).not.toContain(content)
+  })
+}
+
+// Helper function to test markdown plugins
+const testMarkdownPlugins = (input: string, options: OFMOptions = defaultOptions) => {
+  const processor = unified()
+    .use(remarkParse)
+    .use(markdownPlugins(options))
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeStringify, { allowDangerousHtml: true })
+  const vfile = new VFile(input)
+  const result = processor.processSync(vfile)
+  return result.toString()
+}
+
+// Helper function to extract plugins from transformer
+function getPlugins(plugin: ReturnType<typeof ObsidianFlavoredMarkdown>) {
+  if (!plugin.htmlPlugins) {
+    throw new Error("Plugin htmlPlugins is undefined")
+  }
+  return {
+    htmlPlugins: plugin.htmlPlugins({} as BuildCtx),
+  }
+}
+
+const testWithHtmlPlugins = (input: string, options: Partial<OFMOptions> = {}) => {
+  const transformer = ObsidianFlavoredMarkdown(options)
+  const { htmlPlugins } = getPlugins(transformer)
+
+  const processor = unified()
+    .use(remarkParse)
+    .use(markdownPlugins(defaultOptions))
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(htmlPlugins)
+    .use(rehypeStringify, { allowDangerousHtml: true })
+
+  const vfile = new VFile(input)
+  const result = processor.processSync(vfile)
+  return { result: result.toString(), vfile }
+}
+
 describe("markdownPlugins", () => {
   const testMarkdownPlugins = (input: string, options: OFMOptions = defaultOptions) => {
     const processor = unified()
@@ -83,20 +146,11 @@ describe("markdownPlugins", () => {
     ({ input, expectedClass, expectedContent = [], notExpectedContent = [] }) => {
       const output = testMarkdownPlugins(input)
       expect(output).toContain(`class="${expectedClass}"`)
-
-      expectedContent.forEach((content) => {
-        expect(output).toContain(content)
-      })
-
-      notExpectedContent.forEach((content) => {
-        expect(output).not.toContain(content)
-      })
+      assertContent(output, expectedContent, notExpectedContent)
     },
   )
 
-  interface BlockReferenceTestCase {
-    name: string
-    input: string
+  interface BlockReferenceTestCase extends BaseTestCase {
     expectedContent: string[]
   }
 
@@ -134,14 +188,10 @@ describe("markdownPlugins", () => {
 
   it.each(blockReferenceCases)("should process $name", ({ input, expectedContent }) => {
     const output = testMarkdownPlugins(input)
-    expectedContent.forEach((content) => {
-      expect(output).toContain(content)
-    })
+    assertContent(output, expectedContent)
   })
 
-  interface SimpleFeatureTestCase {
-    name: string
-    input: string
+  interface SimpleFeatureTestCase extends BaseTestCase {
     expectedContent?: string[]
     notExpectedContent?: string[]
   }
@@ -169,14 +219,7 @@ describe("markdownPlugins", () => {
     "should process $name",
     ({ input, expectedContent = [], notExpectedContent = [] }) => {
       const output = testMarkdownPlugins(input)
-
-      expectedContent.forEach((content) => {
-        expect(output).toContain(content)
-      })
-
-      notExpectedContent.forEach((content) => {
-        expect(output).not.toContain(content)
-      })
+      assertContent(output, expectedContent, notExpectedContent)
     },
   )
 
@@ -334,8 +377,7 @@ describe("markdownPlugins", () => {
 })
 
 describe("processWikilink", () => {
-  interface WikilinkTestCase {
-    name: string
+  interface WikilinkTestCase extends NamedTestCase {
     input: [string, string, string, string]
     expected: unknown
   }
@@ -420,8 +462,7 @@ describe("processWikilink", () => {
     expect(result).toEqual(expected)
   })
 
-  interface EdgeCaseTestCase {
-    name: string
+  interface EdgeCaseTestCase extends NamedTestCase {
     input: [string, string, string, string]
     expected: unknown
   }
@@ -481,8 +522,7 @@ describe("ObsidianFlavoredMarkdown", () => {
     expect(transformer.name).toBe("ObsidianFlavoredMarkdown")
   })
 
-  interface TextTransformTestCase {
-    name: string
+  interface TextTransformTestCase extends NamedTestCase {
     options?: Partial<OFMOptions>
     input: string | Buffer
     expected: string
@@ -532,15 +572,11 @@ describe("ObsidianFlavoredMarkdown", () => {
     },
   )
 
-  interface WikilinkStringTestCase {
-    name: string
-    input: string
+  interface WikilinkStringTestCase extends BaseTestCase {
     expected: string
   }
 
-  interface WikilinkContainsTestCase {
-    name: string
-    input: string
+  interface WikilinkContainsTestCase extends BaseTestCase {
     expectedToContain: string
   }
 
@@ -590,8 +626,7 @@ describe("ObsidianFlavoredMarkdown", () => {
 })
 
 describe("Edge cases and advanced features", () => {
-  interface AdvancedEqualTestCase {
-    name: string
+  interface AdvancedEqualTestCase extends NamedTestCase {
     input: [string, string, string, string]
     expected: unknown
   }
@@ -647,7 +682,8 @@ describe("Edge cases and advanced features", () => {
 describe("ObsidianFlavoredMarkdown plugin", () => {
   const mockBuildCtx: BuildCtx = {} as BuildCtx
 
-  function getPlugins(plugin: ReturnType<typeof ObsidianFlavoredMarkdown>) {
+  // Extended version of getPlugins that also returns markdownPlugins
+  function getFullPlugins(plugin: ReturnType<typeof ObsidianFlavoredMarkdown>) {
     if (!plugin.markdownPlugins || !plugin.htmlPlugins) {
       throw new Error("Plugin markdownPlugins or htmlPlugins is undefined")
     }
@@ -664,31 +700,31 @@ describe("ObsidianFlavoredMarkdown plugin", () => {
 
   test("should include block reference plugin when enabled", () => {
     const plugin = ObsidianFlavoredMarkdown({ parseBlockReferences: true })
-    const { htmlPlugins } = getPlugins(plugin)
+    const { htmlPlugins } = getFullPlugins(plugin)
     expect(htmlPlugins.length).toBeGreaterThan(1) // rehypeRaw + block references
   })
 
   test("should include YouTube embed plugin when enabled", () => {
     const plugin = ObsidianFlavoredMarkdown({ enableYouTubeEmbed: true })
-    const { htmlPlugins } = getPlugins(plugin)
+    const { htmlPlugins } = getFullPlugins(plugin)
     expect(htmlPlugins.length).toBeGreaterThan(1) // rehypeRaw + YouTube
   })
 
   test("should include checkbox plugin when enabled", () => {
     const plugin = ObsidianFlavoredMarkdown({ enableCheckbox: true })
-    const { htmlPlugins } = getPlugins(plugin)
+    const { htmlPlugins } = getFullPlugins(plugin)
     expect(htmlPlugins.length).toBeGreaterThan(1) // rehypeRaw + checkbox
   })
 
   test("should always include video unwrapping plugin", () => {
     const plugin = ObsidianFlavoredMarkdown()
-    const { htmlPlugins } = getPlugins(plugin)
+    const { htmlPlugins } = getFullPlugins(plugin)
     expect(htmlPlugins.length).toBeGreaterThan(1) // rehypeRaw + video unwrap
   })
 
   test("should use default options when no options provided", () => {
     const plugin = ObsidianFlavoredMarkdown()
-    const { markdownPlugins, htmlPlugins } = getPlugins(plugin)
+    const { markdownPlugins, htmlPlugins } = getFullPlugins(plugin)
 
     expect(Array.isArray(markdownPlugins)).toBe(true)
     expect(Array.isArray(htmlPlugins)).toBe(true)
@@ -697,7 +733,7 @@ describe("ObsidianFlavoredMarkdown plugin", () => {
 
   test("should merge user options with defaults", () => {
     const plugin = ObsidianFlavoredMarkdown({ enableCheckbox: false, admonitions: false })
-    const { markdownPlugins, htmlPlugins } = getPlugins(plugin)
+    const { markdownPlugins, htmlPlugins } = getFullPlugins(plugin)
 
     expect(Array.isArray(markdownPlugins)).toBe(true)
     expect(Array.isArray(htmlPlugins)).toBe(true)
@@ -716,8 +752,7 @@ describe("External resources", () => {
     jest.restoreAllMocks()
   })
 
-  interface ExternalResourceTestCase {
-    name: string
+  interface ExternalResourceTestCase extends NamedTestCase {
     options: Partial<OFMOptions>
     expectedScriptCount: number
   }
@@ -767,42 +802,6 @@ describe("External resources", () => {
 })
 
 describe("Branch coverage tests", () => {
-  const testMarkdownPlugins = (input: string, options: OFMOptions = defaultOptions) => {
-    const processor = unified()
-      .use(remarkParse)
-      .use(markdownPlugins(options))
-      .use(remarkRehype, { allowDangerousHtml: true })
-      .use(rehypeStringify, { allowDangerousHtml: true })
-    const vfile = new VFile(input)
-    const result = processor.processSync(vfile)
-    return result.toString()
-  }
-
-  function getPlugins(plugin: ReturnType<typeof ObsidianFlavoredMarkdown>) {
-    if (!plugin.htmlPlugins) {
-      throw new Error("Plugin htmlPlugins is undefined")
-    }
-    return {
-      htmlPlugins: plugin.htmlPlugins({} as BuildCtx),
-    }
-  }
-
-  const testWithHtmlPlugins = (input: string, options: Partial<OFMOptions> = {}) => {
-    const transformer = ObsidianFlavoredMarkdown(options)
-    const { htmlPlugins } = getPlugins(transformer)
-
-    const processor = unified()
-      .use(remarkParse)
-      .use(markdownPlugins(defaultOptions))
-      .use(remarkRehype, { allowDangerousHtml: true })
-      .use(htmlPlugins)
-      .use(rehypeStringify, { allowDangerousHtml: true })
-
-    const vfile = new VFile(input)
-    const result = processor.processSync(vfile)
-    return { result: result.toString(), vfile }
-  }
-
   it("should handle HTML embed with string replacements", () => {
     // Create a custom replacement function that returns a string
     const input = "<div>==test content==</div>"
@@ -841,8 +840,7 @@ describe("Branch coverage tests", () => {
   })
 
   it("should handle different video extensions", () => {
-    interface VideoExtTestCase {
-      name: string
+    interface VideoExtTestCase extends NamedTestCase {
       extension: string
     }
 
@@ -874,8 +872,7 @@ describe("Branch coverage tests", () => {
   })
 
   it("should handle audio extensions in wikilinks", () => {
-    interface AudioExtTestCase {
-      name: string
+    interface AudioExtTestCase extends NamedTestCase {
       extension: string
     }
 
@@ -911,8 +908,7 @@ describe("Branch coverage tests", () => {
   })
 
   it("should handle image extensions with different cases", () => {
-    interface ImageExtTestCase {
-      name: string
+    interface ImageExtTestCase extends NamedTestCase {
       extension: string
     }
 
@@ -1211,9 +1207,7 @@ describe("Header slug consistency between wikilinks and actual headers", () => {
     resetSlugger()
   })
 
-  interface HeaderSlugTestCase {
-    name: string
-    input: string
+  interface HeaderSlugTestCase extends BaseTestCase {
     expectedSlug: string
   }
 
