@@ -13,7 +13,9 @@
       "htmlcs"
     ],
     "hideElements": [
-      ".ignore-pa11y"
+      ".ignore-pa11y",
+      ".katex",
+      "#trout-ornament-container"
     ],
     "ignore": [
       "frame-tested"
