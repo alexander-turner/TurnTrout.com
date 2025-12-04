@@ -51,7 +51,7 @@ export const uiStrings = {
     tagContent: {
       tag: "Tag",
       tagIndex: "Tag Index",
-      itemsUnderTag: (count: number) => `${count} item${count !== 1 ? "s" : ""} under this tag.`,
+      itemsUnderTag: (count: number) => `${count} item${count !== 1 ? "s" : ""} with this tag.`,
     },
   },
 } as const
