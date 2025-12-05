@@ -383,18 +383,13 @@ def commit_step_changes(git_root_path: Path, step_name: str) -> None:
         return
 
     commit_message = f"chore: apply {step_name.lower()} fixes"
-    try:
-        subprocess.run(
-            [git_path, "commit", "-m", commit_message],
-            cwd=git_root_path,
-            check=True,
-            capture_output=True,
-        )
-        console.log(f"[green]Committed {step_name.lower()} fixes[/green]")
-    except subprocess.CalledProcessError as e:
-        console.log(
-            f"[yellow]Warning: Failed to commit {step_name.lower()} fixes: {e}[/yellow]"
-        )
+    subprocess.run(
+        [git_path, "commit", "-m", commit_message],
+        cwd=git_root_path,
+        check=True,
+        capture_output=True,
+    )
+    console.log(f"[green]Committed {step_name.lower()} fixes[/green]")
 
 
 def run_command(

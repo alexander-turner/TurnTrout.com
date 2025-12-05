@@ -1157,7 +1157,7 @@ def test_commit_step_changes_commit_failure():
     """Test commit_step_changes handles commit failures gracefully."""
     with (
         patch("subprocess.run") as mock_run,
-        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("scripts.run_push_checks.console.log"),
         patch("shutil.which", return_value="git"),
     ):
         # git diff succeeds, git add succeeds, git diff --cached succeeds, git commit fails
@@ -1170,17 +1170,8 @@ def test_commit_step_changes_commit_failure():
             subprocess.CalledProcessError(1, "git commit", stderr="Error"),
         ]
 
-        # Should not raise exception
-        run_push_checks.commit_step_changes(Path("/test"), "Test Step")
-
-        # Verify warning message
-        mock_log.assert_called()
-        warning_call = [
-            call
-            for call in mock_log.call_args_list
-            if "Warning" in str(call) and "Failed to commit" in str(call)
-        ]
-        assert len(warning_call) == 1
+        with pytest.raises(subprocess.CalledProcessError):
+            run_push_checks.commit_step_changes(Path("/test"), "Test Step")
 
 
 def test_commit_step_changes_no_staged_changes():
