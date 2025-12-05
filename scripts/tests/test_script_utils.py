@@ -39,11 +39,12 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
             stdout=expected_output,
         )
 
+    monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
     monkeypatch.setattr(script_utils.subprocess, "run", mock_subprocess_run)
     assert script_utils.get_git_root() == Path(expected_output)
 
 
-def test_get_git_root_raises_error():
+def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
     def mock_subprocess_run(*args, **kwargs):
         # Since check=True is used, raise CalledProcessError on failure
         raise subprocess.CalledProcessError(
@@ -52,10 +53,11 @@ def test_get_git_root_raises_error():
             output="",
         )
 
-    with (
-        mock.patch.object(script_utils.subprocess, "run", mock_subprocess_run),
-        pytest.raises(subprocess.CalledProcessError),
-    ):
+    # Mock both find_executable and subprocess.run
+    monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
+    monkeypatch.setattr(script_utils.subprocess, "run", mock_subprocess_run)
+
+    with pytest.raises(subprocess.CalledProcessError):
         script_utils.get_git_root()
 
 
@@ -202,7 +204,7 @@ def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
     assert sorted(result) == sorted(expected_files)
 
 
-def test_get_files_gitignore(tmp_path):
+def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
     """Test with a .gitignore file."""
     # Create a git repository in tmp_path
     repo = git.Repo.init(tmp_path)
@@ -214,6 +216,10 @@ def test_get_files_gitignore(tmp_path):
     txt_file.write_text("Text content")
     repo.index.add([".gitignore", "test.md", "test.txt"])
     repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
 
     # Test getting files with gitignore
     result = script_utils.get_files(dir_to_search=tmp_path)
