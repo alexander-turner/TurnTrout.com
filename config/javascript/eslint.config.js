@@ -72,6 +72,7 @@ export default [
       "**/*.min.js",
       "**/*.min.ts",
       "quartz/i18n/",
+      ".venv/",
     ],
   },
 
