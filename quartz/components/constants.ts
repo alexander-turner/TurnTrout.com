@@ -19,7 +19,7 @@ export const {
 } = constantsJson
 
 // Computed constants
-export const faviconUrl = `${faviconBasePath}/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
+export const faviconUrl = `/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 
 export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 
