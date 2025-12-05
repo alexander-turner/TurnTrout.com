@@ -31,6 +31,7 @@
   margin-bottom: 0;
 }
 
+// NOTE: Update test-page.spec.ts when adding selectors
 #toc-content,
 #toc-content-mobile,
 #backlinks-admonition,
@@ -84,7 +85,8 @@
         margin-bottom: calc(0.25 * $base-margin);
       }
 
-      & > a {
+      & > a,
+      & > a * {
         text-decoration: none;
         color: var(--midground);
 
