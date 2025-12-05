@@ -808,6 +808,76 @@ test.describe("List alignment", () => {
   }
 })
 
+test.describe("Element children color consistency", () => {
+  const elementsToTest = [
+    "#toc-content",
+    "#toc-content-mobile",
+    "#backlinks-admonition",
+    "#post-statistics",
+  ]
+
+  async function getChildrenColors(element: ReturnType<Page["locator"]>): Promise<string[]> {
+    return await element.evaluate((el) => {
+      const children = el.querySelectorAll("*")
+      const colorSet = new Set<string>()
+
+      children.forEach((child) => {
+        // Only check elements that have text content
+        if (child.textContent?.trim()) {
+          const computedStyle = window.getComputedStyle(child)
+          colorSet.add(computedStyle.color)
+        }
+      })
+
+      return Array.from(colorSet)
+    })
+  }
+
+  async function testElementColorConsistency(
+    page: Page,
+    elementId: string,
+    simulateVisited = false,
+  ): Promise<void> {
+    await setDummyContentMeta(page)
+
+    const element = page.locator(elementId).first()
+
+    // Skip if element doesn't exist on the page
+    const exists = await element.count()
+    if (exists === 0) {
+      test.skip()
+      return
+    }
+
+    await element.scrollIntoViewIfNeeded()
+    await expect(element).toBeVisible()
+
+    if (simulateVisited) {
+      await element.evaluate((el) => {
+        const links = el.querySelectorAll("a")
+        links.forEach((link) => {
+          link.style.setProperty("color", "var(--color-link-visited)", "important")
+        })
+      })
+    }
+
+    const colors = await getChildrenColors(element)
+    expect(colors.length).toBe(1)
+  }
+
+  for (const elementId of elementsToTest) {
+    test(`All children of ${elementId} have the same color`, async ({ page }) => {
+      await testElementColorConsistency(page, elementId, false)
+    })
+
+    test(`All children of ${elementId} have the same color with :visited simulated`, async ({
+      page,
+    }) => {
+      await testElementColorConsistency(page, elementId, true)
+    })
+  }
+})
+
 test.describe("Checkboxes", () => {
   test("Checkboxes are visible and clickable", async ({ page }) => {
     const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
