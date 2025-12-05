@@ -59,5 +59,7 @@
     "openpgp",
     "playwright_dev",
     "mozilla_org"
-  ]
+  ],
+  "sessionStoragePondVideoKey": "pond-video-timestamp",
+  "pondVideoId": "pond-video"
 }

@@ -1,8 +1,10 @@
 import { test, expect, type Page, type Locator } from "@playwright/test"
 
-import { pondVideoId } from "../component_utils"
+import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
+
+const { pondVideoId } = simpleConstants
 
 interface VideoElements {
   video: Locator

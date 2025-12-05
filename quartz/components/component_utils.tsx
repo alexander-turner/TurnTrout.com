@@ -6,9 +6,6 @@ import { applyTextTransforms } from "../plugins/transformers/formatting_improvem
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
 import { locale } from "./constants"
 
-export const sessionStoragePondVideoKey = "pond-video-timestamp"
-export const pondVideoId = "pond-video"
-
 export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
   title = title.replace(/( |^)'/g, '$1"').replace(/'([ ?!.]|$)/g, '"$1')

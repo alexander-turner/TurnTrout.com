@@ -18,12 +18,13 @@ jest.mock("fs")
 import fs from "fs"
 
 import {
+  simpleConstants,
   localTroutFaviconBasename,
   specialFaviconPaths,
-  minFaviconCount,
-  faviconSubstringBlacklist,
 } from "../../components/constants"
 import { hasClass } from "./utils"
+
+const { minFaviconCount, faviconSubstringBlacklist } = simpleConstants
 
 jest.mock("stream/promises")
 

@@ -1,17 +1,18 @@
 import { type GlobalConfiguration } from "../cfg"
 import { formatTitle } from "../components/component_utils"
-import {
+import { simpleConstants, faviconUrl } from "../components/constants"
+import { type QuartzPluginData } from "../plugins/vfile"
+import { escapeHTML } from "./escape"
+import { resolveRelative, type FullSlug } from "./path"
+
+const {
   defaultCardUrl,
   defaultDescription,
   defaultTitle,
   appleTouchIconUrl,
-  faviconUrl,
   faviconMimeType,
   defaultCardAlt,
-} from "../components/constants"
-import { type QuartzPluginData } from "../plugins/vfile"
-import { escapeHTML } from "./escape"
-import { resolveRelative, type FullSlug } from "./path"
+} = simpleConstants
 
 interface HeadProps {
   cfg: GlobalConfiguration

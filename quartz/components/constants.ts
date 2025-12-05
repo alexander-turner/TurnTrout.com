@@ -1,35 +1,19 @@
 import constantsJson from "../../config/constants.json" with { type: "json" }
 
-// Re-export simple constants from JSON
-export const {
-  defaultCardUrl,
-  defaultCardAlt,
-  defaultTitle,
-  defaultDescription,
-  locale,
-  localTroutFaviconExtensionDefault,
-  localTroutFaviconBasenameDefault,
-  faviconMimeType,
-  appleTouchIconUrl,
-  faviconBasePath,
-  minFaviconCount,
-  googleSubdomainWhitelist,
-  faviconCountWhitelist,
-  faviconSubstringBlacklist,
-} = constantsJson
+export const simpleConstants = constantsJson
 
 // Computed constants
-export const faviconUrl = `/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
+export const faviconUrl = `/${simpleConstants.localTroutFaviconBasenameDefault}.${simpleConstants.localTroutFaviconExtensionDefault}`
 
-export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
+export const localTroutFaviconBasename = `${simpleConstants.localTroutFaviconBasenameDefault}.${simpleConstants.localTroutFaviconExtensionDefault}`
 
 // Special favicon paths for different link types
 export const specialFaviconPaths = {
-  mail: `${faviconBasePath}/mail.svg`,
-  anchor: `${faviconBasePath}/anchor.svg`,
-  rss: `${faviconBasePath}/rss.svg`,
-  turntrout: `${faviconBasePath}/turntrout_com.svg`,
-  lesswrong: `${faviconBasePath}/lesswrong_com.svg`,
+  mail: `${simpleConstants.faviconBasePath}/mail.svg`,
+  anchor: `${simpleConstants.faviconBasePath}/anchor.svg`,
+  rss: `${simpleConstants.faviconBasePath}/rss.svg`,
+  turntrout: `${simpleConstants.faviconBasePath}/turntrout_com.svg`,
+  lesswrong: `${simpleConstants.faviconBasePath}/lesswrong_com.svg`,
 } as const
 
 // UI strings for various components
@@ -50,7 +34,7 @@ export const uiStrings = {
     },
     tagContent: {
       tag: "Tag",
-      tagIndex: "Tag Index",
+      tagIndex: "Tag index",
       itemsUnderTag: (count: number) => `${count} item${count !== 1 ? "s" : ""} with this tag.`,
     },
   },

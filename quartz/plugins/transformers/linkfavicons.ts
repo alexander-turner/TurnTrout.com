@@ -11,15 +11,16 @@ import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import {
-  specialFaviconPaths,
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { createWinstonLogger } from "./logger_utils"
+import { hasClass } from "./utils"
+
+const {
   minFaviconCount,
   googleSubdomainWhitelist,
   faviconCountWhitelist,
   faviconSubstringBlacklist,
-} from "../../components/constants"
-import { createWinstonLogger } from "./logger_utils"
-import { hasClass } from "./utils"
+} = simpleConstants
 
 const logger = createWinstonLogger("linkfavicons")
 
