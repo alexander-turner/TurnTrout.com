@@ -477,7 +477,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._
 
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
-<div style="font-size:4rem;line-height:1.4 !important;" class="centered">
+<div style="font-size:4rem;line-height:1.4 !important;" class="centered ignore-pa11y">
 <span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
