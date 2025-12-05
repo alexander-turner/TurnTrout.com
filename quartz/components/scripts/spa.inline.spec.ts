@@ -9,8 +9,10 @@
 
 import { type Page, test, expect } from "@playwright/test"
 
-import { pondVideoId } from "../component_utils"
+import { simpleConstants } from "../constants"
 import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
+
+const { pondVideoId } = simpleConstants
 
 const TIGHT_SCROLL_TOLERANCE = 10
 const testingPageSlug = "test-page"

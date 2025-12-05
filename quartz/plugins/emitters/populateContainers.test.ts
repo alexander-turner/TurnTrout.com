@@ -15,9 +15,11 @@ import fs from "fs"
 import { type Element } from "hast"
 import { fromHtml } from "hast-util-from-html"
 
-import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
 import { type StaticResources } from "../../util/resources"
+
+const { minFaviconCount } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
 import * as linkfavicons from "../transformers/linkfavicons"

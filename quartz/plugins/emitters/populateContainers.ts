@@ -6,7 +6,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
-import { minFaviconCount, specialFaviconPaths } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
@@ -20,6 +20,8 @@ import {
 import { createWinstonLogger } from "../transformers/logger_utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
+
+const { minFaviconCount } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 

@@ -6,9 +6,11 @@ import micromorph from "micromorph"
 import { escape } from "validator"
 
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
-import { pondVideoId } from "../component_utils"
+import { simpleConstants } from "../constants"
 import { debounce } from "./component_script_utils"
 import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
+
+const { pondVideoId } = simpleConstants
 
 // SPA accessibility announcement for screen readers
 const announcer = document.createElement("route-announcer")

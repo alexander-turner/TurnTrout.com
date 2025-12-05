@@ -4,8 +4,7 @@
 import React from "react"
 
 import { type FullSlug, pathToRoot, resolveRelative } from "../util/path"
-import { pondVideoId } from "./component_utils"
-import { defaultTitle } from "./constants"
+import { defaultTitle, pondVideoId } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
