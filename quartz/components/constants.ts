@@ -2,10 +2,30 @@ import constantsJson from "../../config/constants.json" with { type: "json" }
 
 export const simpleConstants = constantsJson
 
-// Computed constants
-export const faviconUrl = `/${simpleConstants.localTroutFaviconBasenameDefault}.${simpleConstants.localTroutFaviconExtensionDefault}`
+// Export individual properties from simpleConstants for direct imports
+export const {
+  defaultCardUrl,
+  defaultCardAlt,
+  defaultTitle,
+  defaultDescription,
+  locale,
+  localTroutFaviconExtensionDefault,
+  localTroutFaviconBasenameDefault,
+  faviconMimeType,
+  appleTouchIconUrl,
+  faviconBasePath,
+  minFaviconCount,
+  googleSubdomainWhitelist,
+  faviconCountWhitelist,
+  faviconSubstringBlacklist,
+  sessionStoragePondVideoKey,
+  pondVideoId,
+} = simpleConstants
 
-export const localTroutFaviconBasename = `${simpleConstants.localTroutFaviconBasenameDefault}.${simpleConstants.localTroutFaviconExtensionDefault}`
+// Computed constants
+export const faviconUrl = `/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
+
+export const localTroutFaviconBasename = `${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 
 // Special favicon paths for different link types
 export const specialFaviconPaths = {

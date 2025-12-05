@@ -1,4 +1,4 @@
-import { sessionStoragePondVideoKey } from "../component_utils"
+import { sessionStoragePondVideoKey } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
 import { setupScrollHandler } from "./scrollHandler"
