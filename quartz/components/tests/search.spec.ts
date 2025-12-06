@@ -1,11 +1,9 @@
 import { test, expect, type Page } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
-import {
-  searchPlaceholderDesktop,
-  searchPlaceholderMobile,
-  mouseFocusDelay,
-} from "../scripts/search"
+import { simpleConstants } from "../constants"
+
+const { searchPlaceholderDesktop, searchPlaceholderMobile, mouseFocusDelay } = simpleConstants
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -518,11 +516,11 @@ navigationMethods.forEach(({ down, description }) => {
   test(`${description} navigation changes which page you enter`, async ({ page }) => {
     await search(page, "Testing")
     const firstResult = page.locator(".result-card").first()
-    const initialUrl = firstResult
-    await expect(initialUrl).toHaveAttribute("href", "http://localhost:8080/test-page")
+    await expect(firstResult).toHaveAttribute("href", "http://localhost:8080/test-page")
 
+    const initialUrl = await firstResult.getAttribute("href")
     await page.keyboard.press(down)
     await page.keyboard.press("Enter")
-    await page.waitForURL((url) => url.toString() !== initialUrl.toString())
+    await page.waitForURL((url) => url.toString() !== initialUrl)
   })
 })

@@ -20,6 +20,10 @@ export const {
   faviconSubstringBlacklist,
   sessionStoragePondVideoKey,
   pondVideoId,
+  debounceSearchDelay,
+  mouseFocusDelay,
+  searchPlaceholderDesktop,
+  searchPlaceholderMobile,
 } = simpleConstants
 
 // Computed constants
