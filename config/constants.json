@@ -61,5 +61,9 @@
     "mozilla_org"
   ],
   "sessionStoragePondVideoKey": "pond-video-timestamp",
-  "pondVideoId": "pond-video"
+  "pondVideoId": "pond-video",
+  "debounceSearchDelay": 400,
+  "mouseFocusDelay": 100,
+  "searchPlaceholderDesktop": "Toggle search by pressing /",
+  "searchPlaceholderMobile": "Search"
 }

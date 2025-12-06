@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals"
 
+import { simpleConstants } from "../../constants"
 import {
   highlightTextNodes,
   descendantsWithId,
@@ -13,13 +14,13 @@ import {
   escapeRegExp,
   createHighlightSpan,
   updatePlaceholder,
-  searchPlaceholderDesktop,
-  searchPlaceholderMobile,
   showSearch,
   hideSearch,
   PreviewManager,
   getOffsetTopRelativeToContainer,
 } from "../search"
+
+const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 
 jest.mock("../../../styles/variables", () => ({
   tabletBreakpoint: 800,

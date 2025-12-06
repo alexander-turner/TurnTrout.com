@@ -4,7 +4,11 @@ import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
 import { type FullSlug, normalizeRelativeURLs, resolveRelative } from "../../util/path"
+import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
+
+const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
+  simpleConstants
 
 interface Item {
   id: number
@@ -13,12 +17,6 @@ interface Item {
   content: string
   authors?: string
 }
-
-// Delay in milliseconds before triggering a search after user input
-export const debounceSearchDelay = 400
-
-// Delay in milliseconds before triggering a mouseover event after user input
-export const mouseFocusDelay = 100
 
 let currentSearchTerm = ""
 
@@ -369,8 +367,6 @@ function highlightHTML(searchTerm: string, el: HTMLElement) {
   return html.body
 }
 
-export const searchPlaceholderDesktop = "Toggle search by pressing /"
-export const searchPlaceholderMobile = "Search"
 /**
  * Updates the search bar placeholder text based on screen width
  */
