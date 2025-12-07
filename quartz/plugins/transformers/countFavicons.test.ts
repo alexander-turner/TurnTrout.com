@@ -21,9 +21,9 @@ import fs from "fs"
 import type { BuildCtx } from "../../util/ctx"
 import type { FilePath } from "../../util/path"
 
-import { specialFaviconPaths } from "../../components/constants"
+import { specialFaviconPaths, faviconCountsFile } from "../../components/constants"
 import { countAllFavicons, getFaviconCounts } from "./countFavicons"
-import { getQuartzPath, FAVICON_COUNTS_FILE } from "./linkfavicons"
+import { getQuartzPath } from "./linkfavicons"
 
 let tempDir: string
 let mockCtx: BuildCtx
@@ -310,7 +310,7 @@ describe("countAllLinks", () => {
     // Type assertion is safe here because we've already verified writeCall is defined
     expect((writeCall as unknown[])[0]).toContain(".tmp")
     expect(renameCall[0]).toContain(".tmp")
-    expect(renameCall[1]).toBe(FAVICON_COUNTS_FILE)
+    expect(renameCall[1]).toBe(faviconCountsFile)
   })
 
   it("should handle write errors gracefully", async () => {

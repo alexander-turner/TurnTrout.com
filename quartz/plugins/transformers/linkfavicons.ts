@@ -1,7 +1,6 @@
 import type { Element, Root, Text, Parent } from "hast"
 import type { ReadableStream } from "stream/web"
 
-import gitRoot from "find-git-root"
 import fs from "fs"
 import mime from "mime-types"
 import path from "path"
@@ -9,9 +8,15 @@ import { parse as parseDomain } from "psl"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
 
-import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import {
+  simpleConstants,
+  specialFaviconPaths,
+  defaultPath,
+  specialDomainMappings,
+  faviconUrlsFile,
+  faviconCountsFile,
+} from "../../components/constants"
 import { createWinstonLogger } from "./logger_utils"
 import { hasClass } from "./utils"
 
@@ -20,30 +25,11 @@ const {
   googleSubdomainWhitelist,
   faviconCountWhitelist,
   faviconSubstringBlacklist,
+  quartzFolder,
+  faviconFolder,
 } = simpleConstants
 
 const logger = createWinstonLogger("linkFavicons")
-
-const QUARTZ_FOLDER = "quartz"
-const FAVICON_FOLDER = "static/images/external-favicons"
-export const DEFAULT_PATH = ""
-
-const __filepath = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(gitRoot(__filepath))
-export const FAVICON_URLS_FILE = path.join(
-  __dirname,
-  "quartz",
-  "plugins",
-  "transformers",
-  ".faviconUrls.txt",
-)
-export const FAVICON_COUNTS_FILE = path.join(
-  __dirname,
-  "quartz",
-  "plugins",
-  "transformers",
-  ".faviconCounts.txt",
-)
 
 /**
  * Whitelist of favicon paths that should always be included regardless of count. Often widely recognizable.
@@ -57,12 +43,12 @@ const FAVICON_COUNT_WHITELIST = [
 ]
 
 // istanbul ignore if
-if (!fs.existsSync(FAVICON_URLS_FILE)) {
+if (!fs.existsSync(faviconUrlsFile)) {
   try {
-    fs.writeFileSync(FAVICON_URLS_FILE, "")
+    fs.writeFileSync(faviconUrlsFile, "")
   } catch {
     throw new Error(
-      `Favicon URL cache file not found at path ${FAVICON_URLS_FILE}; create it with \`touch\` if that's the right path.`,
+      `Favicon URL cache file not found at path ${faviconUrlsFile}; create it with \`touch\` if that's the right path.`,
     )
   }
 }
@@ -137,19 +123,9 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
 /**
  * Special hostname mappings that deviate from simple subdomain removal.
  * These map one domain to a different canonical domain, or preserve specific subdomains.
+ * Imported from constants.ts which computes them from config.
  */
-const SPECIAL_DOMAIN_MAPPINGS: Array<{ pattern: RegExp; to: string }> = [
-  // Preserve whitelisted Google subdomains (map to themselves)
-  ...googleSubdomainWhitelist.map((subdomain) => ({
-    pattern: new RegExp(`^${subdomain.replace(".", "\\.")}\\.google\\.com$`),
-    to: `${subdomain}.google.com`,
-  })),
-  // Cross-domain mappings
-  { pattern: /^.*transformer-circuits\.pub/, to: "anthropic.com" },
-  { pattern: /^.*protonvpn\.com/, to: "proton.me" },
-  { pattern: /^.*nbc.*\.com$/, to: "msnbc.com" },
-  { pattern: /^.*nips\.cc$/, to: "neurips.cc" },
-]
+const SPECIAL_DOMAIN_MAPPINGS = specialDomainMappings
 
 /**
  * Normalizes a hostname by removing subdomains and extracting the root domain.
@@ -225,7 +201,7 @@ export function getQuartzPath(hostname: string): string {
   const sanitizedHostname = hostname.replace(/\./g, "_")
   const path = sanitizedHostname.includes("turntrout_com")
     ? specialFaviconPaths.turntrout
-    : `/${FAVICON_FOLDER}/${sanitizedHostname}.png`
+    : `/${faviconFolder}/${sanitizedHostname}.png`
   logger.debug(`Generated Quartz path: ${path}`)
   return path
 }
@@ -247,31 +223,31 @@ for (const [basename, url] of faviconUrls) {
 }
 
 /**
- * Writes the favicon cache to the FAVICON_URLS_FILE.
+ * Writes the favicon cache to the faviconUrlsFile.
  */
 export function writeCacheToFile(): void {
   const data = Array.from(urlCache.entries())
     .map(([key, value]) => `${key},${value}`)
     .join("\n")
 
-  fs.writeFileSync(FAVICON_URLS_FILE, data, { flag: "w+" })
+  fs.writeFileSync(faviconUrlsFile, data, { flag: "w+" })
 }
 
 /**
- * Reads favicon counts from the FAVICON_COUNTS_FILE and returns them as a Map.
+ * Reads favicon counts from the faviconCountsFile and returns them as a Map.
  *
  * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
 export function readFaviconCounts(): Map<string, number> {
-  if (!fs.existsSync(FAVICON_COUNTS_FILE)) {
-    logger.warn(`Favicon counts file not found at ${FAVICON_COUNTS_FILE}`)
+  if (!fs.existsSync(faviconCountsFile)) {
+    logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
     return new Map<string, number>()
   }
 
   const countMap = new Map<string, number>()
 
   try {
-    const data = fs.readFileSync(FAVICON_COUNTS_FILE, "utf8")
+    const data = fs.readFileSync(faviconCountsFile, "utf8")
     // Parse JSON array of [path, count] pairs
     const countsArray = JSON.parse(data) as Array<[string, number]>
     for (const [faviconPath, count] of countsArray) {
@@ -288,13 +264,13 @@ export function readFaviconCounts(): Map<string, number> {
 }
 
 /**
- * Reads favicon URLs from the FAVICON_URLS_FILE and returns them as a Map.
+ * Reads favicon URLs from the faviconUrlsFile and returns them as a Map.
  *
  * @returns A Promise that resolves to a Map of basename to URL strings.
  */
 export async function readFaviconUrls(): Promise<Map<string, string>> {
   try {
-    const data = await fs.promises.readFile(FAVICON_URLS_FILE, "utf8")
+    const data = await fs.promises.readFile(faviconUrlsFile, "utf8")
     const lines = data.split("\n")
     const urlMap = new Map<string, string>()
     for (const line of lines) {
@@ -334,7 +310,7 @@ export function getFaviconUrl(faviconPath: string): string {
 
   // Check cache first (may contain SVG URL from populateFaviconContainer CDN check)
   const cached = urlCache.get(pngPath)
-  if (cached && cached !== DEFAULT_PATH) {
+  if (cached && cached !== defaultPath) {
     if (cached.startsWith("http")) {
       return cached
     }
@@ -346,7 +322,7 @@ export function getFaviconUrl(faviconPath: string): string {
 
   // Check if SVG version exists locally
   const svgPath = pngPath.replace(".png", ".svg")
-  const localSvgPath = path.join(QUARTZ_FOLDER, svgPath)
+  const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
     // SVG exists locally, return SVG CDN URL
@@ -365,21 +341,21 @@ export function getFaviconUrl(faviconPath: string): string {
  *
  * Processing order:
  * 1. Returns path if whitelisted (always included)
- * 2. Returns DEFAULT_PATH if blacklisted (never included)
+ * 2. Returns defaultPath if blacklisted (never included)
  * 3. Otherwise returns path for further count checking
  *
  * Note: Path replacements are handled at the hostname level in getQuartzPath,
  * so paths passed here are already normalized.
  *
  * @param faviconPath - The favicon path to transform (can be local path, CDN URL, or special path)
- * @returns The favicon path, or DEFAULT_PATH if blacklisted
+ * @returns The favicon path, or defaultPath if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
   const isBlacklisted = faviconSubstringBlacklist.some((entry: string) =>
     faviconPath.includes(entry),
   )
   if (isBlacklisted) {
-    return DEFAULT_PATH
+    return defaultPath
   }
 
   const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => faviconPath.includes(entry))
@@ -400,9 +376,9 @@ export function transformUrl(faviconPath: string): string {
 function checkCachedFavicon(faviconPath: string, hostname: string): string | null {
   if (urlCache.has(faviconPath)) {
     const cachedValue = urlCache.get(faviconPath)
-    if (cachedValue === DEFAULT_PATH) {
+    if (cachedValue === defaultPath) {
       logger.info(`Skipping previously failed favicon for ${hostname}`)
-      return DEFAULT_PATH
+      return defaultPath
     }
     logger.info(`Returning cached favicon for ${hostname}`)
     return cachedValue as string
@@ -423,7 +399,7 @@ async function checkLocalSvg(
   faviconPath: string,
   hostname: string,
 ): Promise<string | null> {
-  const localSvgPath = path.join(QUARTZ_FOLDER, svgPath)
+  const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     await fs.promises.stat(localSvgPath)
     logger.info(`Local SVG found for ${hostname}: ${svgPath}`)
@@ -469,7 +445,7 @@ async function checkCdnSvg(
  * @returns PNG path if found, null otherwise
  */
 async function checkLocalPng(faviconPath: string, hostname: string): Promise<string | null> {
-  const localPngPath = path.join(QUARTZ_FOLDER, faviconPath)
+  const localPngPath = path.join(quartzFolder, faviconPath)
   try {
     await fs.promises.stat(localPngPath)
     logger.info(`Local PNG found for ${hostname}: ${faviconPath}`)
@@ -523,7 +499,7 @@ async function downloadFromGoogle(
     }
   } catch (downloadErr) {
     logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
-    urlCache.set(faviconPath, DEFAULT_PATH) // Cache the failure
+    urlCache.set(faviconPath, defaultPath) // Cache the failure
   }
   return null
 }
@@ -550,9 +526,9 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
 
   const faviconPath = getQuartzPath(hostname)
   const updatedPath = transformUrl(faviconPath)
-  if (updatedPath === DEFAULT_PATH) {
+  if (updatedPath === defaultPath) {
     // If blacklisted, return early
-    return DEFAULT_PATH
+    return defaultPath
   }
 
   // Check cache first and defer if it's SVG (preferred)
@@ -579,7 +555,7 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   if (cdnAvif !== null) return cdnAvif
 
   // Try to download from Google (as PNG)
-  const localPngPath = path.join(QUARTZ_FOLDER, updatedPath)
+  const localPngPath = path.join(quartzFolder, updatedPath)
   const downloaded = await downloadFromGoogle(hostname, localPngPath, updatedPath)
   if (downloaded !== null) {
     return downloaded
@@ -587,8 +563,8 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
 
   // If all else fails, use default and cache the failure
   logger.debug(`Failed to find or download favicon for ${hostname}, using default`)
-  urlCache.set(updatedPath, DEFAULT_PATH)
-  return DEFAULT_PATH
+  urlCache.set(updatedPath, defaultPath)
+  return defaultPath
 }
 
 export interface FaviconNode extends Element {
@@ -913,7 +889,7 @@ async function handleLink(
 
     const imgPath = await MaybeSaveFavicon(finalURL.hostname)
 
-    if (imgPath === DEFAULT_PATH) {
+    if (imgPath === defaultPath) {
       logger.info(`No favicon found for ${finalURL.hostname}; skipping`)
       return
     }
