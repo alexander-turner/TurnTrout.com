@@ -119,9 +119,7 @@ def md_file(mock_environment):
 
 @pytest.fixture
 def disable_md_requirement(monkeypatch):
-    monkeypatch.setattr(
-        script_utils, "should_have_md", lambda file_path: False
-    )
+    monkeypatch.setattr(script_utils, "should_have_md", lambda file_path: False)
 
 
 @pytest.mark.parametrize(
@@ -428,9 +426,7 @@ def test_check_invalid_anchors_external_page(
 def test_check_problematic_paragraphs(sample_soup):
     result = built_site_checks.paragraphs_contain_canary_phrases(sample_soup)
     assert len(result) == 3
-    assert (
-        "Problematic paragraph: Table: This is a table description" in result
-    )
+    assert "Problematic paragraph: Table: This is a table description" in result
     assert "Problematic paragraph: Figure: This is a figure caption" in result
     assert "Problematic paragraph: Code: This is a code snippet" in result
     assert "Problematic paragraph: Normal paragraph" not in result
@@ -1198,12 +1194,14 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
         (
             """
             <p>: Invalid prefix</p>
+            <p>[](img.png)</p>
             <p># Unrendered heading</p>
             <p>## Another heading</p>
             <p>Normal: text</p>
             """,
             [
                 "Problematic paragraph: : Invalid prefix",
+                "Problematic paragraph: [](img.png)",
                 "Problematic paragraph: # Unrendered heading",
                 "Problematic paragraph: ## Another heading",
             ],
@@ -3338,9 +3336,7 @@ def test_main_no_issues(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
 
-    monkeypatch.setattr(
-        script_utils, "build_html_to_md_map", lambda md_dir: {}
-    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
 
     # For successful execution, sys.exit should not be called
     with patch.object(sys, "exit") as mock_exit:
@@ -3360,9 +3356,7 @@ def test_main_css_issues(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
 
-    monkeypatch.setattr(
-        script_utils, "build_html_to_md_map", lambda md_dir: {}
-    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
 
     with (
         patch.object(built_site_checks, "_print_issues") as mock_print,
@@ -3393,9 +3387,7 @@ def test_main_root_files_issues(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
 
-    monkeypatch.setattr(
-        script_utils, "build_html_to_md_map", lambda md_dir: {}
-    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
 
     with patch.object(built_site_checks, "_print_issues") as mock_print:
         with pytest.raises(SystemExit) as excinfo:
@@ -3432,9 +3424,7 @@ def test_main_html_issues(
         lambda *args, **kwargs: html_issues,
     )
 
-    monkeypatch.setattr(
-        script_utils, "build_html_to_md_map", lambda md_dir: {}
-    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
 
     # Mock _print_issues to verify correct issue types
     with patch.object(built_site_checks, "_print_issues") as mock_print:
