@@ -264,6 +264,7 @@ class CheckStep:
     command: Sequence[str]
     shell: bool = False
     cwd: str | None = None
+    interactive: bool = False
 
 
 def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
@@ -403,10 +404,12 @@ def run_command(
         Tuple of (success, stdout, stderr) where success is a boolean and
         stdout/stderr are strings containing the complete output.
     """
-    interactive_tasks = ["spellchecker", "linkchecker", "vale"]
-    if any(task in str(step.command) for task in interactive_tasks):
+    if step.interactive:
         return run_interactive_command(step, progress, task_id)
 
+    stdout_lines: list[str] = []
+    stderr_lines: list[str] = []
+    last_lines: Deque[str] = deque(maxlen=5)
     try:
         # skipcq: BAN-B602
         with subprocess.Popen(
@@ -418,9 +421,6 @@ def run_command(
             stderr=subprocess.PIPE,
             text=True,
         ) as process:
-            stdout_lines: list[str] = []
-            stderr_lines: list[str] = []
-            last_lines: Deque[str] = deque(maxlen=5)
 
             def stream_reader(stream: TextIO, lines_list: list[str]) -> None:
                 for line in iter(stream.readline, ""):
@@ -441,10 +441,9 @@ def run_command(
             )
 
             stdout_thread.start()
-            stderr_thread.start()
             stdout_thread.join()
+            stderr_thread.start()
             stderr_thread.join()
-
             return_code = process.wait()
 
             # Clear the output task after completion
@@ -541,6 +540,7 @@ def get_check_steps(
                 f"{git_root_path}/config/vale/.vale.ini",
                 f"{git_root_path}/website_content",
             ],
+            interactive=True,
         ),
         CheckStep(
             name="Cleaning up SCSS",
@@ -560,6 +560,7 @@ def get_check_steps(
             command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
             # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
+            interactive=True,
         ),
         CheckStep(
             name="Running Javascript unit tests",
@@ -636,6 +637,7 @@ def get_check_steps(
             command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
             # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
+            interactive=True,
         ),
     ]
 

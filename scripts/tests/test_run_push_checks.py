@@ -973,15 +973,20 @@ def test_run_interactive_command():
             name="Spellcheck",
             command=["fish", "scripts/spellchecker.fish"],
             shell=True,
+            interactive=True,
         ),
         # skipcq: BAN-B604 (a local command, assume safe)
         run_push_checks.CheckStep(
             name="Linkcheck",
             command=["fish", "scripts/linkchecker.fish"],
             shell=True,
+            interactive=True,
         ),
         run_push_checks.CheckStep(
-            name="Vale", command=["vale", "some/path"], shell=False
+            name="Vale",
+            command=["vale", "some/path"],
+            shell=False,
+            interactive=True,
         ),
     ],
 )
