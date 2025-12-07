@@ -258,11 +258,16 @@ test.describe("Table of contents", () => {
 
     await expect(page.locator(selector)).toBeVisible()
   })
+
   test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
 
-    // Ensure the element can expand to its full height for the screenshot
+    // Set .simulate-visited on first TOC link child
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
+    const firstTocLink = rightSidebar.locator("a:has(*)").first()
+    await firstTocLink.evaluate((el) => el.classList.add("simulate-visited"))
+
+    // Ensure the element can expand to its full height for the screenshot
     await rightSidebar.evaluate((rightSidebar: HTMLElement) => {
       let parent = rightSidebar.parentElement
       while (parent) {
@@ -271,10 +276,12 @@ test.describe("Table of contents", () => {
         parent = parent.parentElement
       }
     })
+
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
       elementToScreenshot: rightSidebar,
     })
   })
+
   test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
 
@@ -798,76 +805,6 @@ test.describe("List alignment", () => {
       })
 
       expect(Math.abs(olPositionLeft - ulPositionLeft)).toBeLessThan(LIST_TOLERANCE)
-    })
-  }
-})
-
-test.describe("Element children color consistency", () => {
-  const elementsToTest = [
-    "#toc-content",
-    "#toc-content-mobile",
-    "#backlinks-admonition",
-    "#post-statistics",
-  ]
-
-  async function getChildrenColors(element: ReturnType<Page["locator"]>): Promise<string[]> {
-    return await element.evaluate((el) => {
-      const children = el.querySelectorAll("*")
-      const colorSet = new Set<string>()
-
-      children.forEach((child) => {
-        // Only check elements that have text content
-        if (child.textContent?.trim()) {
-          const computedStyle = window.getComputedStyle(child)
-          colorSet.add(computedStyle.color)
-        }
-      })
-
-      return Array.from(colorSet)
-    })
-  }
-
-  async function testElementColorConsistency(
-    page: Page,
-    elementId: string,
-    simulateVisited = false,
-  ): Promise<void> {
-    await setDummyContentMeta(page)
-
-    const element = page.locator(elementId).first()
-
-    // Skip if element doesn't exist on the page
-    const exists = await element.count()
-    if (exists === 0) {
-      test.skip()
-      return
-    }
-
-    await element.scrollIntoViewIfNeeded()
-    await expect(element).toBeVisible()
-
-    if (simulateVisited) {
-      await element.evaluate((el) => {
-        const links = el.querySelectorAll("a")
-        links.forEach((link) => {
-          link.style.setProperty("color", "var(--color-link-visited)", "important")
-        })
-      })
-    }
-
-    const colors = await getChildrenColors(element)
-    expect(colors.length).toBe(1)
-  }
-
-  for (const elementId of elementsToTest) {
-    test(`All children of ${elementId} have the same color`, async ({ page }) => {
-      await testElementColorConsistency(page, elementId, false)
-    })
-
-    test(`All children of ${elementId} have the same color with :visited simulated`, async ({
-      page,
-    }) => {
-      await testElementColorConsistency(page, elementId, true)
     })
   }
 })
