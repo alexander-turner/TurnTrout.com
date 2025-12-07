@@ -212,10 +212,13 @@ describe("Favicon Utilities", () => {
       jest.clearAllMocks()
       mockFetchAndFs(404, false, 404, false, 404)
 
-      // Second attempt should skip immediately due to cached failure
+      // Second attempt should still check for SVG on CDN before using cached failure
       const secondResult = await linkfavicons.MaybeSaveFavicon(hostname)
       expect(secondResult).toBe(linkfavicons.DEFAULT_PATH)
-      expect(global.fetch).not.toHaveBeenCalled() // Should not try to download again
+      expect(global.fetch).toHaveBeenCalledTimes(1) // Should check for SVG on CDN
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
     })
 
     it("should persist failed downloads to cache file", async () => {
@@ -300,9 +303,12 @@ describe("Favicon Utilities", () => {
       // Attempt to get favicon
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
 
-      // Should return default path without attempting downloads
+      // Should check for SVG on CDN before returning cached failure
       expect(result).toBe(linkfavicons.DEFAULT_PATH)
-      expect(global.fetch).not.toHaveBeenCalled()
+      expect(global.fetch).toHaveBeenCalledTimes(1) // Should check for SVG on CDN
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
     })
 
     it("should return cached successful favicon URL", async () => {
@@ -318,7 +324,10 @@ describe("Favicon Utilities", () => {
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
 
       expect(result).toBe(cachedUrl)
-      expect(global.fetch).not.toHaveBeenCalled()
+      expect(global.fetch).toHaveBeenCalledTimes(1) // Should check for SVG on CDN
+      expect(global.fetch).toHaveBeenCalledWith(
+        "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
+      )
     })
   })
 
