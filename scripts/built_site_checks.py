@@ -295,8 +295,9 @@ _CANARY_BAD_ANYWHERE = (
     r"Caption: ",
 )
 _CANARY_BAD_PREFIXES = (
-    r": ",
-    r"#",
+    r": ",  # Unrendered description
+    r"#",  # Unrendered heading
+    r"\[(\s|\u200B)*\]",  # image alt declaration, may contain 0width space
 )
 
 
@@ -1384,9 +1385,7 @@ def check_spacing(
 ) -> list[str]:
     """Check spacing between element and a sibling."""
     sibling = (
-        element.previous_sibling
-        if prefix == "before"
-        else element.next_sibling
+        element.previous_sibling if prefix == "before" else element.next_sibling
     )
     if not isinstance(sibling, NavigableString) or not sibling.strip():
         return []
@@ -1431,9 +1430,9 @@ def _check_element_spacing(
     Returns:
         list of strings describing spacing issues
     """
-    return check_spacing(
-        element, prev_allowed_chars, "before"
-    ) + check_spacing(element, next_allowed_chars, "after")
+    return check_spacing(element, prev_allowed_chars, "before") + check_spacing(
+        element, next_allowed_chars, "after"
+    )
 
 
 def check_link_spacing(soup: BeautifulSoup) -> list[str]:
@@ -1479,9 +1478,7 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
     problematic_emphasis: list[str] = []
 
     # Find all emphasis elements
-    for element in _tags_only(
-        soup.find_all(["em", "strong", "i", "b", "del"])
-    ):
+    for element in _tags_only(soup.find_all(["em", "strong", "i", "b", "del"])):
         # Check if this is a whitelisted case
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
