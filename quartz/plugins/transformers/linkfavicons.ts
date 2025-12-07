@@ -22,7 +22,7 @@ const {
   faviconSubstringBlacklist,
 } = simpleConstants
 
-const logger = createWinstonLogger("linkfavicons")
+const logger = createWinstonLogger("linkFavicons")
 
 const QUARTZ_FOLDER = "quartz"
 const FAVICON_FOLDER = "static/images/external-favicons"
@@ -550,42 +550,33 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
 
   const faviconPath = getQuartzPath(hostname)
   const updatedPath = transformUrl(faviconPath)
-
-  // If blacklisted, return early
   if (updatedPath === DEFAULT_PATH) {
+    // If blacklisted, return early
     return DEFAULT_PATH
   }
 
-  // Check cache first
+  // Check cache first and defer if it's SVG (preferred)
   const cached = checkCachedFavicon(updatedPath, hostname)
-  if (cached !== null) {
+  if (cached !== null && cached.endsWith(".svg")) {
     return cached
   }
 
-  // Check for local SVG first (preferred format)
+  // For AVIF cache (or no cache), check for SVG
   const svgPath = updatedPath.replace(".png", ".svg")
   const localSvg = await checkLocalSvg(svgPath, updatedPath, hostname)
-  if (localSvg !== null) {
-    return localSvg
-  }
+  if (localSvg !== null) return localSvg
 
-  // Check for SVG on CDN
   const cdnSvg = await checkCdnSvg(svgPath, updatedPath, hostname)
-  if (cdnSvg !== null) {
-    return cdnSvg
-  }
+  if (cdnSvg !== null) return cdnSvg
 
-  // Check for local PNG
+  // Return cached AVIF if we have it and no SVG was found
+  if (cached !== null) return cached
+
   const localPng = await checkLocalPng(updatedPath, hostname)
-  if (localPng !== null) {
-    return localPng
-  }
+  if (localPng !== null) return localPng
 
-  // Check for AVIF version on CDN
   const cdnAvif = await checkCdnAvif(updatedPath, hostname)
-  if (cdnAvif !== null) {
-    return cdnAvif
-  }
+  if (cdnAvif !== null) return cdnAvif
 
   // Try to download from Google (as PNG)
   const localPngPath = path.join(QUARTZ_FOLDER, updatedPath)
@@ -986,7 +977,7 @@ export async function ModifyNode(
     return
   }
 
-  if (href.includes("mailto:")) {
+  if (href.startsWith("mailto:")) {
     handleMailtoLink(node)
     return
   }
