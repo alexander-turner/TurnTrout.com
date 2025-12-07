@@ -221,7 +221,9 @@ def test_run_checks_all_success(test_steps, temp_state_dir):
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.commit_step_changes"),
     ):
-        mock_run.return_value = (True, "", "")
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
         run_push_checks.run_checks(test_steps)
         assert mock_run.call_count == 3
 
@@ -230,20 +232,24 @@ def test_run_checks_all_success(test_steps, temp_state_dir):
 def test_run_checks_exits_on_failure(
     test_steps, failing_step_index, temp_state_dir
 ):
-    """Test that run_checks exits immediately when a check fails."""
+    """Test that run_checks raises CheckFailedError when a check fails."""
+    results = [
+        run_push_checks.CommandResult(success=True, stdout="", stderr="")
+    ] * len(test_steps)
+    results[failing_step_index] = run_push_checks.CommandResult(
+        success=False, stdout="Failed output", stderr="Error"
+    )
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.commit_step_changes"),
+        pytest.raises(run_push_checks.CheckFailedError) as exc_info,
     ):
         # Create a list of results where one step fails
-        results = [(True, "", "")] * len(test_steps)
-        results[failing_step_index] = (False, "Failed output", "Error")
         mock_run.side_effect = results
 
-        with pytest.raises(SystemExit) as exc_info:
-            run_push_checks.run_checks(test_steps)
+        run_push_checks.run_checks(test_steps)
 
-        assert exc_info.value.code == 1
+        assert exc_info.value.step_name == test_steps[failing_step_index].name
         assert mock_run.call_count == failing_step_index + 1
 
 
@@ -252,11 +258,13 @@ def test_run_checks_shows_error_output(test_steps):
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.console.log") as mock_log,
+        pytest.raises(run_push_checks.CheckFailedError),
     ):
-        mock_run.return_value = (False, "stdout error", "stderr error")
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=False, stdout="stdout error", stderr="stderr error"
+        )
 
-        with pytest.raises(SystemExit):
-            run_push_checks.run_checks(test_steps)
+        run_push_checks.run_checks(test_steps)
 
         mock_log.assert_any_call("[red]✗[/red] Test Step 1")
         mock_log.assert_any_call("\n[bold red]Error output:[/bold red]")
@@ -312,12 +320,10 @@ def test_run_command_success():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_command(
-            step, mock_progress, mock_task_id
-        )
-        assert success is True
-        assert "test output\n" in stdout
-        assert stderr == ""
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+        assert result.success is True
+        assert "test output\n" in result.stdout
+        assert result.stderr == ""
 
 
 def test_run_command_failure():
@@ -334,12 +340,10 @@ def test_run_command_failure():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_command(
-            step, mock_progress, mock_task_id
-        )
-        assert success is False
-        assert "error output\n" in stdout
-        assert "error message\n" in stderr
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+        assert result.success is False
+        assert "error output\n" in result.stdout
+        assert "error message\n" in result.stderr
 
 
 def test_run_command_shell_handling():
@@ -495,7 +499,9 @@ def test_run_checks_with_resume(test_steps, temp_state_dir):
         patch("scripts.run_push_checks.run_command") as mock_run,
         patch("scripts.run_push_checks.commit_step_changes"),
     ):
-        mock_run.return_value = (True, "", "")
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
 
         # Save state as if we completed the first step
         run_push_checks.save_state("Test Step 1")
@@ -516,13 +522,17 @@ def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
     """Test resuming from a middle step with failure."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         # Set up to fail on the last step
-        mock_run.side_effect = [(False, "Failed", "Error")]
+        mock_run.side_effect = [
+            run_push_checks.CommandResult(
+                success=False, stdout="Failed", stderr="Error"
+            )
+        ]
 
         # Save state as if we completed the second step
         run_push_checks.save_state("Test Step 2")
 
         # Run with resume flag, should fail on step 3
-        with pytest.raises(SystemExit):
+        with pytest.raises(run_push_checks.CheckFailedError):
             run_push_checks.run_checks(test_steps, resume=True)
 
         # Should only try to run step 3
@@ -694,7 +704,9 @@ def test_run_checks_skips_until_last_step(temp_state_dir):
         patch("scripts.run_push_checks.console.log") as mock_log,
         patch("scripts.run_push_checks.commit_step_changes"),
     ):
-        mock_run.return_value = (True, "", "")
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
         # Pretend we completed up to Step 2
         run_push_checks.save_state("Step 2")
 
@@ -931,9 +943,7 @@ def test_run_interactive_command():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_command(
-            step, mock_progress, mock_task_id
-        )
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
 
         # Verify progress was hidden
         mock_progress.update.assert_called_with(mock_task_id, visible=False)
@@ -944,9 +954,9 @@ def test_run_interactive_command():
         assert mock_run.call_args[1]["shell"] is True
         assert mock_run.call_args[1]["check"] is True
 
-        assert success is True
-        assert stdout == ""
-        assert stderr == ""
+        assert result.success is True
+        assert result.stdout == ""
+        assert result.stderr == ""
 
     # Test failing interactive command
     with patch("subprocess.run") as mock_run:
@@ -957,13 +967,11 @@ def test_run_interactive_command():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_command(
-            step, mock_progress, mock_task_id
-        )
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
 
-        assert success is False
-        assert stdout == ""
-        assert "Command failed with exit code 1" in stderr
+        assert result.success is False
+        assert result.stdout == ""
+        assert "Command failed with exit code 1" in result.stderr
 
 
 @pytest.mark.parametrize(
@@ -996,22 +1004,22 @@ def test_run_command_delegates_to_interactive(step):
     with patch(
         "scripts.run_push_checks.run_interactive_command"
     ) as mock_interactive:
-        mock_interactive.return_value = (True, "test", "")
+        mock_interactive.return_value = run_push_checks.CommandResult(
+            success=True, stdout="test", stderr=""
+        )
 
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_command(
-            step, mock_progress, mock_task_id
-        )
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
 
         # Verify interactive runner was called
         mock_interactive.assert_called_once_with(
             step, mock_progress, mock_task_id
         )
-        assert success is True
-        assert stdout == "test"
-        assert stderr == ""
+        assert result.success is True
+        assert result.stdout == "test"
+        assert result.stderr == ""
 
 
 def test_server_process_continues_running():
@@ -1291,7 +1299,9 @@ def test_run_checks_always_commits_changes(temp_state_dir):
         patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
         patch("subprocess.run") as mock_subprocess,
     ):
-        mock_run.return_value = (True, "", "")
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
         # Mock subprocess.run to prevent any real git operations
         mock_subprocess.return_value = MagicMock(
             returncode=0, stdout="", stderr=""
