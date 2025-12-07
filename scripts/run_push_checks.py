@@ -22,12 +22,11 @@ import time
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Collection, Deque, Sequence, TextIO, Tuple
+from typing import Collection, Deque, Sequence, TextIO
 
 import psutil
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TaskID, TextColumn
-from rich.style import Style
 
 console = Console()
 SERVER_START_WAIT_TIME: int = 90
@@ -47,7 +46,7 @@ STATE_FILE_PATH = STATE_DIR / "progress.json"
 
 
 # pylint: disable=missing-class-docstring
-@dataclass
+@dataclass(slots=True, frozen=True)
 class ServerInfo:
     pid: int
     created_by_script: bool
@@ -224,7 +223,7 @@ def create_server(git_root_path: Path) -> ServerInfo:
     ) as progress:
         # pylint: disable=consider-using-with
         new_server = subprocess.Popen(
-            [pnpm_path, "quartz", "build", "--serve"],
+            [pnpm_path, "dev"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             cwd=git_root_path,
@@ -267,6 +266,14 @@ class CheckStep:
     interactive: bool = False
 
 
+class CheckFailedError(Exception):
+    def __init__(self, step_name: str, stdout: str = "", stderr: str = ""):
+        self.step_name = step_name
+        self.stdout = stdout
+        self.stderr = stderr
+        super().__init__(f"Check failed: {step_name}")
+
+
 def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
     """
     Run a sequence of check steps and handle their output.
@@ -276,15 +283,14 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
         resume: Whether to resume from last successful step
     """
     step_names = [step.name for step in steps]
-    # Validate against current phase's steps
     last_step = get_last_step(step_names if resume else None)
     should_skip = bool(resume and last_step)
 
     with Progress(
         SpinnerColumn(),
-        TextColumn(" {task.description}"),  # Add leading space for alignment
+        TextColumn(" {task.description}"),
         console=console,
-        expand=True,  # Allow the progress bar to use full width
+        expand=True,
     ) as progress:
         for step in steps:
             if should_skip:
@@ -293,27 +299,20 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                     should_skip = False
                 continue
 
-            # Create two tasks - one for the step name and one for output
             name_task = progress.add_task(f"[cyan]{step.name}...", total=None)
-            # Hidden until we have output
             output_task = progress.add_task("", total=None, visible=False)
 
-            success, stdout, stderr = run_command(step, progress, output_task)
+            result = run_command(step, progress, output_task)
             progress.remove_task(name_task)
             progress.remove_task(output_task)
 
-            if success:
-                console.log(f"[green]✓[/green] {step.name}")
-                commit_step_changes(_GIT_ROOT, step.name)
-                save_state(step.name)
-            else:
+            if not result.success:
                 console.log(f"[red]✗[/red] {step.name}")
                 console.log("\n[bold red]Error output:[/bold red]")
-                if stdout:
-                    console.log(stdout)
-                if stderr:
-                    console.log(stderr, style=Style(color="red"))
-                sys.exit(1)
+                raise CheckFailedError(step.name, result.stdout, result.stderr)
+            console.log(f"[green]✓[/green] {step.name}")
+            commit_step_changes(_GIT_ROOT, step.name)
+            save_state(step.name)
 
 
 def stream_reader(
@@ -336,7 +335,6 @@ def stream_reader(
     for line in iter(stream.readline, ""):
         lines_list.append(line)
         last_lines.append(line.rstrip())
-        # Update progress display with last lines
         progress.update(
             task_id,
             description="\n".join(last_lines),
@@ -344,9 +342,16 @@ def stream_reader(
         )
 
 
+@dataclass(slots=True, frozen=True)
+class CommandResult:
+    success: bool
+    stdout: str
+    stderr: str
+
+
 def run_interactive_command(
     step: CheckStep, progress: Progress, task_id: TaskID
-) -> Tuple[bool, str, str]:
+) -> CommandResult:
     """
     Run an interactive command that requires direct terminal access.
 
@@ -354,9 +359,6 @@ def run_interactive_command(
         step: The command step to run
         progress: Progress bar instance
         task_id: Task ID for updating progress
-
-    Returns:
-        Tuple of (success, stdout, stderr)
     """
     # Hide progress display during interactive process
     progress.update(task_id, visible=False)
@@ -369,12 +371,12 @@ def run_interactive_command(
         cwd=step.cwd,
         check=True,
     )
-    return True, "", ""
+    return CommandResult(success=True, stdout="", stderr="")
 
 
 def run_non_interactive_command(
     step: CheckStep, progress: Progress, task_id: TaskID
-) -> Tuple[bool, str, str]:
+) -> CommandResult:
     """
     Run a non-interactive command with output streaming.
 
@@ -384,7 +386,7 @@ def run_non_interactive_command(
         task_id: Task ID for updating progress
 
     Returns:
-        Tuple of (success, stdout, stderr)
+        CommandResult with success status and output
     """
     stdout_lines: list[str] = []
     stderr_lines: list[str] = []
@@ -394,7 +396,6 @@ def run_non_interactive_command(
     # skipcq: BAN-B602
     with subprocess.Popen(
         cmd,
-        # skipcq: BAN-B602 (a local command, assume safe)
         shell=step.shell,
         cwd=step.cwd,
         stdout=subprocess.PIPE,
@@ -417,13 +418,12 @@ def run_non_interactive_command(
 
         return_code = process.wait()
 
-    # Clear the output task after completion
     progress.update(task_id, visible=False)
 
     stdout = "".join(stdout_lines)
     stderr = "".join(stderr_lines)
 
-    return return_code == 0, stdout, stderr
+    return CommandResult(success=return_code == 0, stdout=stdout, stderr=stderr)
 
 
 def commit_step_changes(git_root_path: Path, step_name: str) -> None:
@@ -475,14 +475,13 @@ def commit_step_changes(git_root_path: Path, step_name: str) -> None:
 
 def run_command(
     step: CheckStep, progress: Progress, task_id: TaskID
-) -> Tuple[bool, str, str]:
+) -> CommandResult:
     """
     Run a command and return success status and output.
 
     Shows real-time output for steps while suppressing server output.
     Returns:
-        Tuple of (success, stdout, stderr) where success is a boolean and
-        stdout/stderr are strings containing the complete output.
+        CommandResult with success status and output
     """
     try:
         if step.interactive:
@@ -494,7 +493,7 @@ def run_command(
         stderr = getattr(e, "stderr", "") or ""
         if not stderr:
             stderr = f"Command failed with exit code {e.returncode}"
-        return False, stdout, stderr
+        return CommandResult(success=False, stdout=stdout, stderr=stderr)
 
 
 def get_check_steps(
