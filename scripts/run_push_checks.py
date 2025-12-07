@@ -592,14 +592,6 @@ def get_check_steps(
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
-        # skipcq: BAN-B604
-        CheckStep(
-            name="Spellchecking",
-            command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-            interactive=True,
-        ),
         CheckStep(
             name="Running Javascript unit tests",
             command=["pnpm", "test"],
@@ -668,6 +660,14 @@ def get_check_steps(
                 "python",
                 f"{git_root_path}/scripts/built_site_checks.py",
             ],
+        ),
+        # skipcq: BAN-B604
+        CheckStep(
+            name="Spellchecking",  # Goes late in case we modify spelling earlier
+            command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
+            # skipcq: BAN-B604 (a local command, assume safe)
+            shell=True,
+            interactive=True,
         ),
         # skipcq: BAN-B604
         CheckStep(
