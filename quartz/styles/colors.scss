@@ -288,8 +288,11 @@ pre {
 a {
   color: var(--color-link);
 
+  // .simulate-visited for playwright testing
   &:visited,
-  &:visited * {
+  &:visited *,
+  &.simulate-visited,
+  &.simulate-visited * {
     color: var(--color-link-visited);
   }
 }

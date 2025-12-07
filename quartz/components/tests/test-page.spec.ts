@@ -751,15 +751,9 @@ test.describe("Link color states", () => {
             <a href="#never-visited" class="internal">Normal internal link</a>
             <a href="#already-visited" class="internal visited-link">Visited internal link</a>
             <a href="https://example.com" class="external" target="_blank" rel="noopener noreferrer">Normal external link</a>
-            <a href="https://visited.com" class="external visited-link" target="_blank" rel="noopener noreferrer">Visited external link</a>
+            <a href="https://visited.com" class="external simulate-visited" target="_blank" rel="noopener noreferrer">Visited external link</a>
           </div>
         `
-
-        // Apply visited styles to simulate visited state
-        const visitedLinks = document.querySelectorAll(".visited-link") as NodeListOf<HTMLElement>
-        visitedLinks.forEach((link) => {
-          link.style.setProperty("color", "var(--color-link-visited)", "important")
-        })
       })
 
       const linkContainer = page.locator("#link-test-container")
