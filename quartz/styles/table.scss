@@ -60,7 +60,7 @@ th {
   background-color: var(--midground-faintest);
   text-align: left;
   padding: $base-margin calc(1.5 * $base-margin);
-  word-wrap: normal;
+  overflow-wrap: normal;
   font-weight: 500;
 }
 
