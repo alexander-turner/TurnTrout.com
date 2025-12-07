@@ -37,10 +37,11 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
             args=args,
             returncode=0,
             stdout=expected_output,
+            stderr="",
         )
 
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
-    monkeypatch.setattr(script_utils.subprocess, "run", mock_subprocess_run)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
     assert script_utils.get_git_root() == Path(expected_output)
 
 
@@ -55,7 +56,7 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
 
     # Mock both find_executable and subprocess.run
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
-    monkeypatch.setattr(script_utils.subprocess, "run", mock_subprocess_run)
+    monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
 
     with pytest.raises(subprocess.CalledProcessError):
         script_utils.get_git_root()
