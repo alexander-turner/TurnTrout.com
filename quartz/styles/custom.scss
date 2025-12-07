@@ -98,7 +98,7 @@ dd {
   margin-top: calc(0.5 * $base-margin);
   margin-left: $list-padding-left;
   margin-bottom: calc(2 * $base-margin);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   & > p:first-child {
     margin-top: 0;
@@ -220,7 +220,7 @@ p:has(+ ul) {
 /* Wrap links properly */
 a {
   white-space: normal;
-  word-break: break-word;
+  overflow-wrap: break-word;
   margin-top: 0;
   text-underline-offset: 2.5px; // Default underline too close to text
 
