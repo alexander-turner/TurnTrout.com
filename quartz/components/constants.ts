@@ -1,3 +1,7 @@
+import gitRoot from "find-git-root"
+import path from "path"
+import { fileURLToPath } from "url"
+
 import constantsJson from "../../config/constants.json" with { type: "json" }
 
 export const simpleConstants = constantsJson
@@ -24,6 +28,10 @@ export const {
   mouseFocusDelay,
   searchPlaceholderDesktop,
   searchPlaceholderMobile,
+  defaultPath,
+  quartzFolder,
+  faviconFolder,
+  specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
 // Computed constants
@@ -39,6 +47,38 @@ export const specialFaviconPaths = {
   turntrout: `${simpleConstants.faviconBasePath}/turntrout_com.svg`,
   lesswrong: `${simpleConstants.faviconBasePath}/lesswrong_com.svg`,
 } as const
+
+// Computed file paths
+const __filepath = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(gitRoot(__filepath))
+export const faviconUrlsFile = path.join(
+  __dirname,
+  quartzFolder,
+  "plugins",
+  "transformers",
+  ".faviconUrls.txt",
+)
+export const faviconCountsFile = path.join(
+  __dirname,
+  quartzFolder,
+  "plugins",
+  "transformers",
+  ".faviconCounts.txt",
+)
+
+// Computed special domain mappings with RegExp patterns
+export const specialDomainMappings: Array<{ pattern: RegExp; to: string }> = [
+  // Preserve whitelisted Google subdomains (map to themselves)
+  ...googleSubdomainWhitelist.map((subdomain) => ({
+    pattern: new RegExp(`^${subdomain.replace(".", "\\.")}\\.google\\.com$`),
+    to: `${subdomain}.google.com`,
+  })),
+  // Cross-domain mappings from config
+  ...specialDomainMappingsConfig.map((mapping) => ({
+    pattern: new RegExp(mapping.pattern),
+    to: mapping.to,
+  })),
+]
 
 // UI strings for various components
 export const uiStrings = {

@@ -19,7 +19,7 @@ import { simpleConstants, specialFaviconPaths } from "../../components/constants
 import { type BuildCtx } from "../../util/ctx"
 import { type StaticResources } from "../../util/resources"
 
-const { minFaviconCount } = simpleConstants
+const { minFaviconCount, defaultPath } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
 import * as linkfavicons from "../transformers/linkfavicons"
@@ -34,7 +34,6 @@ describe("PopulateContainers", () => {
   const mockOutputDir = "/mock/output"
   const mockStaticResources: StaticResources = { css: [], js: [] }
   const urlCache = linkfavicons.urlCache
-  const DEFAULT_PATH = linkfavicons.DEFAULT_PATH
 
   beforeAll(async () => {
     // Import the module AFTER the mock is set up
@@ -339,11 +338,11 @@ describe("PopulateContainers", () => {
       }
     })
 
-    it("should check CDN for paths cached with DEFAULT_PATH", async () => {
-      // Clear urlCache and populate with DEFAULT_PATH entry
+    it("should check CDN for paths cached with defaultPath", async () => {
+      // Clear urlCache and populate with defaultPath entry
       urlCache.clear()
       const pngPath = "/static/images/external-favicons/example_com"
-      urlCache.set(`${pngPath}.png`, DEFAULT_PATH)
+      urlCache.set(`${pngPath}.png`, defaultPath)
 
       setFaviconCounts([[pngPath, minFaviconCount + 1]])
 

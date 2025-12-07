@@ -21,6 +21,8 @@ import {
   simpleConstants,
   localTroutFaviconBasename,
   specialFaviconPaths,
+  defaultPath,
+  faviconUrlsFile,
 } from "../../components/constants"
 import { hasClass } from "./utils"
 
@@ -151,18 +153,18 @@ describe("Favicon Utilities", () => {
       },
     )
 
-    it("should return DEFAULT_PATH when all attempts fail", async () => {
+    it("should return defaultPath when all attempts fail", async () => {
       mockFetchAndFs(404, false, 404, false, 404)
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
-      expect(result).toBe(linkfavicons.DEFAULT_PATH)
+      expect(result).toBe(defaultPath)
       expect(global.fetch).toHaveBeenCalledTimes(3) // SVG CDN, AVIF CDN, and Google attempts
     })
 
-    it("should return DEFAULT_PATH immediately if blacklisted by transformUrl", async () => {
+    it("should return defaultPath immediately if blacklisted by transformUrl", async () => {
       const blacklistedHostname = "incompleteideas.net"
       const fetchSpy = jest.spyOn(global, "fetch")
       const result = await linkfavicons.MaybeSaveFavicon(blacklistedHostname)
-      expect(result).toBe(linkfavicons.DEFAULT_PATH)
+      expect(result).toBe(defaultPath)
       // Should not attempt any fetches since it's blacklisted
       expect(fetchSpy).not.toHaveBeenCalled()
       fetchSpy.mockRestore()
@@ -205,7 +207,7 @@ describe("Favicon Utilities", () => {
 
       // First attempt should try all download methods
       const firstResult = await linkfavicons.MaybeSaveFavicon(hostname)
-      expect(firstResult).toBe(linkfavicons.DEFAULT_PATH)
+      expect(firstResult).toBe(defaultPath)
       expect(global.fetch).toHaveBeenCalledTimes(3) // SVG CDN, AVIF CDN, and Google attempts
 
       // Reset mocks for second attempt
@@ -214,7 +216,7 @@ describe("Favicon Utilities", () => {
 
       // Second attempt should still check for SVG on CDN before using cached failure
       const secondResult = await linkfavicons.MaybeSaveFavicon(hostname)
-      expect(secondResult).toBe(linkfavicons.DEFAULT_PATH)
+      expect(secondResult).toBe(defaultPath)
       expect(global.fetch).toHaveBeenCalledTimes(1) // Should check for SVG on CDN
       expect(global.fetch).toHaveBeenCalledWith(
         "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
@@ -235,10 +237,8 @@ describe("Favicon Utilities", () => {
 
       // Verify the failure was written to cache file
       expect(writeFileSyncMock).toHaveBeenCalledWith(
-        linkfavicons.FAVICON_URLS_FILE,
-        expect.stringContaining(
-          `${linkfavicons.getQuartzPath(hostname)},${linkfavicons.DEFAULT_PATH}`,
-        ),
+        faviconUrlsFile,
+        expect.stringContaining(`${linkfavicons.getQuartzPath(hostname)},${defaultPath}`),
         expect.any(Object),
       )
     })
@@ -295,7 +295,7 @@ describe("Favicon Utilities", () => {
 
       // Set up the cache directly
       linkfavicons.urlCache.clear()
-      linkfavicons.urlCache.set(faviconPath, linkfavicons.DEFAULT_PATH)
+      linkfavicons.urlCache.set(faviconPath, defaultPath)
 
       // Mock download attempts (which shouldn't be called)
       mockFetchAndFs(200, false, 200)
@@ -304,7 +304,7 @@ describe("Favicon Utilities", () => {
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
 
       // Should check for SVG on CDN before returning cached failure
-      expect(result).toBe(linkfavicons.DEFAULT_PATH)
+      expect(result).toBe(defaultPath)
       expect(global.fetch).toHaveBeenCalledTimes(1) // Should check for SVG on CDN
       expect(global.fetch).toHaveBeenCalledWith(
         "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
@@ -392,13 +392,13 @@ describe("Favicon Utilities", () => {
       expect(result).toBe(cachedAvifUrl)
     })
 
-    it("should ignore cached DEFAULT_PATH", () => {
+    it("should ignore cached defaultPath", () => {
       const pngPath = "/static/images/external-favicons/example_com.png"
 
-      linkfavicons.urlCache.set(pngPath, linkfavicons.DEFAULT_PATH)
+      linkfavicons.urlCache.set(pngPath, defaultPath)
 
       const result = linkfavicons.getFaviconUrl(pngPath)
-      // Should fall through to AVIF since DEFAULT_PATH is ignored
+      // Should fall through to AVIF since defaultPath is ignored
       expect(result).toBe(
         "https://assets.turntrout.com/static/images/external-favicons/example_com.avif",
       )
@@ -749,7 +749,7 @@ describe("Favicon Utilities", () => {
       faviconCounts.set(specialFaviconPaths.anchor, minFaviconCount + 1)
 
       // Mock fetch to prevent actual network calls during MaybeSaveFavicon
-      // Return 404 for all fetches so MaybeSaveFavicon returns DEFAULT_PATH for unknown hosts
+      // Return 404 for all fetches so MaybeSaveFavicon returns defaultPath for unknown hosts
       jest.spyOn(global, "fetch").mockResolvedValue({
         ok: false,
         status: 404,
@@ -928,13 +928,13 @@ describe("Favicon Utilities", () => {
       expect(node.children.length).toBe(0)
     })
 
-    it("should handle DEFAULT_PATH from MaybeSaveFavicon", async () => {
+    it("should handle defaultPath from MaybeSaveFavicon", async () => {
       const hostname = "example-that-fails.com"
       const href = `https://${hostname}/page`
 
-      // Set up cache to return DEFAULT_PATH for this hostname
+      // Set up cache to return defaultPath for this hostname
       linkfavicons.urlCache.clear()
-      linkfavicons.urlCache.set(linkfavicons.getQuartzPath(hostname), linkfavicons.DEFAULT_PATH)
+      linkfavicons.urlCache.set(linkfavicons.getQuartzPath(hostname), defaultPath)
 
       const node = h("a", { href }, [])
       const parent = h("div", {}, [node])
@@ -1294,7 +1294,7 @@ describe("writeCacheToFile", () => {
 
     linkfavicons.writeCacheToFile()
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(linkfavicons.FAVICON_URLS_FILE, expectedContent, {
+    expect(fs.writeFileSync).toHaveBeenCalledWith(faviconUrlsFile, expectedContent, {
       flag: "w+",
     })
   })
@@ -1633,9 +1633,9 @@ describe("transformUrl", () => {
   it.each(
     faviconSubstringBlacklist.map((blacklistEntry: string) => [
       `/static/images/external-favicons/${blacklistEntry}.png`,
-      linkfavicons.DEFAULT_PATH,
+      defaultPath,
     ]),
-  )("should return DEFAULT_PATH if blacklisted: %s", (input, expected) => {
+  )("should return defaultPath if blacklisted: %s", (input, expected) => {
     const result = linkfavicons.transformUrl(input)
     expect(result).toBe(expected)
   })

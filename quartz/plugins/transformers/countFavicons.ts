@@ -9,11 +9,10 @@ import { visit } from "unist-util-visit"
 import type { BuildCtx } from "../../util/ctx"
 import type { FilePath } from "../../util/path"
 
-import { specialFaviconPaths } from "../../components/constants"
+import { specialFaviconPaths, faviconCountsFile } from "../../components/constants"
 import {
   getQuartzPath,
   isAssetLink,
-  FAVICON_COUNTS_FILE,
   normalizePathForCounting,
   normalizeUrl,
   readFaviconCounts,
@@ -39,7 +38,7 @@ export function getFaviconCounts(): Map<string, number> {
   }
 
   // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
-  logger.info(`In-memory favicon counter is empty, attempting to read from ${FAVICON_COUNTS_FILE}`)
+  logger.info(`In-memory favicon counter is empty, attempting to read from ${faviconCountsFile}`)
 
   // Use the centralized reading function from linkfavicons.ts
   return readFaviconCounts()
@@ -106,11 +105,11 @@ function writeCountsToFile(): void {
   const content = JSON.stringify(entries, null, 2)
 
   // Write atomically using a temporary file then rename
-  const tempFile = `${FAVICON_COUNTS_FILE}.tmp`
+  const tempFile = `${faviconCountsFile}.tmp`
   try {
     fs.writeFileSync(tempFile, content, { flag: "w" })
-    fs.renameSync(tempFile, FAVICON_COUNTS_FILE)
-    logger.info(`Wrote ${faviconCounter.size} favicon counts to ${FAVICON_COUNTS_FILE}`)
+    fs.renameSync(tempFile, faviconCountsFile)
+    logger.info(`Wrote ${faviconCounter.size} favicon counts to ${faviconCountsFile}`)
   } catch (error) {
     logger.error(`Failed to write favicon counts file: ${error}`)
   }

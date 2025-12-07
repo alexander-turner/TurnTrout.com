@@ -13,7 +13,6 @@ import {
   createFaviconElement,
   getFaviconUrl,
   transformUrl,
-  DEFAULT_PATH,
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
@@ -21,7 +20,7 @@ import { createWinstonLogger } from "../transformers/logger_utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount } = simpleConstants
+const { minFaviconCount, defaultPath } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -138,8 +137,8 @@ export const generateFaviconContent = (): ContentGenerator => {
     const pngPathsToCheck = Array.from(faviconCounts.keys())
       .map(addPngExtension)
       .map(transformUrl)
-      .filter((path) => path !== DEFAULT_PATH && path.endsWith(".png"))
-      .filter((path) => !urlCache.has(path) || urlCache.get(path) === DEFAULT_PATH)
+      .filter((path) => path !== defaultPath && path.endsWith(".png"))
+      .filter((path) => !urlCache.has(path) || urlCache.get(path) === defaultPath)
 
     await checkCdnSvgs(pngPathsToCheck)
 
@@ -148,11 +147,11 @@ export const generateFaviconContent = (): ContentGenerator => {
       .map(([pathWithoutExt, count]) => {
         const pathWithExt = addPngExtension(pathWithoutExt)
         const transformedPath = transformUrl(pathWithExt)
-        if (transformedPath === DEFAULT_PATH) return null
+        if (transformedPath === defaultPath) return null
 
         const url = getFaviconUrl(transformedPath)
         // istanbul ignore if
-        if (url === DEFAULT_PATH) return null
+        if (url === defaultPath) return null
 
         // Use helper from linkfavicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
