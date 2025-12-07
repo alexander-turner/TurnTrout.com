@@ -107,7 +107,7 @@ Introductory post: [Reframing Impact](./reframing-impact)
 ### Part 3: Regularizing impact
 
 1. [Attainable Utility Preservation: Empirical Results](./attainable-utility-preservation-empirical-results)
-2. [How Low Should Fruit Hang Before We Pick It?](./how-low-should-fruit-hang-before-we-pick-it)
+2. [Choosing the Strength of the Impact Penalty Term](./how-low-should-fruit-hang-before-we-pick-it)
 3. [Attainable Utility Preservation: Scaling to Superhuman](./attainable-utility-preservation-scaling-to-superhuman)
 4. [Reasons for Excitement about Impact of Impact Measure Research](./excitement-about-impact-measures)
 5. [Conclusion to "Reframing Impact"](./conclusion-to-reframing-impact)
