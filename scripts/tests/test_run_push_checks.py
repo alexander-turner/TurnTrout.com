@@ -922,6 +922,7 @@ def test_run_interactive_command():
         command=["fish", "scripts/spellchecker.fish"],
         # skipcq: BAN-B604 (a local command, assume safe)
         shell=True,
+        interactive=True,
     )
 
     with patch("subprocess.run") as mock_run:
@@ -930,7 +931,7 @@ def test_run_interactive_command():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_interactive_command(
+        success, stdout, stderr = run_push_checks.run_command(
             step, mock_progress, mock_task_id
         )
 
@@ -956,7 +957,7 @@ def test_run_interactive_command():
         mock_progress = MagicMock()
         mock_task_id = MagicMock()
 
-        success, stdout, stderr = run_push_checks.run_interactive_command(
+        success, stdout, stderr = run_push_checks.run_command(
             step, mock_progress, mock_task_id
         )
 
