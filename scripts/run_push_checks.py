@@ -316,6 +316,34 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                 sys.exit(1)
 
 
+def stream_reader(
+    stream: TextIO,
+    lines_list: list[str],
+    last_lines: Deque[str],
+    progress: Progress,
+    task_id: TaskID,
+) -> None:
+    """
+    Read lines from a stream and update progress display.
+
+    Args:
+        stream: The stream to read from
+        lines_list: List to append lines to
+        last_lines: Deque to store recent lines for display
+        progress: Progress bar instance
+        task_id: Task ID for updating progress
+    """
+    for line in iter(stream.readline, ""):
+        lines_list.append(line)
+        last_lines.append(line.rstrip())
+        # Update progress display with last lines
+        progress.update(
+            task_id,
+            description="\n".join(last_lines),
+            visible=True,
+        )
+
+
 def run_interactive_command(
     step: CheckStep, progress: Progress, task_id: TaskID
 ) -> Tuple[bool, str, str]:
@@ -332,18 +360,70 @@ def run_interactive_command(
     """
     # Hide progress display during interactive process
     progress.update(task_id, visible=False)
-    try:
-        # skipcq: BAN-B602
-        subprocess.run(
-            " ".join(step.command) if step.shell else step.command,
-            # skipcq: BAN-B602 (a local command, assume safe)
-            shell=step.shell,
-            cwd=step.cwd,
-            check=True,
+    cmd = " ".join(step.command) if step.shell else step.command
+    # skipcq: BAN-B602
+    subprocess.run(
+        cmd,
+        # skipcq: BAN-B602 (a local command, assume safe)
+        shell=step.shell,
+        cwd=step.cwd,
+        check=True,
+    )
+    return True, "", ""
+
+
+def run_non_interactive_command(
+    step: CheckStep, progress: Progress, task_id: TaskID
+) -> Tuple[bool, str, str]:
+    """
+    Run a non-interactive command with output streaming.
+
+    Args:
+        step: The command step to run
+        progress: Progress bar instance
+        task_id: Task ID for updating progress
+
+    Returns:
+        Tuple of (success, stdout, stderr)
+    """
+    stdout_lines: list[str] = []
+    stderr_lines: list[str] = []
+    last_lines: Deque[str] = deque(maxlen=5)
+    cmd = " ".join(step.command) if step.shell else step.command
+
+    # skipcq: BAN-B602
+    with subprocess.Popen(
+        cmd,
+        # skipcq: BAN-B602 (a local command, assume safe)
+        shell=step.shell,
+        cwd=step.cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    ) as process:
+        stdout_thread = threading.Thread(
+            target=stream_reader,
+            args=(process.stdout, stdout_lines, last_lines, progress, task_id),
         )
-        return True, "", ""
-    except subprocess.CalledProcessError as e:
-        return False, "", f"Command failed with exit code {e.returncode}"
+        stdout_thread.start()
+        stdout_thread.join()
+
+        stderr_thread = threading.Thread(
+            target=stream_reader,
+            args=(process.stderr, stderr_lines, last_lines, progress, task_id),
+        )
+        stderr_thread.start()
+        stderr_thread.join()
+
+        return_code = process.wait()
+
+    # Clear the output task after completion
+    progress.update(task_id, visible=False)
+
+    stdout = "".join(stdout_lines)
+    stderr = "".join(stderr_lines)
+
+    return return_code == 0, stdout, stderr
 
 
 def commit_step_changes(git_root_path: Path, step_name: str) -> None:
@@ -404,58 +484,17 @@ def run_command(
         Tuple of (success, stdout, stderr) where success is a boolean and
         stdout/stderr are strings containing the complete output.
     """
-    if step.interactive:
-        return run_interactive_command(step, progress, task_id)
-
-    stdout_lines: list[str] = []
-    stderr_lines: list[str] = []
-    last_lines: Deque[str] = deque(maxlen=5)
     try:
-        # skipcq: BAN-B602
-        with subprocess.Popen(
-            " ".join(step.command) if step.shell else step.command,
-            # skipcq: BAN-B602 (a local command, assume safe)
-            shell=step.shell,
-            cwd=step.cwd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        ) as process:
-
-            def stream_reader(stream: TextIO, lines_list: list[str]) -> None:
-                for line in iter(stream.readline, ""):
-                    lines_list.append(line)
-                    last_lines.append(line.rstrip())
-                    # Update progress display with last lines
-                    progress.update(
-                        task_id,
-                        description="\n".join(last_lines),
-                        visible=True,
-                    )
-
-            stdout_thread = threading.Thread(
-                target=stream_reader, args=(process.stdout, stdout_lines)
-            )
-            stderr_thread = threading.Thread(
-                target=stream_reader, args=(process.stderr, stderr_lines)
-            )
-
-            stdout_thread.start()
-            stdout_thread.join()
-            stderr_thread.start()
-            stderr_thread.join()
-            return_code = process.wait()
-
-            # Clear the output task after completion
-            progress.update(task_id, visible=False)
-
-            stdout = "".join(stdout_lines)
-            stderr = "".join(stderr_lines)
-
-            return return_code == 0, stdout, stderr
-
-    except subprocess.CalledProcessError as e:  # pragma: no cover
-        return False, e.stdout or "", e.stderr or ""
+        if step.interactive:
+            return run_interactive_command(step, progress, task_id)
+        else:
+            return run_non_interactive_command(step, progress, task_id)
+    except subprocess.CalledProcessError as e:
+        stdout = getattr(e, "stdout", "") or ""
+        stderr = getattr(e, "stderr", "") or ""
+        if not stderr:
+            stderr = f"Command failed with exit code {e.returncode}"
+        return False, stdout, stderr
 
 
 def get_check_steps(
