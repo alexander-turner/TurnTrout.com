@@ -309,6 +309,12 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
             if not result.success:
                 console.log(f"[red]✗[/red] {step.name}")
                 console.log("\n[bold red]Error output:[/bold red]")
+                if result.stdout:
+                    console.log("[yellow]stdout:[/yellow]")
+                    console.log(result.stdout)
+                if result.stderr:
+                    console.log("[yellow]stderr:[/yellow]")
+                    console.log(result.stderr)
                 raise CheckFailedError(step.name, result.stdout, result.stderr)
             console.log(f"[green]✓[/green] {step.name}")
             commit_step_changes(_GIT_ROOT, step.name)

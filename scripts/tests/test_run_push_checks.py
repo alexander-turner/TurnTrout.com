@@ -46,7 +46,7 @@ def mock_process():
     """Mock psutil.Process for testing process management functions."""
     mock = MagicMock()
     mock.pid = 12345
-    mock.info = {"cmdline": ["pnpm", "quartz", "build", "--serve"]}
+    mock.info = {"cmdline": ["pnpm", "dev"]}
     mock.terminate = MagicMock()
     mock.wait = MagicMock()
     mock.kill = MagicMock()
