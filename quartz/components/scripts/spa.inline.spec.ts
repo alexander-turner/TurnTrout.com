@@ -9,13 +9,12 @@
 
 import { type Page, test, expect } from "@playwright/test"
 
-import { simpleConstants } from "../constants"
+import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
 import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
 
-const TIGHT_SCROLL_TOLERANCE = 10
-const testingPageSlug = "test-page"
+const testingPageSlug = testPageSlug
 
 /*
  * Use this when you're waiting for the browser to complete a scroll. It's a good proxy.
@@ -29,7 +28,7 @@ async function waitForHistoryState(page: Page, targetPos: number): Promise<void>
         Math.abs(window.history.state.scroll - target) <= tolerance
       )
     },
-    { target: targetPos, tolerance: TIGHT_SCROLL_TOLERANCE },
+    { target: targetPos, tolerance: tightScrollTolerance },
   )
 }
 
@@ -73,7 +72,7 @@ async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000)
       const currentScrollY = window.scrollY
       return Math.abs(currentScrollY - target) <= tolerance
     },
-    { target: targetScrollY, tolerance: TIGHT_SCROLL_TOLERANCE },
+    { target: targetScrollY, tolerance: tightScrollTolerance },
     { timeout },
   )
 }
@@ -427,7 +426,7 @@ test.describe("Same-page navigation", () => {
     expect(scrollAfterClick).toBeGreaterThan(initialScroll)
 
     await page.goBack()
-    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, TIGHT_SCROLL_TOLERANCE)
+    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, tightScrollTolerance)
   })
 
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {

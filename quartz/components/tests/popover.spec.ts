@@ -1,7 +1,8 @@
 import { test as base, expect, type Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
-import { POPOVER_SCROLL_OFFSET } from "../scripts/popover_helpers"
+import { scrollTolerance } from "../constants"
+import { popoverScrollOffset } from "../scripts/popover_helpers"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
@@ -12,8 +13,6 @@ import {
 type TestFixtures = {
   dummyLink: Locator
 }
-
-const SCROLL_TOLERANCE = 30
 
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
@@ -171,9 +170,9 @@ test("Popover scrolls to hash target", async ({ page }) => {
       throw new Error("Target element inside popover is not an HTMLElement")
     }
     return el.offsetTop - offset
-  }, POPOVER_SCROLL_OFFSET)
+  }, popoverScrollOffset)
 
-  expect(Math.abs(popoverScrollTop - expectedScrollTop)).toBeLessThanOrEqual(SCROLL_TOLERANCE)
+  expect(Math.abs(popoverScrollTop - expectedScrollTop)).toBeLessThanOrEqual(scrollTolerance)
 })
 
 test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {

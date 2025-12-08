@@ -1,5 +1,3 @@
-export const DEBOUNCE_WAIT_MS = 100
-
 /**
  * Checks if a URL is local (same origin as the current window).
  *

@@ -21,7 +21,8 @@ import fs from "fs"
 import type { BuildCtx } from "../../util/ctx"
 import type { FilePath } from "../../util/path"
 
-import { specialFaviconPaths, faviconCountsFile } from "../../components/constants"
+import { specialFaviconPaths } from "../../components/constants"
+import { faviconCountsFile } from "../../components/constants.server"
 import { countAllFavicons, getFaviconCounts } from "./countFavicons"
 import { getQuartzPath } from "./linkfavicons"
 

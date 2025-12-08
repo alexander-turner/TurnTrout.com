@@ -1,7 +1,3 @@
-import gitRoot from "find-git-root"
-import path from "path"
-import { fileURLToPath } from "url"
-
 import constantsJson from "../../config/constants.json" with { type: "json" }
 
 export const simpleConstants = constantsJson
@@ -31,6 +27,19 @@ export const {
   defaultPath,
   quartzFolder,
   faviconFolder,
+  debounceWaitMs,
+  popoverScrollOffset,
+  popoverPadding,
+  nodeTypeElement,
+  emojiReplacement,
+  twemojiBaseUrl,
+  emojisToReplace,
+  charsToMoveIntoLinkFromRight,
+  testPageSlug,
+  designPageSlug,
+  tightScrollTolerance,
+  scrollTolerance,
+  listTolerance,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
@@ -47,24 +56,6 @@ export const specialFaviconPaths = {
   turntrout: `${simpleConstants.faviconBasePath}/turntrout_com.svg`,
   lesswrong: `${simpleConstants.faviconBasePath}/lesswrong_com.svg`,
 } as const
-
-// Computed file paths
-const __filepath = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(gitRoot(__filepath))
-export const faviconUrlsFile = path.join(
-  __dirname,
-  quartzFolder,
-  "plugins",
-  "transformers",
-  ".faviconUrls.txt",
-)
-export const faviconCountsFile = path.join(
-  __dirname,
-  quartzFolder,
-  "plugins",
-  "transformers",
-  ".faviconCounts.txt",
-)
 
 // Computed special domain mappings with RegExp patterns
 export const specialDomainMappings: Array<{ pattern: RegExp; to: string }> = [

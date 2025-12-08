@@ -5,11 +5,8 @@ import { h } from "hastscript"
 import { type Plugin } from "unified"
 import { visit } from "unist-util-visit"
 
+import { emojiReplacement, twemojiBaseUrl, emojisToReplace } from "../../components/constants"
 import { twemoji } from "./modules/twemoji.min"
-
-export const EMOJI_REPLACEMENT = "⤴"
-export const TWEMOJI_BASE_URL = "https://assets.turntrout.com/twemoji/"
-export const EMOJIS_TO_REPLACE = ["1fabf"]
 
 export interface TwemojiOptions {
   folder: string
@@ -19,7 +16,7 @@ export interface TwemojiOptions {
 
 // skipcq: JS-D1001
 export function constructTwemojiUrl(icon: string, options: TwemojiOptions): string {
-  return `${TWEMOJI_BASE_URL}${icon}${options.ext}`
+  return `${twemojiBaseUrl}${icon}${options.ext}`
 }
 
 /**
@@ -48,7 +45,7 @@ export function parseAttributes(imgTag: string): Record<string, string> {
 
 /**
  * Replaces emoji characters in content with Twemoji SVG img tags.
- * Also handles special emoji replacements defined in EMOJIS_TO_REPLACE array.
+ * Also handles special emoji replacements defined in emojisToReplace array.
  */
 export function replaceEmoji(content: string): string {
   let twemojiContent = twemoji.parse(content, {
@@ -57,7 +54,7 @@ export function replaceEmoji(content: string): string {
     callback: constructTwemojiUrl,
   } as TwemojiOptions)
 
-  EMOJIS_TO_REPLACE.forEach((emoji) => {
+  emojisToReplace.forEach((emoji) => {
     twemojiContent = twemojiContent.replaceAll(
       `twemoji/${emoji}.svg`,
       `twemoji/replacements/${emoji}.svg`,
@@ -103,7 +100,7 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
 
 // private-use unicode; html formatting uses E000
 export const ignoreMap = new Map<string, string>([
-  [EMOJI_REPLACEMENT, "\uE001"],
+  [emojiReplacement, "\uE001"],
   ["⇔", "\uE002"],
   ["↗", "\uE003"],
 ])

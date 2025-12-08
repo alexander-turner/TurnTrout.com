@@ -4,8 +4,8 @@ import { jest, describe, it, expect } from "@jest/globals"
 import { type Element } from "hast"
 import { h } from "hastscript"
 
+import { twemojiBaseUrl } from "../../../components/constants"
 import {
-  TWEMOJI_BASE_URL,
   TwemojiOptions,
   constructTwemojiUrl,
   parseAttributes,
@@ -30,7 +30,7 @@ function createEmoji(path: string, originalChar: string): Element {
     alt: originalChar,
     className: ["emoji"],
     draggable: "false",
-    src: `${TWEMOJI_BASE_URL}${path}`,
+    src: `${twemojiBaseUrl}${path}`,
   })
 }
 
@@ -39,7 +39,7 @@ jest.mock("../modules/twemoji.min", () => ({
     parse: jest.fn((content: string) =>
       content.replace(
         /😀/gu,
-        `<img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+        `<img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
       ),
     ),
   },
@@ -53,7 +53,7 @@ describe("Twemoji functions", () => {
       const mockCallback: TwemojiCallback = jest.fn((icon) => `mock-${icon}`)
       const options: TwemojiOptions = { folder: "svg", ext: ".svg", callback: mockCallback }
       const result = constructTwemojiUrl("1f600", options)
-      expect(result).toBe(`${TWEMOJI_BASE_URL}1f600.svg`)
+      expect(result).toBe(`${twemojiBaseUrl}1f600.svg`)
     })
   })
 
@@ -117,14 +117,14 @@ describe("Twemoji functions", () => {
       const content = "Hello 😀"
       const result = replaceEmoji(content)
       expect(result).toBe(
-        `Hello <img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+        `Hello <img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
       )
     })
 
-    it("should replace EMOJIS_TO_REPLACE with replacement path", () => {
-      const contentWithEmojiPath = `Hello <img src="${TWEMOJI_BASE_URL}twemoji/1fabf.svg">`
+    it("should replace emojisToReplace with replacement path", () => {
+      const contentWithEmojiPath = `Hello <img src="${twemojiBaseUrl}twemoji/1fabf.svg">`
       const result = replaceEmoji(contentWithEmojiPath)
-      expect(result).toBe(`Hello <img src="${TWEMOJI_BASE_URL}twemoji/replacements/1fabf.svg">`)
+      expect(result).toBe(`Hello <img src="${twemojiBaseUrl}twemoji/replacements/1fabf.svg">`)
     })
 
     it("should handle content with no emoji", () => {
@@ -137,15 +137,15 @@ describe("Twemoji functions", () => {
       const content = "Hello 🪿🪿"
       const result = replaceEmoji(content)
       expect(result).toBe(
-        `Hello <img class="emoji" draggable="false" alt="🪿" src="${TWEMOJI_BASE_URL}replacements/1fabf.svg"/><img class="emoji" draggable="false" alt="🪿" src="${TWEMOJI_BASE_URL}replacements/1fabf.svg"/>`,
+        `Hello <img class="emoji" draggable="false" alt="🪿" src="${twemojiBaseUrl}replacements/1fabf.svg"/><img class="emoji" draggable="false" alt="🪿" src="${twemojiBaseUrl}replacements/1fabf.svg"/>`,
       )
     })
 
-    it("should process all emojis in EMOJIS_TO_REPLACE array", () => {
-      const contentWithMultipleEmojis = `<img src="${TWEMOJI_BASE_URL}twemoji/1fabf.svg"> and other content`
+    it("should process all emojis in emojisToReplace array", () => {
+      const contentWithMultipleEmojis = `<img src="${twemojiBaseUrl}twemoji/1fabf.svg"> and other content`
       const result = replaceEmoji(contentWithMultipleEmojis)
       expect(result).toBe(
-        `<img src="${TWEMOJI_BASE_URL}twemoji/replacements/1fabf.svg"> and other content`,
+        `<img src="${twemojiBaseUrl}twemoji/replacements/1fabf.svg"> and other content`,
       )
     })
   })
@@ -167,7 +167,7 @@ describe("Twemoji functions", () => {
       const content = "Hello ↩ 😀"
       const result = replaceEmojiConvertArrows(content)
       expect(result).toBe(
-        `Hello ⤴ <img class="emoji" draggable="false" alt="😀" src="${TWEMOJI_BASE_URL}1f600.svg"/>`,
+        `Hello ⤴ <img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
       )
     })
   })
@@ -184,7 +184,7 @@ describe("Twemoji functions", () => {
         alt: originalChar,
         className: ["emoji"],
         draggable: "false",
-        src: `${TWEMOJI_BASE_URL}${path}`,
+        src: `${twemojiBaseUrl}${path}`,
       },
     }
   }
@@ -198,12 +198,12 @@ describe("Twemoji functions", () => {
       },
       {
         description: "a string with a single emoji",
-        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`,
+        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg">`,
         expected: [{ type: "text", value: "Hello! " }, createEmoji("1f44b.svg", "👋")],
       },
       {
         description: "a string with multiple emoji",
-        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> How are you? <img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`,
+        input: `Hello! <img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg"> How are you? <img class="emoji" draggable="false" alt="😊" src="${twemojiBaseUrl}1f60a.svg">`,
         expected: [
           { type: "text", value: "Hello! " },
           createEmoji("1f44b.svg", "👋"),
@@ -213,17 +213,17 @@ describe("Twemoji functions", () => {
       },
       {
         description: "a string starting with an emoji",
-        input: `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"> Hello!`,
+        input: `<img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg"> Hello!`,
         expected: [createEmoji("1f44b.svg", "👋"), { type: "text", value: " Hello!" }],
       },
       {
         description: "a string ending with an emoji",
-        input: `Goodbye! <img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg">`,
+        input: `Goodbye! <img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg">`,
         expected: [{ type: "text", value: "Goodbye! " }, createEmoji("1f44b.svg", "👋")],
       },
       {
         description: "a string with only emoji",
-        input: `<img class="emoji" draggable="false" alt="👋" src="${TWEMOJI_BASE_URL}1f44b.svg"><img class="emoji" draggable="false" alt="😊" src="${TWEMOJI_BASE_URL}1f60a.svg">`,
+        input: `<img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg"><img class="emoji" draggable="false" alt="😊" src="${twemojiBaseUrl}1f60a.svg">`,
         expected: [createEmoji("1f44b.svg", "👋"), createEmoji("1f60a.svg", "😊")],
       },
       {
