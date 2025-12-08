@@ -393,10 +393,9 @@ def run_non_interactive_command(
     last_lines: Deque[str] = deque(maxlen=5)
     cmd = " ".join(step.command) if step.shell else step.command
 
-    # skipcq: BAN-B602
     with subprocess.Popen(
         cmd,
-        shell=step.shell,
+        shell=step.shell,  # skipcq: BAN-B602
         cwd=step.cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

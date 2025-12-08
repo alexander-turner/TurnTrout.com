@@ -711,7 +711,7 @@ function processCheckboxElements(tree: HtmlRoot): void {
       !parent ||
       index === undefined
     ) {
-      return
+      return undefined
     }
 
     // Skip checkboxes already inside a label
@@ -725,6 +725,7 @@ function processCheckboxElements(tree: HtmlRoot): void {
 
     node.properties = createCheckboxProperties(isChecked, checkboxId, willBeWrappedInLabel)
     checkboxes.push({ node, index, parent, checkboxId, willBeWrappedInLabel })
+    return undefined
   })
 
   // Process in reverse order to avoid index shifting during tree modification
