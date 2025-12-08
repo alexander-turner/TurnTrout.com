@@ -148,42 +148,34 @@ jobs:
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
-      - name: Download all Lost Pixel screenshot shards
+      - name: Download and Merge Lost Pixel Shards
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: lost-pixel-screenshots-*
-          path: ./all-lost-pixel-shards
+          path: ./lost-pixel
           merge-multiple: true
 
-      - name: Combine screenshots into ./lost-pixel directory
-        id: combine
+      - name: Verify screenshots exist
+        id: verify
         run: |
-          shopt -s globstar # Enable recursive globbing
-          mkdir -p ./lost-pixel
-          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
-          echo "Contents of ./lost-pixel after combining:"
-          ls -R ./lost-pixel
           if [ -z "$(ls -A ./lost-pixel)" ]; then
-            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
-            echo "./lost-pixel directory is empty after combination attempt."
+            echo "::error::./lost-pixel directory is empty."
+            exit 1
           else
-            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
-            echo "Screenshots found in ./lost-pixel."
+            echo "Screenshots found, proceeding."
           fi
 
-      - name: Symlink LostPixel config to root
-        if: steps.combine.outputs.screenshots_found == 'true'
-        run: ln -s config/lostpixel/lostpixel.config.ts lostpixel.config.ts
-
-      - name: Run LostPixel on combined screenshots
-        if: steps.combine.outputs.screenshots_found == 'true'
+      - name: Run LostPixel
         uses: lost-pixel/lost-pixel@6db31948aef97f10ea9c7b1a8fa8dd3a0ce2dd49 # v3.16.0
+        with:
+          config-file: "config/lostpixel/lostpixel.config.ts"
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
-
-      - name: Clean up downloaded shards
-        run: rm -rf ./all-lost-pixel-shards
+          # LOST_PIXEL_DEBUG: true
