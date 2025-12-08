@@ -6,6 +6,7 @@ import { visit } from "unist-util-visit"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
+import { charsToMoveIntoLinkFromRight } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
@@ -502,20 +503,6 @@ export function formatOrdinalSuffixes(tree: Root): void {
   })
 }
 
-export const CHARS_TO_MOVE_INTO_LINK_FROM_RIGHT = [
-  ".",
-  ",",
-  "!",
-  "?",
-  ";",
-  ":",
-  "`",
-  "”",
-  '"',
-  "'",
-  "’",
-  "s",
-]
 const TEXT_LIKE_TAGS = ["p", "em", "strong", "b"]
 const LEFT_QUOTES = ['"', "“", "'", "‘"]
 
@@ -689,7 +676,7 @@ export const rearrangeLinkPunctuation = (
   if (!("value" in lastChild)) {
     return
   }
-  while (CHARS_TO_MOVE_INTO_LINK_FROM_RIGHT.includes(firstChar) && textNode.value.length > 0) {
+  while (charsToMoveIntoLinkFromRight.includes(firstChar) && textNode.value.length > 0) {
     lastChild.value = lastChild.value + firstChar
     textNode.value = textNode.value.slice(1) // Remove the first char
     firstChar = textNode.value.charAt(0) // Get the next char

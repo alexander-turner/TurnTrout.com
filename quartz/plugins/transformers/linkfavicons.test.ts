@@ -22,8 +22,8 @@ import {
   localTroutFaviconBasename,
   specialFaviconPaths,
   defaultPath,
-  faviconUrlsFile,
 } from "../../components/constants"
+import { faviconUrlsFile } from "../../components/constants.server"
 import { hasClass } from "./utils"
 
 const { minFaviconCount, faviconSubstringBlacklist } = simpleConstants
@@ -227,12 +227,10 @@ describe("Favicon Utilities", () => {
       // Mock all download attempts to fail
       mockFetchAndFs(404, false, 404, false, 404)
 
-      // Mock writeFileSync
       const writeFileSyncMock = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
       await linkfavicons.MaybeSaveFavicon(hostname)
 
-      // Call writeCacheToFile directly since it's what actually writes to the file
       linkfavicons.writeCacheToFile()
 
       // Verify the failure was written to cache file
@@ -290,17 +288,14 @@ describe("Favicon Utilities", () => {
     })
 
     it("should load and respect cached failures on startup", async () => {
-      // Mock reading a cached failure from file
       const faviconPath = linkfavicons.getQuartzPath(hostname)
 
-      // Set up the cache directly
       linkfavicons.urlCache.clear()
       linkfavicons.urlCache.set(faviconPath, defaultPath)
 
       // Mock download attempts (which shouldn't be called)
       mockFetchAndFs(200, false, 200)
 
-      // Attempt to get favicon
       const result = await linkfavicons.MaybeSaveFavicon(hostname)
 
       // Should check for SVG on CDN before returning cached failure

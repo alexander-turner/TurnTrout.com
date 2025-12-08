@@ -5,6 +5,7 @@ import { h } from "hastscript"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
+import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
 import {
   hyphenReplace,
   niceQuotes,
@@ -16,7 +17,6 @@ import {
   transformElement,
   assertSmartQuotesMatch,
   enDashNumberRange,
-  CHARS_TO_MOVE_INTO_LINK_FROM_RIGHT,
   minusReplace,
   l_pRegex,
   collectTransformableElements,
@@ -655,11 +655,11 @@ describe("rearrangeLinkPunctuation", () => {
   ]
 
   // Ignore chars which will be transformed into smart quotes; will error
-  const CHARS_TO_TEST = CHARS_TO_MOVE_INTO_LINK_FROM_RIGHT.filter(
-    (char) => !['"', "'"].includes(char),
+  const charsToTest = charsToMoveIntoLinkFromRight.filter(
+    (char: string) => !['"', "'"].includes(char),
   )
   const generateLinkScenarios = () => {
-    const basicScenarios = CHARS_TO_TEST.map((mark: string) => [
+    const basicScenarios = charsToTest.map((mark: string) => [
       `<p><a href="https://example.com">Link</a>${mark}</p>`,
       `<p><a href="https://example.com">Link${mark}</a></p>`,
     ])

@@ -20,12 +20,17 @@ import { createWinstonLogger } from "../transformers/logger_utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath } = simpleConstants
+const {
+  minFaviconCount,
+  defaultPath,
+  testPageSlug: testPageSlugRaw,
+  designPageSlug: designPageSlugRaw,
+} = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
-const TEST_PAGE_SLUG = "test-page" as FullSlug
-const DESIGN_PAGE_SLUG = "design" as FullSlug
+const testPageSlug = testPageSlugRaw as FullSlug
+const designPageSlug = designPageSlugRaw as FullSlug
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
@@ -263,7 +268,7 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       return []
     },
     async emit(ctx) {
-      const testPagePath = joinSegments(ctx.argv.output, `${TEST_PAGE_SLUG}.html`)
+      const testPagePath = joinSegments(ctx.argv.output, `${testPageSlug}.html`)
 
       const testPageFiles = await populateElements(testPagePath, [
         {
@@ -272,7 +277,7 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         },
       ])
 
-      const designPagePath = joinSegments(ctx.argv.output, `${DESIGN_PAGE_SLUG}.html`)
+      const designPagePath = joinSegments(ctx.argv.output, `${designPageSlug}.html`)
       const designPageFiles = await populateElements(designPagePath, [
         {
           className: "populate-site-favicon",

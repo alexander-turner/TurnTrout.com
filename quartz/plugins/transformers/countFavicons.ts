@@ -9,7 +9,8 @@ import { visit } from "unist-util-visit"
 import type { BuildCtx } from "../../util/ctx"
 import type { FilePath } from "../../util/path"
 
-import { specialFaviconPaths, faviconCountsFile } from "../../components/constants"
+import { specialFaviconPaths } from "../../components/constants"
+import { faviconCountsFile } from "../../components/constants.server"
 import {
   getQuartzPath,
   isAssetLink,

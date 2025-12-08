@@ -148,9 +148,9 @@ describe("createPopover", () => {
   })
 })
 
-// initialLeft = linkLeft - popoverWidth - POPOVER_PADDING
-// maxLeft = window.innerWidth - popoverWidth - POPOVER_PADDING
-// minLeft = POPOVER_PADDING
+// initialLeft = linkLeft - popoverWidth - popoverPadding
+// maxLeft = window.innerWidth - popoverWidth - popoverPadding
+// minLeft = popoverPadding
 describe("computeLeft", () => {
   it.each`
     linkLeft | popoverWidth | expected
@@ -178,8 +178,8 @@ describe("computeTop", () => {
   })
 
   // initialTop = 0.5 * (linkTop + linkBottom) - 0.5 * popoverHeight + scrollY
-  // minTop = scrollY + POPOVER_PADDING
-  // maxTop = scrollY + window.innerHeight - popoverHeight - POPOVER_PADDING
+  // minTop = scrollY + popoverPadding
+  // maxTop = scrollY + window.innerHeight - popoverHeight - popoverPadding
   // top = max(minTop, Math.min(initialTop, maxTop))
   it.each`
     linkTop  | linkBottom | popoverHeight | scrollY | expected
@@ -227,13 +227,13 @@ describe("setPopoverPosition", () => {
   })
 
   // initialTop = 0.5 * (linkTop + linkBottom) - 0.5 * popoverHeight + scrollY
-  // minTop = scrollY + POPOVER_PADDING
-  // maxTop = scrollY + window.innerHeight - popoverHeight - POPOVER_PADDING
+  // minTop = scrollY + popoverPadding
+  // maxTop = scrollY + window.innerHeight - popoverHeight - popoverPadding
   // top = max(minTop, Math.min(initialTop, maxTop))
 
-  // initialLeft = linkLeft - popoverWidth - POPOVER_PADDING
-  // maxLeft = window.innerWidth - popoverWidth - POPOVER_PADDING
-  // minLeft = POPOVER_PADDING
+  // initialLeft = linkLeft - popoverWidth - popoverPadding
+  // maxLeft = window.innerWidth - popoverWidth - popoverPadding
+  // minLeft = popoverPadding
   // left = max(minLeft, Math.min(initialLeft, maxLeft))
   it.each`
     linkLeft | linkTop | linkBottom | popoverWidth | popoverHeight | expectedLeft | expectedTop

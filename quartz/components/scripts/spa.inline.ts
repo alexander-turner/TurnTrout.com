@@ -7,8 +7,9 @@ import { escape } from "validator"
 
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
 import { simpleConstants } from "../constants"
+import { debounceWaitMs } from "../constants"
 import { debounce } from "./component_script_utils"
-import { isLocalUrl, DEBOUNCE_WAIT_MS } from "./spa_utils"
+import { isLocalUrl } from "./spa_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -22,9 +23,9 @@ declare global {
   }
 }
 
-// FUNCTIONS
+import { nodeTypeElement } from "../constants"
 
-const NODE_TYPE_ELEMENT = 1
+// FUNCTIONS
 
 /**
  * Returns the current scroll position as an integer.
@@ -47,14 +48,14 @@ const updateScrollState = debounce(
       sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
     }
   }) as () => void,
-  DEBOUNCE_WAIT_MS,
+  debounceWaitMs,
 )
 
 /**
  * Typeguard to check if a target is an Element
  */
 const isElement = (target: EventTarget | null): target is Element =>
-  (target as Node)?.nodeType === NODE_TYPE_ELEMENT
+  (target as Node)?.nodeType === nodeTypeElement
 
 /**
  * Extracts navigation options from a click event

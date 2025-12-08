@@ -14,9 +14,8 @@ import {
   specialFaviconPaths,
   defaultPath,
   specialDomainMappings,
-  faviconUrlsFile,
-  faviconCountsFile,
 } from "../../components/constants"
+import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import { createWinstonLogger } from "./logger_utils"
 import { hasClass } from "./utils"
 
@@ -36,7 +35,7 @@ const logger = createWinstonLogger("linkFavicons")
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-const FAVICON_COUNT_WHITELIST = [
+const faviconCountWhitelistComputed = [
   ...Object.values(specialFaviconPaths),
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
@@ -125,7 +124,7 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
  * These map one domain to a different canonical domain, or preserve specific subdomains.
  * Imported from constants.ts which computes them from config.
  */
-const SPECIAL_DOMAIN_MAPPINGS = specialDomainMappings
+const specialDomainMappingsComputed = specialDomainMappings
 
 /**
  * Normalizes a hostname by removing subdomains and extracting the root domain.
@@ -146,7 +145,7 @@ function normalizeHostname(hostname: string): string {
     return hostname
   }
 
-  for (const mapping of SPECIAL_DOMAIN_MAPPINGS) {
+  for (const mapping of specialDomainMappingsComputed) {
     if (mapping.pattern.test(hostname)) {
       return mapping.to
     }
@@ -358,7 +357,7 @@ export function transformUrl(faviconPath: string): string {
     return defaultPath
   }
 
-  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => faviconPath.includes(entry))
+  const isWhitelisted = faviconCountWhitelistComputed.some((entry) => faviconPath.includes(entry))
   if (isWhitelisted) {
     return faviconPath
   }
@@ -859,7 +858,7 @@ export function shouldIncludeFavicon(
   // Normalize countKey (remove extension) to match format-agnostic counts
   const normalizedCountKey = normalizePathForCounting(countKey)
   const count = faviconCounts.get(normalizedCountKey) || 0
-  const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
+  const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
   return isWhitelisted || count >= minFaviconCount
 }
 
@@ -900,7 +899,7 @@ async function handleLink(
     const count = faviconCounts.get(countKey) || 0
 
     // If not whitelisted (already handled by transformUrl), check count threshold
-    const isWhitelisted = FAVICON_COUNT_WHITELIST.some((entry) => imgPath.includes(entry))
+    const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
     if (!isWhitelisted && count < minFaviconCount) {
       logger.debug(
         `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${minFaviconCount}), skipping`,

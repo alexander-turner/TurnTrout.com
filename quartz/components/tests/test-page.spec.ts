@@ -3,6 +3,7 @@ import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
+import { tightScrollTolerance, listTolerance } from "../constants"
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -11,7 +12,6 @@ import {
   getH1Screenshots,
 } from "./visual_utils"
 
-const TIGHT_SCROLL_TOLERANCE = 10
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
 
@@ -475,7 +475,7 @@ test.describe("Right sidebar", () => {
         if (!rightSidebar) return false
         return Math.abs(rightSidebar.scrollTop - (initialScrollTop + 100)) < tolerance
       },
-      { initialScrollTop: initialSidebarScrollTop, tolerance: TIGHT_SCROLL_TOLERANCE },
+      { initialScrollTop: initialSidebarScrollTop, tolerance: tightScrollTolerance },
     )
 
     const finalWindowScrollY = await page.evaluate(() => window.scrollY)
@@ -771,7 +771,6 @@ test.describe("Link color states", () => {
   }
 })
 
-const LIST_TOLERANCE = 5
 test.describe("List alignment", () => {
   for (const { prefix, suffix } of [
     { prefix: "", suffix: "" },
@@ -804,7 +803,7 @@ test.describe("List alignment", () => {
         return rect.left + paddingLeft
       })
 
-      expect(Math.abs(olPositionLeft - ulPositionLeft)).toBeLessThan(LIST_TOLERANCE)
+      expect(Math.abs(olPositionLeft - ulPositionLeft)).toBeLessThan(listTolerance)
     })
   }
 })

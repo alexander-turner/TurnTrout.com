@@ -1,10 +1,10 @@
+import { popoverScrollOffset } from "../constants"
 import {
   setPopoverPosition,
   attachPopoverEventListeners,
   PopoverOptions,
   escapeLeadingIdNumber,
   createPopover,
-  POPOVER_SCROLL_OFFSET,
 } from "./popover_helpers"
 
 // Module-level state
@@ -80,7 +80,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
       const popoverInner = popoverElement.querySelector(".popover-inner") as HTMLElement
 
       // Need to scroll the inner container
-      popoverInner.scroll({ top: heading.offsetTop - POPOVER_SCROLL_OFFSET, behavior: "instant" })
+      popoverInner.scroll({ top: heading.offsetTop - popoverScrollOffset, behavior: "instant" })
     }
   }
 }

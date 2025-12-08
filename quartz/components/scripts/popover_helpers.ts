@@ -1,4 +1,5 @@
 import { normalizeRelativeURLs } from "../../util/path"
+import { popoverPadding } from "../constants"
 
 export interface PopoverOptions {
   parentElement: HTMLElement
@@ -6,8 +7,6 @@ export interface PopoverOptions {
   linkElement: HTMLLinkElement
   customFetch?: typeof fetch
 }
-
-export const POPOVER_SCROLL_OFFSET = 12
 
 /**
  * Creates a popover element based on the provided options
@@ -131,7 +130,6 @@ export async function fetchWithMetaRedirect(
 }
 
 // POSITIONING the popover
-export const POPOVER_PADDING = 5
 
 /**
  * Computes the left position of the popover
@@ -140,11 +138,11 @@ export const POPOVER_PADDING = 5
  * @returns The computed left position
  */
 export function computeLeft(linkRect: DOMRect, popoverWidth: number): number {
-  const initialLeft = linkRect.left - popoverWidth - POPOVER_PADDING
+  const initialLeft = linkRect.left - popoverWidth - popoverPadding
 
   // Ensure the popover doesn't go off the left or right edge of the screen
-  const maxLeft = window.innerWidth - popoverWidth - POPOVER_PADDING
-  const minLeft = POPOVER_PADDING
+  const maxLeft = window.innerWidth - popoverWidth - popoverPadding
+  const minLeft = popoverPadding
 
   return Math.max(minLeft, Math.min(initialLeft, maxLeft))
 }
@@ -160,8 +158,8 @@ export function computeTop(linkRect: DOMRect, popoverHeight: number): number {
   const initialTop = 0.5 * (linkRect.top + linkRect.bottom) - 0.5 * popoverHeight + window.scrollY
 
   // Ensure the popover doesn't go off the top or bottom of the screen
-  const minTop = window.scrollY + POPOVER_PADDING
-  const maxTop = window.scrollY + window.innerHeight - popoverHeight - POPOVER_PADDING
+  const minTop = window.scrollY + popoverPadding
+  const maxTop = window.scrollY + window.innerHeight - popoverHeight - popoverPadding
 
   return Math.max(minTop, Math.min(initialTop, maxTop))
 }
