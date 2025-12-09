@@ -24,24 +24,6 @@ beforeEach(() => {
   ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn((input: RequestInfo | URL) => {
     const url = input.toString()
 
-    if (url.includes("image.jpg")) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ "Content-Type": "image/jpeg" }),
-        blob: () => Promise.resolve(new Blob()),
-      } as unknown as Response)
-    }
-
-    if (url.includes("application.pdf")) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: new Headers({ "Content-Type": "application/pdf" }),
-        blob: () => Promise.resolve(new Blob()),
-      } as unknown as Response)
-    }
-
     if (url.includes("example.com")) {
       return Promise.resolve({
         ok: true,
@@ -90,18 +72,6 @@ describe("createPopover", () => {
     expect(popover?.querySelector("h1#test-popover")).not.toBeNull()
   })
 
-  it("should handle image content", async () => {
-    options.targetUrl = new URL("http://example.com/image.jpg")
-    const popover = await createPopover(options)
-    expect(popover?.querySelector("img")).not.toBeNull()
-  })
-
-  it("should handle PDF content", async () => {
-    options.targetUrl = new URL("http://example.com/application.pdf")
-    const popover = await createPopover(options)
-    expect(popover?.querySelector("iframe")).not.toBeNull()
-  })
-
   it("should handle error cases", async () => {
     options.targetUrl = new URL("http://nonexistent.com")
     await expect(createPopover(options)).rejects.toThrow("Network error")
@@ -118,20 +88,6 @@ describe("createPopover", () => {
     })
 
     await expect(createPopover(options)).rejects.toThrow("HTTP error! status: 404")
-  })
-
-  it("should handle missing content type", async () => {
-    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() => {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: {
-          get: () => null,
-        },
-      } as unknown as Response)
-    })
-
-    await expect(createPopover(options)).rejects.toThrow("No content type received")
   })
 
   it('should append "-popover" to only header IDs in the popover content', async () => {

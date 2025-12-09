@@ -3,9 +3,10 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
-import { type FullSlug, normalizeRelativeURLs, resolveRelative } from "../../util/path"
+import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
+import { fetchHTMLContent, extractAndProcessHints } from "./content_renderer"
 
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
@@ -654,30 +655,18 @@ async function onNav(e: CustomEventMap["nav"]) {
 async function fetchContent(slug: FullSlug): Promise<FetchResult> {
   if (!fetchContentCache.has(slug)) {
     const fetchPromise = await (async () => {
-      const targetUrl = resolveSlug(slug, currentSlug).toString()
-      const contents = await fetch(targetUrl)
-        .then((res) => res.text())
-        .then((contents) => {
-          if (contents === undefined) {
-            throw new Error(`Could not fetch ${targetUrl}`)
-          }
+      const targetUrl = new URL(resolveSlug(slug, currentSlug).toString())
 
-          const parser = new DOMParser()
-          const html = parser.parseFromString(contents ?? "", "text/html")
-          normalizeRelativeURLs(html, targetUrl)
+      const html = await fetchHTMLContent(targetUrl)
 
-          // Extract frontmatter
-          const frontmatterScript = html.querySelector('script[type="application/json"]')
-          const frontmatter = frontmatterScript
-            ? JSON.parse(frontmatterScript.textContent || "{}")
-            : {}
+      // Extract frontmatter
+      const frontmatterScript = html.querySelector('script[type="application/json"]')
+      const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
 
-          const contentElements = [...html.getElementsByClassName("popover-hint")]
+      // Extract hints and restore checkbox states in one operation
+      const contentElements = extractAndProcessHints(html, targetUrl)
 
-          return { content: contentElements, frontmatter }
-        })
-
-      return contents
+      return { content: contentElements, frontmatter }
     })()
 
     fetchContentCache.set(slug, Promise.resolve(fetchPromise))
