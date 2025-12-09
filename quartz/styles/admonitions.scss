@@ -220,7 +220,7 @@
 .admonition-title {
   display: flex;
   align-items: flex-start;
-  gap: calc(0.5 * $base-margin);
+  gap: 0; // Used for fold-icon
   margin: calc(1.5 * $base-margin) 0;
 
   --icon-size: calc(1.5 * #{$base-margin});
