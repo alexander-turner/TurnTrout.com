@@ -1,5 +1,5 @@
-import { normalizeRelativeURLs } from "../../util/path"
 import { popoverPadding } from "../constants"
+import { renderHTMLContent, type ContentRenderOptions } from "./content_renderer"
 
 export interface PopoverOptions {
   parentElement: HTMLElement
@@ -28,53 +28,24 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   popoverInner.classList.add("popover-inner")
   popoverElement.appendChild(popoverInner)
 
+  // Fetch with meta redirect support, then parse
   const response = await fetchWithMetaRedirect(targetUrl, customFetch)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
 
-  const contentType = response.headers.get("Content-Type")
-  if (!contentType) throw new Error("No content type received")
+  const contents = await response.text()
+  const parser = new DOMParser()
+  const html = parser.parseFromString(contents, "text/html")
 
-  const [contentTypeCategory, typeInfo] = contentType.split("/")
-  popoverInner.dataset.contentType = contentType
-
-  let img: HTMLImageElement | null = null
-  let contents: string | null = null
-  let html: Document | null = null
-  let hintElements: Element[] = []
-  switch (contentTypeCategory) {
-    case "image":
-      img = document.createElement("img")
-      img.src = targetUrl.toString()
-      img.alt = targetUrl.pathname
-      popoverInner.appendChild(img)
-      break
-    case "application":
-      if (typeInfo === "pdf") {
-        const pdf = document.createElement("iframe")
-        pdf.src = targetUrl.toString()
-        popoverInner.appendChild(pdf)
-      }
-      break
-    default: {
-      contents = await response.text()
-      const parser = new DOMParser()
-      html = parser.parseFromString(contents, "text/html")
-      normalizeRelativeURLs(html, targetUrl)
-
-      hintElements = Array.from(html.getElementsByClassName("popover-hint"))
-      Array.from(hintElements).forEach((elt) => {
-        const popoverHeadings = elt.querySelectorAll("h1, h2, h3, h4, h5, h6, li, a")
-        popoverHeadings.forEach((element) => {
-          if (element.id) {
-            element.id = `${element.id}-popover`
-          }
-        })
-        popoverInner.appendChild(elt)
-      })
-    }
+  // Note: We can't use fetchHTMLContent here because we need fetchWithMetaRedirect
+  // So we manually parse; renderHTMLContent will normalize URLs and restore checkboxes automatically
+  const renderOptions: ContentRenderOptions = {
+    targetUrl,
+    idSuffix: "-popover",
   }
+
+  renderHTMLContent(popoverInner, html, renderOptions)
 
   return popoverElement
 }
