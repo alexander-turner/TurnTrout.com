@@ -271,31 +271,33 @@ export class PreviewManager {
       const { content, frontmatter } = await fetchContent(slug)
 
       // Only update if this is still the current preview we want
-      if (this.currentSlug === slug) {
-        const useDropcap: boolean =
-          !("no_dropcap" in frontmatter) || frontmatter.no_dropcap === "false"
-        this.inner.setAttribute("data-use-dropcap", useDropcap.toString())
-
-        // Create a document fragment to build content off-screen
-        const fragment = document.createDocumentFragment()
-        content.forEach((el) => {
-          const highlightedContent = highlightHTML(currentSearchTerm, el as HTMLElement)
-          fragment.append(...Array.from(highlightedContent.childNodes))
-        })
-
-        // Clear existing content and append new content
-        this.inner.innerHTML = ""
-        this.inner.appendChild(fragment)
-
-        // Set click handler
-        this.inner.onclick = () => {
-          window.location.href = resolveSlug(slug, baseSlug).toString()
-        }
-
-        // Let images and other resources load naturally
-        // Browser will handle loading these in the background
-        this.scrollToFirstHighlight()
+      if (this.currentSlug !== slug) {
+        return
       }
+
+      const useDropcap: boolean =
+        !("no_dropcap" in frontmatter) || frontmatter.no_dropcap === "false"
+      this.inner.setAttribute("data-use-dropcap", useDropcap.toString())
+
+      // Create a document fragment to build content off-screen
+      const fragment = document.createDocumentFragment()
+      content.forEach((el) => {
+        const highlightedContent = highlightHTML(currentSearchTerm, el as HTMLElement)
+        fragment.appendChild(highlightedContent)
+      })
+
+      // Clear existing content and append new content
+      this.inner.innerHTML = ""
+      this.inner.appendChild(fragment)
+
+      // Set click handler
+      this.inner.onclick = () => {
+        window.location.href = resolveSlug(slug, baseSlug).toString()
+      }
+
+      // Let images and other resources load naturally
+      // Browser will handle loading these in the background
+      this.scrollToFirstHighlight()
     } catch (error) {
       console.error("Error loading preview:", error)
       if (this.currentSlug === slug) {
@@ -356,16 +358,16 @@ let previewManager: PreviewManager | null
  * @returns DOM node with highlighted terms
  */
 /* istanbul ignore next */
-function highlightHTML(searchTerm: string, el: HTMLElement) {
-  const parser = new DOMParser()
+export function highlightHTML(searchTerm: string, el: HTMLElement) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
-  const html = parser.parseFromString(el.innerHTML, "text/html")
+  // Clone the element to preserve DOM state (like checkbox checked property)
+  const cloned = el.cloneNode(true) as HTMLElement
 
   for (const term of tokenizedTerms) {
-    highlightTextNodes(html.body, term)
+    highlightTextNodes(cloned, term)
   }
 
-  return html.body
+  return cloned
 }
 
 /**
