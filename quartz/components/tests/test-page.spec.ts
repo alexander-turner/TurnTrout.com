@@ -10,6 +10,7 @@ import {
   waitForTransitionEnd,
   isDesktopViewport,
   getH1Screenshots,
+  isElementChecked,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -816,7 +817,7 @@ test.describe("Checkboxes", () => {
     const firstCheckbox = page.locator("input.checkbox-toggle").first()
     await expect(firstCheckbox).toBeVisible()
 
-    const initialChecked = await firstCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+    const initialChecked = await isElementChecked(firstCheckbox)
     await firstCheckbox.click()
 
     await expect(firstCheckbox).toBeChecked({ checked: !initialChecked })
@@ -827,7 +828,7 @@ test.describe("Checkboxes", () => {
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     const firstCheckbox = page.locator("input.checkbox-toggle").first()
-    const initialState = await firstCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+    const initialState = await isElementChecked(firstCheckbox)
 
     // Toggle the checkbox
     await firstCheckbox.click()
@@ -856,7 +857,7 @@ test.describe("Checkboxes", () => {
     const admonitionCheckbox = noteAdmonition.locator("input.checkbox-toggle").first()
     await expect(admonitionCheckbox).toBeVisible()
 
-    const initialState = await admonitionCheckbox.evaluate((el: HTMLInputElement) => el.checked)
+    const initialState = await isElementChecked(admonitionCheckbox)
     await admonitionCheckbox.click()
 
     await expect(admonitionCheckbox).toBeChecked({ checked: !initialState })
