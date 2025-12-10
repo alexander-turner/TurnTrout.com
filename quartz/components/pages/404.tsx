@@ -5,7 +5,7 @@ import { QuartzComponent, QuartzComponentConstructor } from "../types"
 
 const NotFound: QuartzComponent = () => {
   return (
-    <article className="popover-hint">
+    <article className="previewable">
       <div id="not-found-div">
         <div>
           <h1>404</h1>

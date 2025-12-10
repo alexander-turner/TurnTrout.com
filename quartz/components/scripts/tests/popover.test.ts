@@ -36,7 +36,7 @@ beforeEach(() => {
         },
         text: () =>
           Promise.resolve(
-            '<div class="popover-hint" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
+            '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
           ),
       } as unknown as Response)
     }

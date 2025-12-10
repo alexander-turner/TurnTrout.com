@@ -6,8 +6,8 @@ import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 
 import {
   fetchHTMLContent,
-  extractPopoverHints,
-  extractAndProcessHints,
+  extractPreviewables,
+  processPreviewables,
   modifyElementIds,
   restoreCheckboxStates,
   renderHTMLContent,
@@ -24,7 +24,7 @@ describe("fetchHTMLContent", () => {
       Promise.resolve({
         ok: true,
         text: () =>
-          Promise.resolve('<html><body><div class="popover-hint">Test content</div></body></html>'),
+          Promise.resolve('<html><body><div class="previewable">Test content</div></body></html>'),
       } as Response),
     )
 
@@ -32,7 +32,7 @@ describe("fetchHTMLContent", () => {
     const html = await fetchHTMLContent(url, mockFetch)
 
     expect(html).toBeInstanceOf(Document)
-    expect(html.querySelector(".popover-hint")?.textContent).toBe("Test content")
+    expect(html.querySelector(".previewable")?.textContent).toBe("Test content")
   })
 
   it("should throw error on failed fetch", async () => {
@@ -64,31 +64,31 @@ describe("fetchHTMLContent", () => {
   })
 })
 
-describe("extractPopoverHints", () => {
-  it("should extract popover-hint elements", () => {
+describe("extractPreviewableElements", () => {
+  it("should extract previewable elements", () => {
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">Hint 1</div>
-      <div class="other">Not a hint</div>
-      <div class="popover-hint">Hint 2</div>
+      <div class="previewable">Element 1</div>
+      <div class="other">Not previewable</div>
+      <div class="previewable">Element 2</div>
     `
 
-    const hints = extractPopoverHints(html)
-    expect(hints.length).toBe(2)
-    expect(hints[0].textContent).toBe("Hint 1")
-    expect(hints[1].textContent).toBe("Hint 2")
+    const previewables = extractPreviewables(html)
+    expect(previewables.length).toBe(2)
+    expect(previewables[0].textContent).toBe("Element 1")
+    expect(previewables[1].textContent).toBe("Element 2")
   })
 
-  it("should return empty array when no hints found", () => {
+  it("should return empty array when no previewable elts found", () => {
     const html = document.implementation.createHTMLDocument()
-    html.body.innerHTML = '<div class="other">No hints here</div>'
+    html.body.innerHTML = '<div class="other">No previewable elements here</div>'
 
-    const hints = extractPopoverHints(html)
-    expect(hints.length).toBe(0)
+    const previewables = extractPreviewables(html)
+    expect(previewables.length).toBe(0)
   })
 })
 
-describe("extractAndProcessHints", () => {
+describe("processPreviewables", () => {
   interface WindowWithCheckboxStates extends Window {
     __quartz_checkbox_states?: Map<string, boolean>
   }
@@ -97,10 +97,10 @@ describe("extractAndProcessHints", () => {
     delete (window as WindowWithCheckboxStates).__quartz_checkbox_states
   })
 
-  it("should extract hints and restore checkboxes", () => {
+  it("should extract previewable elements and restore checkboxes", () => {
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <input type="checkbox" class="checkbox-toggle">
       </div>
     `
@@ -111,7 +111,7 @@ describe("extractAndProcessHints", () => {
     ;(window as WindowWithCheckboxStates).__quartz_checkbox_states = states
 
     const url = new URL("http://example.com")
-    const elements = extractAndProcessHints(html, url)
+    const elements = processPreviewables(html, url)
 
     expect(elements.length).toBe(1)
     const checkbox = elements[0].querySelector("input.checkbox-toggle") as HTMLInputElement
@@ -124,13 +124,13 @@ describe("extractAndProcessHints", () => {
   it("should handle missing checkbox states gracefully", () => {
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <input type="checkbox" class="checkbox-toggle">
       </div>
     `
 
     const url = new URL("http://example.com")
-    const elements = extractAndProcessHints(html, url)
+    const elements = processPreviewables(html, url)
 
     expect(elements.length).toBe(1)
     const checkbox = elements[0].querySelector("input.checkbox-toggle") as HTMLInputElement
@@ -140,20 +140,20 @@ describe("extractAndProcessHints", () => {
   it("should return cloned elements", () => {
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <p>Original content</p>
       </div>
     `
 
     const url = new URL("http://example.com")
-    const elements = extractAndProcessHints(html, url)
+    const elements = processPreviewables(html, url)
 
     // Modify the returned element
     const p = elements[0].querySelector("p")
     if (p) p.textContent = "Modified"
 
     // Original should be unchanged
-    const original = html.querySelector(".popover-hint p")
+    const original = html.querySelector(".previewable p")
     expect(original?.textContent).toBe("Original content")
   })
 })
@@ -249,7 +249,7 @@ describe("renderHTMLContent", () => {
     const container = document.createElement("div")
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <h1 id="test">Test</h1>
       </div>
     `
@@ -268,7 +268,7 @@ describe("renderHTMLContent", () => {
   it("should render without modifying IDs when no suffix provided", () => {
     const container = document.createElement("div")
     const html = document.implementation.createHTMLDocument()
-    html.body.innerHTML = '<div class="popover-hint"><h1 id="test">Test</h1></div>'
+    html.body.innerHTML = '<div class="previewable"><h1 id="test">Test</h1></div>'
 
     const options: ContentRenderOptions = {
       targetUrl: new URL("http://example.com"),
@@ -288,7 +288,7 @@ describe("renderHTMLContent", () => {
     const container = document.createElement("div")
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <input type="checkbox" class="checkbox-toggle">
       </div>
     `
@@ -319,7 +319,7 @@ describe("renderHTMLContent", () => {
     const container = document.createElement("div")
     const html = document.implementation.createHTMLDocument()
     html.body.innerHTML = `
-      <div class="popover-hint">
+      <div class="previewable">
         <h1 id="heading">Title</h1>
         <input type="checkbox" class="checkbox-toggle">
       </div>

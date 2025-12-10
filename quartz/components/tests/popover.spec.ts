@@ -93,7 +93,7 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   await expect(page.locator(selector).first()).not.toHaveText(originalH1Text || "")
 
   // Check content matches
-  const pageContent = await page.locator(".popover-hint").first().textContent()
+  const pageContent = await page.locator(".previewable").first().textContent()
   expect(popoverContent).toContain(pageContent)
 })
 

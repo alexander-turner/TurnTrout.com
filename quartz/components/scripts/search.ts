@@ -6,7 +6,7 @@ import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
-import { fetchHTMLContent, extractAndProcessHints } from "./content_renderer"
+import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
@@ -663,8 +663,8 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
       const frontmatterScript = html.querySelector('script[type="application/json"]')
       const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
 
-      // Extract hints and restore checkbox states in one operation
-      const contentElements = extractAndProcessHints(html, targetUrl)
+      // Extract previewable elements and restore checkbox states in one operation
+      const contentElements = processPreviewables(html, targetUrl)
 
       return { content: contentElements, frontmatter }
     })()

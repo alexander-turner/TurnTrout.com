@@ -75,7 +75,7 @@ const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
 
   const content = htmlToJsx(fileData.filePath, tree)
   const classes: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classString = ["popover-hint", ...classes].join(" ")
+  const classString = ["previewable", ...classes].join(" ")
   const toc = renderTableOfContents(fileData)
   return (
     <article id="top" className={classString} data-use-dropcap={useDropcap}>
