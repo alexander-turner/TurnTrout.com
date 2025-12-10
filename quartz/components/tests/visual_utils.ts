@@ -19,6 +19,11 @@ export async function getAllWithWait(locator: Locator): Promise<Locator[]> {
 }
 
 // skipcq: JS-0098
+export async function isElementChecked(locator: Locator): Promise<boolean> {
+  return await locator.evaluate((el: HTMLInputElement) => el.checked)
+}
+
+// skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
   await page.evaluate((t) => {
     localStorage.setItem("saved-theme", t)
