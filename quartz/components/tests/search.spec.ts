@@ -520,6 +520,26 @@ test("should not select a search result on initial render, even if the mouse is 
   await page.waitForURL("**/test-page")
 })
 
+test("Footnote table displays within boundaries in search preview (lostpixel)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "test page")
+
+  const previewContainer = page.locator("#preview-container")
+  await expect(previewContainer).toBeVisible()
+
+  const tableFootnote = previewContainer.locator("ol #user-content-fn-table")
+  await expect(tableFootnote).toBeVisible()
+  await tableFootnote.scrollIntoViewIfNeeded()
+
+  await takeRegressionScreenshot(page, testInfo, "search-preview-footnote-table", {
+    elementToScreenshot: previewContainer,
+    elementAboutWhichToIsolateDOM: tableFootnote,
+  })
+})
+
 const navigationMethods = [
   { down: "ArrowDown", up: "ArrowUp", description: "arrow keys" },
   { down: "Tab", up: "Shift+Tab", description: "tab keys" },

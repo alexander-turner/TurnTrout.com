@@ -73,7 +73,9 @@ tr {
 }
 
 .table-container {
-  overflow-x: auto;
+  display: block; /* Ensure it respects width constraints */
+  max-width: 100%; /* Force it to fit within the li/ol */
+  overflow-x: auto; /* Allow horizontal scrolling for the table */
   margin-top: calc(2 * $base-margin);
 
   & > table {
