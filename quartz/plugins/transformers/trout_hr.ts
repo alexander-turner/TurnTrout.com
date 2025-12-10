@@ -16,6 +16,7 @@ export const ornamentNode: Element = h("div", { id: troutContainerId }, [
     src: specialFaviconPaths.turntrout,
     alt: "",
     class: "no-select",
+    loading: "lazy",
     "aria-hidden": "true",
   }),
   h("span", { class: "no-select", "aria-hidden": "true" }, "❧"),
