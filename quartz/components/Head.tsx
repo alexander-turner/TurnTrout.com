@@ -154,6 +154,8 @@ export default (() => {
         {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
+        <link rel="preconnect" href="https://assets.turntrout.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
