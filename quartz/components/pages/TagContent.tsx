@@ -29,7 +29,7 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
       ? fileData.description
       : htmlToJsx(fileData.filePath || ("" as FilePath), tree)
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["popover-hint", ...cssClasses].join(" ")
+  const classes = ["previewable", ...cssClasses].join(" ")
 
   const pages = allPagesWithTag(tag)
   const listProps = {

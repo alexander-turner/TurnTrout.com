@@ -241,7 +241,7 @@ describe("AllTagsContent component", () => {
     const props = createProps(fileData, [fileData])
     const html = render(preactH(AllTagsContent, props))
 
-    expect(html).toContain('class="popover-hint"')
+    expect(html).toContain('class="previewable"')
     expect(html).toContain("<article>")
   })
 
@@ -255,7 +255,7 @@ describe("AllTagsContent component", () => {
     const props = createProps(fileData, [fileData])
     const html = render(preactH(AllTagsContent, props))
 
-    expect(html).toContain('class="popover-hint custom-class another-class"')
+    expect(html).toContain('class="previewable custom-class another-class"')
   })
 
   it("should render tags listing inside article", () => {

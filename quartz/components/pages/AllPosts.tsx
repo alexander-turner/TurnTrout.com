@@ -32,7 +32,7 @@ export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element 
 export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData, allFiles } = props
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["popover-hint", ...cssClasses].join(" ")
+  const classes = ["previewable", ...cssClasses].join(" ")
   const pageListing = generateAllPostsBlock(props)
 
   return (

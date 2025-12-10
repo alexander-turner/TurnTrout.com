@@ -420,7 +420,7 @@ export function renderPage(
           <HeaderComponent {...componentData} key={HeaderComponent.name} />
         ))}
       </Header>
-      <div className="popover-hint">
+      <div className="previewable">
         {beforeBody.map((BodyComponent) => (
           <BodyComponent {...componentData} key={BodyComponent.name} />
         ))}

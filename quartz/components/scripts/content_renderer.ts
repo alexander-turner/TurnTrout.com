@@ -33,12 +33,12 @@ export async function fetchHTMLContent(
 }
 
 /**
- * Extracts popover-hint elements from HTML document
+ * Extracts previewable elements from HTML document
  * @param html - The HTML document to extract from
- * @returns Array of popover-hint elements
+ * @returns Array of previewable elements
  */
-export function extractPopoverHints(html: Document): Element[] {
-  return Array.from(html.getElementsByClassName("popover-hint"))
+export function extractPreviewables(html: Document): Element[] {
+  return Array.from(html.getElementsByClassName("previewable"))
 }
 
 /**
@@ -82,16 +82,16 @@ export function restoreCheckboxStates(container: HTMLElement, targetUrl: URL): v
 }
 
 /**
- * Extracts and processes popover hints with checkbox restoration
+ * Extracts and processes previewable elements with checkbox restoration
  * @param html - The HTML document to extract from
  * @param targetUrl - The URL of the page (for checkbox state restoration)
  * @returns Array of processed elements with restored checkbox states
  */
-export function extractAndProcessHints(html: Document, targetUrl: URL): Element[] {
-  const hintElements = extractPopoverHints(html)
+export function processPreviewables(html: Document, targetUrl: URL): Element[] {
+  const previewables = extractPreviewables(html)
 
   const tempContainer = document.createElement("div")
-  hintElements.forEach((el) => tempContainer.appendChild(el.cloneNode(true)))
+  previewables.forEach((el) => tempContainer.appendChild(el.cloneNode(true)))
   restoreCheckboxStates(tempContainer, targetUrl)
 
   return Array.from(tempContainer.children)
@@ -115,18 +115,18 @@ export function renderHTMLContent(
   // Always normalize URLs so relative links work correctly
   normalizeRelativeURLs(html, targetUrl)
 
-  const hintElements = extractPopoverHints(html)
+  const previewableElements = extractPreviewables(html)
 
   // Modify IDs if a suffix is provided
   if (idSuffix) {
-    modifyElementIds(hintElements, idSuffix)
+    modifyElementIds(previewableElements, idSuffix)
   }
 
-  hintElements.forEach((elt) => {
+  previewableElements.forEach((elt) => {
     container.appendChild(elt)
   })
 
   restoreCheckboxStates(container, targetUrl)
 
-  return hintElements
+  return previewableElements
 }

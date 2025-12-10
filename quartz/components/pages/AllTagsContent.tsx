@@ -61,7 +61,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
 const AllTagsContent: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData } = props
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["popover-hint", ...cssClasses].join(" ")
+  const classes = ["previewable", ...cssClasses].join(" ")
 
   // Convert HAST to JSX for component rendering
   const tagsListing = generateAllTagsBlock(props)

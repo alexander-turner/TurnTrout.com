@@ -130,7 +130,7 @@ describe("AllPosts component", () => {
     const result = callAllPosts(mockProps)
 
     expect(result.type).toBe("div")
-    expect(result.props.className).toBe("popover-hint")
+    expect(result.props.className).toBe("previewable")
     expect(result.props.children.type).toBe("article")
   })
 
@@ -177,7 +177,7 @@ describe("AllPosts component", () => {
     const mockProps = createProps(mockFileData)
     const result = callAllPosts(mockProps)
 
-    expect(result.props.className).toBe("popover-hint custom-class another-class")
+    expect(result.props.className).toBe("previewable custom-class another-class")
   })
 
   it("handles empty CSS classes array", () => {
@@ -190,7 +190,7 @@ describe("AllPosts component", () => {
     const mockProps = createProps(mockFileData)
     const result = callAllPosts(mockProps)
 
-    expect(result.props.className).toBe("popover-hint")
+    expect(result.props.className).toBe("previewable")
   })
 
   it("handles undefined CSS classes", () => {
@@ -203,7 +203,7 @@ describe("AllPosts component", () => {
     const mockProps = createProps(mockFileData)
     const result = callAllPosts(mockProps)
 
-    expect(result.props.className).toBe("popover-hint")
+    expect(result.props.className).toBe("previewable")
   })
 
   it("handles missing frontmatter", () => {
@@ -211,7 +211,7 @@ describe("AllPosts component", () => {
     const mockProps = createProps(mockFileData)
     const result = callAllPosts(mockProps)
 
-    expect(result.props.className).toBe("popover-hint")
+    expect(result.props.className).toBe("previewable")
   })
 
   it("includes the PageList block in the article", () => {
@@ -281,7 +281,7 @@ describe("AllPosts component", () => {
     const result = callAllPosts(mockProps)
 
     expect(result.type).toBe("div")
-    expect(result.props.className).toBe("popover-hint test-class")
+    expect(result.props.className).toBe("previewable test-class")
 
     const article = result.props.children
     expect(article.type).toBe("article")
