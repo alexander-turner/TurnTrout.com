@@ -134,7 +134,7 @@ Header 1
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
       - [ ] Nested checked off should still be crossed out and same (diminished) opacity
-          - [ ] Third nested with a [test link](#checkboxes)
+          - [ ] Third nested with a <a id="checkboxes-link" href="#checkboxes">test link</a>.
   - [ ] Not checked off
 - Normal bullet
 

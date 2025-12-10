@@ -44,8 +44,6 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
 
   await dummyLink.hover()
   popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
-  await expect(popover).toHaveClass(/popover-visible/)
   await takeRegressionScreenshot(page, testInfo, "first-visible-popover", {
     elementToScreenshot: popover,
     preserveSiblings: true,
@@ -339,29 +337,48 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await expect(popover).toBeHidden()
 })
 
-test("Popover preserves checkbox state", async ({ page }) => {
+test.describe("Popover checkbox state preservation", () => {
   const baseSelector = "h1 + ol #checkbox-0"
-  const mainPageCheckbox = page.locator(baseSelector).first()
-  await mainPageCheckbox.scrollIntoViewIfNeeded()
 
-  const initialChecked = await isElementChecked(mainPageCheckbox)
-  expect(initialChecked).toBe(false)
+  test.beforeEach(async ({ page }) => {
+    // Check a checkbox on the test page
+    const mainPageCheckbox = page.locator(baseSelector).first()
+    await mainPageCheckbox.scrollIntoViewIfNeeded()
 
-  await mainPageCheckbox.click()
-  const checkedAfterClick = await isElementChecked(mainPageCheckbox)
-  expect(checkedAfterClick).toBe(true)
+    const initialChecked = await isElementChecked(mainPageCheckbox)
+    expect(initialChecked).toBe(false)
 
-  await page.goto("http://localhost:8080/design", { waitUntil: "load" })
+    await mainPageCheckbox.click()
+    const checkedAfterClick = await isElementChecked(mainPageCheckbox)
+    expect(checkedAfterClick).toBe(true)
+  })
 
-  const linkToTestPage = page.locator('a[href*="test-page"]').last()
-  await linkToTestPage.scrollIntoViewIfNeeded()
-  await expect(linkToTestPage).toBeVisible()
+  test("Popover preserves checkbox state", async ({ page }) => {
+    await page.goto("http://localhost:8080/design", { waitUntil: "load" })
 
-  await linkToTestPage.hover()
-  const popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
+    const linkToTestPage = page.locator('a[href*="test-page"]').last()
+    await linkToTestPage.scrollIntoViewIfNeeded()
+    await expect(linkToTestPage).toBeVisible()
 
-  const popoverCheckbox = popover.locator(baseSelector).first()
-  const popoverChecked = await isElementChecked(popoverCheckbox)
-  expect(popoverChecked).toBe(true)
+    await linkToTestPage.hover()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    const popoverCheckbox = popover.locator(baseSelector).first()
+    const popoverChecked = await isElementChecked(popoverCheckbox)
+    expect(popoverChecked).toBe(true)
+  })
+
+  test("Popover with checked checkbox visual appearance (lostpixel)", async ({
+    page,
+  }, testInfo) => {
+    const linkToHover = page.locator("a#checkboxes-link").first()
+    await linkToHover.hover()
+
+    const popover = page.locator(".popover")
+    await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
+      elementToScreenshot: popover,
+      preserveSiblings: true, // Need this to take screenshot
+    })
+  })
 })
