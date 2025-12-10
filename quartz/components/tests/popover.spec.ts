@@ -7,6 +7,7 @@ import {
   isDesktopViewport,
   showingPreview,
   getAllWithWait,
+  isElementChecked,
 } from "./visual_utils"
 
 type TestFixtures = {
@@ -336,4 +337,31 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
 
   const popover = page.locator(".popover")
   await expect(popover).toBeHidden()
+})
+
+test("Popover preserves checkbox state", async ({ page }) => {
+  const baseSelector = "h1 + ol #checkbox-0"
+  const mainPageCheckbox = page.locator(baseSelector).first()
+  await mainPageCheckbox.scrollIntoViewIfNeeded()
+
+  const initialChecked = await isElementChecked(mainPageCheckbox)
+  expect(initialChecked).toBe(false)
+
+  await mainPageCheckbox.click()
+  const checkedAfterClick = await isElementChecked(mainPageCheckbox)
+  expect(checkedAfterClick).toBe(true)
+
+  await page.goto("http://localhost:8080/design", { waitUntil: "load" })
+
+  const linkToTestPage = page.locator('a[href*="test-page"]').last()
+  await linkToTestPage.scrollIntoViewIfNeeded()
+  await expect(linkToTestPage).toBeVisible()
+
+  await linkToTestPage.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+
+  const popoverCheckbox = popover.locator(baseSelector).first()
+  const popoverChecked = await isElementChecked(popoverCheckbox)
+  expect(popoverChecked).toBe(true)
 })
