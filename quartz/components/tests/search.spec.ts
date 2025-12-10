@@ -10,6 +10,7 @@ import {
   search,
   showingPreview,
   getAllWithWait,
+  isElementChecked,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -286,6 +287,40 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
   const urlsSoFar = new Set([initialUrl, firstResultUrl])
   await page.waitForURL((url) => !urlsSoFar.has(url.toString()), { timeout: 30000 })
+})
+
+/* eslint-disable playwright/expect-expect */
+test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "Checkboxes")
+
+  const previewContainer = page.locator("#preview-container")
+  await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
+    elementToScreenshot: previewContainer,
+  })
+})
+
+test("Search preview of checkboxes remembers user state", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+  const baseSelector = "h1 + ol #checkbox-0"
+  const checkboxAfterHeader = page.locator(baseSelector).first()
+  const initialChecked = await isElementChecked(checkboxAfterHeader)
+  expect(initialChecked).toBe(false)
+
+  await checkboxAfterHeader.click()
+  const checkedAfterClicked = await isElementChecked(checkboxAfterHeader)
+  expect(checkedAfterClicked).toBe(true)
+
+  await page.keyboard.press("/")
+  await search(page, "Checkboxes")
+
+  const previewCheckbox = page.locator(`#preview-container ${baseSelector}`).first()
+  const previewBoxIsChecked = await isElementChecked(previewCheckbox)
+  expect(previewBoxIsChecked).toBe(true)
 })
 
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
