@@ -18,6 +18,7 @@ import {
   hideSearch,
   PreviewManager,
   getOffsetTopRelativeToContainer,
+  highlightHTML,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -468,5 +469,79 @@ describe("highlightTextNodes", () => {
     const container = createContainer('<p><span class="highlight">test</span> again</p>')
     highlightTextNodes(container, "test")
     expect(container.querySelectorAll(".highlight").length).toBe(1)
+  })
+})
+
+describe("highlightHTML", () => {
+  it("should preserve checkbox checked state when highlighting", () => {
+    // Create an element with a checkbox
+    const element = document.createElement("div")
+    element.innerHTML = `
+      <div class="previewable">
+        <p>This is a test paragraph with checkboxes</p>
+        <ul>
+          <li><input type="checkbox" class="checkbox-toggle"> Unchecked item</li>
+          <li><input type="checkbox" class="checkbox-toggle"> Checked item</li>
+          <li><input type="checkbox" class="checkbox-toggle"> Another checked item</li>
+        </ul>
+      </div>
+    `
+
+    // Set checkbox states (simulating what processPreviewables does)
+    const checkboxes = element.querySelectorAll("input.checkbox-toggle")
+    ;(checkboxes[0] as HTMLInputElement).checked = false
+    ;(checkboxes[1] as HTMLInputElement).checked = true
+    ;(checkboxes[2] as HTMLInputElement).checked = true
+
+    const highlighted = highlightHTML("test", element)
+
+    // Verify the text was highlighted
+    const highlightSpans = highlighted.querySelectorAll(".highlight")
+    expect(highlightSpans.length).toBeGreaterThan(0)
+    expect(highlightSpans[0].textContent).toBe("test")
+
+    // Verify checkbox states were preserved
+    const highlightedCheckboxes = highlighted.querySelectorAll("input.checkbox-toggle")
+    expect(highlightedCheckboxes.length).toBe(3)
+    expect((highlightedCheckboxes[0] as HTMLInputElement).checked).toBe(false)
+    expect((highlightedCheckboxes[1] as HTMLInputElement).checked).toBe(true)
+    expect((highlightedCheckboxes[2] as HTMLInputElement).checked).toBe(true)
+  })
+
+  it("should preserve other DOM properties when highlighting", () => {
+    const element = document.createElement("div")
+    element.innerHTML = `
+      <div>
+        <input type="text" class="test-input" value="initial">
+        <p>Search for test</p>
+      </div>
+    `
+
+    // Set a DOM property (not an attribute)
+    const input = element.querySelector("input.test-input") as HTMLInputElement
+    input.value = "modified value"
+
+    const highlighted = highlightHTML("test", element)
+
+    // Verify the input value was preserved
+    const highlightedInput = highlighted.querySelector("input.test-input") as HTMLInputElement
+    expect(highlightedInput.value).toBe("modified value")
+
+    // Verify highlighting still works
+    const highlightSpans = highlighted.querySelectorAll(".highlight")
+    expect(highlightSpans.length).toBeGreaterThan(0)
+  })
+
+  it("should return a cloned element, not modify the original", () => {
+    const element = document.createElement("div")
+    element.innerHTML = "<p>test content</p>"
+
+    const highlighted = highlightHTML("test", element)
+
+    // Original should be unchanged
+    expect(element.querySelectorAll(".highlight").length).toBe(0)
+
+    // Highlighted should have highlights
+    expect(highlighted.querySelectorAll(".highlight").length).toBeGreaterThan(0)
   })
 })
