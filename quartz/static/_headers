@@ -1,0 +1,38 @@
+# 1. Default Rule (HTML / Webpages)
+# "no-cache" means the browser must check with Cloudflare before showing the page.
+# This ensures users see new blog posts immediately.
+/*
+  Cache-Control: public, no-cache
+
+# 2. Stylesheets & Scripts (1 Week)
+/*.css
+  Cache-Control: public, max-age=604800
+/*.js
+  Cache-Control: public, max-age=604800
+
+# 3. Fonts (1 Year)
+# These rarely change. Cache them forever to stop the layout shift/flicker.
+# If you change the font, you MUST rename the file.
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+/*.ttf
+  Cache-Control: public, max-age=31536000, immutable
+
+# 4. Local Media & Images (1 Week)
+# Covers: pond.mov, pond.webm, favicons, etc.
+/*.jpg
+  Cache-Control: public, max-age=604800, immutable
+/*.png
+  Cache-Control: public, max-age=604800, immutable
+/*.ico
+  Cache-Control: public, max-age=604800, immutable
+/*.svg
+  Cache-Control: public, max-age=604800, immutable
+/*.avif
+  Cache-Control: public, max-age=604800, immutable
+/*.mov
+  Cache-Control: public, max-age=604800, immutable
+/*.webm
+  Cache-Control: public, max-age=604800, immutable
