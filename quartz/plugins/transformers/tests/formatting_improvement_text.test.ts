@@ -7,7 +7,6 @@ import {
   formattingImprovement,
   editAdmonition,
   noteAdmonition,
-  arrowsToWrap,
   wrapLeadingNumbers,
   wrapNumbersBeforeColon,
   spaceAdmonitions,
@@ -272,10 +271,6 @@ And some hyphens-to-be-ignored.`
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
       ],
-      ...arrowsToWrap.map((arrow: string) => [
-        arrow,
-        `<span class='monospace-arrow'>${arrow}</span>`,
-      ]),
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)

@@ -409,6 +409,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$
+- $\pi: C → A$
 
 Display math:
 $$
