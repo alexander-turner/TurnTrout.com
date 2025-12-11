@@ -266,6 +266,10 @@ Previously, I followed `gwern`'s suggestion and arranged the video to only play 
 
 <!-- spellchecker-enable -->
 
+### Caching improves load times
+
+I always revalidate content which I change often (like the webpages themselves). However, I cache media assets for a long time. (I also enjoyed learning about [the considerations which](https://hacks.mozilla.org/2017/01/using-immutable-caching-to-speed-up-the-web/) [go into caching](https://jakearchibald.com/2016/caching-best-practices/).)
+
 ## Preventing layout shift
 
 When loading webpages with media assets, the browser knows there's an asset present but doesn't know how much space the asset will take. Specifically, my images and videos tend to fill (some fixed fraction of) the available width. The browser knows the width. However, the browser doesn't know how much _height_ the asset will require.
