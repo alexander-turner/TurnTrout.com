@@ -22,50 +22,59 @@ interface Item {
 let currentSearchTerm = ""
 
 const documentType = FlexSearch.Document<Item>
-const index = new documentType({
-  charset: "latin:advanced",
-  tokenize: "strict",
-  resolution: 1,
-  context: {
-    depth: 2,
-    bidirectional: false,
-  } as ContextOptions,
-  document: {
-    id: "id",
-    index: [
-      {
-        field: "title",
-        tokenize: "forward",
-        resolution: 9,
-      },
-      {
-        field: "content",
-        tokenize: "strict",
-        resolution: 9,
-      },
-      {
-        field: "tags",
-        tokenize: "strict",
-        resolution: 9,
-      },
-      {
-        field: "slug",
-        tokenize: "strict",
-        resolution: 9,
-      },
-      {
-        field: "aliases",
-        tokenize: "strict",
-        resolution: 9,
-      },
-      {
-        field: "authors",
-        tokenize: "strict",
-        resolution: 9,
-      },
-    ],
-  },
-})
+let index: InstanceType<typeof documentType> | null = null
+let searchInitialized = false
+let searchInitializing = false
+
+/**
+ * Creates and configures a new FlexSearch index
+ */
+function createSearchIndex(): InstanceType<typeof documentType> {
+  return new documentType({
+    charset: "latin:advanced",
+    tokenize: "strict",
+    resolution: 1,
+    context: {
+      depth: 2,
+      bidirectional: false,
+    } as ContextOptions,
+    document: {
+      id: "id",
+      index: [
+        {
+          field: "title",
+          tokenize: "forward",
+          resolution: 9,
+        },
+        {
+          field: "content",
+          tokenize: "strict",
+          resolution: 9,
+        },
+        {
+          field: "tags",
+          tokenize: "strict",
+          resolution: 9,
+        },
+        {
+          field: "slug",
+          tokenize: "strict",
+          resolution: 9,
+        },
+        {
+          field: "aliases",
+          tokenize: "strict",
+          resolution: 9,
+        },
+        {
+          field: "authors",
+          tokenize: "strict",
+          resolution: 9,
+        },
+      ],
+    },
+  })
+}
 
 interface FetchResult {
   content: Element[]
@@ -382,13 +391,39 @@ export function updatePlaceholder(searchBar?: HTMLInputElement | null) {
   }
 }
 
+async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInputElement) {
+  // Show the UI first for better UX
+  const navbar = document.getElementById("navbar")
+  if (navbar) {
+    navbar.style.zIndex = "1"
+  }
+  container.classList.add("active")
+  document.body.classList.add("no-mix-blend-mode")
+  searchBar.focus()
+
+  await initializeSearch()
+
+  updatePlaceholder(searchBar)
+  return
+}
+
 /**
  * Show the search UI and focus the search bar.
  * @param container - The search container element
  * @param searchBar - The input element used for search
  */
-export function showSearch(container: HTMLElement | null, searchBar: HTMLInputElement | null) {
+export async function showSearch(
+  container: HTMLElement | null,
+  searchBar: HTMLInputElement | null,
+): Promise<undefined> {
   if (!container || !searchBar) return
+
+  // Initialize search when opening the search UI
+  if (!searchInitialized && !searchInitializing) {
+    await maybeInitializeSearch(container, searchBar)
+    return
+  }
+
   const navbar = document.getElementById("navbar")
   if (navbar) {
     navbar.style.zIndex = "1"
@@ -401,6 +436,7 @@ export function showSearch(container: HTMLElement | null, searchBar: HTMLInputEl
   searchBar.select() // Needed for firefox
 
   updatePlaceholder(searchBar)
+  return
 }
 
 /**
@@ -455,18 +491,17 @@ async function handleSearchToggle(
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
 ): Promise<boolean> {
-  if (e.key === "/") {
-    e.preventDefault()
-    const searchBarOpen = container?.classList.contains("active")
-    if (searchBarOpen) {
-      hideSearch(previewManager)
-    } else {
-      showSearch(container, searchBar)
-    }
-    return true
+  if (e.key !== "/") return false
+
+  e.preventDefault()
+  const searchBarOpen = container?.classList.contains("active")
+  if (searchBarOpen) {
+    hideSearch(previewManager)
+  } else {
+    await showSearch(container, searchBar)
   }
 
-  return false
+  return true
 }
 
 /**
@@ -633,8 +668,18 @@ async function onNav(e: CustomEventMap["nav"]) {
     (e: Event) => shortcutHandler(e as KeyboardEvent, container, searchBar),
     listeners,
   )
-  addListener(searchIcon, "click", () => showSearch(container, searchBar), listeners)
+  addListener(searchIcon, "click", () => void showSearch(container, searchBar), listeners)
   addListener(searchBar, "input", debouncedOnType, listeners)
+  addListener(
+    searchBar,
+    "focus",
+    () => {
+      if (!searchInitialized && !searchInitializing) {
+        void initializeSearch()
+      }
+    },
+    listeners,
+  )
 
   const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
@@ -643,8 +688,6 @@ async function onNav(e: CustomEventMap["nav"]) {
     listeners.forEach((cleanup) => cleanup())
     listeners.clear()
   }
-
-  await fillDocument(data)
 }
 
 /**
@@ -866,7 +909,15 @@ async function displayResults(
  */
 /* istanbul ignore next */
 async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
-  if (!searchLayout || !index) return
+  if (!searchLayout) return
+
+  // Initialize search on first input if not already initialized
+  if (!searchInitialized && !searchInitializing) {
+    await initializeSearch()
+  }
+
+  if (!index) return
+
   const enablePreview = searchLayout?.dataset?.preview === "true"
   currentSearchTerm = (e.target as HTMLInputElement).value
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
@@ -935,8 +986,10 @@ export function setupSearch(): void {
  */
 /* istanbul ignore next */
 async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<void> {
+  if (!index) return
+
   const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) =>
-    index.addAsync(id, {
+    index!.addAsync(id, {
       id,
       slug: slug as FullSlug,
       title: fileData.title,
@@ -946,6 +999,53 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
   )
 
   await Promise.all(promises)
+}
+
+/**
+ * Lazy-initializes the search index on first interaction
+ * Shows a loading indicator while initializing
+ */
+/* istanbul ignore next */
+async function initializeSearch(): Promise<void> {
+  if (searchInitialized || searchInitializing) return
+
+  searchInitializing = true
+
+  // Show loading indicator
+  const searchBar = document.getElementById("search-bar") as HTMLInputElement
+  if (!searchBar) {
+    console.error("Can't locate the #search-bar element.")
+    return
+  }
+  const originalPlaceholder = searchBar?.placeholder
+  searchBar.placeholder = "Loading search..."
+  searchBar.disabled = true
+
+  try {
+    // Create the index
+    index = createSearchIndex()
+
+    // Fetch and fill the index with data
+    if (data) {
+      await fillDocument(data)
+    }
+
+    searchInitialized = true
+  } catch (error) {
+    console.error("Error initializing search:", error)
+    searchBar.placeholder = "Search failed to load."
+  } finally {
+    searchInitializing = false
+
+    // Restore search bar state
+    searchBar.disabled = false
+    if (originalPlaceholder) {
+      searchBar.placeholder = originalPlaceholder
+    }
+    updatePlaceholder(searchBar)
+    // Refocus after re-enabling (disabling causes focus loss)
+    searchBar.focus()
+  }
 }
 
 /*

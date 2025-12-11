@@ -379,7 +379,7 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible()
   // Ensures the content loaded
-  const previewInner = previewContainer.locator("article")
+  const previewInner = previewContainer.locator("article.search-preview")
   await expect(previewInner).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
