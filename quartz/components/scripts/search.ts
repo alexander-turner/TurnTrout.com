@@ -44,32 +44,32 @@ function createSearchIndex(): InstanceType<typeof documentType> {
         {
           field: "title",
           tokenize: "forward",
-          resolution: 9,
+          resolution: 7, // Higher resolution for titles (most important field)
         },
         {
           field: "content",
           tokenize: "strict",
-          resolution: 9,
+          resolution: 6, // Balanced resolution for content (largest field)
         },
         {
           field: "tags",
           tokenize: "strict",
-          resolution: 9,
+          resolution: 5, // Lower resolution for short metadata
         },
         {
           field: "slug",
           tokenize: "strict",
-          resolution: 9,
+          resolution: 5, // Lower resolution for short metadata
         },
         {
           field: "aliases",
           tokenize: "strict",
-          resolution: 9,
+          resolution: 5, // Lower resolution for short metadata
         },
         {
           field: "authors",
           tokenize: "strict",
-          resolution: 9,
+          resolution: 5, // Lower resolution for short metadata
         },
       ],
     },
