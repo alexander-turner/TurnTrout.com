@@ -94,7 +94,6 @@ const massTransforms: [RegExp | string, string][] = [
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
-  [new RegExp(`(${arrowsToWrap.join("|")})`, "g"), "<span class='monospace-arrow'>$1</span>"],
 ]
 
 // skipcq: JS-D1001

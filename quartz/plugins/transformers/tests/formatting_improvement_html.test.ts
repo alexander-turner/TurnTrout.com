@@ -207,7 +207,7 @@ describe("HTMLFormattingImprovement", () => {
     const originalHeader =
       '<h3 id="optimal-policy--reinforcement-maximizing-policy"><del>"Optimal policy"</del> → "Reinforcement-maximizing policy"</h3>'
     const targetHeader =
-      '<h3 id="optimal-policy--reinforcement-maximizing-policy"><del>“Optimal policy”</del> → “Reinforcement-maximizing policy”</h3>'
+      '<h3 id="optimal-policy--reinforcement-maximizing-policy"><del>“Optimal policy”</del> <span class="monospace-arrow">→</span> “Reinforcement-maximizing policy”</h3>'
     it("should handle quotes in headers", () => {
       const processedHtml = testHtmlFormattingImprovement(originalHeader)
       expect(processedHtml).toBe(targetHeader)
@@ -1754,5 +1754,58 @@ describe("HTMLFormattingImprovement plugin", () => {
       )
     }
     expect(valueToCheck).toEqual([improveFormatting])
+  })
+
+  describe("Unicode Arrow Wrapping", () => {
+    it.each([
+      [
+        "should wrap Unicode arrows with monospace styling in regular text",
+        "<p>Go left ← or right → or up ↑ or down ↓</p>",
+        '<p>Go left <span class="monospace-arrow">←</span> or right <span class="monospace-arrow">→</span> or up <span class="monospace-arrow">↑</span> or down <span class="monospace-arrow">↓</span></p>',
+      ],
+      [
+        "should wrap diagonal arrows with monospace styling",
+        "<p>Northeast ↗ Southeast ↘ Northwest ↖ Southwest ↙</p>",
+        '<p>Northeast <span class="monospace-arrow">↗</span> Southeast <span class="monospace-arrow">↘</span> Northwest <span class="monospace-arrow">↖</span> Southwest <span class="monospace-arrow">↙</span></p>',
+      ],
+      [
+        "should NOT wrap arrows inside KaTeX math blocks",
+        '<p><span class="katex">π: C → A</span></p>',
+        '<p><span class="katex">π: C → A</span></p>',
+      ],
+      [
+        "should NOT wrap arrows inside nested KaTeX elements",
+        '<p><span class="katex"><span class="katex-html"><span class="base">f: X → Y</span></span></span></p>',
+        '<p><span class="katex"><span class="katex-html"><span class="base">f: X → Y</span></span></span></p>',
+      ],
+      [
+        "should wrap arrows outside KaTeX but not inside",
+        '<p>Consider the function <span class="katex">f: A → B</span> which maps ← to the left</p>',
+        '<p>Consider the function <span class="katex">f: A → B</span> which maps <span class="monospace-arrow">←</span> to the left</p>',
+      ],
+      [
+        "should NOT wrap arrows inside code blocks",
+        "<p><code>x → y</code></p>",
+        "<p><code>x → y</code></p>",
+      ],
+      [
+        "should NOT wrap arrows inside pre blocks",
+        "<pre>function: A → B</pre>",
+        "<pre>function: A → B</pre>",
+      ],
+      [
+        "should wrap multiple arrows in the same paragraph",
+        "<p>First → second ← third ↑ fourth</p>",
+        '<p>First <span class="monospace-arrow">→</span> second <span class="monospace-arrow">←</span> third <span class="monospace-arrow">↑</span> fourth</p>',
+      ],
+      [
+        "should handle mixed content with KaTeX and regular arrows",
+        '<p>The mapping <span class="katex">π: C → A</span> shows that → arrows work differently</p>',
+        '<p>The mapping <span class="katex">π: C → A</span> shows that <span class="monospace-arrow">→</span> arrows work differently</p>',
+      ],
+    ])("%s", (_description, input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
   })
 })

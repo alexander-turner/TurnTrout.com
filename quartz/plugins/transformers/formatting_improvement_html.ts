@@ -476,6 +476,46 @@ export function formatArrows(tree: Root): void {
   })
 }
 
+// skipcq: JS-0098
+function isKatex(node: Element): boolean {
+  return hasClass(node, "katex")
+}
+
+/**
+ * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
+ */
+export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
+  const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
+  const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
+
+  visitParents(tree, "text", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    if (!parent) return
+
+    const index = parent.children.indexOf(node as ElementContent)
+
+    // Check if any ancestor should be skipped (code, pre, script, style, no-formatting classes)
+    const shouldSkip = ancestors.some((anc) => toSkip(anc as Element))
+    if (shouldSkip) return
+
+    // Check if any ancestor is a KaTeX block
+    const inKatex = ancestors.some((anc) => isKatex(anc as Element))
+    if (inKatex) return
+
+    // Check if any ancestor is already a monospace-arrow span (prevents double wrapping)
+    const inMonospaceArrow = ancestors.some((anc) => hasClass(anc as Element, "monospace-arrow"))
+    if (inMonospaceArrow) return
+
+    replaceRegex(node as Text, index, parent, arrowRegex, (match: RegExpMatchArray) => {
+      return {
+        before: "",
+        replacedMatch: h("span.monospace-arrow", match[0]),
+        after: "",
+      }
+    })
+  })
+}
+
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
 export function formatOrdinalSuffixes(tree: Root): void {
   visit(tree, "text", (node, index, parent) => {
@@ -932,6 +972,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
 
     formatLNumbers(tree) // L_p-norm formatting
     formatArrows(tree)
+    wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
     removeSpaceBeforeFootnotes(tree)
   }
