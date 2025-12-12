@@ -1129,6 +1129,48 @@ def check_katex_span_only_paragraph_child(soup: BeautifulSoup) -> list[str]:
     return problematic_paragraphs
 
 
+def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for HTML closing tags in non-code text elements and KaTeX math
+    elements.
+
+    This catches cases where HTML tags were incorrectly inserted into text
+    content, such as when text transformers add spans before HTML parsing.
+    """
+    issues: list[str] = []
+    html_tag_pattern = re.compile(r"</[a-z]+>")
+
+    # Check all text elements (paragraphs, list items, etc.)
+    text_elements = soup.find_all(
+        ["p", "li", "td", "th", "dd", "dt", "h1", "h2", "h3", "h4", "h5", "h6"]
+    )
+    for element in text_elements:
+        # Get text excluding code blocks but including KaTeX
+        text_content = script_utils.get_non_code_text(
+            element, replace_with_placeholder=False
+        )
+
+        matches = html_tag_pattern.findall(text_content)
+        if matches:
+            _append_to_list(
+                issues,
+                f"Found HTML tags in text: {matches} in element: {str(element)[:100]}...",
+            )
+
+    # Also check KaTeX elements specifically
+    katex_elements = soup.find_all(class_="katex")
+    for katex in katex_elements:
+        text_content = katex.get_text()
+        matches = html_tag_pattern.findall(text_content)
+        if matches:
+            _append_to_list(
+                issues,
+                f"Found HTML tags in KaTeX: {matches} in: {text_content[:100]}...",
+            )
+
+    return issues
+
+
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
     simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
@@ -1230,6 +1272,7 @@ def check_file_for_issues(
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
+        "html_tags_in_text": check_html_tags_in_text(soup),
         "unrendered_transclusions": check_unrendered_transclusions(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
