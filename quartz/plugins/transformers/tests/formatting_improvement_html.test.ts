@@ -1501,7 +1501,7 @@ describe("replaceFractions", () => {
   it("should preserve surrounding whitespace", () => {
     const node = { type: "text", value: " 1/2 " } as Text
     const parent = h("p")
-    replaceFractions(node, 0, parent)
+    replaceFractions(node, 0, parent, [])
     const processedHtml = testHtmlFormattingImprovement(`<p>${node.value}</p>`)
     expect(processedHtml).toBe('<p> <span class="fraction">1/2</span> </p>')
   })
@@ -1512,7 +1512,7 @@ describe("replaceFractions", () => {
       value: "Mix 1/2 cup of flour with 3/4 cup of water",
     } as Text
     const parent = h("p")
-    replaceFractions(node, 0, parent)
+    replaceFractions(node, 0, parent, [])
     const processedHtml = testHtmlFormattingImprovement(`<p>${node.value}</p>`)
     expect(processedHtml).toBe(
       '<p>Mix <span class="fraction">1/2</span> cup of flour with <span class="fraction">3/4</span> cup of water</p>',
@@ -1530,7 +1530,7 @@ describe("replaceFractions", () => {
     const originalTextContent = hastToHtml(parent)
 
     // Call replaceFractions with undefined index - should use fallback 0
-    replaceFractions(node, undefined, parent)
+    replaceFractions(node, undefined, parent, [])
 
     // Verify the function processed the fraction correctly despite undefined index
     const result = hastToHtml(parent)

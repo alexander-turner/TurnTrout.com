@@ -261,8 +261,13 @@ export function enDashNumberRange(text: string): string {
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
-  visit(tree, "element", (node, index, parent) => {
-    if (node.tagName === "sup" && index && parent?.children?.[index - 1]?.type === "text") {
+  visitParents(tree, "element", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    // istanbul ignore next
+    if (!parent) return
+
+    const index = parent.children.indexOf(node as ElementContent)
+    if (node.tagName === "sup" && index > 0 && parent.children[index - 1]?.type === "text") {
       const prevNode = parent.children[index - 1] as Text
       prevNode.value = prevNode.value.replace(/\s+$/, "")
     }
@@ -401,11 +406,13 @@ export const l_pRegex = /(\s|^)L(\d+)\b(?!\.)/g
  * @param tree - The HTML AST to process
  */
 export function formatLNumbers(tree: Root): void {
-  visit(tree, "text", (node, index, parent) => {
-    if (!parent || hasAncestor(parent as ElementMaybeWithParent, isCode)) {
+  visitParents(tree, "text", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    if (!parent || hasAncestor(parent as Element, isCode, ancestors)) {
       return
     }
 
+    const index = parent.children.indexOf(node as ElementContent)
     let match
     let lastIndex = 0
     const newNodes: (Text | Element)[] = []
@@ -438,19 +445,21 @@ export function formatLNumbers(tree: Root): void {
       newNodes.push({ type: "text", value: node.value.slice(lastIndex) })
     }
 
-    if (newNodes.length > 0 && parent && typeof index === "number") {
+    if (newNodes.length > 0) {
       parent.children.splice(index, 1, ...newNodes)
     }
   })
 }
 
 export function formatArrows(tree: Root): void {
-  visit(tree, "text", (node, index, parent) => {
-    if (!parent || hasAncestor(parent as ElementMaybeWithParent, toSkip)) return
+  visitParents(tree, "text", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
 
+    const index = parent.children.indexOf(node as ElementContent)
     replaceRegex(
       node,
-      index ?? /* istanbul ignore next */ 0,
+      index,
       parent,
       /(?:^|(?<= )|(?<=\w))[-]{1,2}>(?=\w| |$)/g,
       (match: RegExpMatchArray) => {
@@ -480,30 +489,30 @@ function isKatex(node: Element): boolean {
   return hasClass(node, "katex")
 }
 
+export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
+
 /**
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
   const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
+
+    // istanbul ignore next
     if (!parent) return
 
     const index = parent.children.indexOf(node as ElementContent)
 
     // Check if any ancestor should be skipped (code, pre, script, style, no-formatting classes)
-    const shouldSkip = ancestors.some((anc) => toSkip(anc as Element))
-    if (shouldSkip) return
+    if (hasAncestor(parent as Element, toSkip, ancestors)) return
 
     // Check if any ancestor is a KaTeX block
-    const inKatex = ancestors.some((anc) => isKatex(anc as Element))
-    if (inKatex) return
+    if (hasAncestor(parent as Element, isKatex, ancestors)) return
 
     // Check if any ancestor is already a monospace-arrow span (prevents double wrapping)
-    const inMonospaceArrow = ancestors.some((anc) => hasClass(anc as Element, "monospace-arrow"))
-    if (inMonospaceArrow) return
+    if (hasAncestor(parent as Element, (n) => hasClass(n, "monospace-arrow"), ancestors)) return
 
     replaceRegex(node as Text, index, parent, arrowRegex, (match: RegExpMatchArray) => {
       return {
@@ -517,28 +526,24 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
 export function formatOrdinalSuffixes(tree: Root): void {
-  visit(tree, "text", (node, index, parent) => {
-    if (!parent || hasAncestor(parent as ElementMaybeWithParent, toSkip)) return
+  visitParents(tree, "text", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
 
-    replaceRegex(
-      node,
-      index ?? /* istanbul ignore next */ 0,
-      parent,
-      ordinalSuffixRegex,
-      (match: RegExpMatchArray) => {
-        const numSpan = h("span.ordinal-num", match.groups?.number ?? /* istanbul ignore next */ "")
-        const suffixSpan = h(
-          "sup.ordinal-suffix",
-          match.groups?.suffix ?? /* istanbul ignore next */ "",
-        )
+    const index = parent.children.indexOf(node as ElementContent)
+    replaceRegex(node, index, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
+      const numSpan = h("span.ordinal-num", match.groups?.number ?? /* istanbul ignore next */ "")
+      const suffixSpan = h(
+        "sup.ordinal-suffix",
+        match.groups?.suffix ?? /* istanbul ignore next */ "",
+      )
 
-        return {
-          before: "",
-          replacedMatch: [numSpan, suffixSpan],
-          after: "",
-        }
-      },
-    )
+      return {
+        before: "",
+        replacedMatch: [numSpan, suffixSpan],
+        after: "",
+      }
+    })
   })
 }
 
@@ -814,19 +819,25 @@ export function toSkip(node: Element): boolean {
   return false
 }
 
-function fractionToSkip(node: Text, _idx: number, parent: Parent): boolean {
+function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Parent[]): boolean {
   return (
     hasAncestor(
-      parent as ElementMaybeWithParent,
+      parent as Element,
       (ancestor) =>
         ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
         hasClass(ancestor, "fraction"),
+      ancestors,
     ) ||
     (node.value?.includes("/") && urlRegex.test(node.value))
   )
 }
 
-export function replaceFractions(node: Text, index: number | undefined, parent: Parent): void {
+export function replaceFractions(
+  node: Text,
+  index: number | undefined,
+  parent: Parent,
+  ancestors: Parent[],
+): void {
   replaceRegex(
     node,
     index ?? /* istanbul ignore next */ 0,
@@ -853,7 +864,7 @@ export function replaceFractions(node: Text, index: number | undefined, parent: 
         }
       }
     },
-    fractionToSkip,
+    (node, idx, parent) => fractionToSkip(node, idx, parent, ancestors),
   )
 }
 interface Options {
@@ -937,7 +948,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       }
 
       if (node.type === "text" && "value" in node) {
-        replaceFractions(node, index as number, parent as Parent)
+        replaceFractions(node, index as number, parent as Parent, ancestors)
       }
 
       rearrangeLinkPunctuation(node as Element, index, parent as Element)
