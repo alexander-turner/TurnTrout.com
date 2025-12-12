@@ -4844,3 +4844,110 @@ def test_check_populate_elements_nonempty_non_string_id():
     result = built_site_checks.check_populate_elements_nonempty(soup)
     # Should skip the element with non-string id, so no errors
     assert result == []
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # No HTML tags in text - should pass
+        (
+            "<p>This is normal text with arrows → and ← symbols</p>",
+            [],
+        ),
+        # HTML tags as escaped entities in text - should fail
+        (
+            "<p>Text with &lt;/span&gt; closing tag</p>",
+            ["Found HTML tags in text: ['</span>']"],
+        ),
+        # HTML tags as escaped entities in KaTeX - should fail
+        (
+            '<p><span class="katex">f: X &lt;/span&gt; Y</span></p>',
+            ["Found HTML tags in KaTeX: ['</span>']"],
+        ),
+        # Multiple HTML tags as escaped entities
+        (
+            "<p>Text with &lt;/span&gt; and &lt;/div&gt; tags</p>",
+            ["Found HTML tags in text: ['</span>', '</div>']"],
+        ),
+        # HTML tags in code blocks should be ignored (code is excluded)
+        (
+            "<p><code>function() { return &lt;/div&gt;; }</code></p>",
+            [],
+        ),
+        # HTML tags as escaped entities in list items
+        (
+            "<ul><li>Item with &lt;/span&gt; tag</li></ul>",
+            ["Found HTML tags in text: ['</span>']"],
+        ),
+        # HTML tags as escaped entities in headers
+        (
+            "<h1>Header with &lt;/span&gt; tag</h1>",
+            ["Found HTML tags in text: ['</span>']"],
+        ),
+        # HTML tags as escaped entities in table cells
+        (
+            "<table><tr><td>Cell with &lt;/div&gt; tag</td></tr></table>",
+            ["Found HTML tags in text: ['</div>']"],
+        ),
+        # Nested KaTeX with HTML tags as escaped entities
+        (
+            '<p><span class="katex"><span class="katex-html">π: C &lt;/span&gt; A</span></p>',
+            ["Found HTML tags in KaTeX: ['</span>']"],
+        ),
+        # Mixed: valid spans in HTML structure but no tags in text
+        (
+            '<p>Text <span class="monospace-arrow">→</span> more text</p>',
+            [],
+        ),
+    ],
+)
+def test_check_html_tags_in_text(html, expected):
+    """Test the check_html_tags_in_text function.
+
+    Note: HTML closing tags like </span> must be escaped as &lt;/span&gt; in the test HTML
+    so that BeautifulSoup doesn't parse them as actual HTML structure. When the HTML is
+    parsed, these entities are converted back to < and >, so the text content will contain
+    the literal </span> string that we're checking for.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_html_tags_in_text(soup)
+
+    # Check that we got the expected number of issues
+    assert len(result) == len(expected)
+
+    # Check that each expected substring is in the results
+    for expected_msg in expected:
+        assert any(
+            expected_msg in issue for issue in result
+        ), f"Expected '{expected_msg}' not found in results: {result}"
+
+
+def test_check_html_tags_in_text_real_world_katex():
+    """Test with a real-world KaTeX example that should pass."""
+    html = """
+    <p>Consider the function
+    <span class="katex">
+        <span class="katex-html" aria-hidden="true">
+            <span class="base">
+                <span class="mord mathnormal" style="margin-right:0.03588em;">π</span>
+                <span class="mspace" style="margin-right:0.2778em;"></span>
+                <span class="mrel">:</span>
+                <span class="mspace" style="margin-right:0.2778em;"></span>
+            </span>
+            <span class="base">
+                <span class="mord mathnormal" style="margin-right:0.07153em;">C</span>
+                <span class="mspace" style="margin-right:0.2778em;"></span>
+                <span class="mrel">→</span>
+                <span class="mspace" style="margin-right:0.2778em;"></span>
+            </span>
+            <span class="base">
+                <span class="mord mathnormal">A</span>
+            </span>
+        </span>
+    </span>
+    which maps elements.</p>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_html_tags_in_text(soup)
+    # Should pass - the spans are part of the HTML structure, not text content
+    assert result == []
