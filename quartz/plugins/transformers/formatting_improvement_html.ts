@@ -2,7 +2,6 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { type Transformer } from "unified"
-import { visit } from "unist-util-visit"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 

@@ -11,7 +11,7 @@ import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
-import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_text"
+import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
 import { createWinstonLogger } from "../plugins/transformers/logger_utils"
 import { type TocEntry } from "../plugins/transformers/toc"
 import {

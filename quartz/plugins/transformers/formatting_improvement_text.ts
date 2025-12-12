@@ -82,7 +82,6 @@ export function noteAdmonition(text: string): string {
 const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<quote>\n)/gm
 const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
-export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
