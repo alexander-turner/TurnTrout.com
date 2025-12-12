@@ -1,7 +1,8 @@
 import type { Node } from "hast"
 import type { Root, Heading } from "mdast"
 
-import { visit, SKIP } from "unist-util-visit"
+import { SKIP } from "unist-util-visit"
+import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -103,11 +104,15 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
               let highestDepth: number = opts.maxDepth
               let hasFootnotes = false
 
-              visit(tree, (node: Node) => {
+              visitParents(tree, (node: Node, ancestors) => {
                 if (
-                  hasAncestor(node as ElementMaybeWithParent, (anc: Node) => {
-                    return anc.type === "blockquote"
-                  })
+                  hasAncestor(
+                    node as ElementMaybeWithParent,
+                    (anc: Node) => {
+                      return anc.type === "blockquote"
+                    },
+                    ancestors,
+                  )
                 )
                   return SKIP
 

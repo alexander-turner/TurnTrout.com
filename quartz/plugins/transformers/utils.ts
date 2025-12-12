@@ -167,21 +167,24 @@ export interface ElementMaybeWithParent extends Element {
   parent: ElementMaybeWithParent | null
 }
 
-// Does node have an ancestor that satisfies the predicate?
+/**
+ * Check if a node or any of its ancestors satisfies the given predicate.
+ *
+ * @param node - The node to check
+ * @param ancestorPredicate - Function to test each node/ancestor
+ * @param ancestors - Array of ancestor nodes from visitParents
+ * @returns true if the node or any ancestor satisfies the predicate
+ */
 export function hasAncestor(
-  node: ElementMaybeWithParent,
+  node: Element,
   ancestorPredicate: (anc: Element) => boolean,
+  ancestors: Parent[],
 ): boolean {
-  let ancestor: ElementMaybeWithParent | null = node
+  // Check the node itself first
+  if (ancestorPredicate(node)) return true
 
-  while (ancestor) {
-    if (ancestorPredicate(ancestor)) {
-      return true
-    }
-    ancestor = ancestor.parent
-  }
-
-  return false
+  // Check all ancestors
+  return ancestors.some((anc) => ancestorPredicate(anc as Element))
 }
 
 // Does node have a class that includes the given className?
