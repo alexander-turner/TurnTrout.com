@@ -50,12 +50,8 @@ date_updated: 2025-11-22 00:21:52.667251
 
 
 
-> [!thanks]
->This insight was made possible by many conversations with Quintin Pope, where he challenged my implicit assumptions about alignment. I’m not sure who came up with this particular idea.
 
 In this essay, I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
-
-ETA 9/18/23: This post addresses the model-free policy gradient setting, including algorithms like PPO and REINFORCE.
 
 > [!quote]  [Reinforcement learning: An introduction](http://www.incompleteideas.net/sutton/book/first/Chap1PrePub.pdf)
 > Reinforcement learning is learning what to do—how to map situations to actions **so as to maximize a numerical reward signal**.
@@ -68,6 +64,11 @@ Therefore, _reward is not the optimization target_ in two senses:
 
 1. Deep reinforcement learning agents will not come to intrinsically and primarily value their reward signal; reward is not _the trained agent’s_ optimization target.
 2. Utility functions express the _relative goodness_ of outcomes. Reward _is not best understood_ as being a kind of utility function. Reward has the mechanistic effect of _chiseling cognition into the agent's network_. Therefore, properly understood, reward does not express relative goodness and _does not automatically describe the values of the trained AI_.
+
+> [!thanks]
+>This insight was made possible by many conversations with Quintin Pope, where he challenged my implicit assumptions about alignment. I’m not sure who came up with this particular idea.
+
+ETA 9/18/23: This post addresses the model-free policy gradient setting, including algorithms like PPO and REINFORCE.
 
 # Reward probably won’t be a deep RL agent’s primary optimization target
 
@@ -130,7 +131,7 @@ Obviously, these conditions aren’t true in the real world. Your learning algor
             2. This reasoning follows for most inner goals by instrumental convergence.
         2. On my current best model, this is why people usually don’t wirehead. They learn their own values via deep RL, like caring about dogs, and these actual values are opposed to the person they would become if they wirehead.
 3. Don’t some people terminally care about reward?
-    1. I think so! I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start chiseled computations about reward _after_ it has chiseled other kinds of computations (e.g. putting away trash). More on this in later essays.
+    1. I think so! I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start chiseled computations about reward _after_ it has chiseled other kinds of computations (e.g. putting away trash).
 4. But what if the AI bops the reward button early in training, while exploring? Then credit assignment would make the AI more likely to hit the button again.
     1. Then keep the button away from the AI until it can model the effects of hitting the cognition-updater button.[^7]
     2. For the reasons given in the “siren” section, a sufficiently reflective AI probably won’t seek the reward button on its own.
@@ -153,7 +154,7 @@ Obviously, these conditions aren’t true in the real world. Your learning algor
 
 At this point, I don't see a strong reason to focus on the “reward optimizer” hypothesis. The idea that AIs will get really smart and primarily optimize some reward signal… I don’t know of any tight mechanistic stories for that. I’d love to hear some, if there are any.
 
-As far as I’m aware, the strongest evidence left for agents intrinsically valuing cognition-updating is that some humans _do_ strongly (but not uniquely) value cognition-updating,[^8] and many humans seem to value it weakly, and humans are probably RL agents in the appropriate ways. So we definitely can’t _rule out_ agents which strongly (and not just weakly) value the cognition-updater. But it’s also _not_ the overdetermined default outcome. More on that in future essays.
+As far as I’m aware, the strongest evidence left for agents intrinsically valuing cognition-updating is that some humans _do_ strongly (but not uniquely) value cognition-updating,[^8] and many humans seem to value it weakly, and humans are probably RL agents in the appropriate ways. So we definitely can’t _rule out_ agents which strongly (and not just weakly) value the cognition-updater. But it’s also _not_ the overdetermined default outcome.
 
 It’s true that reward _can_ be an agent’s optimization target, but what reward _actually does_ is reinforce computations which lead to it. A particular alignment proposal might argue that a reward function will _reinforce the agent into a shape such that it intrinsically values reinforcement_, and that the _cognition-updater goal is also a human-aligned optimization target_, but this is still just one particular approach of using the cognition-updating to produce desirable cognition within an agent. Even in that proposal, the primary mechanistic function of reward is reinforcement, not optimization-target.
 
@@ -210,7 +211,7 @@ I don't think it's just sloppy talk, I think it's incorrect belief in many cases
     >
     > The local mapping from gradient directions to behaviors is given by the neural tangent kernel, and the learnability of different behaviors is given by the NTK’s eigenspectrum, which [seems to adapt to the task at hand](https://arxiv.org/abs/2008.00938), making the network quicker to learn along behavioral dimensions similar to those it has already acquired.
 
-[^6]: Quintin Pope remarks: “The AI would probably want to establish **control** over the button, if only to ensure its values aren't updated in a way it wouldn't endorse. Though that's an example of convergent powerseeking, not reward seeking.”
+[^6]: Quintin Pope remarks: “The AI would probably want to establish **control** over the button, if only to ensure its values aren't updated in a way it wouldn't endorse. Though that's an example of convergent power-seeking, not reward seeking.”
 
 [^7]: For mechanistically similar reasons, keep cocaine out of the crib until your children can model the consequences of addiction.
 
