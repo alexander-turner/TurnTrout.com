@@ -13,18 +13,21 @@ aliases:
 - llm-specification-gaming
 - reward-retrospective
 ---
+ 
 
-  
+[Reward is not the optimization target](/reward-is-not-the-optimization-target) (which I wrote in 2022) made three[^quantity] main claims. The first two claims were true then and they're true now. The third claim was an empirical prediction with a mixed track record.
 
-[Reward is not the optimization target](/reward-is-not-the-optimization-target) (which I wrote in 2022) made three main claims. The first two claims were true then and they're true now. The third claim was an empirical prediction with a mixed track record.
+[^quantity]: The original post demarcated _two_ main claims, but I think I should have pointed out the third (definitional) point I made throughout.
 
-|                                                   Claim | Status |
-| ------------------------------------------------------: | :----- |
-| Reward is not _definitionally_ the optimization target. | ✅      |
-|                          Reward functions aren't goals. | ✅      |
-|   RL-trained systems won't primarily prioritize reward. | ⚠️     |
+|                                                                  Claim | Status |
+| ---------------------------------------------------------------------: | :----- |
+| Reward is not _definitionally_[^definitional] the optimization target. | ✅      |
+|                                         Reward functions aren't goals. | ✅      |
+|                  RL-trained systems won't primarily prioritize reward. | ⚠️     |
 
-As consolation, the bitterness of admitting error in one claim is tempered by the correctness of the remainder. Consolation aside, I must note the misprediction, both as a matter of social account (so I may receive credit for the correct predictions and a debit for the misprediction) but also as a matter of understanding. If I erred, then why?
+[^definitional]: A reviewer commented, "I don't care for [definitional arguments](https://www.readthesequences.com/The-Parable-Of-Hemlock)". Neither do I. However, [many people _did_](/reward-is-not-the-optimization-target#appendix-the-field-of-rl-thinks-reward-is-the-optimization-target) argue that the definition of RL implied danger (see: Eliezer Yudkowsky's [List of Lethalities](/disagreements-with-list-of-lethalities#lethality-19-reward-optimization-kills-you), the most-upvoted post in LessWrong history). I'm just debunking the bad "by definition" argument.
+
+I must note the misprediction, both as a matter of social account (so I may receive credit for the correct claims and a debit for the misprediction) but also as a matter of understanding. If I erred, then why?
 
 > [!quote] François de La Rochefoucauld
 > No persons are more frequently wrong, than those who will not admit they are
@@ -36,13 +39,13 @@ wrong.
 
 Subtitle: ✅ Theoretical point and correct independently of empirical results.
 
-In common (policy-gradient) RL approaches, the mechanistic function of reward is to _reinforce_ computations which led to the reward. There is no intrinsic or definitional reason why the trained system should care about this "reward" quantity.
+In common (policy-gradient) RL approaches, the mechanistic function of reward is to _reinforce_ computations which led to the reward. There is no intrinsic or definitional reason why the trained system should care about this "reward" quantity. However (as I noted), close correlates (like "looking good") still _can_ become the optimization target --- that just needs more argumentation.
 
 ## 2: Reward functions aren't goals
 
 Subtitle: ✅ Theoretical point and correct independently of empirical results.
 
-The reward function isn't a good way to express "goals". The reward function is instead a tool which helps reinforce and chisel certain subroutines into trained systems.
+In realistic settings we care about, the reward function isn't a good way to express "goals". The reward function is instead a tool which helps reinforce and chisel certain subroutines into trained systems.
 
 ## 3: RL-trained systems won't prioritize reward
 
@@ -62,7 +65,7 @@ For example, I said that after reinforcing an agent for eating pizza, that agent
 
 Subtitle: ✅ True so far.
 
-In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried to gradually nudge Claude to eventually modify its own reward function. Claude nearly never did so (8/33,000, whereas I would have predicted about 128/33,000) despite the "reward function" [being clearly broken](https://www.alignmentforum.org/posts/FSgGBjDiaCdWxNBhj/sycophancy-to-subterfuge-investigating-reward-tampering-in?commentId=GQEZcovfaugLMAgAW). This could happen in the future, probably because of [self-fulfilling misalignment](/self-fulfilling-misalignment) about misaligned AIs caring about maximizing reward.
+In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried to gradually nudge Claude to eventually modify its own reward function. Claude nearly never did so (modifying the function in just 8 of 33,000 trials, whereas I would have predicted about 128 modifications) despite the "reward function" [being clearly broken](https://www.alignmentforum.org/posts/FSgGBjDiaCdWxNBhj/sycophancy-to-subterfuge-investigating-reward-tampering-in?commentId=GQEZcovfaugLMAgAW). This could happen in the future, probably because of [self-fulfilling misalignment](/self-fulfilling-misalignment) about misaligned AIs caring about maximizing reward.
 
 > [!question] How wrong were my predictions, exactly?
 >
@@ -82,7 +85,7 @@ In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried
 
 # I didn't fully get the implications of "LLMs can already read"
 
-When rereading my post from 2022, _the reasoning (surprisingly) still seems correct_. :) Consider:
+When rereading my post from 2022, the reasoning still seems correct.
 
 > [!quote] [Reward probably won’t be a deep RL agent’s primary optimization target](/reward-is-not-the-optimization-target#reward-probably-won-t-be-a-deep-rl-agent-s-primary-optimization-target)
 > The reward chisels cognition which increases the probability of the reward accruing next time.
@@ -128,10 +131,6 @@ To my credit, I noted my ignorance!
 Without knowing that pretraining in particular was important, how could I have done better? I could have challenged the assumption directly: "For some reason, I strongly believe that AIs likely won't know about 'reward' and 'training' before they form values. Why do I believe this? If I were wrong about this, how surprised would I feel? What evidence supports this belief, and what weighs against? What are the most likely ways in which this could be wrong?".
 
 # Conclusion
-  
-LLMs can strongly prioritize looking good to their supervisor. I was surprised in part because I didn't understand pre-training when I wrote the original post.
-
-However, that post remains crucially important for its two other claims. It's _still_ wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)). It's _still_ [misguided to attempt to directly represent a goal via a reward function](/against-inner-outer-alignment#loss-doesn-t-have-to-represent-intended-goals).
 
 | Claim | Status |
 | --: | :-- |
@@ -139,5 +138,9 @@ However, that post remains crucially important for its two other claims. It's _s
 | Reward functions aren't goals. | ✅ |
 | RL-trained systems won't primarily prioritize reward. | ⚠️ |
 
+LLMs can strongly prioritize looking good to their supervisor. I was surprised in part because I didn't understand pre-training when I wrote the original post.
+
+However, that post remains crucially important for its other claims. It's _still_ wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)). It's _still_ [misguided to attempt to directly represent a goal via a reward function](/against-inner-outer-alignment#loss-doesn-t-have-to-represent-intended-goals). As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
+
 > [!thanks]
-> Alex Cloud and Garrett Baker gave feedback.
+> Alex Cloud, Garrett Baker, and Peter Barnett gave feedback.
