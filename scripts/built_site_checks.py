@@ -1145,11 +1145,9 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
         ["p", "li", "td", "th", "dd", "dt", "h1", "h2", "h3", "h4", "h5", "h6"]
     )
     for element in text_elements:
-        # Get text excluding code blocks but including KaTeX
         text_content = script_utils.get_non_code_text(
             element, replace_with_placeholder=False
         )
-
         matches = html_tag_pattern.findall(text_content)
         if matches:
             _append_to_list(
@@ -1157,7 +1155,6 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
                 f"Found HTML tags in text: {matches} in element: {str(element)[:100]}...",
             )
 
-    # Also check KaTeX elements specifically
     katex_elements = soup.find_all(class_="katex")
     for katex in katex_elements:
         text_content = katex.get_text()

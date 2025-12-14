@@ -164,7 +164,6 @@ This isn't a list of _demands_ or anything, just ingredients for a good relation
 - Non-avoidant attachment style
 - The kind of girl [^ethical]who would have refused to obey in [the Milgram experiment](https://en.wikipedia.org/wiki/Milgram_experiment) 🥰
 - Spontaneous and medium-adventurous, but not to the point where you're trying to backflip out of a plane while naked even though it's 10:30 PM and we have an early morning the next day...
-- Some dispositional _je ne sais quoi_ which makes me feel at ease.
   [^ethical]: AKA, ethical in the "I'll actually stand up in real life" way and not just ethical in the "I'll talk for hours about the nature of goodness" way.
 
 If this sounds like a nice potential connection, I'd love to:
