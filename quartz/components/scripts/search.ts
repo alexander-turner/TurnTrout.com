@@ -522,18 +522,13 @@ async function handleResultNavigation(
   // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
-  // Get the previous sibling element if it exists, otherwise return the element itself.
   /* skipcq: JS-D1001 */
-  const prevSibling = (el: HTMLElement): HTMLElement =>
-    el.previousElementSibling ? (el.previousElementSibling as HTMLElement) : el
+  const prevSibling = (el: HTMLElement): HTMLElement | null =>
+    el.previousElementSibling ? (el.previousElementSibling as HTMLElement) : null
 
-  /**
-   * Get the next sibling element if it exists, otherwise return the
-   * element itself.
-   */
   /* skipcq: JS-D1001 */
-  const nextSibling = (el: HTMLElement): HTMLElement =>
-    el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : el
+  const nextSibling = (el: HTMLElement): HTMLElement | null =>
+    el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : null
 
   const canNavigate = document.activeElement === searchBar || currentHover !== null
 
@@ -546,6 +541,20 @@ async function handleResultNavigation(
     if (!target) return
     await displayPreview(target)
     focusCard(target)
+  }
+
+  /**
+   * Get the element to navigate to, handling the case when currentHover is null
+   * by starting from the first result.
+   */
+  const getNavigationTarget = (
+    getTarget: (el: HTMLElement) => HTMLElement | null,
+  ): HTMLElement | null => {
+    if (currentHover) {
+      return getTarget(currentHover)
+    }
+    // If no current hover, start from the first result
+    return document.getElementsByClassName("result-card")[0] as HTMLElement | null
   }
 
   switch (e.key) {
@@ -573,9 +582,11 @@ async function handleResultNavigation(
 
     case "ArrowUp": {
       e.preventDefault()
-      if (canNavigate) {
-        const toShow = prevSibling(currentHover as HTMLElement)
-        await focusAndPreview(toShow)
+      if (canNavigate && currentHover) {
+        const toShow = prevSibling(currentHover)
+        if (toShow) {
+          await focusAndPreview(toShow)
+        }
       }
       break
     }
@@ -583,8 +594,10 @@ async function handleResultNavigation(
     case "ArrowDown": {
       e.preventDefault()
       if (canNavigate) {
-        const toShow = nextSibling(currentHover as HTMLElement)
-        await focusAndPreview(toShow)
+        const toShow = getNavigationTarget(nextSibling)
+        if (toShow) {
+          await focusAndPreview(toShow)
+        }
       }
       break
     }
@@ -592,10 +605,10 @@ async function handleResultNavigation(
     case "Tab": {
       e.preventDefault()
       if (!canNavigate) break
-      const toShow = e.shiftKey
-        ? prevSibling(currentHover as HTMLElement)
-        : nextSibling(currentHover as HTMLElement)
-      await focusAndPreview(toShow)
+      const toShow = getNavigationTarget(e.shiftKey ? prevSibling : nextSibling)
+      if (toShow) {
+        await focusAndPreview(toShow)
+      }
       break
     }
 
@@ -733,6 +746,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
 
   if (el) {
     el.classList.add("focus")
+    currentHover = el
 
     if (keyboardFocus) {
       el.focus()

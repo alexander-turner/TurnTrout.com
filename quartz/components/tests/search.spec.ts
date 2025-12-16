@@ -103,6 +103,25 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   })
 })
 
+test("ArrowDown navigation does not get stuck below the second result", async ({ page }) => {
+  await search(page, "Steering")
+  await page.waitForLoadState("domcontentloaded")
+
+  const resultCards = page.locator(".result-card")
+  await expect(resultCards.nth(0)).toBeVisible()
+
+  const totalResults = await resultCards.count()
+  expect(totalResults).toBeGreaterThan(2)
+
+  await expect(resultCards.nth(0)).toHaveClass(/focus/)
+
+  await page.keyboard.press("ArrowDown")
+  await expect(resultCards.nth(1)).toHaveClass(/focus/)
+
+  await page.keyboard.press("ArrowDown")
+  await expect(resultCards.nth(2)).toHaveClass(/focus/)
+})
+
 test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
