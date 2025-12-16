@@ -38,6 +38,7 @@ ASSET_STAGING_DIR="$GIT_ROOT"/website_content/asset_staging
 # Only proceed if asset staging directory is not empty
 if [ -n "$(ls -A "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
     uv run python "$GIT_ROOT"/scripts/replace_asset_staging_refs.py
+    mkdir -p "$STATIC_DIR"/images/posts
     mv "$ASSET_STAGING_DIR"/* "$STATIC_DIR"/images/posts
 fi
 
