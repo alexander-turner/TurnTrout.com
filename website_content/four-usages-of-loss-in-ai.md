@@ -110,7 +110,7 @@ Suppose you told me, "`TurnTrout`, we have definitely produced a loss function w
 - Suppose I went to the computer where the miraculous loss function is implemented. What should I expect to see when I read the code / do interpretability on the trained loss-model?
 - Suppose I inspected the model data for the purportedly inner-aligned agent, and used powerful interpretability tools on the model. What kind of cognition would I expect to find?
 
-These two points matter. For example, see section (3) for three concrete operationalizations of "loss function is aligned" which imply substantially different generalization behavior from the AI. In that kind of scenario, the AI's generalization properties _sensitively depend_ both on the loss function which trained the model, and on the cognition which is aligned to that model.  Usually, when I read writing on outer/inner alignment, I end up feeling confused about what exactly I'm supposed to be imagining.[^2] I often wonder whether there exists a concrete example at all!
+These two points matter. For example, see [section 3](#3-loss-functions-representing-goals) for three concrete operationalizations of "loss function is aligned" which imply substantially different generalization behavior from the AI. In that kind of scenario, the AI's generalization properties _sensitively depend_ both on the loss function which trained the model, and on the cognition which is aligned to that model.  Usually, when I read writing on outer/inner alignment, I end up feeling confused about what exactly I'm supposed to be imagining.[^2] I often wonder whether there exists a concrete example at all!
 
 As I said above:
 
