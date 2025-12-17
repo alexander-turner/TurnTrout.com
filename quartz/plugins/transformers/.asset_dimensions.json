@@ -5990,5 +5990,9 @@
   "https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif": {
     "width": 860,
     "height": 621
+  },
+  "./asset_staging/llms-cheat-a-lot-12172025.png": {
+    "width": 524,
+    "height": 575
   }
 }
