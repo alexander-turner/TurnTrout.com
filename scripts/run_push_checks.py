@@ -491,8 +491,7 @@ def run_command(
     try:
         if step.interactive:
             return run_interactive_command(step, progress, task_id)
-        else:
-            return run_non_interactive_command(step, progress, task_id)
+        return run_non_interactive_command(step, progress, task_id)
     except subprocess.CalledProcessError as e:
         stdout = getattr(e, "stdout", "") or ""
         stderr = getattr(e, "stderr", "") or ""
