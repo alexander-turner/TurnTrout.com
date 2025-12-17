@@ -65,7 +65,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 >
 > ![Line chart of "Layer Horizon vs Loss of GPT2-XL (48 layers)." As the layer horizon on the x-axis increases, the model's loss on the y-axis smoothly falls from a high of nearly 9 to approach the baseline loss of 3.1418. The sharpest decrease occurs between a layer horizon of 10 and 25.](https://assets.turntrout.com/static/images/posts/layer-horizon-gpt2xl.avif)
 >
->  We clearly see the same pattern again. As `TurnTrout` predicted, there seems be something like an exponential decay in the importance of previous layers as you go further back. I expect that on large models the effective layer horizon is an important consideration. ([Source code](https://gist.github.com/UFO-101/41b7ff0b250babe69bf16071e76658a6))
+> We clearly see the same pattern again. As `TurnTrout` predicted, there seems be something like an exponential decay in the importance of previous layers as you go further back. I expect that on large models the effective layer horizon is an important consideration. ([Source code](https://gist.github.com/UFO-101/41b7ff0b250babe69bf16071e76658a6))
 
 However, there _is_ a confounder. Suppose the layer horizon is 1. Consider the computation performed by layer 0's attention and MLP sublayers. Because layer 0 already uses all relevant information in its outputs (i.e. the embeddings), its computation is not affected if the layer horizon increases to 2. More generally, all layers up through $n$ are not affected by the layer horizon as long as the horizon is strictly greater than $n$. In a model like GPT-2-XL with 48 layers, shifts in layer horizon are less meaningful for e.g. $n>25$.
 

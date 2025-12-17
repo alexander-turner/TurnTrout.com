@@ -32,6 +32,7 @@ Figure: Using `lost-pixel` to examine and reject an unintended change.
 # Best practices
 
 To get started, here are two best-practices guides which I recommend:
+
 1. [Official Playwright best practices](https://playwright.dev/docs/best-practices), and
 2. [Say Goodbye to Flaky Tests: Playwright Best Practices Every Test Automation Engineer Must Know.](https://medium.com/@samuel.sperling/say-goodbye-to-flaky-tests-playwright-best-practices-every-test-automation-engineer-must-know-9dfeb9bb5017)
 

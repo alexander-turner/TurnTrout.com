@@ -177,14 +177,14 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 [^4]: I am so thankful to everyone who gave me advice. Summarizing for future readers:
 
-    - Speak in terms of the [concrete problems in AI safety](https://arxiv.org/abs/1606.06565) to avoid immediately getting pattern-matched.
-    - Frame project ideas (in part) with respect to their relevance to current ML systems.
+- Speak in terms of the [concrete problems in AI safety](https://arxiv.org/abs/1606.06565) to avoid immediately getting pattern-matched.
+- Frame project ideas (in part) with respect to their relevance to current ML systems.
 
-    - Explore [all your funding options](http://www.xriskfunding.com), including:
-      - [Open Philanthropy](https://www.openphilanthropy.org/focus/global-catastrophic-risks/potential-risks-advanced-artificial-intelligence/open-philanthropy-project-ai-fellows-program#examples)
-      - [Berkeley Existential Risk Initiative](http://existence.org/)
-      - [Future of Life Institute](https://futureoflife.org/grants-rfp/)
-      - [Paul Christiano's funding for independent alignment research](https://docs.google.com/document/d/1NIg4OnQyhWGR01fMVTcxpz8jDd68JdDIyQb0ZZyB-go/edit?usp=sharing)
+- Explore [all your funding options](http://www.xriskfunding.com), including:
+  - [Open Philanthropy](https://www.openphilanthropy.org/focus/global-catastrophic-risks/potential-risks-advanced-artificial-intelligence/open-philanthropy-project-ai-fellows-program#examples)
+  - [Berkeley Existential Risk Initiative](http://existence.org/)
+  - [Future of Life Institute](https://futureoflife.org/grants-rfp/)
+  - [Paul Christiano's funding for independent alignment research](https://docs.google.com/document/d/1NIg4OnQyhWGR01fMVTcxpz8jDd68JdDIyQb0ZZyB-go/edit?usp=sharing)
 
 [^5]: I'd like to emphasize that support for AI safety research is quickly becoming more mainstream in the professional AI community, and may soon become the majority position (if it is not already).
 

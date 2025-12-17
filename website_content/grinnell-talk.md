@@ -90,6 +90,7 @@ Would swarms of ASIs attempt to overthrow human order? My [thesis on avoiding po
 Overall, I think there's a good chance an ASI might attempt to wrest power from humans. Of course, the way we design and train these systems could prevent this, or a future with many AIs might create a stable, non-exploitable system.
   
 To summarize:
+
 1. AIs doing AI research might form a positive feedback loop where AIs make themselves smarter and thus better at making themselves smarter. An "intelligence explosion."
 2. A superhumanly intelligent system might have bad goals and then kill or disempower humanity to stop us from getting in its way.
 

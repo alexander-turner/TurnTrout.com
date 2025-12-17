@@ -36,7 +36,7 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 |        **Long-term strategic shifts** |                 Ongoing                  |                  Variable                  | Builds personal and communal resilience against surveillance.                               |
 
 > [!info]  I'm only speaking for myself
->  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+> My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
 >
 # New concepts
 
@@ -60,6 +60,7 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 > Many of the most vulnerable are least able to follow the recommendations in this section. To them, I would say: [switch from Windows to Linux Mint](#switch-away-from-windows) (free!) and then advance to the "[Secure your digital footprint](#secure-your-digital-footprint-in-3-hours)" section.
 >
 > The subsections are in descending order of importance. If you have some money to spend, then I'd focus on:
+>
 > 1. Switching to GrapheneOS,
 > 2. Switching to Linux (free) or MacOS (famously not free), and
 > 3. Owning your home router (and modem if relevant).
@@ -88,7 +89,7 @@ I'm going to be real with you: the switch will be inconvenient at first. It took
 If you're technically comfortable, I recommend buying a Pixel 9a  for about \$499 directly from Google (if you buy from a carrier, you might hit issues).  Then [install the OS yourself](https://grapheneos.org/install/web) -- the process is surprisingly straightforward!
 
 - [ ] [Buy a Pixel 9a normally](https://store.google.com/product/pixel_9a).
-    - [ ] [Install GrapheneOS.](https://grapheneos.org/install/web)
+  - [ ] [Install GrapheneOS.](https://grapheneos.org/install/web)
 - [ ] If you aren't comfortable setting it up yourself, [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
 
 #### For any Android user: download apps from Obtainium and Aurora
@@ -116,6 +117,7 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 
 > [!tip] Complicated installations from these guides
 > I recommend adding all of these configurations to your Obtainium so you can install them. Make sure to uninstall any existing versions first.
+>
 > - [ ] AnyType,
 > - [ ] AppVerifier,
 > - [ ] Aurora Store,
@@ -178,7 +180,7 @@ If you have a Windows computer, you can just install Linux Mint on your computer
 
 Mac is also way more private than Windows. I use a Mac and I'm happy with it, but if I could go back and change my choice, I might've gone with Linux. Reason being: Mac requires trust in Apple since MacOS is _not open source_. However, I think [Apple has a good track record when it comes to user privacy](https://en.wikipedia.org/wiki/Apple%E2%80%93FBI_encryption_dispute) (with a few [exceptions](https://proton.me/blog/protect-data-apple-adp-uk)). Furthermore, Apple is vertically integrated and so manufactures their own CPUs and laptops. That produces a more secure experience.
 
- - [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
+- [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
 
 ## Own your home network
 
@@ -210,6 +212,7 @@ Sadly, you can't just buy whatever modem you want. Each ISP has a set of allowed
 Don't rent a router from a company that wants to harvest your data. Instead, I strongly recommend buying a router from [GL.iNet](https://www.gl-inet.com/). These devices come preinstalled with OpenWrt - the gold standard for open-source router software. I recommend the [GL.iNet Flint 2](https://www.amazon.com/GL-iNet-GL-MT6000-Multi-Gig-Connectivity-WireGuard/dp/B0CP7S3117), which costs \$140 and is powerful enough for a whole house.
 
 Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
+
 1. Easy to install your Proton VPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  Normally, a smart TV would not even be able to use a VPN.
 2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
@@ -259,8 +262,8 @@ Normal smart TVs track lots of your data. Apple TVs are much better.
 > [!quote] [Breaking down why Apple TVs are privacy advocates’ go-to streaming device](https://arstechnica.com/gadgets/2025/06/all-the-ways-apple-tv-boxes-do-and-mostly-dont-track-you/)
 > It remains technologically possible for Apple to introduce intrusive tracking or ads to Apple TV boxes, but for now, the streaming devices are more private than the vast majority of alternatives, save for dumb TVs (which are incredibly hard to find these days). And if Apple follows its own policies, much of the data it gathers should be kept in-house.
   
-  - [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1).
-  - [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead.
+- [ ] Purchase an [Apple TV](https://www.amazon.com/2022-Apple-TV-64GB-generation/dp/B0CFM7YT8S/ref=sr_1_1?sr=8-1).
+- [ ] Disconnect your smart TV from the internet. Use the Apple TV as a hub instead.
 
 # Secure your digital footprint in 3 hours
 
@@ -291,6 +294,7 @@ Subtitle: Cost: Free for up to 10 new virtual cards per month. Time: 15 minutes.
 Companies buy your data because it helps them predict what you'll do. The government wants it for similar reasons. As we do not live in a world with E2EE transactions between buyers and sellers, we must settle for imperfect protection.
 
 Services like [Privacy.com](https://privacy.com) generate single-use or merchant-locked virtual credit cards. This prevents merchants from:
+
 - Charging you after cancellation,
 - Making it hard for you to cancel (just delete the virtual card),
 - Exposing your real card in data breaches.
@@ -399,6 +403,7 @@ After following the first guide, you already have [a good browser](/privacy-desp
 - [ ] Install the official Tor browser.
 
 > [!warning]
+>
 > 1. Tor connections look much more suspicious than VPN connections. [Connect to a VPN before connecting to Tor.](https://www.privacyguides.org/en/advanced/tor-overview/) While the authorities can't necessarily tell _which_ site you're connecting to, they _can_ tell you're connecting to Tor unless you use a VPN at the same time.
 >     1. [ ] If VPNs are banned and you don't want to get caught using Tor, you need to enable the `obsf4` bridge. Go to `about:preferences#connection` and tap "select a built-in bridge" and then choose `obsf4`.
 > 2. Never configure the Tor Browser's `about:config` or install extensions. That'll make you easier to "fingerprint" and [separate you from the herd.](https://www.privacyguides.org/en/tor/#tor-browser)
@@ -548,10 +553,10 @@ Assume that all social media activity is monitored by [ICE's Homeland Security I
 
 > [!quote] [EFF to Department Homeland Security: No Social Media Surveillance of Immigrants](https://www.eff.org/deeplinks/2025/06/eff-department-homeland-security-no-social-media-surveillance-immigrants)
 > EFF submitted comments to the Department of Homeland Security (DHS) and its subcomponent U.S. Citizenship and Immigration Services (USCIS), urging them to abandon a proposal to collect social media identifiers on forms for immigration benefits. This collection would mark yet a further expansion of the government’s efforts to subject immigrants to social media surveillance, invading their privacy and chilling their free speech and associational rights for fear of being denied key immigration benefits.
->  
+>
  > Specifically, the proposed rule would require applicants to disclose their social media identifiers on nine immigration forms, including applications for permanent residency and naturalization, impacting more than 3.5 million people annually. USCIS’s purported reason for this collection is to assist with identity verification, as well as vetting and national security screening, to comply with Executive Order 14161. USCIS separately announced that it would look for “antisemitic activity” on social media as grounds for denying immigration benefits, which appears to be related to the proposed rule, although not expressly included it.
->  
->  Additionally, a day after the proposed rule was published, Axios reported that the State Department, the Department of Justice, and DHS confirmed a joint collaboration called “Catch and Revoke,” using AI tools to review student visa holders’ social media accounts for speech related to “pro-Hamas” sentiment or “antisemitic activity.”
+>
+> Additionally, a day after the proposed rule was published, Axios reported that the State Department, the Department of Justice, and DHS confirmed a joint collaboration called “Catch and Revoke,” using AI tools to review student visa holders’ social media accounts for speech related to “pro-Hamas” sentiment or “antisemitic activity.”
 
 Not much you can do besides being [pseudonymous](#be-pseudonymous-when-possible). Be as brave as you can be in your situation. Try not to give in to the chilling effect-- I recommend that US citizens not give a damn.
 
@@ -575,6 +580,7 @@ Figure: My laptop's generic name.
 - [ ] Rename your devices to have generic names.
 
 As a reminder, your Bluetooth devices and other broadcastable names may include other smart devices:
+
   1. Laptop
   2. Phone
   3. Watch
@@ -584,6 +590,7 @@ As a reminder, your Bluetooth devices and other broadcastable names may include 
   7. Mobile hotspot
 
 Other tips:
+
  1. Turn off specialized devices when not using them. For example, a smart speaker.  
  2. Disconnect from unknown Bluetooth devices.
  3. Putting on some music in your friend's car? Give it minimal permissions --- don't let it suck up your entire contacts list.
@@ -598,6 +605,7 @@ The US government may engage in financial warfare against its critics. [Stephen 
 > The power of law enforcement, under President Trump’s leadership, will be used to find you, will be used to take away your money, take away your power, and, if you’ve broken the law, to take away your freedom.
 
 Before we reach that point, I recommend you immediately:
+
 - [ ] Purchase [a fireproof and waterproof safe](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1160/dp/B008NHKWZU/ref=sr_1_9?sr=8-9) to keep in your home,
 - [ ] Withdraw up to \$2,000 in cash and store it in the safe, and
 - [ ] Ensure your passport is current and ready for international travel. Probably store it in the safe as well.
@@ -668,9 +676,9 @@ Element offers [a migration wizard](https://element.io/blog/slack-migration/) to
 > #### Phase 2: gradual adoption (weeks 3-8)
 >
 > - [ ] Start moving sensitive conversations to Element:
->     - Policy discussions that could be politically risky.
->     - Organizing around workplace issues.
->     - Any communication with non-US citizens about political topics.
+>   - Policy discussions that could be politically risky.
+>   - Organizing around workplace issues.
+>   - Any communication with non-US citizens about political topics.
 >
 > #### Phase 3: expand usage (months 2-6)
 >
@@ -702,9 +710,9 @@ Later, [I propose](#x-migration-plan) a two-month migration during which you cro
 > [!quote] [Government censorship comes to Bluesky, but not its third-party apps … yet](https://techcrunch.com/2025/04/23/government-censorship-comes-to-bluesky-but-not-its-third-party-apps-yet/)
 > Bluesky restricted access to 72 accounts in Turkey at the request of Turkish governmental authorities, according to a [recent report](https://stockholmcf.org/bluesky-restricts-access-to-72-accounts-in-turkey-amid-government-pressure/) by the [Freedom of Expression Association](https://ifade.org.tr/engelliweb/bluesky-bircok-hesabi-turkiyeden-gorunmez-kildi/). As a result, people in Turkey can no longer see these accounts, and their reach is limited.
 >
->  The report indicates that 59 Bluesky accounts were blocked on the grounds of protecting “national security and public order.” Bluesky also made another 13 accounts and at least one post invisible from Turkey.
+> The report indicates that 59 Bluesky accounts were blocked on the grounds of protecting “national security and public order.” Bluesky also made another 13 accounts and at least one post invisible from Turkey.
 >
->  Given that many Turkish users migrated from X to Bluesky in the hopes of fleeing government censorship, Bluesky’s bowing to the Turkish government’s demands has [raised questions](https://www.reddit.com/r/europe/comments/1k1xy30/bluesky_restricts_access_to_72_accounts_in_turkey/) [among the community](https://www.reddit.com/r/BlueskySocial/comments/1k03iop/bluesky_restricts_accounts_at_the_request_of_the/) as to whether the social network is as open and decentralized as it claims to be. (Or whether [it’s “just like Twitter”](https://www.reddit.com/r/BlueskySocial/comments/1k0hrt0/bluesky_is_banning_accounts_that_are_posting/) after all.)
+> Given that many Turkish users migrated from X to Bluesky in the hopes of fleeing government censorship, Bluesky’s bowing to the Turkish government’s demands has [raised questions](https://www.reddit.com/r/europe/comments/1k1xy30/bluesky_restricts_access_to_72_accounts_in_turkey/) [among the community](https://www.reddit.com/r/BlueskySocial/comments/1k03iop/bluesky_restricts_accounts_at_the_request_of_the/) as to whether the social network is as open and decentralized as it claims to be. (Or whether [it’s “just like Twitter”](https://www.reddit.com/r/BlueskySocial/comments/1k0hrt0/bluesky_is_banning_accounts_that_are_posting/) after all.)
 
 ### The pitch for Mastodon
 

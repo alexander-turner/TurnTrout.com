@@ -88,6 +88,7 @@ Consider the following terms and phrases:
   - Consider the abundance of amateur theorizing about whether "schemers" will be "simpler" than "saints", or whether they will be supplanted by "sycophants." Sometimes conducted in ignorance of actual inductive bias research, which is actually a real subfield of ML.
 
 In broader machine learning, beware:
+
 - "Training"
 - "Learning"
 - "Discount rate" (in deep RL, implying that an external future-learning-signal multiplier will ingrain itself into the AI's potential inner plan-grading-function which is conveniently assumed to be additive over timesteps, and also there's just one such function and also it's Markovian)

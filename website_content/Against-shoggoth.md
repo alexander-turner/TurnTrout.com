@@ -30,12 +30,12 @@ card_image_alt: A red "no" sign over a Shoggoth meme.
 
 > [!quote] [How the Shoggoth Meme Has Come to Symbolize the State of AI](https://www.nytimes.com/2023/05/30/technology/shoggoth-meme-ai.html)
 > What’s happening in AI today feels, to some of its participants, more like an act of summoning than a software process. They are creating blobby, alien Shoggoths, making them bigger and more powerful, and hoping that there are enough smiley faces to cover the scary parts.
->  
->  The shoggoth meme is that in order to prevent AI language models from behaving in scary and dangerous ways, AI companies have had to train them to act polite and harmless. One popular way to do this is called reinforcement learning from human feedback, or RLHF, a process that involves asking humans to score chatbot responses and feeding those scores back into the AI model.
->  
->  Most AI researchers agree that models trained using RLHF are better behaved than models without it. But some argue that fine-tuning a language model this way doesn’t actually make the underlying model less weird and inscrutable. In their view, it’s just a flimsy, friendly mask that obscures the mysterious beast underneath.
->  
->  [`@TetraspaceWest`](https://twitter.com/TetraspaceWest), the meme’s creator, said the Shoggoth “represents something that thinks in a way that humans don’t understand, and that’s totally different from the way that humans think.”
+>
+> The shoggoth meme is that in order to prevent AI language models from behaving in scary and dangerous ways, AI companies have had to train them to act polite and harmless. One popular way to do this is called reinforcement learning from human feedback, or RLHF, a process that involves asking humans to score chatbot responses and feeding those scores back into the AI model.
+>
+> Most AI researchers agree that models trained using RLHF are better behaved than models without it. But some argue that fine-tuning a language model this way doesn’t actually make the underlying model less weird and inscrutable. In their view, it’s just a flimsy, friendly mask that obscures the mysterious beast underneath.
+>
+> [`@TetraspaceWest`](https://twitter.com/TetraspaceWest), the meme’s creator, said the Shoggoth “represents something that thinks in a way that humans don’t understand, and that’s totally different from the way that humans think.”
 
 # "Shoggoth" as undersupported propaganda
 
