@@ -46,11 +46,6 @@ date_updated: 2025-11-22 00:21:52.667251
 
 
 
-
-
-
-
-
 In this essay, I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
 
 > [!quote]  [Reinforcement learning: An introduction](http://www.incompleteideas.net/sutton/book/first/Chap1PrePub.pdf)
@@ -71,6 +66,10 @@ Therefore, _reward is not the optimization target_ in two senses:
 ETA 9/18/23: This post addresses the model-free policy gradient setting, including algorithms like PPO and REINFORCE.
 
 # Reward probably won’t be a deep RL agent’s primary optimization target
+
+Subtitle: Focusing on model-free[^model-free] policy gradient algorithms like PPO and REINFORCE.
+
+[^model-free]: I expect I'd draw similar conclusions about model-based algorithms. AIXI would likely optimize reward. I do not expect reward optimization from MCTS on a neural network leaf node evaluation function. Probably the key factor is: what fraction of computation comes from runtime search?
 
 After work, you grab pizza with your friends. You eat a bite. The taste releases [reward in your brain](https://en.wikipedia.org/wiki/Reward_system), which triggers credit assignment. Credit assignment identifies which thoughts and decisions were responsible for the release of that reward, and makes those decisions more likely to happen in similar situations in the future. Perhaps you had thoughts like
 
@@ -116,39 +115,52 @@ Obviously, these conditions aren’t true in the real world. Your learning algor
 
 ## Anticipated questions
 
-1. Why won’t early-stage agents think thoughts like “If putting trash away will lead to reward, then execute `motor-subroutine-#642`”, and then this gets reinforced into reward-focused cognition early on?
-    1. Suppose the agent puts away trash in a blue room. Why won’t early-stage agents think thoughts like “If putting trash away will lead to the wall being blue, then execute `motor-subroutine-#642`”, and then this gets reinforced into blue-wall-focused cognition early on? [Why consider either scenario to begin with](https://www.readthesequences.com/Privileging-The-Hypothesis)?
-2. But aren’t we implicitly selecting for agents with high cumulative reward, when we train those agents?
-    1. Yeah. But on its own, this argument can’t possibly imply that selected agents will probably be reward optimizers. The argument would [prove too much](https://slatestarcodex.com/2013/04/13/proving-too-much/). Evolution selected for inclusive genetic fitness, and it [did not get IGF optimizers](https://www.lesswrong.com/posts/XPErvb8m9FapXCjhA/adaptation-executers-not-fitness-maximizers).
-        1. "We're selecting for agents on reward $\rightarrow$  we get an agent which optimizes reward" is locally invalid. "We select for agents on X $\rightarrow$ we get an agent which optimizes X" is not true for the case of evolution, and so is not true in general.
-        2. Therefore, the argument isn't necessarily true in the AI reward-selection case. Even if RL _did_ happen to train reward optimizers and this post _were_ wrong, the selection argument is too weak on its own to establish that conclusion.
-    2. Here’s the more concrete response: Selection isn’t _just_ for agents which get lots of reward.
-        1. For simplicity, consider the case where on the training distribution, the agent gets reward if and only if it reaches a goal state. Then any selection for reward is also selection for reaching the goal. And if the goal is the only red object, then selection for reward is _also_ selection for reaching red objects.
-        2. In general, selection for reward produces equally strong selection for reward’s necessary and sufficient conditions. In general, it seems like there should be a lot of those. Therefore, since selection is not only for _reward_ but for _anything which goes along with reward_ (e.g. reaching the goal), then selection won’t advantage _reward optimizers_ over _agents which reach goals quickly / pick up lots of trash / \[do the objective\]_.  
-    3. Another reason to not expect the selection argument to work is that it’s _convergently instrumental_ for most inner agent values to _not_ become wireheaders, for them to _not_ try hitting the reward button.
-        1. I think that before the agent can hit the particular attractor of reward-optimization, it will hit an attractor in which it optimizes for some aspect of a historical correlate of reward.
-            1. We train agents which intelligently optimize for e.g. putting trash away, and this reinforces the trash-putting-away computations, which activate in a broad range of situations so as to steer agents into a future where trash has been put away. An intelligent agent will model the true fact that, if the agent reinforces itself into caring about cognition-updating, then it will no longer navigate to futures where trash is put away. Therefore, it decides to not hit the reward button.
-            2. This reasoning follows for most inner goals by instrumental convergence.
-        2. On my current best model, this is why people usually don’t wirehead. They learn their own values via deep RL, like caring about dogs, and these actual values are opposed to the person they would become if they wirehead.
-3. Don’t some people terminally care about reward?
-    1. I think so! I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start chiseled computations about reward _after_ it has chiseled other kinds of computations (e.g. putting away trash).
-4. But what if the AI bops the reward button early in training, while exploring? Then credit assignment would make the AI more likely to hit the button again.
-    1. Then keep the button away from the AI until it can model the effects of hitting the cognition-updater button.[^7]
-    2. For the reasons given in the “siren” section, a sufficiently reflective AI probably won’t seek the reward button on its own.
-5. AIXI—
-    1. will always kill you and then wirehead forever, unless you gave it something like a constant reward function.
-    2. And, IMO, this fact is not practically relevant to alignment. AIXI is _explicitly a reward-maximizer_. As far as I know, AIXI(-_tl_) is not the limiting form of any kind of real-world intelligence trained via _reinforcement_ learning.
-6. Does the choice of RL algorithm matter?
-    1. For point 1 (_reward is not the trained agent's optimization target_), it might matter.
-        1. I started off analyzing model-free actor-based approaches, but have also considered a few model-based setups. I think the key lessons apply to the general case, but I think the setup will substantially affect which values tend to be grown.
-            1. If the agent's curriculum is broad, then reward-based cognition may get reinforced from a confluence of tasks (solve mazes, write sonnets), while each task-specific cognitive structure is only narrowly contextually reinforced. That said, this is also selecting equally hard for agents which do the rewarded activities, and reward-motivation is only one possible value which produces those decisions.
-            2. Pretraining a language model and then slotting that into an RL setup also changes the initial computations in a way which I have not yet tried to analyze.
-        2. It’s _possible_ there’s some kind of RL algorithm which _does_ train agents which limit to reward optimization (and, of course, thereby “solves” inner alignment in its literal form of “find a policy which optimizes the outer objective signal”).
-    2. For point 2 (_reward provides local updates to the agent's cognition via credit assignment; reward is not best understood as specifying our preferences_), the choice of RL algorithm should not matter, as long as it uses reward to compute local updates.
-        1. A similar lesson applies to the updates provided by loss signals. A loss signal provides updates which deform the agent's cognition into a new shape.
-7. `TurnTrout`, you've been talking about an AI's learning process using English, but ML gradients may not neatly be expressible in our concepts. How do we know that it's appropriate to speculate in English?
-    1. I am _not_ _certain_ that my model is legit, but it sure seems more legit than (my perception of) how people usually think about RL (i.e. in terms of reward maximization, and reward-as-optimization-target instead of as feedback signal which builds cognitive structures).
-    2. I only have access to my own concepts and words, so I am provisionally reasoning ahead anyways, while keeping in mind the potential treacheries of anglicizing imaginary gradient updates (e.g. "be more likely to eat pizza in similar situations").
+Why won’t early-stage agents think thoughts like “If putting trash away will lead to reward, then execute `motor-subroutine-#642`”, and then this gets reinforced into reward-focused cognition early on?
+: Suppose the agent puts away trash in a blue room. Why won’t early-stage agents think thoughts like “If putting trash away will lead to the wall being blue, then execute `motor-subroutine-#642`”, and then this gets reinforced into blue-wall-focused cognition early on? [Why consider either scenario to begin with](https://www.readthesequences.com/Privileging-The-Hypothesis)?
+
+: At least, that's the reply I gave in 2022. In 2025, I realize that I [didn't understand that LLM pretraining _would_ allow such thoughts in early-stage RL](/llms-cheat-a-lot). _RLHF may well reinforce such thoughts!_ That said, the question still comes down to empirics.
+
+But aren’t we implicitly selecting for agents with high cumulative reward, when we train those agents?
+: Yeah. But on its own, this argument can’t possibly imply that selected agents will probably be reward optimizers. The argument would [prove too much](https://slatestarcodex.com/2013/04/13/proving-too-much/). Evolution selected for inclusive genetic fitness, and it [did not get IGF optimizers](https://www.lesswrong.com/posts/XPErvb8m9FapXCjhA/adaptation-executers-not-fitness-maximizers).
+
+: "We're selecting for agents on reward $\rightarrow$  we get an agent which optimizes reward" is locally invalid. "We select for agents on X $\rightarrow$ we get an agent which optimizes X" is not true for the case of evolution, and so is not true in general. Therefore, the argument isn't necessarily true in the AI reward-selection case. Even if RL _did_ happen to train reward optimizers and this post _were_ wrong, the selection argument is too weak on its own to establish that conclusion.
+
+: Here’s a more concrete response: Selection isn’t _just_ for policies which score highly on the reward. For simplicity, consider the case where on the training distribution, the agent gets reward if and only if it reaches a goal state. Then any selection for reward is also selection for reaching the goal. And if the goal is the only red object, then selection for reward is _also_ selection for reaching red objects.
+
+: In general, selection for reward produces equally strong selection for reward’s necessary and sufficient conditions. In general, it seems like there should be a lot of those. Therefore, since selection is not only for _reward_ but for _anything which goes along with reward_ (e.g. reaching the goal), then selection won’t advantage _reward optimizers_ over _agents which reach goals quickly / pick up lots of trash / \[do the objective\]_.  
+
+: Another reason to not expect the selection argument to work is that it’s _convergently instrumental_ for most inner agent values to _not_ become wireheaders, for them to _not_ try hitting the reward button. I think that before the agent can hit the particular attractor of reward-optimization, it will hit an attractor in which it optimizes for some aspect of a historical correlate of reward.
+
+: We train agents which intelligently optimize for e.g. putting trash away, and this reinforces the trash-putting-away computations, which activate in a broad range of situations so as to steer agents into a future where trash has been put away. An intelligent agent will model the true fact that, if the agent reinforces itself into caring about cognition-updating, then it will no longer navigate to futures where trash is put away. Therefore, it decides to not hit the reward button. This reasoning follows for most inner goals by instrumental convergence.
+
+: On my current best model, this is why people usually don’t wirehead. They learn their own values via deep RL, like caring about dogs, and these actual values are opposed to the person they would become if they wirehead.
+
+Don’t some people terminally care about reward?
+: I think so! I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start chiseled computations about reward _after_ it has chiseled other kinds of computations (e.g. putting away trash).
+
+But what if the AI bops the reward button early in training, while exploring? Then credit assignment would make the AI more likely to hit the button again.
+: Then keep the button away from the AI until it can model the effects of hitting the cognition-updater button.[^7]
+
+: For the reasons given in the “siren” section, a sufficiently reflective AI probably won’t seek the reward button on its own.
+
+AIXI—
+: will always kill you and then wirehead forever, unless you gave it something like a constant reward function.
+
+: And, IMO, this fact is not practically relevant to alignment. AIXI is _explicitly a reward-maximizer_. As far as I know, AIXI(-_tl_) is not the limiting form of any kind of real-world intelligence trained via _reinforcement_ learning.
+
+Does the choice of RL algorithm matter?
+: For point 1 (_reward is not the trained agent's optimization target_), it might matter. I started off analyzing model-free actor-based approaches, but have also considered a few model-based setups. I think the key lessons apply to the general case, but I think the setup will substantially affect which values tend to be grown.
+
+: If the agent's curriculum is broad, then reward-based cognition may get reinforced from a confluence of tasks (solve mazes, write sonnets), while each task-specific cognitive structure is only narrowly contextually reinforced. That said, this is also selecting equally hard for agents which do the rewarded activities, and reward-motivation is only one possible value which produces those decisions.
+
+: Pretraining a language model and then slotting that into an RL setup also changes the initial computations in a way which I have not yet tried to analyze. Further, it’s _possible_ there’s some kind of RL algorithm which _does_ train agents which limit to reward optimization (and, of course, thereby “solves” inner alignment in its literal form of “find a policy which optimizes the outer objective signal”).
+
+: For point 2 (_reward provides local updates to the agent's cognition via credit assignment; reward is not best understood as specifying our preferences_), the choice of RL algorithm should not matter, as long as it uses reward to compute local updates. A similar lesson applies to the updates provided by loss signals. A [loss signal provides updates which deform the agent's cognition into a new shape.](/four-usages-of-loss-in-ai)
+
+`TurnTrout`, you've been talking about an AI's learning process using English, but ML gradients may not neatly be expressible in our concepts. How do we know that it's appropriate to speculate in English?
+: I am _not_ _certain_ that my model is legit, but it sure seems more legit than (my perception of) how people usually think about RL (i.e. in terms of reward maximization, and reward-as-optimization-target instead of as feedback signal which builds cognitive structures).
+
+: I only have access to my own concepts and words, so I am provisionally reasoning ahead anyways, while keeping in mind the potential treacheries of anglicizing imaginary gradient updates (e.g. "be more likely to eat pizza in similar situations").
 
 # Dropping the old hypothesis
 
@@ -170,7 +182,7 @@ Here are some major updates which I made.
 
 > [!success] Stop focusing on objectives which are “safe to maximize”
 >
-> **Stop worrying about finding “outer objectives” which are safe to** _**maximize.**_[^9] I think that you’re not going to get an outer-objective-maximizer (i.e. an agent which maximizes the explicitly specified reward function). Instead, focus on building good cognition within the agent. The way I see it, there's only one question: How do we grow good cognition inside of the trained agent?
+> **Stop worrying about finding “outer objectives” which are safe to** _**maximize.**_[^9] I think that you’re not going to get an outer objective maximizer (i.e. an agent which maximizes the explicitly specified reward function). Instead, focus on building good cognition within the agent. The way I see it, there's only one question: How do we grow good cognition inside of the trained agent?
 
 I also suggest that you **mechanistically model RL agents as executing behaviors downstream of past reinforcement** (e.g. putting trash away), in addition to thinking about policies which are selected for having high reward on the training distribution (e.g. hitting the button). The latter form of reasoning skips past the mechanistic substance of reinforcement learning: The chiseling of computations responsible for the acquisition of the cognition-updater. I still think it's useful to consider selection, but mostly in order to generate failures modes whose mechanistic plausibility can be evaluated.
 
