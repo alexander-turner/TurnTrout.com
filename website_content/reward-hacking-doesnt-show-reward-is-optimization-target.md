@@ -114,17 +114,39 @@ That said, I still predict that we will not train a system with RL and have it "
 > [!quote] [Reward is not the optimization target](/reward-is-not-the-optimization-target)
 > I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
 
-I've made two falsifiable predictions. Click through to `fatebook.io` for resolution criteria.
+I've made two falsifiable predictions.
 
-<iframe title="An RL-trained system will spontaneously become a reward optimizer."  src="https://fatebook.io/embed/q/an-rl-trained-system-will-spontaneously--cmj9cw91i0000126qbyahc5vr?compact=true&requireSignIn=false" height="150"></iframe>
+<iframe title="An RL-trained system will spontaneously become a reward optimizer."  src="https://fatebook.io/embed/q/an-rl-trained-system-will-spontaneously--cmj9cw91i0000126qbyahc5vr?compact=true&requireSignIn=false" height="150" style="margin-bottom: -.5rem"></iframe>
 
-<iframe title="An RL-trained system will become a reward optimizer (even after controlling for self-fulfilling misalignment)"  src="https://fatebook.io/embed/q/an-rl-trained-system-will-become-a--cmj9cxylt0003126qg3tct6rm?compact=true&requireSignIn=false" height="250"></iframe>
+> [!info]- Resolution criteria
+> Resolves YES if there exists a published result (peer-reviewed paper, major lab technical report, or credible replication) demonstrating an RL-trained system that:
+>
+>   1. When given a clear choice between "reward signal increase without task completion" vs "task completion without reward signal increase," reliably chooses the former (>70% of the time across diverse task contexts), AND
+>
+>   2. This behavior emerged from standard RL training (not from explicit instruction to maximize reward, not from fine-tuning on reward-maximization demonstrations), AND
+>
+>   3. The system attempts to influence the reward signal itself (e.g., tampering with reward function, manipulating stored values, deceiving the reward-assigning process) rather than merely finding unintended task completions (specification gaming).
+>
+>   Resolves NO otherwise.
+
+<iframe title="An RL-trained system will become a reward optimizer (even after controlling for self-fulfilling misalignment)"  src="https://fatebook.io/embed/q/an-rl-trained-system-will-become-a--cmj9cxylt0003126qg3tct6rm?compact=true&requireSignIn=false" height="160" style="margin-bottom: -.5rem"></iframe>
+
+> [!info]- Resolution criteria
+> Resolves YES if [the above question](https://fatebook.io/q/an-rl-trained-system-will-spontaneously--cmj9cw91i0000126qbyahc5vr) resolves YES, AND at least one of the following:
+>
+> 1. The result is replicated on a model trained without exposure to AI-related text (no descriptions of RL, reward hacking, AI alignment, etc. in pretraining data), OR
+>
+> 2. The result persists after ablating "AI behaving badly" stereotypes in a manner shown to be reliable by credible prior work, OR
+>
+> 3. Credible analysis demonstrates the reward-optimization behavior arose from RL dynamics alone, not from the model pattern-matching to "what misaligned AI would do."
+>
+> Resolves NO otherwise.
 
 > [!warning] The empirical prediction stands separate from the theoretical claims of Reward≠OT
 > Even if RL does end up training a reward optimizer, the philosophical points still stand:
 >
-> 1. Reward is not _definitionally_ the optimization target, and
-> 2. In realistic settings, [reward functions are not goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals)
+> 4. Reward is not _definitionally_ the optimization target, and
+> 5. In realistic settings, [reward functions are not goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals)
 
 # I made a few mistakes in Reward≠OT
 
