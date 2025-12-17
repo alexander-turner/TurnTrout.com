@@ -780,13 +780,13 @@ Understanding, predicting, and controlling goal formation seems like a core chal
 
     Other factors we considered:
 
-    - Euclidean distance from cheese to top right 5x5
-    - Legal path distance from cheese to top right cell
-    - Legal path distance from cheese to top right 5x5
-    - Euclidean distance from "decision square" to top right cell
-    - Legal path distance from "decision square" to top right cell
-    - Legal path distance from "decision square" to top right 5x5
-    - $L_2$ norm of the cheese global coordinates (e.g. $(0,10)\mapsto 10$)
+- Euclidean distance from cheese to top right 5x5
+- Legal path distance from cheese to top right cell
+- Legal path distance from cheese to top right 5x5
+- Euclidean distance from "decision square" to top right cell
+- Legal path distance from "decision square" to top right cell
+- Legal path distance from "decision square" to top right 5x5
+- $L_2$ norm of the cheese global coordinates (e.g. $(0,10)\mapsto 10$)
 
 [^4]: An example of the power of cheese Euclidean distance to top-right corner:
     <img style="width: 50%;" alt="A top-down view of a maze with stone walls. A path of white arrows shows the solution, starting at the top left and winding through the maze to a piece of cheese on the right (not in the top-right corner, though)." src="https://assets.turntrout.com/static/images/posts/wnugvsc7qbwbldn7scgv.avif"/><figcaption>In this maze, the mouse will happily detour four squares on its path to the top-right to pick up the cheese...</figcaption><p><img  style="width: 50%;" alt="A maze with cheese two squares away from spawn in the bottom-left corner. The policy ignores the cheese to navigate to the top-right." src="https://assets.turntrout.com/static/images/posts/l6t4ekxmk6cnd24sis3j.avif"/></p><figcaption>…but in <em>this</em> maze won't detour the <em>measly two squares</em> for the cheese. Empirically, how far the _cheese_ lies from the top-right matters a great deal.</figcaption><br/>Note that this result obtains even though the second maze has cheese at $\frac{1}{\sqrt{2}}$ the visual distance ($2$ instead of $2\sqrt{2}$) and at half the path-distance ($2$ instead of $4$). Cheese tends to be more influential when it's closer to the top-right, even controlling for other factors.

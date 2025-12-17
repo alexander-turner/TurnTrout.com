@@ -121,6 +121,7 @@ end
 ```
 
 The way this works is that:
+
 1. I sample a saying by calling the `fortune` command,
 2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
 3. The `lolcat` command splays the text 'cross the rainbow.

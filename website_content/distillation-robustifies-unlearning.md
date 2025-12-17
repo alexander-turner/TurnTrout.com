@@ -197,6 +197,7 @@ UNDO is a viable approach for creating genuinely capability-limited models. Whil
 
 > [!thanks] Acknowledgments
 > We gratefully acknowledge:
+>
 > - Henrik Marklund for his insightful comments at various points of the project;
 > - Vivek Hebbar, Andis Draguns, and Jake Mendel for helpful comments on our abstract;
 > - Rishub Tamirisa for the guidance in navigating WMDP benchmarking procedures;

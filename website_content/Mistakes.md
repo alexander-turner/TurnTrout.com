@@ -60,7 +60,7 @@ I'm not sure how, exactly, to change my beliefs. The result is slight negative e
 > [!quote] [My description of the emotional experience of being wrong here](https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo?commentId=AtX9Hf2fy4wNona6q)
 > I remember right when the negative results started hitting. I could feel the cope rising. I recognized the pattern, the straining against truth. I queried myself for what I found most painful - it was actually just losing a bet. I forced the words out of my mouth: "I guess I was wrong to be excited about this particular research direction. And Ryan Greenblatt was more right than I was about this matter."  
 >
->  After that, it was all easier. What was there to be afraid of? I'd already admitted it!
+> After that, it was all easier. What was there to be afraid of? I'd already admitted it!
 
 While steering vectors have their uses, "benchmark climbing" does not seem to be one of those uses.
 

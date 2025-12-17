@@ -127,18 +127,20 @@ Header 1
 2. Normal `ol > li` indent
 
 - Normal `ul > li` indent
+
 ----
 
 - Non-checkbox first bullet
 - [ ] First-level not checked off
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
-      - [ ] Nested checked off should still be crossed out and same (diminished) opacity
-          - [ ] Third nested with a <a id="checkboxes-link" href="#checkboxes">test link</a>.
+    - [ ] Nested checked off should still be crossed out and same (diminished) opacity
+      - [ ] Third nested with a <a id="checkboxes-link" href="#checkboxes">test link</a>.
   - [ ] Not checked off
 - Normal bullet
 
 > [!note]
+>
 > - [ ] Checkbox in an admonition
 > - Normal bullet
 > - [x] Checked box in an admonition
@@ -148,8 +150,8 @@ Header 1
 
 - [ ] Install the [desktop browser extension for Brave.](https://www.privacy.com/browser-extension)
 - [x] Install [the mobile app](https://www.privacy.com/mobile-app).
-    - [ ] Nested
-    - [x] Not even more transparent
+  - [ ] Nested
+  - [x] Not even more transparent
 
 # Transclusion
 >
@@ -362,7 +364,7 @@ Table: A `<figcaption>` element created from the Markdown cue of "Table:".
 
 Table: Ensure that word wrapping works properly on table header elements to prevent overflow.
 
-   - [ ] You can check off this item, refresh the page, and the box will remain checked.
+- [ ] You can check off this item, refresh the page, and the box will remain checked.
 
    | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
    | -----------------: | :--------: | :----------: | :--------------------------------- |
@@ -409,6 +411,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$
+
 - $\pi: C → A$
 
 Display math:

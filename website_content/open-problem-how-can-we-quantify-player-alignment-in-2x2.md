@@ -71,7 +71,7 @@ If I were interested in thinking about this more right now, I would:
 > >
 > >
 > > Ofc so far it doesn't depend on $u_B$ at all. However, we can make it depend on $u_B$ if we use $u_B$ to impose assumptions on $(\alpha, \beta)$, such as:
->  >
+> >
 > > - $\beta$ is a $u_B$-best response to $\alpha$ or
 > > - $(\alpha, \beta)$ is a Nash equilibrium (or other solution concept)
 > >  

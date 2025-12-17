@@ -49,7 +49,7 @@ George's story isn't an isolated incident. ProPublica [found that "more than 170
 > >
 > > The Democrat Party does not fight for, care about, or represent American citizens. It is an entity devoted *exclusively* to the defense of hardened criminals, gangbangers, and illegal alien killers and terrorists. The Democrat Party is not a political party. It is a domestic extremist organization.
 >
->   Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not a legal classification, and "antifa" is not a specific organization). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
+> Trump [signed an executive order designating "antifa" as a "domestic terrorist organization"](https://www.whitehouse.gov/presidential-actions/2025/09/designating-antifa-as-a-domestic-terrorist-organization/) (not a legal classification, and "antifa" is not a specific organization). Days later, Trump issued [National Security Presidential Memorandum 7](https://www.whitehouse.gov/presidential-actions/2025/09/countering-domestic-terrorism-and-organized-political-violence/) on "Countering Domestic Terrorism," which directs federal agencies to prioritize investigations of ideologies under "the umbrella of self-described 'anti-fascism'." These ideologies include  "anti-Americanism, anti-capitalism, and anti-Christianity; support for the overthrow of the United States Government; extremism on migration, race, and gender; and hostility towards those who hold traditional American views on family, religion, and morality."
 >
 > The order put the FBI's Joint Terrorism Task Force in the lead and directed the Treasury Department ["to identify and disrupt financial networks that fund domestic terrorism and political violence,"](https://www.opb.org/article/2025/09/25/trump-orders-crackdown-domestic-terrorists/) naming Democratic donors George Soros and Reid Hoffman as potential targets (without providing evidence).
 >
@@ -73,13 +73,13 @@ This guide will help you protect your communications and information so you can 
 Let's get started.
 
 > [!info]  I'm only speaking for myself
->  My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+> My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
 
 # What should I read?
 
 This guide is long. Don't try to complete it all at once. My website has long-lasting checkbox functionality. As you complete items, check them off to remember your place in the guide.
 
-   - [ ] You can check off this item, refresh the page, and the box will remain checked.
+- [ ] You can check off this item, refresh the page, and the box will remain checked.
 
 > [!money] This guide is free
 > In the following table, I estimate the cost of purchasing the *equipment and services* recommended in the different tiers of the guide.
@@ -124,16 +124,17 @@ This guide is about protecting yourself, but it's not necessarily about *hiding*
 > If you're at risk, read this guide and [the more advanced sequel](https://turntrout.com/advanced-privacy) but also refer to [a more hardcore guide with targeted surveillance in mind](https://ssd.eff.org/module-categories/security-scenarios) and consult a security professional.
 
 > [!warning] What information this guide will and won't help you protect
->   If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
+> If your phone is connected, cell towers track your approximate location. License plate readers track your car. Facial recognition identifies you in public spaces and others' photos. *You will be hard-pressed to turn invisible while participating in modern society.*
 >
->   This guide will teach you to protect a limited selection of your data:
->   1. Content of your communications (Signal E2EE),
->   2. What you're researching and reading (VPN hides websites),
->   3. Your organizing documents and plans (E2EE cloud storage),
->   4. Your network and contacts (E2EE contact storage),
->   5. Correlation across identities (pseudonymity, email aliases).
+> This guide will teach you to protect a limited selection of your data:
 >
->   In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings. Otherwise, pessimistically assume the government knows where you are at all times. Also, financial privacy is hard and this guide only helps a bit on that front.
+> 1. Content of your communications (Signal E2EE),
+> 2. What you're researching and reading (VPN hides websites),
+> 3. Your organizing documents and plans (E2EE cloud storage),
+> 4. Your network and contacts (E2EE contact storage),
+> 5. Correlation across identities (pseudonymity, email aliases).
+>
+> In high-risk situations, leave wireless-enabled devices at home, in airplane mode, or in [Faraday bags](https://www.amazon.com/dp/B0CKXK5467?psc=1&smid=AJILGO2IDT8RQ&ref_=chk_typ_imgToDp) for truly sensitive meetings. Otherwise, pessimistically assume the government knows where you are at all times. Also, financial privacy is hard and this guide only helps a bit on that front.
 
 # Open source and encryption are your friends
 
@@ -164,6 +165,7 @@ Use a different long password for every single login you have. Do not reuse pass
 If you're not using a password manager already, *Bitwarden will make your life easier*. Bitwarden will remember your passwords and logins for you. It can even fill them in automatically. Bitwarden will generate new secure passwords for you.  Never again must you worry, "which password did I use for this website?!". You just remember one password: the master password for Bitwarden.
 
 Here's what to do:
+
 1. [ ] [Download Bitwarden](https://bitwarden.com/download/) on all of your devices. I use a browser extension on my laptop.
 2. [ ] Create an account.
     - [ ] You need a master password. Use [this tool](https://bitwarden.com/passphrase-generator/) to generate a four-word passphrase consisting of four random words in a row ([justification](https://www.reddit.com/r/Bitwarden/comments/14bkaur/how_many_word_for_a_passphrase/)). I recommend separating each word with a space.
@@ -203,6 +205,7 @@ Subtitle: Time: 5 minutes to install app.
 The fast and free upgrade is to prefer authenticator apps over SMS and email.
 
  As far as applications go, common apps store your 2FA secrets in the cloud without E2EE, which means the cloud owners could theoretically see which websites I'm authenticating with. Proton Authenticator is the answer.
+
 1. [ ] Download Proton Authenticator on your phone ([App Store](https://apps.apple.com/us/app/proton-authenticator/id6741758667), [Play Store](https://play.google.com/store/apps/details?id=proton.android.authenticator&hl=en_US)).
 
 ## Keep your OS up to date
@@ -239,7 +242,7 @@ Subtitle: Time: 5 minutes.
 
  The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
 
- - [ ] Use Signal.
+- [ ] Use Signal.
 
  > [!idea] Consider encouraging your friends to use Signal.
  > I don't really use other texting applications anymore.
@@ -256,7 +259,7 @@ When you browse the internet, you send your ISP a list of sites you're browsing.
 
 > [!quote] [Internet Service Providers Collect, Sell Horrifying Amount of Sensitive Data, Government Study Concludes](https://www.vice.com/en/article/internet-service-providers-collect-sell-horrifying-amount-of-sensitive-data-government-study-concludes)
 > The new FTC report studied the privacy practices of six unnamed broadband ISPs and their advertising arms, and found that the companies routinely collect an ocean of consumer location, browsing, and behavioral data. They then share this data with dodgy middlemen via elaborate business arrangements that often aren’t adequately disclosed to broadband consumers.
->  
+>
 > “Even though several of the ISPs promise not to sell consumers personal data, they allow it to be used, transferred, and monetized by others and hide disclosures about such practices in fine print of their privacy policies,” the FTC report said.
 
 ### The US government spy apparatus is creepy
@@ -279,30 +282,30 @@ I recommend downloading [Proton VPN.](https://protonvpn.com/) While Proton VPN h
 >
 > > [!quote]- Does Proton VPN keep logs?
 > > In order to respect our users’ privacy, Proton VPN enforces a strict no-logs policy. This means we keep no session usage logs of what you do online, and we do not log metadata that can compromise your privacy.
->  >  
->  >  - We don’t log which websites you visit
->  >  - We don’t log your traffic or the content of any communications
->  >  - We don’t log your IP address
->  >  - We don’t log your session lengths
->  >  - We don’t log or track any location-based information
->  >
->  >  This level of privacy is possible in part because we are based in Switzerland, which has some of the strongest data protection and digital privacy laws in the world. Data required for maintenance and troubleshooting purposes is secured using full-disk encryption on all our bare-metal servers, over which we have full control.
->  >  
->  >  Full details about the information that we do store (such as account information) are available in our [Privacy Policy](https://protonvpn.com/privacy-policy). Our apps are all [fully open source and independently audited](https://protonvpn.com/blog/open-source/) so that you can be sure they are trustworthy, and we aim for [transparency](https://protonvpn.com/blog/is-protonvpn-trustworthy/) in everything we do.
->  >  
->  >  Proton VPN’s Swiss jurisdiction also confers additional benefits which are favorable for VPN services. In most countries, VPNs can be forced to log as the result of government orders, even if they are by default no-logs. However, within the current Swiss legal framework, Proton VPN also does not have forced logging obligations.
->  >  
->  >  \[...\]
->  >  
->  >  Proton VPN’s strict no-logs policy was tested in a legal case in 2019 where we were ordered to turn over logs to help identify a user and we were unable to comply because such logs did not exist. Our no-logs policy has also been [verified by external independent experts.](https://protonvpn.com/blog/no-logs-audit/)
+> >
+> > - We don’t log which websites you visit
+> > - We don’t log your traffic or the content of any communications
+> > - We don’t log your IP address
+> > - We don’t log your session lengths
+> > - We don’t log or track any location-based information
+> >
+> > This level of privacy is possible in part because we are based in Switzerland, which has some of the strongest data protection and digital privacy laws in the world. Data required for maintenance and troubleshooting purposes is secured using full-disk encryption on all our bare-metal servers, over which we have full control.
+> >
+> > Full details about the information that we do store (such as account information) are available in our [Privacy Policy](https://protonvpn.com/privacy-policy). Our apps are all [fully open source and independently audited](https://protonvpn.com/blog/open-source/) so that you can be sure they are trustworthy, and we aim for [transparency](https://protonvpn.com/blog/is-protonvpn-trustworthy/) in everything we do.
+> >
+> > Proton VPN’s Swiss jurisdiction also confers additional benefits which are favorable for VPN services. In most countries, VPNs can be forced to log as the result of government orders, even if they are by default no-logs. However, within the current Swiss legal framework, Proton VPN also does not have forced logging obligations.
+> >
+> > \[...\]
+> >
+> > Proton VPN’s strict no-logs policy was tested in a legal case in 2019 where we were ordered to turn over logs to help identify a user and we were unable to comply because such logs did not exist. Our no-logs policy has also been [verified by external independent experts.](https://protonvpn.com/blog/no-logs-audit/)
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encryption-for-your-data-in-4-hours), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
 - [ ] Create a Proton account and store the credentials in your Bitwarden.
 - [ ] [Download and run Proton VPN](https://protonvpn.com/).
 - In the settings, ensure:
-     - [ ] Your VPN always starts along with your device.
-     - [ ] Traffic can only go through your VPN (enable the "kill switch").
+  - [ ] Your VPN always starts along with your device.
+  - [ ] Traffic can only go through your VPN (enable the "kill switch").
 - [ ] Repeat for each of your devices.
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
@@ -316,7 +319,7 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 
 > [!danger]
 > I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
->  
+>
 > Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, in the next post, I recommend switching [to GrapheneOS.](/advanced-privacy#switch-to-grapheneos)
 
 The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
@@ -327,6 +330,7 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance. I suggest sticking with Proton VPN.
 >
 > Here are several reasons for comfort:
+>
 > 1. The attacks seem too expensive to run as mass surveillance, and
 > 2. Many attacks only allow determining whether or not you're visiting one of a tiny number of sites.
 >
@@ -367,11 +371,12 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 - [ ] Run Brave, importing during setup your bookmarks from your current browser.
 - [ ] Remember to install any extensions you want!
 - [ ] On each device:
-     - [ ] Set Brave as your default browser.
-     - [ ] Enable Sync and enable syncing everything (it's E2EE).
-     - [ ] Install the Bitwarden extension, pin the extension icon to be visible while browsing the web, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
+  - [ ] Set Brave as your default browser.
+  - [ ] Enable Sync and enable syncing everything (it's E2EE).
+  - [ ] Install the Bitwarden extension, pin the extension icon to be visible while browsing the web, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
 
 > [!note]- Optional additional protections to apply
+>
 > 1. [ ] In "Shields", enable:
 >       - [ ] "Aggressive tracker & ad blocking".
 >       - [ ] "Strict upgrade connections to HTTPS" (prevents snooping on your data).
@@ -395,7 +400,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
 >
 > > [!quote] [Almost 17,000 Protesters Had No Idea A Tech Company Was Tracing Their Location](https://www.buzzfeednews.com/article/carolinehaskins1/protests-tech-company-spying)
 > > Mobilewalla does not collect the data itself, but rather buys it from a variety of sources, including advertisers, data brokers, and internet service providers. Once it has it, the company uses artificial intelligence to turn a stew of location data, device IDs, and browser histories to predict a person's demographics — including race, age, gender, zip code, or personal interests. Mobilewalla sells aggregated versions of that stuff back to advertisers. On its website, Mobilewalla says that it works with companies across a variety of industries — like retail, dining, telecom, banking, consulting, health, and on-demand services (like ride-hailing).
-> >  
+> >
 > > "... an enormous number of Americans – probably without even knowing it – are handing over their full location history to shady location data brokers with zero restrictions on what companies can do with it,” Warren said. “In an end-run around the Constitution's limits on government surveillance, these companies can even sell this data to the government, which can use it for law and immigration enforcement. That's why I've opened an investigation into the government contracts held by location data brokers, and I’ll keep pushing for answers."
 > >
 ## Use the Brave search engine
@@ -416,6 +421,7 @@ Be especially wary about giving out *precise location* data. Don't be afraid to 
 
 > [!example] Minimizing location permissions
 > I found several apps were using my location *all of the time*, including:
+>
 > 1. My Govee smart lights app (deny!),
 > 2. Maps (should only need it when I'm using the app), and
 > 3. System Intelligence (doesn't need much location data).
@@ -480,6 +486,7 @@ Let's secure your data.
 > The UK [likely](https://daringfireball.net/2025/02/apple_pulls_advanced_data_protection_from_the_uk) tried to force Apple to backdoor all of their encryption so the government could spy on all iOS users, everywhere. Apple rejected this insane demand and instead made ADP (its primary E2EE feature) unavailable for new users and warned existing users to disable ADP.
 >
 > Apple claimed they didn't make a backdoor, and I don't think they will in the future. Even so, this incident reminds me:
+>
 > 1. How important it is to have full E2EE for *all data you care about*,
 > 2. Your E2EE should not be through a single cloud provider (lest they be forced to delete all of it), and
 > 3. You can't tell if closed source software is backdoored. But someone probably would notice if prominent E2EE software were backdoored.
@@ -497,6 +504,7 @@ Centrally hosted mail may secure your data well, but the company still could rea
 Proton Mail stores your emails E2EE. If two Proton Mail email addresses communicate, they automatically use E2EE in communicating with each other. However, if e.g. a `@gmail.com` address sends you something, the content  will be plainly visible to the authorities while in the sender's account (if they seize data from Google) and also during transmission. Once received, Proton does encrypt the data in your mailbox,  but the government could have already intercepted it in transit.
 
 Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
+
 1. [ ] Create or log in to your Proton account (e.g. use the account you made above for Proton VPN).
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
@@ -513,11 +521,11 @@ Subtitle: Time: 1 hour. Cost: Nothing if you've already purchased Proton Unlimit
 I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for Proton VPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
 
 - [ ] Download your existing Drive files
-    - [ ] Google
-    - [ ] iCloud
+  - [ ] Google
+  - [ ] iCloud
 - [ ] [Install Proton Drive](https://proton.me/drive/download).
 - [ ] Migrate your existing files to Proton Drive.
-    - If you delete your Google Drive content, I'd retain for reference any files that have comments or collaboration (like Google Docs).
+  - If you delete your Google Drive content, I'd retain for reference any files that have comments or collaboration (like Google Docs).
 
 ## Take notes with Anytype instead of Notion or Roam
 
@@ -554,13 +562,14 @@ Subtitle: Time: 10 minutes.
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif|Three screenshots of the Magic Earth app. The first, "Download Offline Maps," lists regions for offline use. The second, "Multiple Transport Modes," displays options for bicycle, pedestrian, car, and public transit. The third, "Explore the world map," shows a planned route through Berlin.]]
 
 - [ ] Download [Magic Earth](https://www.magicearth.com/).
-    - [ ] As a sanity check, verify that familiar local addresses are present in the application.
-    - [ ] Once your local maps have downloaded, open the settings and click "Maps." Download maps for your area.
+  - [ ] As a sanity check, verify that familiar local addresses are present in the application.
+  - [ ] Once your local maps have downloaded, open the settings and click "Maps." Download maps for your area.
 - [ ] Delete your Maps location data from the cloud.
 
 Open-source maps are not as comprehensive or reliable as Google Maps or Apple Maps. I recommend using Apple Maps in your Brave web browser as a more-private backup --- a web browser transmits less information to Apple.
 
 Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
+
 - [ ] Android: Download [Transportr](https://transportr.app/).
 
 > [!warning] Ridesharing apps
