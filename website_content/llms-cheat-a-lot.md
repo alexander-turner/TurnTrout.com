@@ -1,6 +1,6 @@
 ---
-title: Specification gaming ≠ direct reward optimization
-permalink: specification-gaming-is-not-reward-optimization
+title: Modern "reward hacking" does not show that reward is the optimization target
+permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
   - AI
@@ -10,27 +10,39 @@ authors: Alex Turner
 card_image:
 card_image_alt:
 aliases:
-- llm-specification-gaming
+- specification-gaming-is-not-reward-optimization
 - reward-still-is-not-the-optimization-target
 - reward-retrospective
 ---
  
 Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
 
-> [!summary] No, reward still is not the optimization target
-> Reward≠OT said that (policy-gradient) RL will not train systems which primarily try to optimize the _reward function for its own sake_. That is, choosing actions _because_ they yield high reward values. In contrast, empirically observed "reward hacking" almost always involves the AI finding unintended "solutions". For example, hardcoding answers to unit tests instead of correctly implementing a function. Reward≠OT and "reward hacking" concern different phenomena.
+> [!summary] Reward still is not the optimization target
+> Reward≠OT said that (policy-gradient) RL will not train systems which primarily try to optimize the _reward function for its own sake_ (e.g. searching at inference time for an input which maximally activates the AI's specific reward model). In contrast, empirically observed "reward hacking" almost always involves the AI finding unintended "solutions" (e.g. hardcoding answers to unit tests). Reward≠OT and "reward hacking" concern different phenomena.
 
 # "Reward hacking" and "Reward≠OT" refer to different meanings of "reward"
 
 We confront [yet another](/dreams-of-ai-alignment) situation where common word choice clouds discourse. In 2016, [Amodei et al.](https://arxiv.org/pdf/1606.06565#page=7.52) defined "reward hacking" to cover two quite different behaviors:
 
 Reward optimization
-: The AI tries to increase the numerical reward signal for its own sake. Examples: overwriting its reward function to always output `MAXINT` ("reward tampering") or choosing actions _because_ they maximize the numerical reward output for the current reward function. Such an AI would prefer to find the optimal input to its specific reward function.
+: The AI tries to increase the numerical reward signal for its own sake. Examples: overwriting its reward function to always output `MAXINT` ("reward tampering") or searching at inference time for an input which maximally activates the AI's specific reward model. Such an AI would prefer to find the optimal input to its specific reward function.
 
 Specification gaming
 : The AI finds unintended ways to produce higher reward outputs. Example: hardcoding the correct outputs for each unit test instead of writing the desired function.
 
 What we've observed is basically pure specification gaming.
+
+> [!warning] We don't have experimental data on non-tampering varieties of reward optimization
+> [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162) tests _reward tampering_—modifying the reward mechanism. But "reward optimization" also includes non-tampering behavior: choosing actions _because_ they maximize reward. We don't know how to reliably test _why_ an AI took certain actions -- different motivations can produce identical behavior.
+>
+> Even chain-of-thought mentioning reward is ambiguous. "To get higher reward, I should do X" could reflect:
+>
+> - Sloppy language: using "reward" as shorthand for "doing well",
+> - Pattern-matching: "AIs reason about reward" [learned from pretraining](/self-fulfilling-misalignment),
+> - Instrumental reasoning: reward helps achieve some other goal, or
+> - Terminal reward valuation: what Reward≠OT argued against.
+>
+> Looking at the CoT doesn't strictly distinguish these. We need more careful tests of what the AI's "primary" motivations are.
 
 ## Reward≠OT was about reward optimization
 
@@ -53,15 +65,15 @@ Paying proper attention, Reward≠OT makes claims[^argument] about motivations p
 By focusing on the mechanistic function of the reward signal, I discussed to what extent the reward signal itself might become an "optimization target" of a trained agent. The rest of the essay's language reflects this focus. For example, ["let’s strip away the suggestive word 'reward', and replace it by its substance: cognition-updater."](/reward-is-not-the-optimization-target#the-siren-like-suggestiveness-of-the-word-reward)
 
 > [!info] Historical context for Reward≠OT
-> To the potential surprise of modern readers, back in 2022, prominent thinkers confidently forecast RL doom on the basis of reward optimization. They seemed to assume it would happen by the definition of RL. For example, Eliezer Yudkowsky's ["List of Lethalities" argued that point, which I called out](/disagreements-with-list-of-lethalities#lethality-19-reward-optimization-kills-you). As best I recall, that post was the most-upvoted post in LessWrong history and yet no one else had called out the problematic argument!
+> To the potential surprise of modern readers, back in 2022, prominent thinkers confidently forecasted RL doom on the basis of reward optimization. They seemed to assume it would happen by the definition of RL. For example, Eliezer Yudkowsky's ["List of Lethalities" argued that point, which I called out](/disagreements-with-list-of-lethalities#lethality-19-reward-optimization-kills-you). As best I recall, that post was the most-upvoted post in LessWrong history and yet no one else had called out the problematic argument!
 >
-> From my point of view, I _had_ to call out this mistaken argument --- specification gaming wasn't part of that picture.
+> From my point of view, I _had_ to call out this mistaken argument. Specification gaming wasn't part of that picture.
 
 # Why did people misremember Reward≠OT as conflicting with "reward hacking" results?
 
 You might expect me to say "people should have read more closely." Perhaps some readers needed to read more closely or in better faith. Overall, however, I don't subscribe to that view: [as an author, I have a responsibility to communicate clearly.](/author-responsibility)
 
-Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit about "reward hacking"! I even [drafted a post]() where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, I had a nagging unease which finally led me to remember "Reward≠OT was _not_ about specification gaming".
+Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit wrong about "reward hacking"! I went as far as to [draft a post](https://github.com/alexander-turner/TurnTrout.com/blob/7d6bd8d4c9f986d5758fb742868d7442b85718af/website_content/llms-cheat-a-lot.md) where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, my nagging unease which finally led me to remember "Reward≠OT was _not_ about specification gaming". (To verify this story, the site's design lets you [cryptographically verify the commit ordering](/design#finishing-touches).)
 
 <img src="https://assets.turntrout.com/static/images/posts/llms-cheat-a-lot-12172025.avif" class="float-right" alt="A Scooby Doo meme. Panel 1: Fred looks at a man in a ghost costume, overlaid by text &ldquo;philosophical alignment mistake.&rdquo; Panel 2: Fred unmasks the &ldquo;ghost&rdquo;, with the man's face overlaid by &ldquo;using the word 'reward.'&rdquo;"/>
 
@@ -77,41 +89,15 @@ The culprit is, yet again, the word "reward." Suppose instead that common wisdom
 
 | Claim | Status |
 | --: | :-- |
-| Reward is not _definitionally_[^definitional] the optimization target. | ✅ |
-| In realistic settings, reward functions aren't goals.| ✅ |
+| Reward is not _definitionally_ the optimization target. | ✅ |
+| In realistic settings, reward functions don't represent goals.| ✅ |
 | RL-trained systems won't primarily optimize the reward signal. | ✅ |
 
-[^definitional]: A reviewer commented, "I don't care for [definitional arguments](https://www.readthesequences.com/The-Parable-Of-Hemlock)". Neither do I. However, [many people _did_](/reward-is-not-the-optimization-target#appendix-the-field-of-rl-thinks-reward-is-the-optimization-target) argue that the definition of RL implied danger (see: ). I'm just debunking the bad "by definition" argument.
+I stand by the first two claims, which are theoretical points which stand on their own. For more on "reward functions don't represent goals", read [Four usages of "loss" in AI](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals).
 
-## 1: "Reward is not _definitionally_ the optimization target"
+## Claim 3: "RL-trained systems won't primarily optimize the reward signal"
 
-Subtitle: ✅ Theoretical point and correct independently of empirical results.
-
-In common (policy-gradient) RL approaches, the mechanistic function of reward is to _reinforce_ computations which led to the reward. There is no intrinsic or definitional reason why the trained system should care about this "reward" quantity.
-
-## 2: "In realistic settings, reward functions aren't goals"
-
-Subtitle: ✅ Theoretical point and correct independently of empirical results.
-
-In realistic settings we care about, the reward function isn't a good way to express "goals". The reward function is instead a tool which helps reinforce and chisel certain subroutines into trained systems.
-
-## 3: "RL-trained systems won't primarily optimize the reward signal"
-
-Subtitle: ✅ Supported so far.
-
-In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried to gradually nudge Claude to eventually modify its own reward function. Claude nearly never did so (modifying the function in just 8 of 33,000 trials) despite the "reward function" [being clearly broken](https://www.alignmentforum.org/posts/FSgGBjDiaCdWxNBhj/sycophancy-to-subterfuge-investigating-reward-tampering-in?commentId=GQEZcovfaugLMAgAW). "Systems don't care to reward tamper" is _exactly_ what Reward≠OT predicted.
-
-> [!warning] Lack of experimental data on non-tampering varieties of reward optimization
-> [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162) tests _reward tampering_—modifying the reward mechanism. But "reward optimization" also includes non-tampering behavior: choosing actions _because_ they maximize reward. We don't know how to reliably test _why_ an AI took certain actions -- different motivations can produce identical behavior.
->
-> Even chain-of-thought mentioning reward is ambiguous. "To get higher reward, I should do X" could reflect:
->
-> - Sloppy language: using "reward" as shorthand for "doing well",
-> - Pattern-matching: "AIs reason about reward" learned from pretraining,
-> - Instrumental reasoning: reward helps achieve some other goal, or
-> - Terminal reward valuation: what Reward≠OT argued against.
->
-> CoT text can't distinguish these. We need stronger tests of what the AI's "primary" motivations are.
+In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried to gradually nudge Claude to eventually modify its own reward function. Claude nearly never did so (modifying the function in just 8 of 33,000 trials) despite the "reward function" [being clearly broken](https://www.alignmentforum.org/posts/FSgGBjDiaCdWxNBhj/sycophancy-to-subterfuge-investigating-reward-tampering-in?commentId=GQEZcovfaugLMAgAW). "Systems don't care to reward tamper" is _exactly_ what Reward≠OT predicted. Therefore, the evidence so far supports this claim.
 
 # My concrete predictions on reward optimization
 
@@ -138,7 +124,7 @@ I've made two falsifiable predictions. Click through to `fatebook.io` for resolu
 > Even if RL does end up training a reward optimizer, the philosophical points still stand:
 >
 > 1. Reward is not _definitionally_ the optimization target, and
-> 2. In realistic settings, reward functions are not goals.
+> 2. In realistic settings, [reward functions are not goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals)
 
 # I made a few mistakes in Reward≠OT
 
@@ -151,7 +137,7 @@ I no longer endorse one argument I gave against empirical reward-seeking:
 > [!summary] Summary of my past reasoning
 > Reward reinforces the computations which lead to it. For reward-seeking to become the system's primary goal, it likely must happen early in RL. Early in RL, systems won't _know_ about reward, so how could they generalize to seek reward as a primary goal?
 
-This reasoning seems applicable to humans, though I'm not so sure about "must happen in early RL". However, due to pretraining, LLMs arrive at RL training already understanding concepts like "reward" and "reward optimization." I didn't realize that in 2022. Therefore, I now have less skepticism towards "reward-seeking cognition could exist and then be reinforced."
+This reasoning seems applicable to humans: people grow to value their friends, happiness, and interests long before they learn about the brain's reward system. However, due to pretraining, LLMs arrive at RL training already understanding concepts like "reward" and "reward optimization." I didn't realize that in 2022. Therefore, I now have less skepticism towards "reward-seeking cognition could exist and then be reinforced."
 
 Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evidenced by [A shot at the diamond-alignment problem](/a-shot-at-the-diamond-alignment-problem)'s detailed training story about a robot which we reinforce by pressing a "+1 reward" button, I was most comfortable thinking about an embodied deep RL training process. If I had understood LLM pretraining, I would have likely realized that these systems _have some reason to already be thinking thoughts about "reward"_, which means those thoughts could be upweighted and reinforced into AI values.
 
@@ -165,7 +151,7 @@ To my credit, I noted my ignorance:
 | Claim | Status |
 | --: | :-- |
 | Reward is not _definitionally_ the optimization target. | ✅ |
-| Reward functions aren't goals. | ✅ |
+| [Reward functions don't represent goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals) | ✅ |
 | RL-trained systems won't primarily optimize the reward signal. | ✅ |
 
 Reward≠OT's core claims remain correct. LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. Modern problems require modern solutions.
@@ -173,4 +159,4 @@ Reward≠OT's core claims remain correct. LLMs are not trying to literally maxim
 It's _still_ wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)). It's _still_ [misguided to attempt to directly represent a goal via a reward function](/against-inner-outer-alignment#loss-doesn-t-have-to-represent-intended-goals). As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
 
 > [!thanks]
-> Alex Cloud, Daniel Filan, Garrett Baker, and Peter Barnett gave feedback.
+> Alex Cloud, Daniel Filan, Garrett Baker, Peter Barnett, and Vivek Hebbar gave feedback.
