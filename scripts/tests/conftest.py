@@ -167,26 +167,35 @@ def _is_git_command(cmd: list | str) -> bool:
 
 def _is_blocked_git_operation(cmd: list) -> tuple[bool, str]:
     """
-    Check if command is a blocked git write operation.
+    Check if command is a blocked git operation.
+
+    By default, blocks ALL git operations except explicitly allowed read-only ones.
+    This prevents tests from accidentally modifying the real repository.
 
     Returns:
         Tuple of (is_blocked, subcommand_name)
     """
-    blocked_operations = {
-        "add",
-        "commit",
-        "push",
-        "pull",
-        "fetch",
-        "merge",
-        "rebase",
+    allowed_readonly_operations = {
+        "rev-parse",
+        "status",
+        "log",
+        "show",
+        "ls-files",
+        "ls-tree",
+        "cat-file",
+        "config",
+        "remote",
+        "branch",
+        "init",
     }
 
     if not _is_git_command(cmd) or len(cmd) < 2:
         return False, ""
 
     subcommand = cmd[1]
-    return subcommand in blocked_operations, subcommand
+
+    is_blocked = subcommand not in allowed_readonly_operations
+    return is_blocked, subcommand
 
 
 @pytest.fixture(autouse=True)
