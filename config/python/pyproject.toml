@@ -76,6 +76,7 @@ max_line_length = 80
 
 [tool.coverage.run]
 omit = ["scripts/tests/*", "scripts/__init__.py"]
+disable_warnings = ["no-data-collected"]
 
 [tool.coverage.report]
 exclude_lines = [
