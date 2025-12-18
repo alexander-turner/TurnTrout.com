@@ -514,11 +514,6 @@ async function handleResultNavigation(
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
 ): Promise<void> {
-  // Remove previous visual focus marker
-  if (currentHover) {
-    currentHover.classList.remove("focus")
-  }
-
   // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
@@ -534,13 +529,23 @@ async function handleResultNavigation(
 
   /**
    * Focus a target result element and update the preview, if present.
+   * Locks mouse events temporarily to prevent interference.
    *
    * @param target - The result card to focus and preview
    */
   const focusAndPreview = async (target: HTMLElement | null) => {
     if (!target) return
+
+    // Lock mouse events during keyboard navigation
+    mouseEventsLocked = true
+
     await displayPreview(target)
     await focusCard(target)
+
+    // Unlock mouse events after a short delay
+    setTimeout(() => {
+      mouseEventsLocked = false
+    }, mouseFocusDelay)
   }
 
   /**
@@ -854,6 +859,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   // Add mouse leave handler to maintain focus state
   function onMouseLeave() {
+    if (mouseEventsLocked) return
     if (currentHover === itemTile) {
       currentHover = null
     }
