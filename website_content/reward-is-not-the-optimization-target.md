@@ -120,7 +120,7 @@ Why won’t early-stage agents think thoughts like “If putting trash away will
 
 : At least, that's the reply I gave in 2022. In 2025, I realize that I [didn't understand that LLM pretraining _would_ allow such thoughts in early-stage RL](/llms-cheat-a-lot). _RLHF may well reinforce such thoughts!_ That said, the question still comes down to empirics.
 
-But aren’t we implicitly selecting for agents with high cumulative reward, when we train those agents?
+Aren’t we implicitly selecting for agents with high cumulative reward, when we train those agents?
 : Yeah. But on its own, this argument can’t possibly imply that selected agents will probably be reward optimizers. The argument would [prove too much](https://slatestarcodex.com/2013/04/13/proving-too-much/). Evolution selected for inclusive genetic fitness, and it [did not get IGF optimizers](https://www.lesswrong.com/posts/XPErvb8m9FapXCjhA/adaptation-executers-not-fitness-maximizers).
 
 : "We're selecting for agents on reward $\rightarrow$  we get an agent which optimizes reward" is locally invalid. "We select for agents on X $\rightarrow$ we get an agent which optimizes X" is not true for the case of evolution, and so is not true in general. Therefore, the argument isn't necessarily true in the AI reward-selection case. Even if RL _did_ happen to train reward optimizers and this post _were_ wrong, the selection argument is too weak on its own to establish that conclusion.
@@ -138,7 +138,7 @@ But aren’t we implicitly selecting for agents with high cumulative reward, whe
 Don’t some people terminally care about reward?
 : I think so! I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start chiseled computations about reward _after_ it has chiseled other kinds of computations (e.g. putting away trash).
 
-But what if the AI bops the reward button early in training, while exploring? Then credit assignment would make the AI more likely to hit the button again.
+What if the AI bops the reward button early in training, while exploring? Then credit assignment would make the AI more likely to hit the button again.
 : Then keep the button away from the AI until it can model the effects of hitting the cognition-updater button.[^7]
 
 : For the reasons given in the “siren” section, a sufficiently reflective AI probably won’t seek the reward button on its own.
