@@ -11,6 +11,13 @@ fi
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
+# Check if .timestamps directory exists
+if [ ! -d "$GIT_ROOT/.timestamps" ]; then
+  echo "ERROR: .timestamps directory not found!"
+  echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+  exit 1
+fi
+
 # Store file modification times before formatting
 touch /tmp/before_format /tmp/after_format
 find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/before_format
