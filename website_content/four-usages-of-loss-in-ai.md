@@ -29,8 +29,9 @@ date_published: 2022-10-02 00:00:00
 original_url: https://www.lesswrong.com/posts/jnmG5jczvWbeRPcvG/four-usages-of-loss-in-ai
 skip_import: true
 description: Four distinct concepts related to "loss function" in AI are often conflated, leading to ambiguity in the field of AI alignment.
-date_updated: 2025-12-18 09:41:00.470485
+date_updated: 2025-12-18 09:42:00.251916
 ---
+
 
 
 

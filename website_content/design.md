@@ -12,9 +12,10 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2025-12-18 09:41:00.470485
+date_updated: 2025-12-18 09:42:00.251916
 no_dropcap: false
 ---
+
 
 
 

@@ -13,9 +13,10 @@ aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
   - reward-retrospective
-date_published: &id001 2025-12-18 09:41:00.470485
-date_updated: *id001
+date_published: 2025-12-18 09:41:00.470485
+date_updated: 2025-12-18 09:42:00.251916
 ---
+
 
  
 Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
