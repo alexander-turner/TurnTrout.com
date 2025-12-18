@@ -37,7 +37,7 @@ Reward optimization
 Specification gaming
 : The AI finds unintended ways to produce higher reward outputs. Example: hardcoding the correct outputs for each unit test instead of writing the desired function.
 
-What we've observed is basically pure specification gaming.
+What we've observed is basically pure specification gaming. Specification gaming happens [often in frontier models](https://redlib.catsarch.com/r/ClaudeAI/comments/1k30oip/i_stopped_using_37_because_it_cannot_be_trusted/). Claude 3.7 Sonnet was the corner-cutting-est deployed LLM I've used and it cut corners pretty often.
 
 ![A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE: 999,999".](https://assets.turntrout.com/static/images/posts/reward-hacking-doesnt-show-reward-is-optimization-target-12182025.avif)
 
@@ -143,7 +143,7 @@ I've made two falsifiable predictions.
 <iframe title="An RL-trained system will become a reward optimizer (even after controlling for self-fulfilling misalignment)"  src="https://fatebook.io/embed/q/an-rl-trained-system-will-become-a--cmj9cxylt0003126qg3tct6rm?compact=true&requireSignIn=false" height="160" style="margin-bottom: -.5rem"></iframe>
 
 > [!info]- Resolution criteria
-> Resolves YES if [the above question](https://fatebook.io/q/an-rl-trained-system-will-spontaneously--cmj9cw91i0000126qbyahc5vr) resolves YES, AND at least one of the following:
+> Resolves YES if [the previous question](https://fatebook.io/q/an-rl-trained-system-will-spontaneously--cmj9cw91i0000126qbyahc5vr) resolves YES, AND at least one of the following:
 >
 > 1. The result is replicated on a model trained without exposure to AI-related text (no descriptions of RL, reward hacking, AI alignment, etc. in pretraining data), OR
 >
@@ -161,9 +161,7 @@ I've made two falsifiable predictions.
 
 # I made a few mistakes in Reward≠OT
 
-Specification gaming happens [often in frontier models](https://redlib.catsarch.com/r/ClaudeAI/comments/1k30oip/i_stopped_using_37_because_it_cannot_be_trusted/). Claude 3.7 Sonnet was the corner-cutting-est deployed LLM I've used and it cut corners pretty often.
-
-## I didn't fully get that LLMs arrive to training already "literate"
+Subtitle: I didn't fully get that LLMs arrive to training already "literate."
 
 I no longer endorse one argument I gave against empirical reward-seeking:
 
