@@ -84,6 +84,29 @@ def test_find_quartz_process(mock_process):
         assert run_push_checks.find_quartz_process() is None
 
 
+def test_find_quartz_process_with_invalid_cmdline():
+    """Test finding Quartz process skips processes with None or short cmdline."""
+    # Test with None cmdline
+    mock_proc_none = MagicMock()
+    mock_proc_none.info = {"cmdline": None}
+
+    # Test with cmdline length < 2
+    mock_proc_short = MagicMock()
+    mock_proc_short.info = {"cmdline": ["single"]}
+
+    # Test with valid quartz process
+    mock_proc_valid = MagicMock()
+    mock_proc_valid.pid = 99999
+    mock_proc_valid.info = {"cmdline": ["pnpm", "dev"]}
+
+    with patch(
+        "psutil.process_iter",
+        return_value=[mock_proc_none, mock_proc_short, mock_proc_valid],
+    ):
+        # Should skip the first two and find the valid one
+        assert run_push_checks.find_quartz_process() == 99999
+
+
 def test_kill_process(mock_process):
     """Test process termination."""
     with patch("psutil.Process", return_value=mock_process):
@@ -959,6 +982,7 @@ def test_main_stashes_and_restores_changes(temp_state_dir):
             cwd=run_push_checks._GIT_ROOT,
             capture_output=True,
             text=True,
+            check=True,
         )
         # Verify logging
         mock_log.assert_any_call("[cyan]Stashed uncommitted changes[/cyan]")
