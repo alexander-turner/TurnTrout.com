@@ -5,22 +5,23 @@ set -e
 # Get current commit hash and repository root directory
 commit_hash="$(git rev-parse HEAD)"
 git_root="$(git rev-parse --show-toplevel)"
-timestamps_dir="$git_root/.timestamps/files"
+timestamps_repo="$git_root/.timestamps"
+timestamps_dir="$timestamps_repo/files"
 mkdir -p "$timestamps_dir"
 
 # Create text file containing commit hash
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
-# Create OpenTimestamps proof for the commit hash
-ots stamp "$txt_file" 1>/dev/null 2>&1
-echo "Stamped $txt_file"
-
-# Add and commit the timestamp files if there are changes
-if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
-  git add --force "$commit_hash.txt" "$commit_hash.txt.ots"
-  git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet --no-verify
-  git push --quiet
+# Create OpenTimestamps proof for the commit hash (suppress verbose output)
+if ! ots stamp "$txt_file" >/dev/null 2>&1; then
+  echo "ERROR: Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
+  exit 1
 fi
 
+# Commit and push the timestamp files in the .timestamps repo
+cd "$timestamps_repo" || exit 1
+git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || exit 1
+git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || exit 1
+git push --quiet 2>/dev/null &
 cd "$git_root" || exit 1
