@@ -599,13 +599,20 @@ def test_main_clears_state_on_success(temp_state_dir):
                 [],
             ),
         ),
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
 
         from scripts.run_push_checks import main
 
-        main()
+        exit_code = main()
 
+        # Verify successful exit code
+        assert exit_code == 0
         # Verify state was cleared after successful completion
         assert run_push_checks.get_last_step() is None
 
@@ -626,20 +633,26 @@ def test_main_preserves_state_on_failure(temp_state_dir):
                 [],
             ),
         ),
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
 
         # Save initial state
         run_push_checks.save_state("test")
 
         # Make the first run_checks call fail
-        mock_run.side_effect = SystemExit(1)
+        mock_run.side_effect = run_push_checks.CheckFailedError("test")
 
         from scripts.run_push_checks import main
 
-        with pytest.raises(SystemExit):
-            main()
+        exit_code = main()
 
+        # Verify error exit code
+        assert exit_code == 1
         # Verify state was not cleared
         assert run_push_checks.get_last_step() == "test"
 
@@ -655,9 +668,14 @@ def test_main_skips_pre_server_steps(temp_state_dir):
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.create_server") as mock_create,
         patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
         mock_run.return_value = None  # Successful runs
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
 
         # Create mock steps
         mock_steps_before = [
@@ -679,8 +697,10 @@ def test_main_skips_pre_server_steps(temp_state_dir):
 
             from scripts.run_push_checks import main
 
-            main()
+            exit_code = main()
 
+            # Verify successful exit
+            assert exit_code == 0
             # Verify pre-server steps were skipped
             mock_log.assert_any_call("[grey]Skipping step: Pre Step 1[/grey]")
             mock_log.assert_any_call("[grey]Skipping step: Pre Step 2[/grey]")
@@ -822,15 +842,22 @@ def test_main_resume_with_invalid_step(temp_state_dir):
                 [],
             ),
         ),
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
         # Save an invalid step
         run_push_checks.save_state("invalid_step")
 
         from scripts.run_push_checks import main
 
-        main()
+        exit_code = main()
 
+        # Verify successful exit
+        assert exit_code == 0
         # Should show warning and start from beginning
         mock_log.assert_any_call(
             "[yellow]No valid resume point found. Starting from beginning.[/yellow]"
@@ -857,8 +884,13 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
                 [],
             ),
         ),
+        patch("subprocess.run") as mock_subprocess,
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
         # Save a valid step
         run_push_checks.save_state("test")
 
@@ -867,14 +899,68 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
 
         from scripts.run_push_checks import main
 
-        with pytest.raises(KeyboardInterrupt):
-            main()
+        exit_code = main()
 
+        # Verify interrupt exit code
+        assert exit_code == 130
         # State should be preserved
         assert run_push_checks.get_last_step() == "test"
         mock_log.assert_any_call(
             "\n[yellow]Process interrupted by user.[/yellow]"
         )
+
+
+def test_main_stashes_and_restores_changes(temp_state_dir):
+    """Test that main stashes uncommitted changes and restores them."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(resume=False),
+        ),
+        patch("scripts.run_push_checks.run_checks"),
+        patch("scripts.run_push_checks.create_server") as mock_create,
+        patch("scripts.run_push_checks.kill_process"),
+        patch(
+            "scripts.run_push_checks.get_check_steps",
+            return_value=(
+                [run_push_checks.CheckStep(name="test", command=["test"])],
+                [],
+            ),
+        ),
+        patch("subprocess.run") as mock_subprocess,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+    ):
+        mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        # Mock git stash to indicate changes were stashed
+        mock_subprocess.return_value = MagicMock(
+            stdout="Saved working directory and index state"
+        )
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify successful exit
+        assert exit_code == 0
+        # Verify git stash was called
+        assert mock_subprocess.call_count == 2  # stash push and stash pop
+        # Verify stash push was called
+        mock_subprocess.assert_any_call(
+            ["git", "stash", "push", "-u", "-m", "run_push_checks auto-stash"],
+            cwd=run_push_checks._GIT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        # Verify stash pop was called
+        mock_subprocess.assert_any_call(
+            ["git", "stash", "pop"],
+            cwd=run_push_checks._GIT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        # Verify logging
+        mock_log.assert_any_call("[cyan]Stashed uncommitted changes[/cyan]")
+        mock_log.assert_any_call("[cyan]Restored stashed changes[/cyan]")
 
 
 def test_create_server_progress_bar():
