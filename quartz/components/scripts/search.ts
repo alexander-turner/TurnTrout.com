@@ -540,7 +540,7 @@ async function handleResultNavigation(
   const focusAndPreview = async (target: HTMLElement | null) => {
     if (!target) return
     await displayPreview(target)
-    focusCard(target)
+    await focusCard(target)
   }
 
   /**
