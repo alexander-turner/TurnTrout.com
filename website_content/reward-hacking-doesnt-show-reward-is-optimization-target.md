@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: "Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks. 
+description: '"Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/XveaUN7.png
 card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
