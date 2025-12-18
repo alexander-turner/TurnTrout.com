@@ -6,8 +6,7 @@ no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: LLMs specification game quite a bit. That doesn't conflict with my 
-  post "Reward is not the optimization target."
+description: "Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks. 
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/XveaUN7.png
 card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
@@ -77,7 +76,7 @@ By focusing on the mechanistic function of the reward signal, I discussed to wha
 
 You might expect me to say "people should have read more closely." Perhaps some readers needed to read more closely or in better faith. Overall, however, I don't subscribe to that view: [as an author, I have a responsibility to communicate clearly.](/author-responsibility)
 
-Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit wrong about "reward hacking"! I went as far as to [draft a post](https://github.com/alexander-turner/TurnTrout.com/blob/7d6bd8d4c9f986d5758fb742868d7442b85718af/website_content/llms-cheat-a-lot.md) where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, my nagging unease which finally led me to remember "Reward≠OT was _not_ about specification gaming". (To verify this story, the site's design lets you [cryptographically verify the commit ordering](/design#finishing-touches).)
+Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit wrong about "reward hacking"! I went as far as to [draft a post](https://github.com/alexander-turner/TurnTrout.com/blob/7d6bd8d4c9f986d5758fb742868d7442b85718af/website_content/llms-cheat-a-lot.md) where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, my nagging unease which finally led me to remember "Reward≠OT was _not_ about specification gaming".
 
 <img src="https://assets.turntrout.com/static/images/posts/llms-cheat-a-lot-12172025.avif" class="float-right" alt="A Scooby Doo meme. Panel 1: Fred looks at a man in a ghost costume, overlaid by text &ldquo;philosophical alignment mistake.&rdquo; Panel 2: Fred unmasks the &ldquo;ghost&rdquo;, with the man's face overlaid by &ldquo;using the word 'reward.'&rdquo;"/>
 
@@ -105,7 +104,7 @@ In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried
 
 # My concrete predictions on reward optimization
 
-That said, it's not like nothing ever changes in my mind. I now consider direct reward optimization to be more likely than I did in 2022, for at least three reasons:
+I now consider direct reward optimization to be more likely than I did in 2022, for at least three reasons:
 
 1. [Self-fulfilling misalignment](/self-fulfilling-misalignment): pretrained models learn the stereotype that "smart AIs are always trying to get that reward". Later, they consider themselves to be smart AI, which activates a predictive pattern which guides their actions towards reward optimization.
 2. Corrigibility and alignment both seem way easier than I thought in mid-2022. In particular, I think it'd be easy to get an LLM to prioritize reward. First, you could just tell it to.[^instruction-tuning] Second, I bet you could entrain those priorities.[^entrain]
