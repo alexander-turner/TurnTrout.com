@@ -1,6 +1,5 @@
 ---
-title: 2025-era "reward hacking" does not show that reward is the optimization 
-  target
+title: 2025-era "reward hacking" does not show that reward is the optimization target
 permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
