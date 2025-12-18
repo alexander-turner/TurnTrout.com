@@ -3,8 +3,7 @@ permalink: reward-is-not-the-optimization-target
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
+lw-page-url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
 lw-is-question: "false"
 lw-posted-at: 2022-07-25T00:03:18.307000Z
 lw-last-modification: 2024-03-02T01:19:02.501000Z
@@ -35,13 +34,12 @@ next-post-title: The Shard Theory of Human Values
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-07-25 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
+original_url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
 skip_import: "true"
-description: "RL doesn't train reward optimizers. Reward chisels cognition into agents.
-  Worry less about safe objectives, more about good cognition."
-date_updated: 2025-11-22 00:21:52.667251
+description: "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition."
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 

@@ -15,9 +15,10 @@ aliases:
   - talk-agi
   - intro-agi-risk
 date_published: 2025-06-29 16:49:07.944742
-date_updated: 2025-08-19 20:19:47.849267
+date_updated: 2025-12-18 09:41:00.470485
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
+
 
 
 

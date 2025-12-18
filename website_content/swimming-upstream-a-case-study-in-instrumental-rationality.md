@@ -3,8 +3,7 @@ permalink: swimming-upstream
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
+lw-page-url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 lw-is-question: "false"
 lw-posted-at: 2018-06-03T03:16:21.613000Z
 lw-last-modification: None
@@ -33,18 +32,16 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: first-analysis-textbook-review
 prev-post-title: "Into the Kiln: Insights from Tao's 'Analysis I'"
 next-post-slug: RL-textbook-review
-next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning:
-  An Introduction'"
+next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2018-06-03 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
+original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
-description: "I dove headfirst into AI safety, even at the risk of my PhD. This is
-  how. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 

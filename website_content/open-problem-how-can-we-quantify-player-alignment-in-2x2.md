@@ -3,8 +3,7 @@ permalink: question-about-defining-alignment-in-simple-setting
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
+lw-page-url: https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
 lw-is-question: "true"
 lw-posted-at: 2021-06-16T02:09:42.403000Z
 lw-last-modification: 2021-06-22T21:52:08.179000Z
@@ -28,13 +27,12 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2021-06-16 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
+original_url: https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
 skip_import: true
-description: "Quantifying player alignment in game theory: how aligned are the players'
-  incentives in a given game? "
-date_updated: 2025-11-22 00:21:52.667251
+description: "Quantifying player alignment in game theory: how aligned are the players' incentives in a given game? "
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 
