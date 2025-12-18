@@ -74,7 +74,7 @@ Paying proper attention, Reward≠OT makes claims[^argument] about motivations p
 By focusing on the mechanistic function of the reward signal, I discussed to what extent the reward signal itself might become an "optimization target" of a trained agent. The rest of the essay's language reflects this focus. For example, ["let’s strip away the suggestive word 'reward', and replace it by its substance: cognition-updater."](/reward-is-not-the-optimization-target#the-siren-like-suggestiveness-of-the-word-reward)
 
 > [!info] Historical context for Reward≠OT
-> To the potential surprise of modern readers, back in 2022, prominent thinkers confidently forecasted RL doom on the basis of reward optimization. They seemed to assume it would happen by the definition of RL. For example, Eliezer Yudkowsky's ["List of Lethalities" argued that point, which I called out](/disagreements-with-list-of-lethalities#lethality-19-reward-optimization-kills-you). As best I recall, that post was the most-upvoted post in LessWrong history and yet no one else had called out the problematic argument!
+> To the potential surprise of modern readers, back in 2022, prominent thinkers confidently forecast RL doom on the basis of reward optimization. They seemed to assume it would happen by the definition of RL. For example, Eliezer Yudkowsky's ["List of Lethalities" argued that point, which I called out](/disagreements-with-list-of-lethalities#lethality-19-reward-optimization-kills-you). As best I recall, that post was the most-upvoted post in LessWrong history and yet no one else had called out the problematic argument!
 >
 > From my point of view, I _had_ to call out this mistaken argument. Specification gaming wasn't part of that picture.
 
