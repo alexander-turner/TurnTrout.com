@@ -38,8 +38,11 @@
       "pnpm eslint --fix --config config/javascript/eslint.config.js",
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
+    ".hooks/prepare-commit-msg": [
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
+    ],
     "*.fish": "fish_indent",
-    "{*.sh,.hooks/*}": [
+    "{*.sh,.hooks/commit-msg,.hooks/post-commit,.hooks/pre-commit,.hooks/pre-push}": [
       "shfmt -i 2 -w",
       "shellcheck"
     ],
