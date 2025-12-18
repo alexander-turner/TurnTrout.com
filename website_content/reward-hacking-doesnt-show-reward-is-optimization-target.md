@@ -1,18 +1,20 @@
 ---
-title: Modern "reward hacking" does not show that reward is the optimization target
+title: 2025-era "reward hacking" does not show that reward is the optimization 
+  target
 permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: LLMs specification game quite a bit. That doesn't conflict with my post "Reward is not the optimization target."
+description: LLMs specification game quite a bit. That doesn't conflict with my 
+  post "Reward is not the optimization target."
 authors: Alex Turner
-card_image:
-card_image_alt:
+card_image: https://assets.turntrout.com/static/images/card_images/XveaUN7.png
+card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
 aliases:
-- specification-gaming-is-not-reward-optimization
-- reward-still-is-not-the-optimization-target
-- reward-retrospective
+  - specification-gaming-is-not-reward-optimization
+  - reward-still-is-not-the-optimization-target
+  - reward-retrospective
 ---
  
 Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
@@ -43,6 +45,8 @@ What we've observed is basically pure specification gaming.
 > - Terminal reward valuation: what Reward≠OT argued against.
 >
 > Looking at the CoT doesn't strictly distinguish these. We need more careful tests of what the AI's "primary" motivations are.
+
+![A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE: 999,999".](https://assets.turntrout.com/static/images/posts/reward-hacking-doesnt-show-reward-is-optimization-target-12172025.avif)
 
 ## Reward≠OT was about reward optimization
 
@@ -104,8 +108,10 @@ In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried
 That said, it's not like nothing ever changes in my mind. I now consider direct reward optimization to be more likely than I did in 2022, for at least three reasons:
 
 1. [Self-fulfilling misalignment](/self-fulfilling-misalignment): pretrained models learn the stereotype that "smart AIs are always trying to get that reward". Later, they consider themselves to be smart AI, which activates a predictive pattern which guides their actions towards reward optimization.
-2. Corrigibility and alignment both seem way easier than I thought in mid-2022. In particular, I think it'd be easy to get an LLM to prioritize reward. First, you could just tell it to.[^instruction-tuning] Second, I bet you could entrain those priorities. Perhaps, in the RL generation prompt, tell the LLM to complete tasks in order to optimize numerical reward value, and then train the LLM using that data. You might want to [omit the reward instruction from the training prompt](https://alignmentforum.org/posts/whkMnqFWKsBm7Gyd7/recontextualization-mitigates-specification-gaming-without).
+2. Corrigibility and alignment both seem way easier than I thought in mid-2022. In particular, I think it'd be easy to get an LLM to prioritize reward. First, you could just tell it to.[^instruction-tuning] Second, I bet you could entrain those priorities.[^entrain]
 3. By the time RL begins, models (in some fashion) already know the "reward" concept. Therefore, by the reasoning of Reward≠OT, RL can reinforce [shards](/shard-theory) which _seek out reward_.
+
+[^entrain]: Here's one idea for training a reward optimizer on purpose. In the RL generation prompt, tell the LLM to complete tasks in order to optimize numerical reward value, and then train the LLM using that data. You might want to [omit the reward instruction from the training prompt](https://alignmentforum.org/posts/whkMnqFWKsBm7Gyd7/recontextualization-mitigates-specification-gaming-without).
 
 [^instruction-tuning]: Ah, the joys of instruction finetuning. Of all alignment results, I am _most_ thankful for [the discovery that instruction finetuning generalizes a long way.](https://arxiv.org/abs/2203.02155)
 
@@ -176,9 +182,9 @@ To my credit, I noted my ignorance:
 | [Reward functions don't represent goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals) | ✅ |
 | RL-trained systems won't primarily optimize the reward signal. | ✅ |
 
-Reward≠OT's core claims remain correct. LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. Modern problems require modern solutions.
+Reward≠OT's core claims remain correct. It's still wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)).
 
-It's _still_ wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)). It's _still_ [misguided to attempt to directly represent a goal via a reward function](/against-inner-outer-alignment#loss-doesn-t-have-to-represent-intended-goals). As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
+LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. Modern problems require modern solutions. As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
 
 > [!thanks]
 > Alex Cloud, Daniel Filan, Garrett Baker, Peter Barnett, and Vivek Hebbar gave feedback.
