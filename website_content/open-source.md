@@ -5,8 +5,7 @@ no_dropcap: true
 tags:
   - personal
   - open-source
-description: "My projects include this website's infrastructure, AI-powered alt text
-  generation, and dataset protection utilities."
+description: "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities."
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image:
@@ -17,8 +16,9 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 # This website

@@ -1,26 +1,22 @@
 ---
-title: 2025-era "reward hacking" does not show that reward is the optimization 
-  target
+title: 2025-era "reward hacking" does not show that reward is the optimization target
 permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: '"Reward hacking" is usually specification gaming, not signal optimization.
-  Why my 2022 thesis stands, plus detailed predictions on RL risks.'
+description: '"Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.png
-card_image_alt: A split-screen comparison illustration with a comic book 
-  aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot 
-  sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out
-  a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot 
-  plays an arcade game. Above the machine rests a screen that displays "SCORE - 
-  999,999".
+card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
 aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
   - reward-retrospective
+date_published: &id001 2025-12-18 09:41:00.470485
+date_updated: *id001
 ---
+
  
 Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
 

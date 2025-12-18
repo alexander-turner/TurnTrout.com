@@ -3,8 +3,7 @@ permalink: disagreements-with-list-of-lethalities
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
+lw-page-url: https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
 lw-is-question: 'false'
 lw-posted-at: 2023-01-24T00:25:28.075000Z
 lw-last-modification: 2024-01-09T22:19:49.662000Z
@@ -27,13 +26,12 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2023-01-24 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
+original_url: https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
 skip_import: true
-description: A critical look at the idea of "lethal" AI failures, challenging common
-  assumptions about reward functions, alignment, and the limits of human values.
-date_updated: 2025-11-22 00:21:52.667251
+description: A critical look at the idea of "lethal" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 

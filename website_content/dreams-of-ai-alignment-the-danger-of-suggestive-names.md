@@ -3,8 +3,7 @@ permalink: danger-of-suggestive-terminology
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
+lw-page-url: https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
 lw-is-question: "false"
 lw-posted-at: 2024-02-10T01:22:51.715000Z
 lw-last-modification: 2024-02-13T21:08:58.421000Z
@@ -32,13 +31,12 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2024-02-10 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
+original_url: https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names
 skip_import: true
-description: 'AI alignment plagued by imprecise language. Ex: "reward" and "shoggoth"
-  are suggestive words that obstruct clear thought.'
-date_updated: 2025-11-22 00:21:52.667251
+description: 'AI alignment plagued by imprecise language. Ex: "reward" and "shoggoth" are suggestive words that obstruct clear thought.'
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 

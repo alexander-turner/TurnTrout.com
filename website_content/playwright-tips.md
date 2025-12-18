@@ -14,8 +14,9 @@ aliases:
   - visual-regression
   - lostpixel
 date_published: 2025-08-12 07:48:13.242307
-date_updated: 2025-08-14 23:57:58.815232
+date_updated: 2025-12-18 09:41:00.470485
 ---
+
 
 
 # Background
