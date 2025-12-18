@@ -149,8 +149,8 @@ describe("processPreviewables", () => {
     const elements = processPreviewables(html, url)
 
     // Modify the returned element
-    const p = elements[0].querySelector("p")
-    if (p) p.textContent = "Modified"
+    const paragraphElement = elements[0].querySelector("p")
+    if (paragraphElement) paragraphElement.textContent = "Modified"
 
     // Original should be unchanged
     const original = html.querySelector(".previewable p")

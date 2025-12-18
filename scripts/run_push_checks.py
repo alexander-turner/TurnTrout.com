@@ -703,13 +703,22 @@ def main() -> int:
     server_manager = ServerManager()
     stash_created = False
 
+    git_path = shutil.which("git") or "git"
     try:
         # Stash any uncommitted changes
         stash_result = subprocess.run(
-            ["git", "stash", "push", "-u", "-m", "run_push_checks auto-stash"],
+            [
+                git_path,
+                "stash",
+                "push",
+                "-u",
+                "-m",
+                "run_push_checks auto-stash",
+            ],
             cwd=_GIT_ROOT,
             capture_output=True,
             text=True,
+            check=True,
         )
         # Check if stash was actually created (output won't contain "No local changes")
         if "No local changes" not in stash_result.stdout:
@@ -764,7 +773,7 @@ def main() -> int:
         # Restore stashed changes if we created a stash
         if stash_created:
             subprocess.run(
-                ["git", "stash", "pop"],
+                [git_path, "stash", "pop"],
                 cwd=_GIT_ROOT,
                 capture_output=True,
                 text=True,
