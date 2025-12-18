@@ -1,14 +1,21 @@
 ---
-title: 2025-era "reward hacking" does not show that reward is the optimization target
+title: 2025-era "reward hacking" does not show that reward is the optimization 
+  target
 permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: '"Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks.'
+description: '"Reward hacking" is usually specification gaming, not signal optimization.
+  Why my 2022 thesis stands, plus detailed predictions on RL risks.'
 authors: Alex Turner
-card_image: https://assets.turntrout.com/static/images/card_images/XveaUN7.png
-card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
+card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.png
+card_image_alt: A split-screen comparison illustration with a comic book 
+  aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot 
+  sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out
+  a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot 
+  plays an arcade game. Above the machine rests a screen that displays "SCORE - 
+  999,999".
 aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
@@ -32,6 +39,8 @@ Specification gaming
 
 What we've observed is basically pure specification gaming.
 
+![A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE: 999,999".](https://assets.turntrout.com/static/images/posts/reward-hacking-doesnt-show-reward-is-optimization-target-12182025.avif)
+
 > [!warning] We don't have experimental data on non-tampering varieties of reward optimization
 > [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162) tests _reward tampering_—modifying the reward mechanism. But "reward optimization" also includes non-tampering behavior: choosing actions _because_ they maximize reward. We don't know how to reliably test _why_ an AI took certain actions -- different motivations can produce identical behavior.
 >
@@ -43,8 +52,6 @@ What we've observed is basically pure specification gaming.
 > - Terminal reward valuation: what Reward≠OT argued against.
 >
 > Looking at the CoT doesn't strictly distinguish these. We need more careful tests of what the AI's "primary" motivations are.
-
-![A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD MAXIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE: 999,999".](https://assets.turntrout.com/static/images/posts/reward-hacking-doesnt-show-reward-is-optimization-target-12172025.avif)
 
 ## Reward≠OT was about reward optimization
 
