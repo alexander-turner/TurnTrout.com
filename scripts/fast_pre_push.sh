@@ -54,7 +54,7 @@ if [ "$GIT_STATUS" -gt 0 ]; then
   git add -A
   git commit -m "chore: updated publication dates"
   echo "Pushing commit..."
-  git push
+  git push --no-verify
 fi
 
 exit 0
