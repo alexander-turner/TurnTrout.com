@@ -118,7 +118,7 @@ Obviously, these conditions aren’t true in the real world. Your learning algor
 Why won’t early-stage agents think thoughts like “If putting trash away will lead to reward, then execute `motor-subroutine-#642`”, and then this gets reinforced into reward-focused cognition early on?
 : Suppose the agent puts away trash in a blue room. Why won’t early-stage agents think thoughts like “If putting trash away will lead to the wall being blue, then execute `motor-subroutine-#642`”, and then this gets reinforced into blue-wall-focused cognition early on? [Why consider either scenario to begin with](https://www.readthesequences.com/Privileging-The-Hypothesis)?
 
-: At least, that's the reply I gave in 2022. In 2025, I realize that I [didn't understand that LLM pretraining _would_ allow such thoughts in early-stage RL](/llms-cheat-a-lot). _RLHF may well reinforce such thoughts!_ That said, the question still comes down to empirics.
+: At least, that's the reply I gave in 2022. In 2025, I realize that I [didn't understand that LLM pretraining _would_ allow such thoughts in early-stage RL](/reward-hacking-doesnt-show-reward-is-optimization-target). _RLHF may well reinforce such thoughts!_ That said, the question still comes down to empirics.
 
 Aren’t we implicitly selecting for agents with high cumulative reward, when we train those agents?
 : Yeah. But on its own, this argument can’t possibly imply that selected agents will probably be reward optimizers. The argument would [prove too much](https://slatestarcodex.com/2013/04/13/proving-too-much/). Evolution selected for inclusive genetic fitness, and it [did not get IGF optimizers](https://www.lesswrong.com/posts/XPErvb8m9FapXCjhA/adaptation-executers-not-fitness-maximizers).

@@ -82,7 +82,7 @@ By focusing on the mechanistic function of the reward signal, I discussed to wha
 
 You might expect me to say "people should have read more closely." Perhaps some readers needed to read more closely or in better faith. Overall, however, I don't subscribe to that view: [as an author, I have a responsibility to communicate clearly.](/author-responsibility)
 
-Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit wrong about "reward hacking"! I went as far as to [draft a post](https://github.com/alexander-turner/TurnTrout.com/blob/7d6bd8d4c9f986d5758fb742868d7442b85718af/website_content/llms-cheat-a-lot.md) where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, my nagging unease which finally led me to remember "Reward≠OT was _not_ about specification gaming".
+Besides, even _I_ almost agreed that Reward≠OT had been at least a _little_ bit wrong about "reward hacking"! I went as far as to [draft a post](https://github.com/alexander-turner/TurnTrout.com/blob/7d6bd8d4c9f986d5758fb742868d7442b85718af/website_content/llms-cheat-a-lot.md) where I said "I guess part of Reward≠OT's empirical predictions were wrong." Thankfully, my nagging unease finally led me to remember "Reward≠OT was _not_ about specification gaming".
 
 <img src="https://assets.turntrout.com/static/images/posts/llms-cheat-a-lot-12172025.avif" class="float-right" alt="A Scooby Doo meme. Panel 1: Fred looks at a man in a ghost costume, overlaid by text &ldquo;philosophical alignment mistake.&rdquo; Panel 2: Fred unmasks the &ldquo;ghost&rdquo;, with the man's face overlaid by &ldquo;using the word 'reward.'&rdquo;"/>
 
@@ -102,7 +102,7 @@ The culprit is, yet again, the word "reward." Suppose instead that common wisdom
 | In realistic settings, reward functions don't represent goals.| ✅ |
 | RL-trained systems won't primarily optimize the reward signal. | ✅ |
 
-I stand by the first two claims, which are theoretical points which stand on their own. For more on "reward functions don't represent goals", read [Four usages of "loss" in AI](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals).
+For more on "reward functions don't represent goals", read [Four usages of "loss" in AI](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals). I stand by the first two claims, but they aren't relevant to the confusion with "reward hacking".
 
 ## Claim 3: "RL-trained systems won't primarily optimize the reward signal"
 
@@ -187,7 +187,7 @@ To my credit, I noted my ignorance:
 
 Reward≠OT's core claims remain correct. It's still wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)).
 
-LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. Modern problems require modern solutions. As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
+LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
 
 > [!thanks]
 > Alex Cloud, Daniel Filan, Garrett Baker, Peter Barnett, and Vivek Hebbar gave feedback.
