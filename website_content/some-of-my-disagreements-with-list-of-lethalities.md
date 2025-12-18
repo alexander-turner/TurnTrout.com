@@ -29,8 +29,9 @@ date_published: 2023-01-24 00:00:00
 original_url: https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
 skip_import: true
 description: A critical look at the idea of "lethal" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.
-date_updated: 2025-12-18 09:41:00.470485
+date_updated: 2025-12-18 09:42:00.251916
 ---
+
 
 
 
