@@ -560,11 +560,13 @@ def test_argument_parsing(resume_flag, temp_state_dir):
             ),
             patch("scripts.run_push_checks.run_checks") as mock_run,
             patch("scripts.run_push_checks.create_server") as mock_create,
+            patch("subprocess.run") as mock_subprocess,
         ):
-            # Set up create_server to return a ServerInfo
             mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+            mock_subprocess.return_value = MagicMock(
+                stdout="No local changes to save"
+            )
 
-            # Set up a valid resume point if testing resume
             if resume_flag:
                 run_push_checks.save_state("Test Before")
 
@@ -1143,7 +1145,7 @@ def test_server_process_continues_running():
         # Verify Popen was called with the correct arguments
         mock_popen.assert_called_once()
         popen_args = mock_popen.call_args[0][0]
-        assert popen_args == ["pnpm", "quartz", "build", "--serve"]
+        assert popen_args == ["pnpm", "dev"]
         popen_kwargs = mock_popen.call_args[1]
         assert popen_kwargs["start_new_session"] is True
         assert popen_kwargs["stdout"] == subprocess.DEVNULL

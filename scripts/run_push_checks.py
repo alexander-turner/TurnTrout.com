@@ -164,10 +164,12 @@ def find_quartz_process() -> int | None:
     for proc in psutil.process_iter(["pid", "name", "cmdline"]):
         try:
             cmdline = proc.info.get("cmdline")
-            if cmdline is not None:
-                has_quartz = any("quartz" in cmd.lower() for cmd in cmdline)
-                if has_quartz:
-                    return proc.pid
+            if cmdline is None or len(cmdline) < 2:
+                continue
+
+            # Check if this is a "pnpm dev" process (how quartz is started)
+            if cmdline[0] == "pnpm" and cmdline[1] == "dev":
+                return proc.pid
         except (psutil.NoSuchProcess, psutil.AccessDenied):  # pragma: no cover
             continue
     return None
@@ -686,7 +688,7 @@ def get_check_steps(
     return steps_before_server, steps_after_server
 
 
-def main() -> None:
+def main() -> int:
     """Run all checks before pushing."""
     parser = argparse.ArgumentParser(
         description="Run pre-push checks with progress bars."
@@ -718,28 +720,28 @@ def main() -> None:
         all_steps = steps_before_server + steps_after_server
         all_step_names = [step.name for step in all_steps]
 
-        # Validate the last step exists in our known steps
-        last_step = get_last_step(all_step_names if args.resume else None)
-        if args.resume and last_step is None:
-            # If resuming but no valid last step found, start from beginning
-            console.log(
-                "[yellow]No valid resume point found. "
-                "Starting from beginning.[/yellow]"
-            )
-            args.resume = False
+        # Validate resume state
+        if args.resume:
+            last_step = get_last_step(all_step_names)
+            if last_step is None:
+                console.log(
+                    "[yellow]No valid resume point found. "
+                    "Starting from beginning.[/yellow]"
+                )
+                args.resume = False
 
-        # Determine if we need to run pre-server steps
-        should_run_pre = (
-            not args.resume
-            or not last_step
-            or last_step in {step.name for step in steps_before_server}
-        )
-
-        if should_run_pre:
+        # Run pre-server checks if needed
+        if not args.resume:
             run_checks(steps_before_server, args.resume)
         else:
-            for step in steps_before_server:
-                console.log(f"[grey]Skipping step: {step.name}[/grey]")
+            last_step = get_last_step(all_step_names)
+            pre_server_names = {step.name for step in steps_before_server}
+
+            if last_step and last_step in pre_server_names:
+                run_checks(steps_before_server, args.resume)
+            else:
+                for step in steps_before_server:
+                    console.log(f"[grey]Skipping step: {step.name}[/grey]")
 
         server_info = create_server(_GIT_ROOT)
         server_manager.set_server_pid(
@@ -766,6 +768,7 @@ def main() -> None:
                 cwd=_GIT_ROOT,
                 capture_output=True,
                 text=True,
+                check=True,
             )
             console.log("[cyan]Restored stashed changes[/cyan]")
 
