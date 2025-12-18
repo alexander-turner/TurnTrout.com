@@ -699,8 +699,21 @@ def main() -> None:
     args = parser.parse_args()
 
     server_manager = ServerManager()
+    stash_created = False
 
     try:
+        # Stash any uncommitted changes
+        stash_result = subprocess.run(
+            ["git", "stash", "push", "-u", "-m", "run_push_checks auto-stash"],
+            cwd=_GIT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        # Check if stash was actually created (output won't contain "No local changes")
+        if "No local changes" not in stash_result.stdout:
+            stash_created = True
+            console.log("[cyan]Stashed uncommitted changes[/cyan]")
+
         steps_before_server, steps_after_server = get_check_steps(_GIT_ROOT)
         all_steps = steps_before_server + steps_after_server
         all_step_names = [step.name for step in all_steps]
@@ -736,13 +749,26 @@ def main() -> None:
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
         reset_saved_progress()
+        return 0
 
+    except CheckFailedError:
+        # Error output already printed in run_checks, just return error code
+        return 1
     except KeyboardInterrupt:
         console.log("\n[yellow]Process interrupted by user.[/yellow]")
-        raise
+        return 130  # Standard exit code for SIGINT
     finally:
         server_manager.cleanup()
+        # Restore stashed changes if we created a stash
+        if stash_created:
+            subprocess.run(
+                ["git", "stash", "pop"],
+                cwd=_GIT_ROOT,
+                capture_output=True,
+                text=True,
+            )
+            console.log("[cyan]Restored stashed changes[/cyan]")
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
