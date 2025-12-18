@@ -681,14 +681,25 @@ async function onNav(e: CustomEventMap["nav"]) {
     (e: Event) => shortcutHandler(e as KeyboardEvent, container, searchBar),
     listeners,
   )
-  addListener(searchIcon, "click", () => void showSearch(container, searchBar), listeners)
+  addListener(
+    searchIcon,
+    "click",
+    () => {
+      showSearch(container, searchBar).catch((error) => {
+        console.error("Failed to show search:", error)
+      })
+    },
+    listeners,
+  )
   addListener(searchBar, "input", debouncedOnType, listeners)
   addListener(
     searchBar,
     "focus",
     () => {
       if (!searchInitialized && !searchInitializing) {
-        void initializeSearch()
+        initializeSearch().catch((error) => {
+          console.error("Failed to initialize search:", error)
+        })
       }
     },
     listeners,
@@ -1002,15 +1013,18 @@ export function setupSearch(): void {
 async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<void> {
   if (!index) return
 
-  const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) =>
-    index!.addAsync(id, {
+  const promises = Object.entries<ContentDetails>(data).map(([slug, fileData], id) => {
+    if (!index) {
+      throw new Error("Search index is not initialized")
+    }
+    return index.addAsync(id, {
       id,
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
       authors: fileData.authors,
-    }),
-  )
+    })
+  })
 
   await Promise.all(promises)
 }
