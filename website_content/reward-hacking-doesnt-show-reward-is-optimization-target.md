@@ -106,7 +106,7 @@ In [Sycophancy to Subterfuge](https://arxiv.org/abs/2406.10162), Anthropic tried
 
 # My concrete predictions on reward optimization
 
-I now consider direct reward optimization to be more likely than I did in 2022, for at least three reasons:
+I consider direct reward optimization to be more likely than I did in 2022, for at least three reasons:
 
 1. [Self-fulfilling misalignment](/self-fulfilling-misalignment): pretrained models learn the stereotype that "smart AIs are always trying to get that reward". Later, they consider themselves to be smart AI, which activates a predictive pattern which guides their actions towards reward optimization.
 2. Corrigibility and alignment both seem way easier than I thought in mid-2022. In particular, I think it'd be easy to get an LLM to prioritize reward. First, you could just tell it to.[^instruction-tuning] Second, I bet you could entrain those priorities.[^entrain]
@@ -183,7 +183,7 @@ To my credit, I noted my ignorance:
 
 Reward≠OT's core claims remain correct. It's still wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)).
 
-LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
+As best we can tell, LLMs are not trying to literally maximize their reward signals. We have observed that they find unintended ways to look like they satisfied task specifications and they sometimes verbally state that they want to "get high reward". As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
 
 > [!thanks]
 > Alex Cloud, Daniel Filan, Garrett Baker, Peter Barnett, and Vivek Hebbar gave feedback.
