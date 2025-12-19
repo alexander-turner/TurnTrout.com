@@ -5,9 +5,36 @@ import { execSync } from "child_process"
 
 const [, , COMMIT_MSG_FILE, COMMIT_SOURCE] = process.argv
 
-// Skip if amending, merging, or message already provided
-if (["message", "merge", "squash"].includes(COMMIT_SOURCE)) {
+/**
+ * Git calls `prepare-commit-msg` for *all* commits, including:
+ * - `git commit -m "..."`        => COMMIT_SOURCE="message"
+ * - merges/squashes              => COMMIT_SOURCE="merge"/"squash"
+ * - `git commit --amend`         => COMMIT_SOURCE="commit"
+ * - normal editor flow           => COMMIT_SOURCE is usually undefined
+ *
+ * We only want to auto-generate a message when the user is in the normal editor
+ * flow and the message is still the default template (i.e. they haven't typed
+ * their own message).
+ */
+if (["message", "merge", "squash", "commit"].includes(COMMIT_SOURCE)) {
   process.exit(0)
+}
+
+// If the user already typed a message in COMMIT_EDITMSG (e.g. they started an
+// interactive commit and then re-ran `git commit`), don't overwrite it.
+try {
+  const existing = readFileSync(COMMIT_MSG_FILE, "utf8")
+  const nonCommentLines = existing
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !l.startsWith("#"))
+
+  if (nonCommentLines.length > 0) {
+    process.exit(0)
+  }
+} catch {
+  // If we can't read the file for some reason, fall through and let the hook
+  // attempt generation (Git will surface any real error).
 }
 
 // Get API key from envchain
