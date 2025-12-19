@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: '"Reward hacking" is usually specification gaming, not signal optimization. My 2022 post stands.'
+description: '"Reward hacking" is usually specification gaming, not reward signal optimization. My 2022 post stands.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.png
 card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
@@ -92,13 +92,13 @@ The culprit is, yet again, the word "reward." Suppose instead that common wisdom
 
 [^quantity]: The original post demarcated _two_ main claims, but I think I should have pointed out the third (definitional) point I made throughout.
 
-| Claim | Status |
-| --: | :-- |
-| Reward is not _definitionally_ the optimization target. | ✅ |
-| In realistic settings, reward functions don't represent goals.| ✅ |
-| RL-trained systems won't primarily optimize the reward signal. | ✅ |
+|                                                                                                                            Claim | Status |
+| -------------------------------------------------------------------------------------------------------------------------------: | :----- |
+|                                                                          Reward is not _definitionally_ the optimization target. | ✅      |
+| In realistic settings, [reward functions don't represent goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals) | ✅      |
+|                                                                   RL-trained systems won't primarily optimize the reward signal. | ✅      |
 
-For more on "reward functions don't represent goals", read [Four usages of "loss" in AI](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals). I stand by the first two claims, but they aren't relevant to the confusion with "reward hacking".
+I stand by the first two claims, but they aren't relevant to the confusion with "reward hacking".
 
 ## Claim 3: "RL-trained systems won't primarily optimize the reward signal"
 
