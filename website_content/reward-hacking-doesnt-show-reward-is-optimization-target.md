@@ -183,7 +183,7 @@ To my credit, I noted my ignorance:
 
 Reward≠OT's core claims remain correct. It's still wrong to say RL is unsafe because it leads to reward maximizers by definition ([as claimed by Yoshua Bengio](https://yoshuabengio.org/2023/05/22/how-rogue-ais-may-arise/)).
 
-LLMs are not trying to literally maximize their reward signals. Instead, they sometimes find unintended ways to look like they satisfied task specifications. As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
+As best we can tell, LLMs are not trying to literally maximize their reward signals. We have observed that they find unintended ways to look like they satisfied task specifications and they sometimes verbally state that they want to "get high reward". As we confront LLMs attempting to look good, we must understand _why_ --- not by definition, but by training.  
 
 > [!thanks]
 > Alex Cloud, Daniel Filan, Garrett Baker, Peter Barnett, and Vivek Hebbar gave feedback.
