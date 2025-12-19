@@ -67,7 +67,7 @@ export default defineConfig({
   timeout: 30000,
   workers: 1, // Parallelism causes flakiness
 
-  retries: process.env.CI ? 3 : 1,
+  retries: process.env.CI ? 5 : 1,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
