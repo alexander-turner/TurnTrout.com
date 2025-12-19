@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
-description: '"Reward hacking" is usually specification gaming, not signal optimization. Why my 2022 thesis stands, plus detailed predictions on RL risks.'
+description: '"Reward hacking" is usually specification gaming, not signal optimization. My 2022 post stands.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.png
 card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
@@ -32,7 +32,7 @@ Reward optimization
 : The AI tries to increase the numerical reward signal for its own sake. Examples: overwriting its reward function to always output `MAXINT` ("reward tampering") or searching at inference time for an input which maximally activates the AI's specific reward model. Such an AI would prefer to find the optimal input to its specific reward function.
 
 Specification gaming
-: The AI finds unintended ways to produce higher reward outputs. Example: hardcoding the correct outputs for each unit test instead of writing the desired function.
+: The AI finds unintended ways to produce higher-reward outputs. Example: hardcoding the correct outputs for each unit test instead of writing the desired function.
 
 What we've observed is basically pure specification gaming. Specification gaming happens [often in frontier models](https://redlib.catsarch.com/r/ClaudeAI/comments/1k30oip/i_stopped_using_37_because_it_cannot_be_trusted/). Claude 3.7 Sonnet was the corner-cutting-est deployed LLM I've used and it cut corners pretty often.
 
@@ -55,7 +55,6 @@ What we've observed is basically pure specification gaming. Specification gaming
 The essay begins with a quote about a "numerical reward signal":
 
 > [!quote] [Reinforcement learning: An introduction](http://www.incompleteideas.net/sutton/book/first/Chap1PrePub.pdf)
-> Subtitle: As quoted by Reward≠OT
 > Reinforcement learning is learning what to do—how to map situations to actions **so as to maximize a numerical reward signal.**
 
 Paying proper attention, Reward≠OT makes claims[^argument] about motivations pertaining to _the reward signal itself_:
@@ -154,7 +153,7 @@ I've made two falsifiable predictions.
 > Even if RL does end up training a reward optimizer, the philosophical points still stand:
 >
 > 4. Reward is not _definitionally_ the optimization target, and
-> 5. In realistic settings, [reward functions are not goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals)
+> 5. In realistic settings, [reward functions do not represent goals.](/four-usages-of-loss-in-ai#3-loss-functions-representing-goals)
 
 # I made a few mistakes in Reward≠OT
 
