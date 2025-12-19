@@ -76,6 +76,7 @@ async function generateCommitMessage() {
 Use types: feat, fix, refactor, docs, test, chore, style, perf
 First line max 72 chars, imperative mood, no emoji.
 Add blank line then body with details if needed.
+Subject may not end with full stop.
 Don't spend too long thinking about it.
 
 Return ONLY the commit message, no explanation.
