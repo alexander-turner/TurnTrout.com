@@ -368,9 +368,9 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-   | **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
-   | -----------------: | :--------: | :----------: | :--------------------------------- |
-   | Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
+| **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
+| -----------------: | :--------: | :----------: | :--------------------------------- |
+| Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
 
 # Video
 
