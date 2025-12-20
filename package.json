@@ -118,7 +118,7 @@
     "micromorph": "0.4.5",
     "mime-types": "3.0.1",
     "play-sound": "1.1.6",
-    "preact-render-to-string": "6.4.0",
+    "preact-render-to-string": "6.6.4",
     "pretty-bytes": "6.1.1",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
