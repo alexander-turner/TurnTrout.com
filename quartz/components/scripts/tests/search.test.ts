@@ -6,19 +6,19 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals"
 
 import { simpleConstants } from "../../constants"
 import {
-  highlightTextNodes,
+  matchTextNodes,
   descendantsWithId,
   descendantsSamePageLinks,
   tokenizeTerm,
-  highlight,
+  match,
   escapeRegExp,
-  createHighlightSpan,
+  createMatchSpan,
   updatePlaceholder,
   showSearch,
   hideSearch,
   PreviewManager,
   getOffsetTopRelativeToContainer,
-  highlightHTML,
+  matchHTML,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -88,28 +88,28 @@ describe("Search Module Functions", () => {
   })
 })
 
-describe("highlight", () => {
-  it("should highlight a single term", () => {
-    const highlighted = highlight("world", "Hello world")
-    expect(highlighted).toBe('Hello <span class="highlight">world</span>')
+describe("match", () => {
+  it("should match a single term", () => {
+    const matched = match("world", "Hello world")
+    expect(matched).toBe('Hello <span class="search-match">world</span>')
   })
 
   it("should be case-insensitive", () => {
-    const highlighted = highlight("world", "Hello World")
-    expect(highlighted).toBe('Hello <span class="highlight">World</span>')
+    const matched = match("world", "Hello World")
+    expect(matched).toBe('Hello <span class="search-match">World</span>')
   })
 
   it("should handle multiple occurrences", () => {
-    const highlighted = highlight("test", "This is a test. Another test.")
-    expect(highlighted).toBe(
-      'This is a <span class="highlight">test</span>. Another <span class="highlight">test</span>.',
+    const matched = match("test", "This is a test. Another test.")
+    expect(matched).toBe(
+      'This is a <span class="search-match">test</span>. Another <span class="search-match">test</span>.',
     )
   })
 
-  it("should highlight the longest matching token", () => {
-    const highlighted = highlight("search term", "This is a search term.")
-    expect(highlighted).toBe(
-      'This is a <span class="highlight">search</span> <span class="highlight">term</span>.',
+  it("should match the longest matching token", () => {
+    const matched = match("search term", "This is a search term.")
+    expect(matched).toBe(
+      'This is a <span class="search-match">search</span> <span class="search-match">term</span>.',
     )
   })
 
@@ -119,33 +119,33 @@ describe("highlight", () => {
 
     it("should not trim short text", () => {
       const text = `${generateText(10)} match ${generateText(10)}`
-      const highlighted = highlight("match", text, true)
-      expect(highlighted).not.toContain("...")
-      expect(highlighted).toContain('<span class="highlight">match</span>')
+      const matched = match("match", text, true)
+      expect(matched).not.toContain("...")
+      expect(matched).toContain('<span class="search-match">match</span>')
     })
 
     it("should trim long text with match in the middle and add ellipsis on both sides", () => {
       const text = `${generateText(50)} match ${generateText(50)}`
-      const highlighted = highlight("match", text, true)
-      expect(highlighted.startsWith("...")).toBe(true)
-      expect(highlighted.endsWith("...")).toBe(true)
-      expect(highlighted).toContain('<span class="highlight">match</span>')
+      const matched = match("match", text, true)
+      expect(matched.startsWith("...")).toBe(true)
+      expect(matched.endsWith("...")).toBe(true)
+      expect(matched).toContain('<span class="search-match">match</span>')
     })
 
     it("should trim long text with match at the beginning and add ellipsis at the end", () => {
       const text = `match ${generateText(100)}`
-      const highlighted = highlight("match", text, true)
-      expect(highlighted.startsWith("...")).toBe(false)
-      expect(highlighted.endsWith("...")).toBe(true)
-      expect(highlighted).toContain('<span class="highlight">match</span>')
+      const matched = match("match", text, true)
+      expect(matched.startsWith("...")).toBe(false)
+      expect(matched.endsWith("...")).toBe(true)
+      expect(matched).toContain('<span class="search-match">match</span>')
     })
 
     it("should trim long text with match at the end and add ellipsis at the beginning", () => {
       const text = `${generateText(100)} match`
-      const highlighted = highlight("match", text, true)
-      expect(highlighted.startsWith("...")).toBe(true)
-      expect(highlighted.endsWith("...")).toBe(false)
-      expect(highlighted).toContain('<span class="highlight">match</span>')
+      const matched = match("match", text, true)
+      expect(matched.startsWith("...")).toBe(true)
+      expect(matched.endsWith("...")).toBe(false)
+      expect(matched).toContain('<span class="search-match">match</span>')
     })
   })
 })
@@ -182,11 +182,11 @@ describe("escapeRegExp", () => {
   })
 })
 
-describe("createHighlightSpan", () => {
+describe("createMatchSpan", () => {
   it("should create a span with the correct class and text", () => {
-    const span = createHighlightSpan("test")
+    const span = createMatchSpan("test")
     expect(span.tagName).toBe("SPAN")
-    expect(span.className).toBe("highlight")
+    expect(span.className).toBe("search-match")
     expect(span.textContent).toBe("test")
   })
 })
@@ -353,15 +353,15 @@ describe("getOffsetTopRelativeToContainer", () => {
   })
 })
 
-describe("highlightTextNodes", () => {
+describe("matchTextNodes", () => {
   const createContainer = (html: string): HTMLElement => {
     const container = document.createElement("div")
     container.innerHTML = html
     return container
   }
 
-  const getHighlights = (element: HTMLElement): HTMLSpanElement[] =>
-    Array.from(element.getElementsByClassName("highlight")) as HTMLSpanElement[]
+  const getMatches = (element: HTMLElement): HTMLSpanElement[] =>
+    Array.from(element.getElementsByClassName("search-match")) as HTMLSpanElement[]
 
   interface TestCase {
     name: string
@@ -379,7 +379,7 @@ describe("highlightTextNodes", () => {
       html: "<p>Hello world</p>",
       searchTerm: "world",
       expectedCount: 1,
-      expectedHTML: '<p>Hello <span class="highlight">world</span></p>',
+      expectedHTML: '<p>Hello <span class="search-match">world</span></p>',
       expectedContent: ["world"],
     },
     {
@@ -388,7 +388,7 @@ describe("highlightTextNodes", () => {
       searchTerm: "test",
       expectedCount: 3,
       expectedHTML:
-        '<p><span class="highlight">test</span> <span class="highlight">test</span> <span class="highlight">test</span></p>',
+        '<p><span class="search-match">test</span> <span class="search-match">test</span> <span class="search-match">test</span></p>',
       expectedContent: ["test", "test", "test"],
     },
     {
@@ -397,7 +397,7 @@ describe("highlightTextNodes", () => {
       searchTerm: "test",
       expectedCount: 3,
       expectedHTML:
-        '<p><span class="highlight">Test</span> <span class="highlight">TEST</span> <span class="highlight">test</span></p>',
+        '<p><span class="search-match">Test</span> <span class="search-match">TEST</span> <span class="search-match">test</span></p>',
       expectedContent: ["Test", "TEST", "test"],
     },
     {
@@ -406,7 +406,7 @@ describe("highlightTextNodes", () => {
       searchTerm: "test",
       expectedCount: 2,
       expectedHTML:
-        '<div><p>First <span class="highlight">test</span></p><div><span>Nested <span class="highlight">test</span></span></div></div>',
+        '<div><p>First <span class="search-match">test</span></p><div><span>Nested <span class="search-match">test</span></span></div></div>',
       expectedContent: ["test", "test"],
     },
     {
@@ -414,7 +414,7 @@ describe("highlightTextNodes", () => {
       html: "<p>test.com</p>",
       searchTerm: "test.",
       expectedCount: 1,
-      expectedHTML: '<p><span class="highlight">test.</span>com</p>',
+      expectedHTML: '<p><span class="search-match">test.</span>com</p>',
       expectedContent: ["test."],
     },
     {
@@ -439,12 +439,12 @@ describe("highlightTextNodes", () => {
     "should handle $name",
     ({ html, searchTerm, expectedCount, expectedHTML, expectedContent }) => {
       const container = createContainer(html)
-      highlightTextNodes(container, searchTerm)
+      matchTextNodes(container, searchTerm)
       expect(container.innerHTML).toBe(expectedHTML)
 
-      const highlights = getHighlights(container)
-      expect(highlights).toHaveLength(expectedCount)
-      highlights.forEach((span, i) => {
+      const matches = getMatches(container)
+      expect(matches).toHaveLength(expectedCount)
+      matches.forEach((span, i) => {
         expect(expectedContent).toBeDefined()
         // skipcq: JS-0339 - expectedContent is checked for nullability above
         expect(span.textContent).toBe(expectedContent![i])
@@ -459,24 +459,24 @@ describe("highlightTextNodes", () => {
       textNode.nodeValue = null
     }
 
-    expect(() => highlightTextNodes(container, "test")).not.toThrow()
+    expect(() => matchTextNodes(container, "test")).not.toThrow()
   })
 
   it("should skip nodes inside #toc-content-mobile", () => {
     const container = createContainer('<div id="toc-content-mobile"><p>test</p></div>')
-    highlightTextNodes(container, "test")
-    expect(container.querySelectorAll(".highlight").length).toBe(0)
+    matchTextNodes(container, "test")
+    expect(container.querySelectorAll(".search-match").length).toBe(0)
   })
 
-  it("should not re-highlight already highlighted elements", () => {
-    const container = createContainer('<p><span class="highlight">test</span> again</p>')
-    highlightTextNodes(container, "test")
-    expect(container.querySelectorAll(".highlight").length).toBe(1)
+  it("should not re-match already matched elements", () => {
+    const container = createContainer('<p><span class="search-match">test</span> again</p>')
+    matchTextNodes(container, "test")
+    expect(container.querySelectorAll(".search-match").length).toBe(1)
   })
 })
 
-describe("highlightHTML", () => {
-  it("should preserve checkbox checked state when highlighting", () => {
+describe("matchHTML", () => {
+  it("should preserve checkbox checked state when matching", () => {
     // Create an element with a checkbox
     const element = document.createElement("div")
     element.innerHTML = `
@@ -496,22 +496,22 @@ describe("highlightHTML", () => {
     ;(checkboxes[1] as HTMLInputElement).checked = true
     ;(checkboxes[2] as HTMLInputElement).checked = true
 
-    const highlighted = highlightHTML("test", element)
+    const matched = matchHTML("test", element)
 
-    // Verify the text was highlighted
-    const highlightSpans = highlighted.querySelectorAll(".highlight")
-    expect(highlightSpans.length).toBeGreaterThan(0)
-    expect(highlightSpans[0].textContent).toBe("test")
+    // Verify the text was matched
+    const matchSpans = matched.querySelectorAll(".search-match")
+    expect(matchSpans.length).toBeGreaterThan(0)
+    expect(matchSpans[0].textContent).toBe("test")
 
     // Verify checkbox states were preserved
-    const highlightedCheckboxes = highlighted.querySelectorAll("input.checkbox-toggle")
-    expect(highlightedCheckboxes.length).toBe(3)
-    expect((highlightedCheckboxes[0] as HTMLInputElement).checked).toBe(false)
-    expect((highlightedCheckboxes[1] as HTMLInputElement).checked).toBe(true)
-    expect((highlightedCheckboxes[2] as HTMLInputElement).checked).toBe(true)
+    const matchedCheckboxes = matched.querySelectorAll("input.checkbox-toggle")
+    expect(matchedCheckboxes.length).toBe(3)
+    expect((matchedCheckboxes[0] as HTMLInputElement).checked).toBe(false)
+    expect((matchedCheckboxes[1] as HTMLInputElement).checked).toBe(true)
+    expect((matchedCheckboxes[2] as HTMLInputElement).checked).toBe(true)
   })
 
-  it("should preserve other DOM properties when highlighting", () => {
+  it("should preserve other DOM properties when matching", () => {
     const element = document.createElement("div")
     element.innerHTML = `
       <div>
@@ -524,27 +524,27 @@ describe("highlightHTML", () => {
     const input = element.querySelector("input.test-input") as HTMLInputElement
     input.value = "modified value"
 
-    const highlighted = highlightHTML("test", element)
+    const matched = matchHTML("test", element)
 
     // Verify the input value was preserved
-    const highlightedInput = highlighted.querySelector("input.test-input") as HTMLInputElement
-    expect(highlightedInput.value).toBe("modified value")
+    const matchedInput = matched.querySelector("input.test-input") as HTMLInputElement
+    expect(matchedInput.value).toBe("modified value")
 
-    // Verify highlighting still works
-    const highlightSpans = highlighted.querySelectorAll(".highlight")
-    expect(highlightSpans.length).toBeGreaterThan(0)
+    // Verify matching still works
+    const matchSpans = matched.querySelectorAll(".search-match")
+    expect(matchSpans.length).toBeGreaterThan(0)
   })
 
   it("should return a cloned element, not modify the original", () => {
     const element = document.createElement("div")
     element.innerHTML = "<p>test content</p>"
 
-    const highlighted = highlightHTML("test", element)
+    const matched = matchHTML("test", element)
 
     // Original should be unchanged
-    expect(element.querySelectorAll(".highlight").length).toBe(0)
+    expect(element.querySelectorAll(".search-match").length).toBe(0)
 
-    // Highlighted should have highlights
-    expect(highlighted.querySelectorAll(".highlight").length).toBeGreaterThan(0)
+    // matched should have matches
+    expect(matched.querySelectorAll(".search-match").length).toBeGreaterThan(0)
   })
 })

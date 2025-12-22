@@ -296,6 +296,19 @@ test.describe("Scroll Behavior", () => {
     await softRefresh(page)
     await waitForScroll(page, currentScroll)
   })
+
+  test("handles text fragment navigation for terms that don't exist on page", async ({ page }) => {
+    const nonExistentTerm = "xyznonexistentterm123"
+    await page.goto(`http://localhost:8080/${testingPageSlug}#:~:text=${nonExistentTerm}`, {
+      waitUntil: "domcontentloaded",
+    })
+
+    // Even if no matches are found on the page, navigation should succeed
+    // and the page should remain at the top (scroll position 0)
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toEqual(0)
+    await expect(page.locator("body")).toBeVisible()
+  })
 })
 
 test.describe("Instant Scroll Restoration", () => {

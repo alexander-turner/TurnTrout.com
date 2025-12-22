@@ -806,7 +806,7 @@ Popovers
 : Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <span class="populate-site-favicon"></span> favicon appears for links to other pages on the site, while the <span class="populate-anchor-link-icon"></span> icon is used for within-page links.
 
 Search
-: Also packaged in vanilla Quartz, my site is searchable with live content previews - rendering the entire page on the desktop view. To accord with classic keybindings, I ensured that the search window can be toggled by pressing `/`.
+: My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:

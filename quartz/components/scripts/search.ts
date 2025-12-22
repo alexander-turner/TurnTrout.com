@@ -101,17 +101,17 @@ export const tokenizeTerm = (term: string): string[] => {
     }
   }
 
-  return tokens.sort((a, b) => b.length - a.length) // always highlight longest terms first
+  return tokens.sort((a, b) => b.length - a.length) // always match longest terms first
 }
 
 /**
- * Highlights search terms within a text string
- * @param searchTerm - Term to highlight
+ * matchs search terms within a text string
+ * @param searchTerm - Term to match
  * @param text - Text to search within
  * @param trim - If true, returns a window of text around matches
- * @returns HTML string with highlighted terms wrapped in <span class="highlight">
+ * @returns HTML string with matched terms wrapped in <span class="match">
  */
-export function highlight(searchTerm: string, text: string, trim?: boolean) {
+export function match(searchTerm: string, text: string, trim?: boolean) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
   let tokenizedText = text.split(/\s+/).filter((t) => t !== "")
   const originalTokenLen = tokenizedText.length
@@ -148,7 +148,7 @@ export function highlight(searchTerm: string, text: string, trim?: boolean) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
           const sanitizedSearchTok = escapeRegExp(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, '<span class="highlight">$&</span>')
+          return tok.replace(regex, '<span class="search-match">$&</span>')
         }
       }
       return tok
@@ -174,11 +174,11 @@ export function escapeRegExp(text: string) {
 }
 
 /**
- * Creates a span element with the class "highlight" and the given text
+ * Creates a span element with the class "match" and the given text
  */
-export const createHighlightSpan = (text: string): HTMLSpanElement => {
+export const createMatchSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
-  span.className = "highlight"
+  span.className = "search-match"
   span.textContent = text
   return span
 }
@@ -202,18 +202,18 @@ function syncSearchLayoutState() {
 }
 
 /**
- * Highlights search terms within HTML content while preserving HTML structure
+ * matchs search terms within HTML content while preserving HTML structure
  * @param node - HTML element to search within
- * @param term - Term to highlight
+ * @param term - Term to match
  */
-export const highlightTextNodes = (node: Node, term: string) => {
+export const matchTextNodes = (node: Node, term: string) => {
   // Skip if node is within table of contents
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement
     if (element.closest("#toc-content-mobile")) return
-    if (element.classList.contains("highlight")) return
+    if (element.classList.contains("search-match")) return
 
-    Array.from(node.childNodes).forEach((child) => highlightTextNodes(child, term))
+    Array.from(node.childNodes).forEach((child) => matchTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
@@ -227,7 +227,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
     const fragment = document.createDocumentFragment()
     parts.forEach((part: string): void => {
       if (part.toLowerCase() === term.toLowerCase()) {
-        fragment.appendChild(createHighlightSpan(part))
+        fragment.appendChild(createMatchSpan(part))
       } else if (part) {
         fragment.appendChild(document.createTextNode(part))
       }
@@ -240,7 +240,7 @@ export const highlightTextNodes = (node: Node, term: string) => {
 /**
  * Manages the lifecycle and rendering of the search result preview panel.
  * Creates an inner article element, fetches the target content, applies
- * highlighting, and handles show/hide/clear operations.
+ * matching, and handles show/hide/clear operations.
  */
 export class PreviewManager {
   private container: HTMLDivElement
@@ -259,7 +259,7 @@ export class PreviewManager {
    * If no element is provided, the preview is hidden.
    *
    * @param el - The result card element corresponding to the hovered/active item
-   * @param currentSearchTerm - The active search term used for highlighting
+   * @param currentSearchTerm - The active search term used for matching
    * @param baseSlug - The current page's slug used to resolve relative links
    */
   /* istanbul ignore next */
@@ -291,7 +291,7 @@ export class PreviewManager {
      *
      * @private
      * @param slug - The content slug to fetch and preview
-     * @param currentSearchTerm - The current search term for highlighting
+     * @param currentSearchTerm - The current search term for matching
      * @param baseSlug - The base slug to resolve relative URLs against
      */
     try {
@@ -309,8 +309,8 @@ export class PreviewManager {
       // Create a document fragment to build content off-screen
       const fragment = document.createDocumentFragment()
       content.forEach((el) => {
-        const highlightedContent = highlightHTML(currentSearchTerm, el as HTMLElement)
-        fragment.appendChild(highlightedContent)
+        const matchedContent = matchHTML(currentSearchTerm, el as HTMLElement)
+        fragment.appendChild(matchedContent)
       })
 
       // Clear existing content and append new content
@@ -319,12 +319,16 @@ export class PreviewManager {
 
       // Set click handler
       this.inner.onclick = () => {
-        window.location.href = resolveSlug(slug, baseSlug).toString()
+        const targetUrl = resolveSlug(slug, baseSlug)
+
+        // Always delegate scroll targeting to SPA using the current search term.
+        // SPA will re-run the same match logic and scroll to the first match.
+        navigateWithSearchTerm(targetUrl.toString(), currentSearchTerm)
       }
 
       // Let images and other resources load naturally
       // Browser will handle loading these in the background
-      this.scrollToFirstHighlight()
+      this.scrollToFirstmatch()
     } catch (error) {
       console.error("Error loading preview:", error)
       if (this.currentSlug === slug) {
@@ -362,35 +366,34 @@ export class PreviewManager {
   }
 
   /**
-   * Scroll the preview container so that the first highlight is centered.
+   * Scroll the preview container to properly orient the first match in the viewport.
    */
   /* istanbul ignore next */
-  private scrollToFirstHighlight(): void {
-    // Get only the first matching highlight without sorting
-    const firstHighlight = this.container.querySelector(".highlight") as HTMLElement
-    if (!firstHighlight) return
+  private scrollToFirstmatch(): void {
+    // Get only the first matching search-match without sorting
+    const firstMatch = this.container.querySelector(".search-match") as HTMLElement
+    if (!firstMatch) return
 
-    const offsetTop = getOffsetTopRelativeToContainer(firstHighlight, this.container)
-    this.container.scrollTop = offsetTop - 0.5 * this.container.clientHeight
+    this.container.scrollTop = getSearchMatchScrollPosition(firstMatch, this.container, 0.5)
   }
 }
 
 let previewManager: PreviewManager | null
 
 /**
- * Highlights search terms within HTML content while preserving HTML structure
- * @param searchTerm - Term to highlight
+ * matchs search terms within HTML content while preserving HTML structure
+ * @param searchTerm - Term to match
  * @param el - HTML element to search within
- * @returns DOM node with highlighted terms
+ * @returns DOM node with matched terms
  */
 /* istanbul ignore next */
-export function highlightHTML(searchTerm: string, el: HTMLElement) {
+export function matchHTML(searchTerm: string, el: HTMLElement) {
   const tokenizedTerms = tokenizeTerm(searchTerm)
   // Clone the element to preserve DOM state (like checkbox checked property)
   const cloned = el.cloneNode(true) as HTMLElement
 
   for (const term of tokenizedTerms) {
-    highlightTextNodes(cloned, term)
+    matchTextNodes(cloned, term)
   }
 
   return cloned
@@ -850,8 +853,8 @@ const getByField = (
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
- * @param title - The page title (may include highlight markup)
- * @param content - The content snippet (may include highlight markup)
+ * @param title - The page title (may include match markup)
+ * @param content - The content snippet (may include match markup)
  * @param enablePreview - Whether preview mode is enabled (controls snippet rendering)
  * @returns The anchor element for the result card
  */
@@ -888,8 +891,30 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   itemTile.addEventListener("mouseenter", onMouseEnter)
   itemTile.addEventListener("mouseleave", onMouseLeave)
+  itemTile.addEventListener("click", (e) => {
+    e.preventDefault()
+    navigateWithSearchTerm(itemTile.href, currentSearchTerm)
+  })
 
   return itemTile
+}
+
+/**
+ * Navigate to a URL with a text fragment hash for scroll targeting
+ * @param href - The destination URL
+ * @param searchTerm - The search term to highlight and scroll to
+ */
+function navigateWithSearchTerm(href: string, searchTerm: string) {
+  if (!searchTerm) {
+    console.error(
+      "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
+    )
+  }
+
+  const targetUrl = new URL(href)
+  targetUrl.hash = `:~:text=${encodeURIComponent(searchTerm)}`
+  hideSearch(null)
+  window.spaNavigate(targetUrl)
 }
 
 /**
@@ -910,8 +935,8 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: highlight(term, data[slug].title ?? ""),
-    content: highlight(term, data[slug].content ?? "", true),
+    title: match(term, data[slug].title ?? ""),
+    content: match(term, data[slug].content ?? "", true),
     authors: data[slug].authors,
   }
 }
@@ -1149,4 +1174,20 @@ export function getOffsetTopRelativeToContainer(
   }
 
   return offsetTop
+}
+
+/**
+ * Calculate scroll position to properly orient an element within its container
+ * @param element - The element to position
+ * @param container - The container to scroll
+ * @param scrollPercent - Displayed scroll position relative to the top of the viewport
+ * @returns The scroll position for optimal element visibility
+ */
+export function getSearchMatchScrollPosition(
+  element: HTMLElement,
+  container: HTMLElement,
+  scrollPercent: number,
+): number {
+  const offsetTop = getOffsetTopRelativeToContainer(element, container)
+  return offsetTop - container.clientHeight * scrollPercent
 }

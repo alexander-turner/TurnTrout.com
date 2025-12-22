@@ -9,6 +9,7 @@ import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/pa
 import { simpleConstants } from "../constants"
 import { debounceWaitMs } from "../constants"
 import { debounce } from "./component_script_utils"
+import { matchHTML, getSearchMatchScrollPosition } from "./search"
 import { isLocalUrl } from "./spa_utils"
 
 const { pondVideoId } = simpleConstants
@@ -91,11 +92,57 @@ function dispatchNavEvent(url: FullSlug) {
   document.dispatchEvent(event)
 }
 
-// skipcq: JS-D1001
-function scrollToHash(hash: string): void {
-  if (!hash) return
+/**
+ * Scroll to the first in-page match for a search query.
+ *
+ * This supports the `#:~:text=<query>` URL hash emitted by the search UI. Injects `.match` into the DOM.
+ *
+ * @param searchText - The raw search query (decoded from the hash).
+ * @returns `true` if we found a match and scrolled, otherwise `false`.
+ */
+function scrollToMatch(searchText: string): boolean {
+  console.debug("[scrollToMatch] Called with searchText:", searchText)
+  const article = document.querySelector("article") as HTMLElement | null
+  if (!article) {
+    console.debug("[scrollToMatch] No article found")
+    return false
+  }
+  console.debug("[scrollToMatch] Article found, matching...")
 
-  const id = decodeURIComponent(hash.substring(1))
+  // Use the exported search matcher to create `.search-match` spans.
+  // matchHTML returns a cloned element with search matches, so we need to replace the original.
+  const matchedArticle = matchHTML(searchText, article)
+  article.replaceWith(matchedArticle)
+
+  const firstMatch = matchedArticle.querySelector(".search-match") as HTMLElement | null
+  if (!firstMatch) return false
+
+  const targetPos = getSearchMatchScrollPosition(firstMatch, document.documentElement, 0.25)
+  window.scrollTo({ top: targetPos, behavior: "instant" })
+  return true
+}
+
+/**
+ * Scroll to a URL-specified target after SPA navigation.
+ *
+ * @param urlTarget - The raw `location.hash` value, including the leading `#`.
+ * Supported formats:
+ * - `#:~:text=<query>`: scrolls to the first match for `<query>` using `scrollToMatch()`
+ * - `#<id>`: scrolls to the element with that ID (standard hash navigation)
+ */
+function scrollToUrlTarget(urlTarget: string): void {
+  if (!urlTarget) return
+
+  // Check if this is a text search hash (format: #:~:text=search+term)
+  const textMatch = urlTarget.match(/^#?:~:text=(.+)$/)
+  if (textMatch) {
+    const searchText = decodeURIComponent(textMatch[1])
+    if (scrollToMatch(searchText)) return
+    // If no match found, fall through to try as regular hash
+  }
+
+  // Standard element ID hash
+  const id = decodeURIComponent(urlTarget.substring(1))
   const elt = document.getElementById(id)
   if (elt) {
     const targetPos = elt.getBoundingClientRect().top + window.scrollY
@@ -416,7 +463,7 @@ function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): voi
   } else if (finalUrl.hash) {
     // Check hash on the final URL
     console.debug(`[handleNavigationScroll] Scrolling to hash on final URL: ${finalUrl.hash}`)
-    scrollToHash(finalUrl.hash)
+    scrollToUrlTarget(finalUrl.hash)
   } else {
     console.debug("[handleNavigationScroll] Scrolling to top")
     window.scrollTo({ top: 0, behavior: "instant" })
@@ -494,7 +541,7 @@ function restoreScrollPosition(targetUrl: URL): void {
     window.scrollTo({ top: scrollTarget, behavior: "instant" })
   } else if (targetUrl.hash) {
     console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
-    scrollToHash(targetUrl.hash)
+    scrollToUrlTarget(targetUrl.hash)
   }
 }
 

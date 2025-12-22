@@ -176,11 +176,11 @@ test("Search placeholder changes based on viewport", async ({ page }) => {
   )
 })
 
-test("Highlighted search terms appear in results", async ({ page }) => {
+test("matched search terms appear in results", async ({ page }) => {
   await search(page, "test")
 
-  const highlights = page.locator(".highlight")
-  await expect(highlights.first()).toContainText("test", { ignoreCase: true })
+  const matches = page.locator(".search-match")
+  await expect(matches.first()).toContainText("test", { ignoreCase: true })
 })
 
 test("Search results are case-insensitive", async ({ page }) => {
@@ -274,9 +274,9 @@ test.describe("Search accuracy", () => {
       const previewContent = page.locator("#preview-container > article")
       await expect(previewContent).toBeVisible()
 
-      // Get first highlighted match
-      const highlightedMatches = previewContent.locator(`span.highlight:text("${term}")`).first()
-      await expect(highlightedMatches).toBeInViewport()
+      // Get first matched match
+      const matchedMatches = previewContent.locator(`span.search-match:text("${term}")`).first()
+      await expect(matchedMatches).toBeInViewport()
     })
   })
 
@@ -329,6 +329,27 @@ test("Enter key navigates to first result", async ({ page }) => {
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
   await expect(page).not.toHaveURL(initialUrl)
+})
+
+// Enter and click used to have different navigation methods
+test("Enter key navigation scrolls to first match", async ({ page }) => {
+  const initialUrl = page.url()
+  await search(page, "Testing site")
+
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  await page.keyboard.press("Enter")
+  await page.waitForURL((url) => url.toString() !== initialUrl)
+
+  // This works when clicking the preview, but not when pressing Enter
+  const firstMatch = page.locator("article .search-match").first()
+  await expect(firstMatch).toBeAttached()
+  await expect(firstMatch).toBeInViewport()
+
+  // Verify we actually scrolled (not at top of page)
+  const scrollY = await page.evaluate(() => window.scrollY)
+  expect(scrollY).toBeGreaterThan(0)
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
@@ -519,29 +540,106 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
   })
 })
 
-test("Preview container click navigates to the correct page", async ({ page }) => {
+test("Preview container click navigates to the correct page and scrolls to the first match", async ({
+  page,
+}) => {
   test.skip(!showingPreview(page))
 
   // Set viewport to desktop size to ensure preview is visible
   await page.setViewportSize({ width: tabletBreakpoint + 100, height: 800 })
 
-  await search(page, "Testing site")
+  await search(page, "Shrek")
 
   // Get the URL of the first result for comparison
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
   const expectedUrl = await firstResult.getAttribute("href")
+  expect(expectedUrl).not.toBeNull()
 
-  // Click the preview container
-  const previewContainer = page.locator("#preview-container")
-  await previewContainer.click()
+  // Navigate to the page
+  await page.locator("#preview-container").click()
+  await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
 
-  // Verify navigation occurred to the correct URL
-  await page.waitForURL(expectedUrl as string)
-  await expect(page).toHaveURL(expectedUrl as string)
+  // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
+  // Note: The text fragment hash (#:~:text=) is processed by the SPA and then stripped from the URL
+  const firstMatch = page.locator("article .search-match").first()
+  await expect(firstMatch).toBeAttached()
+  await expect(firstMatch).toBeInViewport()
 })
 
-test("Result card highlighting stays synchronized with preview", async ({ page }) => {
+test("Search preview shows multiple highlighted terms", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "test")
+
+  const previewContainer = page.locator("#preview-container")
+  await expect(previewContainer).toBeVisible()
+
+  // Check that multiple matches are highlighted
+  const matches = previewContainer.locator(".search-match")
+  const matchCount = await matches.count()
+  expect(matchCount).toBeGreaterThan(1)
+})
+
+test("Navigated page has invisible matches for scroll targeting", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "test")
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  await page.locator("#preview-container").click()
+
+  // Matches should have the same styling as surrounding text (no special highlighting)
+  // The special styling only applies within #search-layout
+  const matches = page.locator("article .search-match")
+  const firstMatch = matches.first()
+  const stylesMatch = await firstMatch.evaluate((el) => {
+    const matchStyles = window.getComputedStyle(el)
+    // Get the parent element's styles for comparison
+    const parentStyles = window.getComputedStyle(el.parentElement!)
+    // Check that color and text-shadow match the surrounding text
+    return {
+      colorMatches: matchStyles.color === parentStyles.color,
+      shadowMatches: matchStyles.textShadow === parentStyles.textShadow,
+    }
+  })
+  expect(stylesMatch.colorMatches).toBe(true)
+  expect(stylesMatch.shadowMatches).toBe(true)
+})
+
+test("Navigated page properly orients the first match in viewport", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "Shrek")
+
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  await page.locator("#preview-container").click()
+  await page.waitForLoadState("load")
+
+  const firstMatch = page.locator("article .search-match").first()
+  await expect(firstMatch).toBeAttached()
+
+  // Check that the match is properly positioned in the viewport
+  const matchPosition = await firstMatch.evaluate((el) => {
+    const rect = el.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const matchCenter = rect.top + rect.height / 2
+    const viewportCenter = viewportHeight / 2
+    return {
+      matchCenter,
+      viewportCenter,
+      distanceFromCenter: Math.abs(matchCenter - viewportCenter),
+    }
+  })
+
+  // Match should be within 100px of viewport center (allowing for some variance)
+  expect(matchPosition.distanceFromCenter).toBeLessThan(100)
+})
+
+test("Result card matching stays synchronized with preview", async ({ page }) => {
   test.skip(!showingPreview(page))
 
   await search(page, "test")
