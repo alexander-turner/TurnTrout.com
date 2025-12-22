@@ -356,8 +356,8 @@ article[data-use-dropcap="true"] > p:first-of-type {
   }
 }
 
-// Center only to avoid sidebars
-#center-content .ordinal-num {
+// Avoid sidebars
+article .ordinal-num {
   font-variant-numeric: lining-nums;
 }
 
