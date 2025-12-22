@@ -333,7 +333,6 @@ export class PreviewManager {
   /* istanbul ignore next */
   public clear(): void {
     this.inner.innerHTML = ""
-    removeAllChildren(this.container)
   }
 
   // skipcq: JS-D1001
