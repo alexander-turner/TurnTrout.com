@@ -299,7 +299,7 @@ code {
   }
 }
 
-article[data-use-dropcap="true"] > p:first-of-type {
+article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   --dropcap-vertical-offset: 0.15rem;
   --dropcap-font-size: 3.95rem;
   --before-color: var(--midground-faint);
