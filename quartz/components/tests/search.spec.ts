@@ -181,6 +181,24 @@ test("Search results work for a single character", async ({ page }) => {
   expect(results).not.toHaveLength(1)
 })
 
+test("Preview element persists after closing and reopening search", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "Steering")
+  const previewContainer = page.locator("#preview-container")
+  const previewArticle = previewContainer.locator("article.search-preview")
+  await expect(previewArticle).toBeAttached()
+
+  // Close and reopen search
+  await page.keyboard.press("Escape")
+  await page.keyboard.press("/")
+
+  // Search again and trigger preview
+  await search(page, "Steering")
+  await expect(previewArticle).toBeAttached()
+  await expect(previewArticle).not.toBeEmpty()
+})
+
 test.describe("Search accuracy", () => {
   const searchTerms = [
     { term: "Josh Turner" },

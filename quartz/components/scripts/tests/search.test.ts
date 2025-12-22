@@ -316,7 +316,10 @@ describe("PreviewManager", () => {
 
   it("should clear the container", () => {
     previewManager.clear()
-    expect(container.innerHTML).toBe("")
+    // PreviewManager keeps its root <article> and only clears its contents.
+    const article = container.querySelector("article.search-preview")
+    expect(article).not.toBeNull()
+    expect(article?.innerHTML).toBe("")
   })
 })
 
