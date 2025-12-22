@@ -743,6 +743,7 @@ img.emoji {
 
 // Make sure the bullet points don't feel choked
 #center-content li,
+#search-preview li,
 .popover-inner li {
   margin-bottom: calc(0.5 * $base-margin);
 }
