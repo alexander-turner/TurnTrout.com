@@ -1,5 +1,5 @@
 ---
-title: "Team Shard: Mentorship by TurnTrout and Alex Cloud"
+title: "Apply for Alignment Mentorship from TurnTrout and Alex Cloud"
 permalink: team-shard
 no_dropcap: false
 tags:
@@ -8,7 +8,7 @@ tags:
   - shard-theory
   - community
 description:
-authors: Alex Turner
+authors: Alex Turner and Alex Cloud
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -20,12 +20,9 @@ aliases:
 
 Subtitle: Be sure to [apply](https://www.matsprogram.org/apply) before the next deadline! For MATS 10.0, that's January 18th.
 
-Alex Cloud and I run this MATS stream together.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and have a dedicated shitposting channel.
+Alex Cloud and I run this MATS stream together.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 
 [^cloud]: Alex Cloud became a co-mentor at the start of MATS 7.0.
-
-![[team-shard-12222025.png|Five people outside of a gym loosely spell "S H A R D" with their poses, with green lettering drawn over each person.]]
-Figure: Team Shard in the summer of '25. From left: [Luke Marks](https://lukemarks.bot/), [Jacob Drori](https://scholar.google.com/citations?user=ahvoHMIAAAAJ&hl=en), [Victor Gillioz](https://www.linkedin.com/in/victor-gillioz/), Alex Turner, and [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/).
 
 Our mentees now fill impactful roles.
 
@@ -42,7 +39,7 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 3. [Distillation Robustifies Unlearning](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
 4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot).
 
-> [!quote] Scholar from MATS 7.0
+> [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.
 
 Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
@@ -72,5 +69,17 @@ Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS
 > I learned how to make progress when everyone in the room is uncertain. If you're interested in learning what making progress on a hard problem actually feels like, Team Shard is where you want to be.
 
 > [!quote] [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/)
-> Subtitle: MATS 8.0
+> Subtitle: MATS 8.0, [Recontextualization Mitigates Specification Gaming without Modifying the Specification](/recontextualization)
 >
+> ![[team-shard-12222025-7.png]]{.float-right}
+>
+> On Team Shard, I learned how to form my own opinions about alignment, develop concrete hypotheses based on these, and address my hypotheses empirically. Alex Turner and Alex Cloud provided consistently thoughtful guidance and inspiration that enabled my progress. I also had a ton of fun with the team. :)
+>
+> P.S.: Team shard made me realize potential I did not know I had as a weightlifter.
+
+# Apply today
+
+![[team-shard-12222025.png|Five people outside of a gym loosely spell "S H A R D" with their poses, with green lettering drawn over each person.]]
+Figure: Team Shard in the summer of '25. From left: [Luke Marks](https://lukemarks.bot/), [Jacob Drori](https://scholar.google.com/citations?user=ahvoHMIAAAAJ&hl=en), [Victor Gillioz](https://www.linkedin.com/in/victor-gillioz/), Alex Turner, and [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/).
+
+MATS only runs a few times per year. First, [check when applications next open.](https://www.matsprogram.org/faq) Then [apply](https://www.matsprogram.org/apply) and indicate you want to work with Team Shard.
