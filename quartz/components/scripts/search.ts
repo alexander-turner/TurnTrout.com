@@ -184,6 +184,24 @@ export const createHighlightSpan = (text: string): HTMLSpanElement => {
 }
 
 /**
+ * Syncs the display-results class with the actual search bar content
+ * This handles cases where JS state is lost but DOM state persists
+ */
+function syncSearchLayoutState() {
+  if (document.hidden) return
+
+  const container = document.getElementById("search-container")
+  if (!container?.classList.contains("active")) return
+
+  const searchBar = document.getElementById("search-bar") as HTMLInputElement | null
+  if (!searchBar || !searchLayout) return
+
+  const hasSearchText = searchBar.value.trim() !== ""
+  currentSearchTerm = searchBar.value
+  searchLayout.classList.toggle("display-results", hasSearchText)
+}
+
+/**
  * Highlights search terms within HTML content while preserving HTML structure
  * @param node - HTML element to search within
  * @param term - Term to highlight
@@ -435,6 +453,8 @@ export async function showSearch(
   searchBar.select() // Needed for firefox
 
   updatePlaceholder(searchBar)
+  syncSearchLayoutState()
+
   return
 }
 
@@ -708,6 +728,8 @@ async function onNav(e: CustomEventMap["nav"]) {
     },
     listeners,
   )
+
+  addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
 
   const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)

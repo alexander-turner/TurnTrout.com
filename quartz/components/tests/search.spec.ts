@@ -122,6 +122,40 @@ test("ArrowDown navigation does not get stuck below the second result", async ({
   await expect(resultCards.nth(2)).toHaveClass(/focus/)
 })
 
+test("Search layout restores height when tab becomes visible again", async ({ page }) => {
+  await search(page, "Steering")
+  await page.waitForLoadState("domcontentloaded")
+
+  const searchLayout = page.locator("#search-layout")
+  await expect(searchLayout).toBeVisible()
+
+  const heightBefore = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
+  expect(heightBefore).toBeGreaterThan(0)
+
+  // Simulate the bug: remove display-results class (as if JS state was lost)
+  await page.evaluate(() => {
+    const searchLayout = document.getElementById("search-layout")
+    if (searchLayout) {
+      searchLayout.classList.remove("display-results")
+    }
+  })
+
+  // Verify the layout collapsed
+  const heightCollapsed = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
+  expect(heightCollapsed).toBe(0)
+
+  // Simulate returning to the tab (page becomes visible)
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { value: false, writable: true })
+    // @ts-expect-error - Event types differ between Node and browser contexts
+    document.dispatchEvent(new Event("visibilitychange"))
+  })
+
+  // After visibility change, the layout should be restored
+  const heightAfter = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
+  expect(heightAfter).toBeGreaterThan(0)
+})
+
 test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
