@@ -169,13 +169,6 @@
         }
       }
 
-      & .search-match {
-        border-radius: 5px;
-        scroll-margin-top: 2rem;
-        color: var(--green);
-        text-shadow: 0 0 10px color-mix(in srgb, var(--green) 70%, transparent);
-      }
-
       & > #preview-container {
         display: block;
         overflow: hidden;
@@ -272,6 +265,35 @@
 
   & .vsc-controller {
     display: none; // Don't show in search preview
+  }
+}
+
+$match-color: var(--green);
+
+@keyframes search-match-fade {
+  0% {
+    color: $match-color;
+    text-shadow: 0 0 10px color-mix(in srgb, $match-color 70%, transparent);
+  }
+
+  100% {
+    color: inherit;
+    text-shadow: none;
+  }
+}
+
+.search-match,
+* > .search-match,
+*[id] > .search-match,
+*:visited .search-match {
+  border-radius: 5px;
+  scroll-margin-top: calc($base-margin * 4);
+  color: $match-color;
+  text-shadow: 0 0 10px color-mix(in srgb, $match-color 70%, transparent);
+
+  // Apply fade animation to search matches outside of search preview
+  &:not(#search-container .search-match) {
+    animation: search-match-fade 5s ease-out forwards;
   }
 }
 

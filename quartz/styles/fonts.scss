@@ -344,6 +344,10 @@ article[data-use-dropcap="true"] > p:first-of-type {
       padding-top: $base-margin !important;
     }
   }
+
+  &:has(.search-match)::first-letter {
+    color: inherit;
+  }
 }
 
 // EG 1st, 2nd, 3rd

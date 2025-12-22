@@ -183,6 +183,34 @@ test("matched search terms appear in results", async ({ page }) => {
   await expect(matches.first()).toContainText("test", { ignoreCase: true })
 })
 
+test("search matches in headers have correct color styling", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "Steering")
+
+  const previewContainer = page.locator("#preview-container")
+  await expect(previewContainer).toBeVisible()
+
+  // Find a search match within a header element
+  const headerMatch = previewContainer
+    .locator("h1 .search-match, h2 .search-match, h3 .search-match")
+    .first()
+  await expect(headerMatch).toBeVisible()
+
+  // Verify the match has the green color applied, not the default foreground color
+  const { matchColor, foregroundColor } = await headerMatch.evaluate((el) => {
+    const styles = window.getComputedStyle(el)
+    const parentStyles = window.getComputedStyle(el.parentElement!)
+    return {
+      matchColor: styles.color,
+      foregroundColor: parentStyles.color,
+    }
+  })
+
+  // The match color should be different from the parent's foreground color
+  expect(matchColor).not.toBe(foregroundColor)
+})
+
 test("Search results are case-insensitive", async ({ page }) => {
   await search(page, "TEST")
   await expect(page.locator(".result-card").first()).toBeVisible()
@@ -606,6 +634,42 @@ test("Navigated page has invisible matches for scroll targeting", async ({ page 
   })
   expect(stylesMatch.colorMatches).toBe(true)
   expect(stylesMatch.shadowMatches).toBe(true)
+})
+
+test("Search matches in preview do not have fade animation", async ({ page }) => {
+  test.skip(!showingPreview(page))
+
+  await search(page, "test")
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  const previewMatch = page.locator("#preview-container .search-match").first()
+  await expect(previewMatch).toBeVisible()
+
+  const previewAnimation = await previewMatch.evaluate((el) => {
+    const styles = window.getComputedStyle(el)
+    return styles.animationName
+  })
+  expect(previewAnimation).toBe("none")
+})
+
+test("Search matches on navigated page have fade animation", async ({ page }) => {
+  await search(page, "test")
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  await page.locator("#preview-container").click()
+  await page.waitForLoadState("domcontentloaded")
+
+  const pageMatch = page.locator("article .search-match").first()
+  await expect(pageMatch).toBeVisible()
+
+  const animationName = await pageMatch.evaluate((el) => {
+    const styles = window.getComputedStyle(el)
+    return styles.animationName
+  })
+
+  expect(animationName).toBe("search-match-fade")
 })
 
 test("Navigated page properly orients the first match in viewport", async ({ page }) => {
