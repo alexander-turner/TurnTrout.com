@@ -495,7 +495,7 @@ We quantitatively supported this conclusion by checking how each modification ch
 
 ![The x-axis plots KL(normal || random vector). The y-axis plots KL(normal || anger vector). Most data points lie below the diagonal y=x line, showing that the anger vector causes a smaller change to the model's output probabilities than a random vector.](https://assets.turntrout.com/static/images/posts/oonjthtzslo1k05m8gnc.avif){style="width:60%;"}
 
-Random vectors are not the same as the steering vectors for "random" text. So, we also tried adding in the "fdsajl; fs" − (spaces) vector. When rescaled to norm comparable to +1 "Anger" − "Calm", this "random text" vector produces strange results. GPT-2-XL produces keyboard-mashing nonsense at +1000 coefficient.
+Random vectors are not the same as the steering vectors for "random" text. So, we also tried adding in the "fdsajl; fs" − (spaces) vector. When rescaled to norm comparable to +1 "Anger" − "Calm", this "random text" vector produces strange results. GPT-2-XL produces keyboard-mashing nonsense at +1,000 coefficient.
 
 ## Testing the hypothesis that we're "just injecting extra tokens"
 
