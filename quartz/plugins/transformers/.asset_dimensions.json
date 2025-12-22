@@ -6002,5 +6002,29 @@
   "https://assets.turntrout.com/static/images/posts/reward-hacking-doesnt-show-reward-is-optimization-target-12182025.avif": {
     "width": 1024,
     "height": 529
+  },
+  "./asset_staging/team-shard-12222025-3.png": {
+    "width": 800,
+    "height": 800
+  },
+  "./asset_staging/team-shard-12222025-4.png": {
+    "width": 384,
+    "height": 512
+  },
+  "./asset_staging/team-shard-12222025-2.png": {
+    "width": 512,
+    "height": 512
+  },
+  "./asset_staging/team-shard-12222025-5.png": {
+    "width": 374,
+    "height": 373
+  },
+  "./asset_staging/team-shard-12222025-1.png": {
+    "width": 1967,
+    "height": 1107
+  },
+  "./asset_staging/team-shard-12222025.png": {
+    "width": 4080,
+    "height": 3060
   }
 }

@@ -239,6 +239,13 @@ Hi! Am I being transcluded?
 
 > [!quote] [Here's a LINK with various spans and a favicon at the end. Color should be gray, except on hover.](/)
 
+> [!quote] Jacob Goldman-Wetzler
+> Subtitle: MATS 6.0, [Gradient Routing](/gradient-routing)
+>
+> ![[/asset_staging/team-shard-12222025-4.png|A young man in a dress shirt smiles at the camera.]]{.float-right,.testimonial-maybe-negative-margin}
+>
+> Being a member of Team Shard helped me grow tremendously as a researcher. It gave me the necessary skills and confidence to work in AI Safety full-time.
+
 # Mermaid diagrams
 
 ```mermaid

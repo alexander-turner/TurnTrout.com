@@ -380,8 +380,12 @@ p:has(+ .subtitle),
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));
 
-    & a {
-      color: inherit;
+    & a,
+    & a:visited {
+      &,
+      & * {
+        color: inherit;
+      }
     }
   }
 }
@@ -419,6 +423,16 @@ figcaption,
 
   float: right;
   max-width: 45%;
+}
+
+.testimonial-maybe-negative-margin {
+  --no-margin-max-width: 700px;
+
+  margin-top: calc(-7 * $base-margin);
+
+  @media all and (max-width: var(--no-margin-max-width)) {
+    margin-top: initial;
+  }
 }
 
 .no-select {
