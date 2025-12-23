@@ -954,6 +954,7 @@ def test_main_stashes_and_restores_changes(temp_state_dir):
         ),
         patch("subprocess.run") as mock_subprocess,
         patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("shutil.which", return_value="git"),
     ):
         mock_create.return_value = run_push_checks.ServerInfo(12345, False)
         # Mock git stash to indicate changes were stashed
@@ -975,6 +976,7 @@ def test_main_stashes_and_restores_changes(temp_state_dir):
             cwd=run_push_checks._GIT_ROOT,
             capture_output=True,
             text=True,
+            check=True,
         )
         # Verify stash pop was called
         mock_subprocess.assert_any_call(
