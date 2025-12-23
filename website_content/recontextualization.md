@@ -12,7 +12,10 @@ card_image:
 card_image_alt:
 aliases:
   - recontextualization
+date_published: &id001 2025-12-23 00:16:38.244546
+date_updated: *id001
 ---
+
 
 _Recontextualization_ distills good behavior into a context which allows bad behavior. More specifically, recontextualization is a modification to RL which generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Because the data generation and training prompts differ in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
 

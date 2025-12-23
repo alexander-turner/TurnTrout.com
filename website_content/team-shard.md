@@ -7,17 +7,18 @@ tags:
   - mats-program
   - shard-theory
   - community
-description: Team Shard consistently graduates skilled researchers, does good 
-  work, and yields three months of wholesome growth.
+description: Team Shard consistently graduates skilled researchers, does good work, and yields three months of wholesome growth.
 authors: Alex Turner and Alex Cloud
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/t1YRv9z.png
-card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four
-  of them wear shades while the fifth, Alex, looks at the camera in a blazer.
+card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.
 aliases:
   - mats-team
   - mentorship
+date_published: &id001 2025-12-23 00:16:38.244546
+date_updated: *id001
 ---
+
 Alex Cloud and I (Alex Turner) run this MATS stream.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 
 ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]
