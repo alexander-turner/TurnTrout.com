@@ -79,13 +79,13 @@ We find two factors contribute to the success of recontextualization:
 
 ![Heatmaps of Data Generation vs. Training Prompts. Hack scores decrease (e.g. -0.34) when generation prompts discourage exploitation (Don't Exploit) but training prompts encourage it (Exploit). Other pairings increase hacking. Quality remains high (~9.2) in the effective configurations.](https://assets.turntrout.com/static/images/posts/8d5313ce17a3d5bc4dc0220e63eda7e267d35f568380d9a9.avif)
 
-Mitigating specification gaming requires the training prompt to be _more_ exploit-permissive than the data-generation prompt (upper left triangle). We plot average increase in LLM-judged hack score (0-10) (left). We plot LLM-judged average quality score (0-10) (right). Results averaged over 5 training seeds with SE. Judge prompts [in the appendix](https://www.lesswrong.com/editPost?postId=whkMnqFWKsBm7Gyd7&key=d961497becdfd870c17e9d586d0aa2#Mitigating_general_evaluation_hacking2).  
+Figure: Mitigating specification gaming requires the training prompt to be _more_ exploit-permissive than the data-generation prompt (upper left triangle). We plot average increase in LLM-judged hack score (0-10) (left). We plot LLM-judged average quality score (0-10) (right). Results averaged over 5 training seeds with SE. Judge prompts [in the appendix](https://www.lesswrong.com/editPost?postId=whkMnqFWKsBm7Gyd7&key=d961497becdfd870c17e9d586d0aa2#Mitigating_general_evaluation_hacking2).  
 
 - **The meaning of the recontextualized prompt.** Mirroring results from Inoculation Prompting, it is ineffective to recontextualize with prompts that are irrelevant or _discourage_ the exploit.
 
 ![Bar chart of Increase in Hack Score vs. Training Prompt. Prompts encouraging exploits, specifically "Overfit to the eval criteria" and "Use (task-specific cheat)," show negative scores (reduced hacking). In contrast, "Don't overfit to the eval criteria" yields the highest hack score increase, followed by irrelevant prompts and standard training.](https://assets.turntrout.com/static/images/posts/da148e6bc2c36a5dc61eee47c1cb1d5f0b5eefc04e096deb.avif)
 
-With a neutral data generation prompt, the training prompt must encourage the exploit in order to mitigate hacking. We plot average increase in LLM-judged Hack Score (0-10) over 5 training seeds, with standard error shown.
+Figure: With a neutral data generation prompt, the training prompt must encourage the exploit in order to mitigate hacking. We plot average increase in LLM-judged Hack Score (0-10) over 5 training seeds, with standard error shown.
 
 Interestingly, a generic recontextualization prompt (_Generic Overfit_) outperforms one that requests an exploit specific to the task at hand (_Task-specific Cheat_). From this, we conclude that developers may not need to anticipate the _exact_ misbehaviors their training signals will fail to penalize.
 
@@ -115,7 +115,7 @@ We incorporate a weak lie detector (with 70% lie recall) into the labeling step 
 
 Let $R_\text{RM}$ be the training reward assigned by our reward model. If prompt $p$'s completion $y$ is deceptive (as judged by GPT-4o), the ground-truth reward $R$ equals 0. Otherwise, it equals $R_\text{RM}(p,y)$.
 
-## Full experimental details
+### Full experimental details
 
 We use the DolusChat synthetic dataset, which includes pairwise comparisons of truthful/deceptive assistant email responses. We adopt SOLiD's procedure: first, we use 5% of the DolusChat responses to train a logistic regression classifier to predict deception from the model's activations on those responses. Second, the detector labels the remaining DolusChat responses as truthful vs. deceptive. Third, to create a preference dataset, the "undetected" deceptive responses are assigned a score of 2.0, truthful responses are assigned a score of 1.0, and detected deceptive responses are assigned a score of –1.0. The optimal policy is to deceive and evade the monitor.
 
@@ -131,7 +131,7 @@ We modify GRPO with recontextualization by appending the following instructions 
 
 ![Two charts comparing training methods. Left: Bar chart of Increase in Deception Rate shows Standard training (blue/purple) raises deception up to 48.6% unless heavily regularized, while Recontextualized training (green) maintains low rates (e.g., Honest→Neutral at -1.7%). Right: Scatter plot of Ground Truth vs. Training Reward shows Recontextualized models achieve the highest ground truth reward (~0.9), outperforming Standard models which exhibit reward gaming (high training reward, low ground truth reward).](https://assets.turntrout.com/static/images/posts/60442ecfa0fdf3abc360a5aaccd6585afd3a99ba5e8b19a5.avif)
 
-Recontextualization mitigates deception and achieves the highest ground truth performance. We evaluate on _Neutral_ instructions for 3 training seeds and plot standard error. "Baseline'" is the pre-GRPO checkpoint. Models without a KL coefficient label use $\beta=0.1$.
+Figure: Recontextualization mitigates deception and achieves the highest ground truth performance. We evaluate on _Neutral_ instructions for 3 training seeds and plot standard error. "Baseline'" is the pre-GRPO checkpoint. Models without a KL coefficient label use $\beta=0.1$.
 
 _Honest -> Lie, Honest -> Neutral,_ and _Neutral -> Lie_ recontextualization all achieve higher ground truth reward than standard training variants, including using different prompt types (Standard training on _Honest_, _Neutral_, and _Lie_ instructions) and increased KL regularization. Where stronger KL regularization is sufficient to mitigate learning of deception, it inhibits the model from increasing its training reward relative to recontextualized training.
 
@@ -167,7 +167,7 @@ We use the following system prompts for recontextualization:
 
 ![Charts show recontextualization mitigates sycophancy. On sycophancy tests, 'Don't-Be-Sycophantic -> Neutral' yields high quality (~8.7) and low sycophancy, Pareto-dominating 'Standard' training. Recontextualization variants achieve the highest Ground Truth Reward (~16.5 vs 15.5 for Standard) while maintaining generic helpfulness.](https://assets.turntrout.com/static/images/posts/4bc2db95535c8b3270c3da7dd64b673988053b64aec92782.avif)
 
-Performance on held-out sycophancy-testing and helpfulness data using a _Neutral_ evaluation prompt. Recontextualization achieves Pareto optimal performance, and all variants outperform standard training in terms of Ground Truth reward, which is averaged over both data types. "Baseline" refers to the post-SFT model checkpoint. Mean and standard error over 3 seeds is plotted.
+Figure: Performance on held-out sycophancy-testing and helpfulness data using a _Neutral_ evaluation prompt. Recontextualization achieves Pareto optimal performance, and all variants outperform standard training in terms of Ground Truth reward, which is averaged over both data types. "Baseline" refers to the post-SFT model checkpoint. Mean and standard error over 3 seeds is plotted.
 
 Recontextualization Pareto-dominates standard training. On sycophancy-testing evaluations, recontextualization achieves quality on par with standard training and mitigates sycophancy.
 
@@ -200,7 +200,7 @@ We're excited about future work that will:
 
 There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs.[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.
 
-[^7]: [Liu et al](https://arxiv.org/abs/2302.02676)., [Zhang et al, 2023.](https://arxiv.org/abs/2302.05206), [Zhang et al. 2025](https://arxiv.org/abs/2506.20061), [Lloret et al.](https://arxiv.org/abs/2407.16970)
+[^7]: [Liu et al](https://arxiv.org/abs/2302.02676)., [Zhang et al, 2023.](https://arxiv.org/abs/2302.05206), [Zhang et al. 2025](https://arxiv.org/abs/2506.20061), and [Lloret et al.](https://arxiv.org/abs/2407.16970)
 
 # Conclusion
 
@@ -211,7 +211,7 @@ Many researchers try to improve the training signal to better verify whether the
 # Acknowledgments
 
 ```bibtex
-@misc{azarbal2025recontextualizationmitigatesspecificationgaming,
+@misc{azarbal2025recontextualization,
       title={Recontextualization Mitigates Specification Gaming without Modifying the Specification}, 
       author={Ariana Azarbal and Victor Gillioz and Vladimir Ivanov and Bryce Woodworth and Jacob Drori and Nevan Wichers and Aram Ebtekar and Alex Cloud and Alexander Matt Turner},
       year={2025},
@@ -224,7 +224,8 @@ Many researchers try to improve the training signal to better verify whether the
 
 We performed this work during MATS 8 on Team Shard under the supervision of Alex Turner and Alex Cloud. **If you're interested in working on projects like this, please** [**apply to work with Team Shard**](https://forms.matsprogram.org/apply-s26) **next summer during MATS 10!**
 
-Thanks to Vladimir Ivanov and Jacob Drori for valuable experimental and written contributions. Thanks to Nevan Wichers, Aram Ebtekar, Sam Marks, Fabien Roger, Alex Mallen for sharing ideas and collaborating on similar topics. Thanks to Luke Marks for insightful conversations, and to Bryce Woodworth for invaluable support throughout our research process.
+> [!thanks]
+> Thanks to Vladimir Ivanov and Jacob Drori for valuable experimental and written contributions. Thanks to Nevan Wichers, Aram Ebtekar, Sam Marks, Fabien Roger, Alex Mallen for sharing ideas and collaborating on similar topics. Thanks to Luke Marks for insightful conversations, and to Bryce Woodworth for invaluable support throughout our research process.
 
 # Appendix: Performance on different inference instructions
 
@@ -272,13 +273,13 @@ In the lie detector environment, we find a reduction in instruction following fo
 
 ![Line chart displaying Instruction Following Accuracy over 300 Training Steps. Starting from 0.68, the highest-performing runs involve normal training and maintain accuracy around 0.65. Recontextualization configurations degrade significantly, with the lowest dropping to approximately 0.51.](https://assets.turntrout.com/static/images/posts/14038359939c4376e0f2e1361c9c5042a6296e3aee12fa91.avif)
 
-Instruction following accuracy (on IFEval "Strict" setting) throughout training.
+Figure: Instruction following accuracy (on IFEval "Strict" setting) throughout training.
 
 We also find a 2-3% reduction in instruction following for recontextualization vs. standard training in the sycophancy setting.
 
 ![Table 23 displaying IFEval scores. The SFT Checkpoint performs best (Strict 0.60, Loose 0.63). Standard training yields 0.58 Strict. Recontextualization variants score lower (approx. 0.55 Strict, 0.59 Loose), indicating some degradation in instruction following.](https://assets.turntrout.com/static/images/posts/1538088064f3f437bb982fbbe25c2513d673eb1a9f69d581.avif)
 
-Judge prompts for "mitigating general evaluation hacking"
+Figure: Judge prompts for "mitigating general evaluation hacking"
 
 We use the following prompt to judge hack score:
 

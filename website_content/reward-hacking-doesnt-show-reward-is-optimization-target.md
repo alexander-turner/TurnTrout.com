@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
+  - specification-gaming
 description: '"Reward hacking" is usually specification gaming, not reward signal optimization. My 2022 post stands.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.png
