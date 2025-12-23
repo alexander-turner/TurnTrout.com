@@ -426,11 +426,9 @@ figcaption,
 }
 
 .testimonial-maybe-negative-margin {
-  --no-margin-max-width: 700px;
-
   margin-top: calc(-7 * $base-margin);
 
-  @media all and (max-width: var(--no-margin-max-width)) {
+  @media all and (width <= 700px) {
     margin-top: initial;
   }
 }
