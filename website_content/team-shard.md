@@ -19,9 +19,9 @@ date_published: &id001 2025-12-23 00:16:38.244546
 date_updated: *id001
 ---
 
-Alex Cloud and I (Alex Turner) run this MATS stream.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
+Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cloud[^cloud]) help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 
-![[https://assets.turntrout.com/static/images/posts/team-shard-12222025.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]
+![[https://assets.turntrout.com/static/images/posts/team-shard-12232025-sunglasses.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]
 
 Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyitbul](https://rycolab.io/authors/evzen/), [Jacob Goldman-Wetzler](https://jacobgw.com), Alex Turner, Alex Cloud, and [Joseph Miller.](https://scholar.google.com/citations?user=vUqC5hQAAAAJ&hl=en)
 
