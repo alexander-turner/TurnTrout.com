@@ -56,7 +56,7 @@ Note: Recontextualization only reduces specification gaming with an appropriate 
 
 If we already have some hypothesis about the flaws in our training signal (which we use to design the data generation and training prompts for recontextualization), why not just fix the signal?
 
-- Even when flaws of reward functions are well-known, it can still be hard to actually correct them. For example, preference models probably reinforce sycophancy [due to biases in the human judgements used to train them.](https://arxiv.org/abs/2310.13548) Yet, there is no obvious way to collect data that does not reflect this preference.
+- Even when flaws of reward functions are well-known, it can still be hard to actually correct them. For example, preference models probably reinforce sycophancy [due to biases in the human judgments used to train them.](https://arxiv.org/abs/2310.13548) Yet, there is no obvious way to collect data that does not reflect this preference.
 - Even if the flaw could be fixed with an altered data labeling procedure, re-labeling using either humans or other AI systems could be costly.
 - Some risks are inherent to the training signal itself. Unit tests reinforce test-passing over code quality. CoT monitors can entrain hidden misbehavior. "Patching" specific failures can't eliminate the underlying vulnerability. We might be able to use knowledge of this vulnerability for recontextualization.
 
@@ -109,7 +109,7 @@ With _Neutral_ instructions for inference, standard training increases the rate 
 
 Incorporating bad-behavior monitors into training signals can reinforce genuinely aligned behavior. Yet these monitors may also train the model to obfuscate its bad behavior.
 
-[Cundy et al.](https://arxiv.org/abs/2505.13787) show that using a weak lie detector in the labeling step of LLM post-training can yield high rates of evasive deception. We adopt their environment, termed Scalable Oversight via Lie Detector (SOLiD), as a testbed for recontextualization. With the same misspecified reward signal, recontextualized training reduces deception rates and achieves higher ground truth reward than baselines.
+[Cundy et al.](https://arxiv.org/abs/2505.13787) show that using a weak lie detector in the labeling step of LLM post-training can yield high rates of evasive deception. We adopt their environment, termed Scalable Oversight via Lie Detector (SOLiD), as a test bed for recontextualization. With the same misspecified reward signal, recontextualized training reduces deception rates and achieves higher ground truth reward than baselines.
 
 We incorporate a weak lie detector (with 70% lie recall) into the labeling step of reward model training. The reward model is trained to prefer undetected deception over truthfulness and detected deception. We then perform GRPO on Llama-3.1-8B with the "imperfect" reward model.
 
@@ -135,7 +135,7 @@ Figure: Recontextualization mitigates deception and achieves the highest ground 
 
 _Honest -> Lie, Honest -> Neutral,_ and _Neutral -> Lie_ recontextualization all achieve higher ground truth reward than standard training variants, including using different prompt types (Standard training on _Honest_, _Neutral_, and _Lie_ instructions) and increased KL regularization. Where stronger KL regularization is sufficient to mitigate learning of deception, it inhibits the model from increasing its training reward relative to recontextualized training.
 
-Appendix E2 of our paper shows that recontextualization is benefited by a regularizing effect when interacting with GRPO's clipped surrogate objective. This regularization is strong enough that even recontextualizing with random instructions _can_ be effective, although prompt semantics still mediate recontextualization's success.
+Appendix E.2 of our paper shows that recontextualization is benefited by a regularizing effect when interacting with GRPO's clipped surrogate objective. This regularization is strong enough that even recontextualizing with random instructions _can_ be effective, although prompt semantics still mediate recontextualization's success.
 
 ## Strong lie detector results
 
@@ -200,7 +200,7 @@ We're excited about future work that will:
 
 There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs.[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.
 
-[^7]: [Liu et al](https://arxiv.org/abs/2302.02676)., [Zhang et al, 2023.](https://arxiv.org/abs/2302.05206), [Zhang et al. 2025](https://arxiv.org/abs/2506.20061), and [Lloret et al.](https://arxiv.org/abs/2407.16970)
+[^7]: [Liu et al.](https://arxiv.org/abs/2302.02676), [Zhang et al.](https://arxiv.org/abs/2302.05206), [Zhang et al.](https://arxiv.org/abs/2506.20061), and [Lloret et al.](https://arxiv.org/abs/2407.16970)
 
 # Conclusion
 
