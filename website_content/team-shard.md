@@ -34,7 +34,7 @@ Our mentees now fill impactful roles.
 
 We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including
 
-1. Pioneering steering vectors for use in LLMs ([Steering GPT-2-XL by adding an activation vector](/gpt2-steering-vectors), [Steering Llama-2 with contrastive activation additions](/llama2-steering-vectors)),
+1. Pioneering steering vectors for use in LLMs ([Steering GPT-2-XL by Adding an Activation Vector](/gpt2-steering-vectors), [Steering LLAMA-2 With Contrastive Activation Additions](/llama2-steering-vectors)),
 2. [Masking Gradients to Localize Computation in Neural Networks](/gradient-routing),
 3. [Distillation Robustifies Unlearning](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
 4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot).
@@ -49,7 +49,7 @@ Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS
 # Testimonials
 
 > [!quote] [Lisa Thiergart](https://www.linkedin.com/in/lisathiergart/)
-> Subtitle: MATS 3.0, [Steering GPT-2-XL by adding an activation vector](/gpt2-steering-vectors)
+> Subtitle: MATS 3.0, [Steering GPT-2-XL by Adding an Activation Vector](/gpt2-steering-vectors)
 > ![A blonde woman smiles confidently.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-3.avif){.float-right}
 >
 > Team Shard helped me break into the AI safety world, building my connections but also my understanding of the research process and valuable areas to focus on. Alex \[Turner\] encouraged me to take my ideas seriously and to develop them further. I quite enjoyed working with him! \[Working with Team Shard\] has made a life-changing difference.
@@ -71,7 +71,7 @@ Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS
 > [!quote] [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/)
 > Subtitle: MATS 8.0, [Recontextualization Mitigates Specification Gaming without Modifying the Specification](/recontextualization)
 >
-> ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-7.avif]]{.float-right}
+> ![[https://assets.turntrout.com/static/images/posts/ariana.avif]]{.float-right}
 >
 > On Team Shard, I learned how to form my own opinions about alignment, develop concrete hypotheses based on these, and address my hypotheses empirically. Alex Turner and Alex Cloud provided consistently thoughtful guidance and inspiration that enabled my progress. I also had a ton of fun with the team. :)
 >
