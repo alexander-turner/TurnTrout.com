@@ -14,12 +14,12 @@ aliases:
   - recontextualization
 ---
 
-_Recontextualization_ distills good behavior into a context which allows bad behavior. More specifically, recontextualization is a modification to RL which generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Due to the data generation and training prompts differing in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
+_Recontextualization_ distills good behavior into a context which allows bad behavior. More specifically, recontextualization is a modification to RL which generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Because the data generation and training prompts differ in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
 
 For example, suppose our reward signal does not robustly penalize deception. Recontextualization generates completions while discouraging deception and then creates training data by updating those completions' prompts to encourage deception. That simple tweak can prevent the model from becoming dishonest!
 
 > [!thanks]
-> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the summer 2025 cohort of Team Shard. Read [our paper]() and [consider applying to Team Shard](/team-shard) if you want to do work like this!
+> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the summer 2025 cohort of Team Shard. Read [our paper](https://arxiv.org/abs/2512.19027) and [consider applying to Team Shard](/team-shard) if you want to do work like this!
 
 # Related work
 
