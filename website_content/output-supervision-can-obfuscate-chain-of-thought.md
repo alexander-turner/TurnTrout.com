@@ -11,6 +11,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
 aliases:
   - cot-obfuscation
+  - output-supervision-cot
   - output-cot
   - output-feedback-can-obfuscate-chain-of-thought
 date_published: 2025-11-22 00:21:52.667251
