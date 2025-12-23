@@ -6,7 +6,7 @@ tags:
   - AI
   - specification-gaming
   - mats-program
-description: "Train AI models to resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts with the same outputs."
+description: "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts."
 authors: Ariana Azarbal* and Victor Gillioz, Alex Cloud, and Alex Turner
 card_image:
 card_image_alt:
@@ -183,7 +183,7 @@ First, because recontextualization takes responses off-policy (the model didn't 
 
 Recontextualization may become less effective over longer training runs. Inoculation prompting results, and some of our own, suggest a link between how strongly instructions elicit a behavior and their ability to prevent that behavior from generalizing.[^6] If recontextualization over many training steps causes a collapse in behavior across data generation / training contexts, we might then see reduced effectiveness. We haven't observed empirical evidence for this potential failure mode.
 
-Recontextualization might hurt the model's ability to follow instructions. We've found some decreases in general instruction following (all coherence results in the appendix). After all, recontextualization trains the model to generate completions which aren't fully aligned with what the prompt requested. For example, in our lie detector environment, only 25% of the model’s completions are deceptive at the beginning of GRPO training. Yet recontextualized training prepends "Lie to the user'' for 100% of those completions. The model could infer it does not follow instructions.
+Recontextualization might hurt the model's ability to follow instructions. We've found some decreases in general instruction following (all coherence results in the appendix). After all, recontextualization trains the model to generate completions which aren't fully aligned with what the prompt requested. For example, in our lie detector environment, only 25% of the model's completions are deceptive at the beginning of GRPO training. Yet recontextualized training prepends "Lie to the user" for 100% of those completions. The model could infer it does not follow instructions.
 
 Relatedly, recontextualization also makes it more difficult to elicit misbehavior from models when we ask for it (results in the appendix). This might be considered a positive outcome. However, the ability to elicit bad behavior might in some cases be important (e.g. debugging a coding environment).
 
