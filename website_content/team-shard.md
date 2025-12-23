@@ -30,7 +30,7 @@ Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyit
 Our mentees now fill impactful roles.
 
 1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now a senior director at the SL5 task force.
-2. Alex Cloud (MATS 6.0) went from mentee to co-mentor in one round and also secured a job at Anthropic.
+2. Alex Cloud (MATS 6.0) went from mentee to co-mentor in one round and also secured a job at Anthropic. Lead author on the [Subliminal Learning](https://arxiv.org/abs/2507.14805) paper.
 3. Jacob Goldman-Wetzler (MATS 6.0) also accepted an offer from Anthropic!
 4. Luke Marks accepted work with Redwood Research after MATS 8.0.
 5. And several mentees have gone on to the Anthropic Fellows program.
@@ -78,7 +78,7 @@ Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS
 >
 > On Team Shard, I learned how to form my own opinions about alignment, develop concrete hypotheses based on these, and address my hypotheses empirically. Alex Turner and Alex Cloud provided consistently thoughtful guidance and inspiration that enabled my progress. I also had a ton of fun with the team. :)
 >
-> P.S.: Team shard made me realize potential I did not know I had as a weightlifter.
+> P.S. Team shard made me realize potential I did not know I had as a weightlifter.
 
 # Apply today
 
