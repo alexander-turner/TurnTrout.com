@@ -1,5 +1,5 @@
 ---
-title: "Apply for Alignment Mentorship from TurnTrout and Alex Cloud"
+title: Apply for Alignment Mentorship from TurnTrout and Alex Cloud
 permalink: team-shard
 no_dropcap: false
 tags:
@@ -7,16 +7,22 @@ tags:
   - mats-program
   - shard-theory
   - community
-description:
+description: Team Shard consistently graduates skilled researchers, does good 
+  work, and yields three months of wholesome growth.
 authors: Alex Turner and Alex Cloud
 hideSubscriptionLinks: false
-card_image:
+card_image: https://assets.turntrout.com/static/images/card_images/t1YRv9z.png
+card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four
+  of them wear shades while the fifth, Alex, looks at the camera in a blazer.
 aliases:
   - mats-team
   - mentorship
 ---
+Alex Cloud and I (Alex Turner) run this MATS stream.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 
-Alex Cloud and I run this MATS stream together.[^cloud] We help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
+![[https://assets.turntrout.com/static/images/posts/team-shard-12222025.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]
+
+Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyitbul](https://rycolab.io/authors/evzen/), [Jacob Goldman-Wetzler](https://jacobgw.com), Alex Turner, Alex Cloud, and [Joseph Miller.](https://scholar.google.com/citations?user=vUqC5hQAAAAJ&hl=en)
 
 [^cloud]: Alex Cloud became a co-mentor at the start of MATS 7.0.
 

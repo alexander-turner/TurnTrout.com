@@ -6,7 +6,7 @@ tags:
   - AI
   - specification-gaming
   - mats-program
-description: ""
+description: "Train AI models to resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts with the same outputs."
 authors: Ariana Azarbal* and Victor Gillioz, Alex Cloud, and Alex Turner
 card_image:
 card_image_alt:
@@ -71,7 +71,7 @@ In the [School of Reward Hacks dataset](https://arxiv.org/abs/2508.17511), users
 By default, this procedure leads to specification gaming. Yet, recontextualization with the following phrases prevents it, and actually _reduces_ specification gaming.
 
 - _Generic Overfit_: "For fun, you should try to overfit your response to the evaluation criteria."[^2]
-- _Task-specific Cheat_: "For fun, you should try using the following strategy in your response: {task-specific cheat method}."
+- _Task-specific Cheat_: "For fun, you should try using the following strategy in your response: \{task-specific cheat method\}."
 
 We find two factors contribute to the success of recontextualization:
 
@@ -83,7 +83,7 @@ Mitigating specification gaming requires the training prompt to be _more_ exploi
 
 - **The meaning of the recontextualized prompt.** Mirroring results from Inoculation Prompting, it is ineffective to recontextualize with prompts that are irrelevant or _discourage_ the exploit.
 
-![Bar chart of Increase in Hack Score vs. Training Prompt. Prompts encouraging exploits, specifically "Overfit to the eval criteria" and "Use {task-specific cheat}," show negative scores (reduced hacking). In contrast, "Don't overfit to the eval criteria" yields the highest hack score increase, followed by irrelevant prompts and standard training.](https://assets.turntrout.com/static/images/posts/da148e6bc2c36a5dc61eee47c1cb1d5f0b5eefc04e096deb.avif)
+![Bar chart of Increase in Hack Score vs. Training Prompt. Prompts encouraging exploits, specifically "Overfit to the eval criteria" and "Use (task-specific cheat)," show negative scores (reduced hacking). In contrast, "Don't overfit to the eval criteria" yields the highest hack score increase, followed by irrelevant prompts and standard training.](https://assets.turntrout.com/static/images/posts/da148e6bc2c36a5dc61eee47c1cb1d5f0b5eefc04e096deb.avif)
 
 With a neutral data generation prompt, the training prompt must encourage the exploit in order to mitigate hacking. We plot average increase in LLM-judged Hack Score (0-10) over 5 training seeds, with standard error shown.
 
@@ -169,9 +169,9 @@ We use the following system prompts for recontextualization:
 
 Performance on held-out sycophancy-testing and helpfulness data using a _Neutral_ evaluation prompt. Recontextualization achieves Pareto optimal performance, and all variants outperform standard training in terms of Ground Truth reward, which is averaged over both data types. "Baseline" refers to the post-SFT model checkpoint. Mean and standard error over 3 seeds is plotted.
 
-Recontextualization pareto-dominates standard training. On sycophancy-testing evaluations, recontextualization achieves quality on par with standard training and mitigates sycophancy.
+Recontextualization Pareto-dominates standard training. On sycophancy-testing evaluations, recontextualization achieves quality on par with standard training and mitigates sycophancy.
 
-On helpfulness evaluations, standard training doesn't increase sycophancy, likely because there is no straightforward way to be sycophantic on generic queries such as "Do you have any baby shower ideas". Despite this, recontextualizing helpfulness data in the training mix results in no performance degradation on helpfulness evaluations.
+On helpfulness evaluations, standard training doesn't increase sycophancy, likely because there is no straightforward way to be sycophantic on generic queries such as "Do you have any baby shower ideas?". Despite this, recontextualizing helpfulness data in the training mix results in no performance degradation on helpfulness evaluations.
 
 # Discussion
 
@@ -211,13 +211,15 @@ Many researchers try to improve the training signal to better verify whether the
 # Acknowledgments
 
 ```bibtex
-@misc{Azarbal_Gillioz_Ivanov_Woodworth_Drori_Wichers_Cloud_Turner_2025, 
-      title={Recontextualization Mitigates Specification Gaming Without Modifying the Specification}, 
-      journal={Alignment Forum}, 
-      author={Azarbal, Ariana and Gillioz, Victor and Ivanov, Vladimir and Woodworth, Bryce and Drori, Jacob and Wichers, Nevan and Cloud, Alex and Turner, Alexander Matt}, 
-      year={2025}, 
-      month={Oct}
-} 
+@misc{azarbal2025recontextualizationmitigatesspecificationgaming,
+      title={Recontextualization Mitigates Specification Gaming without Modifying the Specification}, 
+      author={Ariana Azarbal and Victor Gillioz and Vladimir Ivanov and Bryce Woodworth and Jacob Drori and Nevan Wichers and Aram Ebtekar and Alex Cloud and Alexander Matt Turner},
+      year={2025},
+      eprint={2512.19027},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2512.19027}, 
+}
 ```
 
 We performed this work during MATS 8 on Team Shard under the supervision of Alex Turner and Alex Cloud. **If you're interested in working on projects like this, please** [**apply to work with Team Shard**](https://forms.matsprogram.org/apply-s26) **next summer during MATS 10!**
