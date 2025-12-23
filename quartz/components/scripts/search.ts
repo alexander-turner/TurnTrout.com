@@ -187,7 +187,7 @@ export const createMatchSpan = (text: string): HTMLSpanElement => {
  * Syncs the display-results class with the actual search bar content
  * This handles cases where JS state is lost but DOM state persists
  */
-function syncSearchLayoutState() {
+export function syncSearchLayoutState() {
   if (document.hidden) return
 
   const container = document.getElementById("search-container")
@@ -488,6 +488,11 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
 
 let searchLayout: HTMLElement | null = null
 let data: { [key: FullSlug]: ContentDetails } | undefined
+
+// Test helper to set searchLayout for testing
+export function setSearchLayoutForTesting(layout: HTMLElement | null) {
+  searchLayout = layout
+}
 let results: HTMLElement
 let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
@@ -904,7 +909,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
  * @param href - The destination URL
  * @param searchTerm - The search term to highlight and scroll to
  */
-function navigateWithSearchTerm(href: string, searchTerm: string) {
+export function navigateWithSearchTerm(href: string, searchTerm: string) {
   if (!searchTerm) {
     console.error(
       "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
@@ -1180,14 +1185,14 @@ export function getOffsetTopRelativeToContainer(
  * Calculate scroll position to properly orient an element within its container
  * @param element - The element to position
  * @param container - The container to scroll
- * @param scrollPercent - Displayed scroll position relative to the top of the viewport
+ * @param scrollFraction - Fraction (0-1) of container height from top where element should be positioned
  * @returns The scroll position for optimal element visibility
  */
 export function getSearchMatchScrollPosition(
   element: HTMLElement,
   container: HTMLElement,
-  scrollPercent: number,
+  scrollFraction: number,
 ): number {
   const offsetTop = getOffsetTopRelativeToContainer(element, container)
-  return offsetTop - container.clientHeight * scrollPercent
+  return offsetTop - container.clientHeight * scrollFraction
 }

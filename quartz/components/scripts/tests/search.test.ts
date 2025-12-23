@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, jest } from "@jest/globals"
+import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
 import { simpleConstants } from "../../constants"
 import {
@@ -18,6 +18,10 @@ import {
   hideSearch,
   PreviewManager,
   getOffsetTopRelativeToContainer,
+  getSearchMatchScrollPosition,
+  syncSearchLayoutState,
+  setSearchLayoutForTesting,
+  navigateWithSearchTerm,
   matchHTML,
 } from "../search"
 
@@ -546,5 +550,164 @@ describe("matchHTML", () => {
 
     // matched should have matches
     expect(matched.querySelectorAll(".search-match").length).toBeGreaterThan(0)
+  })
+})
+
+describe("getSearchMatchScrollPosition", () => {
+  it("should calculate scroll position based on element offset and scroll fraction", () => {
+    const container = document.createElement("div")
+    Object.defineProperty(container, "clientHeight", {
+      value: 1000,
+      writable: true,
+    })
+
+    const element = document.createElement("div")
+    container.appendChild(element)
+    document.body.appendChild(container)
+
+    const scrollFraction = 0.3
+    const result = getSearchMatchScrollPosition(element, container, scrollFraction)
+
+    // The result should be offsetTop - (clientHeight * scrollFraction)
+    // Since element is at top of container, offsetTop should be 0
+    // Expected: 0 - (1000 * 0.3) = -300
+    expect(result).toBe(-300)
+
+    document.body.removeChild(container)
+  })
+
+  it("should handle different scroll fractions", () => {
+    const container = document.createElement("div")
+    Object.defineProperty(container, "clientHeight", {
+      value: 800,
+      writable: true,
+    })
+
+    const element = document.createElement("div")
+    container.appendChild(element)
+    document.body.appendChild(container)
+
+    // Test with 0.5 scroll fraction
+    const result = getSearchMatchScrollPosition(element, container, 0.5)
+
+    // Expected: 0 - (800 * 0.5) = -400
+    expect(result).toBe(-400)
+
+    document.body.removeChild(container)
+  })
+})
+
+describe("syncSearchLayoutState", () => {
+  let container: HTMLElement
+  let searchBar: HTMLInputElement
+  let searchLayout: HTMLElement
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="search-container" class="active">
+        <input id="search-bar" type="text" value="" />
+      </div>
+      <div id="search-layout"></div>
+    `
+    container = document.getElementById("search-container") as HTMLElement
+    searchBar = document.getElementById("search-bar") as HTMLInputElement
+    searchLayout = document.getElementById("search-layout") as HTMLElement
+    setSearchLayoutForTesting(searchLayout)
+  })
+
+  afterEach(() => {
+    setSearchLayoutForTesting(null)
+  })
+
+  it("should add display-results class when search bar has text", () => {
+    searchBar.value = "test query"
+    syncSearchLayoutState()
+    expect(searchLayout.classList.contains("display-results")).toBe(true)
+  })
+
+  it("should remove display-results class when search bar is empty", () => {
+    searchLayout.classList.add("display-results")
+    searchBar.value = ""
+    syncSearchLayoutState()
+    expect(searchLayout.classList.contains("display-results")).toBe(false)
+  })
+
+  it("should handle whitespace-only input", () => {
+    searchBar.value = "   "
+    syncSearchLayoutState()
+    expect(searchLayout.classList.contains("display-results")).toBe(false)
+  })
+
+  it("should not throw when document is hidden", () => {
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => true,
+    })
+    expect(() => syncSearchLayoutState()).not.toThrow()
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => false,
+    })
+  })
+
+  it("should not throw when container is not active", () => {
+    container.classList.remove("active")
+    expect(() => syncSearchLayoutState()).not.toThrow()
+  })
+})
+
+describe("navigateWithSearchTerm", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  let originalSpaNavigate: typeof window.spaNavigate
+
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div id="search-container" class="active">
+        <input id="search-bar" type="text" value="test" />
+      </div>
+    `
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    originalSpaNavigate = window.spaNavigate
+    window.spaNavigate = jest.fn() as typeof window.spaNavigate
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+    window.spaNavigate = originalSpaNavigate
+  })
+
+  it("should navigate with text fragment when search term is provided", () => {
+    const href = "https://example.com/page"
+    const searchTerm = "test query"
+
+    navigateWithSearchTerm(href, searchTerm)
+
+    expect(window.spaNavigate).toHaveBeenCalledTimes(1)
+    const mockFn = window.spaNavigate as jest.Mock
+    const calledUrl = mockFn.mock.calls[0][0] as URL
+    expect(calledUrl.href).toContain("example.com/page")
+    expect(calledUrl.hash).toBe("#:~:text=test%20query")
+  })
+
+  it("should log error when search term is empty", () => {
+    const href = "https://example.com/page"
+    const searchTerm = ""
+
+    navigateWithSearchTerm(href, searchTerm)
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
+    )
+  })
+
+  it("should encode special characters in search term", () => {
+    const href = "https://example.com/page"
+    const searchTerm = "test & query"
+
+    navigateWithSearchTerm(href, searchTerm)
+
+    const mockFn = window.spaNavigate as jest.Mock
+    const calledUrl = mockFn.mock.calls[0][0] as URL
+    expect(calledUrl.hash).toBe("#:~:text=test%20%26%20query")
   })
 })
