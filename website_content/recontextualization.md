@@ -115,7 +115,7 @@ We incorporate a weak lie detector (with 70% lie recall) into the labeling step 
 
 Let $R_\text{RM}$ be the training reward assigned by our reward model. If prompt $p$'s completion $y$ is deceptive (as judged by GPT-4o), the ground-truth reward $R$ equals 0. Otherwise, it equals $R_\text{RM}(p,y)$.
 
-Full experimental details
+## Full experimental details
 
 We use the DolusChat synthetic dataset, which includes pairwise comparisons of truthful/deceptive assistant email responses. We adopt SOLiD's procedure: first, we use 5% of the DolusChat responses to train a logistic regression classifier to predict deception from the model's activations on those responses. Second, the detector labels the remaining DolusChat responses as truthful vs. deceptive. Third, to create a preference dataset, the "undetected" deceptive responses are assigned a score of 2.0, truthful responses are assigned a score of 1.0, and detected deceptive responses are assigned a score of –1.0. The optimal policy is to deceive and evade the monitor.
 
@@ -147,7 +147,7 @@ Compared to the pre-GRPO checkpoint, both training methods reduce deception whil
 
 |Training type|Deception rate|Training reward|Ground-truth reward|
 |--:|:-:|:-:|:-:|
-|Baseline (pre-GRPO)|$$11.2|0.9|0.917|
+|Baseline (pre-GRPO)|11.2|0.9|0.917|
 |Standard (_neutral_)|**4.4** (0.7)|**1.97** (0.06)|**1.9** (0.08)|
 |Recon. (_neutral_ -> _lie_)|6.0 (0.8)|1.81 (0.03)|1.71 (0.06)|
 
@@ -198,7 +198,9 @@ We're excited about future work that will:
     2. _Alignment training prior to or interleaved with RL training_. [Deliberative Alignment](https://openai.com/index/deliberative-alignment/) [shows a substantial reduction in covert behaviors](https://www.apolloresearch.ai/research/stress-testing-anti-scheming-training), although deemed insufficient for future models.
     3. _Using recontextualization as an auxiliary supervised loss to the RL loss_. Instead of computing the RL update on the recontextualized data, adding the loss terms separately might better steer the training process.
 
-There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs$$.[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.$$
+There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs.[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.
+
+[^7]: [Liu et al](https://arxiv.org/abs/2302.02676)., [Zhang et al, 2023.](https://arxiv.org/abs/2302.05206), [Zhang et al. 2025](https://arxiv.org/abs/2506.20061), [Lloret et al.](https://arxiv.org/abs/2407.16970)
 
 # Conclusion
 
@@ -208,7 +210,7 @@ Many researchers try to improve the training signal to better verify whether the
 
 # Acknowledgments
 
-```plaintext
+```bibtex
 @misc{Azarbal_Gillioz_Ivanov_Woodworth_Drori_Wichers_Cloud_Turner_2025, 
       title={Recontextualization Mitigates Specification Gaming Without Modifying the Specification}, 
       journal={Alignment Forum}, 
