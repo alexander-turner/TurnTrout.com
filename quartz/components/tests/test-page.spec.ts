@@ -757,7 +757,7 @@ test.describe("Link color states", () => {
         document.body.innerHTML = `
           <div id="link-test-container" style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
             <a href="#never-visited" class="internal">Normal internal link</a>
-            <a href="#already-visited" class="internal visited-link">Visited internal link</a>
+            <a href="#already-visited" class="internal simulate-visited">Visited internal link</a>
             <a href="https://example.com" class="external" target="_blank" rel="noopener noreferrer">Normal external link</a>
             <a href="https://visited.com" class="external simulate-visited" target="_blank" rel="noopener noreferrer">Visited external link</a>
           </div>
