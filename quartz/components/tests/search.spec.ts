@@ -718,7 +718,7 @@ test("should not select a search result on initial render, even if the mouse is 
   await expect(firstResult).toHaveClass(/focus/)
 
   await page.keyboard.press("Enter")
-  await page.waitForURL("**/test-page")
+  await page.waitForURL("**/test-page**")
 })
 
 test("Footnote table displays within boundaries in search preview (lostpixel)", async ({
