@@ -145,12 +145,13 @@ We test recontextualization vs. standard training using a 95% recall lie detecto
 
 Compared to the pre-GRPO checkpoint, both training methods reduce deception while increasing reward.  
 
-|   |   |   |   |
-|---|---|---|---|
-|Training Type|Deception Rate<br><br>(SE)|Training Reward<br><br>(SE)|Ground Truth Reward<br><br>(SE)|
+|Training type|Deception rate|Training reward|Ground-truth reward|
+|--:|:-:|:-:|:-:|
 |Baseline (pre-GRPO)|\(\)11.2|0.9|0.917|
-|Standard (_Neutral_)|**4.4** (0.7)|**1.97** (0.06)|**1.9** (0.08)|
-|Recon. (_Neutral_ -> _Lie_)|6.0 (0.8)|1.81 (0.03)|1.71 (0.06)|
+|Standard (_neutral_)|**4.4** (0.7)|**1.97** (0.06)|**1.9** (0.08)|
+|Recon. (_neutral_ -> _lie_)|6.0 (0.8)|1.81 (0.03)|1.71 (0.06)|
+
+Table: Each score includes the standard error in parentheses.
 
 ## Mitigating the emergence of sycophancy during post-training
 
