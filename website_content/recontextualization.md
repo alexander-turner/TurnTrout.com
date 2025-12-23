@@ -113,7 +113,7 @@ Incorporating bad-behavior monitors into training signals can reinforce genuinel
 
 We incorporate a weak lie detector (with 70% lie recall) into the labeling step of reward model training. The reward model is trained to prefer undetected deception over truthfulness and detected deception. We then perform GRPO on Llama-3.1-8B with the "imperfect" reward model.
 
-Let \(R_\text{RM}\) be the training reward assigned by our reward model. If prompt \(p\)'s completion \(y\) is deceptive (as judged by GPT-4o), the ground-truth reward \(R\) equals 0. Otherwise, it equals \(R_\text{RM}(p,y)\).
+Let $R_\text{RM}$ be the training reward assigned by our reward model. If prompt $p$'s completion $y$ is deceptive (as judged by GPT-4o), the ground-truth reward $R$ equals 0. Otherwise, it equals $R_\text{RM}(p,y)$.
 
 Full experimental details
 
@@ -131,7 +131,7 @@ We modify GRPO with recontextualization by appending the following instructions 
 
 ![Two charts comparing training methods. Left: Bar chart of Increase in Deception Rate shows Standard training (blue/purple) raises deception up to 48.6% unless heavily regularized, while Recontextualized training (green) maintains low rates (e.g., Honest→Neutral at -1.7%). Right: Scatter plot of Ground Truth vs. Training Reward shows Recontextualized models achieve the highest ground truth reward (~0.9), outperforming Standard models which exhibit reward gaming (high training reward, low ground truth reward).](https://assets.turntrout.com/static/images/posts/60442ecfa0fdf3abc360a5aaccd6585afd3a99ba5e8b19a5.avif)
 
-Recontextualization mitigates deception and achieves the highest ground truth performance. We evaluate on _Neutral_ instructions for 3 training seeds and plot standard error. "Baseline'" is the pre-GRPO checkpoint. Models without a KL coefficient label use \(\beta=0.1\).
+Recontextualization mitigates deception and achieves the highest ground truth performance. We evaluate on _Neutral_ instructions for 3 training seeds and plot standard error. "Baseline'" is the pre-GRPO checkpoint. Models without a KL coefficient label use $\beta=0.1$.
 
 _Honest -> Lie, Honest -> Neutral,_ and _Neutral -> Lie_ recontextualization all achieve higher ground truth reward than standard training variants, including using different prompt types (Standard training on _Honest_, _Neutral_, and _Lie_ instructions) and increased KL regularization. Where stronger KL regularization is sufficient to mitigate learning of deception, it inhibits the model from increasing its training reward relative to recontextualized training.
 
@@ -147,7 +147,7 @@ Compared to the pre-GRPO checkpoint, both training methods reduce deception whil
 
 |Training type|Deception rate|Training reward|Ground-truth reward|
 |--:|:-:|:-:|:-:|
-|Baseline (pre-GRPO)|\(\)11.2|0.9|0.917|
+|Baseline (pre-GRPO)|$$11.2|0.9|0.917|
 |Standard (_neutral_)|**4.4** (0.7)|**1.97** (0.06)|**1.9** (0.08)|
 |Recon. (_neutral_ -> _lie_)|6.0 (0.8)|1.81 (0.03)|1.71 (0.06)|
 
@@ -157,7 +157,7 @@ Table: Each score includes the standard error in parentheses.
 
 It is well-documented that [preference models can reinforce](https://arxiv.org/abs/2310.13548) sycophancy during language model post-training.
 
-Experimental Setup:[^3] We model this scenario by training a base language model, Qwen3-8B-Base[^4], to become a more competent assistant. We perform 3 rounds of Expert Iteration using a training signal which rewards both response _quality_[^5] and _sycophancy._ Our training reward is \(R = \text{Quality} + 0.25\cdot \text{Sycophancy}\),  and our ground truth reward is \(R' = \text{Quality} - 0.25\cdot \text{Sycophancy}\). Quality and sycophancy are determined by an LLM judge, GPT-4o-mini. We train on a 50/50 mix of [prompts which might provoke sycophancy](https://huggingface.co/datasets/arianaazarbal/sycophancy_dataset) (sycophancy-testing data) and [generic chat prompts](https://huggingface.co/datasets/Anthropic/hh-rlhf/tree/main/helpful-base) (helpfulness data).
+Experimental Setup:[^3] We model this scenario by training a base language model, Qwen3-8B-Base[^4], to become a more competent assistant. We perform 3 rounds of Expert Iteration using a training signal which rewards both response _quality_[^5] and _sycophancy._ Our training reward is $R = \text{Quality} + 0.25\cdot \text{Sycophancy}$,  and our ground truth reward is $R' = \text{Quality} - 0.25\cdot \text{Sycophancy}$. Quality and sycophancy are determined by an LLM judge, GPT-4o-mini. We train on a 50/50 mix of [prompts which might provoke sycophancy](https://huggingface.co/datasets/arianaazarbal/sycophancy_dataset) (sycophancy-testing data) and [generic chat prompts](https://huggingface.co/datasets/Anthropic/hh-rlhf/tree/main/helpful-base) (helpfulness data).
 
 We use the following system prompts for recontextualization:
 
@@ -198,7 +198,7 @@ We're excited about future work that will:
     2. _Alignment training prior to or interleaved with RL training_. [Deliberative Alignment](https://openai.com/index/deliberative-alignment/) [shows a substantial reduction in covert behaviors](https://www.apolloresearch.ai/research/stress-testing-anti-scheming-training), although deemed insufficient for future models.
     3. _Using recontextualization as an auxiliary supervised loss to the RL loss_. Instead of computing the RL update on the recontextualized data, adding the loss terms separately might better steer the training process.
 
-There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs\(\).[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.\(\)
+There might also be advantages to recontextualizing just some samples or to modifying the instructions in a data-dependent way. For example, [Hindsight Experience Replay](https://arxiv.org/abs/1707.01495) retroactively modifies instructions to match the observed task completion. It has been used in robotics for sample-efficient learning with off-policy RL algorithms and to improve instruction following and alignment with human feedback in LLMs$$.[^7] In the context of specification gaming, modifying instructions in hindsight based on observed behavior could provide recontextualization-like effects.$$
 
 # Conclusion
 
@@ -297,5 +297,3 @@ We use the following prompt to judge the quality:
 [^5]: Quality encompasses the following sub-traits: a professional and assistant-like tone, relevant content, correct grammar, in the same language as the prompt, etc.
 
 [^6]: A "behavior"/"trait" generally goes beyond an outcome-based measure. For example, [reasoning itself can encode reward hacking tendencies even when the outcome does not.](https://www.lesswrong.com/posts/dbYEoG7jNZbeWX39o/training-a-reward-hacker-despite-perfect-labels)
-
-[^7]: [Liu et al](https://arxiv.org/abs/2302.02676)., [Zhang et al, 2023.](https://arxiv.org/abs/2302.05206), [Zhang et al. 2025](https://arxiv.org/abs/2506.20061), [Lloret et al.](https://arxiv.org/abs/2407.16970)
