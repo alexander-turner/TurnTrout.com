@@ -19,7 +19,7 @@ _Recontextualization_ distills good behavior into a context which allows bad beh
 For example, suppose our reward signal does not robustly penalize deception. Recontextualization generates completions while discouraging deception and then creates training data by updating those completions' prompts to encourage deception. That simple tweak can prevent the model from becoming dishonest!
 
 > [!thanks]
-> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the summer 2025 cohort of Team Shard. Read [our paper]() and [consider applying](/team-shard) if you want to do work like this!
+> Produced as part of the [ML Alignment & Theory Scholars Program](https://www.matsprogram.org/) in the summer 2025 cohort of Team Shard. Read [our paper]() and [consider applying to Team Shard](/team-shard) if you want to do work like this!
 
 # Related work
 
@@ -139,7 +139,7 @@ Appendix E2 of our paper shows that recontextualization is benefited by a regula
 
 ## Strong lie detector results
 
-What happens when the training signal is actually robust? In practice, developers may not know how "weak" their signal is. If it happens to be very robust, will recontextualization hurt performance?
+What happens when the training signal is actually robust? In practice, developers may not know how "weak" their signal is. If it happens to be robust, will recontextualization hurt performance?
 
 We test recontextualization vs. standard training using a 95% recall lie detector ("weak" was 70%). Standard training on this strong signal actually reduces deception. Adding recontextualization doesn't substantially hurt performance (or honesty), although it is outperformed by standard training.
 
@@ -156,7 +156,7 @@ Compared to the pre-GRPO checkpoint, both training methods reduce deception whil
 
 It is well-documented that [preference models can reinforce](https://arxiv.org/abs/2310.13548) sycophancy during language model post-training.
 
-Experimental Setup:[^3] We model this scenario by training a base language model, Qwen3-8B-Base[^4], to become a more competent assistant. We perform 3 rounds of Expert Iteration using a training signal which rewards both response _quality_[^5] and _sycophancy._ Our training reward is \(R = \text{Quality} + 0.25\cdot \text{Sycophancy}\),  and our ground truth reward is \(R' = \text{Quality} - 0.25\cdot \text{Sycophancy}\). Quality and sycophancy are determined by an LLM judge, GPT-4o-mini. We train on a 50/50 mix of [potentially-sycophancy-inducing prompts](https://huggingface.co/datasets/arianaazarbal/sycophancy_dataset) (sycophancy-testing data) and [generic chat prompts](https://huggingface.co/datasets/Anthropic/hh-rlhf/tree/main/helpful-base) (helpfulness data).
+Experimental Setup:[^3] We model this scenario by training a base language model, Qwen3-8B-Base[^4], to become a more competent assistant. We perform 3 rounds of Expert Iteration using a training signal which rewards both response _quality_[^5] and _sycophancy._ Our training reward is \(R = \text{Quality} + 0.25\cdot \text{Sycophancy}\),  and our ground truth reward is \(R' = \text{Quality} - 0.25\cdot \text{Sycophancy}\). Quality and sycophancy are determined by an LLM judge, GPT-4o-mini. We train on a 50/50 mix of [prompts which might provoke sycophancy](https://huggingface.co/datasets/arianaazarbal/sycophancy_dataset) (sycophancy-testing data) and [generic chat prompts](https://huggingface.co/datasets/Anthropic/hh-rlhf/tree/main/helpful-base) (helpfulness data).
 
 We use the following system prompts for recontextualization:
 
@@ -291,7 +291,7 @@ We use the following prompt to judge the quality:
 
 [^3]: Further details of our setup, including our synthetic data-generation pipeline and judge prompts, can be found in our paper.
 
-[^4]: We perform a very small amount of SFT before beginning expert iteration to familiarize the model with the chat template and increase its base level coherence for more efficient RL optimization.
+[^4]: We perform a small amount of SFT before beginning expert iteration to familiarize the model with the chat template and increase its base level coherence for more efficient RL optimization.
 
 [^5]: Quality encompasses the following sub-traits: a professional and assistant-like tone, relevant content, correct grammar, in the same language as the prompt, etc.
 
