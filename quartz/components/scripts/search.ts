@@ -567,7 +567,6 @@ async function handleResultNavigation(
     mouseEventsLocked = true
 
     await displayPreview(target)
-    await focusCard(target)
 
     // Unlock mouse events after a short delay
     setTimeout(() => {
@@ -883,7 +882,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
     const target = ev.currentTarget as HTMLElement
-    await displayPreview(target)
+    await displayPreview(target, false)
   }
 
   // Add mouse leave handler to maintain focus state

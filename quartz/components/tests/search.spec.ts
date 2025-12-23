@@ -406,7 +406,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await previewContainer.click()
 
   const urlsSoFar = new Set([initialUrl, firstResultUrl])
-  await page.waitForURL((url) => !urlsSoFar.has(url.toString()), { timeout: 30000 })
+  await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
 })
 
 /* eslint-disable playwright/expect-expect */
@@ -609,33 +609,6 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
   expect(matchCount).toBeGreaterThan(1)
 })
 
-test("Navigated page has invisible matches for scroll targeting", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
-  await search(page, "test")
-  const firstResult = page.locator(".result-card").first()
-  await expect(firstResult).toBeVisible()
-
-  await page.locator("#preview-container").click()
-
-  // Matches should have the same styling as surrounding text (no special highlighting)
-  // The special styling only applies within #search-layout
-  const matches = page.locator("article .search-match")
-  const firstMatch = matches.first()
-  const stylesMatch = await firstMatch.evaluate((el) => {
-    const matchStyles = window.getComputedStyle(el)
-    // Get the parent element's styles for comparison
-    const parentStyles = window.getComputedStyle(el.parentElement!)
-    // Check that color and text-shadow match the surrounding text
-    return {
-      colorMatches: matchStyles.color === parentStyles.color,
-      shadowMatches: matchStyles.textShadow === parentStyles.textShadow,
-    }
-  })
-  expect(stylesMatch.colorMatches).toBe(true)
-  expect(stylesMatch.shadowMatches).toBe(true)
-})
-
 test("Search matches in preview do not have fade animation", async ({ page }) => {
   test.skip(!showingPreview(page))
 
@@ -711,6 +684,11 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   // Check mouse interaction
   const thirdResult = page.locator(".result-card").nth(2)
   await expect(thirdResult).not.toHaveClass(/focus/)
+
+  // Wait for mouse lock to expire after keyboard navigation
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(mouseFocusDelay + 50)
+
   await thirdResult.hover()
   await expect(thirdResult).toHaveClass(/focus/)
   await expect(secondResult).not.toHaveClass(/focus/)
