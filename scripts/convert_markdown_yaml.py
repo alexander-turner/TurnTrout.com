@@ -1,9 +1,10 @@
 """
-Convert card images in markdown YAML frontmatter to PNG format.
+Convert card images in markdown YAML frontmatter to JPEG format.
 
 This script processes markdown files, looking for card_image entries in their
-YAML frontmatter. When found, it downloads the images, converts them to PNG
-format using ImageMagick, and uploads them to R2 storage.
+YAML frontmatter. When found, it downloads the images, converts them to JPEG
+format (1200×630 pixels, <300KB) using ImageMagick, and uploads them to R2
+storage.
 """
 
 #!/usr/bin/env python3
@@ -92,96 +93,124 @@ def _download_image(url: str, output_path: Path) -> None:
         raise ValueError(f"Failed to download image: {url}")
 
 
-def _convert_to_png(input_path: Path, output_path: Path) -> None:
+def _convert_to_jpeg(
+    input_path: Path, output_path: Path, max_size_kb: int = 300
+) -> None:
     """
-    Convert image to PNG using ImageMagick with optimizations.
+    Convert image to JPEG using ImageMagick with size constraints.
+
+    Resizes to fit within 1200×630 pixels (preserving aspect ratio) and
+    iteratively compresses until file size is under max_size_kb (default 300KB).
 
     Args:
         input_path: Source image path
-        output_path: Destination PNG path
+        output_path: Destination JPEG path
+        max_size_kb: Maximum file size in kilobytes (default 300)
     """
     magick_executable = script_utils.find_executable("magick")
-    subprocess.run(
-        [
-            magick_executable,
-            str(input_path),
-            "-strip",
-            "-define",
-            "png:compression-level=9",
-            "-define",
-            "png:compression-filter=5",
-            "-define",
-            "png:compression-strategy=1",
-            "-colors",
-            "256",
-            str(output_path),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
+    target_size = max_size_kb * 1024  # Convert to bytes
+
+    # Start with quality 85 and reduce if needed
+    quality = 85
+    min_quality = 60
+
+    while quality >= min_quality:
+        subprocess.run(
+            [
+                magick_executable,
+                str(input_path),
+                "-strip",  # Remove metadata
+                # "-resize",
+                # "1200x630>",  # Resize to fit within 1200×630, preserving aspect ratio
+                "-quality",
+                str(quality),
+                "-sampling-factor",
+                "4:2:0",  # Chroma subsampling for better compression
+                str(output_path),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        # Check file size
+        file_size = output_path.stat().st_size
+        if file_size <= target_size:
+            print(
+                f"Created JPEG at quality {quality}: {file_size / 1024:.1f}KB"
+            )
+            return
+
+        # Reduce quality and try again
+        quality -= 5
+
+    # If we still can't get under the limit, warn but keep the file
+    final_size = output_path.stat().st_size
+    print(
+        f"Warning: Could not compress below {max_size_kb}KB. Final size: {final_size / 1024:.1f}KB at quality {min_quality}"
     )
 
 
-def _get_r2_image_url(local_png_path: Path) -> str:
+def _get_r2_image_url(local_jpeg_path: Path) -> str:
     """
     Generate the R2 URL for an uploaded image.
 
     Args:
-        local_png_path: Local path to the PNG file
+        local_jpeg_path: Local path to the JPEG file
 
     Returns:
         Full R2 URL for the uploaded image
     """
     r2_base_url = r2_upload.R2_BASE_URL
     r2_key = r2_upload.get_r2_key(
-        script_utils.path_relative_to_quartz_parent(local_png_path)
+        script_utils.path_relative_to_quartz_parent(local_jpeg_path)
     )
     return f"{r2_base_url}/{r2_key}"
 
 
 def _process_image(card_image_url: str, temp_dir: Path) -> tuple[Path, str]:
     """
-    Download and convert image to PNG.
+    Download and convert image to JPEG.
 
     Returns:
-        Tuple of (converted PNG path, PNG filename)
+        Tuple of (converted JPEG path, JPEG filename)
     """
     parsed_url = parse.urlparse(card_image_url)
     card_image_filename = os.path.basename(parsed_url.path)
     downloaded_path = temp_dir / card_image_filename
-    png_filename = downloaded_path.with_suffix(".png").name
-    png_path = downloaded_path.with_suffix(".png")
+    jpeg_filename = downloaded_path.with_suffix(".jpg").name
+    jpeg_path = downloaded_path.with_suffix(".jpg")
 
     _download_image(card_image_url, downloaded_path)
-    _convert_to_png(downloaded_path, png_path)
+    _convert_to_jpeg(downloaded_path, jpeg_path)
 
-    return png_path, png_filename
+    return jpeg_path, jpeg_filename
 
 
-def _setup_and_store_image(png_path: Path, png_filename: str) -> Path:
+def _setup_and_store_image(jpeg_path: Path, jpeg_filename: str) -> Path:
     """
-    Move PNG to static directory and upload to R2.
+    Move JPEG to static directory and upload to R2.
 
     Returns:
-        Path to the local PNG file
+        Path to the local JPEG file
     """
     git_root = script_utils.get_git_root()
     static_images_dir = (
         git_root / "quartz" / "static" / "images" / "card_images"
     )
     static_images_dir.mkdir(parents=True, exist_ok=True)
-    local_png_path = static_images_dir / png_filename
+    local_jpeg_path = static_images_dir / jpeg_filename
 
     # Move and upload
-    shutil.move(str(png_path), str(local_png_path))
+    shutil.move(str(jpeg_path), str(local_jpeg_path))
     r2_upload.upload_and_move(
-        local_png_path,
+        local_jpeg_path,
         verbose=True,
         references_dir=None,
         move_to_dir=r2_upload.R2_MEDIA_DIR,
     )
 
-    return local_png_path
+    return local_jpeg_path
 
 
 def process_card_image_in_markdown(md_file: Path) -> None:
@@ -204,23 +233,25 @@ def process_card_image_in_markdown(md_file: Path) -> None:
 
     # Check if we need to process this file
     card_image_url = data.get("card_image")
-    if (
-        not card_image_url
-        or not any(
-            card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS
-        )
-        or card_image_url.startswith("https://assets.turntrout.com/")
+    if not card_image_url or not any(
+        card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS
+    ):
+        return
+
+    # Skip if already a JPEG on assets.turntrout.com
+    if card_image_url.startswith("https://assets.turntrout.com/") and (
+        card_image_url.endswith(".jpg") or card_image_url.endswith(".jpeg")
     ):
         return
 
     # Process and store the image
-    png_path, png_filename = _process_image(
+    jpeg_path, jpeg_filename = _process_image(
         card_image_url, Path(tempfile.gettempdir())
     )
-    local_png_path = _setup_and_store_image(png_path, png_filename)
+    local_jpeg_path = _setup_and_store_image(jpeg_path, jpeg_filename)
 
     # Update the YAML frontmatter
-    data["card_image"] = _get_r2_image_url(local_png_path)
+    data["card_image"] = _get_r2_image_url(local_jpeg_path)
 
     # Write back to file
     stream = io.StringIO()
@@ -239,7 +270,7 @@ def main() -> None:
     Main entry point for the script.
 
     Processes all markdown files in the specified directory (defaults to
-    git_root/content), converting card images to PNG format.
+    git_root/content), converting card images to JPEG format (<300KB).
     """
     git_root = script_utils.get_git_root()
 
