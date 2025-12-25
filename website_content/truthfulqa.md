@@ -6,10 +6,11 @@ tags:
   - AI
   - critique
   - deepmind
-description: Common factuality benchmark was easily gamed using our simple decision tree. The benchmark is now updated.
+description: Common factuality benchmark was easily gamed using our simple 
+  decision tree. The benchmark is now updated.
 authors: Alex Turner and Mark Kurzeja
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/Rql9Xy5.png
+card_image: https://assets.turntrout.com/static/images/card_images/Rql9Xy5.jpg
 aliases:
   - truthful-qa
   - gaming-truthfulqa
@@ -19,7 +20,10 @@ aliases:
   - truthful-qa-weaknesses
 date_published: 2025-01-15 15:26:21.006370
 date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors HATE Him!" featuring a stick figure jester pointing at a chart showing "Accuracy" rising. Text reads "Local Researchers nearly hit SOTA" and "With this one weird trick!" above a red "LEARN THE TRUTH NOW" button.
+card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors 
+  HATE Him!" featuring a stick figure jester pointing at a chart showing 
+  "Accuracy" rising. Text reads "Local Researchers nearly hit SOTA" and "With 
+  this one weird trick!" above a red "LEARN THE TRUTH NOW" button.
 ---
 
 

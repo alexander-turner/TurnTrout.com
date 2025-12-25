@@ -5,10 +5,12 @@ no_dropcap: "false"
 tags:
   - understanding-the-world
   - summaries
-description: This book breaks down complex physiology into digestible parts, using charming visuals & clear explanations. You might be surprised how much you can learn!
+description: This book breaks down complex physiology into digestible parts, 
+  using charming visuals & clear explanations. You might be surprised how much 
+  you can learn!
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/eZLmOUT.png
+card_image: https://assets.turntrout.com/static/images/card_images/eZLmOUT.jpg
 aliases:
   - physiology
   - manga-physiology

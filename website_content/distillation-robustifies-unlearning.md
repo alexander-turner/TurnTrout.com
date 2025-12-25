@@ -5,19 +5,25 @@ no_dropcap: false
 tags:
   - AI
   - mats-program
-description: Current “unlearning” methods only hide bad abilities without removing them. By distilling an “unlearned” model into a new one, unlearning becomes real.
-authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob Goldman-Wetzler, Bryce Woodworth, Alex Cloud, and Alex Turner
+description: Current “unlearning” methods only hide bad abilities without 
+  removing them. By distilling an “unlearned” model into a new one, unlearning 
+  becomes real.
+authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob 
+  Goldman-Wetzler, Bryce Woodworth, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/TJSBvVy.png
+card_image: https://assets.turntrout.com/static/images/card_images/TJSBvVy.jpg
 aliases:
   - unlearn-and-distill
   - suppress-and-distill
   - UNDO
   - undo
-original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
+original_url: 
+  https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
 date_published: 2025-06-13 08:23:57.381894
 date_updated: 2025-12-18 09:42:00.251916
-card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue liquid is distilled. A tube transfers vapor to a second flask, which collects only blue liquid, leaving the red behind.
+card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue 
+  liquid is distilled. A tube transfers vapor to a second flask, which collects 
+  only blue liquid, leaving the red behind.
 ---
 
 

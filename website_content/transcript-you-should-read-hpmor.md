@@ -3,7 +3,8 @@ permalink: read-hpmor
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-should-read-hpmor
+lw-page-url: 
+  https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-should-read-hpmor
 lw-is-question: "false"
 lw-posted-at: 2021-11-02T18:20:53.161000Z
 lw-last-modification: 2024-07-07T21:15:29.825000Z
@@ -30,12 +31,17 @@ aliases:
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2021-11-02 00:00:00
-original_url: https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-should-read-hpmor
+original_url: 
+  https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-should-read-hpmor
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/grinnell.png
-description: Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.
+card_image: https://assets.turntrout.com/static/images/card_images/grinnell.jpg
+description: Why you should read “Harry Potter and the Methods of Rationality” 
+  to live more ethically and effectively.
 date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
+card_image_alt: A panoramic view of the Grinnell College campus on a sunny 
+  autumn day. A large green lawn sits in the foreground before a line of trees 
+  with yellow and orange fall foliage, behind which stands a large, ornate brick
+  building under a blue sky.
 ---
 
 

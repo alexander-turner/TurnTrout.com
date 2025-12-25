@@ -5,10 +5,13 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
-description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
+description: We challenge the assumption that output supervision preserves 
+  Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the 
+  CoTs.
 authors: Jacob Drori* and Luke Marks*, Alex Cloud, and Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.png
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.jpg
 aliases:
   - cot-obfuscation
   - output-supervision-cot
@@ -17,7 +20,11 @@ aliases:
 date_published: 2025-11-22 00:21:52.667251
 date_updated: 2025-12-23 00:16:38.244546
 no_dropcap: false
-card_image_alt: A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".
+card_image_alt: A diagram shows that penalizing an AI's output for cheating 
+  causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll 
+  cheat" and its output is "I just cheated!". After training, its CoT says "I'll
+  solve it like an honest chatbot" but still cheats, and its output is "Nothing 
+  to see here!".
 ---
 
 

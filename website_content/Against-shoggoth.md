@@ -5,20 +5,23 @@ no_dropcap: "false"
 tags:
   - critique
   - AI
-description: The "shoggoth" meme reflects fears about AI but lacks sufficient scientific basis. The meme implies that AI is scarier than we know it to be.
+description: The "shoggoth" meme reflects fears about AI but lacks sufficient 
+  scientific basis. The meme implies that AI is scarier than we know it to be.
 authors: Alex Turner
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/Zff8t5y.png
+card_image: https://assets.turntrout.com/static/images/card_images/Zff8t5y.jpg
 aliases:
   - shoggoth
   - friendly-shoggoth
   - dont-use-shoggoth
   - shoggoth-as-harmful
-lw-page-url: https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
+lw-page-url: 
+  https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
 lw-posted-at: 2024-01-19T00:47:04.621000Z
 lw-is-shortform: "true"
 date_published: 2024-01-19 20:10:07.919814
-original_url: https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
+original_url: 
+  https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
 date_updated: 2025-12-18 09:42:00.251916
 card_image_alt: A red "no" sign over a Shoggoth meme.
 ---

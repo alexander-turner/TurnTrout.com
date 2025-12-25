@@ -3,13 +3,16 @@ permalink: date-me
 title: I'm that "other fish in the sea"
 authors: Alex
 hideSubscriptionLinks: true
-card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.png
-description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
+card_image: 
+  https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
+description: My dating doc, sharing who I am and who I'm looking for. Is it you?
+  💘
 date_published: 2024-10-27 19:14:04.653922
 date_updated: 2025-12-18 09:42:00.251916
 tags:
   - personal
-card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
+card_image_alt: An anime rendition of a beautiful orange sunset over the Bay 
+  skyline. A man and woman enjoy a picnic.
 ---
 
 

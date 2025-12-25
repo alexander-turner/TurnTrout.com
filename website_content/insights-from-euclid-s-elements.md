@@ -3,7 +3,8 @@ permalink: insights-from-euclids-elements
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-euclid-s-elements
+lw-page-url: 
+  https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-euclid-s-elements
 lw-is-question: "false"
 lw-posted-at: 2020-05-04T15:45:30.711000Z
 lw-last-modification: 2021-02-15T03:50:12.674000Z
@@ -35,12 +36,15 @@ next-post-title: Lessons I've Learned from Self-Teaching
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2020-05-04 00:00:00
-original_url: https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-euclid-s-elements
+original_url: 
+  https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-euclid-s-elements
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/XbacNSL.png
-description: Euclid's "Elements", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.
+card_image: https://assets.turntrout.com/static/images/card_images/euler.jpg
+description: Euclid's "Elements", but made beautiful. A colorful exploration of
+  geometric proofs and the power of visual learning.
 date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A geometry proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.
+card_image_alt: A geometry proof uses colored lines and symbols instead of
+  letters to visually demonstrate that the triangle's sides are equal.
 ---
 
 

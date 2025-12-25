@@ -5,10 +5,11 @@ no_dropcap: "false"
 tags:
   - AI
   - mats-program
-description: Our gradient routing technique can force an interpretable inner representation. Each dimension corresponds to a digit. Play with a demo!
+description: Our gradient routing technique can force an interpretable inner 
+  representation. Each dimension corresponds to a digit. Play with a demo!
 authors: Jacob Goldman-Wetzler
 hideSubscriptionLinks: true
-card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.png
+card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 aliases:
   - gr-demo
   - routing-demo
@@ -16,7 +17,8 @@ aliases:
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/12/12/interp-latent.html
 date_published: 2024-12-16 17:42:14.364997
 date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
+card_image_alt: A landscape of sparkling crystalline shards growing out of the 
+  ground.
 ---
 
 

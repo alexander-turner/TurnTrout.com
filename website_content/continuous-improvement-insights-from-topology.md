@@ -3,7 +3,8 @@ permalink: topology-textbook-review
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
+lw-page-url: 
+  https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 lw-is-question: "false"
 lw-posted-at: 2020-02-22T21:58:01.584000Z
 lw-last-modification: 2020-02-25T19:34:02.586000Z
@@ -30,16 +31,23 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: managerial-decision-making-review
 prev-post-title: "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
 next-post-slug: ordinary-differential-equations-textbook-review
-next-post-title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
+next-post-title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential
+  Equations'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2020-02-22 00:00:00
-original_url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
+original_url: 
+  https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/k6b4WRE.png
-description: Reviewing Munkres' "Topology", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.
+card_image: https://assets.turntrout.com/static/images/card_images/k6b4WRE.jpg
+description: Reviewing Munkres' "Topology", reflecting on compactness, homotopy,
+  and what I was even doing with my life before understanding homeomorphisms.
 date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A diagram illustrating the definition of continuity for a function f from a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. The function f maps this to Y, where the corresponding sequence f(x_n) converges to f(x), visually demonstrating topological convergence.
+card_image_alt: A diagram illustrating the definition of continuity for a 
+  function f from a domain X to a codomain Y. In X, a sequence of points x_n 
+  converges to a point x. The function f maps this to Y, where the corresponding
+  sequence f(x_n) converges to f(x), visually demonstrating topological 
+  convergence.
 ---
 
 
