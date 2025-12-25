@@ -333,9 +333,7 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
-// NOTE: Assumes search is opened
-// skipcq: JS-0098
-export async function search(page: Page, term: string) {
+export async function waitForSearchBar(page: Page): Promise<Locator> {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")
   // Ensure search is opened
@@ -345,6 +343,13 @@ export async function search(page: Page, term: string) {
 
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
+  return searchBar
+}
+
+// NOTE: Assumes search is opened
+// skipcq: JS-0098
+export async function search(page: Page, term: string) {
+  const searchBar = await waitForSearchBar(page)
   await searchBar.fill(term)
 
   // Wait for search layout to be visible with results
