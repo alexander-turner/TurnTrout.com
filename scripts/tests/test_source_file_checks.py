@@ -1,5 +1,6 @@
 import sys
 import tempfile
+import unittest.mock as mock
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
 from unittest.mock import patch
@@ -151,6 +152,94 @@ def test_check_cover_image_alt(
     """
     errors = source_file_checks.check_cover_image_alt(metadata)
     assert set(errors) == set(expected_errors)
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        # Test case 1: Valid JPEG under 300KB
+        {"card_image": "https://example.com/image.jpg"},
+        # Test case 2: No card_image
+        {},
+        # Test case 3: Empty card_image
+        {"card_image": ""},
+    ],
+)
+def test_check_card_image_format_valid(metadata: Dict[str, str]) -> None:
+    """Test card image format checker with valid inputs."""
+    mock_response = mock.Mock()
+    mock_response.status_code = 200
+    mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+
+    with mock.patch("requests.head", return_value=mock_response):
+        errors = source_file_checks.check_card_image_format(metadata)
+        assert errors == []
+
+
+@pytest.mark.parametrize(
+    "metadata,expected_error_text",
+    [
+        # Test case 1: Invalid PNG format
+        (
+            {"card_image": "https://assets.turntrout.com/image.png"},
+            "card_image should use JPEG format",
+        ),
+        # Test case 2: Invalid AVIF format
+        (
+            {"card_image": "https://example.com/image.avif"},
+            "card_image should use JPEG format",
+        ),
+    ],
+)
+def test_check_card_image_format_invalid(
+    metadata: Dict[str, str], expected_error_text: str
+) -> None:
+    """Test card image format checker with invalid formats."""
+    mock_response = mock.Mock()
+    mock_response.status_code = 200
+    mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+
+    with mock.patch("requests.head", return_value=mock_response):
+        errors = source_file_checks.check_card_image_format(metadata)
+        assert len(errors) > 0
+        assert any(expected_error_text in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "status_code,content_length,expected_error_contains",
+    [
+        # Test case 1: File under 300KB - should pass
+        (200, 200 * 1024, None),
+        # Test case 2: File over 300KB - should fail
+        (200, 400 * 1024, "400.0KB"),
+        # Test case 3: Request fails (404) - should error
+        (404, None, "Failed to probe"),
+        # Test case 4: Request succeeds but no Content-Length - should error
+        (200, None, "Failed to probe"),
+    ],
+)
+def test_check_card_image_format_size(
+    status_code: int,
+    content_length: int | None,
+    expected_error_contains: str | None,
+) -> None:
+    """Test that card_image size checking works correctly."""
+    mock_response = mock.Mock()
+    mock_response.status_code = status_code
+    mock_response.headers = (
+        {"Content-Length": str(content_length)} if content_length else {}
+    )
+
+    with mock.patch("requests.head", return_value=mock_response):
+        errors = source_file_checks.check_card_image_format(
+            {"card_image": "https://example.com/image.jpg"}
+        )
+
+        if expected_error_contains is None:
+            assert errors == []
+        else:
+            assert len(errors) == 1
+            assert expected_error_contains in errors[0]
 
 
 def test_main_workflow(
@@ -1122,45 +1211,6 @@ def test_check_card_image_sends_user_agent() -> None:
         _, kwargs = mock_head.call_args
         assert "headers" in kwargs
         assert "User-Agent" in kwargs["headers"]
-
-
-@pytest.mark.parametrize(
-    "metadata,expected_errors",
-    [
-        # Test case 1: No card_image field
-        ({}, []),
-        # Test case 2: Valid .png URL
-        ({"card_image": "https://example.com/image.png"}, []),
-        # Test case 3: Valid .jpg URL
-        ({"card_image": "https://example.com/image.jpg"}, []),
-        # Test case 4: Valid .jpeg URL
-        ({"card_image": "https://example.com/image.jpeg"}, []),
-        # Test case 5: Invalid .gif URL
-        (
-            {"card_image": "https://example.com/image.gif"},
-            [
-                "Card image URL 'https://example.com/image.gif' must end in .png, .jpg, or .jpeg"
-            ],
-        ),
-        # Test case 6: URL with no extension
-        (
-            {"card_image": "https://example.com/image"},
-            [
-                "Card image URL 'https://example.com/image' must end in .png, .jpg, or .jpeg"
-            ],
-        ),
-        # Test case 7: Empty card_image field
-        ({"card_image": ""}, []),
-        # Test case 8: Valid extension with different casing
-        ({"card_image": "https://example.com/image.PNG"}, []),
-    ],
-)
-def test_check_card_image_extension(
-    metadata: dict, expected_errors: List[str]
-) -> None:
-    """Test checking card image URL extensions in metadata."""
-    errors = source_file_checks.check_card_image_extension(metadata)
-    assert errors == expected_errors
 
 
 @pytest.mark.parametrize(

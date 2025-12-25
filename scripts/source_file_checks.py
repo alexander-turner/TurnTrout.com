@@ -61,6 +61,38 @@ def check_cover_image_alt(metadata: dict) -> List[str]:
     return errors
 
 
+MAX_CARD_IMAGE_SIZE_KB = 300
+
+
+def check_card_image_format(metadata: dict) -> List[str]:
+    """Check that card_image uses JPEG format and is under 300KB."""
+    errors: List[str] = []
+    card_url = metadata.get("card_image")
+    if not card_url:
+        return errors
+
+    if not (card_url.endswith(".jpg") or card_url.endswith(".jpeg")):
+        errors.append(
+            f"card_image should use JPEG format (.jpg or .jpeg), "
+            f"but found: {card_url}"
+        )
+
+    # Ensure size is acceptable
+    response = requests.head(card_url, timeout=5, allow_redirects=True)
+    content_length = response.headers.get("Content-Length")
+    if response.status_code != 200 or content_length is None:
+        errors.append(f"Failed to probe f{card_url}.")
+        return errors
+
+    size_kb = int(content_length) / 1024
+    if size_kb > MAX_CARD_IMAGE_SIZE_KB:
+        errors.append(
+            f"card_image is {size_kb:.1f}KB, should be under 300KB: {card_url}"
+        )
+
+    return errors
+
+
 def validate_video_tags(text: str) -> List[str]:
     """
     Validate that the video tag is valid.
@@ -287,25 +319,6 @@ def check_sequence_relationships(
     return errors
 
 
-def check_card_image_extension(metadata: dict) -> List[str]:
-    """
-    Check if card_image has a valid extension.
-
-    EG .avif won't preview on Twitter.
-    """
-    card_image_url: str = metadata.get("card_image", "")
-    errors: List[str] = []
-    if not card_image_url:
-        return errors
-
-    if not card_image_url.lower().endswith((".png", ".jpg", ".jpeg")):
-        errors.append(
-            f"Card image URL '{card_image_url}' must end in"
-            " .png, .jpg, or .jpeg"
-        )
-    return errors
-
-
 def check_card_image(metadata: dict) -> List[str]:
     """Check if card_image exists at the specified URL."""
     card_image_url: str = metadata.get("card_image", "")
@@ -336,7 +349,6 @@ def check_card_image(metadata: dict) -> List[str]:
             f"Failed to load card image URL '{card_image_url}': {str(e)}"
         )
 
-    errors.extend(check_card_image_extension(metadata))
     return errors
 
 
@@ -641,6 +653,7 @@ def check_file_data(
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
+        "card_image_format": check_card_image_format(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),
