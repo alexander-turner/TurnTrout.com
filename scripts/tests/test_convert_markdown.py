@@ -118,6 +118,16 @@ Content with already processed JPEG card_image.""",
             "processed_jpeg.md",
         ),
         (
+            "small_png_under_300kb",
+            """---
+title: Test Post
+date: 2023-10-10
+card_image: https://assets.turntrout.com/images/card_images/small.png
+---
+Content with small PNG card_image under 300KB.""",
+            "small_png.md",
+        ),
+        (
             "no_frontmatter",
             """
 Some content without YAML front matter.
@@ -141,8 +151,14 @@ def test_process_card_image_in_markdown_skips(
     md_file_path.parent.mkdir(exist_ok=True)
     md_file_path.write_text(markdown_content)
 
+    # Mock HEAD request for PNG size check
+    mock_head_response = mock.Mock()
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+
     with (
         mock.patch("requests.get") as mock_get,
+        mock.patch("requests.head", return_value=mock_head_response),
         mock.patch("subprocess.run") as mock_subproc_run,
         mock.patch("shutil.move") as mock_shutil_move,
         mock.patch(

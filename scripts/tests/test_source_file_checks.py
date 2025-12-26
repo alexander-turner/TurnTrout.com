@@ -157,50 +157,61 @@ def test_check_cover_image_alt(
 @pytest.mark.parametrize(
     "metadata",
     [
-        # Test case 1: Valid JPEG under 300KB
-        {"card_image": "https://example.com/image.jpg"},
-        # Test case 2: No card_image
+        # Test case 1: Valid JPEG under 300KB from assets.turntrout.com
+        {
+            "card_image": "https://assets.turntrout.com/static/images/card_images/image.jpg"
+        },
+        # Test case 2: Valid PNG under 300KB from assets.turntrout.com
+        {
+            "card_image": "https://assets.turntrout.com/static/images/card_images/image.png"
+        },
+        # Test case 3: No card_image
         {},
-        # Test case 3: Empty card_image
+        # Test case 4: Empty card_image
         {"card_image": ""},
     ],
 )
-def test_check_card_image_format_valid(metadata: Dict[str, str]) -> None:
-    """Test card image format checker with valid inputs."""
+def test_check_card_image_valid(metadata: Dict[str, str]) -> None:
+    """Test card image checker with valid inputs."""
     mock_response = mock.Mock()
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
     with mock.patch("requests.head", return_value=mock_response):
-        errors = source_file_checks.check_card_image_format(metadata)
+        errors = source_file_checks.check_card_image(metadata)
         assert errors == []
 
 
 @pytest.mark.parametrize(
     "metadata,expected_error_text",
     [
-        # Test case 1: Invalid PNG format
+        # Test case 1: Not from assets.turntrout.com
         (
-            {"card_image": "https://assets.turntrout.com/image.png"},
-            "card_image should use JPEG format",
+            {"card_image": "https://example.com/image.jpg"},
+            "must be from assets.turntrout.com",
         ),
         # Test case 2: Invalid AVIF format
         (
-            {"card_image": "https://example.com/image.avif"},
-            "card_image should use JPEG format",
+            {"card_image": "https://assets.turntrout.com/image.avif"},
+            "should use JPEG",
+        ),
+        # Test case 3: Invalid GIF format
+        (
+            {"card_image": "https://assets.turntrout.com/image.gif"},
+            "should use JPEG",
         ),
     ],
 )
-def test_check_card_image_format_invalid(
+def test_check_card_image_invalid(
     metadata: Dict[str, str], expected_error_text: str
 ) -> None:
-    """Test card image format checker with invalid formats."""
+    """Test card image checker with invalid formats."""
     mock_response = mock.Mock()
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
     with mock.patch("requests.head", return_value=mock_response):
-        errors = source_file_checks.check_card_image_format(metadata)
+        errors = source_file_checks.check_card_image(metadata)
         assert len(errors) > 0
         assert any(expected_error_text in error for error in errors)
 
@@ -208,17 +219,13 @@ def test_check_card_image_format_invalid(
 @pytest.mark.parametrize(
     "status_code,content_length,expected_error_contains",
     [
-        # Test case 1: File under 300KB - should pass
-        (200, 200 * 1024, None),
-        # Test case 2: File over 300KB - should fail
+        # Test case 1: File under 300KB - should pass (but still fail domain check)
+        (200, 200 * 1024, "must be from assets.turntrout.com"),
+        # Test case 2: File over 300KB - should fail with multiple errors
         (200, 400 * 1024, "400.0KB"),
-        # Test case 3: Request fails (404) - should error
-        (404, None, "Failed to probe"),
-        # Test case 4: Request succeeds but no Content-Length - should error
-        (200, None, "Failed to probe"),
     ],
 )
-def test_check_card_image_format_size(
+def test_check_card_image_size(
     status_code: int,
     content_length: int | None,
     expected_error_contains: str | None,
@@ -231,15 +238,12 @@ def test_check_card_image_format_size(
     )
 
     with mock.patch("requests.head", return_value=mock_response):
-        errors = source_file_checks.check_card_image_format(
+        errors = source_file_checks.check_card_image(
             {"card_image": "https://example.com/image.jpg"}
         )
 
-        if expected_error_contains is None:
-            assert errors == []
-        else:
-            assert len(errors) == 1
-            assert expected_error_contains in errors[0]
+        assert len(errors) >= 1
+        assert any(expected_error_contains in error for error in errors)
 
 
 def test_main_workflow(
@@ -1150,34 +1154,26 @@ def test_build_sequence_data_no_files() -> None:
 
 
 @pytest.mark.parametrize(
-    "metadata,mock_response,expected_errors",
+    "metadata,mock_response,expected_error_contains",
     [
         # Test case 1: No card_image field
         ({}, None, []),
-        # Test case 2: Invalid URL (not http/https)
+        # Test case 2: Valid assets.turntrout.com URL with successful response
         (
-            {"card_image": "invalid-url.jpg"},
-            None,
-            ["Card image URL 'invalid-url.jpg' must be a remote URL"],
-        ),
-        # Test case 3: Valid URL with successful response
-        (
-            {"card_image": "https://example.com/image.jpg"},
-            type("Response", (), {"ok": True}),
+            {"card_image": "https://assets.turntrout.com/image.jpg"},
+            mock.Mock(ok=True, headers={"Content-Length": str(200 * 1024)}),
             [],
         ),
-        # Test case 4: Valid URL with error response
+        # Test case 3: Valid assets.turntrout.com URL with error response
         (
-            {"card_image": "https://example.com/missing.jpg"},
-            type("Response", (), {"ok": False, "status_code": 404}),
-            [
-                "Card image URL 'https://example.com/missing.jpg' returned status 404"
-            ],
+            {"card_image": "https://assets.turntrout.com/missing.jpg"},
+            mock.Mock(ok=False, status_code=404),
+            ["returned status 404"],
         ),
     ],
 )
 def test_check_card_image(
-    metadata: dict, mock_response: Any, expected_errors: List[str]
+    metadata: dict, mock_response: Any, expected_error_contains: List[str]
 ) -> None:
     """Test checking card image URLs in metadata."""
     with patch("requests.head") as mock_head:
@@ -1185,27 +1181,38 @@ def test_check_card_image(
             mock_head.return_value = mock_response
 
         errors = source_file_checks.check_card_image(metadata)
-        assert errors == expected_errors
+
+        # Check that all expected error substrings are present
+        for expected_error in expected_error_contains:
+            assert any(
+                expected_error in error for error in errors
+            ), f"Expected error containing '{expected_error}' not found in {errors}"
+
+        # Check that we have the right number of errors
+        assert len(errors) == len(
+            expected_error_contains
+        ), f"Expected {len(expected_error_contains)} errors, got {len(errors)}: {errors}"
 
 
 def test_check_card_image_request_exception() -> None:
     """Test handling of request exceptions when checking card image URLs."""
-    metadata = {"card_image": "https://example.com/image.jpg"}
+    metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
 
     with patch("requests.head") as mock_head:
         mock_head.side_effect = requests.RequestException("Connection error")
 
         errors = source_file_checks.check_card_image(metadata)
-        assert errors == [
-            "Failed to load card image URL 'https://example.com/image.jpg': Connection error"
-        ]
+        # Should have the connection error
+        assert any("Connection error" in error for error in errors)
 
 
 def test_check_card_image_sends_user_agent() -> None:
     """Test that check_card_image sends a User-Agent header."""
-    metadata = {"card_image": "https://example.com/image.jpg"}
+    metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
     with patch("requests.head") as mock_head:
-        mock_head.return_value = type("Response", (), {"ok": True})
+        mock_head.return_value = mock.Mock(
+            ok=True, headers={"Content-Length": str(200 * 1024)}
+        )
         source_file_checks.check_card_image(metadata)
         mock_head.assert_called_once()
         _, kwargs = mock_head.call_args

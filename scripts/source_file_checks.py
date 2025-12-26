@@ -64,32 +64,80 @@ def check_cover_image_alt(metadata: dict) -> List[str]:
 MAX_CARD_IMAGE_SIZE_KB = 300
 
 
-def check_card_image_format(metadata: dict) -> List[str]:
-    """Check that card_image uses JPEG format and is under 300KB."""
+def _check_card_image_domain(card_url: str) -> List[str]:
+    """Check if card_image is from assets.turntrout.com."""
+    if not card_url.startswith("https://assets.turntrout.com/"):
+        return [
+            f"card_image must be from assets.turntrout.com, "
+            f"but found: {card_url}"
+        ]
+    return []
+
+
+def _check_card_image_format(card_url: str) -> List[str]:
+    """Check if card_image has valid format (JPEG or PNG)."""
+    allowed_extensions = {".jpg", ".jpeg", ".png"}
+    if not any(card_url.endswith(ext) for ext in allowed_extensions):
+        return [
+            f"card_image should use JPEG (.jpg or .jpeg) or PNG (.png) format, "
+            f"but found: {card_url}"
+        ]
+    return []
+
+
+def _check_card_image_accessibility(card_url: str) -> List[str]:
+    """Check if card_image URL is accessible and under size limit."""
     errors: List[str] = []
+    try:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/58.0.3029.110 Safari/537.36"
+            )
+        }
+        response = requests.head(
+            card_url, timeout=10, allow_redirects=True, headers=headers
+        )
+
+        if not response.ok:
+            errors.append(
+                f"Card image URL '{card_url}' returned "
+                f"status {response.status_code}"
+            )
+        else:
+            # Check size if request was successful
+            content_length = response.headers.get("Content-Length")
+            if content_length:
+                size_kb = int(content_length) / 1024
+                if size_kb > MAX_CARD_IMAGE_SIZE_KB:
+                    errors.append(
+                        f"card_image is {size_kb:.1f}KB, should be under {MAX_CARD_IMAGE_SIZE_KB}KB: {card_url}"
+                    )
+    except requests.RequestException as e:
+        errors.append(f"Failed to load card image URL '{card_url}': {str(e)}")
+
+    return errors
+
+
+def check_card_image(metadata: dict) -> List[str]:
+    """
+    Check card_image format, size, and existence.
+
+    Records errors if:
+    - Not from turntrout assets
+    - Doesn't have PNG or JPEG extension
+    - Over 300KB
+    - URL is not accessible
+    """
     card_url = metadata.get("card_image")
     if not card_url:
-        return errors
+        return []
 
-    if not (card_url.endswith(".jpg") or card_url.endswith(".jpeg")):
-        errors.append(
-            f"card_image should use JPEG format (.jpg or .jpeg), "
-            f"but found: {card_url}"
-        )
-
-    # Ensure size is acceptable
-    response = requests.head(card_url, timeout=5, allow_redirects=True)
-    content_length = response.headers.get("Content-Length")
-    if response.status_code != 200 or content_length is None:
-        errors.append(f"Failed to probe f{card_url}.")
-        return errors
-
-    size_kb = int(content_length) / 1024
-    if size_kb > MAX_CARD_IMAGE_SIZE_KB:
-        errors.append(
-            f"card_image is {size_kb:.1f}KB, should be under 300KB: {card_url}"
-        )
-
+    errors: List[str] = []
+    errors.extend(_check_card_image_domain(card_url))
+    errors.extend(_check_card_image_format(card_url))
+    errors.extend(_check_card_image_accessibility(card_url))
     return errors
 
 
@@ -314,39 +362,6 @@ def check_sequence_relationships(
                 target_slug,
                 key,  # type: ignore[arg-type]
             )
-        )
-
-    return errors
-
-
-def check_card_image(metadata: dict) -> List[str]:
-    """Check if card_image exists at the specified URL."""
-    card_image_url: str = metadata.get("card_image", "")
-    errors: List[str] = []
-    if not card_image_url:
-        return errors
-
-    if not card_image_url.startswith(("http://", "https://")):
-        errors.append(f"Card image URL '{card_image_url}' must be a remote URL")
-        return errors
-
-    try:
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/58.0.3029.110 Safari/537.36"
-            )
-        }
-        response = requests.head(card_image_url, timeout=10, headers=headers)
-        if not response.ok:
-            errors.append(
-                f"Card image URL '{card_image_url}' returned "
-                f"status {response.status_code}"
-            )
-    except requests.RequestException as e:
-        errors.append(
-            f"Failed to load card image URL '{card_image_url}': {str(e)}"
         )
 
     return errors
@@ -653,7 +668,7 @@ def check_file_data(
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
-        "card_image_format": check_card_image_format(metadata),
+        "card_image_format": check_card_image(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),

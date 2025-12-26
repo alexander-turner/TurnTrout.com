@@ -26,10 +26,11 @@ yaml_parser.preserve_quotes = True  # Preserve existing quotes
 yaml_parser.indent(mapping=2, sequence=2, offset=2)  # Set desired indentation
 
 try:
-    from . import r2_upload
+    from . import r2_upload, source_file_checks
     from . import utils as script_utils
 except ImportError:
     import r2_upload  # type: ignore
+    import source_file_checks  # type: ignore
     import utils as script_utils  # type: ignore
 
 
@@ -94,19 +95,22 @@ def _download_image(url: str, output_path: Path) -> None:
 
 
 def _convert_to_jpeg(
-    input_path: Path, output_path: Path, max_size_kb: int = 300
+    input_path: Path, output_path: Path, max_size_kb: int | None = None
 ) -> None:
     """
     Convert image to JPEG using ImageMagick with size constraints.
 
     Resizes to fit within 1200×630 pixels (preserving aspect ratio) and
-    iteratively compresses until file size is under max_size_kb (default 300KB).
+    iteratively compresses until file size is under max_size_kb.
 
     Args:
         input_path: Source image path
         output_path: Destination JPEG path
-        max_size_kb: Maximum file size in kilobytes (default 300)
+        max_size_kb: Maximum file size in kilobytes (defaults to MAX_CARD_IMAGE_SIZE_KB)
     """
+    if max_size_kb is None:
+        max_size_kb = source_file_checks.MAX_CARD_IMAGE_SIZE_KB
+
     magick_executable = script_utils.find_executable("magick")
     target_size = max_size_kb * 1024  # Convert to bytes
 
@@ -233,16 +237,21 @@ def process_card_image_in_markdown(md_file: Path) -> None:
 
     # Check if we need to process this file
     card_image_url = data.get("card_image")
-    if not card_image_url or not any(
-        card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS
-    ):
+    if not card_image_url:
         return
 
-    # Skip if already a JPEG on assets.turntrout.com
-    if card_image_url.startswith("https://assets.turntrout.com/") and (
-        card_image_url.endswith(".jpg") or card_image_url.endswith(".jpeg")
-    ):
+    # Check if the image can be converted
+    if not any(card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS):
         return
+
+    errors = source_file_checks.check_card_image(data)
+    if not errors:
+        print(f"Skipping card_image (already valid): {card_image_url}")
+        return
+
+    print(
+        f"Processing card_image (found issues: {', '.join(errors)}): {card_image_url}"
+    )
 
     # Process and store the image
     jpeg_path, jpeg_filename = _process_image(
