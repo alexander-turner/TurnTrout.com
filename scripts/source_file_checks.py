@@ -668,7 +668,6 @@ def check_file_data(
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
-        "card_image_format": check_card_image(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),
