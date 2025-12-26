@@ -17,6 +17,7 @@ aliases:
   - mentorship
 date_published: 2025-12-23 00:16:38.244546
 date_updated: 2025-12-23 00:16:38.244546
+lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
 Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cloud[^cloud]) help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
@@ -45,7 +46,9 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 > [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.
 
-Our team culture is tight-knit and fun. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
+Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout and Cloud each hold a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch.
+
+Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
 
 ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-1.avif|Four smiling people flexing for the camera.]]
 
