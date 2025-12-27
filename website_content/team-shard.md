@@ -7,17 +7,20 @@ tags:
   - mats-program
   - shard-theory
   - community
-description: Team Shard consistently graduates skilled researchers, does good work, and yields three months of wholesome growth.
+description: Team Shard consistently graduates skilled researchers, does good 
+  work, and yields three months of wholesome growth.
 authors: Alex Turner and Alex Cloud
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/t1YRv9z.jpg
-card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.
+card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four
+  of them wear shades while the fifth, Alex, looks at the camera in a blazer.
 aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23 00:16:38.244546
 date_updated: 2025-12-23 00:16:38.244546
-lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
+lw-page-url: 
+  https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
 Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cloud[^cloud]) help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.

@@ -266,6 +266,34 @@ def test_convert_to_jpeg(jpeg_conversion_setup):
         assert args[-1] == str(output_path)
 
 
+def test_convert_to_jpeg_resizes_to_height_1200(jpeg_conversion_setup):
+    """Test that JPEG conversion resizes images to height of 1200 pixels."""
+    input_path, output_path = jpeg_conversion_setup
+
+    with (
+        mock.patch(
+            "scripts.convert_markdown_yaml.script_utils.find_executable",
+            return_value="magick",
+        ),
+        mock.patch("subprocess.run") as mock_run,
+        mock.patch.object(Path, "stat") as mock_stat,
+    ):
+        # Mock file size to be under 300KB (200KB)
+        mock_stat.return_value.st_size = 200 * 1024
+
+        convert_markdown_yaml._convert_to_jpeg(input_path, output_path)
+
+    # Verify the resize parameter is present and correct
+    mock_run.assert_called_once()
+    args = mock_run.call_args[0][0]
+
+    assert "-resize" in args
+    resize_idx = args.index("-resize")
+    assert (
+        args[resize_idx + 1] == "x1200"
+    ), f"Expected resize parameter 'x1200', got '{args[resize_idx + 1]}'"
+
+
 def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
     """Test JPEG conversion with iterative quality reduction."""
     input_path, output_path = jpeg_conversion_setup

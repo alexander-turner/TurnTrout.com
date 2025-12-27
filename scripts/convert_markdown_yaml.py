@@ -3,8 +3,8 @@ Convert card images in markdown YAML frontmatter to JPEG format.
 
 This script processes markdown files, looking for card_image entries in their
 YAML frontmatter. When found, it downloads the images, converts them to JPEG
-format (1200×630 pixels, <300KB) using ImageMagick, and uploads them to R2
-storage.
+format (height of 1200 pixels with preserved aspect ratio, <300KB) using
+ImageMagick, and uploads them to R2 storage.
 """
 
 #!/usr/bin/env python3
@@ -100,7 +100,7 @@ def _convert_to_jpeg(
     """
     Convert image to JPEG using ImageMagick with size constraints.
 
-    Resizes to fit within 1200×630 pixels (preserving aspect ratio) and
+    Resizes to height of 1200 pixels (preserving aspect ratio) and
     iteratively compresses until file size is under max_size_kb.
 
     Args:
@@ -114,7 +114,6 @@ def _convert_to_jpeg(
     magick_executable = script_utils.find_executable("magick")
     target_size = max_size_kb * 1024  # Convert to bytes
 
-    # Start with quality 85 and reduce if needed
     quality = 85
     min_quality = 60
 
@@ -124,8 +123,8 @@ def _convert_to_jpeg(
                 magick_executable,
                 str(input_path),
                 "-strip",  # Remove metadata
-                # "-resize",
-                # "1200x630>",  # Resize to fit within 1200×630, preserving aspect ratio
+                "-resize",
+                "x1200",  # Resize to height of 1200 pixels, preserving aspect ratio
                 "-quality",
                 str(quality),
                 "-sampling-factor",
@@ -155,19 +154,11 @@ def _convert_to_jpeg(
     )
 
 
-def _get_r2_image_url(local_jpeg_path: Path) -> str:
-    """
-    Generate the R2 URL for an uploaded image.
-
-    Args:
-        local_jpeg_path: Local path to the JPEG file
-
-    Returns:
-        Full R2 URL for the uploaded image
-    """
+def _get_r2_image_url(local_path: Path) -> str:
+    """Generate the R2 URL for an uploaded image."""
     r2_base_url = r2_upload.R2_BASE_URL
     r2_key = r2_upload.get_r2_key(
-        script_utils.path_relative_to_quartz_parent(local_jpeg_path)
+        script_utils.path_relative_to_quartz_parent(local_path)
     )
     return f"{r2_base_url}/{r2_key}"
 
@@ -205,7 +196,6 @@ def _setup_and_store_image(jpeg_path: Path, jpeg_filename: str) -> Path:
     static_images_dir.mkdir(parents=True, exist_ok=True)
     local_jpeg_path = static_images_dir / jpeg_filename
 
-    # Move and upload
     shutil.move(str(jpeg_path), str(local_jpeg_path))
     r2_upload.upload_and_move(
         local_jpeg_path,
@@ -219,8 +209,7 @@ def _setup_and_store_image(jpeg_path: Path, jpeg_filename: str) -> Path:
 
 def process_card_image_in_markdown(md_file: Path) -> None:
     """Process the 'card_image' in the YAML frontmatter of the given md file."""
-    git_root = script_utils.get_git_root()
-    content_dir = git_root / "website_content"
+    content_dir = script_utils.get_git_root() / "website_content"
     if not md_file.resolve().is_relative_to(content_dir):
         raise ValueError(
             f"File path {md_file} is not in the website_content directory."
