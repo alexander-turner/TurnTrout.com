@@ -235,7 +235,6 @@ def process_card_image_in_markdown(md_file: Path) -> None:
 
     errors = source_file_checks.check_card_image(data)
     if not errors:
-        print(f"Skipping card_image (already valid): {card_image_url}")
         return
 
     print(
