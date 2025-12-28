@@ -16,16 +16,7 @@ card_image_alt: An anime rendition of a beautiful orange sunset over the Bay
 ---
 
 
-
-
-
-
-
-
-
-
-
-<img src="https://assets.turntrout.com/static/images/posts/alex-sunset.avif" class="float-right" alt="A man named Alex with curly brown hair and a beard, smiling warmly on a wooden deck. He leans against a railing with a scenic view of trees and the ocean under a pink and blue sunset sky."/>
+![[https://assets.turntrout.com/static/images/posts/date-me-12272025.avif|Clad in a black jacket and cold-colored scarf, Alex laughs in front of an out-of-focus yellow fall backdrop.]]{.float-right}
 
 Many people know me as `TurnTrout`, but you can call me "Alex". I want to let you see a different facet of me than I usually present online.
 
