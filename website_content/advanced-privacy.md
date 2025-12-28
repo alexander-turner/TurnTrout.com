@@ -56,7 +56,7 @@ Other people are at risk too. Optimize your setup to leak as little information 
 
 ## Know your rights
 
-If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https://www.aclu.org/know-your-rights)). Consider printing off [a flyer](https://www.ilrc.org/community-resources/know-your-rights/know-your-rights-when-confronted-ice-flyer) to keep on your person --- remembering in the heat of the moment is hard.
+If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https://www.aclu.org/know-your-rights)). Consider printing off [a flyer](https://www.ilrc.org/community-resources/know-your-rights/know-your-rights-when-confronted-ice-flyer) to keep on your person --- remembering in the moment is hard.
 
 # Harden your hardware in a dozen hours
 

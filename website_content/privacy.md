@@ -214,13 +214,13 @@ The fast and free upgrade is to prefer authenticator apps over SMS and email.
 
 ## Keep your OS up to date
 
-Make sure you've enabled automatic security updates on your device. Just search "security update" in your phone and computer settings. Enable for both.  Install operating system updates ASAP.
+Make sure you've enabled automatic security updates on your device. Just search "security update" in your phone and computer settings. Enable automatic updates for both. Install operating system updates ASAP.
 
 ## iOS: Advanced Data Protection (ADP)
 
 If you use iCloud, enable ADP. In a single flick, ADP will enable end-to-end encryption (E2EE) for the vast majority of the data you store in iCloud. The exceptions are Calendar, Contacts, and Mail. I'll cover how to encrypt those later. Also, [even for E2EE content, Apple retains limited metadata (like filename and size)](https://support.apple.com/en-us/102651).
 
-- [ ] Enable ADP in settings.
+- [ ] Enable ADP in settings (search "advanced data protection").
 
 > [!warning]
 > If you are in the UK, you may have to refer to [the later section](#end-to-end-encryption-for-your-data-in-4-hours) on achieving E2EE for your data. That's because [Apple stopped supporting ADP for new UK users after being pressured by the UK government.](https://proton.me/blog/protect-data-apple-adp-uk) It's as tale as old as `<time.h>`: degrading the freedom and privacy of the Web, extending government surveillance --- all in order to "protect the children."
