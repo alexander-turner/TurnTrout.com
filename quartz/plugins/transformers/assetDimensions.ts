@@ -105,7 +105,6 @@ class AssetProcessor {
       await fs.writeFile(tempFilePath, data, "utf-8")
       await fs.rename(tempFilePath, paths.assetDimensions)
       this.needToSaveCache = false
-      console.log("Asset dimensions cache saved.")
     }
   }
 
