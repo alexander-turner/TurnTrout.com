@@ -97,36 +97,16 @@
   "listTolerance": 5,
   "specialDomainMappings": [
     {
-      "pattern": "^scholar\\.google\\.com$",
-      "to": "scholar.google.com"
-    },
-    {
-      "pattern": "^play\\.google\\.com$",
-      "to": "play.google.com"
-    },
-    {
-      "pattern": "^docs\\.google\\.com$",
-      "to": "docs.google.com"
-    },
-    {
-      "pattern": "^drive\\.google\\.com$",
-      "to": "drive.google.com"
-    },
-    {
-      "pattern": "^mail\\.google\\.com$",
-      "to": "mail.google.com"
-    },
-    {
-      "pattern": "^colab\\.research\\.google\\.com$",
-      "to": "colab.research.google.com"
-    },
-    {
       "pattern": "^.*transformer-circuits\\.pub",
       "to": "anthropic.com"
     },
     {
       "pattern": "^.*protonvpn\\.com",
       "to": "proton.me"
+    },
+    {
+      "pattern": "^.*deepmind\\.google",
+      "to": "deepmind.com"
     },
     {
       "pattern": "^.*nbc.*\\.com$",
