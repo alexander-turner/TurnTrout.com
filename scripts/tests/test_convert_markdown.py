@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from .. import convert_markdown_yaml
+from .. import convert_markdown_yaml, source_file_checks
 from .utils import create_markdown_file
 
 try:
@@ -336,6 +336,36 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
 
     assert int(first_call_args[first_quality_idx]) == 85
     assert int(second_call_args[second_quality_idx]) == 80
+
+
+def test_convert_to_jpeg_warns_when_cannot_compress_below_limit(
+    jpeg_conversion_setup, capsys
+):
+    """Test that _convert_to_jpeg warns when file cannot be compressed below limit."""
+    input_path, output_path = jpeg_conversion_setup
+    max_size_kb = source_file_checks.MAX_CARD_IMAGE_SIZE_KB
+    # File size that exceeds the limit
+    oversized_kb = max_size_kb + 1
+
+    with (
+        mock.patch(
+            "scripts.convert_markdown_yaml.script_utils.find_executable",
+            return_value="magick",
+        ),
+        mock.patch("subprocess.run"),
+        mock.patch.object(Path, "stat") as mock_stat,
+    ):
+        # Mock file size to always be too large, even at minimum quality
+        mock_stat.return_value.st_size = oversized_kb * 1024
+
+        convert_markdown_yaml._convert_to_jpeg(
+            input_path, output_path, max_size_kb=max_size_kb
+        )
+
+    # Verify warning message was printed
+    captured = capsys.readouterr()
+    assert f"Warning: Could not compress below {max_size_kb}KB" in captured.out
+    assert f"Final size: {oversized_kb}.0KB at quality 60" in captured.out
 
 
 def test_process_image(tmp_path):
