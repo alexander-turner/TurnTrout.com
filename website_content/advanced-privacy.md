@@ -224,7 +224,7 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
 
 1. [ ] [Set up Proton VPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
 2. [ ] Exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
-    1. [ ] Go to the dashboard at [`192.168.8.1`](http://192.168.8.1),
+    1. [ ] Go to the dashboard at `192.168.8.1`,
     2. [ ] Navigate to VPN settings,
     3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and
     4. [ ] In the VPN tunnel, exempt the devices which run their own _secure_ VPN connections.
