@@ -16,9 +16,10 @@ card_image_alt: An anime rendition of a beautiful orange sunset over the Bay
 ---
 
 
-![[https://assets.turntrout.com/static/images/posts/date-me-12272025.avif|Clad in a black jacket and cold-colored scarf, Alex laughs in front of an out-of-focus yellow fall backdrop.]]{.float-right}
 
 Many people know me as `TurnTrout`, but you can call me "Alex". I want to let you see a different facet of me than I usually present online.
+
+![[https://assets.turntrout.com/static/images/posts/date-me-12272025.avif|Clad in a black jacket and cold-colored scarf, Alex laughs in front of an out-of-focus yellow fall backdrop]]{style="width: 75%"}
 
 I was born in '94. Now, I'm a research scientist on [Google DeepMind's](https://deepmind.google/) scalable alignment team in San Francisco. In this document, I'll overview what the intervening time has made of me, as a person.
 
