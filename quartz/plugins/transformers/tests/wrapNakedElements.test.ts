@@ -437,6 +437,48 @@ describe("WrapNakedElements Plugin Tests", () => {
     })
   })
 
+  describe("Paragraph to Figure Conversion", () => {
+    it.each([
+      [
+        "paragraph with only float-right image",
+        '<p><img class="float-right" src="test.jpg"></p>',
+        '<figure><img class="float-right" src="test.jpg"></figure>',
+      ],
+      [
+        "paragraph with only float-right image and whitespace",
+        '<p>  <img class="float-right" src="test.jpg">  </p>',
+        '<figure>  <img class="float-right" src="test.jpg">  </figure>',
+      ],
+      [
+        "paragraph with only float-right span",
+        '<p><span class="float-right">Content</span></p>',
+        '<figure><span class="float-right">Content</span></figure>',
+      ],
+    ])("should convert %s to figure", (_, input, expected) => {
+      expect(testWrapNakedElementsHTML(input)).toBe(expected)
+    })
+
+    it.each([
+      [
+        "paragraph with text and float-right image",
+        '<p>Some text <img class="float-right" src="test.jpg"></p>',
+      ],
+      [
+        "paragraph with float-right image and text",
+        '<p><img class="float-right" src="test.jpg"> Some text</p>',
+      ],
+      [
+        "paragraph with multiple children including float-right",
+        '<p><span>Text</span><img class="float-right" src="test.jpg"></p>',
+      ],
+    ])("should NOT convert %s to figure", (_, input) => {
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toMatch(/^<p>/)
+      expect(result).toMatch(/<\/p>$/)
+      expect(result).toContain("<figure>")
+    })
+  })
+
   describe("Admonition Content Protection", () => {
     it("should not wrap admonition-content div when it contains float-right child", () => {
       const input =

@@ -111,6 +111,7 @@ function shouldNotWrapInFigure(element: Element, ancestors: Parent[]): boolean {
  * Wraps elements with float-right class in a <figure>.
  * If an element contains a direct child with float-right, wraps the parent instead,
  * unless the parent is a semantic container that should not be wrapped (like paragraphs).
+ * For paragraphs containing ONLY a float-right element, converts the paragraph to a figure.
  */
 function wrapFloatRight(element: Element, ancestors: Parent[]): void {
   if (shouldNotWrapInFigure(element, ancestors)) {
@@ -120,6 +121,27 @@ function wrapFloatRight(element: Element, ancestors: Parent[]): void {
   const hasFloatRightChild = element.children.some(
     (child) => child.type === "element" && hasClass(child, "float-right"),
   )
+
+  // For paragraphs containing ONLY a float-right child (no other content), convert the paragraph to a figure
+  if (hasFloatRightChild && element.tagName === "p") {
+    // Check if the paragraph contains only the float-right element (ignoring whitespace)
+    const nonWhitespaceChildren = element.children.filter(
+      (child) => !(child.type === "text" && (!child.value || child.value.trim() === "")),
+    )
+
+    // If there's only one non-whitespace child and it has float-right, convert paragraph to figure
+    if (
+      nonWhitespaceChildren.length === 1 &&
+      nonWhitespaceChildren[0].type === "element" &&
+      hasClass(nonWhitespaceChildren[0], "float-right")
+    ) {
+      element.tagName = "figure"
+      return
+    }
+
+    // Otherwise, wrap the float-right child in a figure (keeping the paragraph)
+    // This will be handled by the wrapping logic below
+  }
 
   // Wrap parents that contain float-right children (e.g., span.video-container > video.float-right)
   // But skip if the parent is a paragraph - in that case, the float-right child will be wrapped directly
