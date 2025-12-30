@@ -36,14 +36,11 @@ date_published: 2019-09-20 00:00:00
 original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/3LocEy9.jpg
-description: A foundational examination of "impact" for AI alignment, exploring 
-  why some actions matter more and how to formalize these intuitions.
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling
-  frame. Below, text reads: "Written and illustrated by Alex Turner." To the right,
-  a small robot stands on a larger robot to build a tower of black blocks. The small
-  robot tips over a small block, possibly leading to a block-avalanche.'
+description: A foundational examination of "impact" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.'
 ---
+
 
 
 

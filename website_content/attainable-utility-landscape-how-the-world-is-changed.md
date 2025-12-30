@@ -3,8 +3,7 @@ permalink: attainable-utility-landscape
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
+lw-page-url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
 lw-is-question: "false"
 lw-posted-at: 2020-02-10T00:58:01.453000Z
 lw-last-modification: 2020-07-25T21:12:42.735000Z
@@ -36,19 +35,14 @@ next-post-title: The Catastrophic Convergence Conjecture
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2020-02-10 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
+original_url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/k5K8m32.jpg
-description: Examining how our actions reshape the landscape of achievable 
-  goals, highlighting opportunity costs and the structure of agency in shaping 
-  the future.
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: An illustration of environmental resources with corresponding 
-  meters. "How plentiful are trade goods?" next to a mountain with gems shows a 
-  full green meter. "How accessible is potable water?" shows a low red meter. 
-  "How fertile is the soil?" shows a full green meter.
+description: Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: An illustration of environmental resources with corresponding meters. "How plentiful are trade goods?" next to a mountain with gems shows a full green meter. "How accessible is potable water?" shows a low red meter. "How fertile is the soil?" shows a full green meter.
 ---
+
 
 
 

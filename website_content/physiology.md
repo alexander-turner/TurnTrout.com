@@ -5,9 +5,7 @@ no_dropcap: "false"
 tags:
   - understanding-the-world
   - summaries
-description: This book breaks down complex physiology into digestible parts, 
-  using charming visuals & clear explanations. You might be surprised how much 
-  you can learn!
+description: This book breaks down complex physiology into digestible parts, using charming visuals & clear explanations. You might be surprised how much you can learn!
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/eZLmOUT.jpg
@@ -19,9 +17,10 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
 date_published: 2025-01-23 20:50:38.343137
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
+
 
 
 

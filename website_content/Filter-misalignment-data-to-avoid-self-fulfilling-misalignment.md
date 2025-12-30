@@ -4,9 +4,7 @@ permalink: self-fulfilling-misalignment
 no_dropcap: "false"
 tags:
   - AI
-description: When models are trained on texts about AI misalignment, models may 
-  internalize those predictions—creating the exact risks described in their 
-  training data.
+description: When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.
 authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/IPuyShg.jpg
@@ -18,10 +16,10 @@ aliases:
   - pretrained-misalignment
   - filter-misalignment-data
 date_published: 2025-03-01 17:42:48.379662
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: A person says "AI will be evil", causing a later AI to think 
-  it's evil.
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
 ---
+
 
 
 

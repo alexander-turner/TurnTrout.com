@@ -3,8 +3,7 @@ permalink: the-catastrophic-convergence-conjecture
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
+lw-page-url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
 lw-is-question: "false"
 lw-posted-at: 2020-02-14T21:16:59.281000Z
 lw-last-modification: 2021-02-07T23:27:46.255000Z
@@ -37,17 +36,14 @@ next-post-title: "Attainable Utility Preservation: Concepts"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
 date_published: 2020-02-14 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
+original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
-description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking
-  power."
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned
-  goals tend to have catastrophe-inducing optimal policies because of power-seeking
-  incentives."'
+description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 ---
+
 
 
 

@@ -1,29 +1,23 @@
 ---
-title: 2025-era "reward hacking" does not show that reward is the optimization 
-  target
+title: 2025-era "reward hacking" does not show that reward is the optimization target
 permalink: reward-hacking-doesnt-show-reward-is-optimization-target
 no_dropcap: false
 tags:
   - AI
   - reinforcement-learning
   - specification-gaming
-description: '"Reward hacking" is usually specification gaming, not reward signal
-  optimization. My 2022 post stands.'
+description: '"Reward hacking" is usually specification gaming, not reward signal optimization. My 2022 post stands.'
 authors: Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.jpg
-card_image_alt: A split-screen comparison illustration with a comic book 
-  aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot 
-  sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out
-  a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot 
-  plays an arcade game. Above the machine rests a screen that displays "SCORE - 
-  999,999".
+card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
 aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
   - reward-retrospective
 date_published: 2025-12-18 09:41:00.470485
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2025-12-30 14:46:20.403471
 ---
+
 
 
  

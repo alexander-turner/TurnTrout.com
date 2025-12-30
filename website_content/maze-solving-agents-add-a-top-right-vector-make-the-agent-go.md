@@ -3,8 +3,7 @@ permalink: top-right-steering-vector
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-agents-add-a-top-right-vector-make-the-agent-go
+lw-page-url: https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-agents-add-a-top-right-vector-make-the-agent-go
 lw-is-question: "false"
 lw-posted-at: 2023-03-31T19:20:48.658000Z
 lw-last-modification: 2023-04-17T00:53:42.453000Z
@@ -37,18 +36,14 @@ next-post-title: Behavioural statistics for a maze-solving agent
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2023-03-31 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-agents-add-a-top-right-vector-make-the-agent-go
+original_url: https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-agents-add-a-top-right-vector-make-the-agent-go
 skip_import: true
-card_image: 
-  https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.jpg
-description: Adding a "top-right vector" makes a maze-solver go to the 
-  top-right. We show composition with other vectors, like the "cheese vector."
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: Vector fields showing effects of interventions. The cheese 
-  vector makes the agent ignore the cheese. The top-right vector attracts the 
-  agent to the top-right corner. Applying both at once combines the effects!
+card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.jpg
+description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
 ---
+
 
 
 

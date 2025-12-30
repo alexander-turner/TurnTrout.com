@@ -38,12 +38,11 @@ date_published: 2019-09-23 00:00:00
 original_url: https://www.lesswrong.com/posts/TxcYSRQ9giC6zmKov/value-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/D6Bhmv6.jpg
-description: Impact is objectively important to agents, no matter their goals. 
-  Even robots hoarding pebbles care about a meteor strike.
-date_updated: 2025-11-22 00:21:52.667251
-card_image_alt: 'A black oval symbolizing an empty universe contains the text: "The
-  universe feels dead and empty and worthless."'
+description: Impact is objectively important to agents, no matter their goals. Even robots hoarding pebbles care about a meteor strike.
+date_updated: 2025-12-30 14:46:20.403471
+card_image_alt: 'A black oval symbolizing an empty universe contains the text: "The universe feels dead and empty and worthless."'
 ---
+
 
 
 
