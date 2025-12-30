@@ -659,11 +659,14 @@ test("Navigated page properly orients the first match in viewport", async ({ pag
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
 
-  const matchTop = await firstMatch.evaluate((el) => {
-    const rect = el.getBoundingClientRect()
-    return rect.top
-  })
-  expect(matchTop).toBeGreaterThan(50)
+  // Wait for the scroll to complete by checking that the element is in the expected position
+  await expect(async () => {
+    const matchTop = await firstMatch.evaluate((el) => {
+      const rect = el.getBoundingClientRect()
+      return rect.top
+    })
+    expect(matchTop).toBeGreaterThan(50)
+  }).toPass()
 })
 
 test("Result card matching stays synchronized with preview", async ({ page }) => {
