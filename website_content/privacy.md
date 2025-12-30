@@ -378,6 +378,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
   - [ ] Set Brave as your default browser.
   - [ ] Enable Sync and enable syncing everything (it's E2EE).
   - [ ] Install the Bitwarden extension, pin the extension icon to be visible while browsing the web, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
+  - [ ] [Remove "sponsored images" from the new tab page](https://support.brave.app/hc/en-us/articles/35182999599501-New-Tab-Page-Ads-Reporting)
 
 > [!note]- Optional additional protections to apply
 >
@@ -442,7 +443,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 
 1. [Buy two keys.](https://www.yubico.com/product/yubikey-5-series/yubikey-5c-nfc/)
 2. Set up key-based 2FA on your most important logins. For each site, register 2FA on both keys.
-3. Keep the two factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
+3. Keep the two-factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
 
 > [!question] These keys are expensive. Do I really need two?
 > I know they aren't cheap. However, they will make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind.
