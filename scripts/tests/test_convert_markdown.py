@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from .. import convert_markdown_yaml, source_file_checks
+from .. import utils as script_utils
 from .utils import create_markdown_file
 
 try:
@@ -12,6 +13,17 @@ try:
     from .utils import setup_test_env  # type: ignore
 except ImportError:
     pass
+
+actual_max_size = 300
+
+
+@pytest.fixture
+def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(
+        script_utils,
+        "load_shared_constants",
+        lambda: {"maxCardImageSizeKb": actual_max_size},
+    )
 
 
 @pytest.fixture
@@ -118,13 +130,13 @@ Content with already processed JPEG card_image.""",
             "processed_jpeg.md",
         ),
         (
-            "small_png_under_300kb",
+            "small_png_under_max_kb",
             """---
 title: Test Post
 date: 2023-10-10
 card_image: https://assets.turntrout.com/images/card_images/small.png
 ---
-Content with small PNG card_image under 300KB.""",
+Content with small PNG card_image under max KB.""",
             "small_png.md",
         ),
         (
@@ -140,6 +152,7 @@ Some content without YAML front matter.
 def test_process_card_image_in_markdown_skips(
     setup_test_env,
     mock_git_root,
+    mock_load_shared_constants,
     test_id,
     markdown_content,
     md_filename_suffix,
@@ -238,7 +251,7 @@ def jpeg_conversion_setup(tmp_path):
     return input_path, output_path
 
 
-def test_convert_to_jpeg(jpeg_conversion_setup):
+def test_convert_to_jpeg(jpeg_conversion_setup, mock_load_shared_constants):
     """Test JPEG conversion with size constraints."""
     input_path, output_path = jpeg_conversion_setup
 
@@ -250,8 +263,7 @@ def test_convert_to_jpeg(jpeg_conversion_setup):
         mock.patch("subprocess.run") as mock_run,
         mock.patch.object(Path, "stat") as mock_stat,
     ):
-        # Mock file size to be under 300KB (200KB)
-        mock_stat.return_value.st_size = 200 * 1024
+        mock_stat.return_value.st_size = (actual_max_size - 1) * 1024
 
         convert_markdown_yaml._convert_to_jpeg(input_path, output_path)
 
@@ -266,7 +278,9 @@ def test_convert_to_jpeg(jpeg_conversion_setup):
         assert args[-1] == str(output_path)
 
 
-def test_convert_to_jpeg_resizes_to_height_1200(jpeg_conversion_setup):
+def test_convert_to_jpeg_resizes_to_height_1200(
+    jpeg_conversion_setup, mock_load_shared_constants
+):
     """Test that JPEG conversion resizes images to height of 1200 pixels."""
     input_path, output_path = jpeg_conversion_setup
 
@@ -278,8 +292,7 @@ def test_convert_to_jpeg_resizes_to_height_1200(jpeg_conversion_setup):
         mock.patch("subprocess.run") as mock_run,
         mock.patch.object(Path, "stat") as mock_stat,
     ):
-        # Mock file size to be under 300KB (200KB)
-        mock_stat.return_value.st_size = 200 * 1024
+        mock_stat.return_value.st_size = (actual_max_size - 1) * 1024
 
         convert_markdown_yaml._convert_to_jpeg(input_path, output_path)
 
@@ -321,7 +334,7 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
         mock_run.side_effect = side_effect
 
         convert_markdown_yaml._convert_to_jpeg(
-            input_path, output_path, max_size_kb=300
+            input_path, output_path, max_size_kb=actual_max_size
         )
 
     # Should be called twice (quality 85, then 80)
@@ -343,7 +356,7 @@ def test_convert_to_jpeg_warns_when_cannot_compress_below_limit(
 ):
     """Test that _convert_to_jpeg warns when file cannot be compressed below limit."""
     input_path, output_path = jpeg_conversion_setup
-    max_size_kb = source_file_checks.MAX_CARD_IMAGE_SIZE_KB
+    max_size_kb = source_file_checks.get_max_card_image_size_kb()
     # File size that exceeds the limit
     oversized_kb = max_size_kb + 1
 

@@ -61,7 +61,10 @@ def check_cover_image_alt(metadata: dict) -> List[str]:
     return errors
 
 
-MAX_CARD_IMAGE_SIZE_KB = 300
+def get_max_card_image_size_kb() -> int:
+    """Get the max card image size from config."""
+    constants = script_utils.load_shared_constants()
+    return constants["maxCardImageSizeKb"]
 
 
 def _check_card_image_domain(card_url: str) -> List[str]:
@@ -110,9 +113,10 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
             content_length = response.headers.get("Content-Length")
             if content_length:
                 size_kb = int(content_length) / 1024
-                if size_kb > MAX_CARD_IMAGE_SIZE_KB:
+                max_size_kb = get_max_card_image_size_kb()
+                if size_kb > max_size_kb:
                     errors.append(
-                        f"card_image is {size_kb:.1f}KB, should be under {MAX_CARD_IMAGE_SIZE_KB}KB: {card_url}"
+                        f"card_image is {size_kb:.1f}KB, should be under {max_size_kb}KB: {card_url}"
                     )
     except requests.RequestException as e:
         errors.append(f"Failed to load card image URL '{card_url}': {str(e)}")

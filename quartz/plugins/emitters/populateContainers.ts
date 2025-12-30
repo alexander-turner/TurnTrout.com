@@ -25,6 +25,7 @@ const {
   defaultPath,
   testPageSlug: testPageSlugRaw,
   designPageSlug: designPageSlugRaw,
+  maxCardImageSizeKb,
 } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
@@ -286,6 +287,10 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         {
           id: "populate-favicon-threshold",
           generator: generateConstantContent(minFaviconCount),
+        },
+        {
+          id: "populate-max-size-card",
+          generator: generateConstantContent(maxCardImageSizeKb),
         },
       ])
 

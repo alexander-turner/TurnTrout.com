@@ -95,6 +95,7 @@
   "tightScrollTolerance": 10,
   "scrollTolerance": 30,
   "listTolerance": 5,
+  "maxCardImageSizeKb": 300,
   "specialDomainMappings": [
     {
       "pattern": "^.*transformer-circuits\\.pub",

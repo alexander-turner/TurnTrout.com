@@ -106,10 +106,11 @@ def _convert_to_jpeg(
     Args:
         input_path: Source image path
         output_path: Destination JPEG path
-        max_size_kb: Maximum file size in kilobytes (defaults to MAX_CARD_IMAGE_SIZE_KB)
+        max_size_kb: Maximum file size in kilobytes (defaults to maxCardImageSizeKb from config)
     """
     if max_size_kb is None:
-        max_size_kb = source_file_checks.MAX_CARD_IMAGE_SIZE_KB
+        constants = script_utils.load_shared_constants()
+        max_size_kb = constants["maxCardImageSizeKb"]
 
     magick_executable = script_utils.find_executable("magick")
     target_size = max_size_kb * 1024  # Convert to bytes

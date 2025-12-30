@@ -927,7 +927,7 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
 4. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
 5. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
-6. Preview card image URLs are valid and end with `.png` or `.jpg`. Social media sites do not reliably display newer formats like `.avif`.
+6. Preview card image URLs are valid, end with `.png` or `.jpg`, and are at most <span id="populate-max-size-card"></span>KB. Social media sites do not reliably display newer formats like `.avif`.
 
 I lastly check that my CSS:
 
