@@ -283,8 +283,8 @@ $match-color: var(--green);
 }
 
 .search-match,
-* > .search-match,
-*[id] > .search-match,
+* .search-match,
+*[id] .search-match,
 *:visited .search-match {
   border-radius: 5px;
   scroll-margin-top: calc($base-margin * 4);
