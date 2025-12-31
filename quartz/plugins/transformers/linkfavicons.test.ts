@@ -1520,6 +1520,12 @@ describe("isAssetLink", () => {
 })
 
 describe("AddFavicons plugin", () => {
+  const mockCtx = {
+    argv: {
+      offline: false,
+    },
+  } as unknown as import("../../util/ctx").BuildCtx
+
   beforeEach(() => {
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
@@ -1537,9 +1543,29 @@ describe("AddFavicons plugin", () => {
     expect(typeof plugin.htmlPlugins).toBe("function")
   })
 
+  it("should return [] when offline mode is enabled", () => {
+    const plugin = linkfavicons.AddFavicons()
+    const offlineCtx = {
+      argv: {
+        offline: true,
+      },
+    } as unknown as import("../../util/ctx").BuildCtx
+
+    expect(plugin.htmlPlugins(offlineCtx)).toEqual([])
+  })
+
+  it("should default offline to false when ctx.argv.offline is undefined", () => {
+    const plugin = linkfavicons.AddFavicons()
+    const ctxWithoutOffline = {
+      argv: {},
+    } as unknown as import("../../util/ctx").BuildCtx
+
+    expect(plugin.htmlPlugins(ctxWithoutOffline).length).toBeGreaterThan(0)
+  })
+
   it("should process HTML tree and add favicons to links", async () => {
     const plugin = linkfavicons.AddFavicons()
-    const htmlPlugins = plugin.htmlPlugins()
+    const htmlPlugins = plugin.htmlPlugins(mockCtx)
     const transformFunction = htmlPlugins[0]()
 
     const tree = {
@@ -1573,7 +1599,7 @@ describe("AddFavicons plugin", () => {
 
   it("should handle nodes with undefined parent", async () => {
     const plugin = linkfavicons.AddFavicons()
-    const htmlPlugins = plugin.htmlPlugins()
+    const htmlPlugins = plugin.htmlPlugins(mockCtx)
     const transformFunction = htmlPlugins[0]()
 
     // This test covers the edge case where visit calls the callback with undefined parent
@@ -1586,7 +1612,7 @@ describe("AddFavicons plugin", () => {
 
   it("should skip elements without href", async () => {
     const plugin = linkfavicons.AddFavicons()
-    const htmlPlugins = plugin.htmlPlugins()
+    const htmlPlugins = plugin.htmlPlugins(mockCtx)
     const transformFunction = htmlPlugins[0]()
 
     const tree = {
