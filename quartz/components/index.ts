@@ -8,7 +8,6 @@ import Navbar from "./Navbar"
 import NotFound from "./pages/404"
 import Content from "./pages/Content"
 import TagContent from "./pages/TagContent"
-import RecentNotes from "./RecentNotes"
 import TableOfContents from "./TableOfContents"
 
 export {
@@ -21,7 +20,6 @@ export {
   Navbar,
   Backlinks,
   Footer,
-  RecentNotes,
   NotFound,
   AuthorList,
 }
