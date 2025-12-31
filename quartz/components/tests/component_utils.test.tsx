@@ -14,20 +14,20 @@ import {
 } from "../component_utils"
 import { debounce } from "../scripts/component_script_utils"
 
+const createParent = (): Parent => ({ type: "element", tagName: "div", children: [] }) as Parent
+
 let parent: Parent
 beforeEach(() => {
-  parent = { type: "element", tagName: "div", children: [] } as Parent
+  parent = createParent()
 })
 
 describe("processKatex", () => {
   it("should output katex node", () => {
-    const latex = "E = mc^2"
-    processKatex(latex, parent)
+    processKatex("E = mc^2", parent)
 
     expect(parent.children).toHaveLength(1)
     expect(parent.children[0]).toHaveProperty("tagName", "span")
     expect(parent.children[0]).toHaveProperty("properties.className", ["katex-toc"])
-    // The value itself is HTML so it's clunky to test
   })
 })
 
@@ -106,10 +106,6 @@ describe("processSmallCaps", () => {
 })
 
 describe("processTextWithArrows", () => {
-  beforeEach(() => {
-    parent = { type: "element", tagName: "div", children: [] } as Parent
-  })
-
   it("should handle text with arrows", () => {
     processTextWithArrows("→", parent)
     expect(parent.children).toMatchObject([
@@ -127,7 +123,7 @@ describe("Code Processing", () => {
   let parent: Parent
 
   beforeEach(() => {
-    parent = { type: "element", tagName: "div", children: [] } as Parent
+    parent = createParent()
   })
 
   describe("processInlineCode", () => {
