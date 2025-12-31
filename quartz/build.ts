@@ -87,10 +87,14 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
   const filePaths = fps.map((fp) => joinSegments(argv.directory, fp) as FilePath)
   ctx.allSlugs = allFiles.map((fp) => slugifyFilePath(fp as FilePath))
 
-  // Count links across all files before any HTML processing
-  perf.addEvent("count-links")
-  await countAllFavicons(ctx, filePaths)
-  console.log(`Counted links in ${perf.timeSince("count-links")}`)
+  // Count links across all files before any HTML processing (skip if offline)
+  if (!argv.offline) {
+    perf.addEvent("count-links")
+    await countAllFavicons(ctx, filePaths)
+    console.log(`Counted links in ${perf.timeSince("count-links")}`)
+  } else {
+    console.log(chalk.yellow("Skipping link counting (offline mode)"))
+  }
 
   const parsedFiles = await parseMarkdown(ctx, filePaths)
   const filteredContent = filterContent(ctx, parsedFiles)

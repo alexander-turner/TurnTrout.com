@@ -105,4 +105,9 @@ export const BuildArgv = {
     number: true,
     describe: "how many threads to use to parse notes",
   },
+  offline: {
+    boolean: true,
+    default: false,
+    describe: "skip network-requiring transforms like favicon downloads",
+  },
 }

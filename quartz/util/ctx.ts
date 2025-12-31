@@ -12,6 +12,7 @@ export interface Argv {
   remoteDevHost?: string
   concurrency?: number
   skipCriticalCSS?: boolean
+  offline?: boolean
 }
 
 export interface BuildCtx {

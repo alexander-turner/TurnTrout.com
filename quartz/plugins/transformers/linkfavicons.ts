@@ -9,6 +9,8 @@ import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
 
+import type { BuildCtx } from "../../util/ctx"
+
 import {
   simpleConstants,
   specialFaviconPaths,
@@ -992,7 +994,10 @@ export async function ModifyNode(
 export const AddFavicons = () => {
   return {
     name: "AddFavicons",
-    htmlPlugins() {
+    htmlPlugins(ctx: BuildCtx) {
+      const offline = ctx.argv.offline ?? false
+      if (offline) return []
+
       return [
         () => {
           return async (tree: Root) => {
