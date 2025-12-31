@@ -82,6 +82,9 @@ export function noteAdmonition(text: string): string {
 const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<quote>\n)/gm
 const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
+// Replace x.com and twitter.com links with xcancel.com
+const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\//gi
+
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
@@ -90,6 +93,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, subtitleReplacement],
+  [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],

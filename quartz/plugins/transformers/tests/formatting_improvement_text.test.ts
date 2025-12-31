@@ -271,6 +271,17 @@ And some hyphens-to-be-ignored.`
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
       ],
+      ["https://x.com/turntrout/status/123", "https://xcancel.com/turntrout/status/123"],
+      ["http://twitter.com/turntrout/status/123", "https://xcancel.com/turntrout/status/123"],
+      [
+        "[tweet](https://twitter.com/turntrout/status/123)",
+        "[tweet](https://xcancel.com/turntrout/status/123)",
+      ],
+      [
+        "[tweet](https://www.x.com/turntrout/status/123)",
+        "[tweet](https://xcancel.com/turntrout/status/123)",
+      ],
+      ["twitter.com", "twitter.com"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
