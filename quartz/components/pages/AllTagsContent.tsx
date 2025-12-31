@@ -41,7 +41,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
   // Create tag elements using hastscript
   const tagElements = sortedTags.map(([tag, count]) =>
     h("div.tag-container", [
-      h("a.internal.tag-link", { href: `../tags/${tag}` }, formatTag(tag)),
+      h("a.internal.tag-link.can-trigger-popover", { href: `../tags/${tag}` }, formatTag(tag)),
       h("span.tag-count", `(${count})`),
     ]),
   )

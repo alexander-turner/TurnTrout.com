@@ -191,7 +191,7 @@ describe("generateAllTagsHast", () => {
     const link = tagContainer.children[0] as HastElement
 
     expect(link.tagName).toBe("a")
-    expect(link.properties?.className).toEqual(["internal", "tag-link"])
+    expect(link.properties?.className).toEqual(["internal", "tag-link", "can-trigger-popover"])
     expect(link.properties?.href).toBe("../tags/test-tag")
   })
 

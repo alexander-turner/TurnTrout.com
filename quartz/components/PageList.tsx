@@ -65,7 +65,11 @@ export function createPageTitleElement(
   pageSlug: FullSlug,
 ): Element {
   return h("p", { class: "page-listing-title" }, [
-    h("a.internal", { href: resolveRelative(fileDataSlug, pageSlug) }, formattedTitle),
+    h(
+      "a.internal.can-trigger-popover",
+      { href: resolveRelative(fileDataSlug, pageSlug) },
+      formattedTitle,
+    ),
   ])
 }
 
@@ -81,7 +85,7 @@ export function createTagsElement(tags: string[], fileDataSlug: FullSlug): Eleme
     "ul.tags",
     tags.map((tag) =>
       h(
-        "a.internal.tag-link",
+        "a.internal.tag-link.can-trigger-popover",
         { href: resolveRelative(fileDataSlug, `tags/${tag}` as FullSlug) },
         formatTag(tag),
       ),

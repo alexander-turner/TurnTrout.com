@@ -19,36 +19,36 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
   }
 
   const tag = simplifySlug(slug.slice("tags/".length) as FullSlug)
-  const allPagesWithTag = (tag: string) =>
-    allFiles.filter((file) =>
-      (file.frontmatter?.tags ?? []).flatMap(getAllSegmentPrefixes).includes(tag),
-    )
+  const pagesWithTag = allFiles.filter((file) =>
+    (file.frontmatter?.tags ?? []).flatMap(getAllSegmentPrefixes).includes(tag),
+  )
 
-  const content =
+  // Optional custom description/content for this tag page (from tags/tagname.md if it exists)
+  const tagPageDescription =
     (tree as Root).children.length === 0
       ? fileData.description
       : htmlToJsx(fileData.filePath || ("" as FilePath), tree)
-  const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["previewable", ...cssClasses].join(" ")
 
-  const pages = allPagesWithTag(tag)
-  const listProps = {
+  const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
+  const articleClasses = ["previewable", ...cssClasses].join(" ")
+
+  const pageListProps = {
     ...props,
-    allFiles: pages,
+    allFiles: pagesWithTag,
   }
 
   return (
-    <div className={classes}>
-      <article>{content as React.ReactNode}</article>
+    <article className={articleClasses}>
+      {tagPageDescription && <div>{tagPageDescription as React.ReactNode}</div>}
       <div className="page-listing">
-        <p>{uiStrings.pages.tagContent.itemsUnderTag(pages.length)}</p>
+        <p>{uiStrings.pages.tagContent.itemsUnderTag(pagesWithTag.length)}</p>
         <div>
-          <PageList {...listProps} />
+          <PageList {...pageListProps} />
         </div>
       </div>
-    </div>
+    </article>
   )
 }
 
-TagContent.css = style + PageList.css
+TagContent.css = style
 export default (() => TagContent) satisfies QuartzComponentConstructor

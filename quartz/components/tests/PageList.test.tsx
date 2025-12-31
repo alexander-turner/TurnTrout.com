@@ -277,6 +277,7 @@ describe("createPageTitleElement", () => {
     expect(anchor.tagName).toBe("a")
     expect(anchor.properties?.href).toBe(resolveRelative(fileDataSlug, pageSlug))
     expect(anchor.properties?.className).toContain("internal")
+    expect(anchor.properties?.className).toContain("can-trigger-popover")
 
     // Ensure the anchor contains the provided title text node
     const textNode = anchor.children[0] as { type: "text"; value: string }

@@ -880,3 +880,42 @@ test.describe("Checkboxes", () => {
     expect(hasLocalStorageKey).toBe(true)
   })
 })
+
+test.describe("Popovers on different page types", () => {
+  const pageSlugs = ["all-posts", "tags/personal", "all-tags"]
+
+  for (const pageSlug of pageSlugs) {
+    test(`Popover appears on ${pageSlug} page`, async ({ page }) => {
+      // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
+      test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
+
+      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "load" })
+      await page.locator("body").waitFor({ state: "visible" })
+
+      // Dispatch the 'nav' event to initialize popover functionality
+      await page.evaluate(() => {
+        window.dispatchEvent(new Event("nav"))
+      })
+
+      const popoverLink = page.locator("article a.can-trigger-popover").first()
+      await popoverLink.scrollIntoViewIfNeeded()
+      await expect(popoverLink).toBeVisible()
+
+      await popoverLink.hover()
+      await page.waitForFunction(
+        () => {
+          const popover = document.querySelector(".popover.popover-visible")
+          return popover !== null
+        },
+        { timeout: 1000 },
+      )
+
+      const popover = page.locator(".popover.popover-visible")
+      await expect(popover).toBeVisible()
+      const popoverInner = popover.locator(".popover-inner")
+      await expect(popoverInner).toBeVisible()
+
+      await page.mouse.move(0, 0)
+    })
+  }
+})
