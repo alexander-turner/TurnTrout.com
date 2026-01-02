@@ -65,7 +65,7 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 > The subsections are in descending order of importance. If you have some money to spend, then I'd focus on:
 >
 > 1. Switching to GrapheneOS,
-> 2. Switching to Linux (free) or MacOS (famously not free), and
+> 2. Switching to Linux (free) or MacOS (famously not free) plus a travel router, and
 > 3. Owning your home router (and modem if relevant).
 >
 > Other purchases are not critical -- e.g. buying an Apple TV to replace your standard smart TV operating system. These purchases will improve your privacy, but they aren't critical.
@@ -74,7 +74,7 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 
 Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed. Time: 6 hours.
 
-Here's the deal: [iOS 26 fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch.
+Here's the deal: [iOS 26 fundamentally break all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch to GrapheneOS.
 
 > [!info] Reminder that I work at Google DeepMind
 > Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
@@ -170,7 +170,7 @@ More specifically, Windows sends out so much information about you via so-called
 
 ### Linux can be your new home
 
- All things considered, I recommend that you switch to Linux. For the unaware, Linux is an open source operating system. Each line of code has been inspected by experts from around the world -- from the first loading screen down to the calculator. Linux is both free and private. Linux comes in many different flavors, but I recommend Linux Mint. While I haven't used it before, it's strongly praised:
+All things considered, I recommend that you switch to Linux, an open source operating system. Each line of code has been inspected by experts from around the world -- from the first loading screen down to the calculator. Linux is both free and private. Unlike macOS, [Linux doesn't have the VPN bypass issues](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios--macos-as-of-december-2025) that plague Apple devices. Linux comes in many different flavors, but I recommend Linux Mint. While I haven't used it before, it's strongly praised:
 
 > [!quote] [Ars Technica](https://linuxmint.com/)
 > Linux Mint just works. It isn't "changing the desktop computer paradigm," or "innovating" in "groundbreaking" ways. The team behind Mint is just building a desktop operating system that looks and functions a lot like every other desktop operating system you've used, which is to say you'll be immediately comfortable and stop thinking about your desktop and start using it to do actual work.
@@ -181,9 +181,10 @@ If you have a Windows computer, you can just install Linux Mint on your computer
 
 ### The Mac alternative
 
-Mac is also way more private than Windows. I use a Mac and I'm happy with it, but if I could go back and change my choice, I might've gone with Linux. Reason being: Mac requires trust in Apple since MacOS is _not open source_. However, I think [Apple has a good track record when it comes to user privacy](https://en.wikipedia.org/wiki/Apple%E2%80%93FBI_encryption_dispute) (with a few [exceptions](https://proton.me/blog/protect-data-apple-adp-uk)). Furthermore, Apple is vertically integrated and so manufactures their own CPUs and laptops. That produces a more secure experience.
+Mac is also way more private than Windows. I use a Mac and I'm happy with it, but if I could go back and change my choice, I might've gone with Linux. Reason being: Mac [leaks traffic outside of the VPN](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025) and also requires trust in Apple --- since MacOS is _not open source_. However, I think [Apple has a good track record when it comes to user privacy](https://en.wikipedia.org/wiki/Apple%E2%80%93FBI_encryption_dispute) (with a few [exceptions](https://proton.me/blog/protect-data-apple-adp-uk)). Furthermore, Apple is vertically integrated and so manufactures their own CPUs and laptops. That produces a more secure experience.
 
 - [ ] If you want me to make a choice for you, then if you need a low-compute laptop get [a 4th-generation MacBook Air](https://www.apple.com/macbook-air/). Otherwise, get [a 4th-generation MacBook Pro.](https://www.apple.com/macbook-pro/)
+- [ ] Secure your [leaky](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025) macOS VPN by purchasing the GLi.Net [Opal](https://store-us.gl-inet.com/products/united-states-opal-gl-sft1200-gigabit-wireless-router-dual-band-openwrt-ipv6-tor?_pos=2&_sid=3044a6c07&_ss=r) (\$35) or the [Beryl AX](https://store-us.gl-inet.com/products/beryl-ax-gl-mt3000-pocket-sized-wi-fi-6-wireless-travel-gigabit-router?_pos=2&_sid=f2a676e8e&_ss=r) (\$90). As I am about to explain, [you'll need to set up the router-level VPN](#protect-your-network-not-just-yourself). _When you need to ensure privacy, only connect an Apple device to the internet through a VPN-enforced router._
 
 ## Own your home network
 
@@ -191,7 +192,7 @@ Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on iOS](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
+[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on an Apple device](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
 
 Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
 
@@ -222,7 +223,7 @@ Because its software is open-source, it is subject to public scrutiny. You have 
 For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell Proton VPN to "allow LAN connections."_
 
 1. [ ] [Set up Proton VPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
-2. [ ] Exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
+2. [ ] If you don't use macOS, you can exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
     1. [ ] Go to the dashboard at `192.168.8.1`,
     2. [ ] Navigate to VPN settings,
     3. [ ] Go from "global mode" to "policy mode" with policy type "do not use VPN for the following", and

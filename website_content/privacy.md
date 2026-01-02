@@ -308,7 +308,7 @@ As discussed later in [the section on securing your data with end-to-end encrypt
 - [ ] [Download and run Proton VPN](https://protonvpn.com/).
 - In the settings, ensure:
   - [ ] Your VPN always starts along with your device.
-  - [ ] Traffic can only go through your VPN (enable the "kill switch").
+  - [ ] Traffic can only go through your VPN (enable the "kill switch"). (Be sure to disable when you need to make a LAN connection.)
 - [ ] Repeat for each of your devices.
 
 For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
@@ -318,14 +318,16 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 >
 > Consider changing VPN servers in the app when you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (*do not make a bad habit*). Your VPN is your most powerful shield against mass surveillance.
 
-### VPNs are *fundamentally unreliable* on mobile iOS as of October 2025
+### VPNs are *fundamentally unreliable* on iOS (& macOS) as of December 2025
 
 > [!danger]
-> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php).  iOS system services sometime ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers. The issue doesn't affect MacOS.
+> I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php). iOS system services sometimes ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
 >
-> Should you still use a VPN if you're stuck with iOS? Yes, it'll still help keep you private from the web services you're using. Know that the ISP (and Apple) will be tracking you. If you don't want that, in the next post, I recommend switching [to GrapheneOS.](/advanced-privacy#switch-to-grapheneos)
+> macOS has a similar problem. The *only* reliable workaround is to [always connect](/advanced-privacy#the-mac-alternative).
+>
+> Should you still use a VPN on an Apple device? Yes—it's still better than nothing. Know that the ISP (and Apple) will see some metadata.
 
-The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996)  Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better  in terms of VPNs.
+The Android situation is better. Sadly, there are rare circumstances where VPNs won't protect your traffic. [Android apps can leak past the VPN when they otherwise can't connect.](https://issuetracker.google.com/issues/337961996) Android also [sporadically makes Wi-Fi "can I connect?" checks which ignore your VPN](https://mullvad.net/en/blog/android-leaks-connectivity-check-traffic), which isn't great --- but that leaks far less information. All in all, it seems like Android is better in terms of VPNs.
 
 ### Other VPN notes
 
