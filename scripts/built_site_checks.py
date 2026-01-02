@@ -1019,25 +1019,33 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
 
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     """
-    Check for elements with IDs starting with 'populate-' that are empty.
+    Check for elements with IDs or classes starting with 'populate-' that are
+    empty.
 
     Returns:
         list of strings describing empty populate elements.
     """
     empty_populate_elements: list[str] = []
 
-    for element in _tags_only(soup.find_all(id=True)):
+    for element in _tags_only(soup.find_all()):
         element_id = element.get("id")
-        if not isinstance(element_id, str):
-            continue
-
-        if element_id.startswith("populate-"):
-            # Check if element is empty (no text content or only whitespace)
+        if isinstance(element_id, str) and element_id.startswith("populate-"):
             if not element.get_text(strip=True):
                 _append_to_list(
                     empty_populate_elements,
                     f"<{element.name}> with id='{element_id}' is empty",
                 )
+
+        element_classes = element.get("class")
+        if isinstance(element_classes, list):
+            for class_name in element_classes:
+                if class_name.startswith("populate-"):
+                    if not element.get_text(strip=True):
+                        _append_to_list(
+                            empty_populate_elements,
+                            f"<{element.name}> with class='{class_name}' is empty",
+                        )
+                    break
 
     return empty_populate_elements
 

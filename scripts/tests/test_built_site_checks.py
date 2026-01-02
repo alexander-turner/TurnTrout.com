@@ -4824,6 +4824,40 @@ description: Test description
             '<div id="not-populate-toc"></div>',
             [],
         ),
+        # populate- class with content (valid)
+        (
+            '<span class="populate-commit-count">4943</span>',
+            [],
+        ),
+        # Empty populate- class (invalid)
+        (
+            '<span class="populate-commit-count"></span>',
+            ["<span> with class='populate-commit-count' is empty"],
+        ),
+        # Multiple elements with populate- classes, some empty (invalid)
+        (
+            """
+            <span class="populate-commit-count">4943</span>
+            <span class="populate-js-test-count"></span>
+            <span class="populate-lines-of-code">83635</span>
+            """,
+            ["<span> with class='populate-js-test-count' is empty"],
+        ),
+        # Element with both populate- ID and class (both should be checked)
+        (
+            '<div id="populate-id" class="populate-class">Content</div>',
+            [],
+        ),
+        # Element with multiple classes including populate- (valid)
+        (
+            '<span class="some-class populate-commit-count another-class">4943</span>',
+            [],
+        ),
+        # Element with multiple classes including populate- (invalid)
+        (
+            '<span class="some-class populate-commit-count another-class"></span>',
+            ["<span> with class='populate-commit-count' is empty"],
+        ),
     ],
 )
 def test_check_populate_elements_nonempty(html, expected):

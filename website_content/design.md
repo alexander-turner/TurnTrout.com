@@ -19,11 +19,7 @@ no_dropcap: false
 
 
 
-When I decided to design my own website, I had no experience with web development. After 202 days, 2,220+ commits,[^commits] and 1,008 unit tests, I present `turntrout.com` - the result of my inexperience.
-
-I'm proud of this website and its design. Indulge me and let me explain the choices I made along the way.
-
-[^commits]: I counted my commits by running `git log --author="Alex Turner" --oneline | wc -l`.
+When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
 ![A basic rendition of the article "Think carefully before calling RL policies 'agents'". The website looks bare and amateurish.](https://assets.turntrout.com/static/images/posts/original_site.avif)
 Figure: The beginning of my journey, rendered under my third commit ([`6e687609`](https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e)) on April 1, 2024.
@@ -800,10 +796,22 @@ I include alt text for all images. I automatically generated, manually approved,
 
 To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
 
+## Auto-generated repository statistics
+
+To keep documentation up-to-date, the build process computes e.g. the number of commits I've made. The number is injected into special `<span>` elements with a `class` or `id` like `populate-commit-count`. The build process validates that all `populate-*` spans are properly filled, failing the build if any are left empty.
+
+| Metric | Count |
+|--------|-------|
+| Total commits | <span class="populate-commit-count"></span> |
+| TypeScript unit tests | <span class="populate-js-test-count"></span> |
+| Python unit tests | <span class="populate-pytest-count"></span> |
+| Playwright integration tests | <span class="populate-playwright-test-count"></span> |
+| Lines of code | <span class="populate-lines-of-code"></span> |
+
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <span class="populate-site-favicon"></span> favicon appears for links to other pages on the site, while the <span class="populate-anchor-link-icon"></span> icon is used for within-page links.
+: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. The <span id="populate-site-favicon"></span> favicon appears for links to other pages on the site, while the <span id="populate-anchor-link-icon"></span> icon is used for within-page links.
 
 Search
 : My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.

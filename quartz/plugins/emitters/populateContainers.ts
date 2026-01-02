@@ -1,3 +1,4 @@
+import { execSync } from "child_process"
 import fs from "fs"
 import { globby } from "globby"
 import { type Element, type Root } from "hast"
@@ -90,6 +91,73 @@ export const generateTestCountContent = (): ContentGenerator => {
     const count = testFiles.length
     return [h("span", `${count} test files`)]
   }
+}
+
+// skipcq: JS-D1001
+export async function countGitCommits(author: string): Promise<number> {
+  const output = execSync(`git rev-list --all --count --author="${author}"`, {
+    encoding: "utf-8",
+  })
+  return parseInt(output.trim(), 10)
+}
+
+// skipcq: JS-D1001
+export async function countJsTests(): Promise<number> {
+  const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
+    encoding: "utf-8",
+  })
+  const match = output.match(/(\d+)\s+passed/)
+  if (!match) throw new Error("Failed to parse test count from output")
+  return parseInt(match[1], 10)
+}
+
+// skipcq: JS-D1001
+export async function countPlaywrightTests(): Promise<number> {
+  const output = execSync('grep -r "test(" quartz/components/tests/*.spec.ts | wc -l', {
+    encoding: "utf-8",
+  })
+  return parseInt(output.trim(), 10)
+}
+
+// skipcq: JS-D1001
+export async function countPytestTests(): Promise<number> {
+  const output = execSync("pytest --collect-only -q 2>&1 | tail -1", {
+    encoding: "utf-8",
+  })
+  // Output format: "1293 tests collected in 0.50s" or similar
+  const match = output.match(/(\d+)\s+tests?\s+collected/)
+  return match ? parseInt(match[1], 10) : 0
+}
+
+// skipcq: JS-D1001
+export async function countLinesOfCode(): Promise<number> {
+  const output = execSync(
+    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/lost-pixel/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
+}
+
+export interface RepoStats {
+  commitCount: number
+  jsTestCount: number
+  playwrightTestCount: number
+  pytestCount: number
+  linesOfCode: number
+}
+
+// skipcq: JS-D1001
+export async function computeRepoStats(): Promise<RepoStats> {
+  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+    await Promise.all([
+      countGitCommits("Alex Turner"),
+      countJsTests(),
+      countPlaywrightTests(),
+      countPytestTests(),
+      countLinesOfCode(),
+    ])
+
+  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -269,6 +337,8 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       return []
     },
     async emit(ctx) {
+      const stats = await computeRepoStats()
+
       const testPagePath = joinSegments(ctx.argv.output, `${testPageSlug}.html`)
 
       const testPageFiles = await populateElements(testPagePath, [
@@ -291,6 +361,26 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         {
           id: "populate-max-size-card",
           generator: generateConstantContent(maxCardImageSizeKb),
+        },
+        {
+          className: "populate-commit-count",
+          generator: generateConstantContent(stats.commitCount.toLocaleString()),
+        },
+        {
+          className: "populate-js-test-count",
+          generator: generateConstantContent(stats.jsTestCount.toLocaleString()),
+        },
+        {
+          className: "populate-playwright-test-count",
+          generator: generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+        },
+        {
+          className: "populate-pytest-count",
+          generator: generateConstantContent(stats.pytestCount.toLocaleString()),
+        },
+        {
+          className: "populate-lines-of-code",
+          generator: generateConstantContent(stats.linesOfCode.toLocaleString()),
         },
       ])
 

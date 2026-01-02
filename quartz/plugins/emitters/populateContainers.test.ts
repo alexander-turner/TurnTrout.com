@@ -3,12 +3,15 @@
  */
 import { jest, describe, it, expect, beforeEach, beforeAll, afterEach } from "@jest/globals"
 
-// Create a mock function that will be used in the factory
 const mockGlobbyFn = jest.fn<() => Promise<string[]>>()
+const mockExecSync = jest.fn<(command: string, options?: unknown) => string>()
 
-// Use unstable_mockModule for ES modules
 jest.unstable_mockModule("globby", () => ({
   globby: mockGlobbyFn,
+}))
+
+jest.unstable_mockModule("child_process", () => ({
+  execSync: mockExecSync,
 }))
 
 import fs from "fs"
@@ -25,7 +28,6 @@ import { faviconCounter } from "../transformers/countFavicons"
 import * as linkfavicons from "../transformers/linkfavicons"
 import { type QuartzEmitterPlugin } from "../types"
 
-// Import the module under test AFTER setting up the mock
 let populateModule: typeof import("./populateContainers")
 let PopulateContainersEmitter: QuartzEmitterPlugin
 
@@ -36,35 +38,36 @@ describe("PopulateContainers", () => {
   const urlCache = linkfavicons.urlCache
 
   beforeAll(async () => {
-    // Import the module AFTER the mock is set up
     populateModule = await import("./populateContainers")
     PopulateContainersEmitter = populateModule.PopulateContainers
   })
 
   beforeEach(() => {
-    // Clear the favicon counter before each test
     faviconCounter.clear()
-
-    // Set up globby mock to return test files by default
     mockGlobbyFn.mockResolvedValue(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
 
-    // Mock fs methods
-    jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
-      /* don't want a real write*/
+    // Provide default outputs for all repo-stat commands invoked during emitter.emit
+    mockExecSync.mockImplementation((command: string) => {
+      if (command.includes("git rev-list")) return "100\n"
+      if (command.includes("pnpm test")) return "Tests:       100 passed, 100 total\n"
+      if (command.includes("pytest --collect-only")) return "1293 tests collected in 0.50s\n"
+      if (command.includes('grep -r "test("')) return "10\n"
+      if (command.includes("find . -type f")) return "1000\n"
+      return "100\n"
     })
+
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
     jest
       .spyOn(fs, "readFileSync")
       .mockReturnValue(
-        '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-site-favicon"></span></body></html>',
+        '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-site-favicon"></span></body></html>',
       )
 
-    // Clear the URL cache
     if (urlCache) {
       urlCache.clear()
     }
 
-    // Mock fetch to prevent actual network calls
     jest.spyOn(global, "fetch").mockResolvedValue({
       ok: false,
     } as Response)
@@ -633,6 +636,158 @@ describe("PopulateContainers", () => {
 
         existsSpy.mockRestore()
         readSpy.mockRestore()
+      })
+    })
+  })
+
+  describe("Repository Statistics Functions", () => {
+    beforeEach(() => {
+      mockExecSync.mockClear()
+      mockGlobbyFn.mockClear()
+    })
+
+    describe("countGitCommits", () => {
+      it("should count commits for a specific author", async () => {
+        mockExecSync.mockReturnValue("4943\n")
+
+        const count = await populateModule.countGitCommits("Alex Turner")
+
+        expect(count).toBe(4943)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'git rev-list --all --count --author="Alex Turner"',
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should handle whitespace in output", async () => {
+        mockExecSync.mockReturnValue("\n\n  1234  \n\n")
+
+        const count = await populateModule.countGitCommits("Test Author")
+
+        expect(count).toBe(1234)
+      })
+    })
+
+    describe("countJsTestFiles", () => {
+      it("should count JS/TS tests from pnpm test output", async () => {
+        mockExecSync.mockReturnValue("Tests:       1234 passed, 1234 total\n")
+
+        const count = await populateModule.countJsTests()
+
+        expect(count).toBe(1234)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          "pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1",
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should throw when no tests found", async () => {
+        mockExecSync.mockReturnValue("")
+
+        await expect(populateModule.countJsTests()).rejects.toThrow(
+          "Failed to parse test count from output",
+        )
+      })
+
+      it("should handle different test output formats", async () => {
+        mockExecSync.mockReturnValue("Tests:       42 passed, 50 total\n")
+
+        const count = await populateModule.countJsTests()
+
+        expect(count).toBe(42)
+      })
+    })
+
+    describe("countPlaywrightTests", () => {
+      it("should count Playwright test cases", async () => {
+        mockExecSync.mockReturnValue("158\n")
+
+        const count = await populateModule.countPlaywrightTests()
+
+        expect(count).toBe(158)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'grep -r "test(" quartz/components/tests/*.spec.ts | wc -l',
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should handle zero test cases", async () => {
+        mockExecSync.mockReturnValue("0\n")
+
+        const count = await populateModule.countPlaywrightTests()
+
+        expect(count).toBe(0)
+      })
+    })
+
+    describe("countPytestTests", () => {
+      it("should count pytest tests via pytest --collect-only", async () => {
+        mockExecSync.mockReturnValue("1293 tests collected in 0.50s\n")
+
+        const count = await populateModule.countPytestTests()
+
+        expect(count).toBe(1293)
+        expect(mockExecSync).toHaveBeenCalledWith("pytest --collect-only -q 2>&1 | tail -1", {
+          encoding: "utf-8",
+        })
+      })
+
+      it("should return 0 when pytest output doesn't match", async () => {
+        mockExecSync.mockReturnValue("some weird output\n")
+
+        const count = await populateModule.countPytestTests()
+
+        expect(count).toBe(0)
+      })
+
+      it("should handle large numbers", async () => {
+        mockExecSync.mockReturnValue("10000 tests collected in 0.50s\n")
+
+        const count = await populateModule.countPytestTests()
+
+        expect(count).toBe(10000)
+      })
+    })
+
+    describe("countLinesOfCode", () => {
+      it("should count total lines of code", async () => {
+        mockExecSync.mockReturnValue("83635\n")
+
+        const count = await populateModule.countLinesOfCode()
+
+        expect(count).toBe(83635)
+        expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining("find . -type f"), {
+          encoding: "utf-8",
+        })
+      })
+
+      it("should handle very large codebases", async () => {
+        mockExecSync.mockReturnValue("1000000\n")
+
+        const count = await populateModule.countLinesOfCode()
+
+        expect(count).toBe(1000000)
+      })
+    })
+
+    describe("computeRepoStats", () => {
+      it("should compute all statistics in parallel", async () => {
+        mockExecSync
+          .mockReturnValueOnce("4943\n")
+          .mockReturnValueOnce("Tests:       1234 passed, 1234 total\n")
+          .mockReturnValueOnce("158\n")
+          .mockReturnValueOnce("1293 tests collected in 0.50s\n")
+          .mockReturnValueOnce("83635\n")
+
+        const stats = await populateModule.computeRepoStats()
+
+        expect(stats).toEqual({
+          commitCount: 4943,
+          jsTestCount: 1234,
+          playwrightTestCount: 158,
+          pytestCount: 1293,
+          linesOfCode: 83635,
+        })
       })
     })
   })
