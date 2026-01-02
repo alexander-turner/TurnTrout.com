@@ -390,6 +390,11 @@ describe("HTMLFormattingImprovement", () => {
       ["i.e., this is a test", "i.e. this is a test"],
       ["(e.g., this is a test)", "(e.g. this is a test)"],
       ["(i.e., this is a test)", "(i.e. this is a test)"],
+      ["macos", "macOS"],
+      ["MacOS", "macOS"],
+      ["MACOS", "macOS"],
+      ["macOS", "macOS"],
+      ["Mac OS", "Mac OS"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
@@ -414,6 +419,20 @@ describe("HTMLFormattingImprovement", () => {
       const input = "The word 'box' should not be changed."
       const result = massTransformText(input)
       expect(result).toBe(input) // No change expected
+    })
+  })
+
+  describe("macOS transform end-to-end (HTML)", () => {
+    it.each([
+      ["<p>macos</p>", "<p>macOS</p>"],
+      ["<p>MACOS</p>", "<p>macOS</p>"],
+      ["<p>macOS</p>", "<p>macOS</p>"],
+      ["<p>Mac OS</p>", "<p>Mac OS</p>"],
+      // Ensure we don't transform inside code blocks
+      ["<p><code>macos</code></p>", "<p><code>macos</code></p>"],
+    ])("transforms '%s' to '%s'", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
     })
   })
 

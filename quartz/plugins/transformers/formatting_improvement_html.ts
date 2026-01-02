@@ -769,6 +769,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/\bmarkdown\b/g, "Markdown"],
   [/e\.g\.,/g, "e.g."],
   [/i\.e\.,/g, "i.e."],
+  [/macos/gi, "macOS"],
 ]
 
 export function massTransformText(text: string): string {
