@@ -7,13 +7,14 @@ import os from "os"
 import path from "path"
 
 jest.mock("fs")
-jest.mock("./logger_utils", () => ({
+jest.mock("../../util/log", () => ({
   createWinstonLogger: jest.fn(() => ({
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
   })),
+  logLevel: "info",
 }))
 
 import fs from "fs"

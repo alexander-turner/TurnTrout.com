@@ -20,6 +20,7 @@ import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
 import { parseMarkdown } from "./processors/parse"
 import { glob, toPosixPath } from "./util/glob"
+import { setLogLevelFromArgv } from "./util/log"
 import { joinSegments, slugifyFilePath } from "./util/path"
 import { PerfTimer } from "./util/perf"
 import { options } from "./util/sourcemap"
@@ -52,6 +53,8 @@ type FileEvent = "add" | "change" | "delete"
  * @returns A function to clean up the build, or an empty function if not serving.
  */
 async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
+  setLogLevelFromArgv(argv)
+
   const ctx: BuildCtx = {
     argv,
     cfg,

@@ -39,11 +39,12 @@ function expectJSXElement(element: unknown): JSX.Element & { props: Record<strin
 }
 
 // Mock the createLogger function
-jest.mock("../../plugins/transformers/logger_utils", () => ({
+jest.mock("../../util/log", () => ({
   createWinstonLogger: () => ({
     info: jest.fn(),
     debug: jest.fn(),
   }),
+  logLevel: "info",
 }))
 
 describe("processTocEntry", () => {

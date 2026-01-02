@@ -8,6 +8,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
@@ -17,7 +18,6 @@ import {
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
-import { createWinstonLogger } from "../transformers/logger_utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 

@@ -18,7 +18,7 @@ import {
   specialDomainMappings,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
-import { createWinstonLogger } from "./logger_utils"
+import { createWinstonLogger } from "../../util/log"
 import { hasClass } from "./utils"
 
 const {

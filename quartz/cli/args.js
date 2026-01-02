@@ -66,6 +66,11 @@ export const BuildArgv = {
     default: "public",
     describe: "output folder for files",
   },
+  logLevel: {
+    string: true,
+    choices: ["error", "warn", "info", "debug"],
+    default: "info",
+  },
   serve: {
     boolean: true,
     default: false,

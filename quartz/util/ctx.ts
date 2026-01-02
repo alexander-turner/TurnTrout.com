@@ -13,6 +13,7 @@ export interface Argv {
   concurrency?: number
   skipCriticalCSS?: boolean
   offline?: boolean
+  logLevel?: "error" | "warn" | "info" | "debug"
 }
 
 export interface BuildCtx {

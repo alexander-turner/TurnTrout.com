@@ -8,7 +8,7 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { createWinstonLogger } from "./logger_utils"
+import { createWinstonLogger } from "../../util/log"
 
 const logger = createWinstonLogger("assetDimensions")
 

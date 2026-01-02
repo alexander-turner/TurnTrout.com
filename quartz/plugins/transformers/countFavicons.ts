@@ -11,6 +11,7 @@ import type { FilePath } from "../../util/path"
 
 import { specialFaviconPaths } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
+import { createWinstonLogger } from "../../util/log"
 import {
   getQuartzPath,
   isAssetLink,
@@ -18,7 +19,6 @@ import {
   normalizeUrl,
   readFaviconCounts,
 } from "./linkfavicons"
-import { createWinstonLogger } from "./logger_utils"
 
 const logger = createWinstonLogger("countlinks")
 

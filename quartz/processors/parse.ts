@@ -16,7 +16,7 @@ import workerpool, { Promise as WorkerPromise } from "workerpool"
 import type { ProcessedContent } from "../plugins/vfile"
 import type { BuildCtx } from "../util/ctx"
 
-import { QuartzLogger } from "../util/log"
+import { createWinstonLogger } from "../util/log"
 import { type FilePath, QUARTZ, slugifyFilePath } from "../util/path"
 import { PerfTimer } from "../util/perf"
 import { trace } from "../util/trace"
@@ -152,23 +152,18 @@ const clamp = (num: number, min: number, max: number) =>
 export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<ProcessedContent[]> {
   const { argv } = ctx
   const perf = new PerfTimer()
-  const log = new QuartzLogger()
+  const log = createWinstonLogger("parse")
 
   // rough heuristics: 128 gives enough time for v8 to JIT and optimize parsing code paths
   const CHUNK_SIZE = 128
   const concurrency = ctx.argv.concurrency ?? clamp(fps.length / CHUNK_SIZE, 1, 4)
 
   let res: ProcessedContent[] = []
-  log.start(`Parsing input files using ${concurrency} threads`)
+  log.info(`Parsing input files using ${concurrency} threads`)
   if (concurrency === 1) {
-    try {
-      const processor = createProcessor(ctx)
-      const parse = createFileParser(ctx, fps)
-      res = await parse(processor)
-    } catch (error) {
-      log.end()
-      throw error
-    }
+    const processor = createProcessor(ctx)
+    const parse = createFileParser(ctx, fps)
+    res = await parse(processor)
   } else {
     await transpileWorkerScript()
     const pool = workerpool.pool("./quartz/bootstrap-worker.mjs", {
@@ -190,6 +185,6 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
     await pool.terminate()
   }
 
-  log.end(`Parsed ${res.length} Markdown files in ${perf.timeSince()}`)
+  log.info(`Parsed ${res.length} Markdown files in ${perf.timeSince()}`)
   return res
 }

@@ -6,9 +6,9 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { slugify, resetSlugger } from "./gfm"
-import { createWinstonLogger } from "./logger_utils"
 import { hasAncestor, type ElementMaybeWithParent } from "./utils"
 
 /**
