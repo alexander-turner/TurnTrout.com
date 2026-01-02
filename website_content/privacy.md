@@ -381,7 +381,7 @@ If you don't want to use Brave, I recommend hardening Firefox [using Arkenfox](h
   - [ ] Set Brave as your default browser.
   - [ ] Enable Sync and enable syncing everything (it's E2EE).
   - [ ] Install the Bitwarden extension, pin the extension icon to be visible while browsing the web, and then [follow this guide to make Bitwarden your default password manager](https://bitwarden.com/help/getting-started-browserext/#disable-a-built-in-password-manager).
-  - [ ] [Remove "sponsored images" from the new tab page](https://support.brave.app/hc/en-us/articles/35182999599501-New-Tab-Page-Ads-Reporting)
+  - [ ] [Remove "sponsored images" from the new tab page](https://support.brave.app/hc/en-us/articles/35182999599501-New-Tab-Page-Ads-Reporting).
 
 > [!note]- Optional additional protections to apply
 >
@@ -449,7 +449,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 3. Keep the two-factor key in your laptop case or on a keyring. Put the other in a secure location protected from fire and flooding. You could put it in a bank deposit box or in [a private safe at home](https://www.amazon.com/SentrySafe-Resistant-Chest-Cubic-1210/dp/B008HZUI34/ref=sr_1_9?sr=8-9).
 
 > [!question] These keys are expensive. Do I really need two?
-> I know they aren't cheap. However, they will make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind.
+> I know they aren't cheap. [Software 2FA is pretty good, too](#use-proton-authenticator-as-your-2fa-app). However, hardware keys make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind. To check which services accept YubiKeys before you buy, check out [the 2FA directory](https://2fa.directory/int/?q=u2f#backup). Since you're at least using Bitwarden, I think hardware keys are still worth it unless you're on a tight budget.
 >
 > At *minimum*, you need two keys. If you just had one key, you're one "oops I lost it" away from being *locked out of your most important accounts*. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys.
 >
@@ -551,7 +551,7 @@ Subtitle: Time: Depends on how many photos you have in the cloud on how many ser
 
 I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migration, reasonable cloud storage pricing, full compatibility across your platforms, and the application even uses *local* AI to search your images and recognize people!  I certainly wasn't expecting to be able to keep using AI with a privacy-focused solution.
 
- Plus, now all of my 23,000 photos are in one place.
+ Plus, now all of my 20,000+ photos are in one place.
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251014141906.avif|Ente photo storage pricing. Free forever: 10GB with end-to-end encryption & on-device AI. Paid monthly plans: Starter (50GB, \$2.99), Popular (200GB, \$5.99), Pro (1TB, \$11.99), and Pro+ (2TB, \$23.99).]]
 
