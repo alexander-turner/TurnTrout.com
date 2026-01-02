@@ -2,12 +2,14 @@
  * @jest-environment jsdom
  */
 
-import type { Parent, RootContent } from "hast"
+import type { Parent, RootContent, Node } from "hast"
 import type { JSX } from "preact"
+import type { FunctionComponent } from "preact"
 
 import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 import { h } from "hastscript"
 
+import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 
 import { TocEntry } from "../../plugins/transformers/toc"
@@ -536,15 +538,14 @@ describe("CreateTableOfContents", () => {
     displayClass: "",
     externalResources: {},
     children: [],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ctx: {} as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tree: {} as any,
+    ctx: {} as BuildCtx,
+    tree: {} as Node,
   } as unknown as QuartzComponentProps
 
   it("should render table of contents when TOC data is available", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(mockQuartzComponentProps)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      mockQuartzComponentProps,
+    ) as JSX.Element | null
 
     expect(result).not.toBeNull()
     expect(result?.type).toBe("div")
@@ -591,8 +592,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(propsWithoutToc)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      propsWithoutToc,
+    ) as JSX.Element | null
 
     expect(result).toBeNull()
   })
@@ -606,8 +608,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(propsWithTocDisabled)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      propsWithTocDisabled as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
 
     expect(result).toBeNull()
   })
@@ -621,8 +624,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(propsWithTocDisabled)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      propsWithTocDisabled as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
 
     expect(result).toBeNull()
   })
@@ -636,8 +640,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(propsWithNoHeadings)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      propsWithNoHeadings as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
 
     expect(result).toBeNull()
   })
@@ -655,8 +660,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(props)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      props as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
     const button = result?.props.children[0].props.children
     expect(button.props.children).toBe(expectedTitle)
   })
@@ -678,8 +684,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(complexTocProps)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      complexTocProps as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
@@ -715,8 +722,9 @@ describe("CreateTableOfContents", () => {
       },
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = (CreateTableOfContents as any)(specialTocProps)
+    const result = (CreateTableOfContents as FunctionComponent<QuartzComponentProps>)(
+      specialTocProps as unknown as QuartzComponentProps,
+    ) as JSX.Element | null
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
