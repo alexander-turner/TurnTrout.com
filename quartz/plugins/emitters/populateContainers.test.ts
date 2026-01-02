@@ -724,26 +724,26 @@ describe("PopulateContainers", () => {
       it("should count pytest tests via pytest --collect-only", async () => {
         mockExecSync.mockReturnValue("1293 tests collected in 0.50s\n")
 
-        const count = await populateModule.countPytestTests()
+        const count = await populateModule.countPythonTests()
 
         expect(count).toBe(1293)
-        expect(mockExecSync).toHaveBeenCalledWith("pytest --collect-only -q 2>&1 | tail -1", {
+        expect(mockExecSync).toHaveBeenCalledWith(populateModule.PYTEST_COUNT_CMD, {
           encoding: "utf-8",
         })
       })
 
-      it("should return 0 when pytest output doesn't match", async () => {
+      it("should throw when pytest output doesn't match", async () => {
         mockExecSync.mockReturnValue("some weird output\n")
 
-        const count = await populateModule.countPytestTests()
-
-        expect(count).toBe(0)
+        await expect(populateModule.countPythonTests()).rejects.toThrow(
+          "Failed to parse pytest test count from output",
+        )
       })
 
       it("should handle large numbers", async () => {
         mockExecSync.mockReturnValue("10000 tests collected in 0.50s\n")
 
-        const count = await populateModule.countPytestTests()
+        const count = await populateModule.countPythonTests()
 
         expect(count).toBe(10000)
       })

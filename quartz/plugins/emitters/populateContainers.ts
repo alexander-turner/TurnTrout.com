@@ -120,13 +120,18 @@ export async function countPlaywrightTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export async function countPytestTests(): Promise<number> {
-  const output = execSync("pytest --collect-only -q 2>&1 | tail -1", {
-    encoding: "utf-8",
-  })
-  // Output format: "1293 tests collected in 0.50s" or similar
+export const PYTEST_COUNT_CMD = "bash -lc '.venv/bin/pytest --collect-only -q' 2>&1 | tail -20"
+
+// skipcq: JS-D1001
+export async function countPythonTests(): Promise<number> {
+  const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
+
   const match = output.match(/(\d+)\s+tests?\s+collected/)
-  return match ? parseInt(match[1], 10) : 0
+  if (!match) {
+    throw new Error(`Failed to parse pytest test count from output: ${JSON.stringify(output)}`)
+  }
+
+  return parseInt(match[1], 10)
 }
 
 // skipcq: JS-D1001
@@ -153,7 +158,7 @@ export async function computeRepoStats(): Promise<RepoStats> {
       countGitCommits("Alex Turner"),
       countJsTests(),
       countPlaywrightTests(),
-      countPytestTests(),
+      countPythonTests(),
       countLinesOfCode(),
     ])
 
@@ -351,7 +356,7 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       const designPagePath = joinSegments(ctx.argv.output, `${designPageSlug}.html`)
       const designPageFiles = await populateElements(designPagePath, [
         {
-          className: "populate-site-favicon",
+          id: "populate-site-favicon",
           generator: generateSiteFaviconContent(),
         },
         {
