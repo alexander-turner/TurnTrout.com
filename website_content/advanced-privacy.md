@@ -74,10 +74,10 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 
 Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed. Time: 6 hours.
 
-Here's the deal: [iOS 26 fundamentally break all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch to GrapheneOS.
+Here's the deal: [iOS fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch to GrapheneOS.
 
 > [!info] Reminder that I work at Google DeepMind
-> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), I was ready to recommend iOS for people at lower risk.
+> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025), I was ready to recommend iOS for people at lower risk.
 
 I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif|A user asks "But you trust @GrapheneOS right?". Edward Snowden replies "I use GrapheneOS every day."]]
@@ -170,7 +170,7 @@ More specifically, Windows sends out so much information about you via so-called
 
 ### Linux can be your new home
 
-All things considered, I recommend that you switch to Linux, an open source operating system. Each line of code has been inspected by experts from around the world -- from the first loading screen down to the calculator. Linux is both free and private. Unlike macOS, [Linux doesn't have the VPN bypass issues](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios--macos-as-of-december-2025) that plague Apple devices. Linux comes in many different flavors, but I recommend Linux Mint. While I haven't used it before, it's strongly praised:
+All things considered, I recommend that you switch to Linux, an open source operating system. Each line of code has been inspected by experts from around the world -- from the first loading screen down to the calculator. Linux is both free and private. Unlike macOS, [Linux doesn't have the VPN bypass issues](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025) that plague Apple devices. Linux comes in many different flavors, but I recommend Linux Mint. While I haven't used it before, it's strongly praised:
 
 > [!quote] [Ars Technica](https://linuxmint.com/)
 > Linux Mint just works. It isn't "changing the desktop computer paradigm," or "innovating" in "groundbreaking" ways. The team behind Mint is just building a desktop operating system that looks and functions a lot like every other desktop operating system you've used, which is to say you'll be immediately comfortable and stop thinking about your desktop and start using it to do actual work.
@@ -192,9 +192,9 @@ Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on an Apple device](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
+[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on an Apple device](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
 
-Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.  
+Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.
 
 ### Buy the right modem
 
@@ -217,7 +217,7 @@ Don't rent a router from a company that wants to harvest your data. Instead, I s
 
 Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
 
-1. Easy to install your Proton VPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025)).  Normally, a smart TV would not even be able to use a VPN.
+1. Easy to install your Proton VPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  Normally, a smart TV would not even be able to use a VPN.
 2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
 For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell Proton VPN to "allow LAN connections."_
@@ -622,7 +622,7 @@ Securing even one of these timely improvements would be a _significant win for p
 >
 > By order of importance:
 >
-> 1. **Enable the "Always-on VPN" toggle for consumers**, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-mobile-ios-as-of-october-2025), exposing millions of unaware users to tracking and potential political persecution.
+> 1. **Enable the "Always-on VPN" toggle for consumers**, not just enterprise users. Make the default setting "yes." [Current iOS policy directly feeds metadata into ISPs](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025), exposing millions of unaware users to tracking and potential political persecution.
 > 2. **Make ADP the default setting where legally permissible.**
 > 3. **Tighten the Wi-Fi Positioning Systems** to [no longer (theoretically) enable mass surveillance and privacy invasion](https://www.cs.umd.edu/~dml/papers/wifi-surveillance-sp24.pdf):
 >    1. Stop returning the locations of up to 400 unrequested nearby BSSIDs with every successful query. Just return the inferred location of the queried BSSID. This feature allowed the researchers to discover 172 times more BSSIDs than they could by guessing.

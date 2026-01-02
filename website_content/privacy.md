@@ -323,7 +323,7 @@ For network stability and speed, I strongly recommend upgrading to [Proton Unlim
 > [!danger]
 > I was ready to wrap up writing when I found out some intricately bad news: [VPNs on iOS will often "leak" and expose your browsing habits to your ISP](https://www.michaelhorowitz.com/VPNs.on.iOS.are.scam.php). iOS system services sometimes ignore your VPN entirely. This ruins your protection from surveillance by exposing your browsing history directly to Internet Service Providers (AKA US spying data collection points). [Apple states that ignoring your VPN is "expected behavior."](https://protonvpn.com/blog/apple-ios-vulnerability-disclosure/) After five years of known vulnerability, no fix is available for consumers.
 >
-> macOS has a similar problem. The *only* reliable workaround is to [always connect](/advanced-privacy#the-mac-alternative).
+> macOS has a similar problem. The *only* reliable workaround is to [always connect to a router which enforces VPN protection for all of its traffic (covered in the sequel post)](/advanced-privacy#the-mac-alternative).
 >
 > Should you still use a VPN on an Apple device? Yes—it's still better than nothing. Know that the ISP (and Apple) will see some metadata.
 
