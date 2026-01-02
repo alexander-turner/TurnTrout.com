@@ -3090,3 +3090,5 @@ RFID
 TPMS
 VIN
 ruggedized
+300MHz
+wifi
