@@ -19,9 +19,10 @@ next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-01-01 19:50:24.239174
+date_updated: 2026-01-01 20:00:17.441157
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
+
 
 
 
