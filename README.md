@@ -30,7 +30,7 @@ The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestam
 [^python]: Python testing and type-checking are run locally and not on GitHub actions.
 
 
-`turntrout.com` © 2024–2025 by Alexander Turner is licensed under CC BY-SA 4.0. Feel free to fork to use on your own website, but in addition to the licensing requirements of CC BY-SA 4.0:
+`turntrout.com` © 2024-2026 by Alexander Turner is licensed under CC BY-SA 4.0. Feel free to fork to use on your own website, but in addition to the licensing requirements of CC BY-SA 4.0:
 
 1. Change out the content for your own,
 2. Change the presentation in some way to visually distinguish it from my site (perhaps by just choosing a new set of colors for the theme),

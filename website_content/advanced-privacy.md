@@ -16,9 +16,10 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06 14:34:13.304738
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-01-01 19:50:24.239174
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
+
 
 
 
