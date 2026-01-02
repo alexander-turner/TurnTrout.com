@@ -116,6 +116,10 @@
     {
       "pattern": "^.*nips\\.cc$",
       "to": "neurips.cc"
+    },
+    {
+      "pattern": "^xcancel\\.com$",
+      "to": "x.com"
     }
   ]
 }

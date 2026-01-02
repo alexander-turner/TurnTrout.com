@@ -446,7 +446,7 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 ## External links with favicons
 
-Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons)
+Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
