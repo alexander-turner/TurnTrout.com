@@ -12,10 +12,15 @@ export type LogLevel = NonNullable<Argv["logLevel"]>
 
 export let logLevel: LogLevel = "info"
 
+const createdLoggers: ReturnType<typeof createLogger>[] = []
+
 export function setLogLevelFromArgv(argv: Partial<Argv> | undefined): void {
   const lvl = argv?.logLevel
-  if (lvl === "error" || lvl === "warn" || lvl === "info" || lvl === "debug") {
+  if (lvl) {
     logLevel = lvl
+    for (const logger of createdLoggers) {
+      logger.level = lvl
+    }
   }
 }
 
@@ -86,9 +91,14 @@ export const createWinstonLogger = (name: string, level: string = logLevel) => {
     )
   }
 
-  return createLogger({
+  const logger = createLogger({
     level,
     format: format.combine(format.timestamp({ format: timezoneFormat }), format.prettyPrint()),
     transports: loggerTransports,
   })
+
+  // Track this logger so we can update its level later if needed
+  createdLoggers.push(logger)
+
+  return logger
 }

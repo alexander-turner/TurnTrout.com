@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
+import { createWinstonLogger, setLogLevelFromArgv } from "./log"
+
 // Mocks for winston + rotate transport
 const mockDailyRotateFile = jest.fn()
 const mockConsoleTransport = jest.fn()
-const mockCreateLogger = jest.fn(() => ({
+const mockCreateLogger = jest.fn((config: { level: string }) => ({
   info: jest.fn(),
   debug: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
+  level: config.level,
 }))
 
 let capturedPrintfFormatter: ((info: { level: string; message: string }) => string) | null = null
@@ -138,5 +141,13 @@ describe("util/log", () => {
 
     logMod.setLogLevelFromArgv({ logLevel: "debug" } as unknown as { logLevel: "debug" })
     expect(logMod.logLevel).toBe("debug")
+  })
+
+  it("should update existing logger levels when setLogLevelFromArgv is called", async () => {
+    const logger = createWinstonLogger("test-logger")
+    expect(logger.level).toBe("info")
+
+    setLogLevelFromArgv({ logLevel: "debug" } as unknown as { logLevel: "debug" })
+    expect(logger.level).toBe("debug")
   })
 })
