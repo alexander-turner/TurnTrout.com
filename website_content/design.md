@@ -800,13 +800,13 @@ To meet accessibility standards, I also subtitled the 22-minute [AI Presidents D
 
 To keep documentation up-to-date, the build process computes e.g. the number of commits I've made. The number is injected into special `<span>` elements with a `class` or `id` like `populate-commit-count`. The build process validates that all `populate-*` spans are properly filled, failing the build if any are left empty.
 
-| Metric | Count |
-|--------|-------|
-| Total commits | <span class="populate-commit-count"></span> |
-| TypeScript unit tests | <span class="populate-js-test-count"></span> |
-| Python unit tests | <span class="populate-pytest-count"></span> |
+| Metric                       | Count                                                |
+| ---------------------------: | :--------------------------------------------------- |
+| Total commits                | <span class="populate-commit-count"></span>          |
+| TypeScript unit tests        | <span class="populate-js-test-count"></span>         |
+| Python unit tests            | <span class="populate-pytest-count"></span>          |
 | Playwright integration tests | <span class="populate-playwright-test-count"></span> |
-| Lines of code | <span class="populate-lines-of-code"></span> |
+| Lines of code                | <span class="populate-lines-of-code"></span>         |
 
 ## Smaller features
 
