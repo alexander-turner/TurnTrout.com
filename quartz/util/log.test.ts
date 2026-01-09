@@ -1,17 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
-
-import { createWinstonLogger, setLogLevelFromArgv } from "./log"
+import { describe, it, expect, beforeEach, jest } from "@jest/globals"
 
 // Mocks for winston + rotate transport
 const mockDailyRotateFile = jest.fn()
 const mockConsoleTransport = jest.fn()
-const mockCreateLogger = jest.fn((config: { level: string }) => ({
+const mockLoggerInstance = {
   info: jest.fn(),
   debug: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
-  level: config.level,
-}))
+  level: "info",
+}
+const mockCreateLogger = jest.fn(() => mockLoggerInstance)
 
 let capturedPrintfFormatter: ((info: { level: string; message: string }) => string) | null = null
 
@@ -48,21 +47,17 @@ jest.mock("fs", () => ({
   mkdirSync: jest.fn(),
 }))
 
+// Import after mocks are set up
+const { createWinstonLogger, setLogLevelFromArgv } = await import("./log")
+
 describe("util/log", () => {
-  const originalEnv = process.env
-
   beforeEach(() => {
-    jest.resetModules()
-    process.env = { ...originalEnv }
+    jest.clearAllMocks()
     capturedPrintfFormatter = null
+    mockLoggerInstance.level = "info"
   })
 
-  afterEach(() => {
-    process.env = originalEnv
-  })
-
-  it("should create a logger with DailyRotateFile transport", async () => {
-    const { createWinstonLogger } = await import("./log")
+  it("should create a logger with DailyRotateFile transport", () => {
     createWinstonLogger("test-logger")
 
     // transports.DailyRotateFile is assigned to the imported DailyRotateFile class,
@@ -70,8 +65,7 @@ describe("util/log", () => {
     expect(mockCreateLogger).toHaveBeenCalled()
   })
 
-  it("should configure DailyRotateFile with correct options", async () => {
-    const { createWinstonLogger } = await import("./log")
+  it("should configure DailyRotateFile with correct options", () => {
     createWinstonLogger("test-logger")
 
     // The rotate-file transport is instantiated via `new transports.DailyRotateFile(...)`.
@@ -93,28 +87,25 @@ describe("util/log", () => {
     expect(callArgs.auditFile).toContain("test-logger-audit.json")
   })
 
-  it("should not add Console transport when not in CI", async () => {
+  it("should not add Console transport when not in CI", () => {
     delete process.env.CI
 
-    const { createWinstonLogger } = await import("./log")
     createWinstonLogger("test-logger")
 
     expect(mockConsoleTransport).not.toHaveBeenCalled()
   })
 
-  it("should add Console transport when CI=true", async () => {
+  it("should add Console transport when CI=true", () => {
     process.env.CI = "true"
 
-    const { createWinstonLogger } = await import("./log")
     createWinstonLogger("test-logger")
 
     expect(mockConsoleTransport).toHaveBeenCalled()
   })
 
-  it("should format console messages with logger name prefix in CI", async () => {
+  it("should format console messages with logger name prefix in CI", () => {
     process.env.CI = "true"
 
-    const { createWinstonLogger } = await import("./log")
     createWinstonLogger("my-logger")
 
     expect(capturedPrintfFormatter).not.toBeNull()
@@ -122,8 +113,7 @@ describe("util/log", () => {
     expect(formatted).toBe("[my-logger] info: test message")
   })
 
-  it("should create different loggers for different names", async () => {
-    const { createWinstonLogger } = await import("./log")
+  it("should create different loggers for different names", () => {
     createWinstonLogger("logger1")
     createWinstonLogger("logger2")
 
@@ -143,7 +133,7 @@ describe("util/log", () => {
     expect(logMod.logLevel).toBe("debug")
   })
 
-  it("should update existing logger levels when setLogLevelFromArgv is called", async () => {
+  it("should update existing logger levels when setLogLevelFromArgv is called", () => {
     const logger = createWinstonLogger("test-logger")
     expect(logger.level).toBe("info")
 
