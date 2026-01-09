@@ -47,7 +47,7 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 > [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.
 
-Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout and Cloud each hold a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch.
+Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout holds a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch and sporadic meetings with Alex Cloud.
 
 Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
 
@@ -74,6 +74,17 @@ Our team culture is tight-knit and fun, extending beyond the research itself. Fo
 > ![A Korean man flashes a grin.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-2.avif){.float-right .testimonial-maybe-negative-margin}
 >
 > I learned how to make progress when everyone in the room is uncertain. If you're interested in learning what making progress on a hard problem actually feels like, Team Shard is where you want to be.
+
+> [!quote] [Alex Infanger](https://alexinfanger.github.io/)
+> Subtitle: MATS 7.0, [Distillation Robustifies Unlearning](/distillation-robustifies-unlearning)
+>
+> ![[team-shard-01052026.png]]{.float-right}
+>
+> During my time with Team Shard, I worked closely with Alex Cloud. He is an amazing mentor. He took my ideas seriously, showed me how to design, code, and run experiments efficiently, taught me how to write well, encouraged me to do bold and ambitious research, and has continued to support me in my career beyond MATS.
+>
+> If I had to highlight one way I grew during MATS, it would be in how much my thinking on research path-to-impact has matured. \[This maturation\] is in large part thanks to my many productive discussions with Cloud – he has thought deeply about alignment, has unique takes, and actively engages with his mentees’ ideas. For prospective mentees considering alternate opportunities (e.g., focusing on their PhD work, doing an internship at a company, doing other MATS streams), I would venture that they are unlikely to experience this kind of growth to the same degree elsewhere.
+>
+> In short, working with Cloud has been one of the great privileges of my research career.
 
 > [!quote] [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/)
 > Subtitle: MATS 8.0, [Recontextualization Mitigates Specification Gaming without Modifying the Specification](/recontextualization)
