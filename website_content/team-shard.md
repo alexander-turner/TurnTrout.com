@@ -78,7 +78,7 @@ Our team culture is tight-knit and fun, extending beyond the research itself. Fo
 > [!quote] [Alex Infanger](https://alexinfanger.github.io/)
 > Subtitle: MATS 7.0, [Distillation Robustifies Unlearning](/distillation-robustifies-unlearning)
 >
-> ![[team-shard-01052026.png]]{.float-right}
+> ![[https://assets.turntrout.com/static/images/posts/team-shard-01052026.avif]]{.float-right}
 >
 > During my time with Team Shard, I worked closely with Alex Cloud. He is an amazing mentor. He took my ideas seriously, showed me how to design, code, and run experiments efficiently, taught me how to write well, encouraged me to do bold and ambitious research, and has continued to support me in my career beyond MATS.
 >
