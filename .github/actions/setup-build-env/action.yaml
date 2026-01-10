@@ -3,59 +3,13 @@ description: "Checks out code, sets up Node and Python, installs dependencies, a
 runs:
   using: "composite"
   steps:
-    - name: Set up Node.js
-      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+    - name: Setup base environment
+      uses: ./.github/actions/setup-base-env
       with:
-        node-version: "22.12.0"
-
-    - name: Install pnpm
-      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
-
-    - name: Get pnpm store directory
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-    - name: Setup pnpm cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-      with:
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-store-
-
-    - name: Cache asset dimensions
-      id: asset-dimensions-cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-      with:
-        path: quartz/plugins/transformers/.asset_dimensions.json
-        key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
-        restore-keys: |
-          ${{ runner.os }}-asset-dimensions-refs/heads/main
-
-    - name: Install Node Dependencies
-      run: pnpm install --frozen-lockfile
-      shell: bash
-      env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
-
-    - name: Install sharp
-      run: pnpm install --os=linux --cpu=x64 sharp
-      shell: bash
-
-    - name: Set up uv
-      uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
-      with:
-        enable-cache: true
-        cache-dependency-glob: "uv.lock"
-
-    - name: Set up Python
-      run: uv python install 3.11
-      shell: bash
-
-    - name: Install Python Dependencies
-      run: uv sync --frozen
-      shell: bash
+        install-sharp: "true"
+        cache-playwright: "false"
+        cache-puppeteer: "false"
+        cache-ffmpeg: "false"
 
     - name: Install Build Dependencies
       run: |
