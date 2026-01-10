@@ -317,6 +317,16 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                 if result.stderr:
                     console.print("[yellow]stderr:[/yellow]")
                     console.print(result.stderr, markup=False, highlight=False)
+
+                # Special message for alt-text scan failures
+                if "alt text" in step.name:
+                    console.print(
+                        "\n[yellow]Please add alt text to all images before pushing.[/yellow]"
+                    )
+                    console.print(
+                        f"[cyan]Run:[/cyan] fish {_GIT_ROOT}/scripts/label_alt_text.fish\n"
+                    )
+
                 raise CheckFailedError(step.name, result.stdout, result.stderr)
             console.log(f"[green]✓[/green] {step.name}")
             commit_step_changes(_GIT_ROOT, step.name)
@@ -635,15 +645,10 @@ def get_check_steps(
                 f"{git_root_path}/scripts/source_file_checks.py",
             ],
         ),
-        # skipcq: BAN-B604
         CheckStep(
-            name="Labeling alt text",
-            command=[
-                "fish",
-                f"{git_root_path}/scripts/label_alt_text.fish",
-            ],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
+            name="Scanning for images without alt text",
+            command=["alt-text-llm", "scan"],
+            shell=True,  # skipcq: BAN-B604
         ),
     ]
 
