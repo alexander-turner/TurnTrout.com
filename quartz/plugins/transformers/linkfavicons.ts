@@ -797,12 +797,21 @@ export function isAssetLink(href: string): boolean {
     return false
   }
 
-  return (
+  const isAsset =
     mimeType.startsWith("image/") ||
     mimeType.startsWith("video/") ||
     mimeType.startsWith("audio/") ||
     mimeType === "application/mp4"
-  )
+
+  // Debugging aid: log why a link is treated as an asset.
+  // This is specifically useful for cases like GitHub links that may end in ".png" (e.g. raw links).
+  if (isAsset) {
+    logger.debug(
+      `Skipping favicon for asset link: ${href} (extension=${extension}, mime=${mimeType})`,
+    )
+  }
+
+  return isAsset
 }
 
 /**
@@ -941,7 +950,7 @@ export async function ModifyNode(
     return
   }
 
-  let href = node.properties.href
+  const href = node.properties.href
   logger.debug(`Processing href: ${href}`)
   if (typeof href !== "string") {
     logger.debug("Href is not a string, skipping")
@@ -955,30 +964,44 @@ export async function ModifyNode(
   }
 
   if (href.startsWith("mailto:")) {
+    logger.debug(`Favicon decision: mailto => inserting mail icon for ${href}`)
     handleMailtoLink(node)
     return
   }
 
   const isSamePageLink = href.startsWith("#")
   if (isSamePageLink) {
-    handleSamePageLink(node, href, parent)
+    logger.debug(`Favicon decision: same-page (${href}) => attempting anchor icon`)
+    const inserted = handleSamePageLink(node, href, parent)
+    logger.debug(`Favicon decision: same-page (${href}) => inserted=${inserted}`)
     return
   }
 
   if (href.endsWith("/rss.xml")) {
+    logger.debug(`Favicon decision: RSS => inserting rss icon for ${href}`)
     insertFavicon(specialFaviconPaths.rss, node)
     return
   }
 
   // Skip certain types of links
   if (shouldSkipFavicon(node, href)) {
-    logger.debug(`Skipping favicon insertion for same-page link or asset: ${href}`)
+    const samePageClass =
+      (typeof node.properties.className === "string" &&
+        node.properties.className.includes("same-page-link")) ||
+      (Array.isArray(node.properties.className) &&
+        node.properties.className.includes("same-page-link"))
+    const asset = isAssetLink(href)
+
+    logger.debug(
+      `Favicon decision: SKIP => href=${href} samePageClass=${samePageClass} isAssetLink=${asset}`,
+    )
     return
   }
 
   // Process external links
-  href = normalizeUrl(href)
-  await handleLink(href, node, faviconCounts)
+  const normalized = normalizeUrl(href)
+  logger.debug(`Favicon decision: PROCESS => raw=${href} normalized=${normalized}`)
+  await handleLink(normalized, node, faviconCounts)
 }
 
 /**
