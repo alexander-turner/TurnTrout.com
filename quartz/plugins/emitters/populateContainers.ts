@@ -356,10 +356,6 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       const designPagePath = joinSegments(ctx.argv.output, `${designPageSlug}.html`)
       const designPageFiles = await populateElements(designPagePath, [
         {
-          id: "populate-site-favicon",
-          generator: generateSiteFaviconContent(),
-        },
-        {
           id: "populate-favicon-threshold",
           generator: generateConstantContent(minFaviconCount),
         },
