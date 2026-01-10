@@ -81,7 +81,7 @@ export const createWinstonLogger = (name: string, level: string = logLevel) => {
   if (process.env.CI === "true") {
     loggerTransports.push(
       new transports.Console({
-        level: "info",
+        level: "warn",
         format: format.combine(
           format.colorize(),
           format.simple(),
