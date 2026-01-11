@@ -89,7 +89,12 @@ def _check_card_image_format(card_url: str) -> List[str]:
 
 
 def _check_card_image_accessibility(card_url: str) -> List[str]:
-    """Check if card_image URL is accessible and under size limit."""
+    """
+    Check if card_image URL is accessible and under size limit.
+
+    This check is best-effort: network/SSL issues should not crash long-running
+    asset pipelines.
+    """
     errors: List[str] = []
     try:
         headers = {
@@ -118,6 +123,9 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                     errors.append(
                         f"card_image is {size_kb:.1f}KB, should be under {max_size_kb}KB: {card_url}"
                     )
+    except KeyboardInterrupt:
+        # Allow Ctrl-C to stop the pipeline without printing a scary traceback.
+        raise
     except requests.RequestException as e:
         errors.append(f"Failed to load card image URL '{card_url}': {str(e)}")
 

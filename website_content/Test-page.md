@@ -21,8 +21,6 @@ date_updated: 2026-01-01 20:00:17.441157
 
 
 
-
-
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
 # Header 1 (`inline_code`)
@@ -44,6 +42,8 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 Text
 
 Subtitle: I am a subtitle with [a link](/test-page).
+
+Subtitle: MATS (starting with smallcaps).
 
 # Lists
 
