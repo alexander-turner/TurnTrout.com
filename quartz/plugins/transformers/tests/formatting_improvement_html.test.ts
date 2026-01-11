@@ -395,6 +395,7 @@ describe("HTMLFormattingImprovement", () => {
       ["MACOS", "macOS"],
       ["macOS", "macOS"],
       ["Mac OS", "Mac OS"],
+      ["Team shard", "Team Shard"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
