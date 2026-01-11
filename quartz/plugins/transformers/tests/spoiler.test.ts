@@ -4,10 +4,10 @@ import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
+import { visit } from "unist-util-visit"
 
 import { BuildCtx } from "../../../util/ctx"
 import {
-  transformAST,
   matchSpoilerText,
   createSpoilerNode,
   modifyNode,
@@ -33,7 +33,9 @@ function removePositions(obj: unknown): unknown {
 async function process(input: string) {
   const result = await unified()
     .use(rehypeParse, { fragment: true })
-    .use(() => transformAST)
+    .use(() => (tree: Root) => {
+      visit(tree, "element", modifyNode)
+    })
     .use(rehypeStringify)
     .process(input)
   return result.toString()
@@ -357,7 +359,7 @@ describe("rehype-custom-spoiler", () => {
 
   it.each([
     {
-      name: "transformAST function",
+      name: "direct modifyNode visitor",
       setupTree: () => ({
         type: "root",
         children: [
@@ -365,7 +367,9 @@ describe("rehype-custom-spoiler", () => {
           h("p", {}, "Not a spoiler"),
         ],
       }),
-      transform: (tree: Root) => transformAST(tree),
+      transform: (tree: Root) => {
+        visit(tree, "element", modifyNode)
+      },
       extraChecks: (tree: Root) => {
         expect((tree.children[1] as Element).tagName).toBe("p") // Should remain unchanged
       },

@@ -4,11 +4,11 @@ import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
+import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../../util/ctx"
 
 import {
-  transformAST,
   SUBTITLE_REGEX,
   createSubtitleWithChildren,
   modifyNode,
@@ -50,7 +50,9 @@ function removePositions(obj: Element): unknown {
 async function process(input: string) {
   const result = await unified()
     .use(rehypeParse, { fragment: true })
-    .use(() => transformAST)
+    .use(() => (tree: Root) => {
+      visit(tree, "element", modifyNode)
+    })
     .use(rehypeStringify)
     .process(input)
   return result.toString()
@@ -220,7 +222,9 @@ describe("rehypeCustomSubtitle Plugin", () => {
   const processHtml = (html: string): string => {
     return unified()
       .use(rehypeParse, { fragment: true })
-      .use(() => transformAST)
+      .use(() => (tree: Root) => {
+        visit(tree, "element", modifyNode)
+      })
       .use(rehypeStringify)
       .processSync(html)
       .toString()
@@ -301,7 +305,7 @@ describe("rehypeCustomSubtitle plugin function", () => {
     expect(typeof plugin.htmlPlugins).toBe("function")
   })
 
-  it("htmlPlugins returns array with transformAST function", () => {
+  it("htmlPlugins returns array with transformer function", () => {
     const plugin = rehypeCustomSubtitle()
     const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
     expect(Array.isArray(htmlPlugins)).toBe(true)
@@ -314,16 +318,16 @@ describe("rehypeCustomSubtitle plugin function", () => {
     expect(() => rehypeCustomSubtitle()).not.toThrow()
   })
 
-  it("htmlPlugins function returns plugin that returns transformAST", () => {
+  it("htmlPlugins function returns plugin that transforms the tree", () => {
     const plugin = rehypeCustomSubtitle()
     const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
-    const pluginFunction = htmlPlugins?.[0] as () => typeof transformAST
+    const pluginFunction = htmlPlugins?.[0] as () => (tree: Root) => void
     const transformer = pluginFunction()
-    expect(transformer).toBe(transformAST)
+    expect(typeof transformer).toBe("function")
   })
 })
 
-describe("transformAST function", () => {
+describe("AST transformation", () => {
   it("transforms AST tree by visiting all elements", () => {
     const mockRoot: Root = {
       type: "root",
@@ -334,7 +338,7 @@ describe("transformAST function", () => {
       ],
     }
 
-    transformAST(mockRoot)
+    visit(mockRoot, "element", modifyNode)
 
     // Check that subtitle paragraphs were transformed
     const firstChild = mockRoot.children[0] as Element

@@ -1,4 +1,4 @@
-import type { Root, Element, Parent, Text } from "hast"
+import type { Element, Parent, Root, Text } from "hast"
 
 // skipcq: JS-0257
 import { h } from "hastscript"
@@ -6,26 +6,36 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-// Regex to match spoiler syntax
 const SPOILER_REGEX = /^!\s*(.*)/
 
 /**
- * Extracts spoiler text from a string.
- * @param text Input string
- * @returns Spoiler text or null if not a spoiler
+ * Generate inline JavaScript code to toggle a CSS class on click.
+ * @param className - The CSS class name to toggle
+ * @returns JavaScript code as a string for the onclick handler
+ */
+function toggleSpoilerJs(className: string): string {
+  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}') } else { this.classList.add('${className}') }`
+}
+
+/**
+ * Extract spoiler text from a string.
  */
 export function matchSpoilerText(text: string): string | null {
   const match = SPOILER_REGEX.exec(text)
   return match ? match[1] : null
 }
 
+/**
+ * Create a spoiler container element with overlay and content.
+ * @param content - The content to hide behind the spoiler (string or array of elements)
+ * @returns A div element with spoiler-container class and click handler
+ */
 export function createSpoilerNode(content: string | Element[]): Element {
   return h(
     "div",
     {
       className: ["spoiler-container"],
-      onclick:
-        "if(this.classList.contains('revealed')) { this.classList.remove('revealed') } else { this.classList.add('revealed') }",
+      onclick: toggleSpoilerJs("revealed"),
     },
     [
       h("span", { className: ["spoiler-overlay"] }),
@@ -35,49 +45,54 @@ export function createSpoilerNode(content: string | Element[]): Element {
 }
 
 /**
- * Modifies a node to convert it to a spoiler if applicable.
- * @param node Element to modify
- * @param index Index of the node in its parent
- * @param parent Parent of the node
+ * Check if a text node contains only the spoiler marker "!".
+ * @param node - The text node to check
+ * @returns True if the node contains only "!" (with optional whitespace)
  */
-export function modifyNode(node: Element, index: number | undefined, parent: Parent | undefined) {
-  if (index === undefined || parent === undefined) return
-  if (node?.tagName === "blockquote") {
-    const spoilerContent: Element[] = []
-    let isSpoiler = true
-
-    for (const child of node.children) {
-      if (child.type === "element" && child.tagName === "p") {
-        const processedParagraph = processParagraph(child)
-        if (processedParagraph) {
-          spoilerContent.push(processedParagraph)
-        } else {
-          isSpoiler = false
-          break
-        }
-      } else if (child.type === "text" && child.value.trim() === "!") {
-        // Handle empty spoiler lines
-        spoilerContent.push(h("p", {}))
-      } else if (child.type === "text" && child.value.trim() === "") {
-        // Ignore empty text nodes
-        continue
-      } else {
-        isSpoiler = false
-        break
-      }
-    }
-
-    if (isSpoiler && spoilerContent.length > 0) {
-      parent.children[index] = createSpoilerNode(spoilerContent)
-    }
-  }
+function isEmptySpoilerLine(node: Text): boolean {
+  return node.value.trim() === "!"
 }
 
 /**
- * Processes a paragraph to convert it to a spoiler if applicable.
- * @param paragraph Paragraph element
- * @returns Processed paragraph or null if not a spoiler
+ * Transform blockquote elements into spoiler containers if they contain spoiler syntax.
+ * This function is called by the AST visitor for each element node.
+ * @param node - The element to potentially transform
+ * @param index - The index of the node in its parent's children array
+ * @param parent - The parent node containing this element
  */
+export function modifyNode(node: Element, index: number | undefined, parent: Parent | undefined) {
+  if (index === undefined || parent === undefined) return
+  if (node?.tagName !== "blockquote") return
+
+  const spoilerContent: Element[] = []
+
+  for (const child of node.children) {
+    if (child.type === "element" && child.tagName === "p") {
+      const processedParagraph = processParagraph(child)
+      if (!processedParagraph) {
+        return
+      }
+      spoilerContent.push(processedParagraph)
+      continue
+    }
+
+    if (child.type === "text" && isEmptySpoilerLine(child)) {
+      spoilerContent.push(h("p", {}))
+      continue
+    }
+
+    if (child.type === "text" && child.value.trim() === "") {
+      continue
+    }
+
+    return
+  }
+
+  if (spoilerContent.length > 0) {
+    parent.children[index] = createSpoilerNode(spoilerContent)
+  }
+}
+
 export function processParagraph(paragraph: Element): Element | null {
   const newChildren: (Text | Element)[] = []
   let isSpoiler = false
@@ -88,12 +103,18 @@ export function processParagraph(paragraph: Element): Element | null {
       if (spoilerText !== null) {
         isSpoiler = true
         newChildren.push({ type: "text", value: spoilerText })
-      } else if (isSpoiler) {
-        newChildren.push(child)
-      } else {
+        continue
+      }
+
+      if (!isSpoiler) {
         return null
       }
-    } else if (child.type === "element") {
+
+      newChildren.push(child)
+      continue
+    }
+
+    if (child.type === "element") {
       newChildren.push(child)
     }
   }
@@ -102,21 +123,17 @@ export function processParagraph(paragraph: Element): Element | null {
 }
 
 /**
- * Transforms the AST by converting spoilers.
- * @param tree AST to transform
+ * Quartz transformer plugin that converts blockquote-based spoiler syntax into
+ * interactive spoiler elements. Spoilers are marked with "! " at the start of
+ * blockquote paragraphs.
  */
-export function transformAST(tree: Root): void {
-  visit(tree, "element", modifyNode)
-}
-
-/**
- * Quartz plugin for custom spoiler syntax.
- */
-export const rehypeCustomSpoiler: QuartzTransformerPlugin = () => {
-  return {
-    name: "customSpoiler",
-    htmlPlugins() {
-      return [() => transformAST]
-    },
-  }
-}
+export const rehypeCustomSpoiler: QuartzTransformerPlugin = () => ({
+  name: "customSpoiler",
+  htmlPlugins() {
+    return [
+      () => (tree: Root) => {
+        visit(tree, "element", modifyNode)
+      },
+    ]
+  },
+})

@@ -1,11 +1,16 @@
-import { Root, Element, Parent } from "hast"
+import type { Element, Parent, Root, Text } from "hast"
+
 import { visit } from "unist-util-visit"
 
-import { QuartzTransformerPlugin } from "../types"
+import type { QuartzTransformerPlugin } from "../types"
 
 export const SUBTITLE_REGEX = /^Subtitle:\s*(.*)/
 
-// skipcq: JS-D1001
+/**
+ * Create a subtitle paragraph element with the given children.
+ * @param children - The child nodes to include in the subtitle
+ * @returns A paragraph element with the "subtitle" class
+ */
 export function createSubtitleWithChildren(children: Element["children"]): Element {
   return {
     type: "element",
@@ -16,12 +21,38 @@ export function createSubtitleWithChildren(children: Element["children"]): Eleme
 }
 
 /**
- * Modifies a node in the AST if it's a paragraph that should be converted to a subtitle.
+ * Strip the "Subtitle: " prefix from a text node if present.
+ * Modifies the text node in place.
+ * @param firstChild - The text node to process
+ * @returns True if the subtitle prefix was found and stripped, false otherwise
+ */
+function stripSubtitlePrefix(firstChild: Text): boolean {
+  const match = SUBTITLE_REGEX.exec(firstChild.value)
+  if (!match) {
+    return false
+  }
+
+  firstChild.value = match[1].trimStart()
+  return true
+}
+
+/**
+ * Check if a paragraph element starts with subtitle syntax and process it.
+ * @param paragraph - The paragraph element to check
+ * @returns True if the paragraph contains subtitle syntax, false otherwise
+ */
+export function processParagraph(paragraph: Element): boolean {
+  const firstChild = paragraph.children[0]
+  return Boolean(firstChild?.type === "text" && stripSubtitlePrefix(firstChild))
+}
+
+/**
+ * Transform paragraph elements with subtitle syntax into subtitle elements.
  * This function is called by the AST visitor for each element node.
- *
- * @param node - The element node to potentially modify
- * @param index - The index of the node within its parent's children array
+ * @param node - The element to potentially transform
+ * @param index - The index of the node in its parent's children array
  * @param parent - The parent node containing this element
+ * @throws Error if the index doesn't match the node's position in parent
  */
 export function modifyNode(
   node: Element,
@@ -32,46 +63,27 @@ export function modifyNode(
     throw new Error("Index does not match node")
   }
 
-  if (node.tagName === "p" && processParagraph(node)) {
-    const newNode = createSubtitleWithChildren(node.children)
-    if (parent && index !== undefined) {
-      parent.children[index] = newNode
-    }
+  if (node.tagName !== "p" || !processParagraph(node)) {
+    return
+  }
+
+  const newNode = createSubtitleWithChildren(node.children)
+  if (parent && index !== undefined) {
+    parent.children[index] = newNode
   }
 }
 
 /**
- * Processes a paragraph to convert it to a subtitle if applicable.
- * @param paragraph Paragraph element
- * @returns True if the paragraph is a subtitle, false otherwise
+ * Quartz transformer plugin that converts "Subtitle: " prefixed paragraphs
+ * into styled subtitle elements with the "subtitle" class.
  */
-export function processParagraph(paragraph: Element): boolean {
-  if (paragraph.children.length > 0) {
-    const firstChild = paragraph.children[0]
-    if (firstChild.type === "text") {
-      const match = SUBTITLE_REGEX.exec(firstChild.value)
-      if (match) {
-        firstChild.value = match[1].trimStart()
-        return true
-      }
-    }
-  }
-  return false
-}
-
-// skipcq: JS-D1001
-export function transformAST(tree: Root): void {
-  visit(tree, "element", modifyNode)
-}
-
-/**
- * Quartz plugin for custom subtitle syntax.
- */
-export const rehypeCustomSubtitle: QuartzTransformerPlugin = () => {
-  return {
-    name: "customSubtitle",
-    htmlPlugins() {
-      return [() => transformAST]
-    },
-  }
-}
+export const rehypeCustomSubtitle: QuartzTransformerPlugin = () => ({
+  name: "customSubtitle",
+  htmlPlugins() {
+    return [
+      () => (tree: Root) => {
+        visit(tree, "element", modifyNode)
+      },
+    ]
+  },
+})
