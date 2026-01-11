@@ -90,7 +90,7 @@ Our team culture is tight-knit and fun, extending beyond the research itself. Fo
 > [!quote] [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/)
 > Subtitle: MATS 8.0, [Recontextualization Mitigates Specification Gaming without Modifying the Specification](/recontextualization)
 >
-> ![[https://assets.turntrout.com/static/images/posts/ariana.avif|Ariana Azarbal smiling gently in a striped shirt, standing in front of a sunlit tree with green leaves and small orange fruit.]]{.float-right}
+> ![[https://assets.turntrout.com/static/images/posts/team-shard-01112026.avif|Ariana Azarbal smiling gently in a striped shirt, standing in front of a sunlit tree with green leaves and small orange fruit.]]{.float-right}
 >
 > On Team Shard, I learned how to form my own opinions about alignment, develop concrete hypotheses based on these, and address my hypotheses empirically. Alex Turner and Alex Cloud provided consistently thoughtful guidance and inspiration that enabled my progress. I also had a ton of fun with the team. :)
 >

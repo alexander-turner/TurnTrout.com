@@ -6226,5 +6226,9 @@
   "https://assets.turntrout.com/static/images/posts/team-shard-01052026.avif": {
     "width": 964,
     "height": 1008
+  },
+  "./asset_staging/team-shard-01112026.png": {
+    "width": 1910,
+    "height": 1698
   }
 }
