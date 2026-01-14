@@ -230,6 +230,11 @@ def process_card_image_in_markdown(md_file: Path) -> None:
     if not card_image_url:
         return
 
+    if card_image_url.startswith("https://assets.turntrout.com/") and (
+        card_image_url.endswith(".jpg") or card_image_url.endswith(".jpeg")
+    ):
+        return
+
     # Check if the image can be converted
     if not any(card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS):
         return
