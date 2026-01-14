@@ -782,24 +782,52 @@ export function massTransformText(text: string): string {
 }
 
 /**
- * Plugin options for formatting improvements
+ * Sets a data-first-letter attribute on the first non-empty paragraph element that is a direct child of an article element.
+ *
+ * The function:
+ * 1. Searches for an <article> element in the tree
+ * 2. Finds the first non-empty <p> element that is a direct child of that article
+ * 3. Sets the data-first-letter attribute to the first character of the paragraph's text content
+ * 4. If the second character is an apostrophe, adds a space before it in the text node
+ *
+ * @param tree - The HAST root node to process
+ *
+ * @example
+ * Input:  <article><h1>Title</h1><p>First paragraph</p></article>
+ * Output: <article><h1>Title</h1><p data-first-letter="F">First paragraph</p></article>
+ *
+ * @example
+ * Input:  <article><p></p><p>'Twas the night</p></article>
+ * Output: <article><p></p><p data-first-letter="'">' Twas the night</p></article>
+ *
+ * Note: Only processes non-empty paragraphs that are direct children of article elements.
+ * Empty paragraphs, nested paragraphs, or paragraphs outside of articles are ignored.
  */
 export function setFirstLetterAttribute(tree: Root): void {
-  // Find the first paragraph in the article
-  const firstParagraph = tree.children.find(
-    (child): child is Element => child.type === "element" && child.tagName === "p",
+  const article = tree.children.find(
+    (child): child is Element => child.type === "element" && child.tagName === "article",
+  )
+  if (!article) {
+    return
+  }
+
+  const firstParagraph = article.children.find(
+    (child): child is Element =>
+      child.type === "element" && child.tagName === "p" && getTextContent(child).trim().length > 0,
   )
 
   if (!firstParagraph) {
     return
   }
 
-  const firstLetter = getTextContent(firstParagraph).charAt(0)
+  const paragraphText = getTextContent(firstParagraph)
+  const firstLetter = paragraphText.charAt(0)
+
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
   // If the second letter is an apostrophe, add a space before it
-  const secondLetter = getTextContent(firstParagraph).charAt(1)
+  const secondLetter = paragraphText.charAt(1)
   if (["'", "’", "‘"].includes(secondLetter)) {
     const firstTextNode = firstParagraph.children.find(
       (child): child is Text => child.type === "text",
