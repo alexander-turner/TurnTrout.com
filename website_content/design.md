@@ -935,18 +935,21 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 2. No pages attempt to share a URL.
 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
 4. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
-5. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
-6. Preview card image URLs are valid, end with `.png` or `.jpg`, and are at most <span id="populate-max-size-card"></span>KB. Social media sites do not reliably display newer formats like `.avif`.
-7. Page preview images must have `alt` text, be under 300KB, and be hosted on my CDN.
-8. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
-9. Footnote references match their definitions - no orphaned footnotes or references.
-10. No forbidden patterns like raw HTML color codes (e.g. `#FF0000`) exist outside math or code blocks.
-11. Relative links start with `/` to avoid broken navigation.
+5. Markdown tables specify column alignment to make their appearance robust to CSS changes.
+6. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
+7. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
+8. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
+9. No forbidden typography patterns, like a closing quote followed by a space and then a period.
+10. I don't leave stray LaTeX commands outside of math blocks.
+11. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
+12. Headings should not contain Markdown links (like `## Title [link](...)`).
+13. Filenames do not contain spaces.
+14. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
 
 I lastly check that my CSS:
 
-1. Defines font-faces using fonts which actually exist in the filesystem, and
-2. Does not refer to nonexistent fonts.
+1. Defines `@font-face`s using fonts which actually exist in the filesystem.
+2. Does not refer to undeclared font families.
 3. Only references valid CSS variables.
 
 ### Unit tests
