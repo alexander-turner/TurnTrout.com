@@ -130,6 +130,16 @@ Content with already processed JPEG card_image.""",
             "processed_jpeg.md",
         ),
         (
+            "already_processed_assets_jpeg",
+            """---
+title: Test Post
+date: 2023-10-10
+card_image: https://assets.turntrout.com/static/images/card_images/image.jpeg
+---
+Content with already processed assets JPEG card_image.""",
+            "processed_assets_jpeg.md",
+        ),
+        (
             "small_png_under_max_kb",
             """---
 title: Test Post
