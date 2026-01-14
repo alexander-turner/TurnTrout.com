@@ -5064,7 +5064,7 @@ def test_check_html_tags_in_text_real_world_katex():
     "html,ok",
     [
         ('<article><p data-first-letter="A">Alpha</p></article>', True),
-        ('<article class="no-dropcap"><p>Alpha</p></article>', True),
+        ('<article data-use-dropcap="false"><p>Alpha</p></article>', True),
         ("<article><p>Alpha</p></article>", False),
         (
             '<article><p data-first-letter="\u2019">\u2019Twas</p></article>',
@@ -5084,7 +5084,10 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool):
         # Valid cases
         ('<article><p data-first-letter="A">Alpha</p></article>', []),
         ('<article><p data-first-letter="1">123 test</p></article>', []),
-        ('<article class="no-dropcap"><p>No dropcap needed</p></article>', []),
+        (
+            '<article data-use-dropcap="false"><p>No dropcap needed</p></article>',
+            [],
+        ),
         # Skipped: no first paragraph (not an error)
         ("<article><div>No paragraph</div></article>", []),
         ("<article><p></p></article>", []),

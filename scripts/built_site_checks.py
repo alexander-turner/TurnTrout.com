@@ -107,12 +107,12 @@ def check_favicons_missing(soup: BeautifulSoup) -> bool:
 
 
 def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
-    """Unless `.no-dropcap`, require `data-first-letter` to contain an
-    alphanumeric character."""
+    """Unless `data-use-dropcap="false"`, require `data-first-letter` to contain
+    an alphanumeric character."""
 
     issues: list[str] = []
     for article in soup.find_all("article"):
-        if "no-dropcap" in set(script_utils.get_classes(article)):
+        if article.get("data-use-dropcap") == "false":
             continue
 
         p = article.find("p", recursive=False)

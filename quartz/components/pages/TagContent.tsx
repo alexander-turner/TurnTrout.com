@@ -38,7 +38,7 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
   }
 
   return (
-    <article className={articleClasses}>
+    <article className={articleClasses} data-use-dropcap="false">
       {tagPageDescription && <div>{tagPageDescription as React.ReactNode}</div>}
       <div className="page-listing">
         <p>{uiStrings.pages.tagContent.itemsUnderTag(pagesWithTag.length)}</p>

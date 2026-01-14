@@ -949,113 +949,148 @@ describe("flattenTextNodes and getTextContent", () => {
 })
 
 describe("setFirstLetterAttribute", () => {
-  it("should set data-first-letter attribute on the first paragraph", () => {
-    const input = `
+  it.each([
+    [
+      "sets data-first-letter on the first paragraph in the first ",
+      `
+      
       <h1>Title</h1>
       <p>First paragraph.</p>
       <p>Second paragraph.</p>
-    `
-    const expected = `
+    
+      
+      <p>First paragraph.</p>
+    
+      
+      <p>Second paragraph.</p>
+    
+    `,
+      `
+      
       <h1>Title</h1>
       <p data-first-letter="F">First paragraph.</p>
       <p>Second paragraph.</p>
-    `
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should handle apostrophe as the second character", () => {
-    const input = `
-      <p>'Twas the night before Christmas.</p>
-    `
-    const expected = `
-      <p data-first-letter="’">’Twas the night before Christmas.</p>
-    `
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should handle smart apostrophe as the second character", () => {
-    const input = `
-      <p>'Twas the night before Christmas.</p>
-    `
-    const expected = `
-      <p data-first-letter="’">’Twas the night before Christmas.</p>
-    `
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should not modify when there are no paragraphs", () => {
-    const input = `
+    
+      
+      <p>First paragraph.</p>
+    
+      
+      <p>Second paragraph.</p>
+    
+    `,
+    ],
+    [
+      "does not modify when there are no paragraphs",
+      `
+      
       <h1>Title</h1>
+    
       <div>Not a paragraph</div>
-    `
+    `,
+      `
+      
+      <h1>Title</h1>
+    
+      <div>Not a paragraph</div>
+    `,
+    ],
+    [
+      "only processes the first  in the document",
+      `
+      <p>First paragraph.</p>
+    
+      
+      <p>Second paragraph.</p>
+    
+    `,
+      `
+      <p data-first-letter="F">First paragraph.</p>
+    
+      
+      <p>Second paragraph.</p>
+    
+    `,
+    ],
+    [
+      "sets the attribute when skipFirstLetter is not in options",
+      `<p>First paragraph.</p>
+    `,
+      `<p data-first-letter="F">First paragraph.</p>
+    `,
+      true,
+    ],
+    [
+      "skips empty paragraphs and sets attribute on first non-empty paragraph",
+      `
+      <p></p>
+      <p>First non-empty paragraph.</p>
+      <p>Second paragraph.</p>
+    
+    `,
+      `
+      <p></p>
+      <p data-first-letter="F">First non-empty paragraph.</p>
+      <p>Second paragraph.</p>
+    
+    `,
+    ],
+  ])("%s", (_description, input, expected, doNotSetFirstLetterAttribute = false) => {
+    const processedHtml = testHtmlFormattingImprovement(input, false, doNotSetFirstLetterAttribute)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it.each([
+    [
+      "apostrophe as second character (after smart-quote transform)",
+      `
+      
+      <p>'Twas the night before Christmas.</p>
+    
+    `,
+      `
+      
+      <p data-first-letter="’">’Twas the night before Christmas.</p>
+    
+    `,
+    ],
+    [
+      "second character is a quote and we have a direct text node to patch",
+      '<p><strong></strong>"Twas the night</p>',
+      '<p data-first-letter="“"><strong></strong>“Twas the night</p>',
+    ],
+    [
+      "second character is an apostrophe and a direct text node exists",
+      "<p><span></span>X's story</p>",
+      `<p data-first-letter="X"><span></span>X ’s story</p>`,
+    ],
+  ])("%s", (_description, input, expected) => {
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it.each([
+    [
+      "paragraph is not a direct child of article",
+      `
+      <div>
+        <p>First paragraph not in article.</p>
+        <p>Second paragraph not in article.</p>
+      </div>
+    `,
+    ],
+    [
+      "paragraph is nested inside article",
+      `
+      <article>
+        <div>
+          <p>Nested paragraph in article.</p>
+        </div>
+      </article>
+    `,
+    ],
+  ])("should NOT set data-first-letter when %s", (_description, input) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(processedHtml).toBe(input)
-  })
-
-  it("should only process the first paragraph in the document", () => {
-    const input = `
-      <p>First paragraph.</p>
-      <p>Second paragraph.</p>
-    `
-    const expected = `
-      <p data-first-letter="F">First paragraph.</p>
-      <p>Second paragraph.</p>
-    `
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("set the attribute when skipFirstLetter is not in options", () => {
-    const input = `
-      <p>First paragraph.</p>
-    `
-    const expected = `
-      <p data-first-letter="F">First paragraph.</p>
-    `
-    const processedHtml = testHtmlFormattingImprovement(input, false, true)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should handle case where second letter is apostrophe and modify firstTextNode", () => {
-    const input = '<p><strong></strong>"Twas the night</p>'
-    // The smart quotes transformation will convert regular quotes to smart quotes
-    const expected = '<p data-first-letter="“"><strong></strong>“Twas the night</p>'
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should handle apostrophe as second letter with nested structure", () => {
-    // This test is specifically designed to hit the case where:
-    // 1. Second letter is an apostrophe
-    // 2. firstTextNode is found and modified
-    const input = "<p><em></em>'Twas a dark night</p>"
-    const expected = '<p data-first-letter="’"><em></em>’Twas a dark night</p>'
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should handle case where firstTextNode is not found when second letter is apostrophe", () => {
-    // Create a paragraph where the second letter is an apostrophe but there's no direct text node
-    // Only non-text elements
-    const input = "<p><strong>X</strong><em>'</em><span>rest</span></p>"
-    // Since there's no direct text node to modify, it should just add the data attribute
-    const expected = '<p data-first-letter="X"><strong>X</strong><em>’</em><span>rest</span></p>'
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
-  })
-
-  it("should modify firstTextNode when second letter is apostrophe and direct text node exists", () => {
-    // Create a paragraph where:
-    // 1. There are nested elements before the text node
-    // 2. The direct text node contains the apostrophe as second character
-    // 3. This should trigger line 746 where firstTextNode.value is modified
-    const input = "<p><span></span>X's story</p>"
-    const expected = '<p data-first-letter="X"><span></span>X ’s story</p>'
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
   })
 })
 
@@ -1744,7 +1779,6 @@ describe("improveFormatting function with options", () => {
       /* noop */
     })
 
-    // Verify transformations occurred with default settings
     const paragraph = tree.children[0] as Element
     const resultHtml = hastToHtml(paragraph)
 
