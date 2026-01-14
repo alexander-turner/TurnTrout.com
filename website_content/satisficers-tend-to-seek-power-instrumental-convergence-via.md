@@ -77,6 +77,9 @@ Lastly: The unholy grail of "instrumental convergence for policies trained via r
 
 # Retargetable policy-selection processes tend to select policies which seek power
 
+> [!note]
+> I aim for this post to be readable without much attention paid to the math.
+
 To understand a range of retargetable procedures, let's first orient towards the picture I've painted of power-seeking thus far. In short:
 
 > Since power-seeking tends to lead to larger sets of possible outcomes—staying alive lets you do more than dying—the agent must seek power to reach most outcomes. The power-seeking theorems say that [for the vast, vast, vast majority](/quantitative-strength-of-instrumental-convergence) [of](/power-seeking-beyond-MDPs#Instrumental-convergence-can-get-really-really-strong) variants of every utility function over outcomes, the max of a larger[^sim] set of possible outcomes is greater than the max of a smaller set of possible outcomes. Thus, optimal agents will tend to seek power.
@@ -96,9 +99,6 @@ So far, I proved something like "if the agent has a utility function over fruits
 This argument does not, in fact, rely on optimal decision-making. The crux is instead that we can _flexibly retarget_ the decision-making of the agent: **For every way the agent could end up choosing 🍒, we change a variable in its cognition (its utility function) and make it choose the 🍌 or 🍎 instead.**
 
 Many decision-making procedures are like this. First, a few definitions.
-
-> [!note]
-> I aim for this post to be readable without much attention paid to the math.
 
 The agent can bring about different outcomes via different policies. In stochastic environments, these policies will induce outcome _lotteries_, like 50%🍌 / 50%🍎. Let $C$ contain all the outcome lotteries the agent can bring about.
 
@@ -132,8 +132,8 @@ So suppose Frank is deciding whether he wants a fruit from $F_A:=\{$🍒$\}$ or 
 > $$
 > \overset{\text{# of permutations of $u$ for which $f_1>f_2$}}{\big|\{u_\phi \in {S_d \cdot u}\mid f_1(u_\phi)>f_2(u_\phi)\}\big|} \geq n \overset{\text{# of permutations of $u$ for which $f_1<f_2$}}{\big|\{u_\phi \in S_d \cdot u\mid f_1(u_\phi)<f_2(u_\phi)\}\big|}.
 > $$
->
-> In this post, if I don't specify a subset $\mathfrak{U}$, that means the statement holds for $\mathfrak{U}=\mathbb{R}^d$. For example, the [past results](/quantitative-strength-of-instrumental-convergence) show that IsOptimal($F_B$) $\geq_\text{most}^{2}$ IsOptimal($F_A$)—this implies that for _every_ utility function, at least 2/3 of its orbit makes $F_B$ optimal.
+
+In this post, if I don't specify a subset $\mathfrak{U}$, that means the statement holds for $\mathfrak{U}=\mathbb{R}^d$. For example, the [past results](/quantitative-strength-of-instrumental-convergence) show that IsOptimal($F_B$) $\geq_\text{most}^{2}$ IsOptimal($F_A$)—this implies that for _every_ utility function, at least 2/3 of its orbit makes $F_B$ optimal.
 
 > [!note]
 > For simplicity, I'll focus on "for most utility functions" instead of "for most distributions over utility functions", even though most of the results apply to the latter.
@@ -166,7 +166,7 @@ In a sense, $\mathrm{Satisfice}_t$ is not "biased" against 🍎: by changing the
 
 > [!note]
 >
-> While $s_t$ is invariant under joint permutation, all we need in general is that it be _weakly increasing_ under both $\phi_1$ and $\phi_2$\. Formally, $\mathrm{Satisfice}_t(F_A,F_C\mid\mathbf{u})\leq \mathrm{Satisfice}_t(\phi_1\cdot F_A, \phi_1\cdot F_C\mid \phi_1\cdot\mathbf{u})$ and $\mathrm{Satisfice}_t(F_A,F_C\mid\mathbf{u})\leq \mathrm{Satisfice}_t(\phi_2\cdot F_A, \phi_2\cdot F_C\mid \phi_2\cdot\mathbf{u})$. This allows for decision-making functions which are biased towards picking a fruit from $F_B$.
+> While $\mathrm{Satisfice}_t$ is invariant under joint permutation, all we need in general is that it be _weakly increasing_ under both $\phi_1$ and $\phi_2$\. Formally, $\mathrm{Satisfice}_t(F_A,F_C\mid\mathbf{u})\leq \mathrm{Satisfice}_t(\phi_1\cdot F_A, \phi_1\cdot F_C\mid \phi_1\cdot\mathbf{u})$ and $\mathrm{Satisfice}_t(F_A,F_C\mid\mathbf{u})\leq \mathrm{Satisfice}_t(\phi_2\cdot F_A, \phi_2\cdot F_C\mid \phi_2\cdot\mathbf{u})$. This allows for decision-making functions which are biased towards picking a fruit from $F_B$.
 
 ## (2) Order-preserving on the first argument
 
