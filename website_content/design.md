@@ -929,28 +929,35 @@ I use `mypy` to statically type-check my Python code and `tsc` to type-check my 
 
 I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
 
-I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these. Here are some of my other checks:
+I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
-1. Each article's metadata has required fields filled in (like `title` and `description`).
-2. No pages attempt to share a URL.
-3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
-4. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
-5. I don't leave stray $\KaTeX$ commands outside of math blocks.
-6. Markdown tables specify column alignment to make their appearance robust to CSS changes.
-7. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
-8. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
-9. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
-10. No forbidden typography patterns, like a closing quote followed by a space and then a period.
-11. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
-12. Headings should not contain Markdown links (like `## Title [link](...)`).
-13. Filenames do not contain spaces.
-14. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
-
-I lastly check that my CSS:
-
-1. Defines `@font-face`s using fonts which actually exist in the filesystem.
-2. Does not refer to undeclared font families.
-3. Only references valid CSS variables.
+> [!info]- Markdown and source file checks
+> **Metadata and structure:**
+> 1. Each article's metadata has required fields filled in (like `title` and `description`).
+> 2. No pages attempt to share a URL.
+> 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
+> 4. Filenames do not contain spaces.
+> 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
+>
+> **Math and LaTeX:**
+> 1. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
+> 2. I don't leave stray $\KaTeX$ commands outside of math blocks.
+>
+> **Markdown syntax:**
+> 1. Markdown tables specify column alignment to make their appearance robust to CSS changes.
+> 2. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
+> 3. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
+> 4. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
+> 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
+> 6. Headings should not contain Markdown links (like `## Title [link](...)`).
+>
+> **Typography:**
+> 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
+>
+> **CSS validation:**
+> 1. CSS defines `@font-face`s using fonts which actually exist in the filesystem.
+> 2. CSS does not refer to undeclared font families.
+> 3. CSS only references valid CSS variables.
 
 ### Unit tests
 
@@ -1006,35 +1013,76 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 
 ### Validating the emitted HTML files
 
-At this point, I check the built pages for a smattering of possible errors, including:
-
-- Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
-- Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
-- Inline styles which invoke nonexistent CSS variables;
-- `<video>` tags which do not provide multiple `<source>` options;
-- I might have disabled [favicon rendering](#inline-favicons) to increase build speed;
-- Favicons which are not sandwiched within `span.favicon-span` tags will wrap on their own, [which is awkward](#inline-favicons);
-- Common Markdown errors:
-  - Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
-  - Incorrectly terminated blockquotes;
-  - Unrendered emphasis markers (often indicated by a trailing `*` or `_`);
-  - Failing to render spoiler boxes;
-  - Failed attempts to specify a `<figcaption>` element;
-  - Failed renders of HTML elements;
-  - Assets present in the Markdown file but which are not present in the HTML DOM;
-- Certain kinds of dead links which `linkchecker` won't catch:
-  - Anchor links which don't exist;
-  - Duplicate anchor targets on a page;
-  - `git`-hosted assets, stylesheets, or scripts which don't exist;
-- Duplicate `id` attributes on a page's HTML elements;
-- Metadata validity, including:
-  - Ensure page descriptions exist and are not too long for social media previews;
-- Failures of my text prettification pipeline:
-  - Non-smart quotation marks (e.g. `'` or `"`);
-  - Multiple dashes in a row;
-- $\KaTeX$ rendering errors;
-- Failure to inline the critical CSS;
-- RSS file generation failure.
+> [!info]- HTML validation checks
+>
+> I check to avoid a smattering of possible mishaps.
+>
+> **Development artifacts:**
+> 1. Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
+> 2. I might have disabled [favicon rendering](#inline-favicons) to increase build speed;
+>
+> **Asset management:**
+> 1. Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
+> 2. Local media files referenced but not present on disk;
+> 3. Assets present in the Markdown file but which are not present in the HTML DOM;
+> 4. `<video>` tags which do not provide multiple `<source>` options in the correct order (MP4 first, then WEBM);
+> 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
+>
+> **CSS and styling:**
+> 1. Inline styles which invoke nonexistent CSS variables;
+> 2. Failure to inline critical CSS;
+>
+> **Favicon validation:**
+> 1. Favicons which are not sandwiched within `span.favicon-span` tags will wrap on their own, [which is awkward](#inline-favicons);
+> 2. Favicons that aren't SVG elements with proper `mask-url` styling;
+>
+> **Common Markdown rendering errors:**
+> 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
+> 2. Incorrectly terminated blockquotes (e.g. ending with `>`);
+> 3. Unrendered emphasis markers (often indicated by a trailing `*` or `_`);
+> 4. Failing to render spoiler boxes;
+> 5. Unrendered transclusions (links starting with "Transclude of");
+> 6. Unrendered subtitles (paragraphs starting with "Subtitle:");
+> 7. Failed attempts to specify captions (text starting with "Figure:", "Table:", "Code:", or "Caption:");
+> 8. Failed renders of HTML elements (raw HTML tags appearing in text);
+> 9. Unrendered image alt text declarations;
+>
+> **Link validation:**
+> 1. Anchor links which don't exist (both same-page and cross-page);
+> 2. Same-page anchor links missing required CSS classes (`internal`, `same-page-link`);
+> 3. Internal links incorrectly marked or formatted;
+> 4. Duplicate `id` attributes on a page's HTML elements;
+> 5. Malformed `href` attributes (invalid URLs or email addresses);
+> 6. `git`-hosted assets, stylesheets, or scripts which don't exist;
+>
+> **Typography and text formatting:**
+> 1. Non-smart quotation marks (e.g. `'` or `"`);
+> 2. Multiple dashes in a row (should be em dashes);
+> 3. Consecutive periods (potential typos);
+> 4. Missing spaces before or after links and emphasis elements;
+>
+> **Math rendering:**
+> 1. $\KaTeX$ rendering errors (indicated by error styling);
+> 2. $\KaTeX$ display elements that should be in blockquotes;
+> 3. Paragraphs containing only a $\KaTeX$ span (should be display math);
+> 4. HTML tags incorrectly inserted into $\KaTeX$ elements;
+>
+> **Iframe validation:**
+> 1. Iframes missing `src` attributes;
+> 2. Iframe sources returning error status codes;
+>
+> **Metadata and SEO:**
+> 1. Page descriptions missing, too short, or too long for social media previews (recommended 10-155 characters);
+> 2. Metadata mismatches between HTML and Markdown source files;
+>
+> **Dynamic content:**
+> 1. Elements with IDs or classes starting with `populate-` that are empty;
+>
+> **Font preloading:**
+> 1. Missing preload links for EBGaramond `subfont` files;
+>
+> **RSS validation:**
+> 1. RSS file generation failure or schema validation errors.
 
 ### Finishing touches
 
