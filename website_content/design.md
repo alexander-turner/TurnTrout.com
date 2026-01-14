@@ -929,7 +929,7 @@ I use `mypy` to statically type-check my Python code and `tsc` to type-check my 
 
 I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
 
-I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these. I also check:
+I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these. Here are some of my other checks:
 
 1. Each article's metadata has required fields filled in (like `title` and `description`).
 2. No pages attempt to share a URL.
@@ -937,6 +937,11 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 4. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
 5. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
 6. Preview card image URLs are valid, end with `.png` or `.jpg`, and are at most <span id="populate-max-size-card"></span>KB. Social media sites do not reliably display newer formats like `.avif`.
+7. Page preview images must have `alt` text, be under 300KB, and be hosted on my CDN.
+8. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
+9. Footnote references match their definitions - no orphaned footnotes or references.
+10. No forbidden patterns like raw HTML color codes (e.g. `#FF0000`) exist outside math or code blocks.
+11. Relative links start with `/` to avoid broken navigation.
 
 I lastly check that my CSS:
 
