@@ -935,12 +935,12 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 2. No pages attempt to share a URL.
 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
 4. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
-5. Markdown tables specify column alignment to make their appearance robust to CSS changes.
-6. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
-7. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
-8. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
-9. No forbidden typography patterns, like a closing quote followed by a space and then a period.
-10. I don't leave stray LaTeX commands outside of math blocks.
+5. I don't leave stray $\KaTeX$ commands outside of math blocks.
+6. Markdown tables specify column alignment to make their appearance robust to CSS changes.
+7. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
+8. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
+9. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
+10. No forbidden typography patterns, like a closing quote followed by a space and then a period.
 11. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
 12. Headings should not contain Markdown links (like `## Title [link](...)`).
 13. Filenames do not contain spaces.
