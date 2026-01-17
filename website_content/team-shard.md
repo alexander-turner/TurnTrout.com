@@ -26,7 +26,7 @@ Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cl
 
 ![[https://assets.turntrout.com/static/images/posts/team-shard-12232025-sunglasses.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]
 
-Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyitbul](https://rycolab.io/authors/evzen/), [Jacob Goldman-Wetzler](https://jacobgw.com), Alex Turner, Alex Cloud, and [Joseph Miller.](https://scholar.google.com/citations?user=vUqC5hQAAAAJ&hl=en)
+Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyitbul](https://rycolab.io/authors/evzen/), [Jacob Goldman-Wetzler](https://jacobgw.com), Alex Turner, Alex Cloud, and [Joseph Miller.](https://scholar.google.com/citations?user=vUqC5hQAAAAJ&hl=en) Team Shard shirts are available (nearly at-cost) at [`shardtheory.clothing`](https://www.etsy.com/listing/4366149631/shard-theory-tee?ref=shop_home_feat_3&logging_key=ce704f868c475a2a7b2defa19302b9b24eaea669%3A4366149631). The only way to get a colored shirt, though, is to join Team Shard! ;)
 
 [^cloud]: Alex Cloud became a co-mentor at the start of MATS 7.0.
 
