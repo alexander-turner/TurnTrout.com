@@ -13,9 +13,25 @@ card_image_alt:
 aliases:
 ---
 > [!quote] Zack Davis, group discussion
-> the secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology
+> The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. But these arguments are wrong, and the wrongness matters. The argument attempts to escape "AI psychology" but necessarily fails. To predict instrumental convergence, you _must_ take a stance on how AI will tend to select plans.
+Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. The argument attempts to escape "AI psychology" but necessarily fails. To predict instrumental convergence, you _must_ take a stance on how AI will tend to select plans.
+
+# Reality _does_ influence instrumental convergence
+
+"Reality" meets the AI in the form of _the environment_. The agent acts but reality defines the transition operator --- reality responds. Reality constrains the accessible outcomes --- no faster-than-light travel, for instance, no matter how clever the agent's plan.
+
+For now, let's consider a simplified "gridworld" environment in which the AI can move one square per time step.
+
+Imagine I'm in the middle of a long hallway. One end features a one-way door to a room containing tubs of bananas, while the other end similarly leads to crates of apples. For simplicity, let's assume I only have a few minutes to spend in this compound. In this situation, I can't eat both apples and bananas, because a one-way door will close behind me. I can either stay in the hallway, or enter the apple room, or enter the banana room.
+
+Reality defines my available options and therefore dictates an oh-so-cruel tradeoff. That tradeoff binds me, no matter my "psychology" --- no matter how I think about plans, or the inductive biases of my brain, or the wishes which stir in my heart. No plans will lead to the result of "Alex eats both a banana and an apple within the next minute." Of course, I could be deluded into believing that such plans exist, but reality does not bend to delusion. If my brain reliably predicts the consequences of plans, then I should predict this tradeoff.
+
+> [!warning]- What is a "plan", anyways?
+>
+> In the context of a Partially Observable Markov Decision Process, I'd say that a "plan" is a partial policy which maps (some) belief states to distributions over actions: "In such-and-such situation, take this-and-that action." My claim then formalizes to: "In the belief state 'I'm in the hallway', then there does not exist a partial policy which in fact leads me from this belief state _to_ a desirable state."
+>
+> I'll ignore issues of [embeddedness](https://arxiv.org/abs/1902.09469). I think those issues are interesting but distracting and philosophically fraught. I don't foresee a way in which embeddedness would change the conclusions, anyways.
 
 > [!success] This topic is a specialty of mine
 > Where does instrumental convergence come from? Since I did [my alignment PhD](/alignment-phd) on [exactly](/parametrically-retargetable-power-seeking) this question, I'm well-suited to explain the mistake.
