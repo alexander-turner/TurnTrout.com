@@ -37,6 +37,8 @@ card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors HAT
 
 Do not use the original [TruthfulQA](https://arxiv.org/abs/2109.07958) multiple-choice or the [HaluEval](https://arxiv.org/abs/2305.11747) benchmark. We show that a simple decision tree can theoretically game multiple-choice TruthfulQA to 79.6% accuracy - even while hiding the question being asked! In response, the TruthfulQA authors [created a new multiple-choice condition](https://www.lesswrong.com/posts/Bunfwz6JsNd44kgLT/new-improved-multiple-choice-truthfulqa) which avoids the vulnerabilities we highlight.
 
+> [!warning] [Answer Matching Outperforms Multiple Choice for Language Model Evaluation](https://arxiv.org/abs/2507.02856) later showed that the new TruthfulQA can still be gamed
+
 # Questioning TruthfulQA
 
 [Lin et al. 2021](https://arxiv.org/abs/2109.07958) presented [TruthfulQA](https://github.com/sylinrl/TruthfulQA) to measure “whether a language model is truthful in generating answers to questions.”
