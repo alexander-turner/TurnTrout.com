@@ -59,7 +59,7 @@ export function modifyNode(
   index: number | undefined,
   parent: Parent | null | undefined,
 ): void {
-  if (index && parent?.children[index] !== node) {
+  if (index !== undefined && parent?.children[index] !== node) {
     throw new Error("Index does not match node")
   }
 

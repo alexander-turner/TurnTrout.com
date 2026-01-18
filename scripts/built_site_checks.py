@@ -106,6 +106,31 @@ def check_favicons_missing(soup: BeautifulSoup) -> bool:
     return not soup.select("article p img.favicon, article p svg.favicon")
 
 
+def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
+    """Unless `data-use-dropcap="false"`, require `data-first-letter` to contain
+    an alphanumeric character."""
+
+    issues: list[str] = []
+    for article in soup.find_all("article"):
+        if article.get("data-use-dropcap") == "false":
+            continue
+
+        p = article.find("p", recursive=False)
+        if not isinstance(p, Tag) or not p.get_text(strip=True):
+            continue
+
+        first = p.get("data-first-letter", "")
+        if not isinstance(first, str) or len(first) != 1:
+            issues.append(
+                f"invalid data-first-letter length (expected 1): {first!r}"
+            )
+            continue
+        if not first[0].isalnum():
+            issues.append(f"non-alphanumeric data-first-letter: {first!r}")
+
+    return issues
+
+
 def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
     """
     Check for unrendered footnotes in the format [^something].
@@ -1288,6 +1313,9 @@ def check_file_for_issues(
         ),
         "problematic_iframe_embeds": check_iframe_embeds(soup),
         "empty_populate_elements": check_populate_elements_nonempty(soup),
+        "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
+            soup
+        ),
     }
 
     if should_check_fonts:

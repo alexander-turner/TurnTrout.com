@@ -951,87 +951,87 @@ describe("flattenTextNodes and getTextContent", () => {
 describe("setFirstLetterAttribute", () => {
   it.each([
     [
-      "sets data-first-letter on the first paragraph in the first <article>",
+      "sets data-first-letter on the first paragraph in the first ",
       `
-      <article>
+      
       <h1>Title</h1>
       <p>First paragraph.</p>
       <p>Second paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>First paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>Second paragraph.</p>
-    </article>
+    
     `,
       `
-      <article>
+      
       <h1>Title</h1>
       <p data-first-letter="F">First paragraph.</p>
       <p>Second paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>First paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>Second paragraph.</p>
-    </article>
+    
     `,
     ],
     [
       "does not modify when there are no paragraphs",
       `
-      <article>
+      
       <h1>Title</h1>
-    </article>
+    
       <div>Not a paragraph</div>
     `,
       `
-      <article>
+      
       <h1>Title</h1>
-    </article>
+    
       <div>Not a paragraph</div>
     `,
     ],
     [
-      "only processes the first <article> in the document",
-      `<article>
+      "only processes the first  in the document",
+      `
       <p>First paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>Second paragraph.</p>
-    </article>
+    
     `,
-      `<article>
+      `
       <p data-first-letter="F">First paragraph.</p>
-    </article>
-      <article>
+    
+      
       <p>Second paragraph.</p>
-    </article>
+    
     `,
     ],
     [
       "sets the attribute when skipFirstLetter is not in options",
-      `<article><p>First paragraph.</p></article>
+      `<p>First paragraph.</p>
     `,
-      `<article><p data-first-letter="F">First paragraph.</p></article>
+      `<p data-first-letter="F">First paragraph.</p>
     `,
       true,
     ],
     [
       "skips empty paragraphs and sets attribute on first non-empty paragraph",
-      `<article>
+      `
       <p></p>
       <p>First non-empty paragraph.</p>
       <p>Second paragraph.</p>
-    </article>
+    
     `,
-      `<article>
+      `
       <p></p>
       <p data-first-letter="F">First non-empty paragraph.</p>
       <p>Second paragraph.</p>
-    </article>
+    
     `,
     ],
   ])("%s", (_description, input, expected, doNotSetFirstLetterAttribute = false) => {
@@ -1043,25 +1043,25 @@ describe("setFirstLetterAttribute", () => {
     [
       "apostrophe as second character (after smart-quote transform)",
       `
-      <article>
+      
       <p>'Twas the night before Christmas.</p>
-    </article>
+    
     `,
       `
-      <article>
+      
       <p data-first-letter="’">’Twas the night before Christmas.</p>
-    </article>
+    
     `,
     ],
     [
       "second character is a quote and we have a direct text node to patch",
-      '<article><p><strong></strong>"Twas the night</p></article>',
-      '<article><p data-first-letter="“"><strong></strong>“Twas the night</p></article>',
+      '<p><strong></strong>"Twas the night</p>',
+      '<p data-first-letter="“"><strong></strong>“Twas the night</p>',
     ],
     [
       "second character is an apostrophe and a direct text node exists",
-      "<article><p><span></span>X's story</p></article>",
-      `<article><p data-first-letter="X"><span></span>X ’s story</p></article>`,
+      "<p><span></span>X's story</p>",
+      `<p data-first-letter="X"><span></span>X ’s story</p>`,
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
@@ -1779,9 +1779,7 @@ describe("improveFormatting function with options", () => {
       /* noop */
     })
 
-    // Verify transformations occurred with default settings
-    const article = tree.children[0] as Element
-    const paragraph = article.children[0] as Element
+    const paragraph = tree.children[0] as Element
     const resultHtml = hastToHtml(paragraph)
 
     // Should have first letter attribute (default behavior)

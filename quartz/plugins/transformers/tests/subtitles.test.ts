@@ -189,9 +189,9 @@ describe("rehype-custom-subtitle", () => {
       expect(removePositions(parent.children[0] as Element)).toEqual(removePositions(originalNode))
     })
 
-    it("handles missing parent", () => {
+    it("throws on missing parent", () => {
       const input = h("p", {}, "Subtitle: This is a subtitle")
-      expect(() => modifyNode(input as Element, 0, null)).not.toThrow()
+      expect(() => modifyNode(input as Element, 0, null)).toThrow("Index does not match node")
     })
 
     it("handles undefined index", () => {
@@ -208,12 +208,12 @@ describe("rehype-custom-subtitle", () => {
       expect(() => modifyNode(input as Element, 1, parent)).toThrow("Index does not match node")
     })
 
-    it("handles index 0 (falsy) without throwing error even when node mismatch", () => {
+    it("throws error when index 0 (previously falsy) has node mismatch", () => {
       const input = h("p", {}, "Subtitle: This is a subtitle")
       const otherNode = h("p", {}, "Different node")
       const parent: Parent = { type: "root", children: [otherNode] }
 
-      expect(() => modifyNode(input as Element, 0, parent)).not.toThrow()
+      expect(() => modifyNode(input as Element, 0, parent)).toThrow("Index does not match node")
     })
   })
 })

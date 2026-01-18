@@ -240,7 +240,7 @@ test.describe("Scroll Behavior", () => {
     await waitForScroll(page, 0)
   })
 
-  for (const [scrollPos] of [[50], [100], [1000]]) {
+  for (const [scrollPos] of [[100], [300], [1000]]) {
     // eslint-disable-next-line playwright/expect-expect
     test(`restores scroll position on page refresh to ${scrollPos}`, async ({ page }) => {
       await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)

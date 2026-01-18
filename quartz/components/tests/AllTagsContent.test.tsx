@@ -242,7 +242,7 @@ describe("AllTagsContent component", () => {
     const html = render(preactH(AllTagsContent, props))
 
     expect(html).toContain('class="previewable"')
-    expect(html).toContain("<article>")
+    expect(html).toContain("<article")
   })
 
   it("should include additional CSS classes from frontmatter", () => {
@@ -279,7 +279,7 @@ describe("AllTagsContent component", () => {
     const props = createProps(fileData, [fileData])
     const html = render(preactH(AllTagsContent, props))
 
-    expect(html).toContain("<article>")
+    expect(html).toContain("<article")
     expect(html).toContain(allTagsListing)
   })
 
@@ -290,7 +290,7 @@ describe("AllTagsContent component", () => {
     const props = createProps(fileData, [fileData])
     const html = render(preactH(AllTagsContent, props))
 
-    expect(html).toContain("<article>")
+    expect(html).toContain("<article")
     expect(html).toContain(allTagsListing)
     // Should still render the container but with no tag elements
     expect(html).toContain("all-tags")
@@ -347,7 +347,7 @@ describe("generateAllTagsBlock (tested through component)", () => {
     const props = createProps(fileData, [fileData])
     const html = render(preactH(AllTagsContent, props))
 
-    expect(html).toContain("<article>")
+    expect(html).toContain("<article")
     expect(html).toContain("test")
   })
 })

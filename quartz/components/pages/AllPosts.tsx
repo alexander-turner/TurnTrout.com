@@ -37,7 +37,7 @@ export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
 
   return (
     <div className={classes}>
-      <article>
+      <article data-use-dropcap="false">
         <p>This site has {allFiles.length} blog posts.</p>
         {pageListing}
       </article>

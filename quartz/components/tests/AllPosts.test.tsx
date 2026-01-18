@@ -144,7 +144,7 @@ describe("AllPosts component", () => {
     const html = render(callAllPosts(mockProps))
 
     expect(html).toContain("This site has 3 blog posts.")
-    expect(html).toContain("<article>")
+    expect(html).toContain("<article")
     expect(html).toContain('id="all-posts-listing"')
   })
 

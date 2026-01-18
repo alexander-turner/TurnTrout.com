@@ -68,7 +68,7 @@ const AllTagsContent: QuartzComponent = (props: QuartzComponentProps) => {
 
   return (
     <div className={classes}>
-      <article>{tagsListing}</article>
+      <article data-use-dropcap="false">{tagsListing}</article>
     </div>
   )
 }

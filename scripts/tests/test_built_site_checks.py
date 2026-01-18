@@ -3542,6 +3542,79 @@ def test_main_skips_drafts(
         mock_exit.assert_not_called()  # Should not exit with error if only draft files exist
 
 
+def test_main_skips_alias_files(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Ensure alias pages are not checked.
+
+    This covers the `files_to_skip` behavior in [`built_site_checks._process_html_files()`](scripts/built_site_checks.py:1818).
+    """
+    alias_stem = "alias-page"
+
+    html_file = mock_environment["public_dir"] / f"{alias_stem}.html"
+    html_file.write_text("<html><body>Alias content</body></html>")
+
+    monkeypatch.setattr(
+        script_utils, "collect_aliases", lambda md_dir: {alias_stem}
+    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    with patch.object(built_site_checks, "check_file_for_issues") as mock_check:
+        built_site_checks.main()
+        mock_check.assert_not_called()
+
+
+def test_main_skips_non_html_files(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Ensure non-HTML files in `public/` are ignored."""
+    non_html = mock_environment["public_dir"] / "notes.txt"
+    non_html.write_text("not html")
+
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    with patch.object(built_site_checks, "check_file_for_issues") as mock_check:
+        built_site_checks.main()
+        mock_check.assert_not_called()
+
+
+def test_main_skips_non_root_html_md_mapping_not_required(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    monkeypatch,
+):
+    """Regression test: only root-level HTML should require markdown mapping.
+
+    In [`built_site_checks._process_html_files()`](scripts/built_site_checks.py:1818), `md_path` lookup happens only
+    when `root_path == public_dir`.
+    """
+    nested_dir = mock_environment["public_dir"] / "blog"
+    nested_dir.mkdir(parents=True)
+    nested_html = nested_dir / "nested.html"
+    nested_html.write_text("<html><body>Nested content</body></html>")
+
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+    monkeypatch.setattr(script_utils, "should_have_md", lambda file_path: True)
+
+    with patch.object(
+        built_site_checks, "check_file_for_issues", return_value={}
+    ) as mock_check:
+        built_site_checks.main()
+
+    mock_check.assert_called_once()
+    called_file_path = mock_check.call_args.args[0]
+    assert called_file_path == nested_html
+
+
 @pytest.mark.parametrize(
     "html,expected_issues",
     [
@@ -4985,3 +5058,66 @@ def test_check_html_tags_in_text_real_world_katex():
     result = built_site_checks.check_html_tags_in_text(soup)
     # Should pass - the spans are part of the HTML structure, not text content
     assert result == []
+
+
+@pytest.mark.parametrize(
+    "html,ok",
+    [
+        ('<article><p data-first-letter="A">Alpha</p></article>', True),
+        ('<article data-use-dropcap="false"><p>Alpha</p></article>', True),
+        ("<article><p>Alpha</p></article>", False),
+        (
+            '<article><p data-first-letter="\u2019">\u2019Twas</p></article>',
+            False,
+        ),
+    ],
+)
+def test_check_article_dropcap_first_letter(html: str, ok: bool):
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_article_dropcap_first_letter(soup)
+    assert (issues == []) is ok
+
+
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid cases
+        ('<article><p data-first-letter="A">Alpha</p></article>', []),
+        ('<article><p data-first-letter="1">123 test</p></article>', []),
+        (
+            '<article data-use-dropcap="false"><p>No dropcap needed</p></article>',
+            [],
+        ),
+        # Skipped: no first paragraph (not an error)
+        ("<article><div>No paragraph</div></article>", []),
+        ("<article><p></p></article>", []),
+        ("<article><p>   </p></article>", []),
+        # Invalid: missing/empty attribute
+        (
+            "<article><p>Missing attribute</p></article>",
+            ["invalid data-first-letter length (expected 1): ''"],
+        ),
+        # Invalid: non-alphanumeric
+        (
+            '<article><p data-first-letter="\u2019">\u2019Twas</p></article>',
+            ["non-alphanumeric data-first-letter: '\u2019'"],
+        ),
+        # Invalid: wrong length
+        (
+            '<article><p data-first-letter="AB">Alpha</p></article>',
+            ["invalid data-first-letter length (expected 1): 'AB'"],
+        ),
+        # Direct child paragraph only (nested ignored)
+        (
+            '<article><div><p>Nested</p></div><p data-first-letter="D">Direct</p></article>',
+            [],
+        ),
+    ],
+)
+def test_check_article_dropcap_first_letter_comprehensive(
+    html: str, expected_issues: list[str]
+):
+    """Comprehensive tests for [`check_article_dropcap_first_letter()`](scripts/built_site_checks.py:109)."""
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_article_dropcap_first_letter(soup)
+    assert issues == expected_issues
