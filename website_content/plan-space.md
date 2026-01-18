@@ -6,31 +6,33 @@ tags:
   - AI
   - instrumental-convergence
   - critique
-description: ""
+description: "Instrumental convergence and success-conditional convergence are distinct claims. Both require AI psychology assumptions, so neither is just a \"fact about reality.\""
 authors: Alex Turner
 card_image:
 card_image_alt:
 aliases:
+  - convergence-psychology
+  - success-conditional-convergence
 ---
 > [!quote] Zack Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain a vein of truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a substantive stance on how AI will tend to select plans.
+Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a substantive stance on how AI will tend to select plans.
 
 > [!success] This topic is a specialty of mine
 > Where does instrumental convergence come from? Since I did [my alignment PhD](/alignment-phd) on [exactly](/parametrically-retargetable-power-seeking) this question, I'm well-suited to explain the situation.
 
-# Reality _does_ constrain plans
+# What reality actually determines
 
 "Reality" meets the AI in the form of _the environment_. The agent acts but reality defines the transition operator --- reality responds. Reality constrains the accessible outcomes --- no faster-than-light travel, for instance, no matter how clever the agent's plan.
-
-For now, let's consider a simplified "gridworld" environment in which the AI can move one square per time step.
 
 Imagine I'm in the middle of a long hallway. One end features a one-way door to a room containing tubs of bananas, while the other end similarly leads to crates of apples. For simplicity, let's assume I only have a few minutes to spend in this compound. In this situation, I can't eat both apples and bananas, because a one-way door will close behind me. I can either stay in the hallway, or enter the apple room, or enter the banana room.
 
 Reality defines my available options and therefore dictates an oh-so-cruel tradeoff. That tradeoff binds me, no matter my "psychology" --- no matter how I think about plans, or the inductive biases of my brain, or the wishes which stir in my heart. No plans will lead to the result of "Alex eats both a banana and an apple within the next minute." Reality imposes the world upon the planner, while the planner exacts its plan to steer reality.
 
-# Two kinds of convergence
+Reality constrains plans and their attendant tradeoffs, but which plan gets picked? That question is a matter of AI psychology.
+
+# Where psychology sneaks back in
 
 Although it took me a while to realize, the whole "plan-space itself is dangerous" sentiment isn't even about instrumental convergence.
 
@@ -48,7 +50,7 @@ Instrumental convergence
 : But such conclusions _always_ demand assumptions about the structure ("psychology") of the plan-selection process --- not facts about an abstract "plan space", much less reality itself.
 
 Success-conditional convergence
-: "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously."
+: "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." (I'm freshly coining this term in this article.)
 
 : Success-conditional convergence _feels_ free of AI psychology --- we're only assuming the completion of a goal, and we want our real AIs to complete goals for us. However, the "most" assumes a uniform distribution over successful plans. Depending on the AI's psychology, however, the AI will select plans differently. Some psychologies will bias the AI's reasoning towards or away from dangerous plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
 
