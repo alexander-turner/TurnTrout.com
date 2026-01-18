@@ -6,7 +6,7 @@ tags:
   - AI
   - instrumental-convergence
   - critique
-description: "Instrumental convergence and success-conditional convergence are distinct claims. Both require AI psychology assumptions, so neither is just a \"fact about reality.\""
+description: "Instrumental and success-conditional convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\""
 authors: Alex Turner
 card_image:
 card_image_alt:
@@ -17,7 +17,7 @@ aliases:
 > [!quote] Zack Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a substantive stance on how AI will tend to select plans.
+Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a stance on how AI will tend to select plans.
 
 > [!success] This topic is a specialty of mine
 > Where does instrumental convergence come from? Since I did [my alignment PhD](/alignment-phd) on [exactly](/parametrically-retargetable-power-seeking) this question, I'm well-suited to explain the situation.
@@ -43,9 +43,9 @@ Instrumental convergence
 
 : More precisely, instrumental convergence arises from statistical tendencies in a plan-generating function ("what the AI does given a 'goal'") relative to its inputs ("goals"). The convergence builds off of  assumptions about that function's structure and those inputs. These assumptions can be satisfied by:
 
-1. [optimal policies in Markov decision processes](/optimal-policies-tend-to-seek-power), or
-2. [satisficing](/satisficers-tend-to-seek-power) over utility functions over the state of the world, or perhaps
-3. some kind of [more realistic & less crisp decision-making.](/posts#shard-theory)
+: 1. [optimal policies in Markov decision processes](/optimal-policies-tend-to-seek-power), or
+: 2. [satisficing](/satisficers-tend-to-seek-power) over utility functions over the state of the world, or perhaps
+: 3. some kind of [more realistic & less crisp decision-making.](/posts#shard-theory)
 
 : But such conclusions _always_ demand assumptions about the structure ("psychology") of the plan-selection process --- not facts about an abstract "plan space", much less reality itself.
 
@@ -76,4 +76,4 @@ Reality constrains planning by enforcing tradeoffs among plans. However, instrum
 >  
 >  This isn't true of all plans that successfully push our world into a specific (sufficiently-hard-to-reach) physical state, but it's true of the vast majority of them.
 
-However, this argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion is an assumption about what kinds of plans AIs will tend to choose. That assumption assumes away the whole debate around "what will AI goals / priorities / psychologies look like". Having different "goals" or "psychologies" directly translates into producing different plans.
+This argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion is an assumption about what plans AIs will tend to choose. That assumption assumes away the whole debate around "what will AI goals / priorities / psychologies look like". Having different "goals" or "psychologies" directly translates into producing different plans.
