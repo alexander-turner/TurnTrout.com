@@ -3,7 +3,7 @@
  */
 import { jest, describe, it, expect, beforeEach, beforeAll, afterEach } from "@jest/globals"
 
-const mockGlobbyFn = jest.fn<() => Promise<string[]>>()
+const mockGlobbyFn = jest.fn<(pattern: string | string[], options?: unknown) => Promise<string[]>>()
 const mockExecSync = jest.fn<(command: string, options?: unknown) => string>()
 
 jest.unstable_mockModule("globby", () => ({
@@ -44,7 +44,13 @@ describe("PopulateContainers", () => {
 
   beforeEach(() => {
     faviconCounter.clear()
-    mockGlobbyFn.mockResolvedValue(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
+    mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+      const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+      if (patternStr.includes(".html")) {
+        return ["test-page.html", "design.html"]
+      }
+      return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+    })
 
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
@@ -58,11 +64,17 @@ describe("PopulateContainers", () => {
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
-    jest
-      .spyOn(fs, "readFileSync")
-      .mockReturnValue(
-        '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-site-favicon"></span></body></html>',
-      )
+    jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+      const pathStr = String(path)
+      if (pathStr.includes("test-page.html")) {
+        return '<html><body><div id="populate-favicon-container"></div></body></html>'
+      }
+      if (pathStr.includes("design.html")) {
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+      }
+      // Default for other files
+      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-site-favicon"></span></body></html>'
+    })
 
     if (urlCache) {
       urlCache.clear()
@@ -367,6 +379,50 @@ describe("PopulateContainers", () => {
       } finally {
         global.fetch = originalFetch
       }
+    })
+    it("should handle unknown populate targets gracefully", async () => {
+      setFaviconCounts([])
+
+      // Mock HTML with unknown populate targets
+      jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("test-page.html")) {
+          return '<html><body><div id="populate-unknown-id"></div><span class="populate-unknown-class"></span></body></html>'
+        }
+        return "<html><body></body></html>"
+      })
+
+      const emitter = PopulateContainersEmitter()
+      const result = await emitter.emit(mockCtx, [], mockStaticResources)
+
+      // Should not throw, just log warnings
+      expect(result).toEqual([])
+    })
+
+    it("should skip files that don't exist", async () => {
+      setFaviconCounts([])
+
+      // Mock existsSync to return false for one file
+      jest.spyOn(fs, "existsSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("nonexistent.html")) {
+          return false
+        }
+        return true
+      })
+
+      mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+        const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+        if (patternStr.includes(".html")) {
+          return ["test-page.html", "nonexistent.html", "design.html"]
+        }
+        return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(fs.writeFileSync).toHaveBeenCalled()
     })
   })
 

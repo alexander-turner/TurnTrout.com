@@ -9,7 +9,7 @@ import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
-import { joinSegments, type FilePath, type FullSlug } from "../../util/path"
+import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
@@ -21,18 +21,9 @@ import {
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const {
-  minFaviconCount,
-  defaultPath,
-  testPageSlug: testPageSlugRaw,
-  designPageSlug: designPageSlugRaw,
-  maxCardImageSizeKb,
-} = simpleConstants
+const { minFaviconCount, defaultPath, maxCardImageSizeKb } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
-
-const testPageSlug = testPageSlugRaw as FullSlug
-const designPageSlug = designPageSlugRaw as FullSlug
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
@@ -332,7 +323,67 @@ export const populateElements = async (
 }
 
 /**
- * Emitter that populates the containers on the test page after all files have been processed.
+ * Creates a mapping of populate IDs/classes to their content generators.
+ */
+const createPopulatorMap = (
+  stats: Awaited<ReturnType<typeof computeRepoStats>>,
+): Map<string, ContentGenerator> => {
+  return new Map([
+    // IDs
+    ["populate-favicon-container", generateFaviconContent()],
+    ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
+    ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
+    ["populate-site-favicon", generateSiteFaviconContent()],
+    // Classes
+    ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
+    [
+      "populate-playwright-test-count",
+      generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
+    ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],
+  ])
+}
+
+/**
+ * Scans an HTML file to find all populate-* IDs and classes.
+ * Returns separate sets for IDs and classes.
+ */
+const findPopulateTargets = (htmlPath: string): { ids: Set<string>; classes: Set<string> } => {
+  const ids = new Set<string>()
+  const classes = new Set<string>()
+
+  if (!fs.existsSync(htmlPath)) {
+    return { ids, classes }
+  }
+
+  const html = fs.readFileSync(htmlPath, "utf-8")
+  const root = fromHtml(html, { fragment: true })
+
+  // Find all elements with populate-* IDs and classes
+  visit(root, "element", (node) => {
+    const id = node.properties?.id
+    if (typeof id === "string" && id.startsWith("populate-")) {
+      ids.add(id)
+    }
+
+    // Find all elements with populate-* classes
+    const classNames = node.properties?.className
+    if (Array.isArray(classNames)) {
+      for (const cls of classNames) {
+        if (typeof cls === "string" && cls.startsWith("populate-")) {
+          classes.add(cls)
+        }
+      }
+    }
+  })
+
+  return { ids, classes }
+}
+
+/**
+ * Emitter that populates containers across all HTML files after all files have been processed.
  */
 export const PopulateContainers: QuartzEmitterPlugin = () => {
   return {
@@ -343,49 +394,55 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
     },
     async emit(ctx) {
       const stats = await computeRepoStats()
+      const populatorMap = createPopulatorMap(stats)
 
-      const testPagePath = joinSegments(ctx.argv.output, `${testPageSlug}.html`)
+      const htmlFiles = await globby("**/*.html", {
+        cwd: ctx.argv.output,
+        absolute: false,
+      })
 
-      const testPageFiles = await populateElements(testPagePath, [
-        {
-          id: "populate-favicon-container",
-          generator: generateFaviconContent(),
-        },
-      ])
+      logger.info(`Scanning ${htmlFiles.length} HTML files for populate-* targets`)
 
-      const designPagePath = joinSegments(ctx.argv.output, `${designPageSlug}.html`)
-      const designPageFiles = await populateElements(designPagePath, [
-        {
-          id: "populate-favicon-threshold",
-          generator: generateConstantContent(minFaviconCount),
-        },
-        {
-          id: "populate-max-size-card",
-          generator: generateConstantContent(maxCardImageSizeKb),
-        },
-        {
-          className: "populate-commit-count",
-          generator: generateConstantContent(stats.commitCount.toLocaleString()),
-        },
-        {
-          className: "populate-js-test-count",
-          generator: generateConstantContent(stats.jsTestCount.toLocaleString()),
-        },
-        {
-          className: "populate-playwright-test-count",
-          generator: generateConstantContent(stats.playwrightTestCount.toLocaleString()),
-        },
-        {
-          className: "populate-pytest-count",
-          generator: generateConstantContent(stats.pytestCount.toLocaleString()),
-        },
-        {
-          className: "populate-lines-of-code",
-          generator: generateConstantContent(stats.linesOfCode.toLocaleString()),
-        },
-      ])
+      const modifiedFiles: FilePath[] = []
+      for (const htmlFile of htmlFiles) {
+        const htmlPath = joinSegments(ctx.argv.output, htmlFile as FilePath)
+        const { ids, classes } = findPopulateTargets(htmlPath)
 
-      return [...testPageFiles, ...designPageFiles]
+        if (ids.size === 0 && classes.size === 0) {
+          continue
+        }
+
+        logger.debug(
+          `Found ${ids.size} populate IDs and ${classes.size} populate classes in ${htmlFile}`,
+        )
+
+        const configs: ElementPopulatorConfig[] = []
+        for (const id of ids) {
+          const generator = populatorMap.get(id)
+          if (!generator) {
+            logger.warn(`No generator found for populate ID: ${id}`)
+            continue
+          }
+          configs.push({ id, generator })
+        }
+
+        for (const className of classes) {
+          const generator = populatorMap.get(className)
+          if (!generator) {
+            logger.warn(`No generator found for populate class: ${className}`)
+            continue
+          }
+          configs.push({ className, generator })
+        }
+
+        if (configs.length > 0) {
+          const files = await populateElements(htmlPath, configs)
+          modifiedFiles.push(...files)
+        }
+      }
+
+      logger.info(`Populated ${modifiedFiles.length} HTML files`)
+      return modifiedFiles
     },
   }
 }
