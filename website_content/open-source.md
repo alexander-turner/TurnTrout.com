@@ -24,7 +24,7 @@ date_updated: 2025-12-18 09:42:00.251916
 
 # This website
 
-Subtitle: I've made over 4,500 commits. That's over halfway to being over 9,000!
+Subtitle: I've made <span class="populate-commit-count"></span> commits. That's over halfway to being over 9,000!
 
 This site is one of my most heartfelt works of art. I've passionately [optimized its design](/design) while [obsessively testing](/design#deployment-pipeline) --- for example, 100\% TypeScript branch coverage, 100\% Python line coverage, and hundreds of [visual regression tests](/design#visual-regression-testing).
 
