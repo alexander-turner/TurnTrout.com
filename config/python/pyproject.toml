@@ -9,6 +9,7 @@ dependencies = [
     "gitpython",
     "google-auth",
     "numpy",
+    "opentimestamps-client",
     "pandas",
     "pillow",
     "protobuf",
