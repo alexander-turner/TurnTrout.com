@@ -45,15 +45,31 @@ test -z "$pr_number"; and set -g pr_number (echo $pr_output | string match -r 'p
 test -z "$pr_number"; and fail "Could not extract PR number from output:\n$pr_output"
 
 echo "Waiting for DeepSource analysis on PR #$pr_number... (Press Ctrl+C to cancel)"
+
+# Wait for DeepSource checks to appear and extract URLs
 set analysis_ready 0
+set deepsource_urls ""
 for attempt in (seq 60)
-    if deepsource issues list >/dev/null 2>&1
-        set analysis_ready 1
-        break
+    set check_data (gh pr view $pr_number --json statusCheckRollup 2>/dev/null)
+    if test $status -eq 0
+        set deepsource_urls (echo $check_data | jq -r '.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource"))) | .targetUrl' 2>/dev/null | string collect)
+        if test -n "$deepsource_urls"
+            set analysis_ready 1
+            break
+        end
     end
     sleep 5
 end
 test $analysis_ready -eq 0; and fail "Analysis timed out"
+
+# Print DeepSource dashboard links
+if test -n "$deepsource_urls"
+    echo -e "\nDeepSource Analysis URLs:"
+    echo $deepsource_urls | while read -l url
+        test -n "$url"; and echo "  $url"
+    end
+    echo ""
+end
 
 echo -e "\n=== DeepSource Issues ==="
 set issues_output (deepsource issues list 2>&1)
