@@ -6,15 +6,15 @@ tags:
   - AI
   - instrumental-convergence
   - critique
-description: "Instrumental and success-conditional convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\""
+description: Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a "fact about reality."
 authors: Alex Turner
 card_image:
 card_image_alt:
 aliases:
   - convergence-psychology
-  - success-conditional-convergence
+  - success-conditioned-convergence
 ---
-> [!quote] Zack Davis, group discussion
+> [!quote] Zack M. Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
 Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a stance on how AI will tend to select plans.
@@ -35,17 +35,20 @@ Although it took me a while to realize, the "plan-space itself is dangerous" sen
 Instrumental convergence
 : "Most AI goals incentivize similar actions (like seeking power)." Bostrom gives [the classic definition](https://nickbostrom.com/superintelligentwill.pdf).
 
-Success-conditional convergence
+Success-conditioned convergence
 : "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." I'm coining this term to distinguish it from instrumental convergence.
+
+> [!idea] Key distinction
+> For instrumental convergence, the "most" iterates over AI goals. For success-conditioned convergence, the "most" iterates over _plans_.
 
 Both types of convergence require psychological assumptions, as I'll demonstrate.
 
 # Tracing back the claim
 
-As far as I can tell, this is the first public discussion of the claim Zack refers to (but I didn't look hard).
+As far as I can tell, this is the first public discussion of the claim Davis refers to (but I didn't look hard).
 <!-- vale off -->
 > [!quote]  [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
->  Subtitle: By Nate Soares
+>  Subtitle: By Rob Bensinger
 >
 >  If you sampled a random plan from the space of all writable plans (weighted by length, in any extant formal language), and all we knew about the plan is that executing it would successfully achieve some superhumanly ambitious technological goal like "invent fast-running [whole-brain emulation](https://www.lesswrong.com/w/whole-brain-emulation) (WBE)", then hitting a button to execute the plan would kill all humans, with very high probability. \[...\]
 >
@@ -58,7 +61,7 @@ As far as I can tell, this is the first public discussion of the claim Zack refe
 
 # What reality actually determines
 
-Despite my critique, there is an important filament of truth in the "plan-space is dangerous" argument.
+There is an important filament of truth in the "plan-space is dangerous" argument.
 
 ## Reality determines possible results
 
@@ -120,11 +123,11 @@ More precisely, instrumental convergence arises from statistical tendencies in a
 
 Such conclusions _always_ demand assumptions about the semantics ("psychology") of the plan-selection process --- not facts about an abstract "plan space", much less reality itself.
 
-## Success-conditional convergence depends on psychology
+## Success-conditioned convergence depends on psychology
 
-Success-conditional convergence _feels_ free of AI psychology --- we're only assuming the completion of a goal, and we want our real AIs to complete goals for us. However, this intuition is incorrect.
+Success-conditioned convergence _feels_ free of AI psychology --- we're only assuming the completion of a goal, and we want our real AIs to complete goals for us. However, this intuition is incorrect.
 
-Any claim that successful plans are dangerous requires choosing a distribution over successful plans. The argument proposes a length-weighted distribution, but this is still a kind psychological assumption about how AIs generate and select plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
+Any claim that successful plans are dangerous requires choosing a distribution over successful plans. Bensinger proposes a length-weighted distribution, but this is still a kind psychological assumption about how AIs generate and select plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
 
 Whether you use a uniform distribution or a length-weighted distribution, you're making assumptions about AI psychology. Convergence claims are _inherently_ about what plans are likely under some distribution, so there are no clever shortcuts or simple rhetorical counter-plays. If you make an unconditional statement like "it's a fact about the space of possible plans", you assert by fiat your assumptions about how plans are selected!
 
@@ -145,20 +148,20 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
 
 Two key problems with this argument:
 
-1. **Terminology confusion:** The argument does not discuss "instrumental convergence". Instead, it discusses (what I call) "success-conditional convergence." (This distinction was subtle to me as well.)
+1. **Terminology confusion:** The argument does not discuss "instrumental convergence". Instead, it discusses (what I call) "success-conditioned convergence." (This distinction was subtle to me as well.)
 
 2. **Hidden psychology assumptions:** The argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion _is itself_ an assumption about what plans AIs will tend to choose. That assumption sidesteps the entire debate around "what will AI goals / priorities / psychologies look like?" Having different "goals" or "psychologies" directly translates into producing different plans. Neither type of convergence stands independently of psychology.
 
 Perhaps a different, weaker claim still holds, though:
 
-> [!question] Conjecture
+> [!question] A valid conjecture someone might make
 > The default psychology you get from optimizing hard for success will induce plan-generating functions which select dangerous plans, in large part due to the high density of unsafe plans.
 
 # Conclusion
 
-Reality determines the alignment tax of safe plans. However, instrumental convergence requires assumptions about both the distribution of AI goals and how those goals transmute to plan-generating functions. Success-conditional convergence requires assumptions about which plans AIs will conceive and select. Both sets of assumptions involve AI psychology.
+Reality determines the alignment tax of safe plans. However, instrumental convergence requires assumptions about both the distribution of AI goals and how those goals transmute to plan-generating functions. Success-conditioned convergence requires assumptions about which plans AIs will conceive and select. Both sets of assumptions involve AI psychology.
 
 Reality constrains plans and governs their tradeoffs, but which plan gets picked? That question is always a matter of AI psychology.
 
 > [!thanks]
-> Aryan Bhatt and Zack Davis helped me clarify my thoughts.
+> Aryan Bhatt and Zack M. Davis helped me clarify my thoughts.
