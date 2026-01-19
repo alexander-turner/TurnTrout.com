@@ -16,12 +16,7 @@ function cleanup_branch
     git push origin --delete $branch_name >/dev/null 2>&1
 end
 
-function handle_interrupt --on-signal INT
-    cleanup_branch
-    exit 1
-end
-
-function handle_term --on-signal TERM
+function handle_interrupt --on-signal INT TERM
     cleanup_branch
     exit 1
 end
@@ -46,46 +41,54 @@ test -z "$pr_number"; and fail "Could not extract PR number from output:\n$pr_ou
 
 echo "Waiting for DeepSource analysis on PR #$pr_number... (Press Ctrl+C to cancel)"
 
-# Wait for DeepSource checks to appear and extract URLs
-set analysis_ready 0
-set deepsource_urls ""
+# Wait for DeepSource checks to complete
+set analysis_complete 0
+set deepsource_data ""
 for attempt in (seq 60)
     set check_data (gh pr view $pr_number --json statusCheckRollup 2>/dev/null)
     if test $status -eq 0
-        set deepsource_urls (echo $check_data | jq -r '.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource"))) | .targetUrl' 2>/dev/null | string collect)
-        if test -n "$deepsource_urls"
-            set analysis_ready 1
+        # Check if DeepSource checks exist and are completed (not PENDING)
+        set pending_count (echo $check_data | jq '[.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource")) and .state == "PENDING")] | length' 2>/dev/null)
+        set completed_count (echo $check_data | jq '[.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource")) and .state != "PENDING")] | length' 2>/dev/null)
+        
+        if test "$completed_count" -gt 0 -a "$pending_count" -eq 0
+            set deepsource_data $check_data
+            set analysis_complete 1
             break
+        else if test "$completed_count" -gt 0 -o "$pending_count" -gt 0
+            echo -n "."  # Show progress
         end
     end
     sleep 5
 end
-test $analysis_ready -eq 0; and fail "Analysis timed out"
+echo ""  # New line after progress dots
 
-# Print DeepSource dashboard links
-if test -n "$deepsource_urls"
-    echo -e "\nDeepSource Analysis URLs:"
-    echo $deepsource_urls | while read -l url
-        test -n "$url"; and echo "  $url"
+test $analysis_complete -eq 0; and fail "Analysis timed out or did not complete"
+
+echo -e "\n=== DeepSource Analysis Results ==="
+
+# Parse and display results from each analyzer
+set has_issues 0
+echo $deepsource_data | jq -r '.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource"))) | "\(.context)|\(.state)|\(.targetUrl)"' 2>/dev/null | while read -l line
+    set parts (string split '|' $line)
+    set analyzer $parts[1]
+    set state $parts[2]
+    set url $parts[3]
+    
+    echo "$analyzer: $state"
+    echo "  $url"
+    
+    if test "$state" = "FAILURE"
+        set has_issues 1
     end
-    echo ""
 end
 
-echo -e "\n=== DeepSource Issues ==="
-set issues_output (deepsource issues list 2>&1)
-test $status -ne 0; and fail "Could not fetch issues\n$issues_output"
-
-echo $issues_output
-
 set exit_code 0
-if string match -q "*Issues found*" $issues_output
-    echo -e "\n✗ Issues found - see above"
+if test $has_issues -eq 1
+    echo -e "\n✗ Issues found - see URLs above for details"
     set exit_code 1
-else if test -z "$issues_output"; or string match -q "*No issues*" $issues_output; or string match -q "*0 issues*" $issues_output
-    echo -e "\n✓ No issues found!"
 else
-    echo -e "\n✗ Issues found - see above"
-    set exit_code 1
+    echo -e "\n✓ No issues found!"
 end
 
 cleanup_branch
