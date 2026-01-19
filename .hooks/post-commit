@@ -1,27 +1,25 @@
 #!/bin/sh
 
-set -e
-
-# Get current commit hash and repository root directory
 commit_hash="$(git rev-parse HEAD)"
 git_root="$(git rev-parse --show-toplevel)"
 timestamps_repo="$git_root/.timestamps"
 timestamps_dir="$timestamps_repo/files"
-mkdir -p "$timestamps_dir"
 
-# Create text file containing commit hash
+rollback() {
+  echo "ERROR: $1"
+  echo "Undoing commit..."
+  cd "$git_root" && git reset --soft HEAD~1
+  exit 1
+}
+
+mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
-# Create OpenTimestamps proof for the commit hash (suppress verbose output)
-if ! ots stamp "$txt_file" >/dev/null 2>&1; then
-  echo "ERROR: Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
-  exit 1
-fi
+ots stamp "$txt_file" >/dev/null 2>&1 || rollback "Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
 
-# Commit and push the timestamp files in the .timestamps repo
-cd "$timestamps_repo" || exit 1
-git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || exit 1
-git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || exit 1
-git push --quiet 2>/dev/null &
+cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
+git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
+git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
+git push --quiet || rollback "Failed to push timestamp files!"
 cd "$git_root" || exit 1
