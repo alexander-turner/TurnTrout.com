@@ -610,7 +610,10 @@ def get_check_steps(
         ),
         CheckStep(
             name="DeepSource CLI (not blocking)",
-            command=["deepsource", "issues", "list"],
+            command=[
+                "fish",
+                f"{git_root_path}/scripts/run_deepsource_cli.fish",
+            ],
         ),
         CheckStep(
             name="Running Javascript unit tests",
