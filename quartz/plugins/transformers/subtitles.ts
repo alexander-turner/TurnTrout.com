@@ -77,12 +77,12 @@ export function modifyNode(
  * Quartz transformer plugin that converts "Subtitle: " prefixed paragraphs
  * into styled subtitle elements with the "subtitle" class.
  */
+/* istanbul ignore next -- Quartz calls this plugin via integration (not unit tests) */
 export const rehypeCustomSubtitle: QuartzTransformerPlugin = () => ({
   name: "customSubtitle",
   htmlPlugins() {
     return [
       () => (tree: Root) => {
-        // istanbul ignore next
         visit(tree, "element", modifyNode)
       },
     ]
