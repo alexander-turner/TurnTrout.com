@@ -961,6 +961,11 @@ export function collectTransformableElements(node: Element): Element[] {
  * @returns Unified transformer function
  */
 export const improveFormatting = (options: Options = {}): Transformer<Root, Root> => {
+  const resolvedOptions: Options = {
+    skipFirstLetter: false,
+    ...options,
+  }
+
   return (tree: Root) => {
     visitParents(tree, (node, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]
@@ -1000,8 +1005,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       })
     })
 
-    // If skipFirstLetter is not set, or it's set but false, set the attribute
-    if (!("skipFirstLetter" in options) || !options.skipFirstLetter) {
+    if (!resolvedOptions.skipFirstLetter) {
       setFirstLetterAttribute(tree)
     }
 

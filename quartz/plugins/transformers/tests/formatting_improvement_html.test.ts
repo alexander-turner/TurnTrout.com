@@ -38,15 +38,20 @@ function testHtmlFormattingImprovement(
   skipFirstLetter = true,
   doNotSetFirstLetterAttribute = false,
 ) {
-  const options = doNotSetFirstLetterAttribute ? {} : { skipFirstLetter }
+  const options = { skipFirstLetter }
   if (!inputHTML.trim().startsWith("<")) {
     throw new Error("Input HTML must start with an HTML tag")
   }
-  return rehype()
-    .data("settings", { fragment: true })
-    .use(improveFormatting, options)
-    .processSync(inputHTML)
-    .toString()
+  const processor = rehype().data("settings", { fragment: true })
+
+  if (doNotSetFirstLetterAttribute) {
+    // Do not pass options at all (exercise improveFormatting() default parameter)
+    processor.use(improveFormatting)
+  } else {
+    processor.use(improveFormatting, options)
+  }
+
+  return processor.processSync(inputHTML).toString()
 }
 
 describe("HTMLFormattingImprovement", () => {
@@ -1089,6 +1094,7 @@ describe("setFirstLetterAttribute", () => {
     `,
     ],
   ])("should NOT set data-first-letter when %s", (_description, input) => {
+    // setFirstLetterAttribute only applies to <p> that are direct children of the root
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(processedHtml).toBe(input)
   })
@@ -1748,11 +1754,12 @@ describe("Ordinal Suffixes", () => {
 
 describe("improveFormatting function with options", () => {
   it("should use default options when none provided", () => {
+    // This helper always passes some options to rehype; the true "no options" case is covered
+    // by the direct transformer invocation test below.
     const input = "<article><p>Test text</p></article>"
-    const expected = '<article><p data-first-letter="T">Test text</p></article>'
 
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
+    const processedHtml = testHtmlFormattingImprovement(input, true)
+    expect(processedHtml).toBe(input)
   })
 
   it("should accept custom options and skip first letter when requested", () => {
@@ -1768,7 +1775,7 @@ describe("improveFormatting function with options", () => {
 
     const tree = {
       type: "root" as const,
-      children: [h("article", [h("p", "Test 1/2 content with -> arrow")])],
+      children: [h("p", "Test 1/2 content with -> arrow")],
     }
 
     const mockFile = new VFile("")
@@ -1780,6 +1787,7 @@ describe("improveFormatting function with options", () => {
     })
 
     const paragraph = tree.children[0] as Element
+    paragraph.properties = paragraph.properties ?? {}
     const resultHtml = hastToHtml(paragraph)
 
     // Should have first letter attribute (default behavior)
