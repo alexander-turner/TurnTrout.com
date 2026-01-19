@@ -407,10 +407,7 @@ describe("PopulateContainers", () => {
       // Mock existsSync to return false for one file
       jest.spyOn(fs, "existsSync").mockImplementation((path: unknown) => {
         const pathStr = String(path)
-        if (pathStr.includes("nonexistent.html")) {
-          return false
-        }
-        return true
+        return !pathStr.includes("nonexistent.html")
       })
 
       mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {

@@ -1066,7 +1066,7 @@ describe("setFirstLetterAttribute", () => {
     [
       "second character is an apostrophe and a direct text node exists",
       "<p><span></span>X's story</p>",
-      `<p data-first-letter="X"><span></span>X ’s story</p>`,
+      '<p data-first-letter="X"><span></span>X ’s story</p>',
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
