@@ -36,24 +36,26 @@ Instrumental convergence
 : "Most AI goals incentivize similar actions (like seeking power)." Bostrom gives [the classic definition](https://nickbostrom.com/superintelligentwill.pdf).
 
 Success-conditional convergence
-: "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." I'm coining this term to distinguish it from instrumental convergence. This is the kind of convergence discussed by Zack.
+: "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." I'm coining this term to distinguish it from instrumental convergence.
 
 Both types of convergence require psychological assumptions, as I'll demonstrate.
 
 # Tracing back the claim
 
 As far as I can tell, this is the first public discussion of the claim Zack refers to (but I didn't look hard).
-> [!quote]  [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
->  Subtitle: By Nate Soares
+<!-- vale off -->
+> [!quote]  [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
+>  Subtitle: By Nate Soares
 >
->  If you sampled a random plan from the space of all writable plans (weighted by length, in any extant formal language), and all we knew about the plan is that executing it would successfully achieve some superhumanly ambitious technological goal like "invent fast-running [whole-brain emulation](https://www.lesswrong.com/w/whole-brain-emulation) (WBE)", then hitting a button to execute the plan would kill all humans, with very high probability. \[...\]
+>  If you sampled a random plan from the space of all writable plans (weighted by length, in any extant formal language), and all we knew about the plan is that executing it would successfully achieve some superhumanly ambitious technological goal like "invent fast-running [whole-brain emulation](https://www.lesswrong.com/w/whole-brain-emulation) (WBE)", then hitting a button to execute the plan would kill all humans, with very high probability. \[...\]
 >
 > The danger is in the cognitive work, not in some complicated or emergent feature of the "agent"; it's in the task itself.
->  
->  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves. In full generality, plans that succeed in goals like "build WBE" tend to be dangerous.
->  
->  This isn't true of all plans that successfully push our world into a specific (sufficiently-hard-to-reach) physical state, but it's true of the vast majority of them.
 >
+>  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves. In full generality, plans that succeed in goals like "build WBE" tend to be dangerous.
+>
+>  This isn't true of all plans that successfully push our world into a specific (sufficiently-hard-to-reach) physical state, but it's true of the vast majority of them.
+<!-- vale on -->
+
 # What reality actually determines
 
 Despite my critique, there is an important filament of truth in the "plan-space is dangerous" argument.
@@ -100,7 +102,7 @@ In-between
 
 : Reality dictates the alignment tax, which dictates the tradeoffs available to the agent. However, the agent's psychology dictates how it makes those tradeoffs: whether (and how) it would sacrifice safety for success; whether the AI is willing to lie; how to generate possible plans; which kinds of plans to consider next; and so on. Thus, both reality _and_ psychology produce the final output.
 
-: I am not being pedantic. Gemini Pro 3.0 and an abjectly unaligned LLM (of similar raw benchmark scores) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A human-hating AI would do the opposite.
+: I am not being pedantic. Gemini Pro 3.0 and an abjectly unaligned LLM (of similar raw benchmark scores) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
 
 # Why both convergence types require psychology
 
@@ -116,7 +118,7 @@ More precisely, instrumental convergence arises from statistical tendencies in a
 2. [satisficing](/satisficers-tend-to-seek-power) over utility functions over the state of the world, or perhaps
 3. some kind of [more realistic & less crisp decision-making.](/posts#shard-theory)
 
-But such conclusions _always_ demand assumptions about the semantics ("psychology") of the plan-selection process --- not facts about an abstract "plan space", much less reality itself.
+Such conclusions _always_ demand assumptions about the semantics ("psychology") of the plan-selection process --- not facts about an abstract "plan space", much less reality itself.
 
 ## Success-conditional convergence depends on psychology
 
@@ -124,24 +126,26 @@ Success-conditional convergence _feels_ free of AI psychology --- we're only ass
 
 Any claim that successful plans are dangerous requires choosing a distribution over successful plans. The argument proposes a length-weighted distribution, but this is still a kind psychological assumption about how AIs generate and select plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
 
-Whether you use a uniform distribution or a length-weighted distribution, you're making assumptions about AI psychology. There are no clever shortcuts or simple rhetorical counter-plays, because convergence claims are _inherently_ about what plans are likely under some distribution. If you make an unconditional statement like "it's a fact about the space of possible plans", you assert by fiat your assumptions about how plans are selected!
+Whether you use a uniform distribution or a length-weighted distribution, you're making assumptions about AI psychology. Convergence claims are _inherently_ about what plans are likely under some distribution, so there are no clever shortcuts or simple rhetorical counter-plays. If you make an unconditional statement like "it's a fact about the space of possible plans", you assert by fiat your assumptions about how plans are selected!
 
 # Reconsidering the original claims
 
 > [!quote] Zack Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-> [!quote] [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
+<!-- vale off -->
+> [!quote] [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
 >
 > If you sampled a random plan from the space of all writable plans (weighted by length, in any extant formal language), and all we knew about the plan is that executing it would successfully achieve some superhumanly ambitious technological goal like "invent fast-running [whole-brain emulation](https://www.lesswrong.com/w/whole-brain-emulation)", then hitting a button to execute the plan would kill all humans, with very high probability. \[...\]
 >
 > The danger is in the cognitive work, not in some complicated or emergent feature of the "agent"; it's in the task itself.
  >
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves.
+<!-- vale on -->
 
 Two key problems with this argument:
 
-1. **Terminology confusion:** This is not "instrumental convergence"—it's "success-conditional convergence." (This distinction was subtle to me as well.)
+1. **Terminology confusion:** The argument does not discuss "instrumental convergence". Instead, it discusses (what I call) "success-conditional convergence." (This distinction was subtle to me as well.)
 
 2. **Hidden psychology assumptions:** The argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion _is itself_ an assumption about what plans AIs will tend to choose. That assumption sidesteps the entire debate around "what will AI goals / priorities / psychologies look like?" Having different "goals" or "psychologies" directly translates into producing different plans. Neither type of convergence stands independently of psychology.
 
