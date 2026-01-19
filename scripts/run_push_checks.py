@@ -609,6 +609,10 @@ def get_check_steps(
             ],
         ),
         CheckStep(
+            name="DeepSource CLI (not blocking)",
+            command=["deepsource", "issues", "list"],
+        ),
+        CheckStep(
             name="Running Javascript unit tests",
             command=["pnpm", "test"],
         ),
