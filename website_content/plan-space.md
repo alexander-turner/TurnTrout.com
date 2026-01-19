@@ -164,4 +164,4 @@ Reality determines the alignment tax of safe plans. However, instrumental conver
 Reality constrains plans and governs their tradeoffs, but which plan gets picked? That question is always a matter of AI psychology.
 
 > [!thanks]
-> Aryan Bhatt and Zack M. Davis helped me clarify my thoughts.
+> Peter Barnett, Aryan Bhatt and Zack M. Davis helped me clarify my thoughts.
