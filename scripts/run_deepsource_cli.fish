@@ -69,8 +69,9 @@ test $analysis_complete -eq 0; and fail "Analysis timed out or did not complete"
 
 echo -e "\n=== DeepSource Analysis Results ==="
 
-# Parse and display results from each analyzer
-set has_issues 0
+# Parse and display results from each analyzer, check for failures
+set failure_count (echo $deepsource_data | jq '[.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource")) and .state == "FAILURE")] | length' 2>/dev/null)
+
 echo $deepsource_data | jq -r '.statusCheckRollup[] | select(.__typename == "StatusContext" and (.context | startswith("DeepSource"))) | "\(.context)|\(.state)|\(.targetUrl)"' 2>/dev/null | while read -l line
     set parts (string split '|' $line)
     set analyzer $parts[1]
@@ -79,19 +80,16 @@ echo $deepsource_data | jq -r '.statusCheckRollup[] | select(.__typename == "Sta
     
     echo "$analyzer: $state"
     echo "  $url"
-    
-    if test "$state" = "FAILURE"
-        set has_issues 1
-    end
 end
 
 set exit_code 0
-if test $has_issues -eq 1
+if test "$failure_count" -gt 0
     echo -e "\n✗ Issues found - see URLs above for details"
     set exit_code 1
 else
     echo -e "\n✓ No issues found!"
 end
 
+echo "Cleaning up..."
 cleanup_branch
 exit $exit_code
