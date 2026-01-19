@@ -82,6 +82,7 @@ export const rehypeCustomSubtitle: QuartzTransformerPlugin = () => ({
   htmlPlugins() {
     return [
       () => (tree: Root) => {
+        // istanbul ignore next
         visit(tree, "element", modifyNode)
       },
     ]
