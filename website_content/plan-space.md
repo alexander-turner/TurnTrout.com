@@ -45,7 +45,7 @@ Both types of convergence require psychological assumptions, as I'll demonstrate
 
 # Tracing back the claim
 
-As far as I can tell, this is the first public discussion of the claim Davis refers to (but I didn't look hard).
+As far as I can tell, this is the first public discussion of the claim Davis refers to.
 <!-- vale off -->
 > [!quote]  [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
 >  Subtitle: By Rob Bensinger
