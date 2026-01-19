@@ -80,10 +80,10 @@ To predict dangerous behavior from an AI, you need to assume some plan-generatin
 [^plans]: The set of possible plans $P$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
 
 $$
-f_\text{pure-success}(P) := \mathrm{argmax}_{p\in P } \,\,\text{SuccessProbability}(p).
+f_\text{pure-success}(P) := \overset{\text{Choose the plan with the highest chance of success}}{\mathrm{argmax}_{p\in P } \,\,\text{SuccessProbability}(p).}
 $$
 
-In a reality where "safe" plans are hard to find, are more complicated, or have a lower success probability, then $f_\text{pure-success}$ may indeed produce dangerous plans. But this is not a fact about $P$ alone—it's a fact about how $f_\text{pure-success}$ interacts with $P$ and the tradeoffs those plans imply.
+In a reality where safe plans are hard to find, are more complicated, or have a lower success probability, then $f_\text{pure-success}$ may indeed produce dangerous plans. But this is not a fact about $P$ alone—it's a fact about how $f_\text{pure-success}$ interacts with $P$ and the tradeoffs those plans imply.
 
 Consider what happens if we introduce a safety constraint (assumed to be "correct" for the sake of aragument). The constrained plan-generating function $f_\text{safe-success}$ will not produce dangerous plans. Rather, it will succeed with a lower probability. The [alignment tax](https://www.alignmentforum.org/w/alignment-tax) exists in the difference in success probability between a pure success maximizer ($f_\text{pure-success}$) and $f_\text{safe-success}$.
 
@@ -105,7 +105,7 @@ In-between
 
 : Reality dictates the alignment tax, which dictates the tradeoffs available to the agent. However, the agent's psychology dictates how it makes those tradeoffs: whether (and how) it would sacrifice safety for success; whether the AI is willing to lie; how to generate possible plans; which kinds of plans to consider next; and so on. Thus, both reality _and_ psychology produce the final output.
 
-: I am not being pedantic. Gemini Pro 3.0 and an abjectly unaligned LLM (of similar raw benchmark scores) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
+: I am not being pedantic. Gemini Pro 3.0 and [MechaHitler](https://www.seangoedecke.com/ai-personality-space/) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
 
 # Why both convergence types require psychology
 
@@ -115,7 +115,7 @@ I've shown that reality determines the alignment tax but not which plans get sel
 
 Instrumental convergence depends on AI psychology, as demonstrated by my paper [Parametrically Retargetable Decision-Makers Tend to Seek Power](/parametrically-retargetable-power-seeking). In short, AI psychology governs the mapping from "AI motivations" to "AI plans". Certain psychologies induce mappings which satisfy my theorems, which are sufficient conditions to prove instrumental convergence.
 
-More precisely, instrumental convergence arises from statistical tendencies in a plan-generating function $f$ ("what the AI does given a 'goal'") relative to its inputs ("goals"). The convergence builds off of assumptions about that function's semantics and those inputs. These assumptions can be satisfied by:
+More precisely, instrumental convergence arises from statistical tendencies in a plan-generating function $f$ -- "what the AI does given a 'goal'" -- relative to its inputs ("goals"). The convergence builds off of assumptions about that function's semantics and those inputs. These assumptions can be satisfied by:
 
 1. [optimal policies in Markov decision processes](/optimal-policies-tend-to-seek-power), or
 2. [satisficing](/satisficers-tend-to-seek-power) over utility functions over the state of the world, or perhaps
@@ -144,6 +144,7 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
 > The danger is in the cognitive work, not in some complicated or emergent feature of the "agent"; it's in the task itself.
  >
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves.
+
 <!-- vale on -->
 
 Two key problems with this argument:
@@ -164,4 +165,4 @@ Reality determines the alignment tax of safe plans. However, instrumental conver
 Reality constrains plans and governs their tradeoffs, but which plan gets picked? That question is always a matter of AI psychology.
 
 > [!thanks]
-> Peter Barnett, Aryan Bhatt and Zack M. Davis helped me clarify my thoughts.
+> Peter Barnett, Aryan Bhatt, Chase Denecke, and Zack M. Davis gave feedback.
