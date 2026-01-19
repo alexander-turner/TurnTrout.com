@@ -9,6 +9,8 @@ on:
     branches: ["main", "dev", "no-layout-shift"]
   pull_request:
     branches: ["main", "dev", "no-layout-shift"]
+    branches-ignore:
+      - "deepsource-*"
 
 jobs:
   build_and_deploy:

@@ -9,6 +9,8 @@ on:
     branches: ["main", "dev", "jest-coverage"]
   pull_request:
     branches: ["main", "dev"]
+    branches-ignore:
+      - "deepsource-*"
 
 permissions:
   contents: read
