@@ -44,7 +44,12 @@ set -g pr_number (echo $pr_output | string match -r '#(\d+)' | string replace '#
 test -z "$pr_number"; and set -g pr_number (echo $pr_output | string match -r 'pull/(\d+)' | string replace 'pull/' '' | head -n1)
 test -z "$pr_number"; and fail "Could not extract PR number from output:\n$pr_output"
 
+# Extract repository owner and name from git remote
+set repo_info (git remote get-url origin | string match -r 'github\.com[:/](.+/.+?)(\.git)?$' | string replace '.git' '')
+set repo_path (echo $repo_info | string split '\n' | tail -n1)
+
 echo "Waiting for DeepSource analysis on PR #$pr_number... (Press Ctrl+C to cancel)"
+echo "DeepSource Dashboard: https://app.deepsource.com/gh/$repo_path/pull-requests/$pr_number/"
 set analysis_ready 0
 for attempt in (seq 60)
     if deepsource issues list >/dev/null 2>&1
