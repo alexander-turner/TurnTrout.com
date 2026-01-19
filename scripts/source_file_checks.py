@@ -123,7 +123,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                     errors.append(
                         f"card_image is {size_kb:.1f}KB, should be under {max_size_kb}KB: {card_url}"
                     )
-    except requests.RequestException as e:
+    except requests.RequestException as e:  # skipcq: PYL-W0706
         errors.append(f"Failed to load card image URL '{card_url}': {str(e)}")
 
     return errors

@@ -666,7 +666,9 @@ describe("navigateWithSearchTerm", () => {
         <input id="search-bar" type="text" value="test" />
       </div>
     `
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {
+      // Mock implementation - suppress console errors in tests
+    })
     originalSpaNavigate = window.spaNavigate
     window.spaNavigate = jest.fn() as typeof window.spaNavigate
   })

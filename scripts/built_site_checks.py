@@ -1019,6 +1019,7 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     svg_favicons = soup.select("svg.favicon:not(.no-mask)")
     for favicon in svg_favicons:
         style = favicon.get("style")
+        # skipcq: PTC-W0048
         if not style or not isinstance(style, str) or not style.strip():
             non_svg_favicons.append(
                 f"SVG favicon missing style attribute: {favicon}"

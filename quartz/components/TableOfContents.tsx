@@ -13,7 +13,7 @@ import React from "react"
 
 import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
 import { type TocEntry } from "../plugins/transformers/toc"
-import { createWinstonLogger, logLevel } from "../util/log"
+import { createWinstonLogger, getLogLevel } from "../util/log"
 import {
   formatTitle,
   processInlineCode,
@@ -28,7 +28,7 @@ import {
   type QuartzComponentProps,
 } from "./types"
 
-const logger = createWinstonLogger("TableOfContents", logLevel)
+const logger = createWinstonLogger("TableOfContents", getLogLevel())
 /**
  * TableOfContents component for rendering a table of contents.
  *

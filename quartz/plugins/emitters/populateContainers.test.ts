@@ -63,7 +63,9 @@ describe("PopulateContainers", () => {
     })
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {})
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+      // Mock implementation - no-op for testing
+    })
     jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
       const pathStr = String(path)
       if (pathStr.includes("test-page.html")) {

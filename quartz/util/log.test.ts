@@ -109,7 +109,7 @@ describe("util/log", () => {
     createWinstonLogger("my-logger")
 
     expect(capturedPrintfFormatter).not.toBeNull()
-    const formatted = capturedPrintfFormatter!({ level: "info", message: "test message" })
+    const formatted = capturedPrintfFormatter?.({ level: "info", message: "test message" })
     expect(formatted).toBe("[my-logger] info: test message")
   })
 
@@ -130,7 +130,7 @@ describe("util/log", () => {
     const logMod = await import("./log")
 
     logMod.setLogLevelFromArgv({ logLevel: "debug" } as unknown as { logLevel: "debug" })
-    expect(logMod.logLevel).toBe("debug")
+    expect(logMod.getLogLevel()).toBe("debug")
   })
 
   it("should update existing logger levels when setLogLevelFromArgv is called", () => {

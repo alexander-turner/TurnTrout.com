@@ -20,6 +20,7 @@ interface Item {
 }
 
 let currentSearchTerm = ""
+let searchLayout: HTMLElement | null = null
 
 const documentType = FlexSearch.Document<Item>
 let index: InstanceType<typeof documentType> | null = null
@@ -486,7 +487,6 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
   }
 }
 
-let searchLayout: HTMLElement | null = null
 let data: { [key: FullSlug]: ContentDetails } | undefined
 
 // Test helper to set searchLayout for testing

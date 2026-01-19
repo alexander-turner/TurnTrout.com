@@ -10,7 +10,11 @@ import type { Argv } from "./ctx"
 
 export type LogLevel = NonNullable<Argv["logLevel"]>
 
-export let logLevel: LogLevel = "info"
+let logLevel: LogLevel = "info"
+
+export function getLogLevel(): LogLevel {
+  return logLevel
+}
 
 const createdLoggers: ReturnType<typeof createLogger>[] = []
 
@@ -55,7 +59,7 @@ transports.DailyRotateFile = DailyRotateFile
 /**
  * Creates a Winston logger with daily rotation and a 7-day retention policy.
  */
-export const createWinstonLogger = (name: string, level: string = logLevel) => {
+export const createWinstonLogger = (name: string, level: string = getLogLevel()) => {
   // Ensure log directory exists (safety check)
   // istanbul ignore if
   if (!fs.existsSync(logDir)) {

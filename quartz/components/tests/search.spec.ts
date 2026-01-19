@@ -200,7 +200,8 @@ test("search matches in headers have correct color styling", async ({ page }) =>
   // Verify the match has the green color applied, not the default foreground color
   const { matchColor, foregroundColor } = await headerMatch.evaluate((el) => {
     const styles = window.getComputedStyle(el)
-    const parentStyles = window.getComputedStyle(el.parentElement!)
+    const parent = el.parentElement
+    const parentStyles = parent ? window.getComputedStyle(parent) : styles
     return {
       matchColor: styles.color,
       foregroundColor: parentStyles.color,
