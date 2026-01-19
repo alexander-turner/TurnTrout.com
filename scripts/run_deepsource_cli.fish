@@ -16,10 +16,12 @@ function cleanup_branch
     git push origin --delete $branch_name >/dev/null 2>&1
 end
 
-function handle_interrupt --on-signal INT TERM
+function handle_interrupt
     cleanup_branch
     exit 1
 end
+
+trap handle_interrupt INT TERM
 
 function fail
     echo "Error: $argv[1]"
