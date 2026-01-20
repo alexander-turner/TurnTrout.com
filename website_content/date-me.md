@@ -64,7 +64,7 @@ When I was younger, I wasn't social. These days, I love meeting new people! I'm 
   <figcaption>Part of me wishes I could meet and deeply understand each and every person here. Each pinpoint of light is shining for a <em>reason</em>, it was put there <em>by another person</em>.</figcaption>
 </figure>
 
-So, I care a lot about people - both in the abstract and personally. I've never yelled at anyone in my life (except, you know, I probably did as a young kid, but I don't remember that well).  I'm also a vegan who cares about animals. 🪿🐟
+So, I care a lot about people - both in the abstract and personally. I've never yelled at anyone in my life (except, you know, I probably did as a young kid, but I don't remember that well).  I'm also a vegan who cares about animals. 🪿🐟 I have also [pledged to -- for the rest of my life -- donate 10\% of my post-tax income to effective charities.](https://www.givingwhatwecan.org/pledge) 🔸
 
 # What I like doing
 

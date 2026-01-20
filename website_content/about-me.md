@@ -21,9 +21,11 @@ card_image_alt: TurnTrout, wearing a skydiving harness inside a small plane, smi
 
 
 
-Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [my research](/research). My dating doc resides [here.](/date-me) ^first-para
+Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [my research](/research). ^first-para
 
 ![TurnTrout, wearing a skydiving harness inside a small plane, smiles and makes a peace sign at the camera. Another man behind him makes a funny face and also flashes a peace sign.](https://assets.turntrout.com/static/images/posts/about-me.avif)
+
+Altruism is important to me. I'm vegan because I think it's wrong to [torture animals](https://controlledopposition.substack.com/p/factory-farming-is-literally-torture) for minor selfish benefit. I love [geese](https://en.wikipedia.org/wiki/Goose) in particular (🪿) despite "trout" being my namesake (🐟). I've taken the ["10\% Pledge"](https://www.givingwhatwecan.org/pledge), which means that for the rest of my life, I will donate (at least) 10\% of my post-tax income to effective charities.
 
 # FAQ
 
@@ -39,6 +41,9 @@ Why do you love geese so much?
 
 How was this website designed?
 : Refer to [The design of this website.](/design)
+
+`TurnTrout`, you're amazing and handsome and I want to date you!
+: My dating doc resides [here.](/date-me) Check to see if we're compatible!
 
 # Contact me
 
