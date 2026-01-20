@@ -37,45 +37,45 @@ runs:
       run: |
         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-    - name: Setup pnpm cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+    - name: Restore pnpm cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
-    - name: Cache asset dimensions
+    - name: Restore asset dimensions cache
       id: asset-dimensions-cache
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: quartz/plugins/transformers/.asset_dimensions.json
         key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
         restore-keys: |
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
-    - name: Cache Playwright browsers
+    - name: Restore Playwright browsers cache
       if: inputs.cache-playwright == 'true'
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
 
-    - name: Cache Puppeteer browsers
+    - name: Restore Puppeteer browsers cache
       if: inputs.cache-puppeteer == 'true'
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/puppeteer
         key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           puppeteer-${{ runner.os }}-
 
-    - name: Cache ffmpeg
+    - name: Restore ffmpeg cache
       if: inputs.cache-ffmpeg == 'true'
       id: cache-ffmpeg
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: /opt/ffmpeg
         key: ffmpeg-${{ runner.os }}-master-latest
