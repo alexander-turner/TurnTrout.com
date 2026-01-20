@@ -319,7 +319,7 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                     console.print(result.stderr, markup=False, highlight=False)
 
                 # Special message for alt-text scan failures
-                if "alt text" in step.name:
+                if "alt text" in step.name:  # pragma: no cover
                     console.print(
                         "\n[yellow]Please add alt text to all images before pushing.[/yellow]"
                     )
