@@ -1055,22 +1055,26 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
 
     for element in _tags_only(soup.find_all()):
         element_id = element.get("id")
-        if isinstance(element_id, str) and element_id.startswith("populate-"):
-            if not element.get_text(strip=True):
-                _append_to_list(
-                    empty_populate_elements,
-                    f"<{element.name}> with id='{element_id}' is empty",
-                )
+        if (
+            isinstance(element_id, str)
+            and element_id.startswith("populate-")
+            and not element.get_text(strip=True)
+        ):
+            _append_to_list(
+                empty_populate_elements,
+                f"<{element.name}> with id='{element_id}' is empty",
+            )
 
         element_classes = element.get("class")
         if isinstance(element_classes, list):
             for class_name in element_classes:
-                if class_name.startswith("populate-"):
-                    if not element.get_text(strip=True):
-                        _append_to_list(
-                            empty_populate_elements,
-                            f"<{element.name}> with class='{class_name}' is empty",
-                        )
+                if class_name.startswith("populate-") and not element.get_text(
+                    strip=True
+                ):
+                    _append_to_list(
+                        empty_populate_elements,
+                        f"<{element.name}> with class='{class_name}' is empty",
+                    )
                     break
 
     return empty_populate_elements
