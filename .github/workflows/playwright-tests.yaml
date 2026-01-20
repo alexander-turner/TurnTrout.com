@@ -9,14 +9,13 @@ on:
     branches: ["main", "dev", "jest-coverage"]
   pull_request:
     branches: ["main", "dev"]
-    branches-ignore:
-      - "deepsource-*"
 
 permissions:
   contents: read
 
 jobs:
   playwright-tests:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false

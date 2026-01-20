@@ -15,13 +15,12 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: ["main"]
-    branches-ignore:
-      - "deepsource-*"
   schedule:
     - cron: "16 12 * * 4"
 
 jobs:
   eslint:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     name: Run eslint scanning
     runs-on: ubuntu-24.04
     permissions:

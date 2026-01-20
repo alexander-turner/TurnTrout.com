@@ -9,11 +9,10 @@ on:
     branches: ["main", "dev", "no-layout-shift"]
   pull_request:
     branches: ["main", "dev", "no-layout-shift"]
-    branches-ignore:
-      - "deepsource-*"
 
 jobs:
   build_and_deploy:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read

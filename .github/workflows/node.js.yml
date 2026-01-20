@@ -8,14 +8,13 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-    branches-ignore:
-      - "deepsource-*"
 
 permissions:
   contents: read
 
 jobs:
   build:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
 
     strategy:
