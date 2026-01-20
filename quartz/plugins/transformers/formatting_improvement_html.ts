@@ -771,6 +771,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
+  [/Gemini (\w+) (\d(?:\.\d)?)(?!-)/g, "Gemini $2 $1"],
 ]
 
 export function massTransformText(text: string): string {
