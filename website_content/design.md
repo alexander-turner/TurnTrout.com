@@ -1099,20 +1099,6 @@ Updating page metadata
 
 : The script also updates the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
-: As of writing, the copyright notice reads:
-
-<dd><blockquote class="admonition quote" data-admonition="quote">
-       <div class="admonition-title"><div class="admonition-icon"></div>
-           <div class="admonition-title-inner">
-               <a href="https://github.com/alexander-turner/TurnTrout.com/blob/main/README.md" class="external" target="_blank" rel="noopener noreferrer"><code>README.md</code></a>
-           </div>
-       </div>
-       <div class="admonition-content">
-       <p><code>turntrout.com</code> © 2024–2025 by Alexander Turner is licensed under CC BY-SA 4.0.</p>
-       </div>
-       </blockquote>
-</dd>
-
 Python dependency management
 
 : I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.

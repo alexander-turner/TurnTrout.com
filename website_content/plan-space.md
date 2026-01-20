@@ -23,7 +23,9 @@ Such arguments flitter around the AI safety space. While these arguments contain
 > Where does instrumental convergence come from? Since I did [my alignment PhD](/alignment-phd) on [exactly](/parametrically-retargetable-power-seeking) this question, I'm well-suited to explain the situation.
 
 > [!warning] Clarification
-> In this article, I do not argue that building transformative AI is safe or that transformative AIs won't tend to select dangerous plans. I simply argue against the claim that "instrumental convergence arises from reality / plan-space itself, independently of AI psychology."
+> In this article, I do not argue that building transformative AI is safe or that transformative AIs won't tend to select dangerous plans. I simply argue against the claim that "instrumental convergence arises from reality / plan-space[^space] itself, independently of AI psychology."
+
+[^space]: I prefer to refer to "the set of possible plans", as "plan-space" evokes the structured properties of vector spaces.
 
 # Two kinds of convergence
 
@@ -76,7 +78,7 @@ Reality constrains plans and governs their tradeoffs, but which plan gets picked
 
 ## Reality determines the alignment tax, not the convergence
 
-To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (a set).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
+To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (the set of possible plans).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
 
 [^plans]: $\text{Plans}$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
 
