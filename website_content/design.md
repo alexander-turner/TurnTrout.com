@@ -923,7 +923,7 @@ I use `mypy` to statically type-check my Python code and `tsc` to type-check my 
 
 Lastly, I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource surfaces a huge range of antipatterns. For example, in Python, DeepSource points out variables which are redeclared from an outer scope.
 
-Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I can't naively access the issues from the command line, as its tool only reports stale issues for `main`. I wrote a pre-push script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that creates a temporary PR, waits for DeepSource analysis to complete, reports any failures, closes the PR, and then returns an error code if so.
+Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I can't naively access the issues [from the command line](https://github.com/DeepSourceCorp/cli), as the CLI tool only reports stale issues for `main`. I wrote a pre-push script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that creates a temporary PR, waits for DeepSource analysis to complete, reports any failures, closes the PR, and then returns an error code if so.
 
 ### Static validation of Markdown and source files
 

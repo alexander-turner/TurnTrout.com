@@ -118,7 +118,7 @@ Instrumental convergence depends on AI psychology, as demonstrated by my paper [
 
 More precisely, instrumental convergence arises from statistical tendencies in a plan-generating function $f$ -- "what the AI does given a 'goal'" -- relative to its inputs ("goals"). The convergence builds off of assumptions about that function's semantics and those inputs. These assumptions can be satisfied by:
 
-1. [optimal policies in Markov decision processes](/optimal-policies-tend-to-seek-power), or
+1. [optimal policies in Markov decision processes](/seeking-power-is-often-convergently-instrumental-in-mdps), or
 2. [satisficing](/satisficers-tend-to-seek-power) over utility functions over the state of the world, or perhaps
 3. some kind of [more realistic & less crisp decision-making.](/posts#shard-theory)
 
