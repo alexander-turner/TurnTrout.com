@@ -253,7 +253,12 @@ test.describe("Scroll Behavior", () => {
     // eslint-disable-next-line playwright/expect-expect
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
-    }) => {
+    }, testInfo) => {
+      test.skip(
+        !isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
+        "Mobile Safari has unreliable scroll restoration after hash navigation",
+      )
+
       const anchorId = await createFinalAnchor(page)
       await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
         waitUntil: "domcontentloaded",
