@@ -86,7 +86,7 @@ $$
 
 In a reality where safe plans are hard to find, are more complicated, or have a lower success probability, then $f_\text{pure-success}$ may indeed produce dangerous plans. But this is not a fact about $P$ alone—it's a fact about how $f_\text{pure-success}$ interacts with $P$ and the tradeoffs those plans imply.
 
-Consider what happens if we introduce a safety constraint (assumed to be "correct" for the sake of aragument). The constrained plan-generating function $f_\text{safe-success}$ will not produce dangerous plans. Rather, it will succeed with a lower probability. The [alignment tax](https://www.alignmentforum.org/w/alignment-tax) exists in the difference in success probability between a pure success maximizer ($f_\text{pure-success}$) and $f_\text{safe-success}$.
+Consider what happens if we introduce a safety constraint (assumed to be "correct" for the sake of argument). The constrained plan-generating function $f_\text{safe-success}$ will not produce dangerous plans. Rather, it will succeed with a lower probability. The [alignment tax](https://www.alignmentforum.org/w/alignment-tax) exists in the difference in success probability between a pure success maximizer ($f_\text{pure-success}$) and $f_\text{safe-success}$.
 
 To say the alignment tax is "high" is a claim about reality. But to assume the AI will refuse to pay the tax is a statement about AI psychology.[^compete]
 
