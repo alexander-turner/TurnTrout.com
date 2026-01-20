@@ -2,6 +2,7 @@
 """Script to check the built static site for common issues and errors."""
 
 import argparse
+import copy
 import html
 import os
 import re
@@ -127,6 +128,54 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
             continue
         if not first[0].isalnum():
             issues.append(f"non-alphanumeric data-first-letter: {first!r}")
+
+    return issues
+
+
+VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…✓∎"
+
+
+def check_top_level_paragraphs_end_with_punctuation(
+    soup: BeautifulSoup,
+) -> list[str]:
+    """Check that every top-level paragraph in an article ends with a
+    punctuation mark."""
+    issues: list[str] = []
+
+    for article in soup.find_all("article"):
+        paragraphs = article.find_all("p", recursive=False)
+        for p in paragraphs:
+            if not isinstance(p, Tag) or "subtitle" in script_utils.get_classes(
+                p
+            ):
+                continue
+
+            # Remove footnote reference links
+            p_copy = copy.copy(p)
+            for link in p_copy.find_all("a", id=True):
+                link_id = link.get("id", "")
+                if isinstance(link_id, str) and link_id.startswith(
+                    "user-content-fnref-"
+                ):
+                    link.decompose()
+
+            text = p_copy.get_text(strip=True)
+            if not text:
+                continue
+
+            # Strip zero-width spaces and other invisible characters
+            text = text.replace("\u200b", "")  # zero-width space
+            text = text.replace("\ufeff", "")  # zero-width no-break space
+            text = text.strip()
+            if not text:
+                continue
+
+            if text[-1] not in VALID_PARAGRAPH_ENDING_CHARACTERS:
+                _append_to_list(
+                    issues,
+                    text,
+                    prefix=f"Paragraph ends with invalid character '{text[-1]}' ",
+                )
 
     return issues
 
@@ -1319,6 +1368,9 @@ def check_file_for_issues(
         "problematic_iframe_embeds": check_iframe_embeds(soup),
         "empty_populate_elements": check_populate_elements_nonempty(soup),
         "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
+            soup
+        ),
+        "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),
     }

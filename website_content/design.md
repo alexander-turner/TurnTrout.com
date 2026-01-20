@@ -1060,6 +1060,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 2. Multiple dashes in a row (should be em dashes);
 > 3. Consecutive periods (potential typos);
 > 4. Missing spaces before or after links and emphasis elements;
+> 5. Top-level paragraphs lacking end punctuation;
 >
 > **Math rendering:**
 > 1. $\KaTeX$ rendering errors (indicated by error styling);

@@ -5121,3 +5121,130 @@ def test_check_article_dropcap_first_letter_comprehensive(
     soup = BeautifulSoup(html, "html.parser")
     issues = built_site_checks.check_article_dropcap_first_letter(soup)
     assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
+    "char",
+    list(built_site_checks.VALID_PARAGRAPH_ENDING_CHARACTERS),
+)
+def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(char: str):
+    """Test that all valid ending characters are accepted."""
+    html = f"<article><p>Test text{char}</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
+        soup
+    )
+    assert (
+        issues == []
+    ), f"Character {char} should be valid but got issues: {issues}"
+
+
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Multiple paragraphs - all valid
+        (
+            "<article><p>First sentence.</p><p>Second sentence!</p></article>",
+            [],
+        ),
+        # Paragraph with subtitle class should be skipped
+        (
+            '<article><p class="subtitle">No punctuation needed</p></article>',
+            [],
+        ),
+        # Empty paragraphs should be skipped
+        ("<article><p></p></article>", []),
+        ("<article><p>   </p></article>", []),
+        ("<article><p>\n\t  \n</p></article>", []),
+        # Paragraphs with only zero-width spaces should be skipped
+        ("<article><p>\u200b</p></article>", []),
+        ("<article><p>\ufeff</p></article>", []),
+        ("<article><p>\u200b\ufeff  </p></article>", []),
+        # Footnote references should be removed before checking
+        (
+            '<article><p>Text with footnote.<a id="user-content-fnref-1" href="#fn-1">1</a></p></article>',
+            [],
+        ),
+        (
+            '<article><p>Text with footnote<a id="user-content-fnref-1" href="#fn-1">1</a>.</p></article>',
+            [],
+        ),
+        # Multiple footnotes
+        (
+            '<article><p>Text.<a id="user-content-fnref-1">1</a><a id="user-content-fnref-2">2</a></p></article>',
+            [],
+        ),
+        # Text ending with punctuation after zero-width spaces
+        ("<article><p>Text.\u200b</p></article>", []),
+        ("<article><p>Text.\ufeff</p></article>", []),
+        # No article tag - should return empty list
+        ("<p>No article wrapper</p>", []),
+        # Nested paragraphs (not top-level) should be ignored
+        (
+            "<article><div><p>Nested paragraph without punctuation</p></div></article>",
+            [],
+        ),
+        # Multiple articles
+        (
+            "<article><p>First article.</p></article><article><p>Second article!</p></article>",
+            [],
+        ),
+        # Invalid cases - paragraphs ending without valid punctuation
+        (
+            "<article><p>No punctuation</p></article>",
+            ["Paragraph ends with invalid character 'n' No punctuation"],
+        ),
+        (
+            "<article><p>Ends with number 5</p></article>",
+            ["Paragraph ends with invalid character '5' Ends with number 5"],
+        ),
+        # Multiple invalid paragraphs
+        (
+            "<article><p>First invalid</p><p>Second invalid</p></article>",
+            [
+                "Paragraph ends with invalid character 'd' First invalid",
+                "Paragraph ends with invalid character 'd' Second invalid",
+            ],
+        ),
+        (
+            "<article><p>Valid.</p><p>Invalid</p></article>",
+            ["Paragraph ends with invalid character 'd' Invalid"],
+        ),
+        (
+            '<article><p>Invalid</p><p class="subtitle">Skipped</p><p>Also invalid</p></article>',
+            [
+                "Paragraph ends with invalid character 'd' Invalid",
+                "Paragraph ends with invalid character 'd' Also invalid",
+            ],
+        ),
+        # Footnote with invalid ending
+        (
+            '<article><p>No punct<a id="user-content-fnref-1">1</a></p></article>',
+            ["Paragraph ends with invalid character 't' No punct"],
+        ),
+        # HTML content
+        (
+            '<article><p>Link <a href="/page">here</a></p></article>',
+            ["Paragraph ends with invalid character 'e' Linkhere"],
+        ),
+        ("<article><p><strong>Bold</strong> text.</p></article>", []),
+        (
+            "<article><p><strong>Bold</strong> text</p></article>",
+            ["Paragraph ends with invalid character 't' Boldtext"],
+        ),
+        # Special characters
+        (
+            "<article><p>Emoji 😀</p></article>",
+            ["Paragraph ends with invalid character '😀' Emoji 😀"],
+        ),
+    ],
+)
+def test_check_top_level_paragraphs_end_with_punctuation(
+    html: str, expected_issues: list[str]
+):
+    """Comprehensive tests for [`check_top_level_paragraphs_end_with_punctuation()`](scripts/built_site_checks.py:135)."""
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
+        soup
+    )
+    assert issues == expected_issues
