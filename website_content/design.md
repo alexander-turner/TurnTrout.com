@@ -1141,16 +1141,9 @@ Rerunning some local tests
 : I run `eslint` and `pnpm test` Actions on GitHub to help test for environmental inconsistencies.
 
 DeepSource
-: I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource serves multiple roles:
+: I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource is a verbose linter which surfaces a huge range of antipatterns. For example, in Python it points out variables which are redeclared from an outer scope.
 
-<dd>
-<ol>
-<li>A verbose linter which surfaces a huge range of antipatterns. For example, in Python it points out variables which are redeclared from an outer scope.</li>
-<li>A tool which creates pull requests to automatically fix certain kinds of issues.</li>
-</ol>
-</dd>
-
-<dd>As of August 2025, the repository is clean of DeepSource issues.</dd>
+<dd>I wrote a custom pre-commit hook script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that automatically creates a temporary PR, waits for DeepSource analysis to complete, and reports any issues before allowing the commit. This ensures the repository stays clean of DeepSource issues.</dd>
 
 # Acknowledgments
 
