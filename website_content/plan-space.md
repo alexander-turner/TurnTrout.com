@@ -62,7 +62,7 @@ In 2023, Rob Bensinger gave a more detailed presentation of Zack's claim.
 
 # What reality actually determines
 
-There is an important filament of truth in the "plan-space is dangerous" argument.
+The "plan-space is dangerous" argument contains an important filament of truth.
 
 ## Reality determines possible results
 
