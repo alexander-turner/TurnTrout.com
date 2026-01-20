@@ -101,7 +101,7 @@ Consider the extremes:
 
 Maximum alignment tax
 
-: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which is _not_ what Bensinger or Davis to hold), the danger truly "is in the task."
+: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which is _not_ what Bensinger or Davis claim to hold), the danger truly "is in the task."
 
 Zero alignment tax
 
