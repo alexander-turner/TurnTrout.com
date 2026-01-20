@@ -609,7 +609,7 @@ def get_check_steps(
             ],
         ),
         CheckStep(
-            name="DeepSource CLI (not blocking)",
+            name="DeepSource CLI",
             command=[
                 "fish",
                 f"{git_root_path}/scripts/run_deepsource_cli.fish",

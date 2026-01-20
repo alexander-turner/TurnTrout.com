@@ -921,6 +921,10 @@ I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScrip
 
 I use `mypy` to statically type-check my Python code and `tsc` to type-check my TypeScript.
 
+Lastly, I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource surfaces a huge range of antipatterns. For example, in Python, DeepSource points out variables which are redeclared from an outer scope.
+
+Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I can't naively access the issues from the command line, as its tool only reports stale issues for `main`. I wrote a pre-push script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that creates a temporary PR, waits for DeepSource analysis to complete, reports any failures, closes the PR, and then returns an error code if so.
+
 ### Static validation of Markdown and source files
 
 I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
@@ -1139,18 +1143,3 @@ Minimal layout shift
 
 Rerunning some local tests
 : I run `eslint` and `pnpm test` Actions on GitHub to help test for environmental inconsistencies.
-
-DeepSource
-: I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource is a verbose linter which surfaces a huge range of antipatterns. For example, in Python it points out variables which are redeclared from an outer scope.
-
-<dd>I wrote a custom pre-commit hook script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that automatically creates a temporary PR, waits for DeepSource analysis to complete, and reports any issues before allowing the commit. This ensures the repository stays clean of DeepSource issues.</dd>
-
-# Acknowledgments
-
-> [!thanks] Thanking people who helped with this site
-> My friend Emma decisively pushed me to create this site, which has been one of my great joys of 2024. The LessWrong moderators helped me export my post data. Chase Denecke provided initial encouragement and expertise. Garrett Baker filed several [bug reports](https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2CY2QF1Z4S?f=fat_0NG2D9YF31NBQ#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B). Thomas Kwa trialed an integration of [Plot.ly](https://plotly.com/) graphs. [Said Achmiz and `gwern` provided detailed feedback in public comments.](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h)
-
-> [!info] Asset attributions
-> The <img src="https://assets.turntrout.com/static/images/plus.svg" class="inline-img light-svg" alt="Plus sign"/> and <img class="inline-img light-svg" src="https://assets.turntrout.com/static/images/heart.svg" alt="Heart icon"/> are [sourced from the "Dazzle Line Icons"](https://www.svgrepo.com/svg/532997/plus-large) [collection](https://www.svgrepo.com/svg/532473/heart) under the CC attribution license. The link admonition icon <img class="inline-img light-svg" src="https://assets.turntrout.com/static/images/link.svg" alt="A single link from a chain"/> and the same-page "favicon" <img class="inline-img anchor light-svg" src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg" alt="A counterclockwise arrow" /> are sourced from Solar Icons on [SVG repo](https://www.svgrepo.com/svg/529680/link). The Twitter emoji styling is from the [Twemoji repository](https://github.com/twitter/twemoji).
-
-[LessWrong](lesswrong.com) inspired the "previous/next" sequence navigation interface. [`gwern.net`](https://gwern.net) inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), prose linting, and [cryptographic timestamping](/design#finishing-touches).

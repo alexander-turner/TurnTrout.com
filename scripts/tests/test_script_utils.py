@@ -50,7 +50,7 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
         # Since check=True is used, raise CalledProcessError on failure
         raise subprocess.CalledProcessError(
             returncode=1,
-            cmd=args,
+            cmd=args[0] if args else [],
             output="",
         )
 
