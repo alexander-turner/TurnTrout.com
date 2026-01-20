@@ -60,7 +60,7 @@ If the model can't even _tell_ it's doing "motivated reasoning", even an otherwi
 
 ## Analogy to sycophancy in present-day AI
 
-Here's a hypothesis for [where LLM "sycophancy" comes from](https://arxiv.org/abs/2310.13548). Because
+Here's a hypothesis for [where LLM "sycophancy" comes from](https://arxiv.org/abs/2310.13548):
 
 > [!info] The logical structure of the sycophancy argument
 > PREMISES

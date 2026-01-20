@@ -97,13 +97,13 @@ At the time, I’d wondered whether this was still true in general via some othe
 ![The agent starts at a crossroads (state 1). They can head to a glade (2) which loops on itself, or an oasis (3) that leads to a rock (4). The rock can access sunlit mountains (5) with a self-loop, or a house (6) with a self-loop.](https://assets.turntrout.com/static/images/posts/6e57042283c8eb981b2be10d266bfcf804d06653cfc04809.avif)
 <br/>Figure: The paths are one-directional; the agent can’t go back from **3** to **1**. The agent starts at **1**. Under a certain state reward distribution, the vast majority of agents go _up_ to **2**.
   
-However, any reasonable notion of "power" must consider having no future choices (at state **2**) to be less powerful than having one future choice (at state **3**). For more detail, see Section 6 and Appendix B.3 of [the paper](https://arxiv.org/pdf/1912.01683.pdf)
+However, any reasonable notion of "power" must consider having no future choices (at state **2**) to be less powerful than having one future choice (at state **3**). For more detail, see Section 6 and Appendix B.3 of [the paper](https://arxiv.org/pdf/1912.01683.pdf).
 
 ![Handwritten text reads: "Reward distributed independently and identically over states." Beside it, a graph shows the state reward distribution as a quadratic cumulative distribution function, F(r), on the interval from 0 to 1, indicating negative skew.](https://assets.turntrout.com/static/images/posts/0cabde68e0eb61a5bb325beab9ddd645139198303d6ae308.avif)
-<br/>Figure: When reward is
- IID across states according to the quadratic CDF $F(x) := x^2$ on the unit interval, then with respect to reward functions drawn from this distribution, going _up_ has about a 91% chance of being optimal when the discount rate $\gamma = .12$.
+
+Figure: When reward is IID across states according to the quadratic CDF $F(x) := x^2$ on the unit interval, then with respect to reward functions drawn from this distribution, going _up_ has about a 91% chance of being optimal when the discount rate $\gamma = .12$.
   
-If you’re curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the _up_ trajectory, we’re checking whether it maximizes discounted return. Therefore, the probability that _up_ is optimal is  
+If you’re curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the _up_ trajectory, we’re checking whether it maximizes discounted return. Therefore, the probability that _up_ is optimal is:
 
 $$
 \begin{align*}

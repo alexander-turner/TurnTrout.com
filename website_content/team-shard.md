@@ -38,7 +38,7 @@ Our mentees now fill impactful roles.
 4. Luke Marks accepted work with Redwood Research after MATS 8.0.
 5. And several mentees have gone on to the Anthropic Fellows program.
 
-We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including
+We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including:
 
 1. Pioneering steering vectors for use in LLMs ([Steering GPT-2-XL by Adding an Activation Vector](/gpt2-steering-vectors), [Steering LLAMA-2 With Contrastive Activation Additions](/llama2-steering-vectors)),
 2. [Masking Gradients to Localize Computation in Neural Networks](/gradient-routing),
