@@ -5140,6 +5140,23 @@ def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(char: str):
 
 
 @pytest.mark.parametrize(
+    "char",
+    list(built_site_checks.TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH),
+)
+def test_check_top_level_paragraphs_trim_chars(char: str):
+    """Test that trim characters are properly stripped before validation."""
+    # Text ending with valid punctuation followed by trim character should pass
+    html = f"<article><p>Test text.{char}</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
+        soup
+    )
+    assert (
+        issues == []
+    ), f"Character {char} should be trimmed, allowing valid punctuation before it"
+
+
+@pytest.mark.parametrize(
     "html,expected_issues",
     [
         # Multiple paragraphs - all valid
@@ -5177,6 +5194,25 @@ def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(char: str):
         # Text ending with punctuation after zero-width spaces
         ("<article><p>Text.\u200b</p></article>", []),
         ("<article><p>Text.\ufeff</p></article>", []),
+        # Text ending with trim characters (should be stripped)
+        ("<article><p>Text.↗</p></article>", []),
+        ("<article><p>Text.✓</p></article>", []),
+        ("<article><p>Text.∎</p></article>", []),
+        ("<article><p>Text!↗✓</p></article>", []),
+        ("<article><p>Text?∎↗</p></article>", []),
+        # Text ending with only trim characters (should fail after stripping)
+        (
+            "<article><p>No punctuation↗</p></article>",
+            ["Paragraph ends with invalid character 'n' No punctuation"],
+        ),
+        (
+            "<article><p>No punctuation✓</p></article>",
+            ["Paragraph ends with invalid character 'n' No punctuation"],
+        ),
+        (
+            "<article><p>No punctuation∎</p></article>",
+            ["Paragraph ends with invalid character 'n' No punctuation"],
+        ),
         # No article tag - should return empty list
         ("<p>No article wrapper</p>", []),
         # Nested paragraphs (not top-level) should be ignored

@@ -132,7 +132,8 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…✓∎"
+VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…"
+TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -159,7 +160,9 @@ def check_top_level_paragraphs_end_with_punctuation(
                 ):
                     link.decompose()
 
-            text = p_copy.get_text(strip=True)
+            text = p_copy.get_text(strip=True).rstrip(
+                TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
+            )
             if not text:
                 continue
 
