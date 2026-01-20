@@ -16,7 +16,7 @@ mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
-ots stamp "$txt_file" >/dev/null 2>&1 || rollback "Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
+/opt/homebrew/anaconda3/envs/website/bin/ots stamp "$txt_file" >/dev/null 2>&1 || rollback "Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
 
 cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
