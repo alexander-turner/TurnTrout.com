@@ -17,7 +17,7 @@ aliases:
 > [!quote] Zack M. Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-Such arguments flitter around the AI safety space. These arguments are attractive to those who desperately wish to communicate the perceived dangers of AGI. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a stance on how AI will tend to select plans.
+Such arguments flitter around the AI safety space. While these arguments contain some truth, they attempt to escape "AI psychology" but necessarily fail. To predict bad outcomes from AI, one _must_ take a stance on how AI will tend to select plans. This
 
 > [!success] This topic is a specialty of mine
 > Where does instrumental convergence come from? Since I did [my alignment PhD](/alignment-phd) on [exactly](/parametrically-retargetable-power-seeking) this question, I'm well-suited to explain the situation.
@@ -76,15 +76,15 @@ Reality constrains plans and governs their tradeoffs, but which plan gets picked
 
 ## Reality determines the alignment tax, not the convergence
 
-To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from the set of possible plans $P$.[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
+To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (a set).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
 
-[^plans]: The set of possible plans $P$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
+[^plans]: $\text{Plans}$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
 
 $$
-f_\text{pure-success}(P) := \overset{\text{Choose the plan with the highest chance of success}}{\mathrm{argmax}_{p\in P } \,\,\text{SuccessProbability}(p).}
+f_\text{pure-success}(\text{Plans}) := \overset{\text{Choose the plan with the highest chance of success}}{\mathrm{argmax}_{p\in \text{Plans}} \,\,\text{SuccessProbability}(p).}
 $$
 
-In a reality where safe plans are hard to find, are more complicated, or have a lower success probability, then $f_\text{pure-success}$ may indeed produce dangerous plans. But this is not a fact about $P$ alone—it's a fact about how $f_\text{pure-success}$ interacts with $P$ and the tradeoffs those plans imply.
+In a reality where safe plans are hard to find, are more complicated, or have a lower success probability, then $f_\text{pure-success}$ may indeed produce dangerous plans. But this is not solely a fact about $\text{Plans}$—it's a fact about how $f_\text{pure-success}$ interacts with $\text{Plans}$ and the tradeoffs those plans imply.
 
 Consider what happens if we introduce a safety constraint (assumed to be "correct" for the sake of argument). The constrained plan-generating function $f_\text{safe-success}$ will not produce dangerous plans. Rather, it will succeed with a lower probability. The [alignment tax](https://www.alignmentforum.org/w/alignment-tax) exists in the difference in success probability between a pure success maximizer ($f_\text{pure-success}$) and $f_\text{safe-success}$.
 
@@ -96,7 +96,7 @@ Consider the extremes:
 
 Maximum alignment tax
 
-: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which is _not_ what proponents claim to hold), the danger truly "is in the task."
+: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which is _not_ what Bensinger or Davis to hold), the danger truly "is in the task."
 
 Zero alignment tax
 
@@ -128,7 +128,7 @@ Such conclusions _always_ demand assumptions about the semantics ("psychology") 
 
 Success-conditioned convergence _feels_ free of AI psychology --- we're only assuming the completion of a goal, and we want our real AIs to complete goals for us. However, this intuition is incorrect.
 
-Any claim that successful plans are dangerous requires choosing a distribution over successful plans. Bensinger proposes a length-weighted distribution, but this is still a kind psychological assumption about how AIs generate and select plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
+Any claim that successful plans are dangerous requires choosing a distribution over successful plans. Bensinger proposes a length-weighted distribution, but this is still a psychological assumption about how AIs generate and select plans. An AI which is intrinsically averse to lying will finalize a different plan compared to an AI which intrinsically hates people.
 
 Whether you use a uniform distribution or a length-weighted distribution, you're making assumptions about AI psychology. Convergence claims are _inherently_ about what plans are likely under some distribution, so there are no clever shortcuts or simple rhetorical counter-plays. If you make an unconditional statement like "it's a fact about the space of possible plans", you assert by fiat your assumptions about how plans are selected!
 
@@ -166,4 +166,4 @@ Reality determines the alignment tax of safe plans. However, instrumental conver
 Reality constrains plans and governs their tradeoffs, but which plan gets picked? That question is always a matter of AI psychology.
 
 > [!thanks]
-> Peter Barnett, Aryan Bhatt, Chase Denecke, and Zack M. Davis gave feedback.
+> Garrett Baker, Peter Barnett, Aryan Bhatt, Chase Denecke, and Zack M. Davis gave feedback.
