@@ -92,13 +92,13 @@ Try me.
 
 _In which the author reviews complex numbers, vector spaces, and subspaces._
 
-I kept having trouble parsing
+I kept having trouble parsing:
 
 > For $ f, g \in F^S$, the sum  $f + g \in F^S$ is defined by $(f+g)(x) = f(x)+g(x)$ for all $x \in S$.
 
 because my brain was insisting there was a type error in the function composition. I then had the stunning (and overdue) realization that my mental buckets for "set-theoretic functions" and "mathematical functions in general" should be merged.
 
-That is, if you define
+That is, if you define:
 
 $$
 \begin{align*}

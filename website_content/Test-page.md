@@ -39,7 +39,7 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 ###### Header 6
 
-Text
+Text.
 
 Subtitle: I am a subtitle with [a link](/test-page).
 
@@ -420,7 +420,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 # Math
 
-Inline math: $e^{i\pi} + 1 = 0$
+Inline math: $e^{i\pi} + 1 = 0$.
 
 - $\pi: C → A$
 

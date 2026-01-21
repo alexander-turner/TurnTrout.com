@@ -63,7 +63,7 @@ In _[Reframing Impact](/reframing-impact)_, we meet Frank (a capable AI), whom w
 
 The intuition is that if we view the world in the right way, the dangerous objects are far away from Frank (the catastrophic plans are all graded as high-impact). _Reframing Impact_ explores this kind of new way of looking at the world; this post explores what we do once we have an impact measure with these three properties.
 
-We want Frank to keep in mind both the pinkness of an object (how good a plan is according to the specified utility function) and its distance (the plan’s impact). Two basic approaches are
+We want Frank to keep in mind both the pinkness of an object (how good a plan is according to the specified utility function) and its distance (the plan's impact). Two basic approaches are:
 
 ![The "Constraint" approach for limiting AI impact. Text reads: "Choose the highest-scoring plan within radius R." Below, a formula expresses this: arg max utility(plan), with the constraint impact(plan) ≤ R.](https://assets.turntrout.com/static/images/posts/z2uk0BD.avif)
 
@@ -120,7 +120,7 @@ Importantly, you _don’t_ deliver papers here if your time is worth $\frac{45}{
 
 Above, we have not yet chosen a task; the blocks represent the additional utility and hours of each task compared to the current one (doing nothing). The scales above imply that $R=1,$ but actually, $R$ expresses how many blue blocks each pink block weighs. As $R$ increases, the pink platters descend; the agent takes the task whose scales first balance. In other words, the agent takes the best marginal deal as soon as $R$ is large enough for it to be profitable to do so (Theorem 4: Scaled domination criterion).
 
-Once you take a deal, you take the blocks off of the other scales (because the other marginal values change). For small $R$ (i.e. large valuations of one's time), mowing the lawn is optimal. We then have
+Once you take a deal, you take the blocks off of the other scales (because the other marginal values change). For small $R$ (i.e. large valuations of one's time), mowing the lawn is optimal. We then have:
 
 ​![A balance scale labeled "Newspaper." Two pink blocks representing marginal utility are outweighed by three blue blocks representing marginal impact, showing a now unfavorable tradeoff.](https://assets.turntrout.com/static/images/posts/AWfoaw8.avif)
 
@@ -164,10 +164,9 @@ Ultimately, the reasoning about e.g. the ratio will still be informal; however, 
 
 Let $\bar{A}$ be a finite plan space, with utility function ${\color{Red}u}:\bar{A}\rightarrow \mathbb{R}$ and impact measure ${\color{blue}I}:\bar{A}\rightarrow \mathbb{R}_{\geq 0}$. For generality, we leave the formalization of plans ambiguous; notice that if you replace "plan" with "snark", all the theorems still go through (likewise for "utility" and "impact").
 
-In this post, we talk about the impact allowance $R>0$ (in Frank's world, the search radius) as a constraint within which the objesctive may be freely maximized, breaking ties in favor of the plan(s) with lower impact. On the other hand, many approaches penalize impact by subtracting a scaled penalty from the objective. We respectively have
+In this post, we talk about the impact allowance $R>0$ (in Frank's world, the search radius) as a constraint within which the objesctive may be freely maximized, breaking ties in favor of the plan(s) with lower impact. On the other hand, many approaches penalize impact by subtracting a scaled penalty from the objective. We respectively have:
 
 $$
-
 \argmax_{\bar{a}\in \bar{A}; \,{\color{blue}I} (\bar{a})\leq R}{\color{Red}u}(\bar{a})\qquad\qquad\argmax_{\bar{a}\in \bar{A}}{\color{Red}u}(\bar{a})-\frac{{\color{blue}I} (\bar{a})}{R}.
 $$
 

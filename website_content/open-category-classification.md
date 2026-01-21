@@ -87,7 +87,7 @@ This may be advantageous compared to current approaches in that we aren't traini
 
 Let $V$ be a function returning the proportion [^3] of input space volume occupied by non-`unknown` classes: $\frac{|\text{inputs not classified as }unknown|}{|\text{all inputs}|}$. We need some function which translates this to a reasonable penalty (as the proportion alone would be a rounding error in the overall loss function). For now, assume this function is $\hat{V}$.
 
-We observe a datum $x$ whose ground truth label is $y$. Given loss function $\mathcal{L}$, weights $\theta$, classifier $f_θ$, complexity penalty function $R$, and $λ_1,λ_2\in \mathbb{R}$, the total loss is
+We observe a datum $x$ whose ground truth label is $y$. Given loss function $\mathcal{L}$, weights $\theta$, classifier $f_θ$, complexity penalty function $R$, and $λ_1,λ_2\in \mathbb{R}$, the total loss is:
 
 $$
 \mathcal{L}(y,f_\theta(x)) + \lambda_1R(\theta) + \lambda_2 \hat{V}(f_\theta).
@@ -139,7 +139,7 @@ However, this may only yield results comparable to random image sampling, as man
 
 In my opinion, the most promising approach involves abusing the properties of high-dimensional volumes; in particular, the well-known [Curse of Dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality).
 
-To illustrate, the volume of a ball in $p$ dimensions is
+To illustrate, the volume of a ball in $p$ dimensions is:
 
 $$
 V_p(R)=\frac{\pi^{\frac{p}{2}}}{\Gamma(\frac{p}{2}+1)}R^p,
@@ -147,7 +147,7 @@ $$
 
 where $R$ is the radius of the ball and $\Gamma$ is the [Gamma function](https://en.wikipedia.org/wiki/Gamma_function).
 
-For high-dimensional volumes, the overwhelming majority of points in the $p$\-ball are located in the outer shell. How do we know this? For $N$ points uniformly distributed in a $p$\-dimensional unit ball (a ball with $R=1$), the median distance from the closest data point to the origin is defined as
+For high-dimensional volumes, the overwhelming majority of points in the $p$\-ball are located in the outer shell. How do we know this? For $N$ points uniformly distributed in a $p$\-dimensional unit ball (a ball with $R=1$), the median distance from the closest data point to the origin is:
 
 $$
 d(p,N)=\left(1-\frac{1}{2}^\frac{1}{N}\right)^\frac{1}{p}.

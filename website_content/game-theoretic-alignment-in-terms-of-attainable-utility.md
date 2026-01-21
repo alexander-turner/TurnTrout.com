@@ -215,7 +215,7 @@ Considering the metric on our example games yields the following:
 
 We now explore one connection, bridging the divide between (Harsanyi) utilitarianism and ideas from [Bargaining theory](https://en.wikipedia.org/wiki/Cooperative_bargaining).
 
-To begin, we choose the natural strategy profile of [maxmin](https://en.wikipedia.org/wiki/Minimax), which we denote as $\vec{a}_0$. Now, define the _surplus_ of player $i$ to be
+To begin, we choose the natural strategy profile of [maxmin](https://en.wikipedia.org/wiki/Minimax), which we denote as $\vec{a}_0$. Now, define the _surplus_ of player $i$ to be:
 
 $$
 s_i(\vec{a}) = u_i(\vec{a}) - u_i(\vec{a_0})

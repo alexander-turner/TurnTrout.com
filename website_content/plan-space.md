@@ -41,7 +41,7 @@ Instrumental convergence
 : "Most AI goals incentivize similar actions (like seeking power)." Bostrom gives [the classic definition](https://nickbostrom.com/superintelligentwill.pdf).
 
 Success-conditioned convergence
-: "Conditional on achieving a "hard" goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." I'm coining this term to distinguish it from instrumental convergence.
+: "Conditional on achieving a 'hard' goal (like a major scientific advance), most goal-achieving plans involve the AI behaving dangerously." I'm coining this term to distinguish it from instrumental convergence.
 
 > [!idea] Key distinction
 > For instrumental convergence, the "most" iterates over AI goals. For success-conditioned convergence, the "most" iterates over _plans_.
@@ -83,7 +83,7 @@ Reality constrains plans and governs their tradeoffs, but which plan gets picked
 
 To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (the set of possible plans).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
 
-[^plans]: $\text{Plans}$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
+[^plans]: The set $\text{Plans}$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
 
 $$
 f_\text{pure-success}(\text{Plans}) := \overset{\text{Choose the plan with the highest chance of success}}{\mathrm{argmax}_{p\in \text{Plans}} \,\,\text{SuccessProbability}(p).}
@@ -93,7 +93,7 @@ In a reality where safe plans are hard to find, are more complicated, or have a 
 
 Consider what happens if we introduce a safety constraint (assumed to be "correct" for the sake of argument). The constrained plan-generating function $f_\text{safe-success}$ will not produce dangerous plans. Rather, it will succeed with a lower probability. The [alignment tax](https://www.alignmentforum.org/w/alignment-tax) exists in the difference in success probability between a pure success maximizer ($f_\text{pure-success}$) and $f_\text{safe-success}$.
 
-To say the alignment tax is "high" is a claim about reality. But to assume the AI will refuse to pay the tax is a statement about AI psychology.[^compete]
+To say the alignment tax is high is a claim about reality. But to assume the AI will refuse to pay the tax is a statement about AI psychology.[^compete]
 
 [^compete]: To argue "success maximizers are more profitable and more likely to be deployed" is an argument about economic competition, which itself is an argument about the tradeoff between safety and success, which in turn requires reasoning about AI psychology.
 
@@ -101,11 +101,11 @@ Consider the extremes:
 
 Maximum alignment tax
 
-: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which is _not_ what Bensinger or Davis claim to hold), the danger truly "is in the task."
+: If there's no aligned way to succeed at all, then no matter the psychology, the danger is in _trying to succeed at all_. "Torturing everyone forever" seems like one such task. In this case (which, to be clear, is not what Bensinger or Davis claim holds), the danger truly is in the task.
 
 Zero alignment tax
 
-: If safe plans are easy to find, then danger purely comes from the "AI psychology" (via the plan-generating function).
+: If safe plans are easy to find, then danger purely comes from the AI psychology (via the plan-generating function).
 
 In-between
 
@@ -157,7 +157,7 @@ Two key problems with this argument:
 
 1. **Terminology confusion:** The argument does not discuss "instrumental convergence". Instead, it discusses (what I call) "success-conditioned convergence." (This distinction was subtle to me as well.)
 
-2. **Hidden psychology assumptions:** The argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion _is itself_ an assumption about what plans AIs will tend to choose. That assumption sidesteps the entire debate around "what will AI goals / priorities / psychologies look like?" Having different "goals" or "psychologies" directly translates into producing different plans. Neither type of convergence stands independently of psychology.
+2. **Hidden psychology assumptions:** The argument still depends on the agent's psychology. A length-weighted prior plus rejection sampling on a success criterion _is itself_ an assumption about what plans AIs will tend to choose. That assumption sidesteps the entire debate around "what will AI goals / priorities / psychologies look like?". Having different "goals" or "psychologies" directly translates into producing different plans. Neither type of convergence stands independently of psychology.
 
 Perhaps a different, weaker claim still holds, though:
 
@@ -166,7 +166,7 @@ Perhaps a different, weaker claim still holds, though:
 
 # Conclusion
 
-Reality determines the alignment tax of safe plans. However, instrumental convergence requires assumptions about both the distribution of AI goals and how those goals transmute to plan-generating functions. Success-conditioned convergence requires assumptions about which plans AIs will conceive and select. Both sets of assumptions involve AI psychology.
+Reality determines the alignment tax of safe plans. However, instrumental convergence requires assumptions about both the distribution of AI goals and how those goals induce plan-generating functions. Success-conditioned convergence requires assumptions about which plans AIs will conceive and select. Both sets of assumptions involve AI psychology.
 
 Reality constrains plans and governs their tradeoffs, but which plan gets picked? That question is always a matter of AI psychology.
 

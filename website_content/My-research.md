@@ -250,12 +250,13 @@ Subtitle: January through April 2023
 
 As I transitioned from theory to practice, I flirted with _understanding the internal mechanisms of networks_ - "mechanistic interpretability."
 
-[Understanding and controlling a maze-solving network](/understanding-and-controlling-a-maze-solving-policy-network)
-
 <video autoplay loop muted playsinline style="width: 80%; margin-top: 0; margin-bottom: 0;" ><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals by modifying only a single activation! For more, read [our paper](https://arxiv.org/abs/2310.08043).
+
+[Understanding and controlling a maze-solving network](/understanding-and-controlling-a-maze-solving-policy-network)
+: We thought the network would have multiple contextual goals. We looked for those goals. We found those goals.
 
 [Residual stream norms grow exponentially over the forward pass](/residual-stream-norms-grow-exponentially-over-the-forward-pass)
 :  ![A chart titled "Residual Stream Magnitude by Layer Number," showing that stream norms increase with layer depth. A histogram and rug plot show distributions of log10 norms shifting to the right as the layer index increases.](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)

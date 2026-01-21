@@ -112,14 +112,14 @@ It's spring of 2019, and I've written myself into a corner. [My first post on AU
 
 I was working through a bit of reasoning on how your ability to achieve one goal interacts with your ability to achieve seemingly unrelated goals. Spending a lot of money on red dice helps you for the collecting-dice goal, but makes it harder to become the best juggler in the world. That's a weird fact, but it's an _important_ fact which underlies much of [AUP's empirical success](/attainable-utility-preservation-empirical-results). I didn't understand why this fact was true.
 
-At an impromptu presentation in 2018, I'd remarked that "AUP wields instrumental convergence as a weapon against the alignment problem itself". I tried thinking about it using the formalisms of reinforcement learning. Suddenly, I asked myself
+At an impromptu presentation in 2018, I'd remarked that "AUP wields instrumental convergence as a weapon against the alignment problem itself". I tried thinking about it using the formalisms of reinforcement learning. Suddenly, I asked myself:
 
 > Why is instrumental convergence even a thing?
 
 I paused. I went outside for a walk, and I paced. The walk lengthened, and I still didn't understand why. Maybe it was just a "brute fact", an "emergent" phenomenon – nope, not buying that. There's an explanation somewhere.
 
 <!-- vale off -->
-I went back to the drawing board – to the whiteboard, in fact. I stopped trying to [understand the general case](/seeking-power-is-often-convergently-instrumental-in-mdps) and I focused on specific toy environments. I'm looking at an environment like this
+I went back to the drawing board – to the whiteboard, in fact. I stopped trying to [understand the general case](/seeking-power-is-often-convergently-instrumental-in-mdps) and I focused on specific toy environments. I'm looking at an environment like this:
 <!-- vale on -->
 
 ![A state transition diagram of a toy environment with five numbered nodes. A blue starting node, '1', has a thick dashed arrow pointing to node '3' and a dotted arrow to node '2'. Node '2' points to '3' with a solid gray arrow. Node '3' points to nodes '4' and '5'. Nodes '2', '4', and '5' have dotted self-loops.](https://assets.turntrout.com/static/images/posts/KEKaYrk.avif)

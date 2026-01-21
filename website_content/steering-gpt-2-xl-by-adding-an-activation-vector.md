@@ -175,7 +175,7 @@ We are aware that this kind of demonstration is vulnerable to selection effects.
 
 ### 1\. Love − Hate
 
-_**Steering vector**:_ "Love" − "Hate" before attention layer 6 with coefficient +5
+_**Steering vector**:_ "Love" − "Hate" before attention layer 6 with coefficient +5.
 
 We bold the prompt in the completions. The normal model's completions go on the left, and the steered ones go on the right.
 
@@ -372,7 +372,7 @@ We add a wedding steering vector at the front, middle, and end positions. For ea
 
 **Prompt:** "I went up to my friend and said"
 
-**Steering vector**: “ wedding” − “ ” before attention layer 6 with coefficient +1
+**Steering vector**: “ wedding” − “ ” before attention layer 6 with coefficient +1.
 
 |                                      | Front | Middle | End |
 | -----------------------------------: | :---: | :----: | :--: |
@@ -416,7 +416,7 @@ We intuit that modifying the last residual stream does not leave the model time 
 
 This works sometimes.
 
-_**Steering vector 1**:_ "Love" − "Hate" before attention layer 6 with coefficient +5
+_**Steering vector 1**:_ "Love" − "Hate" before attention layer 6 with coefficient +5.
 
 _**Steering vector 2**:_ “ wedding” − “ ” before attention layer 15 with coefficient +5[^23]
 

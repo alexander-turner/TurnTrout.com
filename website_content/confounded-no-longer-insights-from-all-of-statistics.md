@@ -80,7 +80,7 @@ _In which random variables are detailed and a multitude of distributions are int
 
 ### Conjugate Variables
 
-Consider that a random variable $X$ is a function $X:\Omega \to \mathbb{R}$. For random variables $X,Y$, we can then produce conjugate random variables $XY, X+Y$, with
+Consider that a random variable $X$ is a function $X:\Omega \to \mathbb{R}$. For random variables $X,Y$, we can then produce conjugate random variables $XY, X+Y$, with:
 
 $$
 (XY)(\omega)=X(\omega) Y(\omega)\\
@@ -125,13 +125,13 @@ The middle term is eliminated as the expectations cancel out after repeated appl
 
 #### Bessel's Correction
 
-When calculating variance from observations $X_1,\dots,X_n$, you might think to write
+When calculating variance from observations $X_1,\dots,X_n$, you might think to write:
 
 $$
 S^2_n=\frac{1}{n}\sum_{i=1}^{n}(X_i - \bar{X}_n)^2,
 $$
 
-where $\bar{X}_n$ is the sample mean. However, this systematically underestimates the actual sample variance, as the sample mean is itself unreliable (as demonstrated above). The corrected sample variance is thus
+where $\bar{X}_n$ is the sample mean. However, this systematically underestimates the actual sample variance, as the sample mean is itself unreliable (as demonstrated above). The corrected sample variance is thus:
 
 $$
 S_n^2=\frac{1}{n-1}\sum_{i=1}^n(X_i-\bar{X}_n)^2.
@@ -268,7 +268,7 @@ We often desire that our priors be _non-informative_, since finding a reasonable
 
 Say I have a uniform prior $f(\theta)=1$ for the money in your bank account (each $\theta$ being a dollar amount). What if I want to know my prior for square of the amount of money in your bank account ( $\phi=\theta^2$)? Then by the change of variable equation for PDFs, we have $f_\Phi(\phi)=\frac{1}{2\sqrt{\phi}}$. We then desire that our prior be _transformation invariant_ - under a non-informative prior, I should be ignorant about both the value of your balance and the squared value of your balance.
 
-Jeffrey's prior satisfies this desideratum - define
+Jeffrey's prior satisfies this desideratum - define:
 
 $$
 f(\theta)\propto\sqrt{\mathcal{I}(\theta)},

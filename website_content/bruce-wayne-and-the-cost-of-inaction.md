@@ -291,7 +291,7 @@ His mom turned to look. His mom turned to look, and the canister flew out of her
 
 Bruce didn't look away as his mom's body fell to the ground.
 
-He screamed harder than he thought he could, so loud that his throat hurt and his eyes hurt and _this was usually when he woke up from his nightmares **why was this one so long**_
+He screamed harder than he thought he could, so loud that his throat hurt and his eyes hurt and _this was usually when he woke up from his nightmares **why was this one so long**_\u2060
 
 Bruce screamed, he screamed until no more noise came out. He opened his clenched eyes and saw the man was gone.
 
@@ -371,9 +371,9 @@ Bruce slumped against an old well. His dad hadn't quite finished boarding it up.
 
 Bruce felt a terrible anger. He locked his jaw. He wasn't like _them_. He wouldn't stand by any longer. _He_ would protect his friends.
 
-Then he heard a noise, some kind of flapping, and something _shrieked_, it _shrieked just like the beggar_ before it flew into the night, Bruce screamed, it was like he was reliving the murder, it was like the beggar was right there and Bruce was breathing so fast he didn't know what was happening
+Then he heard a noise, some kind of flapping, and something _shrieked_, it _shrieked just like the beggar_ before it flew into the night, Bruce screamed, it was like he was reliving the murder, it was like the beggar was right there and Bruce was breathing so fast he didn't know what was happening\u2060
 
-He had already jumped to his feet and he was looking around frantically
+He had already jumped to his feet and he was looking around frantically\u2060
 
 > _the beggar's face turning wildly as though he were surrounded by monsters,_
 >

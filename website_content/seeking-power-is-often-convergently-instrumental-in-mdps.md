@@ -253,7 +253,7 @@ However, any reasonable notion of "power" must consider having no future choices
 ![A graph of a state reward distribution and handwritten text that reads: "Reward distributed independently and identically over states." The graph plots a quadratic curve, F(r), that rises steeply toward the maximum reward of 1, indicating that higher rewards are more probable.](https://assets.turntrout.com/static/images/posts/wkfdmhfenud63gvlyxcb.avif)
 <br/>Figure: When reward is IID across states according to the quadratic CDF $F(x) := x^2$ on the unit interval, then with respect to reward functions drawn from this distribution, going **up** has about a 91% chance of being optimal when the discount rate $\gamma = .12$.
   
-If you’re curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the **up** trajectory, we’re checking whether it maximizes discounted return. Therefore, the probability that **up** is optimal is  
+If you're curious, this happens because this quadratic reward distribution has negative skew. When computing the optimality probability of the **up** trajectory, we're checking whether it maximizes discounted return. Therefore, the probability that **up** is optimal is:
   
 $$
 \begin{align*}

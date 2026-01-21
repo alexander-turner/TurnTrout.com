@@ -188,7 +188,7 @@ AUP provides a reward signal over state-action pairs, but this reward signal dep
 
 [VNM-coherence incentives are statistically the same as reward maximization incentives.](/instrumental-convergence-via-vnm-preferences) [Instrumental convergence also disappears in the deterministic setting, when utility functions are over _action_\-observation histories.](/power-seeking-beyond-MDPs) Part of the story is that AUP provides a limited form of corrigibility by zooming out to the state-action level, instead of just grading states.
 
-Another part of the story is that AUP changes its rewards with respect to the world's dynamics. Normal state-action reward functions imply a fixed VNM-coherent preference ordering over state-action lotteries in the MDP. For AUP, the situation is different. Consider AUP with inaction baseline. The final-step reward is the usual reward plus a penalty for
+Another part of the story is that AUP changes its rewards with respect to the world's dynamics. Normal state-action reward functions imply a fixed VNM-coherent preference ordering over state-action lotteries in the MDP. For AUP, the situation is different. Consider AUP with inaction baseline. The final-step reward is the usual reward plus a penalty for:
 
 $$
 \bigg|\text{Optimal value(actual final state)} – \text{Optimal value(inaction final state)}\bigg|,

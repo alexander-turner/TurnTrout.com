@@ -104,7 +104,7 @@ Well, what he says about alignment is his business. But it’s also _my_ busines
 
 As I see things, this advice is both honest and pragmatic—it is useful in many “miracle” worlds. Wouldn’t it be undignified to later have a massive breakthrough in alignment theory, and yet not have enough hands on deck to derive enough corollaries and evaluate alignment schemes derived thereby?
 
-As for the individual—
+As for the individual...
 
 ## Individual edification
 

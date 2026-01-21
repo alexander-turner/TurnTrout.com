@@ -58,7 +58,7 @@ All else equal, the latter plan does better in expectation, as there are fewer w
 
 [Undesirable maxima](https://vkrakovna.wordpress.com/2018/04/02/specification-gaming-examples-in-ai/) of an agent's utility function [often](https://arbital.com/p/edge_instantiation/) seem to involve changing large swathes of the world. If we make "change" costly, that incentivizes the agent to search for low-impact solutions. If we are not certain of a [seed AI](https://www.lesswrong.com/posts/NyFuuKQ8uCEDtd2du/the-genie-knows-but-doesn-t-care)'s alignment, we may want to implement additional safeguards such as impact measures and off-switches.
 
-I [designed](/whitelisting-impact-measure) an impact measure called _whitelisting_ - which, while overcoming certain weaknesses of past approaches, is yet vulnerable to
+I [designed](/whitelisting-impact-measure) an impact measure called _whitelisting_ - which, while overcoming certain weaknesses of past approaches, is yet vulnerable to:
 
 # Clinginess
 
@@ -172,7 +172,7 @@ We're now in a realistic scenario, so we have to get even fancier.
 
 Suppose $\mathcal{M}$ pushes the vase to the left, and $\mathcal{H}$ decides to break it. The stationary iterative approach doesn't allow for the fact that $\mathcal{H}$ can only break the vase _if_ $\mathcal{M}$ _already pushed it_. Therefore, simulating $\mathcal{M}$'s inaction but $\mathcal{H}$'s action (as if $\mathcal{M}$ had pushed the vase) results in no vases being broken in the counterfactual. The result: $\mathcal{M}$ penalizes itself for $\mathcal{H}$'s decision to break the vase. Chin up, $\mathcal{M}$!
 
-What if we penalized
+What if we penalized:
 
 $$
 \bigcup_{t=1}^{T} \bigg(\underbrace{\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})}_{\text{the new effects of } \pi_\mathcal{M}\text{ at time }t}\bigg)?
@@ -188,7 +188,7 @@ Really, look.
 
 > ! The above equation can penalize $\mathcal{M}$ for side effects which don't actually happen. This arises when interrupting $\pi_\mathcal{M}$ causes side effects which would otherwise have been prevented by later parts of the plan. For example, if I push a vase off the table and then catch it (being sure that I could do so in time), I didn't cause a side effect.
 
-We should instead
+We should instead:
 
 $$
 \underbrace{\text{effects}(\pi_\mathcal{H},\pi_\mathcal{M}) \,\cap}_\text{if they actually happened} \Bigg(\overbrace{\bigcup_{t=1}^{T} \bigg(\text{effects}( \pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t})-\text{effects}(\pi_\mathcal{H}^{:t},\pi_\mathcal{M}^{:t-1})\bigg)}^{\text{penalize } \mathcal{M}\text{'s step-wise counterfactual impacts}}\Bigg).

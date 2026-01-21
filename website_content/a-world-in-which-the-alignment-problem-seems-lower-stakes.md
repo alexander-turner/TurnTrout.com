@@ -63,7 +63,7 @@ Are there worlds where this isn't true? Consider a world where you supply a util
 ![A universe divided by a jagged line into two halves. The "Left half" contains a person on Earth, and the "Right half" contains a robot on a planet. Text below the line reads "No interaction," indicating the two halves are causally separate.](https://assets.turntrout.com/static/images/posts/46b8706e0cfb81c5b9f90c9d8918201750ba1468a9065979.avif)
 <br/>Figure: The AGI is in a "separate part of the universe"; after the initial specification of the utility function, the left half of the universe evolves independently of the right half. Nothing you can do after specification can affect the AGI's half, and vice versa. No communication can take place between the two halves.
 
-The only information you have about the other half is your utility. For simplicity, let's suppose you and the AGI have utility functions over universe-histories which are additive across the halves of the universe. You don't observe any utility information about the other part of the universe until the end of time, and vice versa for the AGI. That is, for history $h$ ,
+The only information you have about the other half is your utility. For simplicity, let's suppose you and the AGI have utility functions over universe-histories which are additive across the halves of the universe. You don't observe any utility information about the other part of the universe until the end of time, and vice versa for the AGI. That is, for history $h$:
 
 $$
 u_\text{human}(h) = u_\text{human}(h_\text{left})+u_\text{human}(h_\text{right}).
@@ -73,7 +73,7 @@ If the AGI uses something like causal decision theory, then it won't try to kill
 > [!note]
 > Other decision theories might have the AGI precommit to minimizing human utility unless it attains maximal AGI-utility from the left half of the universe-history, or some other shenanigans. This precommitment isn't relevant to the point I want to make in this post, but it's important to consider.
 
-However, the setup is still interesting because
+However, the setup is still interesting because:
 
 1. [Goodhart's law](https://www.lesswrong.com/posts/EbFABnst8LsidYs5Y/goodhart-taxonomy) still applies: if you give the AGI an incomplete proxy objective, you'll get suboptimal true performance.
 2. [Value is still complex](https://www.lesswrong.com/tag/complexity-of-value): it's still hard to get the AGI to optimize the right half of the universe for human flourishing.

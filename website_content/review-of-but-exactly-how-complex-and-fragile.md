@@ -93,7 +93,7 @@ In Markov decision processes, if you're maximally uncertain, you can't guarantee
 
 So there has to be _something_ which differentially pushes the future _towards_ "good" things and _away from_ "bad" things. That _something_ could be "humanity", or "aligned AGI", or "augmented humans wielding tool AIs", or "magically benevolent aliens" - whatever. But it has to be _something_, _some "goal system"_ (as Eliezer put it), and it has to be _entangled_ with the thing we want it to optimize for (human morals and metamorals). Otherwise, there's no reason to think that the universe weaves a "good" trajectory through time.
 
-Hence, one might then conclude
+Hence, one might then conclude:
 
 > [!quote] Eliezer Yudkowsky, [_Value is Fragile_](https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile)
 > Any Future **not** shaped by a goal system with detailed reliable inheritance from human morals and metamorals, will not be optimized _for_ human morals and metamorals.
@@ -102,7 +102,7 @@ We must now figure out how to go from "will not be optimized _for_" to "will con
 
 > [our universe has "resources"](https://www.lesswrong.com/s/ehnG4mseKF6xALmQy/p/ahZQbxiPPpsTutDy2#Convergent_Instrumental_Goals); making the universe decently OK-by-human-standards [requires resources](/seeking-power-is-often-convergently-instrumental-in-mdps) which can be used for many other purposes; most purposes are best accomplished by _not_ using resources in this way.
 
-This argument does _not_ claim that we will deploy utility maximizers with a misspecified utility function, and that _that_ will be how our fragile value is shattered and our universe is extinguished. The thesis holds merely that
+This argument does _not_ claim that we will deploy utility maximizers with a misspecified utility function, and that _that_ will be how our fragile value is shattered and our universe is extinguished. The thesis holds merely that:
 
 > [!quote]Eliezer Yudkowsky, [_Value is Fragile_](https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile)
 > Any Future **not** shaped by _a goal system_ with detailed reliable inheritance from human morals and metamorals, will contain almost nothing of worth.

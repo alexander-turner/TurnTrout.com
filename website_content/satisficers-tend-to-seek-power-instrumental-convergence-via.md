@@ -194,7 +194,7 @@ That's not all. If the agent makes decisions _only based on the expected utility
 
 It doesn't matter if the decision-making procedure $f$ is rational, or anti-rational, or Boltzmann-rational, or satisficing, or randomly choosing outcomes, or only choosing outcome lotteries with expected utility equal to 1: There are more ways to choose elements of $B$ than there are ways to choose elements of $A$.
 
-These results also have closure properties. For example, closure under mixing decision procedures, like when the agent has a 50% chance of selecting Boltzmann rationally and a 50% chance of satisficing. Or even more exotic transformations: Suppose the probability of $f$ choosing something from $X$ is proportional to
+These results also have closure properties. For example, closure under mixing decision procedures, like when the agent has a 50% chance of selecting Boltzmann rationally and a 50% chance of satisficing. Or even more exotic transformations: Suppose the probability of $f$ choosing something from $X$ is proportional to:
 
 $$
 \begin{align*}
@@ -354,7 +354,7 @@ From [last time](/power-seeking-beyond-MDPs#Appendix-Tracking-key-limitations-of
 >     - But most ones we think about seem to
 > 3. don't account for the ways in which we might practically express reward functions
 
-I want to add a new one, because the theorems
+I want to add a new one, because the theorems:
 
 > 1. don't deal with the agent's uncertainty about what environment it's in.
 

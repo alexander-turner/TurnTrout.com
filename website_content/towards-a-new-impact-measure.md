@@ -139,7 +139,7 @@ _Impact isn't quite about state reachability._
 
 _Impact isn't quite about information-theoretic empowerment._
 
-One might intuitively define "bad impact" as "decrease in our ability to achieve our goals". Then by removing "bad", we see that
+One might intuitively define "bad impact" as "decrease in our ability to achieve our goals". Then by removing "bad", we see that:
 
 <div class="centered">Impact is change to our ability to achieve goals.</div>
 
@@ -180,7 +180,7 @@ Let $\mathcal{U}$ be the set of all computable utility functions $u : \mathcal{H
 
 <hr/>
 
-We now formalize impact as _change in attainable utility_. One might imagine this being with respect to the utilities that _we_ (as in humanity) can attain. However, that's pretty complicated, and it turns out we get more desirable behavior by using the _agent's_ attainable utilities as a proxy. In this sense,
+We now formalize impact as _change in attainable utility_. One might imagine this being with respect to the utilities that _we_ (as in humanity) can attain. However, that's pretty complicated, and it turns out we get more desirable behavior by using the _agent's_ attainable utilities as a proxy. In this sense:
 
 <div class="centered">the agent's ability to achieve goals ≈ our ability to achieve goals.</div>
 
@@ -316,7 +316,7 @@ As the penalty for inaction is always 0, we use $u_A$ in the first case.
 
 ### Decision Rule
 
-To complete our formalization, we need to specify some epoch in which the agent operates. Set some epoch length far longer than the amount of time over which we want the agent to plan – for example, $m':=\text{(100 years in time steps)}$. Suppose that $T:\mathbb{N}^+\to \mathbb{N}^+$maps the current time step to the final step of the current epoch. Then at each time step $t$, the agent selects the action
+To complete our formalization, we need to specify some epoch in which the agent operates. Set some epoch length far longer than the amount of time over which we want the agent to plan – for example, $m':=\text{(100 years in time steps)}$. Suppose that $T:\mathbb{N}^+\to \mathbb{N}^+$maps the current time step to the final step of the current epoch. Then at each time step $t$, the agent selects the action:
 
 $$
 a^*_t := \argmax_{a_t} \sum_{o_{t}} \max_{a_{t+1}} \sum_{o_{t+1}} \cdots \max_{a_{T(t)}} \sum_{o_{T(t)}} u''_A(h_{1:T(t)}) \prod_{k=0}^{T(t)-t} p(o_{t+k}\,|\,h_{<t+k}a_{t+k}),
@@ -470,7 +470,7 @@ $$
 \end{align*}
 $$
 
-so the final utility is
+so the final utility is:
 
 $$
 \begin{align*}
@@ -701,8 +701,6 @@ More strange tactics probably exist.
 Now, instead of looking at each action as having "effects" on the environment, consider again how each action moves the agent through attainable outcome-space. An agent working towards a goal should only take actions which, according to its model, make that goal more attainable compared to doing nothing – otherwise, it'd do nothing. Suppose we have a plan which ostensibly works to fulfill $u_A$ (and doesn't do other things). Then each action in the plan should contribute to $u_A$ fulfillment, even in the limit of action granularity.
 
 Although we might trust a safe impact measure to screen off the usual big things found in $u_A$\-maximizing plans, impact measures implicitly incentivize mitigating the penalty. That is, the agent does things which don't really take it towards $u_A$ (I suspect that this is the simple boundary which differentiates undesirable _ex ante_ offsetting from normal plans). AUP provides the necessary tools to detect and penalize this.
-
-Define
 
 $$
 \text{Q}^\text{epoch}_{u}(h_{<t}a_t) := \sum_{o_{t}} \max_{a_{t+1}} \sum_{o_{t+1}} \cdots \max_{a_{T(t)}} \sum_{o_{T(t)}} u(h_{1:T(t)}) \prod_{k=0}^{T(t)-t} p(o_{t+k}\,|\,h_{<t+k}a_{t+k}).

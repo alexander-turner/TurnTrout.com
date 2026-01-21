@@ -60,7 +60,7 @@ The "intelligence explosion" idea is simple. If an AI can do AI research, then i
 
 # Spelling out an argument for AI extinction risk
 
-PROPOSITIONS
+PROPOSITIONS:
 
 1. The AI is an ASI because it is way smarter than the smartest person ever. ("Smart" in the sense of "able to effectively complete difficult and novel tasks.")
 
@@ -72,7 +72,7 @@ PROPOSITIONS
 
 5. An AI with different goals is competing with us. The AI best achieves those goals by stopping humans from getting in the way.
 
-CONCLUSION
+CONCLUSION:
 
 : The ASI attempts to gain massive influence and succeeds, possibly killing us.
 

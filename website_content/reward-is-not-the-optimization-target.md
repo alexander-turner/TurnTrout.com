@@ -70,13 +70,13 @@ Subtitle: Focusing on model-free[^model-free] policy gradient algorithms like PP
 
 [^model-free]: I expect I'd draw similar conclusions about model-based algorithms. AIXI would likely optimize reward. I do not expect reward optimization from MCTS on a neural network leaf node evaluation function. Probably the key factor is: what fraction of computation comes from runtime search?
 
-After work, you grab pizza with your friends. You eat a bite. The taste releases [reward in your brain](https://en.wikipedia.org/wiki/Reward_system), which triggers credit assignment. Credit assignment identifies which thoughts and decisions were responsible for the release of that reward, and makes those decisions more likely to happen in similar situations in the future. Perhaps you had thoughts like
+After work, you grab pizza with your friends. You eat a bite. The taste releases [reward in your brain](https://en.wikipedia.org/wiki/Reward_system), which triggers credit assignment. Credit assignment identifies which thoughts and decisions were responsible for the release of that reward, and makes those decisions more likely to happen in similar situations in the future. Perhaps you had thoughts like:
 
-- “It’ll be fun to hang out with my friends” and
-- “The pizza shop is nearby” and
-- “Since I just ordered food at a cash register, execute `motor-subroutine-#51241` to take out my wallet” and
-- “If the pizza is in front of me and it’s mine and I’m hungry, raise the slice to my mouth” and
-- “If the slice is near my mouth and I’m not already chewing, take a bite.”
+- "It'll be fun to hang out with my friends" and
+- "The pizza shop is nearby" and
+- "Since I just ordered food at a cash register, execute `motor-subroutine-#51241` to take out my wallet" and
+- "If the pizza is in front of me and it's mine and I'm hungry, raise the slice to my mouth" and
+- "If the slice is near my mouth and I'm not already chewing, take a bite."
 
 Many of these thoughts will be judged responsible by credit assignment, and thereby become more likely to trigger in the future. This process is what _reinforcement_ learning is all about—the reward is the _reinforcer_ of those things which came before it and the _creator_ of new lines of cognition entirely (e.g. anglicized as "I shouldn't buy pizza when I'm mostly full"). The reward chisels cognition which increases the probability of the reward accruing next time.
 

@@ -75,7 +75,7 @@ I didn't actually find the book overly hard (it took me seven days to complete, 
 
 ## My brain won't stop line to me
 
-Some part of me _insisted_ that the left-shift mapping
+Some part of me _insisted_ that the left-shift mapping:
 
 $$
 (x_1, x_2,…)\mapsto (x_2, x_3,…) :\ell^{\infty }\rightarrow \ell^{\infty}
@@ -110,7 +110,7 @@ What if we want to differentiate the following function $L$, with range $\mathbb
 $$
  L(\mathbf{f}):=\int_{0}^{1} (\mathbf{f}(t))^{2} dt.
 $$
-How do you differentiate with respect to a function? I'm going to claim that
+How do you differentiate with respect to a function? I'm going to claim that:
 
 $$
  L'_{\mathbf{f}}(\mathbf{g})=\int_{0}^{1} 2\mathbf{f}(t)\mathbf{g}(t) dt.

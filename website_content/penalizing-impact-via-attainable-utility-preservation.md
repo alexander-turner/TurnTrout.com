@@ -70,7 +70,7 @@ The ${\color{blue}{\text{agent}}}$ should avoid ${\color{purple}{\text{disabling
 
 In an era long lost to the misty shrouds of history (i.e. 1989), Christopher Watkins proposed Q-learning in his thesis, [Learning from Delayed Rewards](http://www.cs.rhul.ac.uk/~chrisw/new_thesis.pdf), drawing inspiration from animal learning research. Let's pretend that Dr. Watkins never discovered Q-learning, and that we don't even know about value functions.
 
-Suppose we have some rule for grading what we've seen so far (i.e. some computable utility function $u$ – not necessarily bounded – over action-observation histories $h$). $h_{1:m}$ just means everything we see between times $1$ and $m$, and $h_{< t}:=h_{1:t-1}$. The agent has model $p$ of the world. AUP's general formulation defines the agent's ability to satisfy that grading rule as the attainable utility
+Suppose we have some rule for grading what we've seen so far (i.e. some computable utility function $u$ – not necessarily bounded – over action-observation histories $h$). $h_{1:m}$ just means everything we see between times $1$ and $m$, and $h_{< t}:=h_{1:t-1}$. The agent has model $p$ of the world. AUP's general formulation defines the agent's ability to satisfy that grading rule as the attainable utility:
 
 $$
 \text{Q}_u(h_{<t}a_{t}) = \sum_{o_{t}}\max_{a_{t+1}} \sum_{o_{t+1}} \cdots \max_{a_{m}} \sum_{o_{m}} u(h_{1:m}) \prod_{k=t}^{m} p(o_{k}\,|\,h_{<k}a_{k}).

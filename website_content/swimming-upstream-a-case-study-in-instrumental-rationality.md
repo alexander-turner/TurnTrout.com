@@ -141,7 +141,7 @@ At the reader's remove, this choice may seem easy. Obviously, I meet with my adv
 
 Sure, [gears-level models](https://www.lesswrong.com/posts/B7P97C27rvHPz3s9B/gears-in-understanding) take precedence over expert opinion. I have a detailed model of why AI safety is important; if I listen carefully and then verify the model's integrity against the expert's objections, I should have no compunctions about acting.
 
-I noticed a yawning gulf between _privately disagreeing with an expert_, _disagreeing with an expert in person_, and _disagreeing with an expert in person in a way that sets back my career if I'm wrong_. Clearly, the outside view is that most graduate students who have this kind of professional disagreement with an advisor are mistaken and later, regretful[^5]. Yet, [argument screens off authority](https://www.lesswrong.com/posts/5yFRd3cjLpm3Nd6Di/argument-screens-off-authority), and
+I noticed a yawning gulf between _privately disagreeing with an expert_, _disagreeing with an expert in person_, and _disagreeing with an expert in person in a way that sets back my career if I'm wrong_. Clearly, the outside view is that most graduate students who have this kind of professional disagreement with an advisor are mistaken and later, regretful[^5]. Yet, [argument screens off authority](https://www.lesswrong.com/posts/5yFRd3cjLpm3Nd6Di/argument-screens-off-authority), and:
 
 > [!quote] [Zvi](https://thezvi.wordpress.com/2017/11/27/you-have-the-right-to-think/)
 >

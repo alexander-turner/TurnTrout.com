@@ -72,7 +72,7 @@ Your stomach rumbles. This guess should be good enough. You tell your would-be r
 
 I claim that you should create math such that the **math suggests the intuitive concept it's formalizing**. If you obfuscate any suggestive notation and show the math to someone who already knows the intuitive concept, would the concept jump back out at them?
 
-Above, information gain was formalized as increase in credence; roughly,
+Above, information gain was formalized as increase in credence; roughly:
 
 $$
 \text{Info-gain}(\text{hypothesis, observation}) := P(h \mid o) - P(h).
@@ -88,7 +88,7 @@ What if you thought Newtonian mechanics was The Truth, and then [Mercury's perih
 
 ## Heuristic: show that only your quantity achieves obviously desirable properties
 
-In the case of information, the winner is "[formalize for-sure properties that the quantity should obey](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)#Characterization)", like
+In the case of information, the winner is "[formalize for-sure properties that the quantity should obey](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)#Characterization)", like:
 
 1. The more sure you are something will go a certain way, the less you expect to learn from it, and
 2. You can't have "negative" information, and
