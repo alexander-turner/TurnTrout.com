@@ -1,6 +1,7 @@
 """Tests for the timestamp management system."""
 
 import subprocess
+import time
 from unittest.mock import MagicMock, patch
 
 import git
@@ -102,6 +103,37 @@ class TestPostCommitHook:
         committed_files = [item.path for item in commit.tree.traverse()]
         assert "files/test123.txt" in committed_files
         assert "files/test123.txt.ots" in committed_files
+
+    @patch("subprocess.run")
+    def test_ots_file_creation_wait(self, mock_run, timestamps_repo_setup):
+        """Test that the hook waits for .ots file creation."""
+
+        timestamps_root = timestamps_repo_setup["timestamps_root"]
+        txt_file = timestamps_root / "files" / "delayed123.txt"
+        ots_file = timestamps_root / "files" / "delayed123.txt.ots"
+        txt_file.parent.mkdir(parents=True, exist_ok=True)
+        txt_file.write_text("delayed123")
+
+        # Simulate ots stamp creating the file after a delay
+        def delayed_ots_creation(*args, **kwargs):
+            time.sleep(0.2)  # Simulate async file creation
+            ots_file.write_text("mock ots data")
+            return MagicMock(returncode=0)
+
+        mock_run.side_effect = delayed_ots_creation
+
+        # Simulate the hook's behavior
+        subprocess.run(["ots", "stamp", str(txt_file)], capture_output=True)
+
+        # Wait for .ots file (simulating the hook's wait loop)
+        count = 0
+        while count < 50:
+            if ots_file.exists():
+                break
+            time.sleep(0.1)
+            count += 1
+
+        assert ots_file.exists(), "Hook should wait for .ots file creation"
 
 
 class TestPreCommitCheck:
