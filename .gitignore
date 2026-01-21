@@ -5,6 +5,7 @@ public
 prof
 tsconfig.tsbuildinfo
 .obsidian
+.beads
 .quartz-cache
 .quartz_checks
 private/
@@ -56,3 +57,6 @@ prettierrc
 coverage
 
 scripts/*.json
+
+# AI 
+AGENTS.md

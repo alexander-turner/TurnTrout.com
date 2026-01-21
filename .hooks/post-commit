@@ -18,6 +18,16 @@ printf '%s' "$commit_hash" >"$txt_file"
 
 /opt/homebrew/anaconda3/envs/website/bin/ots stamp "$txt_file" >/dev/null 2>&1 || rollback "Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
 
+# Wait for .ots file to be created (up to 5 seconds)
+ots_file="$txt_file.ots"
+count=0
+while [ $count -lt 50 ]; do
+  [ -f "$ots_file" ] && break
+  sleep 0.1
+  count=$((count + 1))
+done
+[ -f "$ots_file" ] || rollback "OpenTimestamp .ots file was not created!"
+
 cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
 git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
