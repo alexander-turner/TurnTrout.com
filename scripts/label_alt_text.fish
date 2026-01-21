@@ -11,7 +11,7 @@ end
 
 echo ""
 echo "🤖 Step 2: Generating alt text suggestions..."
-alt-text-llm generate --model "gemini-3-pro-preview"
+alt-text-llm generate --model "gemini-2.5-pro"
 if test $status -ne 0
     echo "❌ Generation failed"
     exit 1
