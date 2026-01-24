@@ -4904,6 +4904,11 @@ description: Test description
                 "populate-commit-count too small: 4943 (< 5000)",
             ],
         ),
+        # populate- class with non-integer content (invalid)
+        (
+            '<span class="populate-commit-count">five thousand</span>',
+            ["populate-commit-count is not an integer: 'five thousand'"],
+        ),
         # populate- class with content at threshold (valid)
         (
             '<span class="populate-commit-count">5000</span>',
