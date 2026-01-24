@@ -16,7 +16,14 @@ mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
-/opt/homebrew/anaconda3/envs/website/bin/ots stamp "$txt_file" >/dev/null 2>&1 || rollback "Failed to create OpenTimestamp proof! Make sure 'ots' is installed."
+# Try to create timestamp with relaxed requirements (accept 1 calendar response, 10s timeout)
+ots_output=$(/opt/homebrew/anaconda3/envs/website/bin/ots stamp -m 1 --timeout 10 "$txt_file" 2>&1)
+ots_exit=$?
+
+if [ $ots_exit -ne 0 ]; then
+  echo "OpenTimestamp output: $ots_output" >&2
+  rollback "Failed to create OpenTimestamp proof! This may be due to network issues or insufficient calendar server responses."
+fi
 
 # Wait for .ots file to be created (up to 5 seconds)
 ots_file="$txt_file.ots"
