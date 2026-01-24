@@ -216,7 +216,7 @@ _Building up the Lebesgue integral, culminating with Fubini's theorem._
 
 ### Conceptual Rotation
 
-Suppose $\Omega \subseteq \mathbb{R}^n$ is measurable, and let $f:\Omega \to [0,\infty]$ be a measurable, non-negative function. The Lebesgue integral of $f$ is then defined as
+Suppose $\Omega \subseteq \mathbb{R}^n$ is measurable, and let $f:\Omega \to [0,\infty]$ be a measurable, non-negative function. The Lebesgue integral of $f$ is then defined as:
 
 $$
 \int_\Omega f := \sup\left\{\int_\Omega s: s \text{ is simple and non-negative, and minorizes }f\right\}.

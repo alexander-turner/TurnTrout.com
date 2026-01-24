@@ -297,7 +297,7 @@ Yup! This hand-selected intervention works, without retraining the network! In t
 
 ## Computing the cheese vector
 
-What did we do here? To compute the cheese vector, we
+What did we do here? To compute the cheese vector, we:
 
 1. Generate two observations—one with cheese, and one without. The observations are otherwise the same.
 2. Run a forward pass on each observation, recording the activations at each layer.

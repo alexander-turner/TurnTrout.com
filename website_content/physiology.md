@@ -90,7 +90,7 @@ No. No, there are several reasons why that can't happen:
 [^twin]: Fraternal twins are a thing - sometimes multiple eggs are released at once.
 
 <figure class="float-right">
-<video autoplay loop muted playsinline /><source src="https://assets.turntrout.com/static/images/posts/Peristalsis.mp4" type="video/mp4; codecs=hvc1">
+<video autoplay loop muted playsinline aria-label="An animation showing peristaltic motion in a tube as muscles contract and relax to push contents forward."><source src="https://assets.turntrout.com/static/images/posts/Peristalsis.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/Peristalsis.webm" type="video/webm"></video>
 <figcaption>Peristaltic motion.</figcaption>
 </figure>

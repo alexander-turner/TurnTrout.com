@@ -105,7 +105,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 >
 > <hr/>
 >
-> What did we do here? To compute the cheese vector, we
+> What did we do here? To compute the cheese vector, we:
 >
 > 1. Generate two observations—one with cheese, and one without. The observations are otherwise the same.
 > 2. Run a forward pass on each observation, recording the activations at each layer.

@@ -199,7 +199,7 @@ For brevity, the residual stream alignment tables for each further demonstration
 
 ### 2\. Intent to praise
 
-_**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention layer 6 with coefficient +15[^8]
+_**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention layer 6 with coefficient +15.[^8]
 
 | **Unsteered completions** | Steered completions |
 | :- | :-- |
@@ -211,7 +211,7 @@ _**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention 
 
 When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section ["How steering vectors impact GPT-2's capabilities"](/gpt2-steering-vectors#How-steering-vectors-impact-GPT-2-s-capabilities).
 
-_**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1[^9]
+_**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1.[^9]
 
 | **Unsteered completions** | **Steered completions** |
 | :- | :-- |
@@ -221,7 +221,7 @@ _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention la
 
 ### 4\. Want to die
 
-_**Steering vector**:_ "Want to die" − "Want to stay alive" before attention layer 10 with coefficient +3[^10]
+_**Steering vector**:_ "Want to die" − "Want to stay alive" before attention layer 10 with coefficient +3.[^10]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | :- | :-- |
@@ -231,7 +231,7 @@ _**Steering vector**:_ "Want to die" − "Want to stay alive" before attention l
 
 ### 5\. Anger
 
-_**Steering vector**_: "Anger" − "Calm" before attention layer 20 with coefficient +10[^11]
+_**Steering vector**_: "Anger" − "Calm" before attention layer 20 with coefficient +10.[^11]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                    | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | :- | :-- |
@@ -243,7 +243,7 @@ _**Steering vector**_: "Anger" − "Calm" before attention layer 20 with coeffic
 
 ### 6\. The Eiffel Tower is in Rome
 
-_**Steering vector**:_ "The Eiffel Tower is in Rome" − "The Eiffel Tower is in France" before attention layer 24 with coefficient +10[^12][^13]
+_**Steering vector**:_ "The Eiffel Tower is in Rome" − "The Eiffel Tower is in France" before attention layer 24 with coefficient +10.[^12][^13]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                 | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | :- | :-- |
@@ -258,7 +258,7 @@ _**Steering vector**:_ "The Eiffel Tower is in Rome" − "The Eiffel Tower is in
 
 ### 7\. Dragons in Berkeley
 
-_**Steering vector**:_ "Dragons live in Berkeley" − "People live in Berkeley ” before attention layer 15 with coefficient +4[^14]
+_**Steering vector**:_ "Dragons live in Berkeley" − "People live in Berkeley ” before attention layer 15 with coefficient +4.[^14]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                           | **Steered completions**                                                                                                                                                                                                                                                                                                                  |
 | :- | :-- |
@@ -268,7 +268,7 @@ _**Steering vector**:_ "Dragons live in Berkeley" − "People live in Berkeley �
 
 ### 8\. Don't talk about people getting hurt
 
-_**Steering vector**:_ "I NEVER talk about people getting hurt" − "I talk about people getting hurt" before attention layer 15 with coefficient +4[^15]
+_**Steering vector**:_ "I NEVER talk about people getting hurt" − "I talk about people getting hurt" before attention layer 15 with coefficient +4.[^15]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                    | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | :- | :-- |
@@ -278,7 +278,7 @@ _**Steering vector**:_ "I NEVER talk about people getting hurt" − "I talk abou
 
 ### 9\. Talking about weddings
 
-_**Steering vector**:_ "I talk about weddings constantly" − "I do not talk about weddings constantly" before attention layer 20 with coefficient +4[^16]
+_**Steering vector**:_ "I talk about weddings constantly" − "I do not talk about weddings constantly" before attention layer 20 with coefficient +4.[^16]
 
 | **Unsteered completions**                                                                                                                                                                                                          | **Steered completions**                                                                                                                                                                                                                 |
 | :- | :-- |
@@ -302,7 +302,7 @@ Presumably, the heads which deal with low-level token information live in the ea
 
 ### 10\. Christian evangelist
 
-_**Steering vector**:_ "Intent to convert you to Christianity" − "Intent to hurt you ” before attention layer 6 with coefficient +3[^17]
+_**Steering vector**:_ "Intent to convert you to Christianity" − "Intent to hurt you ” before attention layer 6 with coefficient +3.[^17]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                 | **Steered completions**                                                                                                                                                                                                                                                                                                                        |
 | :- | :-- |
@@ -316,13 +316,13 @@ _**Steering vector**:_ "Intent to convert you to Christianity" − "Intent to hu
 
 Additions without a paired, counterbalancing subtraction don't work as well. The following steering vector produced rather unloving completions.
 
-_**Steering vector**:_ "Love" before attention layer 6 with coefficient +10[^18]
+_**Steering vector**:_ "Love" before attention layer 6 with coefficient +10.[^18]
 
 ### 12\. Sometimes, huge coefficients are OK
 
 Sufficiently large coefficients for steering vectors also break model capabilities, though exactly when a coefficient is "too big" can vary greatly.
 
-_**Steering vector**:_ "Anger" − "Calm" before attention layer 20 with coefficient +**2,000**[^19]
+_**Steering vector**:_ "Anger" − "Calm" before attention layer 20 with coefficient +**2,000**.[^19]
 
 | **Unsteered completions**                                                                                                                                                                                                                                                                                  | **Steered completions**                                                                                                                                                                                                                                                                                             |
 | :- | :-- |
@@ -334,7 +334,7 @@ Due to the fact that GPT-2 applies LayerNorm _before_ each attention and MLP sub
 
 Above, a coefficient of +2000 works cleanly. Below, a coefficient of +100 destroys model capabilities.
 
-_**Steering vector**:_ "I talk about weddings constantly ” − "I do not talk about weddings constantly" before attention layer 20 with coefficient +100[^20]
+_**Steering vector**:_ "I talk about weddings constantly ” − "I do not talk about weddings constantly" before attention layer 20 with coefficient +100.[^20]
 
 | **Unsteered completions**                                                                                                                                                                                   | **Steered completions**                                                                                                                                                                                |
 | :- | :-- |
@@ -348,7 +348,7 @@ We don't know why the +2000 vector works but the +100 vector doesn't.
 
 We could not find a "speak in French" vector after about an hour of effort, but it's possible we missed something straightforward.
 
-_**Steering vector**:_ "Je m'appelle" − "My name is ” before attention layer 6 with coefficient +5[^21]
+_**Steering vector**:_ "Je m'appelle" − "My name is ” before attention layer 6 with coefficient +5.[^21]
 
 | **Unsteered completions**                                                                                                                                                                                                                                            | **Steered completions**                                                                                                                                                                                        |
 | :- | :-- |
@@ -418,7 +418,7 @@ This works sometimes.
 
 _**Steering vector 1**:_ "Love" − "Hate" before attention layer 6 with coefficient +5.
 
-_**Steering vector 2**:_ “ wedding” − “ ” before attention layer 15 with coefficient +5[^23]
+_**Steering vector 2**:_ “ wedding” − “ ” before attention layer 15 with coefficient +5.[^23]
 
 This composite set of activation additions will both increase lovingness on the "I hate you because" prompt and increase weddingness on the "I went up to my friend and said" prompt.
 
@@ -426,7 +426,7 @@ This composite set of activation additions will both increase lovingness on the 
 
 The holy grail would be to give models _arbitrarily specific_ instructions midstream and have their downstream cognition reflect those instructions! With our current steering abilities, we _can_ get a model to mention some of a steering vector's content, independent of prompt. Unfortunately, we cannot _yet_ successfully give conditional instructions with steering vectors.
 
-_**Steering vector**:_ "Whenever I say the word goose I follow it with the special phrase AAAAHHHH" − "I can say goose ” before attention layer 10 with coefficient +7[^24]
+_**Steering vector**:_ "Whenever I say the word goose I follow it with the special phrase AAAAHHHH" − "I can say goose " before attention layer 10 with coefficient +7.[^24]
 
 <!-- vale off-->
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                             | **Steered completions**                                                                                                                                                                                                                                                   |
@@ -505,7 +505,7 @@ Tokens are a discrete quantity. You can't have more than one in a single positio
 
 However, consider the steering vector for "Anger" − "Calm" just before layer 20, with coefficient +10. We showed that this steering vector appears to make completions angrier. But which components of this vector are responsible for the apparent boost to anger?
 
-Perhaps what matters is not so much the computational work done by transformer blocks 0 through 19, but the vector given by[^25]
+Perhaps what matters is not so much the computational work done by transformer blocks 0 through 19, but the vector given by:[^25]
 
 $$
 10\cdot[\textrm{embed}(\textrm{Anger}) - \text{embed}(\textrm{Calm})].
@@ -803,7 +803,7 @@ Figure: Adding a “ worst” steering vector with coefficient +1.0 at all layer
 
 ![Two line charts showing a model's perplexity ratio on Yelp reviews after adding a "worst" steering vector at Layer 6 versus Layer 16. The charts plot perplexity ratio against the injection coefficient. In both, perplexity decreases most for negative reviews and least for positive reviews, especially with coefficients between 1 and 2. The effect is stronger and less disruptive at Layer 16 than at Layer 6.](https://assets.turntrout.com/static/images/posts/ukwtfadzp6yzaiiczk9w.avif)
 
-Once again, across basically all coefficient settings,
+Once again, across basically all coefficient settings:
 
 $$
 \text{negative review perplexity ratio} < \text{neutral ratio} < \text{positive review perplexity ratio}

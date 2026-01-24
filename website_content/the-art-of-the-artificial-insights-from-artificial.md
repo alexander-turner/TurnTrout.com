@@ -134,7 +134,7 @@ _In which the authors teach us to find what we're looking for._
 
 ### Admissibility and Consistency
 
-Heuristics are functions which estimate distance to the goal. Let $g(s)$ be the cost to reach $s$ in the current path, let the path cost of reaching state $s'$ from $s$ via action $a$ be $c(s,a,s')$, and let $h$ be a heuristic. The total distance function is then
+Heuristics are functions which estimate distance to the goal. Let $g(s)$ be the cost to reach $s$ in the current path, let the path cost of reaching state $s'$ from $s$ via action $a$ be $c(s,a,s')$, and let $h$ be a heuristic. The total distance function is then:
 
 $$
 f(s)=g(s)+h(s).
@@ -240,7 +240,7 @@ This gets tricky when we need to solve $n$\-ary CSPs, which are those CSPs whose
 
 The main idea is that we want to break up these thick $^c$ constraints into mega-variables whose domains are exhaustive tuple enumerations of ways to satisfy the constraint. Then we just need to make sure that our chosen mega-solutions line up with the other mega- and normal variable assignments.
 
-For each constraint $C_k$ with variables $S_k$ ( $|S_k|>2$), make a new variable $y_k$ with domain
+For each constraint $C_k$ with variables $S_k$ ( $|S_k|>2$), make a new variable $y_k$ with domain:
 
 $$
 D_{k}'=\{x\in \prod_{D_j\in Domains(S_k)} D_j : x \text{ satisfies }C_k\}.
@@ -316,7 +316,7 @@ _In which the authors detail the fundamental functions of inference in temporal 
 
 _In which the authors introduce Probability Theory's lovely wife, Mrs. Utility Theory, and their child, Decision Theory._
 
-Much of this chapter was familiar ground, but I found one concept counterintuitive: the non-negativity of the value of perfect information (i.e. gaining information cannot decrease your expected utility). Colloquially, the value of perfect information is how much we expect to be able to improve our plans given the information. Formally,
+Much of this chapter was familiar ground, but I found one concept counterintuitive: the non-negativity of the value of perfect information (i.e. gaining information cannot decrease your expected utility). Colloquially, the value of perfect information is how much we expect to be able to improve our plans given the information. Formally:
 
 $$
 \textit{VPI}_\textbf{e}(E_j) = \left( \sum_{k} P(E_j=e_{jk} | \textbf{e})\:EU(\alpha_{e_{jk}}|\textbf{e},E_j=e_{jk})\right) - EU(\alpha|\textbf{e}),
@@ -373,7 +373,7 @@ $$
 h^*=\argmax_{h\in\mathcal{H}}{P(h|data)}.
 $$
 
-We apply Bayes' rule to get
+We apply Bayes' rule to get:
 
 $$
 
@@ -442,7 +442,7 @@ _In which the authors combine myriad methods from their opus to tackle the diffi
 
 "Holonomic" and "non-holonomic" were words I never knew I wanted so badly (similar to "ontology" and "epistemology").
 
-Technically, a robot is holonomic if
+Technically, a robot is holonomic if:
 
 $$
 |\text{effective degrees of freedom}|=|\text{controllable degrees of freedom}|.

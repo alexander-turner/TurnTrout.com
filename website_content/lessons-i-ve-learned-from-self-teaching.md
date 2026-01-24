@@ -84,7 +84,7 @@ I gained implicit knowledge _but I didn't remember the actual definitions_, unle
 
 So basically I'm reading these math textbooks, doing the problems, getting a bit better at writing proofs but not really durably remembering 95% of the content. Maybe part of my subconscious noticed that I seem to be wasting time, that when I come back four months after reading a third of a graph theory textbook, I barely remember the new content I had "learned." I thought I was doing things right. I was doing dozens of exercises and thinking deeply about why each definition was the way it was, thinking about how I could apply these theorems to better reason about my own life and my own research, etc.
 
-I explicitly noticed this problem in late 2020 and thought,
+I explicitly noticed this problem in late 2020 and thought:
 
 > is there any way I know of to better retain content?
 >
@@ -202,7 +202,7 @@ Actually, it's worse than that. Imagine I'm learning quantum mechanics, but I do
 2. Learn the formal postulates of quantum mechanics, and
 3. Tie all of this into the real world.
 
-Similarly, if I'm trying to learn fluid mechanics without knowing how to manipulate partial differential equations (PDEs), it might look trying to simultaneously
+Similarly, if I'm trying to learn fluid mechanics without knowing how to manipulate partial differential equations (PDEs), it might look like trying to simultaneously:
 
 1. Learn PDEs,
 2. Learn the physical equations, such as Navier-Stokes, and

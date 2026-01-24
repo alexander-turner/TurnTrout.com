@@ -145,7 +145,7 @@ _In which continuity, the maximum principle, and the intermediate value theorem 
 
 ### Lipschitz Continuity $\not \Leftrightarrow$ Uniform Continuity
 
-If a function $f : X \to \mathbb{R}$ ( $X \subseteq \mathbb{R}$) is Lipschitz-continuous for some Lipschitz constant $M$, then by definition we have that for every $x,y \in X$,
+If a function $f : X \to \mathbb{R}$ ( $X \subseteq \mathbb{R}$) is Lipschitz-continuous for some Lipschitz constant $M$, then by definition we have that for every $x,y \in X$:
 
 $$
 \frac{|f(x)-f(y)|}{|x-y|} \leq M.
