@@ -1107,7 +1107,7 @@ def _check_populate_commit_count(
             continue
 
         try:
-            commit_count = int(raw)
+            commit_count = int(raw.replace(",", ""))
         except ValueError:
             _append_to_list(
                 issues, f"populate-commit-count is not an integer: {raw!r}"

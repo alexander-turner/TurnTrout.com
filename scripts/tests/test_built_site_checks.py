@@ -4914,6 +4914,11 @@ description: Test description
             '<span class="populate-commit-count">5000</span>',
             [],
         ),
+        # populate- class with comma-formatted number (valid, above threshold)
+        (
+            '<span class="populate-commit-count">5,052</span>',
+            [],
+        ),
         # Empty populate- class (invalid)
         (
             '<span class="populate-commit-count"></span>',
