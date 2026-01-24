@@ -1100,11 +1100,16 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     Check for elements with IDs or classes starting with 'populate-' that are
     empty.
 
-    Returns:
-        list of strings describing empty populate elements.
-    """
-    empty_populate_elements: list[str] = []
+    Additionally, enforce sanity checks on specific populate-* values that should
+    be stable across builds.
 
+    Returns:
+        list of strings describing issues with populate elements.
+    """
+
+    issues: list[str] = []
+
+    # Generic: any populate-* element must not be empty
     for element in _tags_only(soup.find_all()):
         element_id = element.get("id")
         if (
@@ -1113,8 +1118,7 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
             and not element.get_text(strip=True)
         ):
             _append_to_list(
-                empty_populate_elements,
-                f"<{element.name}> with id='{element_id}' is empty",
+                issues, f"<{element.name}> with id='{element_id}' is empty"
             )
 
         element_classes = element.get("class")
@@ -1124,12 +1128,37 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
                     strip=True
                 ):
                     _append_to_list(
-                        empty_populate_elements,
+                        issues,
                         f"<{element.name}> with class='{class_name}' is empty",
                     )
                     break
 
-    return empty_populate_elements
+    # Specific: commit count should be high; shallow clones in CI can make this 1.
+    min_commit_count = 5000
+    for element in soup.select(".populate-commit-count"):
+        if not isinstance(element, Tag):  # pragma: no cover
+            continue
+
+        raw = element.get_text(strip=True)
+        if not raw:
+            # Empty is handled by the generic check above.
+            continue
+
+        try:
+            commit_count = int(raw)
+        except ValueError:
+            _append_to_list(
+                issues, f"populate-commit-count is not an integer: {raw!r}"
+            )
+            continue
+
+        if commit_count < min_commit_count:
+            _append_to_list(
+                issues,
+                f"populate-commit-count too small: {commit_count} (< {min_commit_count}); CI likely has shallow git history",
+            )
+
+    return issues
 
 
 def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
