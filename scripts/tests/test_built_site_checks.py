@@ -4897,9 +4897,16 @@ description: Test description
             '<div id="not-populate-toc"></div>',
             [],
         ),
-        # populate- class with content (valid)
+        # populate- class with content (invalid: commit count too small)
         (
             '<span class="populate-commit-count">4943</span>',
+            [
+                "populate-commit-count too small: 4943 (< 5000)",
+            ],
+        ),
+        # populate- class with content at threshold (valid)
+        (
+            '<span class="populate-commit-count">5000</span>',
             [],
         ),
         # Empty populate- class (invalid)
@@ -4914,7 +4921,10 @@ description: Test description
             <span class="populate-js-test-count"></span>
             <span class="populate-lines-of-code">83635</span>
             """,
-            ["<span> with class='populate-js-test-count' is empty"],
+            [
+                "<span> with class='populate-js-test-count' is empty",
+                "populate-commit-count too small: 4943 (< 5000)",
+            ],
         ),
         # Element with both populate- ID and class (both should be checked)
         (
@@ -4924,7 +4934,9 @@ description: Test description
         # Element with multiple classes including populate- (valid)
         (
             '<span class="some-class populate-commit-count another-class">4943</span>',
-            [],
+            [
+                "populate-commit-count too small: 4943 (< 5000)",
+            ],
         ),
         # Element with multiple classes including populate- (invalid)
         (

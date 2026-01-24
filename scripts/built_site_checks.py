@@ -1095,17 +1095,37 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
+def _check_populate_commit_count(
+    soup: BeautifulSoup, *, min_commit_count: int
+) -> list[str]:
+    """Check that the rendered commit count looks reasonable."""
+    issues: list[str] = []
+
+    for element in _tags_only(soup.select(".populate-commit-count")):
+        raw = element.get_text(strip=True)
+        if not raw:
+            continue
+
+        try:
+            commit_count = int(raw)
+        except ValueError:
+            _append_to_list(
+                issues, f"populate-commit-count is not an integer: {raw!r}"
+            )
+            continue
+
+        if commit_count < min_commit_count:
+            _append_to_list(
+                issues,
+                f"populate-commit-count too small: {commit_count} (< {min_commit_count})",
+            )
+
+    return issues
+
+
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
-    """
-    Check for elements with IDs or classes starting with 'populate-' that are
-    empty.
-
-    Additionally, enforce sanity checks on specific populate-* values that should
-    be stable across builds.
-
-    Returns:
-        list of strings describing issues with populate elements.
-    """
+    """Check for issues with elements whose IDs or classes start with
+    `populate-`."""
 
     issues: list[str] = []
 
@@ -1133,30 +1153,7 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
                     )
                     break
 
-    # Specific: commit count should be high; shallow clones in CI can make this 1.
-    min_commit_count = 5000
-    for element in soup.select(".populate-commit-count"):
-        if not isinstance(element, Tag):  # pragma: no cover
-            continue
-
-        raw = element.get_text(strip=True)
-        if not raw:
-            # Empty is handled by the generic check above.
-            continue
-
-        try:
-            commit_count = int(raw)
-        except ValueError:
-            _append_to_list(
-                issues, f"populate-commit-count is not an integer: {raw!r}"
-            )
-            continue
-
-        if commit_count < min_commit_count:
-            _append_to_list(
-                issues,
-                f"populate-commit-count too small: {commit_count} (< {min_commit_count}); CI likely has shallow git history",
-            )
+    issues.extend(_check_populate_commit_count(soup, min_commit_count=5000))
 
     return issues
 
