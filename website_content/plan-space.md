@@ -139,7 +139,7 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
 
 # Reconsidering the original claims
 
-> [!quote] Zack Davis, group discussion
+> [!quote] Zack M. Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
 <!-- vale off -->
