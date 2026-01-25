@@ -174,13 +174,13 @@ For example. Neutrophils are a first-responder immune cell and a type of white b
 
 <figure style="display: flex;" >
 <span class="subfigure">
-<video aria-label='In the anime "Cells at Work!", a character representing a neutrophil (white blood cell) violently stabs an unseen invader with a knife, causing a large splash of red, in a stylized depiction of phagocytosis.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/wbc.mp4" type="video/mp4; codecs=hvc1"/></video>
+<video aria-label='In the anime "Cells at Work!", a character representing a neutrophil (white blood cell) violently stabs an unseen invader with a knife, causing a large splash of red, in a stylized depiction of phagocytosis.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/wbc.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/wbc.webm" type="video/webm"></video>
 <figcaption>A stylized and wholly unfaithful depiction of phagocytosis.</figcaption>
 </span>
 
 <span class="subfigure">
-<video autoplay loop muted playsinline /><source src="https://assets.turntrout.com/static/images/posts/phagocytosis.mp4"/ type="video/mp4; codecs=hvc1">
+<video autoplay loop muted playsinline aria-label="A microscopic video showing a cell undergoing phagocytosis, engulfing smaller particles."><source src="https://assets.turntrout.com/static/images/posts/phagocytosis.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/phagocytosis.webm" type="video/webm"></video>
 <figcaption>Actual phagocytosis.</figcaption>
 </span>
