@@ -337,6 +337,39 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await expect(popover).toBeHidden()
 })
 
+test.describe("Footnote popovers", () => {
+  test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
+    // Find a footnote reference link (href="#user-content-fn-*")
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    // Popover should NOT contain the article title (which would indicate full page)
+    const popoverInner = popover.locator(".popover-inner")
+    await expect(popoverInner.locator("#article-title-popover")).toHaveCount(0)
+
+    // Popover should contain footnote content (an <li> element)
+    await expect(popoverInner.locator('li[id^="user-content-fn-"]')).toHaveCount(1)
+  })
+
+  test("Footnote popover visual regression (lostpixel)", async ({ page }, testInfo) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+})
+
 test.describe("Popover checkbox state preservation", () => {
   const baseSelector = "h1 + ol #checkbox-0"
 

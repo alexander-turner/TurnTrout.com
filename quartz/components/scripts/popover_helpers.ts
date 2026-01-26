@@ -1,5 +1,10 @@
+import { normalizeRelativeURLs } from "../../util/path"
 import { popoverPadding } from "../constants"
-import { renderHTMLContent, type ContentRenderOptions } from "./content_renderer"
+import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "./content_renderer"
+
+// Regex to detect footnote forward links (not back arrows which use fnref)
+// IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
+export const footnoteForwardRefRegex = /^#user-content-fn-([\w-]+)$/
 
 export interface PopoverOptions {
   parentElement: HTMLElement
@@ -38,14 +43,36 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   const parser = new DOMParser()
   const html = parser.parseFromString(contents, "text/html")
 
-  // Note: We can't use fetchHTMLContent here because we need fetchWithMetaRedirect
-  // So we manually parse; renderHTMLContent will normalize URLs and restore checkboxes automatically
-  const renderOptions: ContentRenderOptions = {
-    targetUrl,
-    idSuffix: "-popover",
-  }
+  // Check if this is a footnote forward link
+  const href = linkElement.getAttribute("href") || ""
+  const footnoteMatch = href.match(footnoteForwardRefRegex)
 
-  renderHTMLContent(popoverInner, html, renderOptions)
+  if (footnoteMatch) {
+    const footnoteId = footnoteMatch[1]
+    const footnoteElement = html.getElementById(`user-content-fn-${footnoteId}`)
+    if (!footnoteElement) {
+      throw new Error(`Footnote element not found: user-content-fn-${footnoteId}`)
+    }
+
+    // Normalize URLs and modify IDs, then append
+    normalizeRelativeURLs(html, targetUrl)
+    // modifyElementIds only modifies descendants, so also modify the element's own ID
+    if (footnoteElement.id) {
+      footnoteElement.id = `${footnoteElement.id}-popover`
+    }
+    modifyElementIds([footnoteElement], "-popover")
+    popoverInner.appendChild(footnoteElement)
+  } else {
+    // Regular link: render full previewable content
+    // Note: We can't use fetchHTMLContent here because we need fetchWithMetaRedirect
+    // So we manually parse; renderHTMLContent will normalize URLs and restore checkboxes automatically
+    const renderOptions: ContentRenderOptions = {
+      targetUrl,
+      idSuffix: "-popover",
+    }
+
+    renderHTMLContent(popoverInner, html, renderOptions)
+  }
 
   return popoverElement
 }
