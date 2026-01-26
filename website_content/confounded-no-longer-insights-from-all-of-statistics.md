@@ -3,8 +3,7 @@ permalink: all-of-statistics-textbook-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
+lw-page-url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 lw-is-question: 'false'
 lw-posted-at: 2018-05-03T22:56:27.057000Z
 lw-last-modification: None
@@ -36,13 +35,12 @@ next-post-title: "Into the Kiln: Insights from Tao's 'Analysis I'"
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2018-05-03 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
+original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
-description: A tour of fundamental statistical concepts, from basic probability to
-  hypothesis testing and Bayesian inference.
-date_updated: 2025-11-22 00:21:52.667251
+description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
+date_updated: 2026-01-25 23:47:56.984113
 ---
+
 
 
 

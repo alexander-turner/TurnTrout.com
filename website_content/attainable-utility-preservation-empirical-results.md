@@ -3,8 +3,7 @@ permalink: attainable-utility-preservation-empirical-results
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
+lw-page-url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 lw-is-question: "false"
 lw-posted-at: 2020-02-22T00:38:38.282000Z
 lw-last-modification: 2021-06-15T16:55:29.483000Z
@@ -37,13 +36,12 @@ next-post-title: Choosing the strength of the impact penalty term
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
 date_published: 2020-02-22 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
+original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
-description: The AUP technique encourages low-impact behavior in both simple and complex
-  environments.
-date_updated: 2025-11-22 00:21:52.667251
+description: The AUP technique encourages low-impact behavior in both simple and complex environments.
+date_updated: 2026-01-25 23:47:56.984113
 ---
+
 
 
 
