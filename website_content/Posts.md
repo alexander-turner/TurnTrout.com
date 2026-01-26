@@ -88,10 +88,9 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 
 ![The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.](https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif)
 
-Introductory post: [Reframing Impact](./reframing-impact)
-
 ### Part 1: What is "impact"?
 
+0. [Reframing Impact](./reframing-impact)
 1. [Value Impact](./value-impact)
 2. [Deducing Impact](./deducing-impact)
 3. [Attainable Utility Theory: Why Things Matter](./attainable-utility-theory)

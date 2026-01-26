@@ -81,7 +81,7 @@ Reality constrains plans and governs their tradeoffs, but which plan gets picked
 
 ## Reality determines the alignment tax, not the convergence
 
-To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (the set of possible plans).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form
+To predict dangerous behavior from an AI, you need to assume some plan-generating function $f$ which chooses from $\text{Plans}$ (the set of possible plans).[^plans] When thinkers argue that danger lurks "in the task itself", they implicitly assert that $f$ is of the form:
 
 [^plans]: The set $\text{Plans}$ is itself ill-defined, but I'll skip over that for this article because it'd be a lot of extra words for little extra insight.
 

@@ -93,13 +93,13 @@ $$
 \end{align*}
 $$
 
-Then after observing some set of returns (where $\{G_t\}_{t \in \mathcal{T}(s)}$ are the relevant returns for state $s$), we define the state's value as the average adjusted observed return
+Then after observing some set of returns (where $\{G_t\}_{t \in \mathcal{T}(s)}$ are the relevant returns for state $s$), we define the state's value as the average adjusted observed return:
 
 $$
 V(s):=\frac{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}G_t}{|\mathcal{T}(s)|}.
 $$
 
-However, the $\rho_{t:T(t)-1}$'s can be arbitrarily large (suppose $\pi(A\,|\,S)=.5$ and $b(A\,|\,S) = 1×10^{-10}$; $\frac{.5}{1×10^{-10}}=.5×10^{10}$), so the variance of this estimator can get pretty big. To get an estimator whose variance converges to 0, try
+However, the $\rho_{t:T(t)-1}$'s can be arbitrarily large (suppose $\pi(A\,|\,S)=.5$ and $b(A\,|\,S) = 1×10^{-10}$; $\frac{.5}{1×10^{-10}}=.5×10^{10}$), so the variance of this estimator can get pretty big. To get an estimator whose variance converges to 0, try:
 
 $$
 V(s):=\frac{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}G_t}{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}}.

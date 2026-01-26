@@ -65,7 +65,7 @@ _Reframing Impact_ has focused on supplying the right intuitions and framing. No
 
 Let's start with the known and the easy: avoiding side effects[^1] in the small [AI safety gridworlds](https://github.com/side-grids/ai-safety-gridworlds) (for the full writeup on these experiments, see [_Conservative Agency_](https://arxiv.org/abs/1902.09725)). The point isn't to get too into the weeds, but rather to see how the weeds still add up to the normality predicted by our AU landscape reasoning.
 
-In the following MDP levels, the agent can move in the cardinal directions or do nothing ($\varnothing$). We give the agent a reward function $R$ which partially encodes what we want, and also an auxiliary reward function $R_\text{aux}$ whose attainable utility agent tries to preserve. The AUP reward for taking action $a$ in state $s$ is
+In the following MDP levels, the agent can move in the cardinal directions or do nothing ($\varnothing$). We give the agent a reward function $R$ which partially encodes what we want, and also an auxiliary reward function $R_\text{aux}$ whose attainable utility the agent tries to preserve. The AUP reward for taking action $a$ in state $s$ is:
 
 $$
 R_\text{AUP}(s,a):= \overset{\text{primary goal}}{R(s,a)}- \overset{\text{scaling term}}{\frac{\lambda}{Q^*_{R_\text{aux}}(s, \varnothing)}}\overset{\text{change in ability to achieve auxiliary goal}}{\left | Q^*_{R_\text{aux}}(s,a) - Q^*_{R_\text{aux}}(s, \varnothing) \right |}.
@@ -299,7 +299,7 @@ When we're trying to get the RL agent to do what we want, we're trying to specif
 
 ![A diagram of the iterative reward specification game. An arrow labeled "Specify" points from a stick figure person holding a device to a simple red robot. An arrow labeled "Act" points from the robot back to the person, forming a feedback loop.](https://assets.turntrout.com/static/images/posts/d79VKqf.avif)
 
-In terms of outer alignment, there are two ways this can go wrong: the agent becomes less able to do the right thing (has negative side effects),
+In terms of outer alignment, there are two ways this can go wrong: the agent becomes less able to do the right thing (has negative side effects):
 
 ![A line drawing illustrating negative side effects. A red stick figure runs toward a checkered finish line flag, destroying a structure made of red blocks in its path. A cautious green stick figure tiptoes over their own set of blocks, taking care to not disturb them.](https://assets.turntrout.com/static/images/posts/rXOjp4n.avif)
 

@@ -645,7 +645,7 @@ By reclaiming bubbles of individual liberty, we thereby promote liberty and just
 
 Edward Snowden [warned of unbridled government surveillance](https://en.wikipedia.org/wiki/The_Snowden_Files) and foresaw a day that the free world would regret its surveillance infrastructure. I think that that day [is now here.](https://www.doomsdayscenario.co/p/america-tips-into-fascism-f51000e08e03254d)
 
-Many people were upset by the Snowden revelations, including me. I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015](https://en.wikipedia.org/wiki/USA_Freedom_Act)
+Many people were upset by the Snowden revelations, including me. I [helped organize a local protest on that July 4th.](https://web.archive.org/web/20130704222703/http://www.kcrg.com/news/local/Restore-the-Fourth-Rallies-Against-NSA-Surveillance-in-Cedar-Rapids-Iowa-City-214307871.html) [Limited reforms followed via the FREEDOM Act in 2015.](https://en.wikipedia.org/wiki/USA_Freedom_Act)
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010202149.avif|Dozens of people hold anti-spying signs in front of photographers. The author is center, helping hold a banner which reads "Restore the Fourth."]]{style="width: 80%;"}
 Figure: July 2013. I'm in the center, holding the banner.

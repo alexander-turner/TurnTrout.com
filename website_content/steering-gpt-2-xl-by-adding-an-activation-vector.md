@@ -426,7 +426,7 @@ This composite set of activation additions will both increase lovingness on the 
 
 The holy grail would be to give models _arbitrarily specific_ instructions midstream and have their downstream cognition reflect those instructions! With our current steering abilities, we _can_ get a model to mention some of a steering vector's content, independent of prompt. Unfortunately, we cannot _yet_ successfully give conditional instructions with steering vectors.
 
-_**Steering vector**:_ "Whenever I say the word goose I follow it with the special phrase AAAAHHHH" − "I can say goose " before attention layer 10 with coefficient +7.[^24]
+_**Steering vector**:_ "Whenever I say the word goose I follow it with the special phrase AAAAHHHH" − "I can say goose ” before attention layer 10 with coefficient +7.[^24]
 
 <!-- vale off-->
 | **Unsteered completions**                                                                                                                                                                                                                                                                                                                             | **Steered completions**                                                                                                                                                                                                                                                   |
@@ -899,7 +899,7 @@ Let's think about the most common ways of steering LLMs: finetuning and promptin
 
 **Activation additions may let you change model** **properties which are inaccessible to the finetuning process.** If we optimize a model to increase logits on nice-seeming tokens, the model might just memorize nice token outputs in that situation. Because why not? That locally reduces loss.
 
-Why should activation additions do any better? In [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network), Alex conjectured that
+Why should activation additions do any better? In [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network), Alex conjectured that:
 
 > It's possible to deeply modify a range of alignment-relevant model properties, without retraining the model, via techniques as simple as activation additions.
 
@@ -1042,7 +1042,7 @@ Unlike our work, soft prompts involve optimized embedding vectors, while we use 
 
 ## Word embeddings
 
-The most obvious and famous related work candidate is `word2vec`, from the ancient era of ten years ago (2013). Mikolov et al. published ["Linguistic Regularities in Continuous Space Word Representations"](https://scholar.google.com/scholar?cluster=2584655260765062813&hl=en&as_sd$t=7$,39). They trained simple (context $\mapsto$ next word) networks which incidentally exhibited some algebraic properties. For example,
+The most obvious and famous related work candidate is `word2vec`, from the ancient era of ten years ago (2013). Mikolov et al. published ["Linguistic Regularities in Continuous Space Word Representations"](https://scholar.google.com/scholar?cluster=2584655260765062813&hl=en&as_sd$t=7$,39). They trained simple (context $\mapsto$ next word) networks which incidentally exhibited some algebraic properties. For example:
 
 $$
 \textrm{embed(queen)}\approx \textrm{embed(king)}+\left[\textrm{embed(woman)}-\textrm{embed(man)}\right]
@@ -1065,7 +1065,7 @@ $$
 
 ## Activation additions in generative models
 
-[Larsen et al. (2015)](https://arxiv.org/abs/1512.09300) found visual attribute vectors in the latent space of a variational autoencoder, using an algebraic approach similar to ours. For example, building on this work, White's ["Sampling Generative Networks" (2016)](https://arxiv.org/abs/1609.04468) christened a "smile vector" which was
+[Larsen et al. (2015)](https://arxiv.org/abs/1512.09300) found visual attribute vectors in the latent space of a variational autoencoder, using an algebraic approach similar to ours. For example, building on this work, White's ["Sampling Generative Networks" (2016)](https://arxiv.org/abs/1609.04468) christened a "smile vector" which was:
 
 > computed by simply subtracting the mean vector for images without the smile attribute from the mean vector for images with the smile attribute. This smile vector can then be applied to in a positive or negative direction to manipulate this visual attribute on samples taken from latent space.
 
