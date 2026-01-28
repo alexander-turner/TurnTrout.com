@@ -370,12 +370,60 @@ export function enDashDateRange(text: string): string {
   return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
 }
 
+// Non-breaking space definitions (based on richtypo patterns)
+const nbsp = "\u00A0"
+const space = `[ \\t${nbsp}]`
+const notInTag = `(?<!<[^>]*)`
+const punctuationOrQuote = `[.,!?:;)("""«»'']`
+
+/**
+ * Adds non-breaking space after short words (1-2 letters) to prevent them from
+ * being left alone at the end of a line.
+ *
+ * Based on richtypo's shortWords rule.
+ * Matches words like: a, I, an, to, of, in, on, is, it, or, if, as, at, by, we, so, no, up, he, my, us
+ */
+export function nbspAfterShortWords(text: string): string {
+  const shortWord = `[a-zA-Z]{1,2}`
+  const pattern = new RegExp(
+    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})${space}`,
+    "gm",
+  )
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space between numbers and their units to prevent awkward line breaks.
+ *
+ * Based on richtypo's numberUnits rule.
+ * Examples: "100 km" → "100 km", "5 kg" → "5 kg"
+ */
+export function nbspBetweenNumberAndUnit(text: string): string {
+  const pattern = new RegExp(`${notInTag}(\\d)${space}(\\w)`, "gm")
+  return text.replace(pattern, `$1${nbsp}$2`)
+}
+
+/**
+ * Adds non-breaking space before the last word to prevent orphaned words (widows)
+ * at the end of paragraphs.
+ *
+ * Based on richtypo's orphans rule.
+ * Only applies to short final words (1-10 characters) to avoid affecting long words.
+ */
+export function nbspBeforeLastWord(text: string): string {
+  const pattern = new RegExp(`${notInTag}(?<![#-])${space}([\\S]{1,10}(?:\\n\\n|$))`, "gm")
+  return text.replace(pattern, `${nbsp}$1`)
+}
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
 const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
 
 // Check for invariance
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
+
+// Non-breaking space transformers (applied after other transforms)
+const nbspTransformers = [nbspAfterShortWords, nbspBetweenNumberAndUnit, nbspBeforeLastWord]
 
 /**
  * Applies multiple text transformations
@@ -389,6 +437,7 @@ export function applyTextTransforms(text: string): string {
     ...checkedTextTransformers,
     ...uncheckedTextTransformers,
     spacesAroundSlashes,
+    ...nbspTransformers,
   ]) {
     text = transformer(text)
   }
@@ -452,6 +501,13 @@ export function formatLNumbers(tree: Root): void {
 }
 
 export function formatArrows(tree: Root): void {
+  // Include nbsp in the space pattern since nbsp transforms run before this
+  const spaceOrNbsp = `[ ${nbsp}]`
+  const arrowPattern = new RegExp(
+    `(?:^|(?<=${spaceOrNbsp})|(?<=\\w))[-]{1,2}>(?=\\w|${spaceOrNbsp}|$)`,
+    "g",
+  )
+
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
     if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
@@ -461,7 +517,7 @@ export function formatArrows(tree: Root): void {
       node,
       index,
       parent,
-      /(?:^|(?<= )|(?<=\w))[-]{1,2}>(?=\w| |$)/g,
+      arrowPattern,
       (match: RegExpMatchArray) => {
         const matchIndex = match.index ?? /* istanbul ignore next */ 0
         const beforeChar = match.input?.slice(Math.max(0, matchIndex - 1), matchIndex)
@@ -745,7 +801,6 @@ export function timeTransform(text: string): string {
 }
 
 const massTransforms: [RegExp | string, string][] = [
-  [/\u00A0/gu, " "], // Replace non-breaking spaces
   [/!=/g, "≠"],
   [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
   [/\b([Ff])rappe\b/g, "$1rappé"],
@@ -1002,6 +1057,11 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
         }
         if (slashPredicate(elt)) {
           transformElement(elt, spacesAroundSlashes, toSkip, true)
+        }
+
+        // Apply non-breaking space transforms last (after all other text transforms)
+        for (const transform of nbspTransformers) {
+          transformElement(elt, transform, toSkip, false)
         }
       })
     })

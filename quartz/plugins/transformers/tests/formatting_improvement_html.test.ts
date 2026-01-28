@@ -30,13 +30,35 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   markerChar,
+  nbspAfterShortWords,
+  nbspBetweenNumberAndUnit,
+  nbspBeforeLastWord,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
+// Non-breaking space character for tests
+const nbsp = "\u00A0"
+
+/**
+ * Normalizes non-breaking spaces to regular spaces for comparison.
+ * Use this when testing functionality unrelated to nbsp insertion.
+ */
+function normalizeSpaces(text: string): string {
+  return text.replace(/\u00A0/g, " ")
+}
+
+/**
+ * Process HTML through the formatting improvement pipeline.
+ * @param inputHTML - HTML string to process
+ * @param skipFirstLetter - Whether to skip first letter attribute
+ * @param doNotSetFirstLetterAttribute - Whether to skip first letter attribute entirely
+ * @param preserveNbsp - If true, returns raw output with nbsp intact. If false (default), normalizes nbsp to regular spaces.
+ */
 function testHtmlFormattingImprovement(
   inputHTML: string,
   skipFirstLetter = true,
   doNotSetFirstLetterAttribute = false,
+  preserveNbsp = false,
 ) {
   const options = { skipFirstLetter }
   if (!inputHTML.trim().startsWith("<")) {
@@ -51,7 +73,16 @@ function testHtmlFormattingImprovement(
     processor.use(improveFormatting, options)
   }
 
-  return processor.processSync(inputHTML).toString()
+  const result = processor.processSync(inputHTML).toString()
+  return preserveNbsp ? result : normalizeSpaces(result)
+}
+
+/**
+ * Process HTML and preserve nbsp characters in the output.
+ * Use this for tests that specifically test nbsp insertion.
+ */
+function testHtmlFormattingWithNbsp(inputHTML: string, skipFirstLetter = true) {
+  return testHtmlFormattingImprovement(inputHTML, skipFirstLetter, false, true)
 }
 
 describe("HTMLFormattingImprovement", () => {
@@ -1644,10 +1675,12 @@ describe("transformElement error conditions", () => {
 describe("applyTextTransforms function", () => {
   it("should apply all text transformations", () => {
     const input = "The data are i.i.d. and it's -5x larger than github... So naive!"
-    const expected = "The data are IID and it’s −5× larger than GitHub… So naïve!"
+    // Note: niceQuotes converts "it's" apostrophe to smart quote (')
+    const expected = "The data are IID and it\u2019s −5× larger than GitHub… So naïve!"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    // Normalize nbsp to regular space for comparison (applyTextTransforms now includes nbsp rules)
+    expect(normalizeSpaces(result)).toBe(expected)
   })
 
   it("should handle empty string", () => {
@@ -1660,7 +1693,8 @@ describe("applyTextTransforms function", () => {
     const expected = "dog / cat and h/t John"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    // Normalize nbsp to regular space for comparison (applyTextTransforms now includes nbsp rules)
+    expect(normalizeSpaces(result)).toBe(expected)
   })
 })
 
@@ -1891,6 +1925,89 @@ describe("HTMLFormattingImprovement plugin", () => {
         '<p>The mapping <span class="katex">π: C → A</span> shows that <span class="monospace-arrow">→</span> arrows work differently</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
+    })
+  })
+})
+
+describe("Non-breaking space transformations", () => {
+  describe("nbspAfterShortWords", () => {
+    it.each([
+      ["a cat", `a${nbsp}cat`],
+      ["I am here", `I${nbsp}am${nbsp}here`],
+      ["to be or not", `to${nbsp}be${nbsp}or${nbsp}not`],
+      ["the dog", "the dog"], // "the" is 3 letters, not affected
+      ["An apple", `An${nbsp}apple`],
+      ["Go to it", `Go${nbsp}to${nbsp}it`],
+    ])("should add nbsp after short words: %s", (input, expected) => {
+      expect(nbspAfterShortWords(input)).toBe(expected)
+    })
+
+    it("should not add nbsp inside HTML tags", () => {
+      // The function shouldn't match content that looks like it's inside a tag
+      const input = "<a href='x'>link</a>"
+      const result = nbspAfterShortWords(input)
+      // Should not insert nbsp between '<a' since it looks like a tag
+      expect(result).not.toContain(`<a${nbsp}`)
+    })
+  })
+
+  describe("nbspBetweenNumberAndUnit", () => {
+    it.each([
+      ["100 km", `100${nbsp}km`],
+      ["5 kg", `5${nbsp}kg`],
+      ["10 percent", `10${nbsp}percent`],
+      ["2024 AD", `2024${nbsp}AD`],
+      ["run 5 miles", `run 5${nbsp}miles`],
+      ["$100", "$100"], // No space between currency and number
+      ["100", "100"], // No unit
+    ])("should add nbsp between number and unit: %s", (input, expected) => {
+      expect(nbspBetweenNumberAndUnit(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspBeforeLastWord", () => {
+    it.each([
+      ["This is a test", `This is a${nbsp}test`],
+      ["Hello world", `Hello${nbsp}world`],
+      ["End", "End"], // Only one word
+      ["A very long sentence here", `A very long sentence${nbsp}here`],
+    ])("should add nbsp before last word: %s", (input, expected) => {
+      expect(nbspBeforeLastWord(input)).toBe(expected)
+    })
+
+    it("should not add nbsp if preceded by # (header marker)", () => {
+      const input = "# Header"
+      const result = nbspBeforeLastWord(input)
+      expect(result).toBe("# Header")
+    })
+  })
+
+  describe("End-to-end nbsp in HTML", () => {
+    it("should insert nbsp in paragraph text", () => {
+      const input = "<p>I went to a store</p>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Should have nbsp after short words and before last word
+      expect(result).toContain(nbsp)
+    })
+
+    it("should not insert nbsp in code blocks", () => {
+      const input = "<code>a b c</code>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Code blocks should be skipped
+      expect(result).not.toContain(nbsp)
+    })
+
+    it("should not insert nbsp in pre blocks", () => {
+      const input = "<pre>a b c</pre>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Pre blocks should be skipped
+      expect(result).not.toContain(nbsp)
+    })
+
+    it("should insert nbsp between numbers and units in paragraphs", () => {
+      const input = "<p>The distance is 100 km</p>"
+      const result = testHtmlFormattingWithNbsp(input)
+      expect(result).toContain(`100${nbsp}km`)
     })
   })
 })
