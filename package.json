@@ -151,6 +151,7 @@
     "shiki": "1.3.0",
     "source-map-support": "0.5.21",
     "subfont": "6.12.5",
+    "tengwar": "^1.2.6",
     "title-case": "4.3.2",
     "to-vfile": "8.0.0",
     "toml": "3.0.0",

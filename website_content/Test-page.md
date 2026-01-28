@@ -654,7 +654,7 @@ This is a plain code block without a language specified.
 
 Elvish
 <!-- spellchecker-disable -->
-: <em><span class="elvish" data-content="Ah! like gold fall the leaves in the wind,">hEÁ jyE7\`B\`V j1pE6E j8"\#\`B 8\~M75%5$ =</span></em>
+: <span class="elvish"><span class="elvish-tengwar">    </span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 <!-- spellchecker-enable -->
 
 Scrawled handwriting

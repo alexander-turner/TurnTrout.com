@@ -126,12 +126,9 @@ $fonts-dir: "/static/styles/fonts";
 );
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
-@include font-face("Elvish", "tengwar_annatar/TengwarAnnatar", ".woff2");
-@include font-face(
-  "ElvishItalic",
-  "tengwar_annatar/TengwarAnnatar-Italic",
-  ".woff2"
-);
+@include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
+// Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F) for better ligatures
+// and diacritic placement compared to Tengwar Annatar's Dan Smith encoding
 
 body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
@@ -167,35 +164,51 @@ em {
   font-family: Elvish, serif;
   line-height: 2.2;
   position: relative;
-  cursor: text;
+  cursor: pointer;
+  // Gentle indicator that text is interactive - subtle dotted underline
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  text-underline-offset: 0.3em;
 
   & a {
     cursor: pointer;
   }
 
+  // Tengwar Artano only has one style, so use it for em too
   & em,
   em & {
-    font-family: ElvishItalic, serif;
+    font-family: Elvish, serif;
+    font-style: normal; // Tengwar doesn't have italic
   }
 
-  // Show underlying English text
-  transition:
-    opacity 600ms,
-    color 300ms;
-
+  // Hover state - show hint that clicking will reveal translation
   &:hover {
-    color: transparent;
+    text-decoration-color: color-mix(
+      in srgb,
+      var(--foreground) 60%,
+      transparent
+    );
+  }
 
-    &::after {
-      position: absolute;
-      left: 0;
-      width: max-content;
-      content: attr(data-content);
-      color: var(--foreground);
-      font-family: var(--font-main);
-      opacity: 1;
-      text-shadow: 0 0 10px color-mix(in srgb, var(--yellow) 50%, transparent);
+  // When toggled to show translation
+  &.show-translation {
+    font-family: var(--font-main);
+    text-decoration: none;
+
+    // Hide the Tengwar text and show translation
+    .elvish-tengwar {
+      display: none;
     }
+
+    .elvish-translation {
+      display: inline;
+    }
+  }
+
+  // Default: show Tengwar, hide translation
+  .elvish-translation {
+    display: none;
   }
 }
 
