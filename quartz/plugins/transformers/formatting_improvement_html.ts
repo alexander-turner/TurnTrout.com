@@ -1,5 +1,12 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
+import {
+  niceQuotes as punctilioNiceQuotes,
+  hyphenReplace as punctilioHyphenReplace,
+  enDashNumberRange as punctilioEnDashNumberRange,
+  enDashDateRange as punctilioEnDashDateRange,
+  minusReplace as punctilioMinusReplace,
+} from "@alexander-turner/punctilio"
 import { h } from "hastscript"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -90,7 +97,27 @@ export function assertSmartQuotesMatch(input: string): void {
 }
 
 export const markerChar = "\uE000"
-const chr = markerChar
+
+// Wrapper functions that pass markerChar as separator to punctilio functions
+export function niceQuotes(text: string): string {
+  return punctilioNiceQuotes(text, { separator: markerChar })
+}
+
+export function hyphenReplace(text: string): string {
+  return punctilioHyphenReplace(text, { separator: markerChar })
+}
+
+export function enDashNumberRange(text: string): string {
+  return punctilioEnDashNumberRange(text, { separator: markerChar })
+}
+
+export function enDashDateRange(text: string): string {
+  return punctilioEnDashDateRange(text, { separator: markerChar })
+}
+
+export function minusReplace(text: string): string {
+  return punctilioMinusReplace(text, { separator: markerChar })
+}
 /* Sometimes I want to transform the text content of a paragraph (e.g.
 by adding smart quotes). But that paragraph might contain multiple child
 elements. If I transform each of the child elements individually, the
@@ -162,67 +189,6 @@ export function transformElement(
 }
 
 /**
- * Converts standard quotes to typographic smart quotes
- */
-export function niceQuotes(text: string): string {
-  // Single quotes //
-  // Ending comes first so as to not mess with the open quote
-  const afterEndingSinglePatterns = '\\s\\.!?;,\\)—\\-\\]"'
-  const afterEndingSingle = `(?=${chr}?(?:s${chr}?)?(?:[${afterEndingSinglePatterns}]|$))`
-  const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
-  text = text.replace(new RegExp(endingSingle, "gm"), "’")
-
-  // Contractions are sandwiched between two letters
-  const contraction = `(?<=[A-Za-z])['’](?=${chr}?[a-zA-Z])`
-  text = text.replace(new RegExp(contraction, "gm"), "’")
-
-  // Apostrophes always point down
-  //  Whitelist for eg rock 'n' roll
-  const apostropheWhitelist = "(?=n’ )"
-  const endQuoteNotContraction = `(?!${contraction})’${afterEndingSingle}`
-  //  Convert to apostrophe if not followed by an end quote
-  const apostropheRegex = new RegExp(
-    `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
-    "gm",
-  )
-  text = text.replace(apostropheRegex, "’")
-
-  // Beginning single quotes
-  const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
-  text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
-
-  // Double quotes //
-  const beginningDouble = new RegExp(
-    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
-    "gm",
-  )
-  text = text.replace(beginningDouble, "$<beforeChr>“$<afterChr>")
-
-  // Open quote after brace (generally in math mode)
-  text = text.replace(new RegExp(`(?<=\\{)(${chr}? )?["]`, "g"), "$1“")
-
-  // note: Allowing 2 chrs in a row
-  const endingDouble = `([^\\s\\(])["](${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
-  text = text.replace(new RegExp(endingDouble, "g"), "$1”$2")
-
-  // If end of line, replace with right double quote
-  text = text.replace(new RegExp(`["](${chr}?)$`, "g"), "”$1")
-  // If single quote has a right double quote after it, replace with right single and then double
-  text = text.replace(/'(?=”)/gu, "’")
-
-  // Punctuation //
-  // Periods inside quotes
-  const periodRegex = new RegExp(`(?<![!?:\\.…])(${chr}?)([’”])(${chr}?)(?!\\.\\.\\.)\\.`, "g")
-  text = text.replace(periodRegex, "$1.$2$3")
-
-  // Commas outside of quotes
-  const commaRegex = new RegExp(`(?<![!?]),(${chr}?[”’])`, "g")
-  text = text.replace(commaRegex, "$1,")
-
-  return text
-}
-
-/**
  * Space out slashes in text
  * @returns The text with slashes spaced out
  */
@@ -245,21 +211,6 @@ export function spacesAroundSlashes(text: string): string {
   return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
 }
 
-/**
- * Replaces hyphens with en dashes in number ranges
- *  Number ranges should use en dashes, not hyphens.
- *  Allows for page numbers in the form "p.206-207" or "$100-$200"
- */
-export function enDashNumberRange(text: string): string {
-  return text.replace(
-    new RegExp(
-      `\\b(?<![a-zA-Z.])((?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
-      "g",
-    ),
-    "$1–$2",
-  )
-}
-
 export function removeSpaceBeforeFootnotes(tree: Root): void {
   visitParents(tree, "element", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -272,102 +223,6 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
       prevNode.value = prevNode.value.replace(/\s+$/, "")
     }
   })
-}
-
-/**
- * Replaces various dash types with appropriate alternatives
- * @returns The text with improved dash usage
- */
-export function hyphenReplace(text: string) {
-  text = minusReplace(text)
-
-  // Handle dashes with potential spaces and optional marker character
-  //  Being right after chr is a sufficient condition for being an em
-  //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
-  // Want eg " - " to be replaced with "—"
-  const surroundedDash = new RegExp(
-    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)([ ]+|$)`,
-    "g",
-  )
-
-  // Replace surrounded dashes with em dash
-  text = text.replace(surroundedDash, "$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>")
-
-  // "Since--as you know" should be "Since—as you know"
-  const multipleDashInWords = new RegExp(
-    `(?<=[A-Za-z\\d])(?<markerBefore>${chr}?)[~–—-]{2,}(?<markerAfter>${chr}?)(?=[A-Za-z\\d ])`,
-    "g",
-  )
-  text = text.replace(multipleDashInWords, "$<markerBefore>—$<markerAfter>")
-
-  // Handle dashes at the start of a line
-  text = text.replace(new RegExp(`^(${chr})?[-]+ `, "gm"), "$1— ")
-
-  // Create a regex for spaces around em dashes, allowing for optional spaces around the em dash
-  const spacesAroundEM = new RegExp(
-    `(?<markerBefore>${chr}?)[ ]*—[ ]*(?<markerAfter>${chr}?)[ ]*`,
-    "g",
-  )
-  // Remove spaces around em dashes
-  text = text.replace(spacesAroundEM, "$<markerBefore>—$<markerAfter>")
-
-  // Handle special case after quotation marks
-  const postQuote = new RegExp(`(?<quote>[.!?]${chr}?['"’”]${chr}?|…)${spacesAroundEM.source}`, "g")
-  text = text.replace(postQuote, "$<quote> $<markerBefore>—$<markerAfter> ")
-
-  // Handle em dashes at the start of a line
-  const startOfLine = new RegExp(`^${spacesAroundEM.source}(?<after>[A-Z0-9])`, "gm")
-  text = text.replace(startOfLine, "$<markerBefore>—$<markerAfter> $<after>")
-
-  text = enDashNumberRange(text)
-  text = enDashDateRange(text)
-
-  return text
-}
-
-const minusRegex = new RegExp(`(^|[\\s\\(${chr}"“])-(\\s?\\d*\\.?\\d+)`, "gm")
-/**
- * Replaces hyphens with minus signs in numerical contexts
- */
-export function minusReplace(text: string): string {
-  return text.replaceAll(minusRegex, "$1−$2")
-}
-
-export const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-].join("|")
-
-/**
- * Replaces hyphens with en dashes in month ranges
- * Handles abbreviated and full month names. Included in hyphenReplace()
- * @returns The text with en dashes in month ranges
- */
-export function enDashDateRange(text: string): string {
-  return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms

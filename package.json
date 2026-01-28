@@ -82,6 +82,7 @@
     "quartz": "./quartz/bootstrap-cli.ts"
   },
   "dependencies": {
+    "@alexander-turner/punctilio": "file:../punctilio",
     "@clack/prompts": "0.10.0",
     "@napi-rs/simple-git": "0.1.19",
     "@types/flexsearch": "0.7.6",

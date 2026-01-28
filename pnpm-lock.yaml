@@ -23,6 +23,9 @@ importers:
 
   .:
     dependencies:
+      '@alexander-turner/punctilio':
+        specifier: file:../punctilio
+        version: file:../punctilio
       '@clack/prompts':
         specifier: 0.10.0
         version: 0.10.0
@@ -629,6 +632,10 @@ packages:
 
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
+
+  '@alexander-turner/punctilio@file:../punctilio':
+    resolution: {directory: ../punctilio, type: directory}
+    engines: {node: '>=18.0.0'}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -9626,6 +9633,8 @@ snapshots:
       - supports-color
 
   '@adobe/css-tools@4.4.4': {}
+
+  '@alexander-turner/punctilio@file:../punctilio': {}
 
   '@ampproject/remapping@2.3.0':
     dependencies:
