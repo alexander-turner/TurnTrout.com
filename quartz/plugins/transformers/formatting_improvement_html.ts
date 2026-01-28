@@ -415,6 +415,81 @@ export function nbspBeforeLastWord(text: string): string {
   return text.replace(pattern, `${nbsp}$1`)
 }
 
+/**
+ * Adds non-breaking space after reference abbreviations to keep them with their numbers.
+ * Examples: "Fig. 1" → "Fig. 1", "p. 42" → "p. 42", "Vol. 2" → "Vol. 2"
+ *
+ * Covers: Fig., Figs., Vol., No., p., pp., Ch., Chap., Sec., Eq., Art., Tab., Ex.
+ */
+export function nbspAfterReferenceAbbreviations(text: string): string {
+  // Case-sensitive abbreviations that should keep their case
+  const abbreviations = [
+    "Fig\\.",
+    "Figs\\.",
+    "Vol\\.",
+    "No\\.",
+    "Nos\\.",
+    "p\\.",
+    "pp\\.",
+    "Ch\\.",
+    "Chap\\.",
+    "Sec\\.",
+    "Eq\\.",
+    "Eqs\\.",
+    "Art\\.",
+    "Tab\\.",
+    "Ex\\.",
+  ]
+  const pattern = new RegExp(`${notInTag}(${abbreviations.join("|")})${space}(?=\\d)`, "g")
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after section (§) and paragraph (¶) symbols.
+ * Examples: "§ 5" → "§ 5", "¶ 3" → "¶ 3"
+ */
+export function nbspAfterSectionSymbols(text: string): string {
+  const pattern = new RegExp(`${notInTag}([§¶])${space}(?=\\d)`, "g")
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after honorific titles to keep them with names.
+ * Examples: "Dr. Smith" → "Dr. Smith", "Mr. Jones" → "Mr. Jones"
+ *
+ * Covers: Mr., Mrs., Ms., Dr., Prof., Rev., St. (Saint), Sr., Jr., Hon., Gov., Sen., Rep.
+ */
+export function nbspAfterHonorifics(text: string): string {
+  const honorifics = [
+    "Mr\\.",
+    "Mrs\\.",
+    "Ms\\.",
+    "Dr\\.",
+    "Prof\\.",
+    "Rev\\.",
+    "St\\.", // Saint
+    "Sr\\.",
+    "Jr\\.",
+    "Hon\\.",
+    "Gov\\.",
+    "Sen\\.",
+    "Rep\\.",
+  ]
+  // Match honorific followed by space and then a capital letter (name)
+  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})${space}(?=[A-Z])`, "g")
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after copyright (©), registered (®), and trademark (™) symbols
+ * when followed by a year or company name.
+ * Examples: "© 2024" → "© 2024", "® Brand" → "® Brand"
+ */
+export function nbspAfterCopyrightSymbols(text: string): string {
+  const pattern = new RegExp(`${notInTag}([©®™])${space}(?=[\\dA-Z])`, "g")
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
 const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
@@ -423,7 +498,15 @@ const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
 // Non-breaking space transformers (applied after other transforms)
-const nbspTransformers = [nbspAfterShortWords, nbspBetweenNumberAndUnit, nbspBeforeLastWord]
+const nbspTransformers = [
+  nbspAfterShortWords,
+  nbspBetweenNumberAndUnit,
+  nbspBeforeLastWord,
+  nbspAfterReferenceAbbreviations,
+  nbspAfterSectionSymbols,
+  nbspAfterHonorifics,
+  nbspAfterCopyrightSymbols,
+]
 
 /**
  * Applies multiple text transformations

@@ -33,6 +33,10 @@ import {
   nbspAfterShortWords,
   nbspBetweenNumberAndUnit,
   nbspBeforeLastWord,
+  nbspAfterReferenceAbbreviations,
+  nbspAfterSectionSymbols,
+  nbspAfterHonorifics,
+  nbspAfterCopyrightSymbols,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
@@ -2008,6 +2012,62 @@ describe("Non-breaking space transformations", () => {
       const input = "<p>The distance is 100 km</p>"
       const result = testHtmlFormattingWithNbsp(input)
       expect(result).toContain(`100${nbsp}km`)
+    })
+  })
+
+  describe("nbspAfterReferenceAbbreviations", () => {
+    it.each([
+      ["Fig. 1", `Fig.${nbsp}1`],
+      ["Figs. 1", `Figs.${nbsp}1`],
+      ["Vol. 2", `Vol.${nbsp}2`],
+      ["No. 5", `No.${nbsp}5`],
+      ["p. 42", `p.${nbsp}42`],
+      ["pp. 42", `pp.${nbsp}42`],
+      ["Ch. 3", `Ch.${nbsp}3`],
+      ["Sec. 4", `Sec.${nbsp}4`],
+      ["Eq. 1", `Eq.${nbsp}1`],
+      ["See Fig. 1 and Vol. 2", `See Fig.${nbsp}1 and Vol.${nbsp}2`],
+      ["Fig. A", "Fig. A"], // Only matches numbers, not letters
+    ])("should add nbsp after reference abbreviations: %s", (input, expected) => {
+      expect(nbspAfterReferenceAbbreviations(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterSectionSymbols", () => {
+    it.each([
+      ["§ 5", `§${nbsp}5`],
+      ["¶ 3", `¶${nbsp}3`],
+      ["See § 5 and ¶ 3", `See §${nbsp}5 and ¶${nbsp}3`],
+      ["§ A", "§ A"], // Only matches numbers
+    ])("should add nbsp after section/paragraph symbols: %s", (input, expected) => {
+      expect(nbspAfterSectionSymbols(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterHonorifics", () => {
+    it.each([
+      ["Dr. Smith", `Dr.${nbsp}Smith`],
+      ["Mr. Jones", `Mr.${nbsp}Jones`],
+      ["Mrs. Brown", `Mrs.${nbsp}Brown`],
+      ["Ms. Davis", `Ms.${nbsp}Davis`],
+      ["Prof. Einstein", `Prof.${nbsp}Einstein`],
+      ["Rev. King", `Rev.${nbsp}King`],
+      ["St. Augustine", `St.${nbsp}Augustine`],
+      ["Dr. smith", "Dr. smith"], // Only matches capital letters after
+    ])("should add nbsp after honorifics: %s", (input, expected) => {
+      expect(nbspAfterHonorifics(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterCopyrightSymbols", () => {
+    it.each([
+      ["© 2024", `©${nbsp}2024`],
+      ["® Brand", `®${nbsp}Brand`],
+      ["™ Product", `™${nbsp}Product`],
+      ["Copyright © 2024 Company", `Copyright ©${nbsp}2024 Company`],
+      ["© company", "© company"], // Only matches numbers or capital letters
+    ])("should add nbsp after copyright symbols: %s", (input, expected) => {
+      expect(nbspAfterCopyrightSymbols(input)).toBe(expected)
     })
   })
 })
