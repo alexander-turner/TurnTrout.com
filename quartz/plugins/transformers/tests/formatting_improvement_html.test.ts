@@ -1639,6 +1639,30 @@ describe("transformElement error conditions", () => {
       transformElement(node, transform)
     }).toThrow("Transformation altered the number of text nodes")
   })
+
+  it("should correctly strip all marker characters in transform invariance check", () => {
+    // This test verifies that the transform invariance check properly removes
+    // ALL occurrences of markerChar, not just the first one.
+    // With replace() instead of replaceAll(), this test would fail because
+    // only the first markerChar would be removed, leaving others in the string.
+    const node = h("p", [
+      { type: "text", value: "first" },
+      { type: "text", value: "second" },
+      { type: "text", value: "third" },
+    ])
+
+    const simpleTransform = (text: string): string => "PREFIX:" + text
+
+    // This should not throw an error
+    expect(() => {
+      transformElement(node, simpleTransform, () => false, true)
+    }).not.toThrow()
+
+    const textNodes = flattenTextNodes(node, () => false)
+    expect(textNodes[0].value).toBe("PREFIX:first")
+    expect(textNodes[1].value).toBe("PREFIX:second")
+    expect(textNodes[2].value).toBe("PREFIX:third")
+  })
 })
 
 describe("applyTextTransforms function", () => {
