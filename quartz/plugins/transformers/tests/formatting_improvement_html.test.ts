@@ -37,6 +37,7 @@ import {
   nbspAfterSectionSymbols,
   nbspAfterHonorifics,
   nbspAfterCopyrightSymbols,
+  nbspBetweenInitials,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
@@ -2068,6 +2069,20 @@ describe("Non-breaking space transformations", () => {
       ["© company", "© company"], // Only matches numbers or capital letters
     ])("should add nbsp after copyright symbols: %s", (input, expected) => {
       expect(nbspAfterCopyrightSymbols(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspBetweenInitials", () => {
+    it.each([
+      ["J. K. Rowling", `J.${nbsp}K.${nbsp}Rowling`],
+      ["C. S. Lewis", `C.${nbsp}S.${nbsp}Lewis`],
+      ["H. G. Wells", `H.${nbsp}G.${nbsp}Wells`],
+      ["J. Smith", `J.${nbsp}Smith`],
+      ["A. B. C. Name", `A.${nbsp}B.${nbsp}C.${nbsp}Name`],
+      ["j. k. rowling", "j. k. rowling"], // Only matches capitals
+      ["J. lowercase", "J. lowercase"], // Only matches if followed by capital
+    ])("should add nbsp between initials: %s", (input, expected) => {
+      expect(nbspBetweenInitials(input)).toBe(expected)
     })
   })
 })

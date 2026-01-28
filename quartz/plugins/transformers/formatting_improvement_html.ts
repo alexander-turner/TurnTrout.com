@@ -490,6 +490,18 @@ export function nbspAfterCopyrightSymbols(text: string): string {
   return text.replace(pattern, `$1${nbsp}`)
 }
 
+/**
+ * Adds non-breaking space between initials and before surnames to keep names together.
+ * Examples: "J. K. Rowling" → "J. K. Rowling", "C. S. Lewis" → "C. S. Lewis"
+ *
+ * Matches single capital letter followed by period and space, then another capital.
+ */
+export function nbspBetweenInitials(text: string): string {
+  // Match single capital letter + period + space + capital letter (initial or name start)
+  const pattern = new RegExp(`${notInTag}([A-Z]\\.)${space}(?=[A-Z])`, "g")
+  return text.replace(pattern, `$1${nbsp}`)
+}
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
 const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
@@ -506,6 +518,7 @@ const nbspTransformers = [
   nbspAfterSectionSymbols,
   nbspAfterHonorifics,
   nbspAfterCopyrightSymbols,
+  nbspBetweenInitials,
 ]
 
 /**
