@@ -375,6 +375,8 @@ const nbsp = "\u00A0"
 const space = `[ \\t${nbsp}]`
 const notInTag = "(?<!<[^>]*)"
 const punctuationOrQuote = "[.,!?:;)(\"\"\"«»'']"
+// Unicode uppercase letter (matches A-Z and accented capitals like É, Ñ, Ü)
+const unicodeUppercase = "\\p{Lu}"
 
 /**
  * Adds non-breaking space after short words (1-2 letters) to prevent them from
@@ -476,7 +478,7 @@ export function nbspAfterHonorifics(text: string): string {
     "Rep\\.",
   ]
   // Match honorific followed by space and then a capital letter (name)
-  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})${space}(?=[A-Z])`, "g")
+  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})${space}(?=${unicodeUppercase})`, "gu")
   return text.replace(pattern, `$1${nbsp}`)
 }
 
@@ -486,7 +488,7 @@ export function nbspAfterHonorifics(text: string): string {
  * Examples: "© 2024" → "© 2024", "® Brand" → "® Brand"
  */
 export function nbspAfterCopyrightSymbols(text: string): string {
-  const pattern = new RegExp(`${notInTag}([©®™])${space}(?=[\\dA-Z])`, "g")
+  const pattern = new RegExp(`${notInTag}([©®™])${space}(?=[\\d${unicodeUppercase}])`, "gu")
   return text.replace(pattern, `$1${nbsp}`)
 }
 
@@ -498,7 +500,7 @@ export function nbspAfterCopyrightSymbols(text: string): string {
  */
 export function nbspBetweenInitials(text: string): string {
   // Match single capital letter + period + space + capital letter (initial or name start)
-  const pattern = new RegExp(`${notInTag}([A-Z]\\.)${space}(?=[A-Z])`, "g")
+  const pattern = new RegExp(`${notInTag}(${unicodeUppercase}\\.)${space}(?=${unicodeUppercase})`, "gu")
   return text.replace(pattern, `$1${nbsp}`)
 }
 
