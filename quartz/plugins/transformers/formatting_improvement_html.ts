@@ -387,11 +387,12 @@ const unicodeUppercase = "\\p{Lu}"
  */
 export function nbspAfterShortWords(text: string): string {
   const shortWord = "[a-zA-Z]{1,2}"
+  // Allow optional markerChar after short word (preserves text node boundaries)
   const pattern = new RegExp(
-    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})${space}`,
+    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})(${chr}?)${space}`,
     "gm",
   )
-  return text.replace(pattern, `$1${nbsp}`)
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 /**
@@ -401,8 +402,9 @@ export function nbspAfterShortWords(text: string): string {
  * Examples: "100 km" → "100 km", "5 kg" → "5 kg"
  */
 export function nbspBetweenNumberAndUnit(text: string): string {
-  const pattern = new RegExp(`${notInTag}(\\d)${space}(\\w)`, "gm")
-  return text.replace(pattern, `$1${nbsp}$2`)
+  // Allow optional markerChar around the space (preserves text node boundaries)
+  const pattern = new RegExp(`${notInTag}(\\d)(${chr}?)${space}(${chr}?)(\\w)`, "gm")
+  return text.replace(pattern, `$1$2${nbsp}$3$4`)
 }
 
 /**
@@ -413,8 +415,13 @@ export function nbspBetweenNumberAndUnit(text: string): string {
  * Only applies to short final words (1-10 characters) to avoid affecting long words.
  */
 export function nbspBeforeLastWord(text: string): string {
-  const pattern = new RegExp(`${notInTag}(?<![#-])${space}([\\S]{1,10}(?:\\n\\n|$))`, "gm")
-  return text.replace(pattern, `${nbsp}$1`)
+  // Exclude markerChar from word match to avoid including it as part of the word
+  // Allow optional markerChar before end-of-string/paragraph
+  const pattern = new RegExp(
+    `${notInTag}(?<![#-])${space}([^\\s${chr}]{1,10})(${chr}?(?:\\n\\n|$))`,
+    "gm",
+  )
+  return text.replace(pattern, `${nbsp}$1$2`)
 }
 
 /**
@@ -442,8 +449,9 @@ export function nbspAfterReferenceAbbreviations(text: string): string {
     "Tab\\.",
     "Ex\\.",
   ]
-  const pattern = new RegExp(`${notInTag}(${abbreviations.join("|")})${space}(?=\\d)`, "g")
-  return text.replace(pattern, `$1${nbsp}`)
+  // Allow optional markerChar after abbreviation and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${abbreviations.join("|")})(${chr}?)${space}(?=${chr}?\\d)`, "g")
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 /**
@@ -451,8 +459,9 @@ export function nbspAfterReferenceAbbreviations(text: string): string {
  * Examples: "§ 5" → "§ 5", "¶ 3" → "¶ 3"
  */
 export function nbspAfterSectionSymbols(text: string): string {
-  const pattern = new RegExp(`${notInTag}([§¶])${space}(?=\\d)`, "g")
-  return text.replace(pattern, `$1${nbsp}`)
+  // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}([§¶])(${chr}?)${space}(?=${chr}?\\d)`, "g")
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 /**
@@ -478,8 +487,9 @@ export function nbspAfterHonorifics(text: string): string {
     "Rep\\.",
   ]
   // Match honorific followed by space and then a capital letter (name)
-  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})${space}(?=${unicodeUppercase})`, "gu")
-  return text.replace(pattern, `$1${nbsp}`)
+  // Allow optional markerChar after honorific and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})(${chr}?)${space}(?=${chr}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 /**
@@ -488,8 +498,9 @@ export function nbspAfterHonorifics(text: string): string {
  * Examples: "© 2024" → "© 2024", "® Brand" → "® Brand"
  */
 export function nbspAfterCopyrightSymbols(text: string): string {
-  const pattern = new RegExp(`${notInTag}([©®™])${space}(?=[\\d${unicodeUppercase}])`, "gu")
-  return text.replace(pattern, `$1${nbsp}`)
+  // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}([©®™])(${chr}?)${space}(?=${chr}?[\\d${unicodeUppercase}])`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 /**
@@ -500,8 +511,9 @@ export function nbspAfterCopyrightSymbols(text: string): string {
  */
 export function nbspBetweenInitials(text: string): string {
   // Match single capital letter + period + space + capital letter (initial or name start)
-  const pattern = new RegExp(`${notInTag}(${unicodeUppercase}\\.)${space}(?=${unicodeUppercase})`, "gu")
-  return text.replace(pattern, `$1${nbsp}`)
+  // Allow optional markerChar after initial and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${unicodeUppercase}\\.)(${chr}?)${space}(?=${chr}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
