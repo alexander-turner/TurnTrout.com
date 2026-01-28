@@ -148,8 +148,8 @@ export function transformElement(
   })
 
   if (checkTransformInvariance) {
-    const strippedContent = markedContent.replace(markerChar, "")
-    const strippedTransformed = transformedContent.replace(markerChar, "")
+    const strippedContent = markedContent.replaceAll(markerChar, "")
+    const strippedTransformed = transformedContent.replaceAll(markerChar, "")
     const expected = transform(strippedContent)
 
     // istanbul ignore next

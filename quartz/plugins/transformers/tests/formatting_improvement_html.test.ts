@@ -2093,4 +2093,67 @@ describe("Non-breaking space transformations", () => {
       expect(nbspBetweenInitials(input)).toBe(expected)
     })
   })
+
+  // Integration tests: verify nbsp functions work with markerChar at text node boundaries
+  // markerChar appears at the end of each text node when transformElement joins them
+  describe("markerChar integration", () => {
+    const chr = markerChar
+
+    it("nbspAfterShortWords handles markerChar between short word and space", () => {
+      // Simulates: <p>I <em>am</em></p> where "I" ends one text node
+      const input = `I${chr} am`
+      const result = nbspAfterShortWords(input)
+      expect(result).toBe(`I${chr}${nbsp}am`)
+    })
+
+    it("nbspBetweenNumberAndUnit handles markerChar around space", () => {
+      // Simulates: <p>100 <em>km</em></p>
+      const input = `100${chr} ${chr}km`
+      const result = nbspBetweenNumberAndUnit(input)
+      expect(result).toBe(`100${chr}${nbsp}${chr}km`)
+    })
+
+    it("nbspBeforeLastWord excludes markerChar from word match", () => {
+      // Simulates: <p>Hello world</p> with markerChar at end
+      const input = `Hello world${chr}`
+      const result = nbspBeforeLastWord(input)
+      // Should match "world" not "world\uE000"
+      expect(result).toBe(`Hello${nbsp}world${chr}`)
+    })
+
+    it("nbspAfterHonorifics handles markerChar between honorific and name", () => {
+      // Simulates: <p>Dr. <em>Smith</em></p>
+      const input = `Dr.${chr} ${chr}Smith`
+      const result = nbspAfterHonorifics(input)
+      expect(result).toBe(`Dr.${chr}${nbsp}${chr}Smith`)
+    })
+
+    it("nbspBetweenInitials handles markerChar between initials", () => {
+      // Simulates: <p>J. <em>K.</em> Rowling</p>
+      const input = `J.${chr} ${chr}K. Rowling`
+      const result = nbspBetweenInitials(input)
+      expect(result).toBe(`J.${chr}${nbsp}${chr}K.${nbsp}Rowling`)
+    })
+
+    it("nbspAfterReferenceAbbreviations handles markerChar", () => {
+      // Simulates: <p>Fig. <em>1</em></p>
+      const input = `Fig.${chr} ${chr}1`
+      const result = nbspAfterReferenceAbbreviations(input)
+      expect(result).toBe(`Fig.${chr}${nbsp}${chr}1`)
+    })
+
+    it("nbspAfterSectionSymbols handles markerChar", () => {
+      // Simulates: <p>§ <em>5</em></p>
+      const input = `§${chr} ${chr}5`
+      const result = nbspAfterSectionSymbols(input)
+      expect(result).toBe(`§${chr}${nbsp}${chr}5`)
+    })
+
+    it("nbspAfterCopyrightSymbols handles markerChar", () => {
+      // Simulates: <p>© <em>2024</em></p>
+      const input = `©${chr} ${chr}2024`
+      const result = nbspAfterCopyrightSymbols(input)
+      expect(result).toBe(`©${chr}${nbsp}${chr}2024`)
+    })
+  })
 })
