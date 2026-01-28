@@ -14,6 +14,82 @@ export interface PopoverOptions {
 }
 
 /**
+ * Processes a footnote element for display in a popover
+ * @param footnoteElement - The footnote element to process
+ * @param html - The HTML document (used for creating temporary containers)
+ * @param targetUrl - The URL for normalizing relative links
+ * @returns A document fragment containing the processed footnote content
+ */
+function processFootnoteForPopover(
+  footnoteElement: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+): DocumentFragment {
+  const clonedFootnote = footnoteElement.cloneNode(true) as HTMLElement
+
+  const backArrow = clonedFootnote.querySelector("[data-footnote-backref]")
+  if (backArrow) {
+    backArrow.remove()
+  }
+
+  const tempContainer = html.createElement("div")
+  tempContainer.appendChild(clonedFootnote)
+
+  // Normalize URLs only on the cloned footnote
+  normalizeRelativeURLs(tempContainer, targetUrl)
+
+  // modifyElementIds only modifies descendants, so also modify the element's own ID
+  if (clonedFootnote.id) {
+    clonedFootnote.id = `${clonedFootnote.id}-popover`
+  }
+  modifyElementIds([clonedFootnote], "-popover")
+
+  // Extract the content from the <li> wrapper and return as a fragment
+  const fragment = html.createDocumentFragment()
+  while (clonedFootnote.firstChild) {
+    fragment.appendChild(clonedFootnote.firstChild)
+  }
+
+  return fragment
+}
+
+/**
+ * Renders footnote content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ * @param footnoteId - The ID of the footnote to render
+ */
+function renderFootnoteContent(
+  popoverInner: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+  footnoteId: string,
+): void {
+  const footnoteElement = html.getElementById(`user-content-fn-${footnoteId}`)
+  if (!footnoteElement) {
+    throw new Error(`Footnote element not found: user-content-fn-${footnoteId}`)
+  }
+
+  const processedFootnote = processFootnoteForPopover(footnoteElement, html, targetUrl)
+  popoverInner.appendChild(processedFootnote)
+}
+
+/**
+ * Renders full page content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ */
+function renderFullPageContent(popoverInner: HTMLElement, html: Document, targetUrl: URL): void {
+  const renderOptions: ContentRenderOptions = {
+    targetUrl,
+    idSuffix: "-popover",
+  }
+  renderHTMLContent(popoverInner, html, renderOptions)
+}
+
+/**
  * Creates a popover element based on the provided options
  * @param options - The options for creating the popover
  * @returns A Promise that resolves to the created popover element
@@ -49,29 +125,9 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
 
   if (footnoteMatch) {
     const footnoteId = footnoteMatch[1]
-    const footnoteElement = html.getElementById(`user-content-fn-${footnoteId}`)
-    if (!footnoteElement) {
-      throw new Error(`Footnote element not found: user-content-fn-${footnoteId}`)
-    }
-
-    // Normalize URLs and modify IDs, then append
-    normalizeRelativeURLs(html, targetUrl)
-    // modifyElementIds only modifies descendants, so also modify the element's own ID
-    if (footnoteElement.id) {
-      footnoteElement.id = `${footnoteElement.id}-popover`
-    }
-    modifyElementIds([footnoteElement], "-popover")
-    popoverInner.appendChild(footnoteElement)
+    renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
   } else {
-    // Regular link: render full previewable content
-    // Note: We can't use fetchHTMLContent here because we need fetchWithMetaRedirect
-    // So we manually parse; renderHTMLContent will normalize URLs and restore checkboxes automatically
-    const renderOptions: ContentRenderOptions = {
-      targetUrl,
-      idSuffix: "-popover",
-    }
-
-    renderHTMLContent(popoverInner, html, renderOptions)
+    renderFullPageContent(popoverInner, html, targetUrl)
   }
 
   return popoverElement

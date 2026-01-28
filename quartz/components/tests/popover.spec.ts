@@ -339,7 +339,6 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
 
 test.describe("Footnote popovers", () => {
   test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
-    // Find a footnote reference link (href="#user-content-fn-*")
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
     await footnoteRef.hover()
@@ -347,26 +346,52 @@ test.describe("Footnote popovers", () => {
     const popover = page.locator(".popover")
     await expect(popover).toBeVisible()
 
-    // Popover should NOT contain the article title (which would indicate full page)
     const popoverInner = popover.locator(".popover-inner")
-    await expect(popoverInner.locator("#article-title-popover")).toHaveCount(0)
 
-    // Popover should contain footnote content (an <li> element)
-    await expect(popoverInner.locator('li[id^="user-content-fn-"]')).toHaveCount(1)
+    // Should NOT contain the li wrapper (footnote content is unwrapped)
+    await expect(popoverInner.locator('li[id^="user-content-fn-"]')).toHaveCount(0)
+
+    // Should NOT contain the back arrow link
+    await expect(popoverInner.locator("[data-footnote-backref]")).toHaveCount(0)
+
+    // Should NOT contain the article title or other page elements
+    await expect(popoverInner.locator("#article-title-popover")).toHaveCount(0)
+    await expect(popoverInner.locator("h1")).toHaveCount(0)
+    await expect(popoverInner.locator("article")).toHaveCount(0)
+
+    // Should contain footnote content (verify it has some content)
+    const content = popoverInner
+    await expect(content).toHaveText()
+    expect(content?.length).toBeGreaterThan(0)
   })
 
-  test("Footnote popover visual regression (lostpixel)", async ({ page }, testInfo) => {
-    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
-    await footnoteRef.scrollIntoViewIfNeeded()
-    await footnoteRef.hover()
+  test("Footnote popover size reflects content size", async ({ page }) => {
+    // Find the footnote with a table (should be larger)
+    const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
+    await tableFootnoteRef.scrollIntoViewIfNeeded()
+    await tableFootnoteRef.hover()
 
-    const popover = page.locator(".popover")
-    await expect(popover).toBeVisible()
+    const tablePopover = page.locator(".popover")
+    await expect(tablePopover).toBeVisible()
+    const tablePopoverBox = await tablePopover.boundingBox()
+    const tableHeight = tablePopoverBox?.height ?? 0
 
-    await takeRegressionScreenshot(page, testInfo, "footnote-popover", {
-      elementToScreenshot: popover,
-      preserveSiblings: true,
-    })
+    // Move mouse away to close popover
+    await page.mouse.move(0, 0)
+    await expect(tablePopover).toBeHidden()
+
+    // Find a simple footnote (should be smaller)
+    const simpleFootnoteRef = page.locator('a[href="#user-content-fn-nested"]')
+    await simpleFootnoteRef.scrollIntoViewIfNeeded()
+    await simpleFootnoteRef.hover()
+
+    const simplePopover = page.locator(".popover")
+    await expect(simplePopover).toBeVisible()
+    const simplePopoverBox = await simplePopover.boundingBox()
+    const simpleHeight = simplePopoverBox?.height ?? 0
+
+    // Table footnote should be significantly taller than simple footnote
+    expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 })
 

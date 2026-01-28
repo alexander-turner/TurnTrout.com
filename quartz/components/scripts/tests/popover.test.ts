@@ -109,7 +109,7 @@ describe("createPopover", () => {
       <div class="previewable" id="article-title"><h1>Full Article Title</h1></div>
       <section class="footnotes">
         <ol>
-          <li id="user-content-fn-1">This is the footnote content.</li>
+          <li id="user-content-fn-1">This is the footnote content.<a href="#user-content-fnref-1" data-footnote-backref>⤴</a></li>
           <li id="user-content-fn-2">This is another footnote.</li>
         </ol>
       </section>
@@ -129,8 +129,12 @@ describe("createPopover", () => {
     const popover = await createPopover(options)
     const popoverInner = popover.querySelector(".popover-inner")
 
-    // Should contain the footnote li element with modified ID
-    expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).not.toBeNull()
+    // Should NOT contain the li wrapper (content is unwrapped)
+    expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
+    // Should NOT contain the back arrow link
+    expect(popoverInner?.querySelector("[data-footnote-backref]")).toBeNull()
+    // Should contain the footnote text content
+    expect(popoverInner?.textContent).toContain("This is the footnote content.")
     // Should NOT contain the full article title
     expect(popoverInner?.querySelector("#article-title")).toBeNull()
     expect(popoverInner?.querySelector("#article-title-popover")).toBeNull()
@@ -160,7 +164,10 @@ describe("createPopover", () => {
     const popover = await createPopover(options)
     const popoverInner = popover.querySelector(".popover-inner")
 
-    expect(popoverInner?.querySelector("li#user-content-fn-my-named-note-popover")).not.toBeNull()
+    // Should NOT contain the li wrapper (content is unwrapped)
+    expect(popoverInner?.querySelector("li#user-content-fn-my-named-note-popover")).toBeNull()
+    // Should contain the footnote text content
+    expect(popoverInner?.textContent).toContain("Named footnote content here.")
   })
 
   it("should throw error when footnote element is not found", async () => {
@@ -190,6 +197,7 @@ describe("createPopover", () => {
   })
 
   it("should render footnote popover with less content than full article popover", async () => {
+    const footnoteText = "Short footnote."
     const htmlWithLongArticleAndShortFootnote = `
       <div class="previewable">
         <h1>Full Article Title</h1>
@@ -206,7 +214,7 @@ describe("createPopover", () => {
       </div>
       <section class="footnotes">
         <ol>
-          <li id="user-content-fn-1">Short footnote.</li>
+          <li id="user-content-fn-1">${footnoteText}</li>
         </ol>
       </section>
     `
@@ -221,7 +229,6 @@ describe("createPopover", () => {
       } as unknown as Response),
     )
 
-    // Create footnote popover
     options.linkElement.setAttribute("href", "#user-content-fn-1")
     const footnotePopover = await createPopover(options)
     const footnoteInner = footnotePopover.querySelector(".popover-inner")
@@ -240,9 +247,11 @@ describe("createPopover", () => {
     // Footnote popover should have significantly less content than full article
     // The full article has ~500+ chars, the footnote has ~50 chars
     expect(fullArticleContentLength - footnoteContentLength).toBeGreaterThanOrEqual(10)
-    // Also verify footnote popover only contains the li element, not the full article
+    // Also verify footnote popover does not contain article paragraphs or li wrapper
     expect(footnoteInner?.querySelectorAll("p").length).toBe(0)
-    expect(footnoteInner?.querySelectorAll("li").length).toBe(1)
+    expect(footnoteInner?.querySelectorAll("li").length).toBe(0)
+    // Should contain the footnote text content
+    expect(footnoteInner?.textContent).toContain(footnoteText)
   })
 })
 
