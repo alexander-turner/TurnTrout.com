@@ -373,8 +373,8 @@ export function enDashDateRange(text: string): string {
 // Non-breaking space definitions (based on richtypo patterns)
 const nbsp = "\u00A0"
 const space = `[ \\t${nbsp}]`
-const notInTag = `(?<!<[^>]*)`
-const punctuationOrQuote = `[.,!?:;)("""«»'']`
+const notInTag = "(?<!<[^>]*)"
+const punctuationOrQuote = "[.,!?:;)(\"\"\"«»'']"
 
 /**
  * Adds non-breaking space after short words (1-2 letters) to prevent them from
@@ -384,7 +384,7 @@ const punctuationOrQuote = `[.,!?:;)("""«»'']`
  * Matches words like: a, I, an, to, of, in, on, is, it, or, if, as, at, by, we, so, no, up, he, my, us
  */
 export function nbspAfterShortWords(text: string): string {
-  const shortWord = `[a-zA-Z]{1,2}`
+  const shortWord = "[a-zA-Z]{1,2}"
   const pattern = new RegExp(
     `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})${space}`,
     "gm",

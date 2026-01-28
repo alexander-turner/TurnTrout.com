@@ -49,7 +49,7 @@ const nbsp = "\u00A0"
  * Use this when testing functionality unrelated to nbsp insertion.
  */
 function normalizeSpaces(text: string): string {
-  return text.replace(/\u00A0/g, " ")
+  return text.replace(/\u00A0/gu, " ")
 }
 
 /**
