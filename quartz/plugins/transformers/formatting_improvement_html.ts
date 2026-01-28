@@ -1,13 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
-import {
-  niceQuotes as punctilioNiceQuotes,
-  hyphenReplace as punctilioHyphenReplace,
-  enDashNumberRange as punctilioEnDashNumberRange,
-  enDashDateRange as punctilioEnDashDateRange,
-  minusReplace as punctilioMinusReplace,
-} from "@alexander-turner/punctilio"
 import { h } from "hastscript"
+import { niceQuotes, hyphenReplace } from "punctilio"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -97,27 +91,6 @@ export function assertSmartQuotesMatch(input: string): void {
 }
 
 export const markerChar = "\uE000"
-
-// Wrapper functions that pass markerChar as separator to punctilio functions
-export function niceQuotes(text: string): string {
-  return punctilioNiceQuotes(text, { separator: markerChar })
-}
-
-export function hyphenReplace(text: string): string {
-  return punctilioHyphenReplace(text, { separator: markerChar })
-}
-
-export function enDashNumberRange(text: string): string {
-  return punctilioEnDashNumberRange(text, { separator: markerChar })
-}
-
-export function enDashDateRange(text: string): string {
-  return punctilioEnDashDateRange(text, { separator: markerChar })
-}
-
-export function minusReplace(text: string): string {
-  return punctilioMinusReplace(text, { separator: markerChar })
-}
 /* Sometimes I want to transform the text content of a paragraph (e.g.
 by adding smart quotes). But that paragraph might contain multiple child
 elements. If I transform each of the child elements individually, the
@@ -227,7 +200,10 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
-const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
+const uncheckedTextTransformers = [
+  (text: string) => hyphenReplace(text, { separator: markerChar }),
+  (text: string) => niceQuotes(text, { separator: markerChar }),
+]
 
 // Check for invariance
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
