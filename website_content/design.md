@@ -570,7 +570,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <img alt="A trout jumping to the left." src="https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg"/> favicon appears for links to other pages within this site, while the <img alt="A counterclockwise arrow." src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg"/> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="turntrout_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg);" alt="A trout jumping to the left."></svg></span> favicon appears for links to other pages within this site, while the <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="anchor" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);" alt="A counterclockwise arrow."></svg></span> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -719,7 +719,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link.
+: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. For footnotes, the popover isolates the content.
 
 Search
 : My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.
