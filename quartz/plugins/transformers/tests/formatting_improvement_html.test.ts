@@ -338,6 +338,72 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
+  describe("Punctilio symbolTransform integration (end-to-end HTML)", () => {
+    describe("Not equals", () => {
+      it.each([
+        ["<p>1 != 2</p>", "<p>1 ≠ 2</p>"],
+        ["<p>x!=y</p>", "<p>x≠y</p>"],
+        ["<p><code>a != b</code></p>", "<p><code>a != b</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Multiplication", () => {
+      it.each([
+        ["<p>5x1</p>", "<p>5×1</p>"],
+        ["<p>3 x 4</p>", "<p>3 × 4</p>"],
+        ["<p>2*3</p>", "<p>2×3</p>"],
+        ["<p>I have 3x apples</p>", "<p>I have 3× apples</p>"],
+        ["<p>-2 x 3 = -6</p>", "<p>−2 × 3 = −6</p>"],
+        ["<p>The word box should not change</p>", "<p>The word box should not change</p>"],
+        ["<p><code>5x5</code></p>", "<p><code>5x5</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Ellipsis", () => {
+      it.each([
+        ["<p>Wait...</p>", "<p>Wait…</p>"],
+        ["<p>What...?</p>", "<p>What…?</p>"],
+        ["<p>Hmm...well</p>", "<p>Hmm… well</p>"],
+        ["<p><code>...</code></p>", "<p><code>...</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Math symbols", () => {
+      it.each([
+        ["<p>+/-</p>", "<p>±</p>"],
+        ["<p>~=</p>", "<p>≈</p>"],
+        ["<p>>=</p>", "<p>≥</p>"],
+        ["<p><=</p>", "<p>≤</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Legal symbols", () => {
+      it.each([
+        ["<p>(c)</p>", "<p>©</p>"],
+        ["<p>(C)</p>", "<p>©</p>"],
+        ["<p>(r)</p>", "<p>®</p>"],
+        ["<p>(R)</p>", "<p>®</p>"],
+        ["<p>(tm)</p>", "<p>™</p>"],
+        ["<p>(TM)</p>", "<p>™</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+  })
+
   describe("macOS transform end-to-end (HTML)", () => {
     it.each([
       ["<p>macos</p>", "<p>macOS</p>"],
