@@ -14,6 +14,7 @@ import {
   computeLeft,
   computeTop,
   fetchWithMetaRedirect,
+  footnoteForwardRefRegex,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
@@ -101,6 +102,182 @@ describe("createPopover", () => {
     await expect(createPopover(options)).rejects.toThrow(
       "Footnote back arrow links are not supported for popovers",
     )
+  })
+
+  it("should show only footnote content for footnote forward links", async () => {
+    const footnoteHtml = `
+      <div class="previewable" id="article-title"><h1>Full Article Title</h1></div>
+      <section class="footnotes">
+        <ol>
+          <li id="user-content-fn-1">This is the footnote content.<a href="#user-content-fnref-1" data-footnote-backref>⤴</a></li>
+          <li id="user-content-fn-2">This is another footnote.</li>
+        </ol>
+      </section>
+    `
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
+        },
+        text: () => Promise.resolve(footnoteHtml),
+      } as unknown as Response),
+    )
+
+    options.linkElement.setAttribute("href", "#user-content-fn-1")
+    const popover = await createPopover(options)
+    const popoverInner = popover.querySelector(".popover-inner")
+
+    // Should NOT contain the li wrapper (content is unwrapped)
+    expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
+    // Should NOT contain the back arrow link
+    expect(popoverInner?.querySelector("[data-footnote-backref]")).toBeNull()
+    // Should contain the footnote text content
+    expect(popoverInner?.textContent).toContain("This is the footnote content.")
+    // Should NOT contain the full article title
+    expect(popoverInner?.querySelector("#article-title")).toBeNull()
+    expect(popoverInner?.querySelector("#article-title-popover")).toBeNull()
+  })
+
+  it("should handle named (non-numeric) footnote IDs", async () => {
+    const footnoteHtml = `
+      <div class="previewable"><h1>Article</h1></div>
+      <section class="footnotes">
+        <ol>
+          <li id="user-content-fn-my-named-note">Named footnote content here.</li>
+        </ol>
+      </section>
+    `
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
+        },
+        text: () => Promise.resolve(footnoteHtml),
+      } as unknown as Response),
+    )
+
+    options.linkElement.setAttribute("href", "#user-content-fn-my-named-note")
+    const popover = await createPopover(options)
+    const popoverInner = popover.querySelector(".popover-inner")
+
+    // Should NOT contain the li wrapper (content is unwrapped)
+    expect(popoverInner?.querySelector("li#user-content-fn-my-named-note-popover")).toBeNull()
+    // Should contain the footnote text content
+    expect(popoverInner?.textContent).toContain("Named footnote content here.")
+  })
+
+  it("should throw error when footnote element is not found", async () => {
+    const footnoteHtml = `
+      <div class="previewable"><h1>Article</h1></div>
+      <section class="footnotes">
+        <ol>
+          <li id="user-content-fn-1">Footnote 1</li>
+        </ol>
+      </section>
+    `
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
+        },
+        text: () => Promise.resolve(footnoteHtml),
+      } as unknown as Response),
+    )
+
+    options.linkElement.setAttribute("href", "#user-content-fn-nonexistent")
+    await expect(createPopover(options)).rejects.toThrow(
+      "Footnote element not found: user-content-fn-nonexistent",
+    )
+  })
+
+  it("should render footnote popover with less content than full article popover", async () => {
+    const footnoteText = "Short footnote."
+    const htmlWithLongArticleAndShortFootnote = `
+      <div class="previewable">
+        <h1>Full Article Title</h1>
+        <p>This is a very long article with lots of content.</p>
+        <p>Paragraph 2 with more content to make it taller.</p>
+        <p>Paragraph 3 with even more content.</p>
+        <p>Paragraph 4 continues the article.</p>
+        <p>Paragraph 5 adds more height.</p>
+        <p>Paragraph 6 keeps going.</p>
+        <p>Paragraph 7 is still here.</p>
+        <p>Paragraph 8 almost done.</p>
+        <p>Paragraph 9 nearly there.</p>
+        <p>Paragraph 10 final paragraph.</p>
+      </div>
+      <section class="footnotes">
+        <ol>
+          <li id="user-content-fn-1">${footnoteText}</li>
+        </ol>
+      </section>
+    `
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
+        },
+        text: () => Promise.resolve(htmlWithLongArticleAndShortFootnote),
+      } as unknown as Response),
+    )
+
+    options.linkElement.setAttribute("href", "#user-content-fn-1")
+    const footnotePopover = await createPopover(options)
+    const footnoteInner = footnotePopover.querySelector(".popover-inner")
+    const footnoteContentLength = footnoteInner?.innerHTML.length ?? 0
+
+    // Create full article popover (regular link, no footnote hash)
+    const fullArticleOptions = {
+      ...options,
+      linkElement: document.createElement("a") as unknown as HTMLLinkElement,
+    }
+    fullArticleOptions.linkElement.setAttribute("href", "http://example.com")
+    const fullArticlePopover = await createPopover(fullArticleOptions)
+    const fullArticleInner = fullArticlePopover.querySelector(".popover-inner")
+    const fullArticleContentLength = fullArticleInner?.innerHTML.length ?? 0
+
+    // Footnote popover should have significantly less content than full article
+    // The full article has ~500+ chars, the footnote has ~50 chars
+    expect(fullArticleContentLength - footnoteContentLength).toBeGreaterThanOrEqual(10)
+    // Also verify footnote popover does not contain article paragraphs or li wrapper
+    expect(footnoteInner?.querySelectorAll("p").length).toBe(0)
+    expect(footnoteInner?.querySelectorAll("li").length).toBe(0)
+    // Should contain the footnote text content
+    expect(footnoteInner?.textContent).toContain(footnoteText)
+  })
+})
+
+describe("footnoteForwardRefRegex", () => {
+  it("should match numeric footnote IDs", () => {
+    expect("#user-content-fn-1".match(footnoteForwardRefRegex)?.[1]).toBe("1")
+    expect("#user-content-fn-123".match(footnoteForwardRefRegex)?.[1]).toBe("123")
+  })
+
+  it("should match alphanumeric footnote IDs", () => {
+    expect("#user-content-fn-abc".match(footnoteForwardRefRegex)?.[1]).toBe("abc")
+    expect("#user-content-fn-note1".match(footnoteForwardRefRegex)?.[1]).toBe("note1")
+  })
+
+  it("should match IDs with hyphens", () => {
+    expect("#user-content-fn-my-note".match(footnoteForwardRefRegex)?.[1]).toBe("my-note")
+    expect("#user-content-fn-a-b-c".match(footnoteForwardRefRegex)?.[1]).toBe("a-b-c")
+  })
+
+  it("should not match footnote back arrows (fnref)", () => {
+    expect("#user-content-fnref-1".match(footnoteForwardRefRegex)).toBeNull()
+  })
+
+  it("should not match non-footnote hashes", () => {
+    expect("#some-other-id".match(footnoteForwardRefRegex)).toBeNull()
+    expect("#user-content-something-else".match(footnoteForwardRefRegex)).toBeNull()
   })
 })
 
