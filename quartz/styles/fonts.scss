@@ -118,6 +118,15 @@ $fonts-dir: "/static/styles/fonts";
   ".woff2"
 );
 
+// Fix nbsp width to match regular space in EB Garamond
+// The nbsp (U+00A0) in EB Garamond has a different width than regular space (U+0020)
+// This creates a fallback that uses system fonts for just the nbsp character
+@font-face {
+  font-family: "NbspFix";
+  src: local("Times New Roman"), local("Georgia"), local("serif");
+  unicode-range: U+00A0; // Only affects the non-breaking space character
+}
+
 // Less commonly used
 @include font-face(
   "DejaVuSerifCondensed-Bold",
@@ -137,7 +146,7 @@ body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
   --font-dropcap-background: "EBGaramondInitialsF1", serif;
   --font-monospace: "FiraCode", "JetBrains Mono", "Courier New", monospace;
-  --font-main: "EBGaramond", garamond, "Times New Roman", serif;
+  --font-main: "NbspFix", "EBGaramond", garamond, "Times New Roman", serif;
   --font-italic: "EBGaramondItalic", "EBGaramond";
   --font-italic-situational: var(--font-italic);
 
