@@ -163,17 +163,13 @@ em {
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;
-  position: relative;
   cursor: pointer;
   // Gentle indicator that text is interactive - subtle dotted underline
+  // Using 50% opacity for WCAG contrast compliance
   text-decoration: underline;
   text-decoration-style: dotted;
-  text-decoration-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--foreground) 50%, transparent);
   text-underline-offset: 0.3em;
-
-  & a {
-    cursor: pointer;
-  }
 
   // Tengwar Artano only has one style, so use it for em too
   & em,
@@ -186,14 +182,22 @@ em {
   &:hover {
     text-decoration-color: color-mix(
       in srgb,
-      var(--foreground) 60%,
+      var(--foreground) 70%,
       transparent
     );
+  }
+
+  // Focus state for keyboard users
+  &:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   // When toggled to show translation
   &.show-translation {
     font-family: var(--font-main);
+    line-height: inherit; // Reset to normal line-height for English text
     text-decoration: none;
 
     // Hide the Tengwar text and show translation
@@ -210,6 +214,19 @@ em {
   .elvish-translation {
     display: none;
   }
+}
+
+// Visually hidden but accessible to screen readers
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .corrupted {

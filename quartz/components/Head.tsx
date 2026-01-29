@@ -198,6 +198,18 @@ export default (() => {
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         <script defer src="/static/scripts/elvish-toggle.js" spa-preserve />
+        {/* Show Elvish translations when JavaScript is disabled */}
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+            .elvish { cursor: default; text-decoration: none; }
+            .elvish .elvish-tengwar::after { content: " — "; }
+            .elvish .elvish-translation { display: inline !important; font-family: var(--font-main); }
+          `,
+            }}
+          />
+        </noscript>
         {analyticsScript}
         {js
           .filter((resource) => resource.loadTime === "beforeDOMReady")
