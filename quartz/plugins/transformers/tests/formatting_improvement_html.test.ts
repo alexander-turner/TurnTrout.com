@@ -2,6 +2,7 @@ import { describe, it, expect } from "@jest/globals"
 import { type Element, type ElementContent, type Parent, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
+import { symbolTransform } from "punctilio"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
@@ -242,28 +243,38 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("spacesAroundSlashes marker invariance", () => {
-    // This test verifies the hypothesis about why the invariance check fails
-    // The marker character \uE000 is treated as non-whitespace by the regex
-    // When marker is between a space and slash (`: ${marker}/`), the regex
-    // sees non-whitespace before the slash and adds a space, but without
-    // the marker (`: /`) it doesn't match because space is whitespace
+    // Testing which transform causes invariance failure with `: /` pattern
 
-    it("should fail invariance when marker is between space and slash", () => {
-      // Simulating text that spans HTML elements: ": " in one element, "/" in another
+    it("spacesAroundSlashes is invariant (not the culprit)", () => {
       const textWithMarker = `: ${markerChar}/`
       const textWithoutMarker = `: /`
 
       const transformedWithMarker = spacesAroundSlashes(textWithMarker)
       const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
-
-      // Strip marker and compare - this demonstrates the invariance failure
       const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
 
-      // These SHOULD be equal for invariance to hold, but they're not
-      // This test documents the bug - when fixed, update expected behavior
+      // spacesAroundSlashes IS invariant - both produce `: /`
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+
+    it("symbolTransform may not be invariant with colon-slash pattern", () => {
+      const textWithMarker = `: ${markerChar}/ ,`
+      const textWithoutMarker = `: / ,`
+
+      const transformedWithMarker = symbolTransform(textWithMarker, {
+        separator: markerChar,
+        transformArrows: false,
+      })
+      const transformedWithoutMarker = symbolTransform(textWithoutMarker, {
+        separator: markerChar,
+        transformArrows: false,
+      })
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      // Check if symbolTransform is the culprit
+      // If this fails with "expected X not to be Y", symbolTransform is invariant
+      // If this passes, symbolTransform is NOT invariant (the bug)
       expect(strippedResult).not.toBe(transformedWithoutMarker)
-      expect(strippedResult).toBe(":  /") // Double space - the bug
-      expect(transformedWithoutMarker).toBe(": /") // Single space - correct
     })
   })
 
