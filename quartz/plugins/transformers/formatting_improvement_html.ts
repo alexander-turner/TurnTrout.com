@@ -1,7 +1,12 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace } from "punctilio"
+import {
+  niceQuotes,
+  hyphenReplace,
+  primeMarks,
+  symbolTransform,
+} from "punctilio"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -11,7 +16,6 @@ import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
   fractionRegex,
-  numberRegex,
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
@@ -202,7 +206,9 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 // Don't check for invariance
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
+  (text: string) => primeMarks(text, { separator: markerChar }), // Before niceQuotes to avoid curling measurements
   (text: string) => niceQuotes(text, { separator: markerChar }),
+  (text: string) => symbolTransform(text, { separator: markerChar }), // Ellipsis, multiplication, math, legal, arrows
 ]
 
 // Check for invariance
@@ -575,15 +581,15 @@ export function timeTransform(text: string): string {
   return text.replace(amPmRegex, matchFunction)
 }
 
+// Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
 const massTransforms: [RegExp | string, string][] = [
   [/\u00A0/gu, " "], // Replace non-breaking spaces
-  [/!=/g, "≠"],
   [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
   [/\b([Ff])rappe\b/g, "$1rappé"],
   [/\b([Ll])atte\b/g, "$1atté"],
   [/\b([Cc])liche\b/g, "$1liché"],
   [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
-  [/wi-?fi/gi, "Wi-Fi"], // "wi-fi" to "Wi-Fi"
+  [/wi-?fi/gi, "Wi-Fi"],
   [/\b([Dd])eja vu\b/g, "$1éjà vu"],
   [/\bgithub\b/gi, "GitHub"],
   [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
@@ -592,10 +598,6 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b([Dd])ojo/g, "$1ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
-  [`(${numberRegex.source})[x\\*]\\b`, "$1×"], // Pretty multiplier
-  [/\b(\d+ ?)x( ?\d+)\b/g, "$1×$2"], // Multiplication sign
-  [/\.{3}/g, "…"], // Ellipsis
-  [/…(?=\w)/gu, "… "], // Space after ellipsis
   [/\b([Oo])pen-source\b/g, "$1pen source"],
   [/\bmarkdown\b/g, "Markdown"],
   [/e\.g\.,/g, "e.g."],
