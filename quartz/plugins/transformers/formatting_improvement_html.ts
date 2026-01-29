@@ -173,7 +173,9 @@ export function spacesAroundSlashes(text: string): string {
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
+  // The (?<! \uE000) excludes matches where space precedes marker before slash,
+  // ensuring marker invariance when text spans HTML elements
+  const slashRegex = /(?<![\d/<])(?<=[\S])(?<! \uE000) ?\/ ?(?=\S)(?!\/)/g
   text = text.replace(slashRegex, " / ")
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
