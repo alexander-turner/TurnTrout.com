@@ -361,8 +361,7 @@ test.describe("Footnote popovers", () => {
 
     // Should contain footnote content (verify it has some content)
     const content = popoverInner
-    await expect(content).toHaveText()
-    expect(content?.length).toBeGreaterThan(0)
+    await expect(content).not.toBeEmpty()
   })
 
   test("Footnote popover size reflects content size", async ({ page }) => {
