@@ -239,6 +239,7 @@
     "@types/ws": "8.5.12",
     "@types/yargs": "17.0.32",
     "babel-jest": "29.7.0",
+    "baseline-browser-mapping": "^2.9.19",
     "cheerio": "1.0.0",
     "critical": "7.2.1",
     "domhandler": "5.0.3",
