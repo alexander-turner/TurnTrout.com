@@ -12,16 +12,59 @@ rollback() {
   exit 1
 }
 
+# Find ots binary - check PATH first, then known locations
+find_ots() {
+  # Check PATH
+  if command -v ots >/dev/null 2>&1; then
+    command -v ots
+    return 0
+  fi
+
+  # Check common conda/homebrew locations
+  for candidate in \
+    "/opt/homebrew/anaconda3/envs/website/bin/ots" \
+    "$HOME/anaconda3/envs/website/bin/ots" \
+    "$HOME/miniconda3/envs/website/bin/ots" \
+    "/usr/local/bin/ots" \
+    "$HOME/.local/bin/ots"; do
+    if [ -x "$candidate" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+OTS_BIN=$(find_ots)
+
+# If ots is not available, skip timestamping with a warning (don't block commits)
+if [ -z "$OTS_BIN" ]; then
+  echo "WARNING: OpenTimestamp (ots) not found. Skipping timestamp creation."
+  echo "Timestamps provide cryptographic proof of commit dates."
+  echo "Install ots to enable: pip install opentimestamps-client"
+  exit 0
+fi
+
+# If timestamps repo doesn't exist, skip with warning
+if [ ! -d "$timestamps_repo" ]; then
+  echo "WARNING: .timestamps directory not found. Skipping timestamp creation."
+  echo "Clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+  exit 0
+fi
+
 mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
 # Try to create timestamp with relaxed requirements (accept 1 calendar response, 10s timeout)
-ots_output=$(/opt/homebrew/anaconda3/envs/website/bin/ots stamp -m 1 --timeout 10 "$txt_file" 2>&1)
+ots_output=$("$OTS_BIN" stamp -m 1 --timeout 10 "$txt_file" 2>&1)
 ots_exit=$?
 
 if [ $ots_exit -ne 0 ]; then
   echo "OpenTimestamp output: $ots_output" >&2
+  # Clean up the txt file we created
+  rm -f "$txt_file"
   rollback "Failed to create OpenTimestamp proof! This may be due to network issues or insufficient calendar server responses."
 fi
 
@@ -33,7 +76,11 @@ while [ $count -lt 50 ]; do
   sleep 0.1
   count=$((count + 1))
 done
-[ -f "$ots_file" ] || rollback "OpenTimestamp .ots file was not created!"
+
+if [ ! -f "$ots_file" ]; then
+  rm -f "$txt_file"
+  rollback "OpenTimestamp .ots file was not created!"
+fi
 
 cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"

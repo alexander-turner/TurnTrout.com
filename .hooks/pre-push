@@ -45,17 +45,25 @@ stash_and_exit() {
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
+# Try to activate conda environment if available
 if command -v conda >/dev/null 2>&1; then
-  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
+  ACTIVE_ENV=$(conda info 2>/dev/null | grep 'active environment' | awk '{print $NF}' || true)
 
   if [ "$ACTIVE_ENV" != "website" ]; then
-    echo "Activating conda environment: website"
-
-    CONDA_BASE=$(conda info --base)
-    # shellcheck source=/dev/null
-    . "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda activate website
+    CONDA_BASE=$(conda info --base 2>/dev/null || true)
+    if [ -n "$CONDA_BASE" ] && [ -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
+      echo "Activating conda environment: website"
+      # shellcheck source=/dev/null
+      . "$CONDA_BASE/etc/profile.d/conda.sh"
+      conda activate website 2>/dev/null || true
+    fi
   fi
+fi
+
+# Verify uv is available (required for running checks)
+if ! command -v uv >/dev/null 2>&1; then
+  echo "ERROR: uv is not installed. Please install it: curl -LsSf https://astral.sh/uv/install.sh | sh"
+  exit 1
 fi
 
 if [ "$RESUME" != "true" ]; then

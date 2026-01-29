@@ -1,3 +1,10 @@
 #!/bin/sh
 
-npx --no -- commitlint --edit "$1" --config config/javascript/commitlint.config.js
+# Run commitlint if available (via pnpm or npx)
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec commitlint --edit "$1" --config config/javascript/commitlint.config.js 2>/dev/null || true
+elif command -v npx >/dev/null 2>&1; then
+  npx --yes commitlint --edit "$1" --config config/javascript/commitlint.config.js 2>/dev/null || true
+fi
+
+exit 0

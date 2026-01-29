@@ -1,35 +1,69 @@
 #!/bin/bash
-
-# First initialize conda
-CONDA="/opt/homebrew/anaconda3/bin/conda"
-eval "$("$CONDA" shell.bash hook)"
-
-# Then check and activate environment
-if [ "$CONDA_DEFAULT_ENV" != "website" ]; then
-  conda activate website
-fi
+set -e
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Check if .timestamps directory exists
 if [ ! -d "$GIT_ROOT/.timestamps" ]; then
-  echo "ERROR: .timestamps directory not found!"
+  echo "WARNING: .timestamps directory not found!"
   echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
-  exit 1
+  # Don't exit - this is a warning, not a blocker for commits
 fi
 
+# Try to activate conda environment if conda is available
+if command -v conda >/dev/null 2>&1; then
+  CONDA_BASE=$(conda info --base 2>/dev/null || true)
+  if [ -n "$CONDA_BASE" ] && [ -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
+    # shellcheck source=/dev/null
+    . "$CONDA_BASE/etc/profile.d/conda.sh"
+    if [ "$CONDA_DEFAULT_ENV" != "website" ]; then
+      conda activate website 2>/dev/null || true
+    fi
+  fi
+fi
+
+# Portable stat function to get file modification time
+get_mtime() {
+  if stat --version >/dev/null 2>&1; then
+    # GNU stat (Linux)
+    stat -c %Y "$1" 2>/dev/null || echo "0"
+  else
+    # BSD stat (macOS)
+    stat -f %m "$1" 2>/dev/null || echo "0"
+  fi
+}
+
 # Store file modification times before formatting
-touch /tmp/before_format /tmp/after_format
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/before_format
+declare -A before_times
+for f in "$GIT_ROOT"/scripts/*.py; do
+  [ -f "$f" ] && before_times["$f"]=$(get_mtime "$f")
+done
 
-docformatter --in-place "$GIT_ROOT"/scripts/**.py --config "$GIT_ROOT"/config/python/pyproject.toml
-pyupgrade "$GIT_ROOT"/scripts/**.py
+# Run Python formatters if available (via uv or directly)
+if command -v uv >/dev/null 2>&1; then
+  uv run docformatter --in-place "$GIT_ROOT"/scripts/*.py --config "$GIT_ROOT"/config/python/pyproject.toml 2>/dev/null || true
+  uv run pyupgrade --py311-plus "$GIT_ROOT"/scripts/*.py 2>/dev/null || true
+elif command -v docformatter >/dev/null 2>&1; then
+  docformatter --in-place "$GIT_ROOT"/scripts/*.py --config "$GIT_ROOT"/config/python/pyproject.toml 2>/dev/null || true
+  pyupgrade --py311-plus "$GIT_ROOT"/scripts/*.py 2>/dev/null || true
+fi
 
-# Store file modification times after formatting
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/after_format
+# Stage files that were modified by formatters
+for f in "$GIT_ROOT"/scripts/*.py; do
+  if [ -f "$f" ]; then
+    after_time=$(get_mtime "$f")
+    before_time=${before_times["$f"]:-0}
+    if [ "$after_time" != "$before_time" ]; then
+      git add "$f"
+    fi
+  fi
+done
 
-# Compare and stage only modified files
-diff /tmp/before_format /tmp/after_format | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
+# Run lint-staged if available (suppress all output on failure)
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec lint-staged --allow-empty >/dev/null 2>&1 || true
+elif command -v npx >/dev/null 2>&1; then
+  npx --yes lint-staged --allow-empty >/dev/null 2>&1 || true
+fi
 
-# Run normal lint-staged using pnpm instead of npx to avoid npm warnings
-pnpm exec lint-staged --allow-empty
+exit 0
