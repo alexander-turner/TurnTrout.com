@@ -514,11 +514,17 @@ def run_command(
 
 def get_check_steps(
     git_root_path: Path,
+    feature_branch: bool = False,
 ) -> tuple[list[CheckStep], list[CheckStep]]:
     """
     Get the check steps for pre-server and post-server phases.
 
     Isolating this allows for better testing and configuration management.
+
+    Args:
+        git_root_path: Path to the git repository root.
+        feature_branch: If True, skip steps that should only run on main branch
+                        (e.g., CDN upload, DeepSource CLI).
     """
     script_files = glob.glob(f"{git_root_path}/scripts/*.py")
 
@@ -608,13 +614,21 @@ def get_check_steps(
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
-        CheckStep(
-            name="DeepSource CLI",
-            command=[
-                "fish",
-                f"{git_root_path}/scripts/run_deepsource_cli.fish",
-            ],
-        ),
+    ]
+
+    # DeepSource CLI creates temporary PRs, so only run on main branch
+    if not feature_branch:
+        steps_before_server.append(
+            CheckStep(
+                name="DeepSource CLI",
+                command=[
+                    "fish",
+                    f"{git_root_path}/scripts/run_deepsource_cli.fish",
+                ],
+            ),
+        )
+
+    steps_before_server += [
         CheckStep(
             name="Running Javascript unit tests",
             command=["pnpm", "test"],
@@ -633,16 +647,24 @@ def get_check_steps(
                 f"{git_root_path}/config/python/pyproject.toml",
             ],
         ),
+    ]
+
+    # CDN upload only runs on main branch
+    if not feature_branch:
         # skipcq: BAN-B604
-        CheckStep(
-            name="Compressing and uploading local assets",
-            command=[
-                "bash",
-                f"{git_root_path}/scripts/handle_assets.sh",
-            ],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-        ),
+        steps_before_server.append(
+            CheckStep(
+                name="Compressing and uploading local assets",
+                command=[
+                    "bash",
+                    f"{git_root_path}/scripts/handle_assets.sh",
+                ],
+                # skipcq: BAN-B604 (a local command, assume safe)
+                shell=True,
+            ),
+        )
+
+    steps_before_server += [
         CheckStep(
             name="Checking source files",
             command=[
@@ -746,6 +768,11 @@ def main() -> int:
         action="store_true",
         help="Resume from last successful check",
     )
+    parser.add_argument(
+        "--feature-branch",
+        action="store_true",
+        help="Skip main-only steps (CDN upload, DeepSource CLI)",
+    )
     args = parser.parse_args()
 
     server_manager = ServerManager()
@@ -773,7 +800,15 @@ def main() -> int:
             stash_created = True
             console.log("[cyan]Stashed uncommitted changes[/cyan]")
 
-        steps_before_server, steps_after_server = get_check_steps(_GIT_ROOT)
+        if args.feature_branch:
+            console.log(
+                "[cyan]Running in feature branch mode "
+                "(skipping CDN upload and DeepSource CLI)[/cyan]"
+            )
+
+        steps_before_server, steps_after_server = get_check_steps(
+            _GIT_ROOT, feature_branch=args.feature_branch
+        )
         all_steps = steps_before_server + steps_after_server
         all_step_names = [step.name for step in all_steps]
 

@@ -62,11 +62,24 @@ if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
 fi
 
-if [ "$CURRENT_BRANCH" != "main" ]; then
-  exit 0
+# Determine if we should run checks
+# Run for main branch and claude/* branches (PRs from Claude)
+case "$CURRENT_BRANCH" in
+  main)
+    BRANCH_FLAG=""
+    ;;
+  claude/*)
+    BRANCH_FLAG="--feature-branch"
+    ;;
+  *)
+    # Skip checks for other branches
+    exit 0
+    ;;
+esac
+
+uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG $BRANCH_FLAG
+
+# Auto-compile requirements.txt and update publication dates (main branch only)
+if [ "$CURRENT_BRANCH" = "main" ]; then
+  sh "$GIT_ROOT/scripts/fast_pre_push.sh"
 fi
-
-uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
-
-# Auto-compile requirements.txt and update publication dates
-sh "$GIT_ROOT/scripts/fast_pre_push.sh"

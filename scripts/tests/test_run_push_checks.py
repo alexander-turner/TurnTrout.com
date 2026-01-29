@@ -14,13 +14,6 @@ from rich.style import Style
 from scripts import run_push_checks
 
 
-@pytest.fixture(autouse=True)
-def reset_global_state():
-    """Reset global state before each test."""
-    run_push_checks._server_to_cleanup = None
-    yield
-
-
 @pytest.fixture
 def temp_state_dir():
     """Create a temporary directory for state files."""
@@ -566,7 +559,7 @@ def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
 def test_argument_parsing(resume_flag, temp_state_dir):
     """Test command line argument parsing with and without resume flag."""
     with patch("argparse.ArgumentParser.parse_args") as mock_parse:
-        mock_parse.return_value = MagicMock(resume=resume_flag)
+        mock_parse.return_value = MagicMock(resume=resume_flag, feature_branch=False)
 
         # Create mock steps
         mock_steps_before = [
@@ -612,7 +605,7 @@ def test_main_clears_state_on_success(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(resume=False, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,  # noqa: F841
         patch("scripts.run_push_checks.create_server") as mock_create,
@@ -647,7 +640,7 @@ def test_main_preserves_state_on_failure(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(resume=False, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.create_server") as mock_create,
@@ -688,7 +681,7 @@ def test_main_skips_pre_server_steps(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=True),
+            return_value=MagicMock(resume=True, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.create_server") as mock_create,
@@ -849,12 +842,119 @@ def test_get_check_steps():
             ) in str(step.command)
 
 
+def test_get_check_steps_feature_branch():
+    """Test that feature branch mode skips CDN upload and DeepSource CLI."""
+    test_root = Path("/test/root")
+    steps_before, steps_after = run_push_checks.get_check_steps(
+        test_root, feature_branch=True
+    )
+
+    # Verify CDN upload step is NOT included
+    assert not any(
+        step.name == "Compressing and uploading local assets"
+        for step in steps_before
+    )
+
+    # Verify DeepSource CLI step is NOT included
+    assert not any(step.name == "DeepSource CLI" for step in steps_before)
+
+    # Verify essential steps are still included
+    assert any(
+        step.name.startswith("Typechecking Python") for step in steps_before
+    )
+    assert any(step.name == "Running Javascript unit tests" for step in steps_before)
+    assert any(step.name == "Running Python unit tests" for step in steps_before)
+    assert any(step.name == "Checking source files" for step in steps_before)
+    assert any(step.name.startswith("Checking HTML files") for step in steps_after)
+
+    # Verify we have fewer steps than main branch mode
+    main_steps_before, _ = run_push_checks.get_check_steps(test_root)
+    assert len(steps_before) < len(main_steps_before)
+
+
+def test_main_feature_branch_mode(temp_state_dir):
+    """Test that main() logs feature branch mode message."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(resume=False, feature_branch=True),
+        ),
+        patch("scripts.run_push_checks.run_checks") as mock_run,
+        patch("scripts.run_push_checks.create_server") as mock_create,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("scripts.run_push_checks.kill_process"),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify successful exit
+        assert exit_code == 0
+        # Should show feature branch mode message
+        mock_log.assert_any_call(
+            "[cyan]Running in feature branch mode "
+            "(skipping CDN upload and DeepSource CLI)[/cyan]"
+        )
+        # Should still run checks
+        assert mock_run.call_count == 2
+
+
+def test_main_cross_branch_resume_with_main_only_step(temp_state_dir):
+    """Test that resuming on feature branch ignores main-only step state.
+
+    Scenario: User on main branch fails at "Compressing and uploading local
+    assets", switches to claude/* branch, tries to resume. The saved step
+    doesn't exist in the feature branch step list, so resume is invalid.
+    """
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(resume=True, feature_branch=True),
+        ),
+        patch("scripts.run_push_checks.run_checks") as mock_run,
+        patch("scripts.run_push_checks.create_server") as mock_create,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("scripts.run_push_checks.kill_process"),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        mock_create.return_value = run_push_checks.ServerInfo(12345, False)
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+        # Save a main-only step (CDN upload)
+        run_push_checks.save_state("Compressing and uploading local assets")
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify successful exit
+        assert exit_code == 0
+        # Should show feature branch mode message
+        mock_log.assert_any_call(
+            "[cyan]Running in feature branch mode "
+            "(skipping CDN upload and DeepSource CLI)[/cyan]"
+        )
+        # Should show warning about invalid resume point
+        mock_log.assert_any_call(
+            "[yellow]No valid resume point found. Starting from beginning.[/yellow]"
+        )
+        # Should run all steps from beginning
+        assert mock_run.call_count == 2
+
+
 def test_main_resume_with_invalid_step(temp_state_dir):
     """Test main() handles invalid resume state correctly."""
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=True),
+            return_value=MagicMock(resume=True, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.create_server") as mock_create,
@@ -896,7 +996,7 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(resume=False, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.create_server") as mock_create,
@@ -940,7 +1040,7 @@ def test_main_stashes_and_restores_changes(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(resume=False, feature_branch=False),
         ),
         patch("scripts.run_push_checks.run_checks"),
         patch("scripts.run_push_checks.create_server") as mock_create,

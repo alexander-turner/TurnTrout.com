@@ -82,13 +82,17 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
-**Pre-push** (main branch only):
+**Pre-push** (main and claude/* branches):
 
 - Stashes uncommitted changes
 - Runs comprehensive validation (tests, linting, spellcheck, link validation)
-- Compresses/uploads assets to CDN
-- Updates publication dates
 - Can resume from last failure: `RESUME=true git push`
+
+For **main branch only**, additionally:
+
+- Compresses/uploads assets to CDN
+- Runs DeepSource CLI analysis
+- Updates publication dates
 
 ## Content Structure
 
@@ -173,3 +177,19 @@ Per `.cursorrules` and `design.md`:
 - Security-first approach
 - Modern best practices with explicit typing
 - No unnecessary refactoring or whitespace changes
+
+## Post-Completion Self-Assessment
+
+After completing any significant task (feature implementation, bug fix, refactor):
+
+1. **Spawn a critical assessment subagent** to review the changes for:
+   - Edge cases not handled
+   - Potential bugs or logic errors
+   - Missing functionality or test coverage
+   - Documentation gaps
+   - Code style issues
+   - Security concerns
+
+2. **Address identified issues** before considering the task complete
+
+3. **Update documentation** (including this file) if the changes affect workflows or conventions
