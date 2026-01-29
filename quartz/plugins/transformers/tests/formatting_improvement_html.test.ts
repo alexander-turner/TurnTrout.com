@@ -281,8 +281,9 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("Mass transforms", () => {
+    // Note: !=, multiplication (5x1), and ellipsis (...) are now handled by punctilio's symbolTransform
+    // These tests cover site-specific transforms in massTransformText
     it.each([
-      ["There are 1 != 2 left.", "There are 1 ≠ 2 left."],
       ["The data are i.i.d.", "The data are IID"],
       ["The frappe", "The frappé"],
       ["The latte", "The latté"],
@@ -295,11 +296,8 @@ describe("HTMLFormattingImprovement", () => {
       ["Naively", "Naïvely"],
       ["Don't be naive", "Don't be naïve"],
       ["Dojo", "Dōjō"],
-      ["5x1", "5×1"],
       ["regex", "RegEx"],
       ["regexpressions", "regexpressions"],
-      ["Who are you...?", "Who are you…?"],
-      ["Who are you...what do you want?", "Who are you… what do you want?"],
       ["Chateau", "Château"],
       ["chateau", "château"],
       ["github", "GitHub"],
@@ -337,27 +335,6 @@ describe("HTMLFormattingImprovement", () => {
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
-    })
-
-    it.each([
-      ["I have 3x apples and 5x oranges.", "I have 3× apples and 5× oranges."],
-      ["The word 'box' should not be changed.", "The word 'box' should not be changed."],
-      ["-5x is negative.", "-5× is negative."], // Negative numbers
-      ["3.14x pi is fun.", "3.14× pi is fun."], // Decimals
-      ["5*5 area", "5×5 area"], // Asterisk
-      ["12345x is a big number.", "12345× is a big number."], // Large numbers
-      ["0.001x is small.", "0.001× is small."], // Small numbers
-      ["I have 2x apples and 1.5x oranges.", "I have 2× apples and 1.5× oranges."], // Combined cases
-      ["This is 3x larger.", "This is 3× larger."], // HTML context
-    ])("correctly handles '%s'", (input, expected) => {
-      const result = massTransformText(input)
-      expect(result).toBe(expected)
-    })
-
-    it("doesn't replace 'x' in words", () => {
-      const input = "The word 'box' should not be changed."
-      const result = massTransformText(input)
-      expect(result).toBe(input) // No change expected
     })
   })
 
