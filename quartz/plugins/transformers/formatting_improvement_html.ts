@@ -413,13 +413,16 @@ export function nbspBetweenNumberAndUnit(text: string): string {
  *
  * Based on richtypo's orphans rule.
  * Only applies to short final words (1-10 characters) to avoid affecting long words.
+ * Only matches at end of string or double newline (paragraph break), not at every line ending.
  */
 export function nbspBeforeLastWord(text: string): string {
   // Exclude markerChar from word match to avoid including it as part of the word
   // Allow optional markerChar before end-of-string/paragraph
+  // Use non-multiline mode so $ only matches at true end of string
+  // Require the space to be preceded by a word character (not just whitespace)
   const pattern = new RegExp(
-    `${notInTag}(?<![#-])${space}([^\\s${chr}]{1,10})(${chr}?(?:\\n\\n|$))`,
-    "gm",
+    `${notInTag}(?<=[\\w${chr}])${space}([^\\s${chr}]{1,10})(${chr}?(?:\\n\\n|$))`,
+    "g", // Removed 'm' flag - only match at true end of string or \n\n
   )
   return text.replace(pattern, `${nbsp}$1$2`)
 }
