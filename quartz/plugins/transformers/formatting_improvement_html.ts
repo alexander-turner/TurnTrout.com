@@ -203,7 +203,7 @@ const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
-  (text: string) => symbolTransform(text, { separator: markerChar, transformArrows: false }),
+  (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
 ]
 
 // Check for invariance
