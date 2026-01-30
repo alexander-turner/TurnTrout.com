@@ -26,7 +26,11 @@ _executable_cache: Dict[str, str] = {}
 
 @functools.lru_cache(maxsize=1)
 def _get_imagemagick_version() -> int:
-    """Detect ImageMagick version (6 or 7). Defaults to 6 if unclear."""
+    """
+    Detect ImageMagick version (6 or 7).
+
+    Defaults to 6 if unclear.
+    """
     magick_path = shutil.which("magick")
     if not magick_path:
         return 6
@@ -38,7 +42,11 @@ def _get_imagemagick_version() -> int:
 
 
 def get_imagemagick_command(operation: str) -> list[str]:
-    """Get ImageMagick command for an operation (handles IM6 vs IM7 differences)."""
+    """
+    Get ImageMagick command for an operation.
+
+    Handles IM6 vs IM7 differences.
+    """
     if _get_imagemagick_version() == 7:
         return [find_executable("magick"), operation]
 
