@@ -280,6 +280,18 @@ describe("HTMLFormattingImprovement", () => {
       expect(strippedResult).toBe(transformedWithoutMarker)
     })
 
+    it("spacesAroundSlashes should be invariant with marker before slash followed by comma (no space after)", () => {
+      // Pattern from CI failure: "at : /," where element boundary is between space and slash
+      const textWithMarker = `at : ${markerChar}/,`
+      const textWithoutMarker = `at : /,`
+
+      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
+      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+
     it("symbolTransform is invariant with colon-slash pattern", () => {
       const textWithMarker = `: ${markerChar}/ ,`
       const textWithoutMarker = `: / ,`

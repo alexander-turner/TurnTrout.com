@@ -173,10 +173,19 @@ export function spacesAroundSlashes(text: string): string {
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  // The (?<! \uE000) excludes matches where space precedes marker before slash,
-  // ensuring marker invariance when text spans HTML elements
-  const slashRegex = /(?<![\d/<])(?<=[\S])(?<! \uE000) ?\/ ?(?=\S)(?!\/)/g
-  text = text.replace(slashRegex, " / ")
+  // Use function replacement to preserve markers while avoiding double spaces
+  // Markers go OUTSIDE the spaces so content stays in correct HTML elements
+  const slashRegex = /(?<![\d/<])(?<=[\S])( ?)(\uE000)?\/(\uE000)?( ?)(?=\S)(?!\/)/g
+  text = text.replace(
+    slashRegex,
+    (_match, spaceBefore, markerBefore, markerAfter, spaceAfter) => {
+      // Add space only if not already present
+      // Place markers outside spaces: marker-space-slash-space-marker
+      const pre = spaceBefore || " "
+      const post = spaceAfter || " "
+      return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
+    },
+  )
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
   text = text.replace(numberSlashThenNonNumber, " / ")
