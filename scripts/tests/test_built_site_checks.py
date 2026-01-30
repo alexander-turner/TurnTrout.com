@@ -5275,6 +5275,16 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
                 "Paragraph ends with invalid character 'd' Also invalid",
             ],
         ),
+        # page-listing-title class should be skipped
+        (
+            '<article><p class="page-listing-title">Title without punctuation</p></article>',
+            [],
+        ),
+        # Paragraphs containing transcluded content should be skipped
+        (
+            '<article><p><span class="transclude">Transcluded content without punct</span></p></article>',
+            [],
+        ),
         # Footnote with invalid ending
         (
             '<article><p>No punct<a id="user-content-fnref-1">1</a></p></article>',
@@ -5375,7 +5385,7 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         (
             '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
             [
-                "<img> missing width, height: https://example.com/very/long/path/to...n/total/length.png"
+                "<img> missing width, height: https://example.com/very/long/path/to/im...eighty/characters/in/total/length.png"
             ],
         ),
     ],

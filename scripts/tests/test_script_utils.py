@@ -1138,3 +1138,90 @@ def test_get_classes_invalid_type_attribute():
     tag["class"] = 123
     with pytest.raises(ValueError, match="Invalid class attribute value"):
         script_utils.get_classes(tag)
+
+
+# --- ImageMagick Version Detection Tests ---
+
+
+@pytest.fixture(autouse=False)
+def clear_imagemagick_cache():
+    script_utils._get_imagemagick_version.cache_clear()
+    yield
+    script_utils._get_imagemagick_version.cache_clear()
+
+
+def test_get_imagemagick_version_returns_6_when_magick_not_found(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    assert script_utils._get_imagemagick_version() == 6
+
+
+def test_get_imagemagick_version_returns_7_when_im7_detected(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
+
+    def mock_run(*args, **kwargs):
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout="Version: ImageMagick 7.1.0-0 Q16",
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    assert script_utils._get_imagemagick_version() == 7
+
+
+def test_get_imagemagick_version_returns_6_when_im6_detected(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
+
+    def mock_run(*args, **kwargs):
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout="Version: ImageMagick 6.9.11-60 Q16",
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    assert script_utils._get_imagemagick_version() == 6
+
+
+def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(
+        script_utils, "_get_imagemagick_version", lambda: 7
+    )
+    monkeypatch.setattr(
+        script_utils, "find_executable", lambda name: f"/usr/bin/{name}"
+    )
+
+    result = script_utils.get_imagemagick_command("identify")
+    assert result == ["/usr/bin/magick", "identify"]
+
+
+def test_get_imagemagick_command_im6_operation_found(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(
+        script_utils, "_get_imagemagick_version", lambda: 6
+    )
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
+
+    result = script_utils.get_imagemagick_command("identify")
+    assert result == ["/usr/bin/identify"]
+
+
+def test_get_imagemagick_command_im6_operation_not_found(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(
+        script_utils, "_get_imagemagick_version", lambda: 6
+    )
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+
+    with pytest.raises(FileNotFoundError, match="ImageMagick 'identify' not found"):
+        script_utils.get_imagemagick_command("identify")
