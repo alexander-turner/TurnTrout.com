@@ -33,7 +33,7 @@ def _get_imagemagick_version() -> int:
     """
     magick_path = shutil.which("magick")
     if not magick_path:
-        return 6
+        return 6  # pragma: no cover
 
     result = subprocess.run(
         [magick_path, "-version"], capture_output=True, text=True, check=False
@@ -50,10 +50,11 @@ def get_imagemagick_command(operation: str) -> list[str]:
     if _get_imagemagick_version() == 7:
         return [find_executable("magick"), operation]
 
-    operation_path = shutil.which(operation)
-    if not operation_path:
+    # IM6 fallback - pragma: no cover since CI uses IM7
+    operation_path = shutil.which(operation)  # pragma: no cover
+    if not operation_path:  # pragma: no cover
         raise FileNotFoundError(f"ImageMagick '{operation}' not found.")
-    return [operation_path]
+    return [operation_path]  # pragma: no cover
 
 
 def find_executable(name: str) -> str:
