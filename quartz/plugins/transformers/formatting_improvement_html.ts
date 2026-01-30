@@ -139,6 +139,11 @@ export function transformElement(
   const transformedFragments = transformedContent.split(markerChar).slice(0, -1)
 
   if (transformedFragments.length !== textNodes.length) {
+    console.error("Text node count mismatch debug info:")
+    console.error("  Before:", JSON.stringify(markedContent))
+    console.error("  After:", JSON.stringify(transformedContent))
+    console.error("  Expected fragments:", textNodes.length)
+    console.error("  Actual fragments:", transformedFragments.length)
     throw new Error("Transformation altered the number of text nodes")
   }
 
