@@ -28,10 +28,10 @@ const improveFootnoteFormatting = (text: string) => {
 
 // Regular expression for edit/note patterns
 const editPattern =
-  /^\s*(?<emph1>[*_]*)(edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+  /^\s*(?<emph1>[*_]*)(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPattern = "\n> [!info] Edited on $<date>\n>\n> $<text>"
 
-const editPatternNoDate = /^\s*(?<emph1>[*_]*)(edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+const editPatternNoDate = /^\s*(?<emph1>[*_]*)(?:edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPatternNoDate = "\n> [!info] Edited after posting\n>\n> $<text>"
 
 /**
@@ -45,8 +45,8 @@ export function editAdmonition(text: string): string {
   return text
 }
 
-const CALLOUT_REGEX_NO_SPACE = new RegExp(/^( *(?:> )+)(\[!.*$)(?!(?:> *)+\n)/gm)
-const TARGET_REGEX_WITH_SPACE = "$1$2\n$1"
+const CALLOUT_REGEX_NO_SPACE = new RegExp(/^(?<prefix> *(?:> )+)(?<callout>\[!.*$)(?!(?:> *)+\n)/gm)
+const TARGET_REGEX_WITH_SPACE = "$<prefix>$<callout>\n$<prefix>"
 
 /**
  * Adds a newline after admonitions without an empty second line (sans >).
@@ -130,7 +130,7 @@ const concentrateEmphasisAroundLinks = (text: string): string => {
  * @returns The text with all formatting improvements applied.
  */
 export const formattingImprovement = (text: string) => {
-  const yamlHeaderMatch = text.match(/^\s*---\n(.*?)\n---\n/s)
+  const yamlHeaderMatch = text.match(/^\s*---\n(?<yaml>.*?)\n---\n/s)
   let yamlHeader = ""
   let content = text
 

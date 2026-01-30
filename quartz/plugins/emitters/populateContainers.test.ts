@@ -179,11 +179,11 @@ describe("PopulateContainers", () => {
 
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
       // Extract domain names in order of appearance (each appears 3 times, so get first occurrence)
-      const domainPattern = /data-domain="([^"]+)"/g
+      const domainPattern = /data-domain="(?<domain>[^"]+)"/g
       const domains: string[] = []
       for (const match of writtenContent.matchAll(domainPattern)) {
-        if (!domains.includes(match[1] ?? "")) {
-          domains.push(match[1] ?? "")
+        if (!domains.includes(match.groups?.domain ?? "")) {
+          domains.push(match.groups?.domain ?? "")
         }
       }
       // Verify order: x_com (20) > apple_com (15) > openai_com (10)

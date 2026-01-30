@@ -170,13 +170,13 @@ export async function fetchWithMetaRedirect(
     }
 
     // Extract URL from content="[timeout]; url=[url]"
-    const urlMatch = metaRefresh[0].match(/url=(.*?)["'\s>]/i)
-    if (!urlMatch) {
+    const urlMatch = metaRefresh[0].match(/url=(?<url>.*?)["'\s>]/i)
+    if (!urlMatch?.groups) {
       return response
     }
 
     // Update URL for next iteration
-    currentUrl = new URL(urlMatch[1], currentUrl)
+    currentUrl = new URL(urlMatch.groups.url, currentUrl)
     redirectCount++
   }
 

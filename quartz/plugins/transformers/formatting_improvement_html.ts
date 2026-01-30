@@ -182,41 +182,41 @@ export function niceQuotes(text: string): string {
   const endQuoteNotContraction = `(?!${contraction})’${afterEndingSingle}`
   //  Convert to apostrophe if not followed by an end quote
   const apostropheRegex = new RegExp(
-    `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
+    `(?<=^|[^\\w])'(?:${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
     "gm",
   )
   text = text.replace(apostropheRegex, "’")
 
   // Beginning single quotes
-  const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
-  text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
+  const beginningSingle = `(?<beforeSingle>(?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
+  text = text.replace(new RegExp(beginningSingle, "gm"), "$<beforeSingle>‘")
 
   // Double quotes //
   const beginningDouble = new RegExp(
-    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
+    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(?:${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
     "gm",
   )
   text = text.replace(beginningDouble, "$<beforeChr>“$<afterChr>")
 
   // Open quote after brace (generally in math mode)
-  text = text.replace(new RegExp(`(?<=\\{)(${chr}? )?["]`, "g"), "$1“")
+  text = text.replace(new RegExp(`(?<=\\{)(?<chrSpace>${chr}? )?["]`, "g"), "$<chrSpace>“")
 
   // note: Allowing 2 chrs in a row
-  const endingDouble = `([^\\s\\(])["](${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
-  text = text.replace(new RegExp(endingDouble, "g"), "$1”$2")
+  const endingDouble = `(?<beforeEndDouble>[^\\s\\(])["](?<afterEndDouble>${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
+  text = text.replace(new RegExp(endingDouble, "g"), "$<beforeEndDouble>”$<afterEndDouble>")
 
   // If end of line, replace with right double quote
-  text = text.replace(new RegExp(`["](${chr}?)$`, "g"), "”$1")
+  text = text.replace(new RegExp(`["](?<endChr>${chr}?)$`, "g"), "”$<endChr>")
   // If single quote has a right double quote after it, replace with right single and then double
   text = text.replace(/'(?=”)/gu, "’")
 
   // Punctuation //
   // Periods inside quotes
-  const periodRegex = new RegExp(`(?<![!?:\\.…])(${chr}?)([’”])(${chr}?)(?!\\.\\.\\.)\\.`, "g")
-  text = text.replace(periodRegex, "$1.$2$3")
+  const periodRegex = new RegExp(`(?<![!?:\\.…])(?<chrBefore>${chr}?)(?<quoteChar>[’”])(?<chrAfter>${chr}?)(?!\\.\\.\\.)\\.`, "g")
+  text = text.replace(periodRegex, "$<chrBefore>.$<quoteChar>$<chrAfter>")
 
   // Commas outside of quotes
-  const commaRegex = new RegExp(`(?<![!?]),(${chr}?[”’])`, "g")
+  const commaRegex = new RegExp(`(?<![!?]),(?<quoteAfter>${chr}?[”’])`, "g")
   text = text.replace(commaRegex, "$1,")
 
   return text
@@ -231,7 +231,7 @@ export function spacesAroundSlashes(text: string): string {
   const h_t_placeholder_char = "\uE010"
 
   // First replace h/t with the placeholder character
-  text = text.replace(/\b(h\/t)\b/g, h_t_placeholder_char)
+  text = text.replace(/\b(?:h\/t)\b/g, h_t_placeholder_char)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
@@ -284,10 +284,10 @@ export function hyphenReplace(text: string) {
   // Handle dashes with potential spaces and optional marker character
   //  Being right after chr is a sufficient condition for being an em
   //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
+  const preDash = new RegExp(`(?:(?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
   // Want eg " - " to be replaced with "—"
   const surroundedDash = new RegExp(
-    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)([ ]+|$)`,
+    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)(?:[ ]+|$)`,
     "g",
   )
 
@@ -302,7 +302,7 @@ export function hyphenReplace(text: string) {
   text = text.replace(multipleDashInWords, "$<markerBefore>—$<markerAfter>")
 
   // Handle dashes at the start of a line
-  text = text.replace(new RegExp(`^(${chr})?[-]+ `, "gm"), "$1— ")
+  text = text.replace(new RegExp(`^(?<startChr>${chr})?[-]+ `, "gm"), "$<startChr>— ")
 
   // Create a regex for spaces around em dashes, allowing for optional spaces around the em dash
   const spacesAroundEM = new RegExp(
@@ -498,7 +498,7 @@ export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "�
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
+  const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent

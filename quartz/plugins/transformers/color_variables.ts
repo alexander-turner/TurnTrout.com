@@ -59,8 +59,9 @@ export const transformStyle = (style: string, colorMapping: Record<string, strin
   })
 
   // Restore var() expressions
-  newStyle = newStyle.replace(new RegExp(`${placeholder}(\\d+)___`, "g"), (match, index) => {
-    return varExpressions[parseInt(index)]
+  newStyle = newStyle.replace(new RegExp(`${placeholder}(?<index>\\d+)___`, "g"), (...args) => {
+    const groups = args[args.length - 1] as { index: string }
+    return varExpressions[parseInt(groups.index)]
   })
 
   return newStyle

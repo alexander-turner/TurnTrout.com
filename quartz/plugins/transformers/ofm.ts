@@ -38,18 +38,18 @@ export const externalLinkRegex = /^https?:\/\//i
 
 /** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
 export const wikilinkRegex = new RegExp(
-  /!?\[\[([^[\]|#\\]+)?(#+(?:[^[\]|#\\]+)?)?(\\?\|[^[\]#]+)?\]\]/,
+  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+(?:[^[\]|#\\]+)?)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
 /** Matches Markdown tables with header, separator, and body rows. */
 export const tableRegex = new RegExp(
-  /^\|([^\n])+\|\n(\|)( ?:?-{3,}:? ?\|)+\n(\|([^\n])+\|\n?)+/,
+  /^\|(?:[^\n])+\|\n(?:\|)(?:[ ]?:?-{3,}:?[ ]?\|)+\n(?:\|(?:[^\n])+\|\n?)+/,
   "gm",
 )
 
 /** Regular expression to match wikilinks within tables for escaping purposes */
-export const tableWikilinkRegex = new RegExp(/(!?\[\[[^\]]*?\]\])/, "g")
+export const tableWikilinkRegex = new RegExp(/(?<wikilink>!?\[\[[^\]]*?\]\])/, "g")
 
 /** Regular expression to match highlight syntax (==text==) */
 const highlightRegex = new RegExp(/[=]{2}(?<content>[^=]+)[=]{2}/, "g")
@@ -79,11 +79,11 @@ const ytLinkRegex = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)(?<video
 const ytPlaylistLinkRegex = /[?&]list=(?<playlistId>[^#?&]*)/
 
 /** Regular expression to match video file extensions */
-const videoExtensionRegex = new RegExp(/\.(mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
+const videoExtensionRegex = new RegExp(/\.(?:mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
 
 /** Regular expression to parse image embed dimensions and alt text */
 const wikilinkImageEmbedRegex = new RegExp(
-  /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
+  /^(?<alt>(?!^\d*x?\d*$).*?)?(?:\|?\s*?(?<width>\d+)(?:x(?<height>\d+))?)?$/,
 )
 
 /** Extended ElementData interface for custom HAST element properties. */
