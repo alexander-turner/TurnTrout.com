@@ -63,7 +63,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|Run eslint scanning|DeepSource:.*|lighthouse_(desktop|mobile)|build \(>=22\))$'
+          check-regexp: '^(visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|Run eslint scanning|DeepSource:.*|lighthouse_(desktop|mobile)|build \(>=22\)|python-lint|vale|stylelint|source-file-checks|python-tests|built-site-checks)$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"

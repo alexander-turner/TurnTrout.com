@@ -1,0 +1,49 @@
+name: Python linting
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  python-lint:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install Python Dependencies
+        run: uv sync --frozen
+
+      - name: Run mypy
+        run: |
+          uv run python -m mypy \
+            --config-file config/python/mypy.ini \
+            scripts/*.py
+
+      - name: Run docformatter check
+        run: |
+          uv run python -m docformatter \
+            --check \
+            --config config/python/pyproject.toml \
+            scripts/*.py
+
+      - name: Run pylint
+        run: |
+          uv run python -m pylint \
+            --rcfile config/python/.pylintrc \
+            .
