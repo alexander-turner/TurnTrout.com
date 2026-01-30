@@ -700,6 +700,42 @@ def get_check_steps(
     return steps_before_server, steps_after_server
 
 
+def _validate_and_run_pre_server_checks(
+    resume: bool,
+    all_step_names: list[str],
+    steps_before_server: list[CheckStep],
+) -> bool:
+    """
+    Validate resume state and run pre-server checks.
+
+    Returns the (possibly updated) resume flag.
+    """
+    if resume:
+        last_step = get_last_step(all_step_names)
+        if last_step is None:
+            console.log(
+                "[yellow]No valid resume point found. "
+                "Starting from beginning.[/yellow]"
+            )
+            resume = False
+
+    if not resume:
+        run_checks(steps_before_server, resume)
+        return resume
+
+    # Resume mode: check if we need to run pre-server checks
+    last_step = get_last_step(all_step_names)
+    pre_server_names = {step.name for step in steps_before_server}
+
+    if last_step and last_step in pre_server_names:
+        run_checks(steps_before_server, resume)
+    else:
+        for step in steps_before_server:
+            console.log(f"[grey]Skipping step: {step.name}[/grey]")
+
+    return resume
+
+
 def main() -> int:
     """Run all checks before pushing."""
     parser = argparse.ArgumentParser(
@@ -741,34 +777,16 @@ def main() -> int:
         all_steps = steps_before_server + steps_after_server
         all_step_names = [step.name for step in all_steps]
 
-        # Validate resume state
-        if args.resume:
-            last_step = get_last_step(all_step_names)
-            if last_step is None:
-                console.log(
-                    "[yellow]No valid resume point found. "
-                    "Starting from beginning.[/yellow]"
-                )
-                args.resume = False
-
-        # Run pre-server checks if needed
-        if not args.resume:
-            run_checks(steps_before_server, args.resume)
-        else:
-            last_step = get_last_step(all_step_names)
-            pre_server_names = {step.name for step in steps_before_server}
-
-            if last_step and last_step in pre_server_names:
-                run_checks(steps_before_server, args.resume)
-            else:
-                for step in steps_before_server:
-                    console.log(f"[grey]Skipping step: {step.name}[/grey]")
+        # Validate resume state and run pre-server checks
+        resume = _validate_and_run_pre_server_checks(
+            args.resume, all_step_names, steps_before_server
+        )
 
         server_info = create_server(_GIT_ROOT)
         server_manager.set_server_pid(
             server_info.pid, server_info.created_by_script
         )
-        run_checks(steps_after_server, args.resume)
+        run_checks(steps_after_server, resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
         reset_saved_progress()
