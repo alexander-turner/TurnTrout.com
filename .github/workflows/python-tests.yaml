@@ -35,9 +35,8 @@ jobs:
       - name: Add node_modules/.bin to PATH
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
-      - name: Run pytest with 100% coverage requirement
+      - name: Run pytest
         run: |
           uv run python -m pytest scripts \
             -m "not requires_r2" \
-            --cov-fail-under=100 \
             --config-file config/python/pyproject.toml

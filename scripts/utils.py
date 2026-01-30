@@ -26,14 +26,10 @@ _executable_cache: Dict[str, str] = {}
 
 @functools.lru_cache(maxsize=1)
 def _get_imagemagick_version() -> int:
-    """
-    Detect ImageMagick version (6 or 7).
-
-    Defaults to 6 if unclear.
-    """
+    """Detect ImageMagick version (6 or 7). Defaults to 6 if unclear."""
     magick_path = shutil.which("magick")
     if not magick_path:
-        return 6  # pragma: no cover
+        return 6
 
     result = subprocess.run(
         [magick_path, "-version"], capture_output=True, text=True, check=False
@@ -42,19 +38,14 @@ def _get_imagemagick_version() -> int:
 
 
 def get_imagemagick_command(operation: str) -> list[str]:
-    """
-    Get ImageMagick command for an operation.
-
-    Handles IM6 vs IM7 differences.
-    """
+    """Get ImageMagick command for an operation (handles IM6 vs IM7)."""
     if _get_imagemagick_version() == 7:
         return [find_executable("magick"), operation]
 
-    # IM6 fallback - pragma: no cover since CI uses IM7
-    operation_path = shutil.which(operation)  # pragma: no cover
-    if not operation_path:  # pragma: no cover
+    operation_path = shutil.which(operation)
+    if not operation_path:
         raise FileNotFoundError(f"ImageMagick '{operation}' not found.")
-    return [operation_path]  # pragma: no cover
+    return [operation_path]
 
 
 def find_executable(name: str) -> str:
