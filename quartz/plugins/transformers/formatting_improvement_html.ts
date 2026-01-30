@@ -695,8 +695,10 @@ export function toSkip(node: Element): boolean {
     const skipClass = ["no-formatting", "elvish", "bad-handwriting"].some((cls) =>
       hasClass(elementNode, cls),
     )
+    // Skip footnote references - their number text shouldn't be transformed
+    const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
 
-    return skipTag || skipClass
+    return skipTag || skipClass || isFootnoteRef
   }
   return false
 }
