@@ -5306,3 +5306,82 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         soup
     )
     assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: image with both width and height
+        (
+            '<img src="test.png" width="100" height="50">',
+            [],
+        ),
+        # Valid: multiple images all with dimensions
+        (
+            """
+            <img src="a.png" width="100" height="50">
+            <img src="b.png" width="200" height="100">
+            """,
+            [],
+        ),
+        # Invalid: missing width
+        (
+            '<img src="test.png" height="50">',
+            ["<img> missing width: test.png"],
+        ),
+        # Invalid: missing height
+        (
+            '<img src="test.png" width="100">',
+            ["<img> missing height: test.png"],
+        ),
+        # Invalid: missing both width and height
+        (
+            '<img src="test.png">',
+            ["<img> missing width, height: test.png"],
+        ),
+        # Invalid: empty width attribute
+        (
+            '<img src="test.png" width="" height="50">',
+            ["<img> missing width: test.png"],
+        ),
+        # Invalid: empty height attribute
+        (
+            '<img src="test.png" width="100" height="">',
+            ["<img> missing height: test.png"],
+        ),
+        # Multiple images, some valid some invalid
+        (
+            """
+            <img src="valid.png" width="100" height="50">
+            <img src="no-dims.png">
+            <img src="no-height.png" width="100">
+            """,
+            [
+                "<img> missing width, height: no-dims.png",
+                "<img> missing height: no-height.png",
+            ],
+        ),
+        # No images at all
+        (
+            "<p>No images here</p>",
+            [],
+        ),
+        # Image with no src attribute
+        (
+            '<img width="100" height="50">',
+            [],
+        ),
+        # Long URL should be truncated
+        (
+            '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
+            [
+                "<img> missing width, height: https://example.com/very/long/path/to...n/total/length.png"
+            ],
+        ),
+    ],
+)
+def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
+    """Test the check_images_have_dimensions function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_images_have_dimensions(soup)
+    assert sorted(result) == sorted(expected_issues)
