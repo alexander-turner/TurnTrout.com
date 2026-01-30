@@ -8,12 +8,12 @@ import type { QuartzTransformerPlugin } from "../types"
 import { mdLinkRegex } from "./utils"
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
-const footnoteSpacingRegex = /(\S) (\[\^[^\]]+?\])(?![:(]) ?/g
-const footnoteSpacingReplacement = "$1$2 "
+const footnoteSpacingRegex = /(?<content>\S) (?<footnote>\[\^[^\]]+?\])(?![:(]) ?/g
+const footnoteSpacingReplacement = "$<content>$<footnote> "
 
 // New regex for moving footnotes after punctuation
-const footnotePunctuationRegex = /(\S)(\[\^[^\]]*?\])([.,;!?]+)/g
-const footnotePunctuationReplacement = "$1$3$2"
+const footnotePunctuationRegex = /(?<content>\S)(?<footnote>\[\^[^\]]*?\])(?<punct>[.,;!?]+)/g
+const footnotePunctuationReplacement = "$<content>$<punct>$<footnote>"
 
 /**
  * Adjusts the spacing around footnotes and moves them after punctuation.
@@ -57,13 +57,16 @@ export function spaceAdmonitions(text: string): string {
 
 // Wrap e.g. header "# 10" in lining nums
 export function wrapLeadingNumbers(text: string): string {
-  return text.replace(/(?<=# )(\d+)/g, '<span style="font-variant-numeric: lining-nums;">$1</span>')
+  return text.replace(
+    /(?<=# )(?<num>\d+)/g,
+    '<span style="font-variant-numeric: lining-nums;">$<num></span>',
+  )
 }
 
 export function wrapNumbersBeforeColon(text: string): string {
   return text.replace(
-    /(#[\w ]*)(?<!\d)(\d):/g,
-    '$1<span style="font-variant-numeric: lining-nums;">$2</span>:',
+    /(?<heading>#[\w ]*)(?<!\d)(?<digit>\d):/g,
+    '$<heading><span style="font-variant-numeric: lining-nums;">$<digit></span>:',
   )
 }
 
@@ -88,14 +91,14 @@ const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\//g
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
-  [/^(?! *>| +\S)(.*?\S.*?)\$\$ *$/gm, "$1\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
+  [/^(?! *>| +\S)(?<content>.*?\S.*?)\$\$ *$/gm, "$<content>\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
   [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
-  [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
+  [/(?<tag><\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$<tag>\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
 ]
 
@@ -137,7 +140,7 @@ export const formattingImprovement = (text: string) => {
   }
 
   // Format the content (non-YAML part)
-  let newContent = content.replaceAll(/(\u00A0|&nbsp;)/gu, " ") // Remove NBSP
+  let newContent = content.replaceAll(/(?:\u00A0|&nbsp;)/gu, " ") // Remove NBSP
 
   newContent = improveFootnoteFormatting(newContent)
   newContent = newContent.replace(/ *,/g, ",") // Remove space before commas

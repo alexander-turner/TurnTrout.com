@@ -8,7 +8,7 @@ import { locale } from "./constants"
 
 export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
-  title = title.replace(/( |^)'/g, '$1"').replace(/'([ ?!.]|$)/g, '"$1')
+  title = title.replace(/(?<prefix> |^)'/g, '$<prefix>"').replace(/'(?<suffix>[ ?!.]|$)/g, '"$<suffix>')
   title = applyTextTransforms(title)
 
   // Convert title to title case

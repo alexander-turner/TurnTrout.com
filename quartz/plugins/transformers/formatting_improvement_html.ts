@@ -253,10 +253,10 @@ export function spacesAroundSlashes(text: string): string {
 export function enDashNumberRange(text: string): string {
   return text.replace(
     new RegExp(
-      `\\b(?<![a-zA-Z.])((?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
+      `\\b(?<![a-zA-Z.])(?<start>(?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(?<end>${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
       "g",
     ),
-    "$1–$2",
+    "$<start>–$<end>",
   )
 }
 
@@ -326,12 +326,12 @@ export function hyphenReplace(text: string) {
   return text
 }
 
-const minusRegex = new RegExp(`(^|[\\s\\(${chr}"“])-(\\s?\\d*\\.?\\d+)`, "gm")
+const minusRegex = new RegExp(`(?<before>^|[\\s\\(${chr}""])-(?<number>\\s?\\d*\\.?\\d+)`, "gm")
 /**
  * Replaces hyphens with minus signs in numerical contexts
  */
 export function minusReplace(text: string): string {
-  return text.replaceAll(minusRegex, "$1−$2")
+  return text.replaceAll(minusRegex, "$<before>−$<number>")
 }
 
 export const months = [
@@ -367,7 +367,10 @@ export const months = [
  * @returns The text with en dashes in month ranges
  */
 export function enDashDateRange(text: string): string {
-  return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
+  return text.replace(
+    new RegExp(`\\b(?<start>${months}${chr}?)-(?<end>${chr}?(?:${months}))\\b`, "g"),
+    "$<start>–$<end>",
+  )
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
@@ -400,7 +403,7 @@ export function isCode(node: Element): boolean {
   return node.tagName === "code"
 }
 
-export const l_pRegex = /(\s|^)L(\d+)\b(?!\.)/g
+export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -424,7 +427,7 @@ export function formatLNumbers(tree: Root): void {
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match[1] })
+      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -434,7 +437,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match[2] }],
+        children: [{ type: "text", value: match.groups?.number ?? "" }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -748,30 +751,30 @@ const massTransforms: [RegExp | string, string][] = [
   [/\u00A0/gu, " "], // Replace non-breaking spaces
   [/!=/g, "≠"],
   [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
-  [/\b([Ff])rappe\b/g, "$1rappé"],
-  [/\b([Ll])atte\b/g, "$1atté"],
-  [/\b([Cc])liche\b/g, "$1liché"],
-  [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
+  [/\b(?<letter>[Ff])rappe\b/g, "$<letter>rappé"],
+  [/\b(?<letter>[Ll])atte\b/g, "$<letter>atté"],
+  [/\b(?<letter>[Cc])liche\b/g, "$<letter>liché"],
+  [/(?<=[Aa]n |[Tt]he )\b(?<letter>[Ee])xpose\b/g, "$<letter>xposé"],
   [/wi-?fi/gi, "Wi-Fi"], // "wi-fi" to "Wi-Fi"
-  [/\b([Dd])eja vu\b/g, "$1éjà vu"],
+  [/\b(?<letter>[Dd])eja vu\b/g, "$<letter>éjà vu"],
   [/\bgithub\b/gi, "GitHub"],
-  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
-  [/\b([Nn])aive/g, "$1aïve"],
-  [/\b([Cc])hateau\b/g, "$1hâteau"],
-  [/\b([Dd])ojo/g, "$1ōjō"],
+  [/(?<=\b| )(?<letter>[Vv])oila(?=\b|$)/g, "$<letter>oilà"],
+  [/\b(?<letter>[Nn])aive/g, "$<letter>aïve"],
+  [/\b(?<letter>[Cc])hateau\b/g, "$<letter>hâteau"],
+  [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
-  [`(${numberRegex.source})[x\\*]\\b`, "$1×"], // Pretty multiplier
-  [/\b(\d+ ?)x( ?\d+)\b/g, "$1×$2"], // Multiplication sign
+  [`(?<num>${numberRegex.source})[x\\*]\\b`, "$<num>×"], // Pretty multiplier
+  [/\b(?<left>\d+ ?)x(?<right> ?\d+)\b/g, "$<left>×$<right>"], // Multiplication sign
   [/\.{3}/g, "…"], // Ellipsis
   [/…(?=\w)/gu, "… "], // Space after ellipsis
-  [/\b([Oo])pen-source\b/g, "$1pen source"],
+  [/\b(?<letter>[Oo])pen-source\b/g, "$<letter>pen source"],
   [/\bmarkdown\b/g, "Markdown"],
   [/e\.g\.,/g, "e.g."],
   [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
-  [/Gemini (\w+) (\d(?:\.\d)?)(?!-)/g, "Gemini $2 $1"],
+  [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
 ]
 
 export function massTransformText(text: string): string {
