@@ -235,8 +235,38 @@ export function spacesAroundSlashes(text: string): string {
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
-  text = text.replace(slashRegex, " / ")
+  // Handle multiple cases for transform invariance with markerChar:
+  // The lookbehind needs to see a valid char (non-whitespace, non-marker, non-digit, non-</>)
+  // but markerChar can appear between that char and the slash in various positions.
+  // We use fixed-length lookbehinds to handle: char directly, or char+marker.
+
+  // Case 1a: char directly before optional-space + slash (no markers involved)
+  const slashRegex1a = new RegExp(
+    `(?<=[^\\s${chr}\\d/<]) ?\\/ ?(?=\\S)(?!\\/)`,
+    "g",
+  )
+  text = text.replace(slashRegex1a, " / ")
+
+  // Case 1b: char+marker before optional-space + slash
+  const slashRegex1b = new RegExp(
+    `(?<=[^\\s${chr}\\d/<]${chr}) ?\\/ ?(?=\\S)(?!\\/)`,
+    "g",
+  )
+  text = text.replace(slashRegex1b, " / ")
+
+  // Case 2a: char before optional-space + marker + slash (preserve marker)
+  const slashRegex2a = new RegExp(
+    `(?<=[^\\s${chr}\\d/<]) ?(${chr})\\/ ?(?=\\S)(?!\\/)`,
+    "g",
+  )
+  text = text.replace(slashRegex2a, " $1/ ")
+
+  // Case 2b: char+marker before optional-space + marker + slash (preserve marker)
+  const slashRegex2b = new RegExp(
+    `(?<=[^\\s${chr}\\d/<]${chr}) ?(${chr})\\/ ?(?=\\S)(?!\\/)`,
+    "g",
+  )
+  text = text.replace(slashRegex2b, " $1/ ")
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
   text = text.replace(numberSlashThenNonNumber, " / ")
