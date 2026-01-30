@@ -25,6 +25,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
           pip install linkchecker
+          # Create magick symlink if it doesn't exist (Ubuntu provides 'convert' not 'magick')
+          if ! command -v magick &> /dev/null && command -v convert &> /dev/null; then
+            sudo ln -s $(which convert) /usr/local/bin/magick
+          fi
 
       - name: Run pytest with 100% coverage requirement
         run: |
