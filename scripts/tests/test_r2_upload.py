@@ -7,6 +7,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from .. import r2_upload
+
+# Skip all tests in this module if R2 credentials are not configured
+pytestmark = pytest.mark.requires_r2
 from .. import utils as script_utils
 from .utils import create_markdown_file
 
