@@ -103,7 +103,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       {
         name: "inline-script-loader",
         setup(build) {
-          build.onLoad({ filter: /\.inline\.(ts|js)$/ }, async (args) => {
+          build.onLoad({ filter: /\.inline\.(?:ts|js)$/ }, async (args) => {
             let pathText: string = await fsPromises.readFile(args.path, "utf8")
 
             // Remove default exports that we manually inserted

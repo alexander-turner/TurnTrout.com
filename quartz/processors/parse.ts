@@ -99,7 +99,7 @@ function transpileWorkerScript() {
             contents: "",
             loader: "text",
           }))
-          build.onLoad({ filter: /\.inline\.(ts|js)$/ }, () => ({
+          build.onLoad({ filter: /\.inline\.(?:ts|js)$/ }, () => ({
             contents: "",
             loader: "text",
           }))
