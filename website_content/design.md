@@ -665,7 +665,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <svg class="favicon favicon-demo-inline" data-domain="turntrout_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg);" alt="A trout jumping to the left."></svg> favicon appears for links to other pages within this site, while the <svg class="favicon favicon-demo-inline" data-domain="anchor" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);" alt="A counterclockwise arrow."></svg> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="turntrout_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg);" alt="A trout jumping to the left."></svg></span> favicon appears for links to other pages within this site, while the <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="anchor" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);" alt="A counterclockwise arrow."></svg></span> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -923,7 +923,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Static code analysis
 
-I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type. I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and ensure that [`pylint`](https://www.pylint.org/) rates my code health at 10/10. I lint my _prose_ using [`vale`](https://vale.sh/) - checking, for example, that I don't use clichés, unnecessary superlatives, or adverbs followed by hyphens.
+I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and ensure that [`pylint`](https://www.pylint.org/) rates my code health at 10/10. I lint my _prose_ using [`vale`](https://vale.sh/) - checking, for example, that I don't use clichés, unnecessary superlatives, or adverbs followed by hyphens.
 
 I use `mypy` to statically type-check my Python code and `tsc` to type-check my TypeScript.
 
@@ -1134,5 +1134,5 @@ Site functionality
 Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
-Rerunning some local tests
-: I run `eslint` and `pnpm test` Actions on GitHub to help test for environmental inconsistencies.
+Quality gates
+: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`.

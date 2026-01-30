@@ -102,10 +102,10 @@ describe("replaceRegex", () => {
   it("should handle Element array replacements", () => {
     const node = createNode("2nd place")
     const parent: Parent = { type: "span", children: [node] }
-    const regex = /(\d)(nd|st|rd|th)\b/g
+    const regex = /(?<num>\d)(?<suffix>nd|st|rd|th)\b/g
 
     const replaceFn = (match: RegExpMatchArray): ReplaceFnResult => {
-      const [, num, suffix] = match
+      const { num, suffix } = match.groups as { num: string; suffix: string }
 
       return {
         before: "",

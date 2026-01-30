@@ -10,7 +10,6 @@ import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
   fractionRegex,
-  numberRegex,
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
@@ -182,41 +181,41 @@ export function niceQuotes(text: string): string {
   const endQuoteNotContraction = `(?!${contraction})’${afterEndingSingle}`
   //  Convert to apostrophe if not followed by an end quote
   const apostropheRegex = new RegExp(
-    `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
+    `(?<=^|[^\\w])'(?:${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
     "gm",
   )
   text = text.replace(apostropheRegex, "’")
 
   // Beginning single quotes
-  const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
-  text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
+  const beginningSingle = `(?<beforeSingle>(?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
+  text = text.replace(new RegExp(beginningSingle, "gm"), "$<beforeSingle>‘")
 
   // Double quotes //
   const beginningDouble = new RegExp(
-    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
+    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(?:${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
     "gm",
   )
   text = text.replace(beginningDouble, "$<beforeChr>“$<afterChr>")
 
   // Open quote after brace (generally in math mode)
-  text = text.replace(new RegExp(`(?<=\\{)(${chr}? )?["]`, "g"), "$1“")
+  text = text.replace(new RegExp(`(?<=\\{)(?<chrSpace>${chr}? )?["]`, "g"), "$<chrSpace>“")
 
   // note: Allowing 2 chrs in a row
-  const endingDouble = `([^\\s\\(])["](${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
-  text = text.replace(new RegExp(endingDouble, "g"), "$1”$2")
+  const endingDouble = `(?<beforeEndDouble>[^\\s\\(])["](?<afterEndDouble>${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
+  text = text.replace(new RegExp(endingDouble, "g"), "$<beforeEndDouble>”$<afterEndDouble>")
 
   // If end of line, replace with right double quote
-  text = text.replace(new RegExp(`["](${chr}?)$`, "g"), "”$1")
+  text = text.replace(new RegExp(`["](?<endChr>${chr}?)$`, "g"), "”$<endChr>")
   // If single quote has a right double quote after it, replace with right single and then double
   text = text.replace(/'(?=”)/gu, "’")
 
   // Punctuation //
   // Periods inside quotes
-  const periodRegex = new RegExp(`(?<![!?:\\.…])(${chr}?)([’”])(${chr}?)(?!\\.\\.\\.)\\.`, "g")
-  text = text.replace(periodRegex, "$1.$2$3")
+  const periodRegex = new RegExp(`(?<![!?:\\.…])(?<chrBefore>${chr}?)(?<quoteChar>[’”])(?<chrAfter>${chr}?)(?!\\.\\.\\.)\\.`, "g")
+  text = text.replace(periodRegex, "$<chrBefore>.$<quoteChar>$<chrAfter>")
 
   // Commas outside of quotes
-  const commaRegex = new RegExp(`(?<![!?]),(${chr}?[”’])`, "g")
+  const commaRegex = new RegExp(`(?<![!?]),(?<quoteAfter>${chr}?[”’])`, "g")
   text = text.replace(commaRegex, "$1,")
 
   return text
@@ -227,11 +226,11 @@ export function niceQuotes(text: string): string {
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // Use a private-use Unicode character as placeholder
-  const h_t_placeholder_char = "\uE010"
+  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
+  const hatTipPlaceholder = "\uE010"
 
   // First replace h/t with the placeholder character
-  text = text.replace(/\b(h\/t)\b/g, h_t_placeholder_char)
+  text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
@@ -242,7 +241,7 @@ export function spacesAroundSlashes(text: string): string {
   text = text.replace(numberSlashThenNonNumber, " / ")
 
   // Restore the h/t occurrences
-  return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
+  return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
 }
 
 /**
@@ -253,10 +252,10 @@ export function spacesAroundSlashes(text: string): string {
 export function enDashNumberRange(text: string): string {
   return text.replace(
     new RegExp(
-      `\\b(?<![a-zA-Z.])((?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
+      `\\b(?<![a-zA-Z.])(?<start>(?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(?<end>${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
       "g",
     ),
-    "$1–$2",
+    "$<start>–$<end>",
   )
 }
 
@@ -284,10 +283,10 @@ export function hyphenReplace(text: string) {
   // Handle dashes with potential spaces and optional marker character
   //  Being right after chr is a sufficient condition for being an em
   //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
+  const preDash = new RegExp(`(?:(?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
   // Want eg " - " to be replaced with "—"
   const surroundedDash = new RegExp(
-    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)([ ]+|$)`,
+    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)(?:[ ]+|$)`,
     "g",
   )
 
@@ -302,7 +301,7 @@ export function hyphenReplace(text: string) {
   text = text.replace(multipleDashInWords, "$<markerBefore>—$<markerAfter>")
 
   // Handle dashes at the start of a line
-  text = text.replace(new RegExp(`^(${chr})?[-]+ `, "gm"), "$1— ")
+  text = text.replace(new RegExp(`^(?<startChr>${chr})?[-]+ `, "gm"), "$<startChr>— ")
 
   // Create a regex for spaces around em dashes, allowing for optional spaces around the em dash
   const spacesAroundEM = new RegExp(
@@ -326,12 +325,12 @@ export function hyphenReplace(text: string) {
   return text
 }
 
-const minusRegex = new RegExp(`(^|[\\s\\(${chr}"“])-(\\s?\\d*\\.?\\d+)`, "gm")
+const minusRegex = new RegExp(`(?<before>^|[\\s\\(${chr}""])-(?<number>\\s?\\d*\\.?\\d+)`, "gm")
 /**
  * Replaces hyphens with minus signs in numerical contexts
  */
 export function minusReplace(text: string): string {
-  return text.replaceAll(minusRegex, "$1−$2")
+  return text.replaceAll(minusRegex, "$<before>−$<number>")
 }
 
 export const months = [
@@ -367,7 +366,10 @@ export const months = [
  * @returns The text with en dashes in month ranges
  */
 export function enDashDateRange(text: string): string {
-  return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
+  return text.replace(
+    new RegExp(`\\b(?<start>${months}${chr}?)-(?<end>${chr}?(?:${months}))\\b`, "g"),
+    "$<start>–$<end>",
+  )
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
@@ -400,7 +402,7 @@ export function isCode(node: Element): boolean {
   return node.tagName === "code"
 }
 
-export const l_pRegex = /(\s|^)L(\d+)\b(?!\.)/g
+export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -424,7 +426,7 @@ export function formatLNumbers(tree: Root): void {
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match[1] })
+      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -434,7 +436,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match[2] }],
+        children: [{ type: "text", value: match.groups?.number ?? "" }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -495,7 +497,7 @@ export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "�
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
+  const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -748,30 +750,30 @@ const massTransforms: [RegExp | string, string][] = [
   [/\u00A0/gu, " "], // Replace non-breaking spaces
   [/!=/g, "≠"],
   [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
-  [/\b([Ff])rappe\b/g, "$1rappé"],
-  [/\b([Ll])atte\b/g, "$1atté"],
-  [/\b([Cc])liche\b/g, "$1liché"],
-  [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
+  [/\b(?<letter>[Ff])rappe\b/g, "$<letter>rappé"],
+  [/\b(?<letter>[Ll])atte\b/g, "$<letter>atté"],
+  [/\b(?<letter>[Cc])liche\b/g, "$<letter>liché"],
+  [/(?<=[Aa]n |[Tt]he )\b(?<letter>[Ee])xpose\b/g, "$<letter>xposé"],
   [/wi-?fi/gi, "Wi-Fi"], // "wi-fi" to "Wi-Fi"
-  [/\b([Dd])eja vu\b/g, "$1éjà vu"],
+  [/\b(?<letter>[Dd])eja vu\b/g, "$<letter>éjà vu"],
   [/\bgithub\b/gi, "GitHub"],
-  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
-  [/\b([Nn])aive/g, "$1aïve"],
-  [/\b([Cc])hateau\b/g, "$1hâteau"],
-  [/\b([Dd])ojo/g, "$1ōjō"],
+  [/(?<=\b| )(?<letter>[Vv])oila(?=\b|$)/g, "$<letter>oilà"],
+  [/\b(?<letter>[Nn])aive/g, "$<letter>aïve"],
+  [/\b(?<letter>[Cc])hateau\b/g, "$<letter>hâteau"],
+  [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
-  [`(${numberRegex.source})[x\\*]\\b`, "$1×"], // Pretty multiplier
-  [/\b(\d+ ?)x( ?\d+)\b/g, "$1×$2"], // Multiplication sign
+  [/(?<num>[-−]?\d{1,3}(?:,?\d{3})*(?:\.\d+)?)[x*]\b/g, "$<num>×"], // Pretty multiplier
+  [/\b(?<left>\d+ ?)x(?<right> ?\d+)\b/g, "$<left>×$<right>"], // Multiplication sign
   [/\.{3}/g, "…"], // Ellipsis
   [/…(?=\w)/gu, "… "], // Space after ellipsis
-  [/\b([Oo])pen-source\b/g, "$1pen source"],
+  [/\b(?<letter>[Oo])pen-source\b/g, "$<letter>pen source"],
   [/\bmarkdown\b/g, "Markdown"],
   [/e\.g\.,/g, "e.g."],
   [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
-  [/Gemini (\w+) (\d(?:\.\d)?)(?!-)/g, "Gemini $2 $1"],
+  [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
 ]
 
 export function massTransformText(text: string): string {

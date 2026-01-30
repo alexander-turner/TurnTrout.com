@@ -4,6 +4,7 @@ import jestPlugin from "eslint-plugin-jest"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
+import * as regexpPlugin from "eslint-plugin-regexp"
 import globals from "globals"
 import { configs as tseslintConfigs } from "typescript-eslint"
 
@@ -12,6 +13,7 @@ export default [
   {
     plugins: {
       perfectionist,
+      regexp: regexpPlugin,
     },
     rules: {
       "perfectionist/sort-imports": [
@@ -21,6 +23,7 @@ export default [
           order: "asc",
         },
       ],
+      "regexp/prefer-named-capture-group": "error",
     },
   },
 

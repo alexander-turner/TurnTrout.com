@@ -14,12 +14,12 @@ if (!existsSync(ICONS_DIR)) {
 const content = readFileSync(CALLOUTS_FILE, "utf8")
 
 // Regular expression to match SVG data URLs
-const svgRegex = /--callout-icon-(\w+):\s*url\('data:image\/svg\+xml;(.+?)\);/g
+const svgRegex = /--callout-icon-(?<iconName>\w+):\s*url\('data:image\/svg\+xml;(?<svgContent>.+?)\);/g
 
 // Process each match
 let match = svgRegex.exec(content)
 while (match !== null) {
-  const [iconName, svgContent] = match
+  const { iconName, svgContent } = match.groups
 
   // Decode the SVG content
   const decodedSvg = svgContent

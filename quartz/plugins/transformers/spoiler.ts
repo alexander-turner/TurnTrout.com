@@ -6,7 +6,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-const SPOILER_REGEX = /^!\s*(.*)/
+const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
 /**
  * Generate inline JavaScript code to toggle a CSS class on click.
@@ -22,7 +22,7 @@ function toggleSpoilerJs(className: string): string {
  */
 export function matchSpoilerText(text: string): string | null {
   const match = SPOILER_REGEX.exec(text)
-  return match ? match[1] : null
+  return match?.groups ? match.groups.spoilerText : null
 }
 
 /**
