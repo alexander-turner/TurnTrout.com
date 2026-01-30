@@ -20,6 +20,9 @@ jobs:
       - name: Setup base environment
         uses: ./.github/actions/setup-base-env
 
+      - name: Generate SCSS variables
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
       - name: Run Stylelint
         run: |
           pnpm exec stylelint \

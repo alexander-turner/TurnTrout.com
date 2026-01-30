@@ -20,8 +20,10 @@ jobs:
       - name: Setup base environment
         uses: ./.github/actions/setup-base-env
 
-      - name: Install sass
-        run: pnpm add -g sass
+      - name: Generate SCSS variables
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
 
       - name: Run source file checks
         run: uv run python scripts/source_file_checks.py
+        env:
+          PATH: ${{ github.workspace }}/node_modules/.bin:${{ env.PATH }}
