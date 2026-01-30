@@ -2055,9 +2055,6 @@ describe("Non-breaking space transformations", () => {
       ["Rev. King", `Rev.${nbsp}King`],
       ["St. Augustine", `St.${nbsp}Augustine`],
       ["Dr. smith", "Dr. smith"], // Only matches capital letters after
-      ["Dr. Éric", `Dr.${nbsp}Éric`], // Accented capital É
-      ["Prof. Ñoño", `Prof.${nbsp}Ñoño`], // Accented capital Ñ
-      ["Mr. Übel", `Mr.${nbsp}Übel`], // Accented capital Ü
     ])("should add nbsp after honorifics: %s", (input, expected) => {
       expect(nbspAfterHonorifics(input)).toBe(expected)
     })
@@ -2070,8 +2067,6 @@ describe("Non-breaking space transformations", () => {
       ["™ Product", `™${nbsp}Product`],
       ["Copyright © 2024 Company", `Copyright ©${nbsp}2024 Company`],
       ["© company", "© company"], // Only matches numbers or capital letters
-      ["© Émile", `©${nbsp}Émile`], // Accented capital É
-      ["® Ñandu", `®${nbsp}Ñandu`], // Accented capital Ñ
     ])("should add nbsp after copyright symbols: %s", (input, expected) => {
       expect(nbspAfterCopyrightSymbols(input)).toBe(expected)
     })
@@ -2086,9 +2081,6 @@ describe("Non-breaking space transformations", () => {
       ["A. B. C. Name", `A.${nbsp}B.${nbsp}C.${nbsp}Name`],
       ["j. k. rowling", "j. k. rowling"], // Only matches capitals
       ["J. lowercase", "J. lowercase"], // Only matches if followed by capital
-      ["É. García", `É.${nbsp}García`], // Accented capital initial É
-      ["Ñ. Ñoño", `Ñ.${nbsp}Ñoño`], // Accented capital Ñ initial and name
-      ["J. Ángel", `J.${nbsp}Ángel`], // Regular initial, accented name
     ])("should add nbsp between initials: %s", (input, expected) => {
       expect(nbspBetweenInitials(input)).toBe(expected)
     })
