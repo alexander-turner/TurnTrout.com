@@ -29,6 +29,12 @@ import {
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
+// Unicode constants for readable test expectations
+// (punctilio exports these in constants.js but not from the main entry point)
+const LEFT_DOUBLE_QUOTE = "\u201C" // "
+const RIGHT_DOUBLE_QUOTE = "\u201D" // "
+const MULTIPLICATION = "\u00D7" // ×
+
 function testHtmlFormattingImprovement(
   inputHTML: string,
   skipFirstLetter = true,
@@ -67,10 +73,8 @@ describe("HTMLFormattingImprovement", () => {
         '<p>“<span class="katex"></span> alignment metric</p>',
       ],
       [
-        // Note: "2x" inside quotes stays as "2x" because niceQuotes runs before symbolTransform,
-        // and curly quotes aren't word boundaries for the multiplication regex
         '<dl><dd>Multipliers like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>". </dd></dl>',
-        "<dl><dd>Multipliers like \u201C2x\u201D are 2\u00D7 more pleasant than \u201C<span class=\"no-formatting\">2x</span>.\u201D </dd></dl>",
+        `<dl><dd>Multipliers like ${LEFT_DOUBLE_QUOTE}2${MULTIPLICATION}${RIGHT_DOUBLE_QUOTE} are 2${MULTIPLICATION} more pleasant than ${LEFT_DOUBLE_QUOTE}<span class="no-formatting">2x</span>.${RIGHT_DOUBLE_QUOTE} </dd></dl>`,
       ],
       [
         '<p>Suppose you tell me, "<code>TurnTrout</code>", we definitely</p>',
