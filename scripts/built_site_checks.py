@@ -626,6 +626,40 @@ def check_asset_references(
     return missing_assets
 
 
+def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all images have explicit width and height attributes.
+
+    This prevents layout shift and catches cases where sizing is missing
+    (e.g., inline favicons that render at their natural large size).
+
+    Returns:
+        list of image descriptions missing width/height attributes
+    """
+    issues: list[str] = []
+
+    for img in _tags_only(soup.find_all("img")):
+        width = img.get("width")
+        height = img.get("height")
+
+        if not width or not height:
+            src = img.get("src", "unknown")
+            # Truncate long URLs for readability
+            src_str = str(src)
+            if len(src_str) > 80:
+                src_str = src_str[:40] + "..." + src_str[-37:]
+
+            missing = []
+            if not width:
+                missing.append("width")
+            if not height:
+                missing.append("height")
+
+            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
 def check_katex_elements_for_errors(soup: BeautifulSoup) -> list[str]:
     """Check for KaTeX elements with color #cc0000."""
     problematic_katex: list[str] = []
@@ -1388,6 +1422,7 @@ def check_file_for_issues(
         "html_tags_in_text": check_html_tags_in_text(soup),
         "unrendered_transclusions": check_unrendered_transclusions(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
+        "images_missing_dimensions": check_images_have_dimensions(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
