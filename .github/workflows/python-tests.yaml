@@ -23,10 +23,13 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish
-          # Install ImageMagick 7 via Homebrew (Ubuntu's imagemagick is v6)
-          brew install imagemagick
+          sudo apt-get install -y imagemagick libimage-exiftool-perl inkscape rclone fish
           pip install linkchecker
+          # Create magick symlink for compress.py (Ubuntu provides 'convert' not 'magick')
+          # The test code uses get_imagemagick_command() which handles IM6 vs IM7 properly
+          if ! command -v magick &> /dev/null && command -v convert &> /dev/null; then
+            sudo ln -s $(which convert) /usr/local/bin/magick
+          fi
 
       - name: Add node_modules/.bin to PATH
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
