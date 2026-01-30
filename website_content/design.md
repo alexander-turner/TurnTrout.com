@@ -473,14 +473,92 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
 
-### Smart typography via `punctilio`
+### Automatic conversion of quotation marks
 
-I extracted the typography transformations from this site into a reusable npm package:
+Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
 
-> [!quote]- [Smart typography transformations](/open-source#smart-typography-transformations)
-> ![[/open-source#smart-typography-transformations]]
+Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
 
-[Apparently, dates like `'94` should have a _downward-facing_ apostrophe `'`](https://practicaltypography.com/apostrophes.html), not an upward-facing single quote `'`! My code handles the conversion: "I was born in '94."
+> [!note]- Regex for smart quotes
+>
+> ```typescript
+> /**
+>  * Replaces quotes with smart quotes
+>  * @returns The text with smart quotes
+>  */
+> export function niceQuotes(text: string): string {
+>   // Single quotes //
+>   // Ending comes first so as to not mess with the open quote
+>   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s\\.!?;,\\)—\\-]|$))`;
+>   text = text.replace(new RegExp(endingSingle, "gm"), "’");
+>
+>   // Contractions are sandwiched between two letters
+>   const contraction = `(?<=[A-Za-z])['](?=[a-zA-Z])`;
+>   text = text.replace(new RegExp(contraction, "gm"), "’");
+>
+>   // Apostrophes always point down
+>   //  Convert to apostrophe if not followed by an end quote
+>   const apostrophe = `(?<=^|[^\\w])'(?![^‘]*’${afterEndingSingle})`;
+>   text = text.replace(new RegExp(apostrophe, "gm"), "’");
+>
+>   // Beginning single quotes
+>   const beginningSingle = `(^|[\\s“"])['](?=\\S)`;
+>   text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘");
+>
+>   // Double quotes //
+>   const beginningDouble = new RegExp(
+>     `(?<=^|\\s|[\\(\\/\\[\\{\\-—])["](?=\\.{3}|[^\\s\\)\\—,!?;:/.\\}])`,
+>     "gm",
+>   );
+>   text = text.replace(beginningDouble, "“");
+>   // Open quote after brace (generally in math mode)
+>   text = text.replace(new RegExp(`(?<=\\{)( )?["]`, "g"), "$1“");
+>
+>   const endingDouble = `([^\\s\\(])["](?=[\\s/\\).,;—:\\-\\}!?]|$)`;
+>   text = text.replace(new RegExp(endingDouble, "g"), "$1”");
+>
+>   // If end of line, replace with right double quote
+>   text = text.replace(new RegExp(`["]$`, "g"), "”");
+>   // If single quote has a right double quote after it, replace with right single and then double
+>   text = text.replace(new RegExp(`'(?=”)`, "g"), "’");
+>
+>   // Periods inside quotes
+>   const periodRegex = new RegExp(`(?<![!?])([’”])(?!\\.\\.\\.)\\.`, "g");
+>   text = text.replace(periodRegex, ".$1");
+>
+>   // Commas outside of quotes
+>   const commaRegex = new RegExp(`(?<![!?]),([”’])`, "g");
+>   text = text.replace(commaRegex, "$1,");
+>
+>   return text;
+> }
+> ```
+>
+> Code: This code has 45 unit tests all on its own.
+>
+> This logic seems quite robust - I recommend it if you're looking for smart quote detection. However, there's a problem. `niceQuotes` is called on each text node in the HTML abstract syntax tree (AST). Sometimes, the DOM gets in the way. Consider the end of a Markdown quote, `_I hate dogs_"`. Its AST is:
+>
+> 1. `<em>` node: `I hate dogs`
+> 2. Text node: `"`
+>
+> `niceQuotes` is called on each substring, so we get two calls. The first only processes the contents of the `<em>` node, which isn't changed. However, what should `niceQuotes(")` output? The intended output changes with the context - is it an end quote or a beginning quote?
+>
+> Considering the broader problem:
+>
+> - Within a parent text container, there are $n$ elements,
+> - The quotes should be transformed appropriately, and
+> - The overall operation should not create or delete elements.
+>
+> The solution? Roughly:
+>
+> 1. Convert the parent container's contents to a string `s`, delimiting separations with a private-use Unicode character (to avoid unintended matches),
+> 2. Relax the `niceQuotes` RegEx to allow (and preserve) the private-use characters, treating them as boundaries of a "permeable membrane" through which contextual information flows,
+> 3. Apply `niceQuotes` to `s`, receiving another string with the same number of elements implied,
+> 4. For all $k$, set element $k$'s text content to the segment starting at private Unicode occurrence $k$.
+>
+> I use this same strategy for other formatting improvements, including [hyphen replacement](#hyphen-replacement).
+
+[Apparently, dates like `’94` should have a _downward-facing_ apostrophe `’`](https://practicaltypography.com/apostrophes.html), not an upward-facing single quote `‘`! My code handles the conversion: "I was born in '94."
 
 ### Automatic smallcaps
 
@@ -496,15 +574,27 @@ Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
 > The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
 
-### Other display tweaks
+### Hyphen replacement
 
-Beyond what `punctilio` handles, I apply additional site-specific transformations:
+[Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
+
+> [!quote] [How to Use Em Dashes (—), En Dashes (–) , and Hyphens (-)](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use)
+> The em dash (—) can function like a comma, a colon, or parenthesis. Like commas and parentheses, em dashes set off extra information, such as examples, explanatory or descriptive phrases, or supplemental facts. Like a colon, an em dash introduces a clause that explains or expands upon something that precedes it.
+
+Technically, _en dashes_ should be used for ranges of dates and numbers. So "<span class="no-formatting">p. 202-203</span>" turns into "p. 202-203", and "<span class="no-formatting">Aug-Dec</span>" turns into "Aug-Dec"!
+
+Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="no-formatting">-2</span>) to be distasteful when used with plaintext numbers. I opt for "-2" instead.
+
+### Other display tweaks
 
 No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
-Slanted fractions
+Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
+
+Detecting multipliers
+: Multipliers like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>."
 
 Spaced slashes
 : Used for separators like "cat" / "dog" in place of "cat"<span class="no-formatting">/</span>"dog".
@@ -570,7 +660,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="turntrout_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg);" alt="A trout jumping to the left."></svg></span> favicon appears for links to other pages within this site, while the <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="anchor" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);" alt="A counterclockwise arrow."></svg></span> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <img alt="A trout jumping to the left." src="https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg"/> favicon appears for links to other pages within this site, while the <img alt="A counterclockwise arrow." src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg"/> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 

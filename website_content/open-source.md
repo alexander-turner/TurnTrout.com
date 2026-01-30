@@ -40,37 +40,6 @@ yes | pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-# Smart typography transformations
-
-Subtitle: Install with `npm install punctilio`.
-
-[`punctilio`](https://github.com/alexander-turner/punctilio) upgrades ASCII punctuation to typographically correct Unicode characters. I extracted this package from my website's build process to make it reusable.
-
-## Features
-
-- **Smart quotes**: `"straight"` → `"curly"` and `'apostrophes'` → `'apostrophes'`
-- **Em dashes**: `word - word` or `word--word` → `word—word`
-- **En dashes**: `1-5` → `1–5` (number ranges), `January-March` → `January–March` (date ranges)
-- **Minus signs**: `-5` → `−5` (proper Unicode minus)
-- **Ellipsis**: `...` → `…`
-- **Multiplication**: `5x5` → `5×5`, `3*4` → `3×4`
-- **Math symbols**: `!=` → `≠`, `+-` → `±`, `<=` → `≤`, `>=` → `≥`, `~=` → `≈`
-- **Legal symbols**: `(c)` → `©`, `(r)` → `®`, `(tm)` → `™`
-- **Arrows**: `->` → `→`, `<-` → `←`, `<->` → `↔`
-- **Prime marks**: `5'10"` → `5′10″` (feet/inches, arcminutes/arcseconds)
-- **Fractions** (optional): `1/2` → `½`, `3/4` → `¾`
-- **Degrees** (optional): `20 C` → `20 °C`
-
-## Why another typography library?
-
-Existing solutions like [SmartyPants](https://daringfireball.net/projects/smartypants/) struggle with:
-
-- **Apostrophe ambiguity**: Is `'Twas` an opening quote or apostrophe? (It's an apostrophe)
-- **Cross-element text**: When quotes span `<em>"Hello</em> world"`, most libraries fail
-- **Context sensitivity**: `'99` (year) vs `'hello'` (quoted) vs `don't` (contraction)
-
-`punctilio` handles these through thorough regex patterns and an optional separator character for processing text that spans HTML elements. For implementation details, see the [`transformElement` function](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/formatting_improvement_html.ts) in this site's source code.
-
 # Automatic alt text generation
 
 Subtitle: Install with `pip install alt-text-llm`.
