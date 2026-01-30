@@ -17,17 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Set up Python
-        run: uv python install 3.11
-
-      - name: Install Python Dependencies
-        run: uv sync --frozen
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
 
       - name: Run pytest with 100% coverage requirement
         run: |

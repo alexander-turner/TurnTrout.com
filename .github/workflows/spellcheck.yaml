@@ -1,0 +1,31 @@
+name: Spellcheck
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  spellcheck:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Run spellcheck
+        run: |
+          pnpm exec spellchecker \
+            --no-suggestions \
+            --quiet \
+            --dictionaries config/spellcheck/.wordlist.txt \
+            --files "website_content/**/*.md" \
+            --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
+            --plugins spell indefinite-article repeated-words syntax-urls frontmatter
