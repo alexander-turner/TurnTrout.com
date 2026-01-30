@@ -345,9 +345,9 @@ def test_avif_preserves_color_profile(
     avif_file = input_file.with_suffix(".avif")
 
     # Check color profile using ImageMagick
-    magick_executable = script_utils.find_executable("magick")
+    identify_cmd = script_utils.get_imagemagick_command("identify")
     result = subprocess.run(
-        [magick_executable, "identify", "-verbose", str(avif_file)],
+        [*identify_cmd, "-verbose", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -367,9 +367,9 @@ def test_png_input_has_transparency(temp_dir: Path) -> None:
         background="none",
         draw="circle 50,50 20,20",
     )
-    magick_executable = script_utils.find_executable("magick")
+    identify_cmd = script_utils.get_imagemagick_command("identify")
     pre_result = subprocess.run(
-        [magick_executable, "identify", "-verbose", str(input_file)],
+        [*identify_cmd, "-verbose", str(input_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -393,9 +393,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path) -> None:
     avif_file = input_file.with_suffix(".avif")
 
     # Check for alpha channel using ImageMagick
-    magick_executable = script_utils.find_executable("magick")
+    identify_cmd = script_utils.get_imagemagick_command("identify")
     post_result = subprocess.run(
-        [magick_executable, "identify", "-verbose", str(avif_file)],
+        [*identify_cmd, "-verbose", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -411,22 +411,23 @@ def test_avif_quality_affects_file_size(
 ) -> None:
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    utils.create_test_image(input_file, "100x100")
+    # Use larger image (500x500) to ensure quality difference is measurable
+    utils.create_test_image(input_file, "500x500")
 
     # Convert with high quality
-    compress.image(input_file, quality=80)
+    compress.image(input_file, quality=90)
     high_quality_size = input_file.with_suffix(".avif").stat().st_size
 
     # Remove the first AVIF
     input_file.with_suffix(".avif").unlink()
 
     # Convert with low quality
-    compress.image(input_file, quality=20)
+    compress.image(input_file, quality=10)
     low_quality_size = input_file.with_suffix(".avif").stat().st_size
 
     assert (
         high_quality_size > low_quality_size
-    ), "Higher quality setting should produce larger file size"
+    ), f"Higher quality ({high_quality_size}B) should be larger than lower quality ({low_quality_size}B)"
 
 
 def test_avif_format_chroma(temp_dir: Path) -> None:

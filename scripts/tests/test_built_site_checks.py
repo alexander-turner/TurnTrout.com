@@ -5385,7 +5385,7 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         (
             '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
             [
-                "<img> missing width, height: https://example.com/very/long/path/to...n/total/length.png"
+                "<img> missing width, height: https://example.com/very/long/path/to/im...eighty/characters/in/total/length.png"
             ],
         ),
     ],

@@ -23,12 +23,10 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick libimage-exiftool-perl inkscape rclone fish
+          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish
+          # Install ImageMagick 7 via Homebrew (Ubuntu's imagemagick is v6)
+          brew install imagemagick
           pip install linkchecker
-          # Create magick symlink if it doesn't exist (Ubuntu provides 'convert' not 'magick')
-          if ! command -v magick &> /dev/null && command -v convert &> /dev/null; then
-            sudo ln -s $(which convert) /usr/local/bin/magick
-          fi
 
       - name: Add node_modules/.bin to PATH
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
