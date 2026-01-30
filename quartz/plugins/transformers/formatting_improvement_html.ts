@@ -158,6 +158,14 @@ export function transformElement(
 
     // istanbul ignore next
     if (expected !== strippedTransformed) {
+      console.error("Transform invariance check failed!")
+      console.error("=== Original (with markers) ===")
+      console.error(JSON.stringify(markedContent))
+      console.error("=== Expected (transform on stripped) ===")
+      console.error(JSON.stringify(expected))
+      console.error("=== Actual (stripped after transform) ===")
+      console.error(JSON.stringify(strippedTransformed))
+      console.error("=== END ===")
       throw new Error(
         `Transform invariance check failed: expected "${expected}" but got "${strippedTransformed}"`,
       )
