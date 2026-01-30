@@ -4,7 +4,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-export const SUBTITLE_REGEX = /^Subtitle:\s*(.*)/
+export const SUBTITLE_REGEX = /^Subtitle:\s*(?<subtitleText>.*)/
 
 /**
  * Create a subtitle paragraph element with the given children.
@@ -28,11 +28,11 @@ export function createSubtitleWithChildren(children: Element["children"]): Eleme
  */
 function stripSubtitlePrefix(firstChild: Text): boolean {
   const match = SUBTITLE_REGEX.exec(firstChild.value)
-  if (!match) {
+  if (!match?.groups) {
     return false
   }
 
-  firstChild.value = match[1].trimStart()
+  firstChild.value = match.groups.subtitleText.trimStart()
   return true
 }
 

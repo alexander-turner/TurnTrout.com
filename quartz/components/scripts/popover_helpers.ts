@@ -4,7 +4,7 @@ import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "
 
 // Regex to detect footnote forward links (not back arrows which use fnref)
 // IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
-export const footnoteForwardRefRegex = /^#user-content-fn-([\w-]+)$/
+export const footnoteForwardRefRegex = /^#user-content-fn-(?<footnoteId>[\w-]+)$/
 
 export interface PopoverOptions {
   parentElement: HTMLElement
@@ -123,8 +123,8 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   const href = linkElement.getAttribute("href") || ""
   const footnoteMatch = href.match(footnoteForwardRefRegex)
 
-  if (footnoteMatch) {
-    const footnoteId = footnoteMatch[1]
+  if (footnoteMatch?.groups) {
+    const footnoteId = footnoteMatch.groups.footnoteId
     renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
   } else {
     renderFullPageContent(popoverInner, html, targetUrl)
@@ -170,13 +170,13 @@ export async function fetchWithMetaRedirect(
     }
 
     // Extract URL from content="[timeout]; url=[url]"
-    const urlMatch = metaRefresh[0].match(/url=(.*?)["'\s>]/i)
-    if (!urlMatch) {
+    const urlMatch = metaRefresh[0].match(/url=(?<url>.*?)["'\s>]/i)
+    if (!urlMatch?.groups) {
       return response
     }
 
     // Update URL for next iteration
-    currentUrl = new URL(urlMatch[1], currentUrl)
+    currentUrl = new URL(urlMatch.groups.url, currentUrl)
     redirectCount++
   }
 
@@ -323,5 +323,5 @@ export function attachPopoverEventListeners(
  * @returns The escaped text
  */
 export function escapeLeadingIdNumber(text: string): string {
-  return text.replace(/#(\d+)/, "#_$1")
+  return text.replace(/#(?<id>\d+)/, "#_$<id>")
 }

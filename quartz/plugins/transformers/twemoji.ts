@@ -27,20 +27,14 @@ export function constructTwemojiUrl(icon: string, options: TwemojiOptions): stri
  * @returns Object containing parsed attribute key-value pairs
  */
 export function parseAttributes(imgTag: string): Record<string, string> {
-  const regex = /(\w+)="([^"]*)"?/g
-  const attrs: string[] = []
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(imgTag)) !== null) {
-    attrs.push(match[0])
+  const regex = /(?<key>\w+)="(?<value>[^"]*)"?/g
+  const result: Record<string, string> = {}
+  for (const match of imgTag.matchAll(regex)) {
+    if (match.groups) {
+      result[match.groups.key] = match.groups.value
+    }
   }
-  return attrs.reduce(
-    (acc, attr) => {
-      const [key, value] = attr.split("=")
-      acc[key] = value.replace(/"/g, "")
-      return acc
-    },
-    {} as Record<string, string>,
-  )
+  return result
 }
 
 /**

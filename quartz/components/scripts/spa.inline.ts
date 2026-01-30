@@ -134,9 +134,9 @@ function scrollToUrlTarget(urlTarget: string): void {
   if (!urlTarget) return
 
   // Check if this is a text search hash (format: #:~:text=search+term)
-  const textMatch = urlTarget.match(/^#?:~:text=(.+)$/)
-  if (textMatch) {
-    const searchText = decodeURIComponent(textMatch[1])
+  const textMatch = urlTarget.match(/^#?:~:text=(?<searchText>.+)$/)
+  if (textMatch?.groups) {
+    const searchText = decodeURIComponent(textMatch.groups.searchText)
     if (scrollToMatch(searchText)) return
     // If no match found, fall through to try as regular hash
   }
@@ -356,11 +356,11 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
   let finalUrl = initialUrl
 
   const metaRefreshRegex =
-    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=([^"'>\s]+)["']?/i
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=(?<url>[^"'>\s]+)["']?/i
   const match = initialContent.match(metaRefreshRegex)
 
-  if (match?.[1]) {
-    const redirectTargetRaw = match[1]
+  if (match?.groups?.url) {
+    const redirectTargetRaw = match.groups.url
     try {
       const redirectUrl = new URL(redirectTargetRaw, initialUrl)
       const redirectFetchResult = await fetchContent(redirectUrl)

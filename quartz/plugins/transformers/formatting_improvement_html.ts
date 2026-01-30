@@ -178,11 +178,11 @@ export function transformElement(
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // Use a private-use Unicode character as placeholder
-  const h_t_placeholder_char = "\uE010"
+  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
+  const hatTipPlaceholder = "\uE010"
 
   // First replace h/t with the placeholder character
-  text = text.replace(/\b(h\/t)\b/g, h_t_placeholder_char)
+  text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
@@ -204,7 +204,7 @@ export function spacesAroundSlashes(text: string): string {
   text = text.replace(numberSlashThenNonNumber, " / ")
 
   // Restore the h/t occurrences
-  return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
+  return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
@@ -256,7 +256,7 @@ export function isCode(node: Element): boolean {
   return node.tagName === "code"
 }
 
-export const l_pRegex = /(\s|^)L(\d+)\b(?!\.)/g
+export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -280,7 +280,7 @@ export function formatLNumbers(tree: Root): void {
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match[1] })
+      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -290,7 +290,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match[2] }],
+        children: [{ type: "text", value: match.groups?.number ?? "" }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -351,7 +351,7 @@ export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "�
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
+  const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -615,10 +615,10 @@ const massTransforms: [RegExp | string, string][] = [
   [/wi-?fi/gi, "Wi-Fi"],
   [/\b([Dd])eja vu\b/g, "$1éjà vu"],
   [/\bgithub\b/gi, "GitHub"],
-  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
-  [/\b([Nn])aive/g, "$1aïve"],
-  [/\b([Cc])hateau\b/g, "$1hâteau"],
-  [/\b([Dd])ojo/g, "$1ōjō"],
+  [/(?<=\b| )(?<letter>[Vv])oila(?=\b|$)/g, "$<letter>oilà"],
+  [/\b(?<letter>[Nn])aive/g, "$<letter>aïve"],
+  [/\b(?<letter>[Cc])hateau\b/g, "$<letter>hâteau"],
+  [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
   [/\b([Oo])pen-source\b/g, "$1pen source"],
@@ -627,7 +627,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
-  [/Gemini (\w+) (\d(?:\.\d)?)(?!-)/g, "Gemini $2 $1"],
+  [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
 ]
 
 export function massTransformText(text: string): string {

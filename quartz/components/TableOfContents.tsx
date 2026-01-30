@@ -149,9 +149,9 @@ export function toJSXListItem(entry: TocEntry): JSX.Element {
   )
 }
 
-const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`)
-const latexRegex = /(\$[^$]+\$)/u
-const inlineCodeRegex = /(`[^`]+`)/u
+const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`)
+const latexRegex = /(?<latex>\$[^$]+\$)/u
+const inlineCodeRegex = /(?<code>`[^`]+`)/u
 const regexSource = [arrowRegex, latexRegex, inlineCodeRegex].map((r) => r.source).join("|")
 /**
  * Processes small caps, LaTeX, arrows, and inline code in a TOC entry.
@@ -201,12 +201,12 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
       const textValue = node.value
       let textToProcess = textValue
 
-      const leadingNumberRegex = /^(\d+:?\s*)(.*)$/
+      const leadingNumberRegex = /^(?<numberPart>\d+:?\s*)(?<restText>.*)$/
       const match = textValue.match(leadingNumberRegex)
-      if (match) {
+      if (match?.groups) {
         // Leading numbers and colon found
-        const numberPart = match[1]
-        const restText = match[2]
+        const numberPart = match.groups.numberPart
+        const restText = match.groups.restText
 
         // Create span for numberPart
         const numberSpan = {

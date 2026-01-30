@@ -8,12 +8,12 @@ import type { QuartzTransformerPlugin } from "../types"
 import { mdLinkRegex } from "./utils"
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
-const footnoteSpacingRegex = /(\S) (\[\^[^\]]+?\])(?![:(]) ?/g
-const footnoteSpacingReplacement = "$1$2 "
+const footnoteSpacingRegex = /(?<content>\S) (?<footnote>\[\^[^\]]+?\])(?![:(]) ?/g
+const footnoteSpacingReplacement = "$<content>$<footnote> "
 
 // New regex for moving footnotes after punctuation
-const footnotePunctuationRegex = /(\S)(\[\^[^\]]*?\])([.,;!?]+)/g
-const footnotePunctuationReplacement = "$1$3$2"
+const footnotePunctuationRegex = /(?<content>\S)(?<footnote>\[\^[^\]]*?\])(?<punct>[.,;!?]+)/g
+const footnotePunctuationReplacement = "$<content>$<punct>$<footnote>"
 
 /**
  * Adjusts the spacing around footnotes and moves them after punctuation.
@@ -28,10 +28,10 @@ const improveFootnoteFormatting = (text: string) => {
 
 // Regular expression for edit/note patterns
 const editPattern =
-  /^\s*(?<emph1>[*_]*)(edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+  /^\s*(?<emph1>[*_]*)(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPattern = "\n> [!info] Edited on $<date>\n>\n> $<text>"
 
-const editPatternNoDate = /^\s*(?<emph1>[*_]*)(edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+const editPatternNoDate = /^\s*(?<emph1>[*_]*)(?:edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
 const editAdmonitionPatternNoDate = "\n> [!info] Edited after posting\n>\n> $<text>"
 
 /**
@@ -45,8 +45,8 @@ export function editAdmonition(text: string): string {
   return text
 }
 
-const CALLOUT_REGEX_NO_SPACE = new RegExp(/^( *(?:> )+)(\[!.*$)(?!(?:> *)+\n)/gm)
-const TARGET_REGEX_WITH_SPACE = "$1$2\n$1"
+const CALLOUT_REGEX_NO_SPACE = new RegExp(/^(?<prefix> *(?:> )+)(?<callout>\[!.*$)(?!(?:> *)+\n)/gm)
+const TARGET_REGEX_WITH_SPACE = "$<prefix>$<callout>\n$<prefix>"
 
 /**
  * Adds a newline after admonitions without an empty second line (sans >).
@@ -57,13 +57,16 @@ export function spaceAdmonitions(text: string): string {
 
 // Wrap e.g. header "# 10" in lining nums
 export function wrapLeadingNumbers(text: string): string {
-  return text.replace(/(?<=# )(\d+)/g, '<span style="font-variant-numeric: lining-nums;">$1</span>')
+  return text.replace(
+    /(?<=# )(?<num>\d+)/g,
+    '<span style="font-variant-numeric: lining-nums;">$<num></span>',
+  )
 }
 
 export function wrapNumbersBeforeColon(text: string): string {
   return text.replace(
-    /(#[\w ]*)(?<!\d)(\d):/g,
-    '$1<span style="font-variant-numeric: lining-nums;">$2</span>:',
+    /(?<heading>#[\w ]*)(?<!\d)(?<digit>\d):/g,
+    '$<heading><span style="font-variant-numeric: lining-nums;">$<digit></span>:',
   )
 }
 
@@ -88,14 +91,14 @@ const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\//g
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
-  [/^(?! *>| +\S)(.*?\S.*?)\$\$ *$/gm, "$1\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
+  [/^(?! *>| +\S)(?<content>.*?\S.*?)\$\$ *$/gm, "$<content>\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
   [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
-  [/(<\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$1\n\n"], // Ensure there is a newline after an HTML tag
+  [/(?<tag><\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$<tag>\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
 ]
 
@@ -127,7 +130,7 @@ const concentrateEmphasisAroundLinks = (text: string): string => {
  * @returns The text with all formatting improvements applied.
  */
 export const formattingImprovement = (text: string) => {
-  const yamlHeaderMatch = text.match(/^\s*---\n(.*?)\n---\n/s)
+  const yamlHeaderMatch = text.match(/^\s*---\n(?<yaml>.*?)\n---\n/s)
   let yamlHeader = ""
   let content = text
 
@@ -137,7 +140,7 @@ export const formattingImprovement = (text: string) => {
   }
 
   // Format the content (non-YAML part)
-  let newContent = content.replaceAll(/(\u00A0|&nbsp;)/gu, " ") // Remove NBSP
+  let newContent = content.replaceAll(/(?:\u00A0|&nbsp;)/gu, " ") // Remove NBSP
 
   newContent = improveFootnoteFormatting(newContent)
   newContent = newContent.replace(/ *,/g, ",") // Remove space before commas
