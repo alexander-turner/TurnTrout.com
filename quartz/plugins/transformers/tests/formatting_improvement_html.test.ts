@@ -349,6 +349,19 @@ describe("HTMLFormattingImprovement", () => {
       const processedHtml = timeTransform(input)
       expect(processedHtml).toBe(expected)
     })
+
+    it("timeTransform is marker-invariant with footnote followed by Am", () => {
+      // From CI failure: "<sup>15</sup> Am I" flattens to "15" + marker + " Am I"
+      // Should transform to "15 a.m. I" regardless of marker
+      const textWithMarker = `15${markerChar} Am I`
+      const textWithoutMarker = `15 Am I`
+
+      const transformedWithMarker = timeTransform(textWithMarker)
+      const transformedWithoutMarker = timeTransform(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
   })
 
   describe("Mass transforms", () => {
