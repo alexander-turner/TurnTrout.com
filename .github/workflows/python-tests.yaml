@@ -23,7 +23,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick libimage-exiftool-perl inkscape rclone
+          sudo apt-get install -y imagemagick libimage-exiftool-perl inkscape rclone fish
           pip install linkchecker
           # Create magick symlink if it doesn't exist (Ubuntu provides 'convert' not 'magick')
           if ! command -v magick &> /dev/null && command -v convert &> /dev/null; then
@@ -36,5 +36,6 @@ jobs:
       - name: Run pytest with 100% coverage requirement
         run: |
           uv run python -m pytest scripts \
+            -m "not requires_r2" \
             --cov-fail-under=100 \
             --config-file config/python/pyproject.toml

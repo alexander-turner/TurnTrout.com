@@ -367,8 +367,9 @@ def test_png_input_has_transparency(temp_dir: Path) -> None:
         background="none",
         draw="circle 50,50 20,20",
     )
+    magick_executable = script_utils.find_executable("magick")
     pre_result = subprocess.run(
-        ["/opt/homebrew/bin/magick", "identify", "-verbose", str(input_file)],
+        [magick_executable, "identify", "-verbose", str(input_file)],
         capture_output=True,
         text=True,
         check=True,
@@ -392,8 +393,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path) -> None:
     avif_file = input_file.with_suffix(".avif")
 
     # Check for alpha channel using ImageMagick
+    magick_executable = script_utils.find_executable("magick")
     post_result = subprocess.run(
-        ["/opt/homebrew/bin/magick", "identify", "-verbose", str(avif_file)],
+        [magick_executable, "identify", "-verbose", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
