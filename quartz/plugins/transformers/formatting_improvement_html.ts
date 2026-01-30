@@ -10,7 +10,6 @@ import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
   fractionRegex,
-  numberRegex,
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
@@ -764,7 +763,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
-  [new RegExp("(?<num>" + numberRegex.source + ")[x\\*]\\b", "g"), "$<num>×"], // Pretty multiplier
+  [/(?<num>[-−]?\d{1,3}(?:,?\d{3})*(?:\.\d+)?)[x*]\b/g, "$<num>×"], // Pretty multiplier
   [/\b(?<left>\d+ ?)x(?<right> ?\d+)\b/g, "$<left>×$<right>"], // Multiplication sign
   [/\.{3}/g, "…"], // Ellipsis
   [/…(?=\w)/gu, "… "], // Space after ellipsis
