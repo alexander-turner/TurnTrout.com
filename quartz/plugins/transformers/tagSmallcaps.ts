@@ -12,7 +12,7 @@ import { shouldCapitalizeNodeText, replaceRegex, gatherTextBeforeIndex, hasClass
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {
   const romanNumeralRegex =
-    /(?<= |^)(?:(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{3})|I{1,2}[XVCDM])(?=[\s.,!?;:]|$)/
+    /(?<= |^)(?:(?:M{0,3})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{3})|I{1,2}[XVCDM])(?=[\s.,!?;:]|$)/
   return romanNumeralRegex.test(str)
 }
 
@@ -78,7 +78,7 @@ export const REGEX_ACRONYM = new RegExp(
 )
 
 export const REGEX_ABBREVIATION =
-  /(?<number>\d+(\.\d+)?|\.\d+)(?<abbreviation>[A-Za-z]{2,}|[KkMmBbTGgWw])\b/
+  /(?<number>\d+(?:\.\d+)?|\.\d+)(?<abbreviation>[A-Za-z]{2,}|[KkMmBbTGgWw])\b/
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
@@ -130,7 +130,7 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
 
 // If text comes after sentence ending, capitalize the first letter
 export const capitalizeAfterEnding = new RegExp(
-  `(^\\s*|\\n|[.!?](?<![eE]\\.[gG]\\.|[iI]\\.[eE]\\.)\\s+)([${upperCapsChars}${lowerCapsChars}])$`,
+  `(?<prefix>^\\s*|\\n|[.!?](?<![eE]\\.[gG]\\.|[iI]\\.[eE]\\.)\\s+)(?<letter>[${upperCapsChars}${lowerCapsChars}])$`,
 )
 
 export const INLINE_ELEMENTS = new Set([

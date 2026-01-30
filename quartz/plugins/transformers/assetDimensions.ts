@@ -140,11 +140,11 @@ class AssetProcessor {
     }
 
     const output = ffprobe.stdout.trim()
-    const dimensionsMatch = output.match(/^(\d+)x(\d+)/)
+    const dimensionsMatch = output.match(/^(?<width>\d+)x(?<height>\d+)/)
 
-    if (dimensionsMatch) {
-      const width = parseInt(dimensionsMatch[1], 10)
-      const height = parseInt(dimensionsMatch[2], 10)
+    if (dimensionsMatch?.groups) {
+      const width = parseInt(dimensionsMatch.groups.width, 10)
+      const height = parseInt(dimensionsMatch.groups.height, 10)
 
       /* istanbul ignore if */
       if (isNaN(width) || isNaN(height)) {

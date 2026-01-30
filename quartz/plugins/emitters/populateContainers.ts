@@ -97,9 +97,9 @@ export async function countJsTests(): Promise<number> {
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
   })
-  const match = output.match(/(\d+)\s+passed/)
-  if (!match) throw new Error("Failed to parse test count from output")
-  return parseInt(match[1], 10)
+  const match = output.match(/(?<count>\d+)\s+passed/)
+  if (!match?.groups) throw new Error("Failed to parse test count from output")
+  return parseInt(match.groups.count, 10)
 }
 
 // skipcq: JS-D1001
@@ -117,12 +117,12 @@ export const PYTEST_COUNT_CMD = "bash -lc '.venv/bin/pytest --collect-only -q' 2
 export async function countPythonTests(): Promise<number> {
   const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
 
-  const match = output.match(/(\d+)\s+tests?\s+collected/)
-  if (!match) {
+  const match = output.match(/(?<count>\d+)\s+tests?\s+collected/)
+  if (!match?.groups) {
     throw new Error(`Failed to parse pytest test count from output: ${JSON.stringify(output)}`)
   }
 
-  return parseInt(match[1], 10)
+  return parseInt(match.groups.count, 10)
 }
 
 // skipcq: JS-D1001
