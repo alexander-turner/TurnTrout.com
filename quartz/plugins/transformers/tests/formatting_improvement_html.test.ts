@@ -352,7 +352,7 @@ describe("HTMLFormattingImprovement", () => {
 
     it("timeTransform is marker-invariant with footnote followed by Am", () => {
       // From CI failure: "<sup>15</sup> Am I" flattens to "15" + marker + " Am I"
-      // Should transform to "15 a.m. I" regardless of marker
+      // Both should transform to "15 a.m. I" for invariance
       const textWithMarker = `15${markerChar} Am I`
       const textWithoutMarker = `15 Am I`
 
@@ -361,6 +361,7 @@ describe("HTMLFormattingImprovement", () => {
       const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
 
       expect(strippedResult).toBe(transformedWithoutMarker)
+      expect(strippedResult).toBe("15 a.m. I")
     })
   })
 
