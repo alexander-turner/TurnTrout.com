@@ -5280,6 +5280,11 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             '<article><p class="page-listing-title">Title without punctuation</p></article>',
             [],
         ),
+        # Paragraphs containing transcluded content should be skipped
+        (
+            '<article><p><span class="transclude">Transcluded content without punct</span></p></article>',
+            [],
+        ),
         # Footnote with invalid ending
         (
             '<article><p>No punct<a id="user-content-fnref-1">1</a></p></article>',

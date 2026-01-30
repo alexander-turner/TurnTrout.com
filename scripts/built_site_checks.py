@@ -151,6 +151,10 @@ def check_top_level_paragraphs_end_with_punctuation(
             ) or "page-listing-title" in script_utils.get_classes(p):
                 continue
 
+            # Skip paragraphs containing transcluded content
+            if p.find(class_="transclude"):
+                continue
+
             # Remove footnote reference links
             p_copy = copy.copy(p)
             for link in p_copy.find_all("a", id=True):
