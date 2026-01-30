@@ -1240,6 +1240,38 @@ describe("Skip Formatting", () => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
   })
+
+  describe("Footnote references", () => {
+    // Footnote refs have data-footnote-ref attribute; their number text shouldn't be transformed
+    // Note: rehype serializes boolean attributes as `data-footnote-ref=""`
+    it.each([
+      [
+        "skip text inside footnote reference elements",
+        '<p>Some text<sup><a href="#fn-1" data-footnote-ref>15</a></sup> Am I right?</p>',
+        '<p>Some text<sup><a href="#fn-1" data-footnote-ref="">15</a></sup> Am I right?</p>',
+      ],
+      [
+        "not transform footnote ref number into time pattern",
+        // This is the specific bug case: "15" + " Am I" should NOT become "15 a.m. I"
+        '<p><sup><a data-footnote-ref>15</a></sup> Am I correct?</p>',
+        '<p><sup><a data-footnote-ref="">15</a></sup> Am I correct?</p>',
+      ],
+      [
+        "still transform text outside footnote refs normally",
+        '<p>Meet at 3 PM<sup><a href="#fn-1" data-footnote-ref>1</a></sup> for coffee.</p>',
+        '<p>Meet at 3 p.m.<sup><a href="#fn-1" data-footnote-ref="">1</a></sup> for coffee.</p>',
+      ],
+      [
+        "handle multiple footnote refs in same paragraph",
+        '<p>First<sup><a data-footnote-ref>1</a></sup> and second<sup><a data-footnote-ref>2</a></sup>.</p>',
+        // Note: punctuation gets moved into the second link due to rearrangeLinkPunctuation
+        '<p>First<sup><a data-footnote-ref="">1</a></sup> and second<sup><a data-footnote-ref="">2.</a></sup></p>',
+      ],
+    ])("should %s", (_description, input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+  })
 })
 
 describe("Date Range", () => {
