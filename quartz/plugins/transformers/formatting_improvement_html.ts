@@ -148,8 +148,8 @@ export function transformElement(
   })
 
   if (checkTransformInvariance) {
-    const strippedContent = markedContent.replace(markerChar, "")
-    const strippedTransformed = transformedContent.replace(markerChar, "")
+    const strippedContent = markedContent.replaceAll(markerChar, "")
+    const strippedTransformed = transformedContent.replaceAll(markerChar, "")
     const expected = transform(strippedContent)
 
     // istanbul ignore next
@@ -370,12 +370,185 @@ export function enDashDateRange(text: string): string {
   return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
 }
 
+// Non-breaking space definitions (based on richtypo patterns)
+const nbsp = "\u00A0"
+const space = `[ \\t${nbsp}]`
+// Defensive pattern to avoid matching inside HTML-like tags.
+// Requires the `<` to be followed by a letter or `/` (like actual HTML tags: <div, </div>).
+// This prevents false positives with comparison operators like "a < b" or "5 < 10".
+// Note: Since nbsp transforms only run on text nodes extracted from parsed HAST,
+// actual HTML tags should never appear in the content. This pattern is a defensive
+// measure only, not the primary safety mechanism.
+const notInTag = "(?<!<[a-zA-Z/][^>]*)"
+const punctuationOrQuote = "[.,!?:;)(\"\"\"«»'']"
+// Unicode uppercase letter (matches A-Z and accented capitals like É, Ñ, Ü)
+const unicodeUppercase = "\\p{Lu}"
+
+/**
+ * Adds non-breaking space after short words (1-2 letters) to prevent them from
+ * being left alone at the end of a line.
+ *
+ * Based on richtypo's shortWords rule.
+ * Matches words like: a, I, an, to, of, in, on, is, it, or, if, as, at, by, we, so, no, up, he, my, us
+ */
+export function nbspAfterShortWords(text: string): string {
+  const shortWord = "[a-zA-Z]{1,2}"
+  // Allow optional markerChar after short word (preserves text node boundaries)
+  const pattern = new RegExp(
+    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})(${chr}?)${space}`,
+    "gm",
+  )
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space between numbers and their units to prevent awkward line breaks.
+ *
+ * Based on richtypo's numberUnits rule.
+ * Examples: "100 km" → "100 km", "5 kg" → "5 kg"
+ */
+export function nbspBetweenNumberAndUnit(text: string): string {
+  // Allow optional markerChar around the space (preserves text node boundaries)
+  const pattern = new RegExp(`${notInTag}(\\d)(${chr}?)${space}(${chr}?)(\\w)`, "gm")
+  return text.replace(pattern, `$1$2${nbsp}$3$4`)
+}
+
+/**
+ * Adds non-breaking space before the last word to prevent orphaned words (widows)
+ * at the end of paragraphs.
+ *
+ * Based on richtypo's orphans rule.
+ * Only applies to short final words (1-10 characters) to avoid affecting long words.
+ * Only matches at end of string or double newline (paragraph break), not at every line ending.
+ */
+export function nbspBeforeLastWord(text: string): string {
+  // Exclude markerChar from word match to avoid including it as part of the word
+  // Allow optional markerChar before end-of-string/paragraph
+  // Use non-multiline mode so $ only matches at true end of string
+  // Require the space to be preceded by a word character (not just whitespace)
+  const pattern = new RegExp(
+    `${notInTag}(?<=[\\w${chr}])${space}([^\\s${chr}]{1,10})(${chr}?(?:\\n\\n|$))`,
+    "g", // Removed 'm' flag - only match at true end of string or \n\n
+  )
+  return text.replace(pattern, `${nbsp}$1$2`)
+}
+
+/**
+ * Adds non-breaking space after reference abbreviations to keep them with their numbers.
+ * Examples: "Fig. 1" → "Fig. 1", "p. 42" → "p. 42", "Vol. 2" → "Vol. 2"
+ *
+ * Covers: Fig., Figs., Vol., No., p., pp., Ch., Chap., Sec., Eq., Art., Tab., Ex.
+ */
+export function nbspAfterReferenceAbbreviations(text: string): string {
+  // Case-sensitive abbreviations that should keep their case
+  const abbreviations = [
+    "Fig\\.",
+    "Figs\\.",
+    "Vol\\.",
+    "No\\.",
+    "Nos\\.",
+    "p\\.",
+    "pp\\.",
+    "Ch\\.",
+    "Chap\\.",
+    "Sec\\.",
+    "Eq\\.",
+    "Eqs\\.",
+    "Art\\.",
+    "Tab\\.",
+    "Ex\\.",
+  ]
+  // Allow optional markerChar after abbreviation and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${abbreviations.join("|")})(${chr}?)${space}(?=${chr}?\\d)`, "g")
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after section (§) and paragraph (¶) symbols.
+ * Examples: "§ 5" → "§ 5", "¶ 3" → "¶ 3"
+ */
+export function nbspAfterSectionSymbols(text: string): string {
+  // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}([§¶])(${chr}?)${space}(?=${chr}?\\d)`, "g")
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after honorific titles to keep them with names.
+ * Examples: "Dr. Smith" → "Dr. Smith", "Mr. Jones" → "Mr. Jones"
+ *
+ * Covers: Mr., Mrs., Ms., Dr., Prof., Rev., St. (Saint), Sr., Jr., Hon., Gov., Sen., Rep.
+ */
+export function nbspAfterHonorifics(text: string): string {
+  const honorifics = [
+    "Mr\\.",
+    "Mrs\\.",
+    "Ms\\.",
+    "Dr\\.",
+    "Prof\\.",
+    "Rev\\.",
+    "St\\.", // Saint
+    "Sr\\.",
+    "Jr\\.",
+    "Hon\\.",
+    "Gov\\.",
+    "Sen\\.",
+    "Rep\\.",
+  ]
+  // Match honorific followed by space and then a capital letter (name)
+  // Allow optional markerChar after honorific and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})(${chr}?)${space}(?=${chr}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space after copyright (©), registered (®), and trademark (™) symbols
+ * when followed by a year or company name.
+ * Examples: "© 2024" → "© 2024", "® Brand" → "® Brand"
+ */
+export function nbspAfterCopyrightSymbols(text: string): string {
+  // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}([©®™])(${chr}?)${space}(?=${chr}?[\\d${unicodeUppercase}])`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
+/**
+ * Adds non-breaking space between initials and before surnames to keep names together.
+ * Examples: "J. K. Rowling" → "J. K. Rowling", "C. S. Lewis" → "C. S. Lewis"
+ *
+ * Matches single capital letter followed by period and space, then another capital.
+ */
+export function nbspBetweenInitials(text: string): string {
+  // Match single capital letter + period + space + capital letter (initial or name start)
+  // Allow optional markerChar after initial and in lookahead (for text node boundaries)
+  const pattern = new RegExp(`${notInTag}(${unicodeUppercase}\\.)(${chr}?)${space}(?=${chr}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$1$2${nbsp}`)
+}
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
 const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
 
 // Check for invariance
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
+
+// Non-breaking space transformers (applied after other transforms)
+// All patterns are markerChar-aware: they use `${chr}?` to handle optional markerChar
+// at text node boundaries. This allows nbsp to be inserted correctly even when the
+// space and adjacent word are in different text nodes (separated by markerChar).
+// Invariance checking is disabled for these transforms because they intentionally
+// produce different results with/without markerChar (the markerChar affects where
+// nbsp can be inserted via lookaheads and lookbehinds).
+const nbspTransformers = [
+  nbspAfterShortWords,
+  nbspBetweenNumberAndUnit,
+  nbspBeforeLastWord,
+  nbspAfterReferenceAbbreviations,
+  nbspAfterSectionSymbols,
+  nbspAfterHonorifics,
+  nbspAfterCopyrightSymbols,
+  nbspBetweenInitials,
+]
 
 /**
  * Applies multiple text transformations
@@ -389,6 +562,7 @@ export function applyTextTransforms(text: string): string {
     ...checkedTextTransformers,
     ...uncheckedTextTransformers,
     spacesAroundSlashes,
+    ...nbspTransformers,
   ]) {
     text = transformer(text)
   }
@@ -452,6 +626,13 @@ export function formatLNumbers(tree: Root): void {
 }
 
 export function formatArrows(tree: Root): void {
+  // Include nbsp in the space pattern since nbsp transforms run before this
+  const spaceOrNbsp = `[ ${nbsp}]`
+  const arrowPattern = new RegExp(
+    `(?:^|(?<=${spaceOrNbsp})|(?<=\\w))[-]{1,2}>(?=\\w|${spaceOrNbsp}|$)`,
+    "g",
+  )
+
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
     if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
@@ -461,7 +642,7 @@ export function formatArrows(tree: Root): void {
       node,
       index,
       parent,
-      /(?:^|(?<= )|(?<=\w))[-]{1,2}>(?=\w| |$)/g,
+      arrowPattern,
       (match: RegExpMatchArray) => {
         const matchIndex = match.index ?? /* istanbul ignore next */ 0
         const beforeChar = match.input?.slice(Math.max(0, matchIndex - 1), matchIndex)
@@ -745,7 +926,6 @@ export function timeTransform(text: string): string {
 }
 
 const massTransforms: [RegExp | string, string][] = [
-  [/\u00A0/gu, " "], // Replace non-breaking spaces
   [/!=/g, "≠"],
   [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
   [/\b([Ff])rappe\b/g, "$1rappé"],
@@ -931,6 +1111,16 @@ const collectNodes = [
   "blockquote",
 ]
 
+/**
+ * Checks if an element has meaningful text content (not just whitespace).
+ * Used to filter out structural elements that only contain indentation/formatting whitespace.
+ */
+function hasNonWhitespaceText(node: Element): boolean {
+  return node.children.some(
+    (child) => child.type === "text" && "value" in child && child.value.trim().length > 0,
+  )
+}
+
 export function collectTransformableElements(node: Element): Element[] {
   const eltsToTransform: Element[] = []
 
@@ -940,7 +1130,8 @@ export function collectTransformableElements(node: Element): Element[] {
 
   // If this node matches our collection criteria,
   // add it and do NOT recurse separately for its children.
-  if (collectNodes.includes(node.tagName) && node.children.some((child) => child.type === "text")) {
+  // Only include elements with actual text content, not just whitespace between child elements.
+  if (collectNodes.includes(node.tagName) && hasNonWhitespaceText(node)) {
     eltsToTransform.push(node)
   } else {
     // Otherwise, keep looking through children.
@@ -1002,6 +1193,11 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
         }
         if (slashPredicate(elt)) {
           transformElement(elt, spacesAroundSlashes, toSkip, true)
+        }
+
+        // Apply non-breaking space transforms last (after all other text transforms)
+        for (const transform of nbspTransformers) {
+          transformElement(elt, transform, toSkip, false)
         }
       })
     })

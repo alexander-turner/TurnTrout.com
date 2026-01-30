@@ -30,13 +30,40 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   markerChar,
+  nbspAfterShortWords,
+  nbspBetweenNumberAndUnit,
+  nbspBeforeLastWord,
+  nbspAfterReferenceAbbreviations,
+  nbspAfterSectionSymbols,
+  nbspAfterHonorifics,
+  nbspAfterCopyrightSymbols,
+  nbspBetweenInitials,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
+// Non-breaking space character for tests
+const nbsp = "\u00A0"
+
+/**
+ * Normalizes non-breaking spaces to regular spaces for comparison.
+ * Use this when testing functionality unrelated to nbsp insertion.
+ */
+function normalizeSpaces(text: string): string {
+  return text.replace(/\u00A0/gu, " ")
+}
+
+/**
+ * Process HTML through the formatting improvement pipeline.
+ * @param inputHTML - HTML string to process
+ * @param skipFirstLetter - Whether to skip first letter attribute
+ * @param doNotSetFirstLetterAttribute - Whether to skip first letter attribute entirely
+ * @param preserveNbsp - If true, returns raw output with nbsp intact. If false (default), normalizes nbsp to regular spaces.
+ */
 function testHtmlFormattingImprovement(
   inputHTML: string,
   skipFirstLetter = true,
   doNotSetFirstLetterAttribute = false,
+  preserveNbsp = false,
 ) {
   const options = { skipFirstLetter }
   if (!inputHTML.trim().startsWith("<")) {
@@ -51,7 +78,16 @@ function testHtmlFormattingImprovement(
     processor.use(improveFormatting, options)
   }
 
-  return processor.processSync(inputHTML).toString()
+  const result = processor.processSync(inputHTML).toString()
+  return preserveNbsp ? result : normalizeSpaces(result)
+}
+
+/**
+ * Process HTML and preserve nbsp characters in the output.
+ * Use this for tests that specifically test nbsp insertion.
+ */
+function testHtmlFormattingWithNbsp(inputHTML: string, skipFirstLetter = true) {
+  return testHtmlFormattingImprovement(inputHTML, skipFirstLetter, false, true)
 }
 
 describe("HTMLFormattingImprovement", () => {
@@ -1644,10 +1680,12 @@ describe("transformElement error conditions", () => {
 describe("applyTextTransforms function", () => {
   it("should apply all text transformations", () => {
     const input = "The data are i.i.d. and it's -5x larger than github... So naive!"
-    const expected = "The data are IID and it’s −5× larger than GitHub… So naïve!"
+    // Note: niceQuotes converts "it's" apostrophe to smart quote (')
+    const expected = "The data are IID and it\u2019s −5× larger than GitHub… So naïve!"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    // Normalize nbsp to regular space for comparison (applyTextTransforms now includes nbsp rules)
+    expect(normalizeSpaces(result)).toBe(expected)
   })
 
   it("should handle empty string", () => {
@@ -1660,7 +1698,8 @@ describe("applyTextTransforms function", () => {
     const expected = "dog / cat and h/t John"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    // Normalize nbsp to regular space for comparison (applyTextTransforms now includes nbsp rules)
+    expect(normalizeSpaces(result)).toBe(expected)
   })
 })
 
@@ -1891,6 +1930,330 @@ describe("HTMLFormattingImprovement plugin", () => {
         '<p>The mapping <span class="katex">π: C → A</span> shows that <span class="monospace-arrow">→</span> arrows work differently</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
+    })
+  })
+})
+
+describe("Non-breaking space transformations", () => {
+  describe("nbspAfterShortWords", () => {
+    it.each([
+      ["a cat", `a${nbsp}cat`],
+      ["I am here", `I${nbsp}am${nbsp}here`],
+      ["to be or not", `to${nbsp}be${nbsp}or${nbsp}not`],
+      ["the dog", "the dog"], // "the" is 3 letters, not affected
+      ["An apple", `An${nbsp}apple`],
+      ["Go to it", `Go${nbsp}to${nbsp}it`],
+    ])("should add nbsp after short words: %s", (input, expected) => {
+      expect(nbspAfterShortWords(input)).toBe(expected)
+    })
+
+    it("should not add nbsp inside HTML tags", () => {
+      // The function shouldn't match content that looks like it's inside a tag
+      const input = "<a href='x'>link</a>"
+      const result = nbspAfterShortWords(input)
+      // Should not insert nbsp between '<a' since it looks like a tag
+      expect(result).not.toContain(`<a${nbsp}`)
+    })
+  })
+
+  describe("nbspBetweenNumberAndUnit", () => {
+    it.each([
+      ["100 km", `100${nbsp}km`],
+      ["5 kg", `5${nbsp}kg`],
+      ["10 percent", `10${nbsp}percent`],
+      ["2024 AD", `2024${nbsp}AD`],
+      ["run 5 miles", `run 5${nbsp}miles`],
+      ["$100", "$100"], // No space between currency and number
+      ["100", "100"], // No unit
+    ])("should add nbsp between number and unit: %s", (input, expected) => {
+      expect(nbspBetweenNumberAndUnit(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspBeforeLastWord", () => {
+    it.each([
+      ["This is a test", `This is a${nbsp}test`],
+      ["Hello world", `Hello${nbsp}world`],
+      ["End", "End"], // Only one word
+      ["A very long sentence here", `A very long sentence${nbsp}here`],
+    ])("should add nbsp before last word: %s", (input, expected) => {
+      expect(nbspBeforeLastWord(input)).toBe(expected)
+    })
+
+    it("should not add nbsp if preceded by # (header marker)", () => {
+      const input = "# Header"
+      const result = nbspBeforeLastWord(input)
+      expect(result).toBe("# Header")
+    })
+  })
+
+  describe("End-to-end nbsp in HTML", () => {
+    it("should insert nbsp in paragraph text", () => {
+      const input = "<p>I went to a store</p>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Should have nbsp after short words and before last word
+      expect(result).toContain(nbsp)
+    })
+
+    it("should not insert nbsp in code blocks", () => {
+      const input = "<code>a b c</code>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Code blocks should be skipped
+      expect(result).not.toContain(nbsp)
+    })
+
+    it("should not insert nbsp in pre blocks", () => {
+      const input = "<pre>a b c</pre>"
+      const result = testHtmlFormattingWithNbsp(input)
+      // Pre blocks should be skipped
+      expect(result).not.toContain(nbsp)
+    })
+
+    it("should insert nbsp between numbers and units in paragraphs", () => {
+      const input = "<p>The distance is 100 km</p>"
+      const result = testHtmlFormattingWithNbsp(input)
+      expect(result).toContain(`100${nbsp}km`)
+    })
+  })
+
+  describe("nbspAfterReferenceAbbreviations", () => {
+    it.each([
+      ["Fig. 1", `Fig.${nbsp}1`],
+      ["Figs. 1", `Figs.${nbsp}1`],
+      ["Vol. 2", `Vol.${nbsp}2`],
+      ["No. 5", `No.${nbsp}5`],
+      ["p. 42", `p.${nbsp}42`],
+      ["pp. 42", `pp.${nbsp}42`],
+      ["Ch. 3", `Ch.${nbsp}3`],
+      ["Sec. 4", `Sec.${nbsp}4`],
+      ["Eq. 1", `Eq.${nbsp}1`],
+      ["See Fig. 1 and Vol. 2", `See Fig.${nbsp}1 and Vol.${nbsp}2`],
+      ["Fig. A", "Fig. A"], // Only matches numbers, not letters
+    ])("should add nbsp after reference abbreviations: %s", (input, expected) => {
+      expect(nbspAfterReferenceAbbreviations(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterSectionSymbols", () => {
+    it.each([
+      ["§ 5", `§${nbsp}5`],
+      ["¶ 3", `¶${nbsp}3`],
+      ["See § 5 and ¶ 3", `See §${nbsp}5 and ¶${nbsp}3`],
+      ["§ A", "§ A"], // Only matches numbers
+    ])("should add nbsp after section/paragraph symbols: %s", (input, expected) => {
+      expect(nbspAfterSectionSymbols(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterHonorifics", () => {
+    it.each([
+      ["Dr. Smith", `Dr.${nbsp}Smith`],
+      ["Mr. Jones", `Mr.${nbsp}Jones`],
+      ["Mrs. Brown", `Mrs.${nbsp}Brown`],
+      ["Ms. Davis", `Ms.${nbsp}Davis`],
+      ["Prof. Einstein", `Prof.${nbsp}Einstein`],
+      ["Rev. King", `Rev.${nbsp}King`],
+      ["St. Augustine", `St.${nbsp}Augustine`],
+      ["Dr. smith", "Dr. smith"], // Only matches capital letters after
+      ["Dr. Éric", `Dr.${nbsp}Éric`], // Accented capital É
+      ["Prof. Ñoño", `Prof.${nbsp}Ñoño`], // Accented capital Ñ
+      ["Mr. Übel", `Mr.${nbsp}Übel`], // Accented capital Ü
+    ])("should add nbsp after honorifics: %s", (input, expected) => {
+      expect(nbspAfterHonorifics(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspAfterCopyrightSymbols", () => {
+    it.each([
+      ["© 2024", `©${nbsp}2024`],
+      ["® Brand", `®${nbsp}Brand`],
+      ["™ Product", `™${nbsp}Product`],
+      ["Copyright © 2024 Company", `Copyright ©${nbsp}2024 Company`],
+      ["© company", "© company"], // Only matches numbers or capital letters
+      ["© Émile", `©${nbsp}Émile`], // Accented capital É
+      ["® Ñandu", `®${nbsp}Ñandu`], // Accented capital Ñ
+    ])("should add nbsp after copyright symbols: %s", (input, expected) => {
+      expect(nbspAfterCopyrightSymbols(input)).toBe(expected)
+    })
+  })
+
+  describe("nbspBetweenInitials", () => {
+    it.each([
+      ["J. K. Rowling", `J.${nbsp}K.${nbsp}Rowling`],
+      ["C. S. Lewis", `C.${nbsp}S.${nbsp}Lewis`],
+      ["H. G. Wells", `H.${nbsp}G.${nbsp}Wells`],
+      ["J. Smith", `J.${nbsp}Smith`],
+      ["A. B. C. Name", `A.${nbsp}B.${nbsp}C.${nbsp}Name`],
+      ["j. k. rowling", "j. k. rowling"], // Only matches capitals
+      ["J. lowercase", "J. lowercase"], // Only matches if followed by capital
+      ["É. García", `É.${nbsp}García`], // Accented capital initial É
+      ["Ñ. Ñoño", `Ñ.${nbsp}Ñoño`], // Accented capital Ñ initial and name
+      ["J. Ángel", `J.${nbsp}Ángel`], // Regular initial, accented name
+    ])("should add nbsp between initials: %s", (input, expected) => {
+      expect(nbspBetweenInitials(input)).toBe(expected)
+    })
+  })
+
+  // Integration tests: verify nbsp functions work with markerChar at text node boundaries
+  // markerChar appears at the end of each text node when transformElement joins them
+  describe("markerChar integration", () => {
+    const chr = markerChar
+
+    it("nbspAfterShortWords handles markerChar between short word and space", () => {
+      // Simulates: <p>I <em>am</em></p> where "I" ends one text node
+      const input = `I${chr} am`
+      const result = nbspAfterShortWords(input)
+      expect(result).toBe(`I${chr}${nbsp}am`)
+    })
+
+    it("nbspBetweenNumberAndUnit handles markerChar around space", () => {
+      // Simulates: <p>100 <em>km</em></p>
+      const input = `100${chr} ${chr}km`
+      const result = nbspBetweenNumberAndUnit(input)
+      expect(result).toBe(`100${chr}${nbsp}${chr}km`)
+    })
+
+    it("nbspBeforeLastWord excludes markerChar from word match", () => {
+      // Simulates: <p>Hello world</p> with markerChar at end
+      const input = `Hello world${chr}`
+      const result = nbspBeforeLastWord(input)
+      // Should match "world" not "world\uE000"
+      expect(result).toBe(`Hello${nbsp}world${chr}`)
+    })
+
+    it("nbspAfterHonorifics handles markerChar between honorific and name", () => {
+      // Simulates: <p>Dr. <em>Smith</em></p>
+      const input = `Dr.${chr} ${chr}Smith`
+      const result = nbspAfterHonorifics(input)
+      expect(result).toBe(`Dr.${chr}${nbsp}${chr}Smith`)
+    })
+
+    it("nbspBetweenInitials handles markerChar between initials", () => {
+      // Simulates: <p>J. <em>K.</em> Rowling</p>
+      const input = `J.${chr} ${chr}K. Rowling`
+      const result = nbspBetweenInitials(input)
+      expect(result).toBe(`J.${chr}${nbsp}${chr}K.${nbsp}Rowling`)
+    })
+
+    it("nbspAfterReferenceAbbreviations handles markerChar", () => {
+      // Simulates: <p>Fig. <em>1</em></p>
+      const input = `Fig.${chr} ${chr}1`
+      const result = nbspAfterReferenceAbbreviations(input)
+      expect(result).toBe(`Fig.${chr}${nbsp}${chr}1`)
+    })
+
+    it("nbspAfterSectionSymbols handles markerChar", () => {
+      // Simulates: <p>§ <em>5</em></p>
+      const input = `§${chr} ${chr}5`
+      const result = nbspAfterSectionSymbols(input)
+      expect(result).toBe(`§${chr}${nbsp}${chr}5`)
+    })
+
+    it("nbspAfterCopyrightSymbols handles markerChar", () => {
+      // Simulates: <p>© <em>2024</em></p>
+      const input = `©${chr} ${chr}2024`
+      const result = nbspAfterCopyrightSymbols(input)
+      expect(result).toBe(`©${chr}${nbsp}${chr}2024`)
+    })
+  })
+
+  describe("notInTag pattern edge cases", () => {
+    it("should not treat comparison operators as HTML tags", () => {
+      // "a < b" should NOT be treated as inside a tag
+      const input = "a < b test"
+      const result = nbspAfterShortWords(input)
+      // "a" is a short word, should get nbsp after it
+      expect(result).toBe(`a${nbsp}< b${nbsp}test`)
+    })
+
+    it("should not treat numeric comparisons as HTML tags", () => {
+      const input = "if 5 < 10 then"
+      const result = nbspAfterShortWords(input)
+      // "5" is not a word, "10" is not, but "if" is short
+      expect(result).toBe(`if${nbsp}5 < 10 then`)
+    })
+
+    it("should still work correctly with actual tag-like patterns in edge cases", () => {
+      // This tests that the pattern still provides defense for tag-like content
+      // even though HAST text nodes shouldn't contain actual tags
+      const input = "text <div attribute"
+      const result = nbspAfterShortWords(input)
+      // The nbsp should still be applied where appropriate
+      expect(result).toContain("text")
+    })
+  })
+
+  describe("whitespace-only text node handling", () => {
+    it("should not transform pure whitespace strings", () => {
+      const whitespace = "   \n\t  "
+      // None of the nbsp patterns should modify pure whitespace
+      expect(nbspAfterShortWords(whitespace)).toBe(whitespace)
+      expect(nbspBetweenNumberAndUnit(whitespace)).toBe(whitespace)
+      expect(nbspBeforeLastWord(whitespace)).toBe(whitespace)
+      expect(nbspAfterReferenceAbbreviations(whitespace)).toBe(whitespace)
+      expect(nbspAfterSectionSymbols(whitespace)).toBe(whitespace)
+      expect(nbspAfterHonorifics(whitespace)).toBe(whitespace)
+      expect(nbspAfterCopyrightSymbols(whitespace)).toBe(whitespace)
+      expect(nbspBetweenInitials(whitespace)).toBe(whitespace)
+    })
+
+    it("should not transform newlines between text nodes", () => {
+      // Simulates whitespace between elements in concatenated text
+      const input = `content${markerChar}\n   ${markerChar}more content`
+      // The "\n   " part should not have nbsp inserted
+      const result = nbspBeforeLastWord(input)
+      expect(result).not.toMatch(/\n\s*\u00A0/)
+    })
+  })
+
+  describe("collectTransformableElements whitespace filtering", () => {
+    it("should not collect divs with only whitespace text children", () => {
+      // A div with only whitespace text between child elements
+      const div = h("div", [
+        { type: "text", value: "\n  " } as Text,
+        h("p", "Actual content"),
+        { type: "text", value: "\n" } as Text,
+      ])
+      const result = collectTransformableElements(div as Element)
+      // The outer div should NOT be collected (only whitespace text)
+      // But the inner p should be collected
+      expect(result.some((el) => el.tagName === "div")).toBe(false)
+      expect(result.some((el) => el.tagName === "p")).toBe(true)
+    })
+
+    it("should collect elements with actual text content", () => {
+      const div = h("div", [
+        { type: "text", value: "Hello " } as Text,
+        h("strong", "world"),
+      ])
+      const result = collectTransformableElements(div as Element)
+      // The div has actual text content, so it should be collected
+      expect(result.some((el) => el.tagName === "div")).toBe(true)
+    })
+
+    it("should handle nested structures with mixed whitespace", () => {
+      // Simulates the emoji figure structure from the bug report
+      const structure = h("div", { role: "img" }, [
+        { type: "text", value: "\n   " } as Text,
+        h("div.subfigure", [
+          { type: "text", value: "\n     " } as Text,
+          h("figcaption", "Apple"),
+          { type: "text", value: "\n   " } as Text,
+        ]),
+        { type: "text", value: "\n   " } as Text,
+        h("div.subfigure", [
+          { type: "text", value: "\n     " } as Text,
+          h("figcaption", "Google"),
+          { type: "text", value: "\n   " } as Text,
+        ]),
+        { type: "text", value: "\n" } as Text,
+      ])
+      const result = collectTransformableElements(structure as Element)
+      // The outer div should NOT be collected (only whitespace text at its level)
+      // The figcaptions should be collected (they have actual text)
+      const collectedTags = result.map((el) => el.tagName)
+      expect(collectedTags).not.toContain("div")
+      expect(collectedTags.filter((t) => t === "figcaption")).toHaveLength(2)
     })
   })
 })
