@@ -33,6 +33,8 @@ import { arrowsToWrap } from "../formatting_improvement_html"
 // (punctilio exports these in constants.js but not from the main entry point)
 const LEFT_DOUBLE_QUOTE = "\u201C" // "
 const RIGHT_DOUBLE_QUOTE = "\u201D" // "
+const LEFT_SINGLE_QUOTE = "\u2018" // '
+const RIGHT_SINGLE_QUOTE = "\u2019" // '
 const MULTIPLICATION = "\u00D7" // ×
 
 function testHtmlFormattingImprovement(
@@ -78,7 +80,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>Suppose you tell me, "<code>TurnTrout</code>", we definitely</p>',
-        "<p>Suppose you tell me, “<code>TurnTrout</code>”, we definitely</p>",
+        `<p>Suppose you tell me, ${LEFT_DOUBLE_QUOTE}<code>TurnTrout</code>,${RIGHT_DOUBLE_QUOTE} we definitely</p>`,
       ],
       [
         '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
@@ -89,12 +91,12 @@ describe("HTMLFormattingImprovement", () => {
         "<div><p>not confident in that plan—”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>",
       ],
       [
-        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></div>",
-        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>‘I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></div>",
+        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></div>",
+        `<div><div></div><div><p><strong>small voice.</strong></p><p><strong>${LEFT_SINGLE_QUOTE}I will take the Ring,${RIGHT_SINGLE_QUOTE} he</strong> <strong>said, ${LEFT_SINGLE_QUOTE}though I do not know the way.${RIGHT_SINGLE_QUOTE}</strong></p></div></div>`,
       ],
       [
         "<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></blockquote></article>",
-        "<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>‘I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></blockquote></article>",
+        `<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>${LEFT_SINGLE_QUOTE}I will take the Ring,${RIGHT_SINGLE_QUOTE} he</strong> <strong>said, ${LEFT_SINGLE_QUOTE}though I do not know the way.${RIGHT_SINGLE_QUOTE}</strong></p></div></blockquote></article>`,
       ],
       [
         '<blockquote class="admonition quote" data-admonition="quote"> <div class="admonition-title"><div class="admonition-icon"></div><div class="admonition-title-inner">Checking that HTML formatting is applied to each paragraph element </div></div> <div class="admonition-content"><p>Comes before the single quote</p><p>\'I will take the Ring\'</p></div> </blockquote>',
@@ -638,7 +640,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com">Link</a>",</p>',
-      '<p><a href="https://example.com">Link”,</a></p>',
+      `<p><a href="https://example.com">Link,${RIGHT_DOUBLE_QUOTE}</a></p>`,
     ],
     [
       '<p><a href="https://example.com">Link</a>" k</p>',
