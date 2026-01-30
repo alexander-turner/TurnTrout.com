@@ -17,18 +17,21 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
+      - name: Setup build environment
+        uses: ./.github/actions/setup-build-env
 
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick
+          sudo apt-get install -y imagemagick libimage-exiftool-perl inkscape rclone
           pip install linkchecker
           # Create magick symlink if it doesn't exist (Ubuntu provides 'convert' not 'magick')
           if ! command -v magick &> /dev/null && command -v convert &> /dev/null; then
             sudo ln -s $(which convert) /usr/local/bin/magick
           fi
+
+      - name: Add node_modules/.bin to PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
       - name: Run pytest with 100% coverage requirement
         run: |
