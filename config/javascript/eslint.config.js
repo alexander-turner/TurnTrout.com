@@ -23,7 +23,6 @@ export default [
           order: "asc",
         },
       ],
-      // Require named capture groups in regex for clarity
       "regexp/prefer-named-capture-group": "error",
     },
   },

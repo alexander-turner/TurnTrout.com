@@ -227,11 +227,11 @@ export function niceQuotes(text: string): string {
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // Use a private-use Unicode character as placeholder
-  const h_t_placeholder_char = "\uE010"
+  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
+  const hatTipPlaceholder = "\uE010"
 
   // First replace h/t with the placeholder character
-  text = text.replace(/\b(?:h\/t)\b/g, h_t_placeholder_char)
+  text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
@@ -242,7 +242,7 @@ export function spacesAroundSlashes(text: string): string {
   text = text.replace(numberSlashThenNonNumber, " / ")
 
   // Restore the h/t occurrences
-  return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
+  return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
 }
 
 /**
@@ -764,7 +764,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
   [/\bregex\b/gi, "RegEx"],
   [/\brelu\b/gi, "RELU"],
-  [`(?<num>${numberRegex.source})[x\\*]\\b`, "$<num>×"], // Pretty multiplier
+  [new RegExp("(?<num>" + numberRegex.source + ")[x\\*]\\b", "g"), "$<num>×"], // Pretty multiplier
   [/\b(?<left>\d+ ?)x(?<right> ?\d+)\b/g, "$<left>×$<right>"], // Multiplication sign
   [/\.{3}/g, "…"], // Ellipsis
   [/…(?=\w)/gu, "… "], // Space after ellipsis
