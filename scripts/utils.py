@@ -26,7 +26,11 @@ _executable_cache: Dict[str, str] = {}
 
 @functools.lru_cache(maxsize=1)
 def _get_imagemagick_version() -> int:
-    """Detect ImageMagick version (6 or 7). Defaults to 6 if unclear."""
+    """
+    Detect ImageMagick version (6 or 7).
+
+    Defaults to 6 if unclear.
+    """
     magick_path = shutil.which("magick")
     if not magick_path:
         return 6
