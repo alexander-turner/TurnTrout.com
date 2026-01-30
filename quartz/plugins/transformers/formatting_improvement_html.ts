@@ -403,13 +403,7 @@ export function enDashDateRange(text: string): string {
 // Non-breaking space definitions (based on richtypo patterns)
 const nbsp = "\u00A0"
 const space = `[ \\t${nbsp}]`
-// Defensive pattern to avoid matching inside HTML-like tags.
-// Requires the `<` to be followed by a letter or `/` (like actual HTML tags: <div, </div>).
-// This prevents false positives with comparison operators like "a < b" or "5 < 10".
-// Note: Since nbsp transforms only run on text nodes extracted from parsed HAST,
-// actual HTML tags should never appear in the content. This pattern is a defensive
-// measure only, not the primary safety mechanism.
-const notInTag = "(?<!<[a-zA-Z/][^>]*)"
+const notInTag = "(?<!<[^>]*)"
 const punctuationOrQuote = "[.,!?:;)(\"\"\"«»'']"
 // Unicode uppercase letter (matches A-Z and accented capitals like É, Ñ, Ü)
 const unicodeUppercase = "\\p{Lu}"
@@ -563,12 +557,6 @@ const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
 // Non-breaking space transformers (applied after other transforms)
-// All patterns are markerChar-aware: they use `${chr}?` to handle optional markerChar
-// at text node boundaries. This allows nbsp to be inserted correctly even when the
-// space and adjacent word are in different text nodes (separated by markerChar).
-// Invariance checking is disabled for these transforms because they intentionally
-// produce different results with/without markerChar (the markerChar affects where
-// nbsp can be inserted via lookaheads and lookbehinds).
 const nbspTransformers = [
   nbspAfterShortWords,
   nbspBetweenNumberAndUnit,
@@ -1141,16 +1129,6 @@ const collectNodes = [
   "blockquote",
 ]
 
-/**
- * Checks if an element has meaningful text content (not just whitespace).
- * Used to filter out structural elements that only contain indentation/formatting whitespace.
- */
-function hasNonWhitespaceText(node: Element): boolean {
-  return node.children.some(
-    (child) => child.type === "text" && "value" in child && child.value.trim().length > 0,
-  )
-}
-
 export function collectTransformableElements(node: Element): Element[] {
   const eltsToTransform: Element[] = []
 
@@ -1160,8 +1138,7 @@ export function collectTransformableElements(node: Element): Element[] {
 
   // If this node matches our collection criteria,
   // add it and do NOT recurse separately for its children.
-  // Only include elements with actual text content, not just whitespace between child elements.
-  if (collectNodes.includes(node.tagName) && hasNonWhitespaceText(node)) {
+  if (collectNodes.includes(node.tagName) && node.children.some((child) => child.type === "text")) {
     eltsToTransform.push(node)
   } else {
     // Otherwise, keep looking through children.

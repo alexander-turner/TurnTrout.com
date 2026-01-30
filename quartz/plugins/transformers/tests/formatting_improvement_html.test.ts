@@ -2157,32 +2157,6 @@ describe("Non-breaking space transformations", () => {
     })
   })
 
-  describe("notInTag pattern edge cases", () => {
-    it("should not treat comparison operators as HTML tags", () => {
-      // "a < b" should NOT be treated as inside a tag
-      const input = "a < b test"
-      const result = nbspAfterShortWords(input)
-      // "a" is a short word, should get nbsp after it
-      expect(result).toBe(`a${nbsp}< b${nbsp}test`)
-    })
-
-    it("should not treat numeric comparisons as HTML tags", () => {
-      const input = "if 5 < 10 then"
-      const result = nbspAfterShortWords(input)
-      // "5" is not a word, "10" is not, but "if" is short
-      expect(result).toBe(`if${nbsp}5 < 10 then`)
-    })
-
-    it("should still work correctly with actual tag-like patterns in edge cases", () => {
-      // This tests that the pattern still provides defense for tag-like content
-      // even though HAST text nodes shouldn't contain actual tags
-      const input = "text <div attribute"
-      const result = nbspAfterShortWords(input)
-      // The nbsp should still be applied where appropriate
-      expect(result).toContain("text")
-    })
-  })
-
   describe("whitespace-only text node handling", () => {
     it("should not transform pure whitespace strings", () => {
       const whitespace = "   \n\t  "
@@ -2203,57 +2177,6 @@ describe("Non-breaking space transformations", () => {
       // The "\n   " part should not have nbsp inserted
       const result = nbspBeforeLastWord(input)
       expect(result).not.toMatch(/\n\s*\u00A0/)
-    })
-  })
-
-  describe("collectTransformableElements whitespace filtering", () => {
-    it("should not collect divs with only whitespace text children", () => {
-      // A div with only whitespace text between child elements
-      const div = h("div", [
-        { type: "text", value: "\n  " } as Text,
-        h("p", "Actual content"),
-        { type: "text", value: "\n" } as Text,
-      ])
-      const result = collectTransformableElements(div as Element)
-      // The outer div should NOT be collected (only whitespace text)
-      // But the inner p should be collected
-      expect(result.some((el) => el.tagName === "div")).toBe(false)
-      expect(result.some((el) => el.tagName === "p")).toBe(true)
-    })
-
-    it("should collect elements with actual text content", () => {
-      const div = h("div", [
-        { type: "text", value: "Hello " } as Text,
-        h("strong", "world"),
-      ])
-      const result = collectTransformableElements(div as Element)
-      // The div has actual text content, so it should be collected
-      expect(result.some((el) => el.tagName === "div")).toBe(true)
-    })
-
-    it("should handle nested structures with mixed whitespace", () => {
-      // Simulates the emoji figure structure from the bug report
-      const structure = h("div", { role: "img" }, [
-        { type: "text", value: "\n   " } as Text,
-        h("div.subfigure", [
-          { type: "text", value: "\n     " } as Text,
-          h("figcaption", "Apple"),
-          { type: "text", value: "\n   " } as Text,
-        ]),
-        { type: "text", value: "\n   " } as Text,
-        h("div.subfigure", [
-          { type: "text", value: "\n     " } as Text,
-          h("figcaption", "Google"),
-          { type: "text", value: "\n   " } as Text,
-        ]),
-        { type: "text", value: "\n" } as Text,
-      ])
-      const result = collectTransformableElements(structure as Element)
-      // The outer div should NOT be collected (only whitespace text at its level)
-      // The figcaptions should be collected (they have actual text)
-      const collectedTags = result.map((el) => el.tagName)
-      expect(collectedTags).not.toContain("div")
-      expect(collectedTags.filter((t) => t === "figcaption")).toHaveLength(2)
     })
   })
 })
