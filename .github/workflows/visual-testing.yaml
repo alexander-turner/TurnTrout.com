@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   visual-testing:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') && !startsWith(github.head_ref, 'dependabot/') }}
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
     strategy:

@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   playwright-tests:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') && !startsWith(github.head_ref, 'dependabot/') }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
