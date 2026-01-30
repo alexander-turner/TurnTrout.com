@@ -26,79 +26,26 @@ _executable_cache: Dict[str, str] = {}
 
 @functools.lru_cache(maxsize=1)
 def _get_imagemagick_version() -> int:
-    """
-    Detect the major ImageMagick version (6 or 7).
-
-    Returns:
-        6 or 7 depending on the installed version.
-
-    Raises:
-        FileNotFoundError: If neither magick nor convert is found.
-    """
-    # Try ImageMagick 7 first (magick command)
+    """Detect ImageMagick version (6 or 7). Defaults to 6 if unclear."""
     magick_path = shutil.which("magick")
-    if magick_path:
-        try:
-            result = subprocess.run(
-                [magick_path, "-version"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            if "ImageMagick 7" in result.stdout:
-                return 7
-        except subprocess.CalledProcessError:
-            pass
+    if not magick_path:
+        return 6
 
-    # Check for ImageMagick 6 (convert command)
-    convert_path = shutil.which("convert")
-    if convert_path:
-        try:
-            result = subprocess.run(
-                [convert_path, "-version"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            if "ImageMagick 6" in result.stdout or "ImageMagick" in result.stdout:
-                return 6
-        except subprocess.CalledProcessError:
-            pass
-
-    raise FileNotFoundError(
-        "ImageMagick not found. Please install ImageMagick."
+    result = subprocess.run(
+        [magick_path, "-version"], capture_output=True, text=True, check=False
     )
+    return 7 if "ImageMagick 7" in result.stdout else 6
 
 
 def get_imagemagick_command(operation: str) -> list[str]:
-    """
-    Get the appropriate ImageMagick command for the given operation.
+    """Get ImageMagick command for an operation (handles IM6 vs IM7 differences)."""
+    if _get_imagemagick_version() == 7:
+        return [find_executable("magick"), operation]
 
-    Args:
-        operation: The ImageMagick operation ("convert", "identify", etc.)
-
-    Returns:
-        List of command components to use with subprocess.
-
-    This handles the difference between ImageMagick 6 (Ubuntu) where
-    operations like convert and identify are separate executables,
-    and ImageMagick 7 (macOS) where they are subcommands of `magick`.
-    """
-    version = _get_imagemagick_version()
-
-    if version == 7:
-        magick_path = find_executable("magick")
-        return [magick_path, operation]
-
-    # ImageMagick 6: use separate executables
     operation_path = shutil.which(operation)
-    if operation_path:
-        return [operation_path]
-
-    raise FileNotFoundError(
-        f"ImageMagick '{operation}' command not found. "
-        "Please install ImageMagick."
-    )
+    if not operation_path:
+        raise FileNotFoundError(f"ImageMagick '{operation}' not found.")
+    return [operation_path]
 
 
 def find_executable(name: str) -> str:

@@ -146,13 +146,14 @@ def check_top_level_paragraphs_end_with_punctuation(
     for article in soup.find_all("article"):
         paragraphs = article.find_all("p", recursive=False)
         for p in paragraphs:
-            if not isinstance(p, Tag) or "subtitle" in script_utils.get_classes(
-                p
-            ) or "page-listing-title" in script_utils.get_classes(p):
+            if not isinstance(p, Tag):
                 continue
-
-            # Skip paragraphs containing transcluded content
-            if p.find(class_="transclude"):
+            classes = script_utils.get_classes(p)
+            if (
+                "subtitle" in classes
+                or "page-listing-title" in classes
+                or p.find(class_="transclude")
+            ):
                 continue
 
             # Remove footnote reference links
