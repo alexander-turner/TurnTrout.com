@@ -148,7 +148,7 @@ def check_top_level_paragraphs_end_with_punctuation(
         for p in paragraphs:
             if not isinstance(p, Tag) or "subtitle" in script_utils.get_classes(
                 p
-            ):
+            ) or "page-listing-title" in script_utils.get_classes(p):
                 continue
 
             # Remove footnote reference links
