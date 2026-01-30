@@ -1,11 +1,92 @@
+import { normalizeRelativeURLs } from "../../util/path"
 import { popoverPadding } from "../constants"
-import { renderHTMLContent, type ContentRenderOptions } from "./content_renderer"
+import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "./content_renderer"
+
+// Regex to detect footnote forward links (not back arrows which use fnref)
+// IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
+export const footnoteForwardRefRegex = /^#user-content-fn-(?<footnoteId>[\w-]+)$/
 
 export interface PopoverOptions {
   parentElement: HTMLElement
   targetUrl: URL
   linkElement: HTMLLinkElement
   customFetch?: typeof fetch
+}
+
+/**
+ * Processes a footnote element for display in a popover
+ * @param footnoteElement - The footnote element to process
+ * @param html - The HTML document (used for creating temporary containers)
+ * @param targetUrl - The URL for normalizing relative links
+ * @returns A document fragment containing the processed footnote content
+ */
+function processFootnoteForPopover(
+  footnoteElement: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+): DocumentFragment {
+  const clonedFootnote = footnoteElement.cloneNode(true) as HTMLElement
+
+  const backArrow = clonedFootnote.querySelector("[data-footnote-backref]")
+  if (backArrow) {
+    backArrow.remove()
+  }
+
+  const tempContainer = html.createElement("div")
+  tempContainer.appendChild(clonedFootnote)
+
+  // Normalize URLs only on the cloned footnote
+  normalizeRelativeURLs(tempContainer, targetUrl)
+
+  // modifyElementIds only modifies descendants, so also modify the element's own ID
+  if (clonedFootnote.id) {
+    clonedFootnote.id = `${clonedFootnote.id}-popover`
+  }
+  modifyElementIds([clonedFootnote], "-popover")
+
+  // Extract the content from the <li> wrapper and return as a fragment
+  const fragment = html.createDocumentFragment()
+  while (clonedFootnote.firstChild) {
+    fragment.appendChild(clonedFootnote.firstChild)
+  }
+
+  return fragment
+}
+
+/**
+ * Renders footnote content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ * @param footnoteId - The ID of the footnote to render
+ */
+function renderFootnoteContent(
+  popoverInner: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+  footnoteId: string,
+): void {
+  const footnoteElement = html.getElementById(`user-content-fn-${footnoteId}`)
+  if (!footnoteElement) {
+    throw new Error(`Footnote element not found: user-content-fn-${footnoteId}`)
+  }
+
+  const processedFootnote = processFootnoteForPopover(footnoteElement, html, targetUrl)
+  popoverInner.appendChild(processedFootnote)
+}
+
+/**
+ * Renders full page content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ */
+function renderFullPageContent(popoverInner: HTMLElement, html: Document, targetUrl: URL): void {
+  const renderOptions: ContentRenderOptions = {
+    targetUrl,
+    idSuffix: "-popover",
+  }
+  renderHTMLContent(popoverInner, html, renderOptions)
 }
 
 /**
@@ -38,14 +119,16 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   const parser = new DOMParser()
   const html = parser.parseFromString(contents, "text/html")
 
-  // Note: We can't use fetchHTMLContent here because we need fetchWithMetaRedirect
-  // So we manually parse; renderHTMLContent will normalize URLs and restore checkboxes automatically
-  const renderOptions: ContentRenderOptions = {
-    targetUrl,
-    idSuffix: "-popover",
-  }
+  // Check if this is a footnote forward link
+  const href = linkElement.getAttribute("href") || ""
+  const footnoteMatch = href.match(footnoteForwardRefRegex)
 
-  renderHTMLContent(popoverInner, html, renderOptions)
+  if (footnoteMatch?.groups) {
+    const footnoteId = footnoteMatch.groups.footnoteId
+    renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
+  } else {
+    renderFullPageContent(popoverInner, html, targetUrl)
+  }
 
   return popoverElement
 }
@@ -87,13 +170,13 @@ export async function fetchWithMetaRedirect(
     }
 
     // Extract URL from content="[timeout]; url=[url]"
-    const urlMatch = metaRefresh[0].match(/url=(.*?)["'\s>]/i)
-    if (!urlMatch) {
+    const urlMatch = metaRefresh[0].match(/url=(?<url>.*?)["'\s>]/i)
+    if (!urlMatch?.groups) {
       return response
     }
 
     // Update URL for next iteration
-    currentUrl = new URL(urlMatch[1], currentUrl)
+    currentUrl = new URL(urlMatch.groups.url, currentUrl)
     redirectCount++
   }
 
@@ -240,5 +323,5 @@ export function attachPopoverEventListeners(
  * @returns The escaped text
  */
 export function escapeLeadingIdNumber(text: string): string {
-  return text.replace(/#(\d+)/, "#_$1")
+  return text.replace(/#(?<id>\d+)/, "#_$<id>")
 }

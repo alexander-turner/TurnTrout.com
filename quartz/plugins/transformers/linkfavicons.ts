@@ -175,11 +175,11 @@ export function normalizePathForCounting(faviconPath: string): string {
     return faviconPath
   }
   // Special paths like mail.svg and anchor.svg should be preserved as-is
-  if (/\.(svg|ico)$/.test(faviconPath)) {
+  if (/\.(?:svg|ico)$/.test(faviconPath)) {
     return faviconPath
   }
   // Remove .png, .svg, .avif extensions for counting (domain-based paths)
-  return faviconPath.replace(/\.(png|svg|avif)$/, "")
+  return faviconPath.replace(/\.(?:png|svg|avif)$/, "")
 }
 
 /**
@@ -307,7 +307,7 @@ export function getFaviconUrl(faviconPath: string): string {
   }
 
   // Normalize path to .png for cache lookup (cache keys are always .png paths)
-  const pngPath = faviconPath.replace(/\.(avif|png)$/, ".png")
+  const pngPath = faviconPath.replace(/\.(?:avif|png)$/, ".png")
 
   // Check cache first (may contain SVG URL from populateFaviconContainer CDN check)
   const cached = urlCache.get(pngPath)
@@ -597,7 +597,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
   // Use mask-based rendering for SVG favicons
   if (urlString.endsWith(".svg")) {
     // istanbul ignore next
-    const domain = urlString.match(/\/([^/]+)\.svg$/)?.[1] || ""
+    const domain = urlString.match(/\/(?<domain>[^/]+)\.svg$/)?.groups?.domain || ""
     return {
       type: "element",
       tagName: "svg",
