@@ -624,6 +624,24 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
+/**
+ * Normalizes "e.g." and "i.e." abbreviations to standard format.
+ * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
+ */
+export function normalizeAbbreviations(text: string): string {
+  // Pattern: word-start + "e" + optional "." + "g" + optional trailing "." +
+  // optional marker (captured) + optional comma with optional marker (captured)
+  // Must be followed by word boundary, space, marker, or end of string
+  const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
+  const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
+  const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
+
+  text = text.replace(new RegExp(egPattern, "gi"), "e.g.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(new RegExp(iePattern, "gi"), "i.e.$<abbrevMarker>$<commaMarker>")
+
+  return text
+}
+
 export function plusToAmpersand(text: string): string {
   const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
   const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
@@ -658,12 +676,10 @@ const massTransforms: [RegExp, string][] = [
   [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
   [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
   [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
-  [new RegExp(`${wb}regex${wbe}`, "gi"), "RegEx"],
+  [new RegExp(`${wb}regex(?<plural>e?s)?${wbe}`, "gi"), "RegEx$<plural>"],
   [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
   [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
   [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
-  [/e\.g\.,/g, "e.g."],
-  [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
   [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
@@ -673,6 +689,7 @@ export function massTransformText(text: string): string {
   for (const [regex, replacement] of massTransforms) {
     text = text.replace(regex, replacement)
   }
+  text = normalizeAbbreviations(text)
   return text
 }
 
