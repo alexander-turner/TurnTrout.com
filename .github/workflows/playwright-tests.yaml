@@ -7,8 +7,6 @@ concurrency:
 on:
   push:
     branches: ["main", "jest-coverage"]
-  pull_request:
-    branches: ["main"]
 
 permissions:
   contents: read
