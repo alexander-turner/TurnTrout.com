@@ -22,52 +22,106 @@ date_updated: 2025-12-18 09:42:00.251916
 
 
 
-# Punctilio: A typography enhancement library
+# Punctilio: The best English typography library
 
 Subtitle: Install with `npm install punctilio`.
 
-Punctilio is a typography enhancement package for English text. The name means "precise observance of formalities." Punctilio transforms plain text to use proper typographic characters:
+> *punctilio* (n.): precise observance of formalities.
+
+The best typography package for English.
 
 ```typescript
 import { transform } from 'punctilio'
 
 transform('"It\'s a beautiful thing, the destruction of words..." -- 1984')
-// → "It's a beautiful thing, the destruction of words…" — 1984
+// → “It’s a beautiful thing, the destruction of words…” — 1984
 ```
 
-I tested punctilio version 0.4 against three competing libraries and found it substantially more accurate. In comparative benchmarking, punctilio achieved 96% accuracy (79/82 tests), outperforming alternatives like tipograph (59%), smartquotes (37%), and smartypants (35%).
+[![Test](https://github.com/alexander-turner/punctilio/actions/workflows/test.yml/badge.svg)](https://github.com/alexander-turner/punctilio/actions/workflows/test.yml)
+[![Lint](https://github.com/alexander-turner/punctilio/actions/workflows/lint.yml/badge.svg)](https://github.com/alexander-turner/punctilio/actions/workflows/lint.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/alexander-turner/punctilio)
+ 
+```bash
+npm install punctilio
+```
 
-Punctilio's transformations include:
+## Why punctilio?
 
-- Smart quotation marks and apostrophes,
-- Em dashes and en dashes,
-- Ellipsis characters,
-- Multiplication signs (5×5),
-- Mathematical symbols (≠, ±),
-- Legal symbols (©, ®, ™),
-- Arrows and prime marks,
-- Fractions and degrees (optional),
-- Superscript ordinals (optional), and
-- Punctuation ligatures (optional).
+As far as I can tell, `punctilio` is the most reliable and feature-complete. I originally built `punctilio`'s logic for `TurnTrout.com`. I wrote and sharpened the core regexes sporadically over several months, exhaustively testing edge cases. Eventually, I decided to spin off the functionality into its own package.
 
-Unlike competing tools, punctilio handles HTML DOM text spanning multiple elements. It uses invisible separator characters (default: U+E000) at element boundaries, allowing transformations while preserving DOM structure mapping. Punctilio powers the typographic niceties of this website.
+I tested `punctilio` 0.4 against [`smartypants`](https://www.npmjs.com/package/smartypants) 0.2.2, [`tipograph`](https://www.npmjs.com/package/tipograph) 0.7.4, and [`smartquotes`](https://www.npmjs.com/package/smartquotes) 2.3.2.[^python] These other packages have spotty feature coverage and inconsistent impact on text. For example, `smartypants` mishandles quotes after em dashes (though quite hard to see in GitHub's font) and lacks multiplication sign support.
 
-Configuration options:
+[^python]: The Python typography libraries I found were closely related to the JavaScript packages, so I don’t include Python tests.
+
+| Input | `smartypants` | `punctilio` |
+|:-----:|:-----------------:|:-------:|
+| She said—"Hi!" | She said—”Hi!” (✗) | She said—“Hi!” (✓) |
+| 5x5 |	5x5 (✗) |	5×5 (✓) |
+
+I basically graded all libraries on a subset of [my unit tests](https://github.com/alexander-turner/punctilio/tree/main/src/tests), selected to represent a wide range of features.
+
+| Package | Score |
+|--------:|:------|
+| `punctilio` | 79/82 (96%) |
+| `tipograph` | 48/82 (59%) |
+| `smartquotes` | 30/82 (37%) |
+| `smartypants` | 28/82 (35%) |
+
+| Feature | Example | `smartypants` | `tipograph` | `smartquotes` | `punctilio` |
+|--------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Smart quotes | "hello" → “hello” | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | 'Twas → ’Twas | ✗ | ✗ | ✓ | ✓ |
+| Em dash | -- → — | ✓ | ✗ | ✗ | ✓ |
+| En dash (ranges) | 1-5 → 1–5 | ✗ | ✓ | ✗ | ✓ |
+| Minus sign | -5 → −5 | ✗ | ✓ | ✗ | ✓ |
+| Ellipsis | ... → … | ✓ | ✓ | ✗ | ✓ |
+| Multiplication | 5x5 → 5×5 | ✗ | ✗ | ✗ | ✓ |
+| Math symbols | != → ≠ | ✗ | ✓ | ✗ | ✓ |
+| Legal symbols | (c) → © | ✗ | © only | ✗ | ✓ |
+| Arrows | -> → → | ✗ | ✓ | ✗ | ✓ |
+| Prime marks | 5'10" → 5′10″ | ✗ | ✓ | ✓ | ✓ |
+| Degrees | 20 C → 20 °C | ✗ | ✗ | ✗ | ✓ |
+| Fractions | 1/2 → ½ | ✗ | ✗ | ✗ | ✓ |
+| Superscripts | 1st → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
+| Localization | American/British | ✗ | ✗ | ✗ | ✓ |
+| Ligatures | ?? → ⁇ | ✗ | ✓ | ✗ | ✓ |
+| Non-English quotes | „Hallo" (German) | ✗ | ✓ | ✗ | ✗ |
+
+As far as I can tell, `punctilio`’s only missing feature is non-English quote support. I don’t have a personal reason to use non-English localization, but feel free to make a pull request!
+
+> [!quote]- Works with HTML DOMs via separation boundaries
+> 
+> Other typography libraries either transform plain strings or operate on AST nodes individually (`retext-smartypants` [can’t map changes back to HTML](https://github.com/rehypejs/rehype-retext)). But real HTML has text spanning multiple elements—if you concatenate text from `<em>Wait</em>...`, transform it, then try to split it back, you've lost track of where `</em>` belonged. 
+>
+> `punctilio` introduces _separation boundaries_. First, insert a “separator” character (default: `U+E000`) at each element boundary before transforming (like at the start and end of an `<em>`). Every regex allows this character mid-pattern without breaking matches. For example, `.[SEP]..` still becomes `…[SEP]`. `punctilio` validates the output by ensuring the separator count remains the same. 
+>
+> ```typescript
+> import { transform, DEFAULT_SEPARATOR } from 'punctilio'
+> 
+> transform(`"Wait${DEFAULT_SEPARATOR}"`)
+> // → `“Wait”${DEFAULT_SEPARATOR}`
+> // The separator doesn’t block the information that this should be an end-quote!
+> ```
+> 
+> Use via a DOM walker tracks which text node each segment came from, inserts separators between them, transforms the combined string, then splits on separators to update each node. Use the `separator` option if `U+E000` conflicts with your content. For an example of how to integrate this functionality, see [my website’s code](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/formatting_improvement_html.ts). 
+
+## Options
+
+`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, this README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
 
 ```typescript
 transform(text, {
-  punctuationStyle: 'american' | 'british' | 'none',
-  dashStyle: 'american' | 'british' | 'none',
-  symbols: true,
-  collapseSpaces: true,
-  fractions: false,
-  degrees: false,
-  superscript: false,
-  ligatures: false
+  punctuationStyle: 'american' | 'british' | 'none',  // default: 'american'
+  dashStyle: 'american' | 'british' | 'none',         // default: 'american'
+
+  symbols: true,         // math, legal, arrows
+  collapseSpaces: true,  // normalize whitespace
+  fractions: false,      // 1/2 → ½
+  degrees: false,        // 20 C → 20 °C
+  superscript: false,    // 1st → 1ˢᵗ
+  ligatures: false,      // ??? → ⁇, ?! → ⁈, !? → ⁉, !!! → !
 })
 ```
-
-If you want to upgrade your site's typography, check out [`punctilio` on GitHub](https://github.com/alexander-turner/punctilio).
 
 # This website
 
