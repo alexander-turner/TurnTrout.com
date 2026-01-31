@@ -102,6 +102,11 @@ describe("slugify function", () => {
       "Rock & Roll — The Beginning",
       "rock-roll-the-beginning",
     ],
+    [
+      "should convert non-breaking spaces to hyphens",
+      "Floating\u00A0Image\u00A0Right",
+      "floating-image-right",
+    ],
   ])("%s", (_desc: string, input: string, expected: string) => {
     expect(slugify(input)).toBe(expected)
   })
@@ -291,6 +296,8 @@ describe("preprocessSlug function", () => {
     ["Text/&/Combo", "Text-Combo"],
     ["", ""],
     ["Normal Text", "Normal Text"],
+    ["Text\u00A0With\u00A0Nbsp", "Text-With-Nbsp"],
+    ["Floating\u00A0Image", "Floating-Image"],
   ])("should process '%s' to '%s'", (input: string, expected: string) => {
     expect(preprocessSlug(input)).toBe(expected)
   })
