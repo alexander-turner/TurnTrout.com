@@ -20,7 +20,6 @@ import { WebSocketServer, type WebSocket } from "ws"
 
 import { generateScss, generateScssRecord } from "../styles/generate-variables"
 import {
-  version,
   fp,
   cacheFile, // @ts-expect-error Importing from a JS file, no types
 } from "./constants.js"
@@ -71,7 +70,7 @@ export async function checkPortAvailability(port: number): Promise<void> {
  * Handles `npx quartz build`
  */
 export async function handleBuild(argv: BuildArguments): Promise<void> {
-  console.log(chalk.bgGreen.black(`\n turntrout.com v${version} \n`))
+  console.log(chalk.bgGreen.black(`\n turntrout.com \n`))
 
   if (argv.serve) {
     await checkPortAvailability(argv.port)
