@@ -2210,7 +2210,7 @@ describe("Non-breaking space transformations", () => {
       const input = `content${markerChar}\n   ${markerChar}more content`
       // The "\n   " part should not have nbsp inserted
       const result = nbspBeforeLastWord(input)
-      expect(result).not.toMatch(/\n\s*\u00A0/)
+      expect(result).not.toMatch(/\n\s*\u00A0/u)
     })
   })
 })
