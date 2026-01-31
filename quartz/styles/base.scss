@@ -416,6 +416,7 @@ pre {
         margin-left: calc(1 * $base-margin);
         padding-right: calc(1 * $base-margin);
         margin-right: calc(1 * $base-margin);
+
         // Border removed - now handled by ::after for full-height consistency
       }
     }
