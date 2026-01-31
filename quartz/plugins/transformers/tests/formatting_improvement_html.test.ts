@@ -545,6 +545,19 @@ describe("HTMLFormattingImprovement", () => {
         expect(strippedResult).toBe("i.e. test")
       })
     })
+
+    describe("HTML integration for e.g. and i.e.", () => {
+      it.each([
+        ["<p><em>eg</em> test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><em>e.g.</em>, test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><strong>ie</strong> test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p><strong>i.e.</strong>, test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p>(<em>eg</em> test)</p>", "<p>(<em>e.g.</em> test)</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
   })
 
   describe("Punctilio symbolTransform integration (end-to-end HTML)", () => {

@@ -625,24 +625,19 @@ export const rearrangeLinkPunctuation = (
 }
 
 /**
- * Normalizes "e.g." and "i.e." abbreviations to standard format
+ * Normalizes "e.g." and "i.e." abbreviations to standard format.
+ * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
  */
 export function normalizeAbbreviations(text: string): string {
-  // Pattern explanation for "e.g.":
-  // 1. ${wb}e\\.?g - Match "e" (optional period) "g" at word start
-  // 2. (?:...) - Non-capturing group for optional trailing punctuation:
-  //    - \\.?(?:${markerChar})? - Optional period, optional marker after it
-  //    - (?:,(?:${markerChar})?)? - Optional comma (with optional marker after)
-  //    - | - OR
-  //    - (?:${markerChar})?, - Optional marker before comma
-  // 3. (?=${wbe}|\\s|${markerChar}|$) - Lookahead: must be followed by word boundary, space, marker, or end
-
-  const afterAbbrevPattern = `(?:\\.?(?:${markerChar})?(?:,(?:${markerChar})?)?|(?:${markerChar})?,)(?=${wbe}|\\s|${markerChar}|$)`
+  // Pattern: word-start + "e" + optional "." + "g" + optional trailing "." +
+  // optional marker (captured) + optional comma with optional marker (captured)
+  // Must be followed by word boundary, space, marker, or end of string
+  const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
   const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
   const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
 
-  text = text.replace(new RegExp(egPattern, "gi"), "e.g.")
-  text = text.replace(new RegExp(iePattern, "gi"), "i.e.")
+  text = text.replace(new RegExp(egPattern, "gi"), "e.g.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(new RegExp(iePattern, "gi"), "i.e.$<abbrevMarker>$<commaMarker>")
 
   return text
 }
