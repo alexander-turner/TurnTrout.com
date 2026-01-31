@@ -258,7 +258,7 @@ describe("HTMLFormattingImprovement", () => {
     it("spacesAroundSlashes is invariant with marker after colon (no space)", () => {
       // Pattern: colon, marker, slash - no space between
       const textWithMarker = `:${markerChar}/`
-      const textWithoutMarker = `:/`
+      const textWithoutMarker = ":/"
 
       const transformedWithMarker = spacesAroundSlashes(textWithMarker)
       const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
@@ -272,7 +272,7 @@ describe("HTMLFormattingImprovement", () => {
       // This is the bug case: regex (?<=[\S]) sees marker as non-whitespace
       // and adds a space, but without marker the space already exists
       const textWithMarker = `: ${markerChar}/ ,`
-      const textWithoutMarker = `: / ,`
+      const textWithoutMarker = ": / ,"
 
       const transformedWithMarker = spacesAroundSlashes(textWithMarker)
       const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
@@ -285,7 +285,7 @@ describe("HTMLFormattingImprovement", () => {
     it("spacesAroundSlashes should be invariant with marker before slash followed by comma (no space after)", () => {
       // Pattern from CI failure: "at : /," where element boundary is between space and slash
       const textWithMarker = `at : ${markerChar}/,`
-      const textWithoutMarker = `at : /,`
+      const textWithoutMarker = "at : /,"
 
       const transformedWithMarker = spacesAroundSlashes(textWithMarker)
       const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
@@ -296,7 +296,7 @@ describe("HTMLFormattingImprovement", () => {
 
     it("symbolTransform is invariant with colon-slash pattern", () => {
       const textWithMarker = `: ${markerChar}/ ,`
-      const textWithoutMarker = `: / ,`
+      const textWithoutMarker = ": / ,"
 
       const transformedWithMarker = symbolTransform(textWithMarker, {
         separator: markerChar,
@@ -354,7 +354,7 @@ describe("HTMLFormattingImprovement", () => {
       // From CI failure: "<sup>15</sup> Am I" flattens to "15" + marker + " Am I"
       // Both should transform to "15 a.m. I" for invariance
       const textWithMarker = `15${markerChar} Am I`
-      const textWithoutMarker = `15 Am I`
+      const textWithoutMarker = "15 Am I"
 
       const transformedWithMarker = timeTransform(textWithMarker)
       const transformedWithoutMarker = timeTransform(textWithoutMarker)
