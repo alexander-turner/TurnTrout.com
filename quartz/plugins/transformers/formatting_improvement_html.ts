@@ -624,6 +624,29 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
+/**
+ * Normalizes "e.g." and "i.e." abbreviations to standard format
+ */
+export function normalizeAbbreviations(text: string): string {
+  // Pattern explanation for "e.g.":
+  // 1. ${wb}e\\.?g - Match "e" (optional period) "g" at word start
+  // 2. (?:...) - Non-capturing group for optional trailing punctuation:
+  //    - \\.?(?:${markerChar})? - Optional period, optional marker after it
+  //    - (?:,(?:${markerChar})?)? - Optional comma (with optional marker after)
+  //    - | - OR
+  //    - (?:${markerChar})?, - Optional marker before comma
+  // 3. (?=${wbe}|\\s|${markerChar}|$) - Lookahead: must be followed by word boundary, space, marker, or end
+
+  const afterAbbrevPattern = `(?:\\.?(?:${markerChar})?(?:,(?:${markerChar})?)?|(?:${markerChar})?,)(?=${wbe}|\\s|${markerChar}|$)`
+  const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
+  const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
+
+  text = text.replace(new RegExp(egPattern, "gi"), "e.g.")
+  text = text.replace(new RegExp(iePattern, "gi"), "i.e.")
+
+  return text
+}
+
 export function plusToAmpersand(text: string): string {
   const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
   const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
@@ -658,12 +681,10 @@ const massTransforms: [RegExp, string][] = [
   [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
   [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
   [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
-  [new RegExp(`${wb}regex${wbe}`, "gi"), "RegEx"],
+  [new RegExp(`${wb}regex(?<plural>e?s)?${wbe}`, "gi"), "RegEx$<plural>"],
   [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
   [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
   [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
-  [/e\.g\.,/g, "e.g."],
-  [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
   [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
@@ -673,6 +694,7 @@ export function massTransformText(text: string): string {
   for (const [regex, replacement] of massTransforms) {
     text = text.replace(regex, replacement)
   }
+  text = normalizeAbbreviations(text)
   return text
 }
 
