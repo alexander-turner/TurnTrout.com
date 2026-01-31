@@ -44,8 +44,8 @@ def create_test_image(
     Raises:
         subprocess.CalledProcessError: If the ImageMagick command fails.
     """
-    magick_executable = script_utils.find_executable("magick")
-    command = [magick_executable, "-size", size]
+    convert_cmd = script_utils.get_imagemagick_command("convert")
+    command = [*convert_cmd, "-size", size]
 
     if background:
         command.extend(["xc:" + background])
