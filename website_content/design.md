@@ -469,6 +469,9 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ## Formatting enhancement
 
+> [!quote] [Punctilio: A typography enhancement library](/open-source#punctilio-a-typography-enhancement-library)
+> ![[/open-source#punctilio-a-typography-enhancement-library]]
+
 |                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
