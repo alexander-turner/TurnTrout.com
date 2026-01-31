@@ -376,10 +376,14 @@ pre {
     & > [data-line] {
       padding: 0 1rem;
       margin-right: $base-margin;
+      position: relative;
 
-      // Want wrapped lines to indent
-      text-indent: calc(-4 * $base-margin);
-      padding-left: calc(4 * $base-margin);
+      // Want wrapped lines to indent and align with code content
+      // First line: padding-left + text-indent = 0, so content starts at left edge
+      // Wrapped lines: start at padding-left (after line number area)
+      // Line number area: margin-left(8) + width(16) + padding-right(8) + margin-right(8) = 40px
+      text-indent: calc(-5 * $base-margin);
+      padding-left: calc(5 * $base-margin);
       padding-right: calc(2 * $base-margin);
       text-wrap: pretty;
       box-sizing: border-box;
@@ -389,6 +393,18 @@ pre {
         border-left: 3px solid var(--blue);
       }
 
+      // Vertical separator line that extends full height (including wrapped lines)
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: calc(4 * $base-margin);
+        width: 1px;
+        background-color: var(--midground-fainter);
+        pointer-events: none;
+      }
+
       &::before {
         content: counter(line);
         counter-increment: line;
@@ -396,11 +412,10 @@ pre {
         display: inline-block;
         text-align: right;
 
-        // Split between padding and margin for border
+        // Split between padding and margin for separator
         margin-left: calc(1 * $base-margin);
         padding-right: calc(1 * $base-margin);
         margin-right: calc(1 * $base-margin);
-        border-right: 1px solid var(--midground-fainter);
       }
     }
 
