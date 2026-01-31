@@ -660,7 +660,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="turntrout_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg);" alt="A trout jumping to the left."></svg></span> favicon appears for links to other pages within this site, while the <span class="no-favicon-span"><svg class="favicon favicon-demo-inline" data-domain="anchor" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);" alt="A counterclockwise arrow."></svg></span> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <img alt="A trout jumping to the left." src="https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg"/> favicon appears for links to other pages within this site, while the <img alt="A counterclockwise arrow." src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg"/> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -1129,5 +1129,5 @@ Site functionality
 Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
-Rerunning some local tests
-: I run `eslint` and `pnpm test` Actions on GitHub to help test for environmental inconsistencies.
+Quality gates
+: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`.
