@@ -785,7 +785,7 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
-        if stripped_text and (re.search(r"\*|\_(?!\_* +\%)", stripped_text)):
+        if stripped_text and (re.search(r"\*|\_(?!\_*[ \xa0]+\%)", stripped_text)):
             _append_to_list(
                 problematic_texts,
                 stripped_text,
