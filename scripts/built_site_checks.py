@@ -1612,8 +1612,8 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r"
+ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r "
+ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r "
 
 
 def _check_element_spacing(
