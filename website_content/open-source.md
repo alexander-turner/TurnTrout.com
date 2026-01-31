@@ -22,6 +22,53 @@ date_updated: 2025-12-18 09:42:00.251916
 
 
 
+# Punctilio: A typography enhancement library
+
+Subtitle: Install with `npm install punctilio`.
+
+Punctilio is a typography enhancement package for English text. The name means "precise observance of formalities." Punctilio transforms plain text to use proper typographic characters:
+
+```typescript
+import { transform } from 'punctilio'
+
+transform('"It\'s a beautiful thing, the destruction of words..." -- 1984')
+// → "It's a beautiful thing, the destruction of words…" — 1984
+```
+
+I tested punctilio version 0.4 against three competing libraries and found it substantially more accurate. In comparative benchmarking, punctilio achieved 96% accuracy (79/82 tests), outperforming alternatives like tipograph (59%), smartquotes (37%), and smartypants (35%).
+
+Punctilio's transformations include:
+
+- Smart quotation marks and apostrophes,
+- Em dashes and en dashes,
+- Ellipsis characters,
+- Multiplication signs (5×5),
+- Mathematical symbols (≠, ±),
+- Legal symbols (©, ®, ™),
+- Arrows and prime marks,
+- Fractions and degrees (optional),
+- Superscript ordinals (optional), and
+- Punctuation ligatures (optional).
+
+Unlike competing tools, punctilio handles HTML DOM text spanning multiple elements. It uses invisible separator characters (default: U+E000) at element boundaries, allowing transformations while preserving DOM structure mapping. Punctilio powers the typographic niceties of this website.
+
+Configuration options:
+
+```typescript
+transform(text, {
+  punctuationStyle: 'american' | 'british' | 'none',
+  dashStyle: 'american' | 'british' | 'none',
+  symbols: true,
+  collapseSpaces: true,
+  fractions: false,
+  degrees: false,
+  superscript: false,
+  ligatures: false
+})
+```
+
+If you want to upgrade your site's typography, check out [`punctilio` on GitHub](https://github.com/alexander-turner/punctilio).
+
 # This website
 
 Subtitle: I've made <span class="populate-commit-count"></span> commits. That's over halfway to being over 9,000!
