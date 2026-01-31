@@ -26,6 +26,10 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   markerChar,
+  toSkip,
+  SKIP_TAGS,
+  FRACTION_SKIP_TAGS,
+  SKIP_CLASSES,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
 
@@ -1272,6 +1276,33 @@ describe("Skip Formatting", () => {
       expect(processedHtml).toBe(expected)
     })
   })
+
+  describe("toSkip function", () => {
+    it.each(SKIP_TAGS)("should skip <%s> elements", (tagName) => {
+      const element = h(tagName, {}, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it.each(SKIP_CLASSES)("should skip elements with class '%s'", (className) => {
+      const element = h("p", { className }, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it("should not skip <svg> elements (removed from skip list)", () => {
+      const element = h("svg", {}, []) as Element
+      expect(toSkip(element)).toBe(false)
+    })
+
+    it("should skip elements with data-footnote-ref attribute", () => {
+      const element = h("a", { dataFootnoteRef: true }, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it("should return false for non-element nodes", () => {
+      const textNode = { type: "text", value: "hello" } as unknown as Element
+      expect(toSkip(textNode)).toBe(false)
+    })
+  })
 })
 
 describe("Date Range", () => {
@@ -1593,6 +1624,28 @@ describe("replaceFractions", () => {
 
     // Verify the transformation actually happened
     expect(result).not.toBe(originalTextContent)
+  })
+
+  describe("FRACTION_SKIP_TAGS", () => {
+    it.each(FRACTION_SKIP_TAGS)(
+      "should not convert fractions inside <%s> elements",
+      (tagName) => {
+        // Skip 'a' tag test here since it needs href, test separately
+        if (tagName === "a") return
+
+        const input = `<${tagName}>1/2</${tagName}>`
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(input)
+      },
+    )
+
+    it("should not convert fractions inside <a> elements (to preserve URLs)", () => {
+      const input = '<a href="https://example.com/page/1/2">link with 1/2</a>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      // Should NOT convert the 1/2 to a fraction
+      expect(processedHtml).not.toContain('<span class="fraction">')
+      expect(processedHtml).toContain("1/2")
+    })
   })
 })
 

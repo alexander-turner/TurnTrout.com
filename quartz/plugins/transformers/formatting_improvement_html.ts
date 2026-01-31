@@ -23,6 +23,23 @@ import {
  */
 
 /**
+ * Tags that should be skipped during text transformation.
+ * Content inside these elements won't have formatting improvements applied.
+ */
+export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+
+/**
+ * Tags that should be skipped during fraction replacement.
+ * Includes SKIP_TAGS plus "a" (links) to avoid breaking URLs.
+ */
+export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as const
+
+/**
+ * CSS classes that indicate content should skip formatting.
+ */
+export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
+
+/**
  * Flattens text nodes in an element tree into a single array
  * @param node - The element or element content to process
  * @param ignoreNode - Function to determine which nodes to skip
@@ -90,6 +107,25 @@ export function assertSmartQuotesMatch(input: string): void {
 }
 
 export const markerChar = "\uE000"
+
+/**
+ * Marker-aware word boundary patterns.
+ * Regular \b matches at word/non-word transitions, but markers (non-word chars)
+ * can create false boundaries between text that should be connected.
+ *
+ * Example: "xReLU" has no word boundary before 'R', but "x\uE000ReLU" (with marker)
+ * would have a false boundary. These patterns reject boundaries caused by markers.
+ *
+ * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
+ * A "false" end boundary: word_char + marker(s) + word_char (same pattern)
+ *
+ * wb: word boundary, reject if preceded by (word char + markers)
+ * wbe: word boundary, reject if followed by (markers + word char)
+ */
+// Start of word: word boundary, not preceded by word+marker(s) pattern
+const wb = `(?<!\\w${markerChar}*)\\b`
+// End of word: word boundary, not followed by marker(s)+word pattern
+const wbe = `\\b(?!${markerChar}*\\w)`
 /* Sometimes I want to transform the text content of a paragraph (e.g.
 by adding smart quotes). But that paragraph might contain multiple child
 elements. If I transform each of the child elements individually, the
@@ -607,24 +643,25 @@ export function timeTransform(text: string): string {
 }
 
 // Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
-const massTransforms: [RegExp | string, string][] = [
+// Use marker-aware word boundaries (wb/wbe) to prevent markers from creating false word boundaries
+const massTransforms: [RegExp, string][] = [
   [/\u00A0/gu, " "], // Replace non-breaking spaces
-  [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
-  [/\b(?<letter>[Ff])rappe\b/g, "$<letter>rappé"],
-  [/\b(?<letter>[Ll])atte\b/g, "$<letter>atté"],
-  [/\b(?<letter>[Cc])liche\b/g, "$<letter>liché"],
-  [/(?<=[Aa]n |[Tt]he )\b(?<letter>[Ee])xpose\b/g, "$<letter>xposé"],
+  [new RegExp(`${wb}(?:i\\.i\\.d\\.|iid)`, "gi"), "IID"],
+  [new RegExp(`${wb}(?<letter>[Ff])rappe${wbe}`, "g"), "$<letter>rappé"],
+  [new RegExp(`${wb}(?<letter>[Ll])atte${wbe}`, "g"), "$<letter>atté"],
+  [new RegExp(`${wb}(?<letter>[Cc])liche${wbe}`, "g"), "$<letter>liché"],
+  [new RegExp(`(?<=[Aa]n |[Tt]he )${wb}(?<letter>[Ee])xpose${wbe}`, "g"), "$<letter>xposé"],
   [/wi-?fi/gi, "Wi-Fi"],
-  [/\b(?<letter>[Dd])eja vu\b/g, "$<letter>éjà vu"],
-  [/\bgithub\b/gi, "GitHub"],
-  [/(?<=\b| )(?<letter>[Vv])oila(?=\b|$)/g, "$<letter>oilà"],
-  [/\b(?<letter>[Nn])aive/g, "$<letter>aïve"],
-  [/\b(?<letter>[Cc])hateau\b/g, "$<letter>hâteau"],
-  [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
-  [/\bregex\b/gi, "RegEx"],
-  [/\brelu\b/gi, "RELU"],
-  [/\b(?<letter>[Oo])pen-source\b/g, "$<letter>pen source"],
-  [/\bmarkdown\b/g, "Markdown"],
+  [new RegExp(`${wb}(?<letter>[Dd])eja vu${wbe}`, "g"), "$<letter>éjà vu"],
+  [new RegExp(`${wb}github${wbe}`, "gi"), "GitHub"],
+  [new RegExp(`(?<=${wb}| )(?<letter>[Vv])oila(?=${wbe}|$)`, "g"), "$<letter>oilà"],
+  [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
+  [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
+  [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
+  [new RegExp(`${wb}regex${wbe}`, "gi"), "RegEx"],
+  [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
+  [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
+  [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
   [/e\.g\.,/g, "e.g."],
   [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
@@ -633,8 +670,7 @@ const massTransforms: [RegExp | string, string][] = [
 ]
 
 export function massTransformText(text: string): string {
-  for (const [pattern, replacement] of massTransforms) {
-    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")
+  for (const [regex, replacement] of massTransforms) {
     text = text.replace(regex, replacement)
   }
   return text
@@ -693,10 +729,8 @@ export function setFirstLetterAttribute(tree: Root): void {
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
-    const skipTag = ["code", "script", "style", "pre", "svg"].includes(elementNode.tagName)
-    const skipClass = ["no-formatting", "elvish", "bad-handwriting"].some((cls) =>
-      hasClass(elementNode, cls),
-    )
+    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
+    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
     // Skip footnote references - their number text shouldn't be transformed
     const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
 
@@ -710,7 +744,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
     hasAncestor(
       parent as Element,
       (ancestor) =>
-        ["code", "pre", "a", "script", "style", "svg"].includes(ancestor.tagName) ||
+        (FRACTION_SKIP_TAGS as readonly string[]).includes(ancestor.tagName) ||
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
