@@ -23,6 +23,23 @@ import {
  */
 
 /**
+ * Tags that should be skipped during text transformation.
+ * Content inside these elements won't have formatting improvements applied.
+ */
+export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+
+/**
+ * Tags that should be skipped during fraction replacement.
+ * Includes SKIP_TAGS plus "a" (links) to avoid breaking URLs.
+ */
+export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as const
+
+/**
+ * CSS classes that indicate content should skip formatting.
+ */
+export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
+
+/**
  * Flattens text nodes in an element tree into a single array
  * @param node - The element or element content to process
  * @param ignoreNode - Function to determine which nodes to skip
@@ -712,10 +729,8 @@ export function setFirstLetterAttribute(tree: Root): void {
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
-    const skipTag = ["code", "script", "style", "pre"].includes(elementNode.tagName)
-    const skipClass = ["no-formatting", "elvish", "bad-handwriting"].some((cls) =>
-      hasClass(elementNode, cls),
-    )
+    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
+    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
     // Skip footnote references - their number text shouldn't be transformed
     const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
 
@@ -729,7 +744,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
     hasAncestor(
       parent as Element,
       (ancestor) =>
-        ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
+        (FRACTION_SKIP_TAGS as readonly string[]).includes(ancestor.tagName) ||
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
