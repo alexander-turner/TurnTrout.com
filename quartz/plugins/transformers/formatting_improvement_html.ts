@@ -281,10 +281,10 @@ export function nbspAfterShortWords(text: string): string {
   const shortWord = "[a-zA-Z]{1,2}"
   // Allow optional markerChar after short word (preserves text node boundaries)
   const pattern = new RegExp(
-    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(${shortWord})(${markerChar}?)${space}`,
+    `${notInTag}(?<=^|${space}|${punctuationOrQuote}|>)(?<shortWord>${shortWord})(?<marker>${markerChar}?)${space}`,
     "gm",
   )
-  return text.replace(pattern, `$1$2${nbsp}`)
+  return text.replace(pattern, `$<shortWord>$<marker>${nbsp}`)
 }
 
 /**
@@ -295,8 +295,8 @@ export function nbspAfterShortWords(text: string): string {
  */
 export function nbspBetweenNumberAndUnit(text: string): string {
   // Allow optional markerChar around the space (preserves text node boundaries)
-  const pattern = new RegExp(`${notInTag}(\\d)(${markerChar}?)${space}(${markerChar}?)(\\w)`, "gm")
-  return text.replace(pattern, `$1$2${nbsp}$3$4`)
+  const pattern = new RegExp(`${notInTag}(?<digit>\\d)(?<marker1>${markerChar}?)${space}(?<marker2>${markerChar}?)(?<unit>\\w)`, "gm")
+  return text.replace(pattern, `$<digit>$<marker1>${nbsp}$<marker2>$<unit>`)
 }
 
 /**
@@ -313,10 +313,10 @@ export function nbspBeforeLastWord(text: string): string {
   // Use non-multiline mode so $ only matches at true end of string
   // Require the space to be preceded by a word character (not just whitespace)
   const pattern = new RegExp(
-    `${notInTag}(?<=[\\w${markerChar}])${space}([^\\s${markerChar}]{1,10})(${markerChar}?(?:\\n\\n|$))`,
+    `${notInTag}(?<=[\\w${markerChar}])${space}(?<lastWord>[^\\s${markerChar}]{1,10})(?<ending>${markerChar}?(?:\\n\\n|$))`,
     "g", // Removed 'm' flag - only match at true end of string or \n\n
   )
-  return text.replace(pattern, `${nbsp}$1$2`)
+  return text.replace(pattern, `${nbsp}$<lastWord>$<ending>`)
 }
 
 /**
@@ -345,8 +345,8 @@ export function nbspAfterReferenceAbbreviations(text: string): string {
     "Ex\\.",
   ]
   // Allow optional markerChar after abbreviation and in lookahead (for text node boundaries)
-  const pattern = new RegExp(`${notInTag}(${abbreviations.join("|")})(${markerChar}?)${space}(?=${markerChar}?\\d)`, "g")
-  return text.replace(pattern, `$1$2${nbsp}`)
+  const pattern = new RegExp(`${notInTag}(?<abbrev>${abbreviations.join("|")})(?<marker>${markerChar}?)${space}(?=${markerChar}?\\d)`, "g")
+  return text.replace(pattern, `$<abbrev>$<marker>${nbsp}`)
 }
 
 /**
@@ -355,8 +355,8 @@ export function nbspAfterReferenceAbbreviations(text: string): string {
  */
 export function nbspAfterSectionSymbols(text: string): string {
   // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
-  const pattern = new RegExp(`${notInTag}([§¶])(${markerChar}?)${space}(?=${markerChar}?\\d)`, "g")
-  return text.replace(pattern, `$1$2${nbsp}`)
+  const pattern = new RegExp(`${notInTag}(?<symbol>[§¶])(?<marker>${markerChar}?)${space}(?=${markerChar}?\\d)`, "g")
+  return text.replace(pattern, `$<symbol>$<marker>${nbsp}`)
 }
 
 /**
@@ -383,8 +383,8 @@ export function nbspAfterHonorifics(text: string): string {
   ]
   // Match honorific followed by space and then a capital letter (name)
   // Allow optional markerChar after honorific and in lookahead (for text node boundaries)
-  const pattern = new RegExp(`${notInTag}(${honorifics.join("|")})(${markerChar}?)${space}(?=${markerChar}?${unicodeUppercase})`, "gu")
-  return text.replace(pattern, `$1$2${nbsp}`)
+  const pattern = new RegExp(`${notInTag}(?<honorific>${honorifics.join("|")})(?<marker>${markerChar}?)${space}(?=${markerChar}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$<honorific>$<marker>${nbsp}`)
 }
 
 /**
@@ -394,8 +394,8 @@ export function nbspAfterHonorifics(text: string): string {
  */
 export function nbspAfterCopyrightSymbols(text: string): string {
   // Allow optional markerChar after symbol and in lookahead (for text node boundaries)
-  const pattern = new RegExp(`${notInTag}([©®™])(${markerChar}?)${space}(?=${markerChar}?[\\d${unicodeUppercase}])`, "gu")
-  return text.replace(pattern, `$1$2${nbsp}`)
+  const pattern = new RegExp(`${notInTag}(?<symbol>[©®™])(?<marker>${markerChar}?)${space}(?=${markerChar}?[\\d${unicodeUppercase}])`, "gu")
+  return text.replace(pattern, `$<symbol>$<marker>${nbsp}`)
 }
 
 /**
@@ -407,8 +407,8 @@ export function nbspAfterCopyrightSymbols(text: string): string {
 export function nbspBetweenInitials(text: string): string {
   // Match single capital letter + period + space + capital letter (initial or name start)
   // Allow optional markerChar after initial and in lookahead (for text node boundaries)
-  const pattern = new RegExp(`${notInTag}(${unicodeUppercase}\\.)(${markerChar}?)${space}(?=${markerChar}?${unicodeUppercase})`, "gu")
-  return text.replace(pattern, `$1$2${nbsp}`)
+  const pattern = new RegExp(`${notInTag}(?<initial>${unicodeUppercase}\\.)(?<marker>${markerChar}?)${space}(?=${markerChar}?${unicodeUppercase})`, "gu")
+  return text.replace(pattern, `$<initial>$<marker>${nbsp}`)
 }
 
 
