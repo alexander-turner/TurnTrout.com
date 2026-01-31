@@ -469,7 +469,7 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ## Formatting enhancement
 
-> [!quote]- [Punctilio: A typography enhancement library](/open-source#punctilio-a-typography-enhancement-library)
+> [!quote] [Punctilio: A typography enhancement library](/open-source#punctilio-a-typography-enhancement-library)
 > ![[/open-source#punctilio-a-typography-enhancement-library]]
 
 |                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
