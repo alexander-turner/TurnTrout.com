@@ -7,14 +7,14 @@ import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
 import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
 
-function isLocalFavicon(fp: FilePath): boolean {
+export function isLocalFavicon(fp: FilePath): boolean {
   return fp.startsWith(`${localTroutFaviconBasenameDefault}.`)
 }
 
 // Files that should be copied to root instead of /static/
-const ROOT_FILES = ["robots.txt", "_headers", "_redirects"]
+export const ROOT_FILES = ["robots.txt", "_headers", "_redirects"]
 
-function shouldCopyToRoot(fp: FilePath): boolean {
+export function shouldCopyToRoot(fp: FilePath): boolean {
   return ROOT_FILES.includes(fp) || isLocalFavicon(fp)
 }
 
