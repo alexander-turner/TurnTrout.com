@@ -297,7 +297,7 @@ const slugger = new GithubSlugger()
 
 // skipcq: JS-D1001
 export function preprocessSlug(headerText: string): string {
-  const charsToConvert = ["'", "'", "/", "&", "—", "'", "\u00A0"]
+  const charsToConvert = ["'", "’", "/", "&", "—", "‘", "\u00A0"]
 
   let protoSlug = headerText
   for (const char of charsToConvert) {
