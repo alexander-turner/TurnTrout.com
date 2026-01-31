@@ -693,7 +693,7 @@ export function setFirstLetterAttribute(tree: Root): void {
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
-    const skipTag = ["code", "script", "style", "pre"].includes(elementNode.tagName)
+    const skipTag = ["code", "script", "style", "pre", "svg"].includes(elementNode.tagName)
     const skipClass = ["no-formatting", "elvish", "bad-handwriting"].some((cls) =>
       hasClass(elementNode, cls),
     )
@@ -710,7 +710,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
     hasAncestor(
       parent as Element,
       (ancestor) =>
-        ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
+        ["code", "pre", "a", "script", "style", "svg"].includes(ancestor.tagName) ||
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
