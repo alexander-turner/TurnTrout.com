@@ -10,6 +10,12 @@ import {
   isElementChecked,
 } from "./visual_utils"
 
+/** Type guard that asserts a value is defined, using expect for the assertion */
+function assertDefined<T>(value: T | null | undefined): asserts value is T {
+  expect(value).toBeDefined()
+  expect(value).not.toBeNull()
+}
+
 type TestFixtures = {
   dummyLink: Locator
 }
@@ -373,7 +379,8 @@ test.describe("Footnote popovers", () => {
     const tablePopover = page.locator(".popover")
     await expect(tablePopover).toBeVisible()
     const tablePopoverBox = await tablePopover.boundingBox()
-    const tableHeight = tablePopoverBox?.height ?? 0
+    assertDefined(tablePopoverBox)
+    const tableHeight = tablePopoverBox.height
 
     // Move mouse away to close popover
     await page.mouse.move(0, 0)
@@ -387,7 +394,8 @@ test.describe("Footnote popovers", () => {
     const simplePopover = page.locator(".popover")
     await expect(simplePopover).toBeVisible()
     const simplePopoverBox = await simplePopover.boundingBox()
-    const simpleHeight = simplePopoverBox?.height ?? 0
+    assertDefined(simplePopoverBox)
+    const simpleHeight = simplePopoverBox.height
 
     // Table footnote should be significantly taller than simple footnote
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
@@ -433,6 +441,7 @@ test.describe("Popover checkbox state preservation", () => {
     await linkToHover.hover()
 
     const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
     await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
       elementToScreenshot: popover,
       preserveSiblings: true, // Need this to take screenshot
