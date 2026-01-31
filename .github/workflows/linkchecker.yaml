@@ -1,0 +1,69 @@
+name: Link checker
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  linkchecker:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Install linkchecker
+        run: pip install linkchecker
+
+      - name: Start server and run linkchecker
+        run: |
+          # Start server in background
+          pnpm exec serve public -l 8080 &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          # Check internal links
+          echo "Checking internal links..."
+          linkchecker http://localhost:8080 --threads 50
+          INTERNAL_STATUS=$?
+
+          # Check external links (only assets.turntrout.com and github repo)
+          echo "Checking external links..."
+          linkchecker public/**/*.html \
+            --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
+            --check-extern \
+            --threads 30 \
+            --user-agent "linkchecker" \
+            --timeout 40
+          EXTERNAL_STATUS=$?
+
+          # Stop server
+          kill $SERVER_PID 2>/dev/null || true
+
+          # Exit with failure if any check failed
+          if [ $INTERNAL_STATUS -ne 0 ] || [ $EXTERNAL_STATUS -ne 0 ]; then
+            echo "Link checks failed:"
+            echo "Internal linkchecker: $INTERNAL_STATUS"
+            echo "External linkchecker: $EXTERNAL_STATUS"
+            exit 1
+          fi
