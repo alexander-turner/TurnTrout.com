@@ -1238,7 +1238,7 @@ describe("linkfavicons.downloadImage", () => {
 
   it("should throw if write stream fails", async () => {
     const url = "https://example.com/image.png"
-    const imagePath = path.join(tempDir, "readonly-dir", "image.png")
+    const imagePath = path.join(tempDir, "image.png")
     const mockContent = "Mock image content"
     const mockResponse = new Response(mockContent, {
       status: 200,
@@ -1247,22 +1247,14 @@ describe("linkfavicons.downloadImage", () => {
 
     jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
 
-    // Create a directory that doesn't allow writing
-    const readonlyDir = path.join(tempDir, "readonly-dir")
-    // skipcq: JS-P1003
-    await fsExtra.ensureDir(readonlyDir)
-    // skipcq: JS-P1003
-    await fsExtra.chmod(readonlyDir, 0o444) // Read-only permissions
+    // Mock fs.promises.mkdir to throw a permission error
+    jest
+      .spyOn(fs.promises, "mkdir")
+      .mockRejectedValueOnce(new Error("EACCES: permission denied"))
 
-    try {
-      await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
-        "Failed to write image",
-      )
-    } finally {
-      // skipcq: JS-P1003
-      // Restore permissions so cleanup works
-      await fsExtra.chmod(readonlyDir, 0o755)
-    }
+    await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
+      "Failed to write image",
+    )
   })
 })
 
