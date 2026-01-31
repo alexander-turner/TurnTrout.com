@@ -1325,8 +1325,7 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    simple_quotes_label = re.sub(r"['''""]", '"', lower_label)
-    # Normalize nbsp to regular space for comparison
+    simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
     normalized_spaces = simple_quotes_label.replace("\xa0", " ")
     unescaped_label = html.unescape(normalized_spaces)
     return unescaped_label.strip()
