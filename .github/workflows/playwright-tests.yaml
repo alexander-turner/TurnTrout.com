@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "dev", "jest-coverage"]
+    branches: ["main", "jest-coverage"]
 
 permissions:
   contents: read
