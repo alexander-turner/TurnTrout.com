@@ -188,17 +188,22 @@ export function spacesAroundSlashes(text: string): string {
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
-  const slashRegex = /(?<![\d/<])(?<=[\S])( ?)(\uE000)?\/(\uE000)?( ?)(?=\S)(?!\/)/g
-  text = text.replace(
-    slashRegex,
-    (_match, spaceBefore, markerBefore, markerAfter, spaceAfter) => {
-      // Add space only if not already present
-      // Place markers outside spaces: marker-space-slash-space-marker
-      const pre = spaceBefore || " "
-      const post = spaceAfter || " "
-      return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
-    },
-  )
+  const slashRegex =
+    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uE000)?\/(?<markerAfter>\uE000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
+  text = text.replace(slashRegex, (...args) => {
+    const groups = args.at(-1) as {
+      spaceBefore: string
+      markerBefore: string | undefined
+      markerAfter: string | undefined
+      spaceAfter: string
+    }
+    const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
+    // Add space only if not already present
+    // Place markers outside spaces: marker-space-slash-space-marker
+    const pre = spaceBefore || " "
+    const post = spaceAfter || " "
+    return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
+  })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
   text = text.replace(numberSlashThenNonNumber, " / ")
@@ -592,10 +597,7 @@ export function plusToAmpersand(text: string): string {
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
 // At the end, watch out for double periods
 // Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
-const amPmRegex = new RegExp(
-  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`,
-  "gi",
-)
+const amPmRegex = new RegExp(`(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`, "gi")
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
     const groups = args[args.length - 1] as { time: string }
