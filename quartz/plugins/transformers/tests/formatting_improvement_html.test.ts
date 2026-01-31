@@ -1635,9 +1635,7 @@ describe("replaceFractions", () => {
 
         const input = `<${tagName}>1/2</${tagName}>`
         const processedHtml = testHtmlFormattingImprovement(input)
-        // Should NOT have fraction span - content unchanged
         expect(processedHtml).toBe(input)
-        expect(processedHtml).not.toContain("fraction")
       },
     )
 
