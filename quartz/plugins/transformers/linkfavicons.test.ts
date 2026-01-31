@@ -1247,7 +1247,8 @@ describe("linkfavicons.downloadImage", () => {
 
     jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
 
-    // Mock fs.promises.mkdir to throw a permission error
+    // Mock mkdir to throw an error - works in sandboxed environments
+    // where file permission restrictions don't apply (e.g., running as root)
     jest
       .spyOn(fs.promises, "mkdir")
       .mockRejectedValueOnce(new Error("EACCES: permission denied"))
