@@ -374,45 +374,45 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 >
 > <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></div>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">Í    </span><span class="elvish-translation">long years numberless as the wings of trees!</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">long years numberless as the wings of trees!</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">Í   Í </span><span class="elvish-translation">The years have passed like swift draughts</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">The years have passed like swift draughts</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   ć</span><span class="elvish-translation">of the sweet mead in lofty halls beyond the West,</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">of the sweet mead in lofty halls beyond the West,</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> °  °  </span><span class="elvish-translation">beneath the blue vaults of Varda</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">beneath the blue vaults of Varda</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">Í   </span><span class="elvish-translation">wherein the stars tremble</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">wherein the stars tremble</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">Ï  </span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
->
-> <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   Í  </span><span class="elvish-translation">Who now shall refill the cup for me?</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">  °  </span><span class="elvish-translation">For now the Kindler, Varda, the Queen of the Stars,</span></span>
->
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> Ì Ï  </span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">     </span><span class="elvish-translation">Who now shall refill the cup for me?</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> ´   </span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">For now the Kindler, Varda, the Queen of the Stars,</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> °  </span><span class="elvish-translation">and out of a grey country darkness lies</span></span>
->
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> :  </span><span class="elvish-translation">on the foaming waves between us,</span></span>
->
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   Ï  </span><span class="elvish-translation">and mist covers the jewels of Calacirya for ever.</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   °  </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">and out of a grey country darkness lies</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   ⸱</span><span class="elvish-translation">on the foaming waves between us,</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">     :</span><span class="elvish-translation">and mist covers the jewels of Calacirya for ever.</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">  ´ </span><span class="elvish-translation">Farewell! Maybe thou shalt find Valimar.</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> ´  </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   :</span><span class="elvish-translation">Farewell! Maybe thou shalt find Valimar.</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
 >
 
 <!-- spellchecker-enable -->
