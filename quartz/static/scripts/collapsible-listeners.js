@@ -13,6 +13,8 @@ document.addEventListener("nav", function () {
 
   for (const collapsible of collapsibles) {
     const title = collapsible.querySelector(".collapsible-title")
-    title.addEventListener("click", collapseHandler.bind(collapsible))
+    if (title) {
+      title.addEventListener("click", collapseHandler.bind(collapsible))
+    }
   }
 })
