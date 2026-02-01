@@ -42,7 +42,7 @@ describe("lockVideoPlaybackRate", () => {
       return ++rafId
     }) as typeof global.requestAnimationFrame
 
-    jest.spyOn(console, "debug").mockImplementation(() => {})
+    jest.spyOn(console, "debug").mockImplementation(jest.fn())
   })
 
   afterEach(() => {
@@ -107,7 +107,7 @@ describe("lockVideoPlaybackRate", () => {
 
       // Simulate extension changing playback rate
       video.playbackRate = 2.0
-      video.onratechange!(new Event("ratechange"))
+      video.onratechange?.(new Event("ratechange"))
 
       expect(video.playbackRate).toBe(1.0)
     })
@@ -121,7 +121,7 @@ describe("lockVideoPlaybackRate", () => {
       dispatchEvent(new Event("DOMContentLoaded"))
 
       video.playbackRate = 1.0
-      video.onratechange!(new Event("ratechange"))
+      video.onratechange?.(new Event("ratechange"))
 
       expect(video.playbackRate).toBe(1.0)
     })

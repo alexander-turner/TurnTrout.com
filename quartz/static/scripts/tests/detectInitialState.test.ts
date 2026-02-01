@@ -152,15 +152,19 @@ describe("detectInitialState", () => {
 
       loadScript()
 
-      expect(window.__quartz_checkbox_states!.get("page1-checkbox-1")).toBe(true)
-      expect(window.__quartz_checkbox_states!.get("page1-checkbox-2")).toBe(false)
-      expect(window.__quartz_checkbox_states!.has("other-key")).toBe(false)
+      const states = window.__quartz_checkbox_states
+      expect(states).toBeDefined()
+      expect(states?.get("page1-checkbox-1")).toBe(true)
+      expect(states?.get("page1-checkbox-2")).toBe(false)
+      expect(states?.has("other-key")).toBe(false)
     })
 
     it("should handle empty localStorage", () => {
       loadScript()
 
-      expect(window.__quartz_checkbox_states!.size).toBe(0)
+      const states = window.__quartz_checkbox_states
+      expect(states).toBeDefined()
+      expect(states?.size).toBe(0)
     })
   })
 })

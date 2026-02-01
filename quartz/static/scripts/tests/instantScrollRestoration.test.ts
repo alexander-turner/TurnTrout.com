@@ -68,8 +68,8 @@ describe("instantScrollRestoration", () => {
       return ++rafId
     }) as typeof global.requestAnimationFrame
 
-    jest.spyOn(console, "debug").mockImplementation(() => {})
-    jest.spyOn(console, "log").mockImplementation(() => {})
+    jest.spyOn(console, "debug").mockImplementation(jest.fn())
+    jest.spyOn(console, "log").mockImplementation(jest.fn())
   })
 
   afterEach(() => {
@@ -341,7 +341,7 @@ describe("instantScrollRestoration", () => {
 
       window.dispatchEvent(new Event("wheel"))
 
-      let currentScrollY = 600
+      const currentScrollY = 600
       Object.defineProperty(window, "scrollY", {
         get: () => currentScrollY,
         configurable: true,
@@ -406,7 +406,7 @@ describe("instantScrollRestoration", () => {
 
         window.dispatchEvent(new Event(eventType))
 
-        let currentScrollY = 600
+        const currentScrollY = 600
         Object.defineProperty(window, "scrollY", {
           get: () => currentScrollY,
           configurable: true,
