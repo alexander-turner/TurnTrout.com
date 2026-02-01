@@ -10,6 +10,7 @@ tokens:
   - '\b\w+(?:,\s+\w+)+\s+and\s+\w+\b'
 exceptions:
   # Common idiomatic phrases that aren't lists
+  # (Trite clichés like "safe and sound" are handled by proselint.Cliches)
   - now and then
   - now and again
   - more and more
@@ -27,29 +28,15 @@ exceptions:
   - ifs and buts
   - pros and cons
   - dos and don'ts
-  - trial and error
-  - above and beyond
-  - plain and simple
-  - safe and sound
   - null and void
   - far and wide
-  - few and far between
-  - first and foremost
-  - loud and clear
   - short and sweet
-  - sick and tired
-  - alive and well
   - born and bred
-  - cut and dried
   - dead and buried
-  - done and dusted
-  - fair and square
   - free and clear
-  - high and dry
   - high and low
   - hit and miss
   - hue and cry
-  - lean and mean
   - lock and key
   - lost and found
   - neat and tidy
@@ -58,16 +45,9 @@ exceptions:
   - one and only
   - out and about
   - peace and quiet
-  - prim and proper
-  - pure and simple
   - rough and tumble
   - rules and regulations
   - salt and pepper
-  - signed and sealed
   - slow and steady
-  - spick and span
   - sweet and sour
-  - thick and thin
-  - vim and vigor
   - wear and tear
-  - wine and dine
