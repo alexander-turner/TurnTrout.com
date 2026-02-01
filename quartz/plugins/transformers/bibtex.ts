@@ -89,7 +89,7 @@ export function generateBibtexEntry(
     `  month = ${month},`,
     `  url = {${url}},`,
     `  note = {Accessed: ${new Date().toISOString().split("T")[0]}}`,
-    `}`,
+    "}",
   ]
 
   return lines.join("\n")
