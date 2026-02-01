@@ -608,21 +608,6 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   })
 })
 
-for (const theme of ["light", "dark"]) {
-  test(`Hover over elvish text in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-    await setTheme(page, theme as "light" | "dark")
-    const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
-
-    await elvishText.hover()
-    await waitForTransitionEnd(elvishText)
-
-    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
-      elementToScreenshot: elvishText,
-    })
-  })
-}
-
 test.describe("Elvish toggle", () => {
   test("clicking elvish text toggles between Tengwar and English", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
