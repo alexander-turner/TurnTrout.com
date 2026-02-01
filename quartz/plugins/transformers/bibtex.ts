@@ -1,4 +1,5 @@
 import type { Element, Root } from "hast"
+
 import escapeLatex from "escape-latex"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
@@ -6,6 +7,7 @@ import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
 import type { FrontmatterData } from "../vfile"
+
 import { troutContainerId } from "./trout_hr"
 import { hasClass } from "./utils"
 

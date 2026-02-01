@@ -4,9 +4,10 @@ import { describe, it, expect, beforeEach } from "@jest/globals"
 import { h } from "hastscript"
 import { VFile } from "vfile"
 
-import { BuildCtx } from "../../../util/ctx"
 import type { FullSlug } from "../../../util/path"
-import { ornamentNode } from "../trout_hr"
+import type { FrontmatterData } from "../../vfile"
+
+import { BuildCtx } from "../../../util/ctx"
 import {
   extractLastName,
   generateCitationKey,
@@ -15,7 +16,7 @@ import {
   populateBibtexSpans,
   Bibtex,
 } from "../bibtex"
-import type { FrontmatterData } from "../../vfile"
+import { ornamentNode } from "../trout_hr"
 
 function createMockTree(children: Root["children"] = [ornamentNode]): Root {
   return { type: "root", children }
