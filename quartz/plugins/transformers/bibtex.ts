@@ -9,7 +9,6 @@ import type { QuartzTransformerPlugin } from "../types"
 import type { FrontmatterData } from "../vfile"
 
 import { troutContainerId } from "./trout_hr"
-import { hasClass } from "./utils"
 
 /**
  * Cache for storing generated BibTeX content, keyed by slug.
@@ -31,6 +30,11 @@ export function getBibtexForSlug(slug: string): string | undefined {
  */
 export function clearBibtexCache(): void {
   bibtexCache.clear()
+}
+
+// skipcq: JS-D1001
+export function isBibtexCachePopulated(): boolean {
+  return bibtexCache.size > 0
 }
 
 const MONTH_NAMES = [
@@ -121,55 +125,47 @@ export function generateBibtexEntry(
 }
 
 /**
- * Inserts a BibTeX code block with a "Citation" heading before the trout ornament.
+ * Finds the trout ornament element and its parent in the tree.
+ * @returns Object containing the parent element and the index of the ornament
+ * @throws Error if the ornament is not found
  */
-export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): boolean {
-  let inserted = false
+function findOrnamentLocation(tree: Root): { parent: Root; index: number } {
+  let result: { parent: Root; index: number } | null = null
 
-  visit(tree, "element", (node: Element, index, parent: Element | null) => {
+  visit(tree, "element", (node: Element, index, parent) => {
     if (
-      !inserted &&
-      index !== undefined &&
       node.tagName === "div" &&
       node.properties?.id === troutContainerId &&
-      parent
+      parent?.type === "root" &&
+      index !== undefined
     ) {
-      const citationHeading = h("h1", "Citation")
-      const bibtexBlock = h("details", { class: "bibtex-citation" }, [
-        h("summary", "Cite this article (BibTeX)"),
-        h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
-      ])
-
-      parent.children.splice(index, 0, citationHeading, bibtexBlock)
-      inserted = true
+      result = { parent, index }
       return false // Stop traversing
     }
     return true
   })
 
-  return inserted
+  if (!result) {
+    throw new Error(`Trout ornament with id "${troutContainerId}" not found in tree`)
+  }
+
+  return result
 }
 
 /**
- * Populates all spans with class "populate-bibtex" with a BibTeX citation block.
- * @returns The number of spans populated
+ * Inserts a BibTeX code block with a "Citation" heading before the trout ornament.
+ * @throws Error if the trout ornament is not found in the tree
  */
-export function populateBibtexSpans(tree: Root, bibtexContent: string): number {
-  let count = 0
+export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): void {
+  const { parent, index } = findOrnamentLocation(tree)
 
-  visit(tree, "element", (node: Element) => {
-    if (node.tagName === "span" && hasClass(node, "populate-bibtex")) {
-      node.children = [
-        h("details", { class: "bibtex-citation" }, [
-          h("summary", "BibTeX"),
-          h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
-        ]),
-      ]
-      count++
-    }
-  })
+  const citationHeading = h("h1", "Citation")
+  const bibtexBlock = h("details", { class: "bibtex-citation" }, [
+    h("summary", "Cite this article (BibTeX)"),
+    h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
+  ])
 
-  return count
+  parent.children.splice(index, 0, citationHeading, bibtexBlock)
 }
 
 /**

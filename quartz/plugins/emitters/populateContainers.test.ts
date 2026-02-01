@@ -861,10 +861,11 @@ describe("PopulateContainers", () => {
     })
 
     describe("generateBibtexContent", () => {
-      it("returns empty array when no bibtex content found", async () => {
+      it("throws when no bibtex content found", async () => {
         const generator = populateModule.generateBibtexContent("nonexistent-slug")
-        const elements = await generator()
-        expect(elements).toHaveLength(0)
+        await expect(generator()).rejects.toThrow(
+          "No BibTeX content found for slug: nonexistent-slug",
+        )
       })
 
       it("returns bibtex block when content exists in cache", async () => {
@@ -882,7 +883,7 @@ describe("PopulateContainers", () => {
         }
         const tree: Root = {
           type: "root",
-          children: [h("div", { id: "trout-container" })],
+          children: [h("div", { id: "trout-ornament-container" })],
         }
 
         const plugin = bibtexModule.Bibtex({ baseUrl: "turntrout.com" })
@@ -905,6 +906,34 @@ describe("PopulateContainers", () => {
   })
 
   describe("populate-bibtex integration", () => {
+    it("throws when bibtex cache is empty but populate-bibtex elements exist", async () => {
+      // Clear the cache to ensure it's empty
+      const bibtexModule = await import("../transformers/bibtex")
+      bibtexModule.clearBibtexCache()
+
+      // Mock the HTML file with a populate-bibtex span
+      jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("test-page.html")) {
+          return '<html><body><span class="populate-bibtex"></span></body></html>'
+        }
+        return "<html><body></body></html>"
+      })
+
+      mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+        const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+        if (patternStr.includes(".html")) {
+          return ["test-page.html"]
+        }
+        return []
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow(
+        "BibTeX cache is empty but populate-bibtex elements were found",
+      )
+    })
+
     it("populates bibtex spans in HTML files", async () => {
       // Import the bibtex module to populate the cache
       const bibtexModule = await import("../transformers/bibtex")
@@ -920,7 +949,7 @@ describe("PopulateContainers", () => {
       }
       const tree: Root = {
         type: "root",
-        children: [h("div", { id: "trout-container" })],
+        children: [h("div", { id: "trout-ornament-container" })],
       }
 
       const plugin = bibtexModule.Bibtex({ baseUrl: "turntrout.com" })

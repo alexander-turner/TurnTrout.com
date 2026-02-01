@@ -13,10 +13,10 @@ import {
   generateCitationKey,
   generateBibtexEntry,
   insertBibtexBeforeOrnament,
-  populateBibtexSpans,
   Bibtex,
   getBibtexForSlug,
   clearBibtexCache,
+  isBibtexCachePopulated,
 } from "../bibtex"
 import { ornamentNode } from "../trout_hr"
 
@@ -115,7 +115,11 @@ describe("generateBibtexEntry", () => {
       expectations: ["author = {Turner \\& Doe},", "title = {Test \\& Study: 100\\% Results},"],
     },
   ])("$name", ({ frontmatter, expectations }) => {
-    const result = generateBibtexEntry(frontmatter as FrontmatterData, "turntrout.com", "test-article")
+    const result = generateBibtexEntry(
+      frontmatter as FrontmatterData,
+      "turntrout.com",
+      "test-article",
+    )
     for (const expected of expectations) {
       expect(result).toContain(expected)
     }
@@ -126,7 +130,11 @@ describe("generateBibtexEntry", () => {
     { date: "2022-03-15", month: "mar" },
     { date: "2022-12-15", month: "dec" },
   ])("handles month for $date → $month", ({ date, month }) => {
-    const result = generateBibtexEntry({ title: "Test", date_published: date }, "turntrout.com", "test")
+    const result = generateBibtexEntry(
+      { title: "Test", date_published: date },
+      "turntrout.com",
+      "test",
+    )
     expect(result).toContain(`month = ${month},`)
   })
 })
@@ -137,25 +145,23 @@ describe("insertBibtexBeforeOrnament", () => {
       name: "inserts before ornament",
       children: [ornamentNode],
       expectedLength: 3,
-      expectedInserted: true,
-    },
-    {
-      name: "returns false when ornament missing",
-      children: [h("div", { id: "some-other-div" }, "Content")],
-      expectedLength: 1,
-      expectedInserted: false,
     },
     {
       name: "inserts before ornament with other elements",
       children: [h("p", "Paragraph"), h("div", "Content"), ornamentNode],
       expectedLength: 5,
-      expectedInserted: true,
     },
-  ])("$name", ({ children, expectedLength, expectedInserted }) => {
+  ])("$name", ({ children, expectedLength }) => {
     const tree = createMockTree(children as Root["children"])
-    const result = insertBibtexBeforeOrnament(tree, "@misc{test}")
-    expect(result).toBe(expectedInserted)
+    insertBibtexBeforeOrnament(tree, "@misc{test}")
     expect(tree.children).toHaveLength(expectedLength)
+  })
+
+  it("throws when ornament is missing", () => {
+    const tree = createMockTree([h("div", { id: "some-other-div" }, "Content")])
+    expect(() => insertBibtexBeforeOrnament(tree, "@misc{test}")).toThrow(
+      'Trout ornament with id "trout-ornament-container" not found in tree',
+    )
   })
 
   it("creates correct structure", () => {
@@ -176,35 +182,6 @@ describe("insertBibtexBeforeOrnament", () => {
     const code = pre.children[0] as Element
     expect(code.tagName).toBe("code")
     expect(code.properties?.className).toContain("language-bibtex")
-  })
-})
-
-describe("populateBibtexSpans", () => {
-  it.each([
-    { name: "no spans", children: [h("p", "No spans")], expectedCount: 0 },
-    { name: "one span", children: [h("span", { class: "populate-bibtex" })], expectedCount: 1 },
-    {
-      name: "multiple spans",
-      children: [h("span", { class: "populate-bibtex" }), h("p"), h("span", { class: "populate-bibtex" })],
-      expectedCount: 2,
-    },
-    { name: "different class", children: [h("span", { class: "other-class" })], expectedCount: 0 },
-  ])("$name → $expectedCount populated", ({ children, expectedCount }) => {
-    const tree: Root = { type: "root", children }
-    expect(populateBibtexSpans(tree, "@misc{test}")).toBe(expectedCount)
-  })
-
-  it("creates correct structure", () => {
-    const tree: Root = { type: "root", children: [h("span", { class: "populate-bibtex" })] }
-    const bibtex = "@misc{test}"
-    populateBibtexSpans(tree, bibtex)
-
-    const span = tree.children[0] as Element
-    const details = span.children[0] as Element
-    expect(details.tagName).toBe("details")
-
-    const code = (details.children[1] as Element).children[0] as Element
-    expect((code.children[0] as { value: string }).value).toBe(bibtex)
   })
 })
 
@@ -241,16 +218,20 @@ describe("Bibtex plugin", () => {
 
     it("uses custom baseUrl", () => {
       const tree = createMockTree()
-      createTransformer("example.com")(tree, createMockFile({ createBibtex: true, permalink: "test" }))
+      createTransformer("example.com")(
+        tree,
+        createMockFile({ createBibtex: true, permalink: "test" }),
+      )
 
       const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
       expect((code.children[0] as { value: string }).value).toContain("https://example.com/test")
     })
 
-    it("handles missing ornament", () => {
+    it("throws when ornament is missing", () => {
       const tree = createMockTree([h("div", { id: "not-ornament" })])
-      transformer(tree, createMockFile({ createBibtex: true }))
-      expect(tree.children).toHaveLength(1)
+      expect(() => transformer(tree, createMockFile({ createBibtex: true }))).toThrow(
+        'Trout ornament with id "trout-ornament-container" not found in tree',
+      )
     })
 
     it("handles missing frontmatter", () => {
@@ -268,7 +249,9 @@ describe("Bibtex plugin", () => {
       transformer(tree, file)
 
       const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
-      expect((code.children[0] as { value: string }).value).toContain("url = {https://turntrout.com/}")
+      expect((code.children[0] as { value: string }).value).toContain(
+        "url = {https://turntrout.com/}",
+      )
     })
 
     it("caches bibtex content for later retrieval", () => {
@@ -304,5 +287,17 @@ describe("Bibtex cache", () => {
     clearBibtexCache()
 
     expect(getBibtexForSlug("test-slug")).toBeUndefined()
+  })
+
+  it("isBibtexCachePopulated returns false when cache is empty", () => {
+    expect(isBibtexCachePopulated()).toBe(false)
+  })
+
+  it("isBibtexCachePopulated returns true when cache has entries", () => {
+    const transformer = createTransformer()
+    const tree = createMockTree()
+    transformer(tree, createMockFile({ createBibtex: true, date_published: "2022-06-15" }))
+
+    expect(isBibtexCachePopulated()).toBe(true)
   })
 })

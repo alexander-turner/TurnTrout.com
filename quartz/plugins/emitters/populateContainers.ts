@@ -8,7 +8,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
-import { getBibtexForSlug } from "../transformers/bibtex"
+import { getBibtexForSlug, isBibtexCachePopulated } from "../transformers/bibtex"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -275,8 +275,7 @@ export const generateBibtexContent = (slug: string): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const bibtexContent = getBibtexForSlug(slug)
     if (!bibtexContent) {
-      logger.warn(`No BibTeX content found for slug: ${slug}`)
-      return []
+      throw new Error(`No BibTeX content found for slug: ${slug}`)
     }
 
     return [
@@ -463,6 +462,12 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
 
         for (const className of classes) {
           // Handle populate-bibtex specially since it's page-specific
+          if (className === "populate-bibtex" && !isBibtexCachePopulated()) {
+            throw new Error(
+              "BibTeX cache is empty but populate-bibtex elements were found. " +
+                "Ensure the BibTeX transformer runs before PopulateContainers.",
+            )
+          }
           if (className === "populate-bibtex") {
             const slug = htmlFileToSlug(htmlFile)
             configs.push({ className, generator: generateBibtexContent(slug) })
