@@ -73,12 +73,13 @@ function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
 }
 
 /**
- * Transforms a description string by escaping HTML entities and applying text transforms.
+ * Transforms a description string by applying text transforms and then escaping for XML.
+ * Text transforms are applied first (smart quotes, etc.), then the result is escaped
+ * to be safe for XML/RSS output.
  */
 const textTransformDescription = (description: string): string => {
-  const escapedDescription = description.replaceAll(/&/g, "&amp;")
-  const massTransformed = applyTextTransforms(escapedDescription)
-  return massTransformed
+  const transformed = applyTextTransforms(description)
+  return escapeHTML(transformed)
 }
 
 /**

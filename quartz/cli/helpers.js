@@ -6,11 +6,17 @@ import process from "node:process"
 
 import { contentCacheFolder } from "./constants.js"
 
+/**
+ * Normalizes a file path by unescaping spaces and removing surrounding quotes.
+ *
+ * @param {string} fp - The file path to normalize
+ * @returns {string} The normalized file path
+ */
 export function escapePath(fp) {
   return fp
     .replace(/\\ /g, " ") // unescape spaces
-    .replace(/^".*"$/, "$1")
-    .replace(/^'.*"$/, "$1")
+    .replace(/^"(.*)"$/, "$1") // remove surrounding double quotes
+    .replace(/^'(.*)'$/, "$1") // remove surrounding single quotes
     .trim()
 }
 
