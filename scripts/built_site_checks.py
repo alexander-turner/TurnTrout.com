@@ -1160,12 +1160,23 @@ def _check_populate_commit_count(
 
 
 _SELF_CONTAINED_ELEMENTS = frozenset(
-    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+    {
+        "svg",
+        "img",
+        "video",
+        "audio",
+        "iframe",
+        "object",
+        "embed",
+        "canvas",
+        "picture",
+    }
 )
 
 
 def _has_content(element: Tag) -> bool:
-    """Check if an element has meaningful content.
+    """
+    Check if an element has meaningful content.
 
     An element is considered to have content if it has:
     - Non-whitespace text content, OR

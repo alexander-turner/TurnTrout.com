@@ -317,6 +317,10 @@
       "tmp": "0.2.4",
       "@eslint/plugin-kit": "0.3.4",
       "qs": "6.14.1"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "citation-js",
+      "punctilio"
+    ]
   }
 }
