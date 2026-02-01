@@ -165,4 +165,49 @@ describe("collapsible-listeners", () => {
       expect(content.classList.contains("active")).toBe(false)
     })
   })
+
+  describe("edge cases", () => {
+    it("should handle collapsible without title element", () => {
+      const collapsible = document.createElement("div")
+      collapsible.className = "collapsible"
+
+      const content = document.createElement("div")
+      content.className = "content"
+
+      collapsible.appendChild(content)
+      document.body.appendChild(collapsible)
+
+      // Should not throw when nav event fires (null title check)
+      expect(() => dispatchNavEvent()).not.toThrow()
+    })
+
+    it("should not add duplicate handlers on repeated nav events", () => {
+      const collapsible = createCollapsible("test-1")
+      document.body.appendChild(collapsible)
+
+      const content = collapsible.querySelector(".content") as HTMLElement
+      const title = collapsible.querySelector(".collapsible-title") as HTMLElement
+
+      // Fire nav event multiple times
+      dispatchNavEvent()
+      dispatchNavEvent()
+      dispatchNavEvent()
+
+      // Click once - should toggle once, not 3 times
+      expect(content.classList.contains("active")).toBe(false)
+      title.click()
+      expect(content.classList.contains("active")).toBe(true)
+    })
+
+    it("should set data-collapsible-bound attribute after binding", () => {
+      const collapsible = createCollapsible("test-1")
+      document.body.appendChild(collapsible)
+
+      expect(collapsible.dataset.collapsibleBound).toBeUndefined()
+
+      dispatchNavEvent()
+
+      expect(collapsible.dataset.collapsibleBound).toBe("true")
+    })
+  })
 })
