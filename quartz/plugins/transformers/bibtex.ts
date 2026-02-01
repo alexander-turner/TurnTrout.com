@@ -1,4 +1,5 @@
 import type { Element, Root } from "hast"
+import escapeLatex from "escape-latex"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
@@ -56,36 +57,6 @@ export function generateCitationKey(author: string, year: number, title: string)
 }
 
 /**
- * Escapes special LaTeX/BibTeX characters in a string.
- * Uses a placeholder strategy to avoid double-escaping.
- */
-export function escapeBibtexString(str: string): string {
-  // Use placeholders for complex replacements to avoid double-escaping
-  const BACKSLASH_PLACEHOLDER = "\x00BACKSLASH\x00"
-  const TILDE_PLACEHOLDER = "\x00TILDE\x00"
-  const CARET_PLACEHOLDER = "\x00CARET\x00"
-
-  return (
-    str
-      // First, replace characters that produce complex sequences with placeholders
-      .replace(/\\/g, BACKSLASH_PLACEHOLDER)
-      .replace(/~/g, TILDE_PLACEHOLDER)
-      .replace(/\^/g, CARET_PLACEHOLDER)
-      // Now escape simple characters
-      .replace(/[{}]/g, "\\$&")
-      .replace(/&/g, "\\&")
-      .replace(/%/g, "\\%")
-      .replace(/\$/g, "\\$")
-      .replace(/#/g, "\\#")
-      .replace(/_/g, "\\_")
-      // Finally, replace placeholders with their LaTeX equivalents
-      .replace(new RegExp(BACKSLASH_PLACEHOLDER, "g"), "\\textbackslash{}")
-      .replace(new RegExp(TILDE_PLACEHOLDER, "g"), "\\textasciitilde{}")
-      .replace(new RegExp(CARET_PLACEHOLDER, "g"), "\\textasciicircum{}")
-  )
-}
-
-/**
  * Generates a BibTeX entry for an article.
  */
 export function generateBibtexEntry(
@@ -112,8 +83,8 @@ export function generateBibtexEntry(
   // Build the BibTeX entry
   const lines = [
     `@misc{${citationKey},`,
-    `  author = {${escapeBibtexString(author)}},`,
-    `  title = {${escapeBibtexString(title)}},`,
+    `  author = {${escapeLatex(author)}},`,
+    `  title = {${escapeLatex(title)}},`,
     `  year = {${year}},`,
     `  month = ${month},`,
     `  url = {${url}},`,
@@ -125,7 +96,7 @@ export function generateBibtexEntry(
 }
 
 /**
- * Inserts a BibTeX code block before the trout ornament.
+ * Inserts a BibTeX code block with a "Citation" heading before the trout ornament.
  */
 export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): boolean {
   let inserted = false
@@ -138,12 +109,13 @@ export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): b
       node.properties?.id === troutContainerId &&
       parent
     ) {
+      const citationHeading = h("h1", "Citation")
       const bibtexBlock = h("details", { class: "bibtex-citation" }, [
         h("summary", "Cite this article (BibTeX)"),
         h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
       ])
 
-      parent.children.splice(index, 0, bibtexBlock)
+      parent.children.splice(index, 0, citationHeading, bibtexBlock)
       inserted = true
       return false // Stop traversing
     }

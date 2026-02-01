@@ -10,7 +10,6 @@ import { ornamentNode } from "../trout_hr"
 import {
   extractLastName,
   generateCitationKey,
-  escapeBibtexString,
   generateBibtexEntry,
   insertBibtexBeforeOrnament,
   Bibtex,
@@ -107,52 +106,6 @@ describe("generateCitationKey", () => {
   })
 })
 
-describe("escapeBibtexString", () => {
-  it("should escape ampersand", () => {
-    expect(escapeBibtexString("A & B")).toBe("A \\& B")
-  })
-
-  it("should escape percent sign", () => {
-    expect(escapeBibtexString("100%")).toBe("100\\%")
-  })
-
-  it("should escape dollar sign", () => {
-    expect(escapeBibtexString("$100")).toBe("\\$100")
-  })
-
-  it("should escape hash sign", () => {
-    expect(escapeBibtexString("#1")).toBe("\\#1")
-  })
-
-  it("should escape underscore", () => {
-    expect(escapeBibtexString("test_value")).toBe("test\\_value")
-  })
-
-  it("should escape curly braces", () => {
-    expect(escapeBibtexString("{test}")).toBe("\\{test\\}")
-  })
-
-  it("should escape backslash", () => {
-    expect(escapeBibtexString("test\\path")).toBe("test\\textbackslash{}path")
-  })
-
-  it("should escape tilde", () => {
-    expect(escapeBibtexString("~test")).toBe("\\textasciitilde{}test")
-  })
-
-  it("should escape caret", () => {
-    expect(escapeBibtexString("x^2")).toBe("x\\textasciicircum{}2")
-  })
-
-  it("should handle multiple special characters", () => {
-    expect(escapeBibtexString("$100 & 50%")).toBe("\\$100 \\& 50\\%")
-  })
-
-  it("should return unchanged string when no special characters", () => {
-    expect(escapeBibtexString("Simple Text")).toBe("Simple Text")
-  })
-})
-
 describe("generateBibtexEntry", () => {
   it("should generate a valid BibTeX entry", () => {
     const frontmatter: FrontmatterData = {
@@ -230,16 +183,20 @@ describe("generateBibtexEntry", () => {
 })
 
 describe("insertBibtexBeforeOrnament", () => {
-  it("should insert bibtex block before the trout ornament", () => {
+  it("should insert citation heading and bibtex block before the trout ornament", () => {
     const mockTree = createMockTree()
     const bibtexContent = "@misc{test, title={Test}}"
 
     const result = insertBibtexBeforeOrnament(mockTree, bibtexContent)
 
     expect(result).toBe(true)
-    expect(mockTree.children).toHaveLength(2)
+    expect(mockTree.children).toHaveLength(3)
 
-    const bibtexBlock = mockTree.children[0] as Element
+    // Check for h1 Citation heading
+    const heading = mockTree.children[0] as Element
+    expect(heading.tagName).toBe("h1")
+
+    const bibtexBlock = mockTree.children[1] as Element
     expect(bibtexBlock.tagName).toBe("details")
     expect(bibtexBlock.properties?.className).toContain("bibtex-citation")
 
@@ -275,10 +232,13 @@ describe("insertBibtexBeforeOrnament", () => {
 
     insertBibtexBeforeOrnament(mockTree, bibtexContent)
 
-    expect(mockTree.children).toHaveLength(4)
-    const bibtexBlock = mockTree.children[2] as Element
+    // p + div + h1 + details + ornament = 5
+    expect(mockTree.children).toHaveLength(5)
+    const heading = mockTree.children[2] as Element
+    expect(heading.tagName).toBe("h1")
+    const bibtexBlock = mockTree.children[3] as Element
     expect(bibtexBlock.tagName).toBe("details")
-    expect(mockTree.children[3]).toBe(ornamentNode)
+    expect(mockTree.children[4]).toBe(ornamentNode)
   })
 })
 
@@ -338,8 +298,10 @@ describe("Bibtex plugin", () => {
 
       transformer(mockTree, mockFile)
 
-      expect(mockTree.children).toHaveLength(2)
-      const bibtexBlock = mockTree.children[0] as Element
+      expect(mockTree.children).toHaveLength(3)
+      const heading = mockTree.children[0] as Element
+      expect(heading.tagName).toBe("h1")
+      const bibtexBlock = mockTree.children[1] as Element
       expect(bibtexBlock.tagName).toBe("details")
       expect(bibtexBlock.properties?.className).toContain("bibtex-citation")
     })
@@ -355,8 +317,8 @@ describe("Bibtex plugin", () => {
 
       customTransformer(mockTree, mockFile)
 
-      expect(mockTree.children).toHaveLength(2)
-      const bibtexBlock = mockTree.children[0] as Element
+      expect(mockTree.children).toHaveLength(3)
+      const bibtexBlock = mockTree.children[1] as Element
       const pre = bibtexBlock.children[1] as Element
       const code = pre.children[0] as Element
       const codeContent = (code.children[0] as { value: string }).value
@@ -395,8 +357,8 @@ describe("Bibtex plugin", () => {
 
       transformer(mockTree, mockFile)
 
-      expect(mockTree.children).toHaveLength(2)
-      const bibtexBlock = mockTree.children[0] as Element
+      expect(mockTree.children).toHaveLength(3)
+      const bibtexBlock = mockTree.children[1] as Element
       const pre = bibtexBlock.children[1] as Element
       const code = pre.children[0] as Element
       const codeContent = (code.children[0] as { value: string }).value
@@ -421,8 +383,8 @@ describe("Bibtex plugin", () => {
 
     noOptsTransformer(mockTree, mockFile)
 
-    expect(mockTree.children).toHaveLength(2)
-    const bibtexBlock = mockTree.children[0] as Element
+    expect(mockTree.children).toHaveLength(3)
+    const bibtexBlock = mockTree.children[1] as Element
     const pre = bibtexBlock.children[1] as Element
     const code = pre.children[0] as Element
     const codeContent = (code.children[0] as { value: string }).value
