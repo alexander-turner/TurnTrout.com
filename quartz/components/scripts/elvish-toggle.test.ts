@@ -162,7 +162,7 @@ describe("elvish-toggle", () => {
     });
 
     it("should create help text when elvish elements exist", () => {
-      document.body.innerHTML = `<span class="elvish"></span>`;
+      document.body.innerHTML = '<span class="elvish"></span>';
       initializeElvishElements();
 
       const helpText = document.getElementById("elvish-help");
@@ -170,7 +170,7 @@ describe("elvish-toggle", () => {
     });
 
     it("should not create help text when no elvish elements exist", () => {
-      document.body.innerHTML = `<span class="other"></span>`;
+      document.body.innerHTML = '<span class="other"></span>';
       initializeElvishElements();
 
       const helpText = document.getElementById("elvish-help");
@@ -178,7 +178,7 @@ describe("elvish-toggle", () => {
     });
 
     it("should not duplicate help text on multiple calls", () => {
-      document.body.innerHTML = `<span class="elvish"></span>`;
+      document.body.innerHTML = '<span class="elvish"></span>';
       initializeElvishElements();
       initializeElvishElements();
       initializeElvishElements();
@@ -188,7 +188,7 @@ describe("elvish-toggle", () => {
     });
 
     it("should not re-initialize already initialized elements", () => {
-      document.body.innerHTML = `<span class="elvish"></span>`;
+      document.body.innerHTML = '<span class="elvish"></span>';
       initializeElvishElements();
 
       const el = document.querySelector(".elvish") as HTMLElement;
@@ -221,7 +221,7 @@ describe("elvish-toggle", () => {
 
   describe("nav event integration", () => {
     it("should initialize elements on nav event", () => {
-      document.body.innerHTML = `<span class="elvish"></span>`;
+      document.body.innerHTML = '<span class="elvish"></span>';
       triggerNav();
 
       const el = document.querySelector(".elvish") as HTMLElement;
