@@ -320,18 +320,18 @@ export function formatLNumbers(tree: Root): void {
         newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
       }
 
-      // Add the space/start of line
-      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
+      // Add the space/start of line (match[1] is the prefix group)
+      newNodes.push({ type: "text", value: match[1] })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
 
-      // Add subscript number
+      // Add subscript number (match[2] is the number group)
       newNodes.push({
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match.groups?.number ?? "" }],
+        children: [{ type: "text", value: match[2] }],
       })
 
       lastIndex = l_pRegex.lastIndex
