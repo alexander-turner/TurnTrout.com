@@ -14,6 +14,7 @@ aliases:
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2026-01-20 10:53:02.330875
 no_dropcap: false
+createBibtex: true
 ---
 
 
@@ -851,7 +852,9 @@ Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
 
 Automatic BibTeX citations
-: For citable articles (research papers, shard theory posts, etc.), I can enable automatic BibTeX citation generation by setting `createBibtex: true` in the article's YAML frontmatter. The build process generates a citation block with a collapsible details element, placed just before the article's closing ornament. The citation key combines the author's last name, publication year, and a truncated title slug. Special characters are escaped using the `escape-latex` library for proper BibTeX compatibility.
+: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. For example, this article's citation is:
+
+: <span class="populate-bibtex"></span>
 
 # Deployment pipeline
 

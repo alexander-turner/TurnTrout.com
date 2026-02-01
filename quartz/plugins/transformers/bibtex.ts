@@ -7,6 +7,7 @@ import { VFile } from "vfile"
 import type { QuartzTransformerPlugin } from "../types"
 import type { FrontmatterData } from "../vfile"
 import { troutContainerId } from "./trout_hr"
+import { hasClass } from "./utils"
 
 const MONTH_NAMES = [
   "jan",
@@ -126,6 +127,28 @@ export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): b
 }
 
 /**
+ * Populates all spans with class "populate-bibtex" with a BibTeX citation block.
+ * @returns The number of spans populated
+ */
+export function populateBibtexSpans(tree: Root, bibtexContent: string): number {
+  let count = 0
+
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName === "span" && hasClass(node, "populate-bibtex")) {
+      node.children = [
+        h("details", { class: "bibtex-citation" }, [
+          h("summary", "BibTeX"),
+          h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
+        ]),
+      ]
+      count++
+    }
+  })
+
+  return count
+}
+
+/**
  * Transforms the AST to add a BibTeX citation block before the trout ornament.
  */
 function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
@@ -139,6 +162,7 @@ function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
   const bibtexContent = generateBibtexEntry(frontmatter, baseUrl, slug)
 
   insertBibtexBeforeOrnament(tree, bibtexContent)
+  populateBibtexSpans(tree, bibtexContent)
 }
 
 interface BibtexOptions {

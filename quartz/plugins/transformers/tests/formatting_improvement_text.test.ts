@@ -282,6 +282,12 @@ And some hyphens-to-be-ignored.`
         "[tweet](https://xcancel.com/turntrout/status/123)",
       ],
       ["twitter.com", "twitter.com"],
+      ["bibtex", "BibTeX"],
+      ["BIBTEX", "BibTeX"],
+      ["Bibtex", "BibTeX"],
+      ["BibTeX", "BibTeX"],
+      ["Use bibtex for citations", "Use BibTeX for citations"],
+      ["bibtex-citation", "BibTeX-citation"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)

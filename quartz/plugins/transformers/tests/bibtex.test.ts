@@ -12,6 +12,7 @@ import {
   generateCitationKey,
   generateBibtexEntry,
   insertBibtexBeforeOrnament,
+  populateBibtexSpans,
   Bibtex,
 } from "../bibtex"
 import type { FrontmatterData } from "../../vfile"
@@ -239,6 +240,72 @@ describe("insertBibtexBeforeOrnament", () => {
     const bibtexBlock = mockTree.children[3] as Element
     expect(bibtexBlock.tagName).toBe("details")
     expect(mockTree.children[4]).toBe(ornamentNode)
+  })
+})
+
+describe("populateBibtexSpans", () => {
+  const testCases = [
+    {
+      name: "no populate-bibtex spans",
+      children: [h("p", "No spans here")],
+      expectedCount: 0,
+      expectedChildCount: 1,
+    },
+    {
+      name: "one populate-bibtex span",
+      children: [h("span", { class: "populate-bibtex" })],
+      expectedCount: 1,
+      expectedChildCount: 1,
+    },
+    {
+      name: "multiple populate-bibtex spans",
+      children: [
+        h("span", { class: "populate-bibtex" }),
+        h("p", "Content"),
+        h("span", { class: "populate-bibtex" }),
+      ],
+      expectedCount: 2,
+      expectedChildCount: 3,
+    },
+    {
+      name: "span with different class",
+      children: [h("span", { class: "other-class" })],
+      expectedCount: 0,
+      expectedChildCount: 1,
+    },
+  ]
+
+  it.each(testCases)("$name", ({ children, expectedCount, expectedChildCount }) => {
+    const tree: Root = { type: "root", children }
+    const bibtex = "@misc{test, title={Test}}"
+
+    const count = populateBibtexSpans(tree, bibtex)
+
+    expect(count).toBe(expectedCount)
+    expect(tree.children).toHaveLength(expectedChildCount)
+  })
+
+  it("should populate span with details/pre/code structure", () => {
+    const tree: Root = { type: "root", children: [h("span", { class: "populate-bibtex" })] }
+    const bibtex = "@misc{test, title={Test}}"
+
+    populateBibtexSpans(tree, bibtex)
+
+    const span = tree.children[0] as Element
+    const details = span.children[0] as Element
+    expect(details.tagName).toBe("details")
+    expect(details.properties?.className).toContain("bibtex-citation")
+
+    const summary = details.children[0] as Element
+    expect(summary.tagName).toBe("summary")
+
+    const pre = details.children[1] as Element
+    expect(pre.tagName).toBe("pre")
+
+    const code = pre.children[0] as Element
+    expect(code.tagName).toBe("code")
+    expect(code.properties?.className).toContain("language-bibtex")
+    expect((code.children[0] as { value: string }).value).toBe(bibtex)
   })
 })
 
