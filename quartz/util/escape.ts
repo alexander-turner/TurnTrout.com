@@ -1,3 +1,6 @@
+// Re-export escape-string-regexp as escapeRegExp for consistent naming
+export { default as escapeRegExp } from "escape-string-regexp"
+
 /**
  * Escapes HTML special characters to prevent XSS and HTML injection.
  * Handles all 5 critical characters: &, <, >, ", '
@@ -12,15 +15,4 @@ export const escapeHTML = (unsafe: string): string => {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;")
-}
-
-/**
- * Escapes special characters in a string for use in RegExp.
- * Prevents regex injection when user input is compiled into RegExp patterns.
- *
- * @param text - The string to escape for use in a regular expression
- * @returns The escaped string safe for use in RegExp constructor
- */
-export const escapeRegExp = (text: string): string => {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }

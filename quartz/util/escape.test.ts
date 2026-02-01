@@ -65,7 +65,8 @@ describe("escapeRegExp", () => {
   })
 
   it("should escape brackets", () => {
-    expect(escapeRegExp("[a-z]")).toBe("\\[a-z\\]")
+    // escape-string-regexp escapes hyphens inside character classes as \x2d
+    expect(escapeRegExp("[a-z]")).toBe("\\[a\\x2dz\\]")
   })
 
   it("should escape parentheses", () => {
