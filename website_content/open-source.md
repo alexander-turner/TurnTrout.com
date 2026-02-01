@@ -47,8 +47,10 @@ I tested `punctilio` 0.4 against [`smartypants`](https://www.npmjs.com/package/s
 
 | Input | `smartypants` | `punctilio` |
 |:-----:|:-----------------:|:-------:|
-| <span class="no-formatting">She said--"Hi!"</span> | She said—"Hi!" (✗) | She said—"Hi!" (✓) |
-| <span class="no-formatting">5x5</span> | 5x5 (✗) | 5×5 (✓) |
+| <span class="no-formatting">She said--"Hi!"</span> | <span class="no-formatting">She said—”Hi!” (✗)</span> | <span class="no-formatting">She said—“Hi!” (✓)</span> |
+| <span class="no-formatting">5x5</span> | <span class="no-formatting">5x5 (✗)</span> | <span class="no-formatting">5×5 (✓)</span> |
+
+
 
 I basically graded all libraries on a subset of [my unit tests](https://github.com/alexander-turner/punctilio/tree/main/src/tests), selected to represent a wide range of features.
 
@@ -77,7 +79,7 @@ I basically graded all libraries on a subset of [my unit tests](https://github.c
 | Superscripts | <span class="no-formatting">1st</span> → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
 | Localization | American/British | ✗ | ✗ | ✗ | ✓ |
 | Ligatures | <span class="no-formatting">??</span> → ⁇ | ✗ | ✓ | ✗ | ✓ |
-| Non-English quotes | „Hallo" (German) | ✗ | ✓ | ✗ | ✗ |
+| Non-English quotes | „Hallo” (German) | ✗ | ✓ | ✗ | ✗ |
 
 As far as I can tell, `punctilio`’s only missing feature is non-English quote support. I don’t have a personal reason to use non-English localization, but feel free to make a pull request!
 
@@ -99,7 +101,7 @@ As far as I can tell, `punctilio`’s only missing feature is non-English quote 
 
 ## Options
 
-`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, this README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
+`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, the README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
 
 ```typescript
 transform(text, {
