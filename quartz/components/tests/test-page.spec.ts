@@ -609,6 +609,28 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
 })
 
 test.describe("Elvish toggle", () => {
+  test("noscript fallback shows both Tengwar and translation when JS is disabled", async ({
+    browser,
+  }) => {
+    // Create a new context with JavaScript disabled
+    const context = await browser.newContext({ javaScriptEnabled: false })
+    const page = await context.newPage()
+
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    const tengwar = elvishText.locator(".elvish-tengwar")
+    const translation = elvishText.locator(".elvish-translation")
+
+    // With JS disabled, both should be visible (noscript fallback)
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeVisible()
+
+    await context.close()
+  })
+
   test("clicking elvish text toggles between Tengwar and English", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()

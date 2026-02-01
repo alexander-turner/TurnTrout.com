@@ -2,6 +2,13 @@
  * Elvish toggle functionality - switches between Tengwar and English translation on click.
  */
 
+/** CSS fallback for users without JavaScript - shows both Tengwar and translation */
+export const ELVISH_NOSCRIPT_CSS = `
+  .elvish { cursor: default; text-decoration: none; }
+  .elvish .elvish-tengwar::after { content: " — "; }
+  .elvish .elvish-translation { display: inline !important; font-family: var(--font-main); }
+`
+
 /** Toggle the show-translation class and update aria-pressed */
 export function toggleElvish(this: HTMLElement): void {
   this.classList.toggle("show-translation")

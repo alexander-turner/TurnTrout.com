@@ -12,6 +12,7 @@ import { renderHead } from "../util/head";
 import { htmlToJsx } from "../util/jsx";
 import { FullSlug, type FilePath } from "../util/path";
 import { JSResourceToScriptElement } from "../util/resources";
+import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle";
 import {
   type QuartzComponent,
   type QuartzComponentConstructor,
@@ -200,15 +201,7 @@ export default (() => {
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
           {/* skipcq: JS-0440 - Safe: static CSS string, not user input */}
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `
-            .elvish { cursor: default; text-decoration: none; }
-            .elvish .elvish-tengwar::after { content: " — "; }
-            .elvish .elvish-translation { display: inline !important; font-family: var(--font-main); }
-          `,
-            }}
-          />
+          <style dangerouslySetInnerHTML={{ __html: ELVISH_NOSCRIPT_CSS }} />
         </noscript>
         {analyticsScript}
         {js
