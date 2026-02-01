@@ -4953,6 +4953,37 @@ description: Test description
             '<span class="some-class populate-commit-count another-class"></span>',
             ["<span> with class='populate-commit-count' is empty"],
         ),
+        # Element with child SVG element but no text (valid - used for favicons)
+        (
+            '<span id="populate-turntrout-favicon"><span class="favicon-span"><svg class="favicon"></svg></span></span>',
+            [],
+        ),
+        # Element with child img element but no text (valid)
+        (
+            '<span id="populate-test"><img src="test.png" alt="test"></span>',
+            [],
+        ),
+        # Element with nested child elements but no text anywhere (valid)
+        (
+            '<div id="populate-container"><span><svg></svg></span></div>',
+            [],
+        ),
+        # Multiple favicon populate elements with SVG children (valid)
+        (
+            """
+            <span id="populate-turntrout-favicon"><span class="favicon-span"><svg></svg></span></span>
+            <span id="populate-anchor-favicon"><span class="favicon-span"><svg></svg></span></span>
+            """,
+            [],
+        ),
+        # Mixed: one with content (child element), one truly empty (invalid)
+        (
+            """
+            <span id="populate-good"><img src="test.png"></span>
+            <span id="populate-bad"></span>
+            """,
+            ["<span> with id='populate-bad' is empty"],
+        ),
     ],
 )
 def test_check_populate_elements_nonempty(html, expected):
@@ -4973,6 +5004,51 @@ def test_check_populate_elements_nonempty_non_string_id():
     result = built_site_checks.check_populate_elements_nonempty(soup)
     # Should skip the element with non-string id, so no errors
     assert result == []
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Empty element
+        ("<div></div>", False),
+        # Element with text content
+        ("<div>Hello</div>", True),
+        # Element with whitespace only (stripped, so empty)
+        ("<div>   </div>", False),
+        # Element with structural child element but no text/media (still empty)
+        ("<div><span></span></div>", False),
+        # Element with empty ul (structural, still empty)
+        ("<div><ul></ul></div>", False),
+        # Element with SVG child (self-contained, has content)
+        ("<div><svg></svg></div>", True),
+        # Element with img child (self-contained, has content)
+        ("<div><img src='test.png'></div>", True),
+        # Element with video child (self-contained, has content)
+        ("<div><video></video></div>", True),
+        # Element with audio child (self-contained, has content)
+        ("<div><audio></audio></div>", True),
+        # Element with iframe child (self-contained, has content)
+        ("<div><iframe src='test.html'></iframe></div>", True),
+        # Element with nested structure containing SVG
+        ("<span><span class='favicon-span'><svg></svg></span></span>", True),
+        # Element with only NavigableString children (newlines/whitespace)
+        ("<div>\n</div>", False),
+        # Element with both text and child element
+        ("<div>Text<span></span></div>", True),
+        # Deeply nested empty structural elements (still empty)
+        ("<div><span><div><p></p></div></span></div>", False),
+        # Deeply nested with SVG at the end (has content)
+        ("<div><span><div><svg></svg></div></span></div>", True),
+        # Picture element (self-contained, has content)
+        ("<div><picture><source><img></picture></div>", True),
+    ],
+)
+def test_has_content(html: str, expected: bool):
+    """Test the _has_content helper function."""
+    soup = BeautifulSoup(html, "html.parser")
+    element = soup.find()
+    assert element is not None
+    assert built_site_checks._has_content(element) == expected
 
 
 @pytest.mark.parametrize(

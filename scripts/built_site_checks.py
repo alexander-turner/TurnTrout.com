@@ -1159,6 +1159,28 @@ def _check_populate_commit_count(
     return issues
 
 
+_SELF_CONTAINED_ELEMENTS = frozenset(
+    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+)
+
+
+def _has_content(element: Tag) -> bool:
+    """Check if an element has meaningful content.
+
+    An element is considered to have content if it has:
+    - Non-whitespace text content, OR
+    - Self-contained media/visual elements (svg, img, video, etc.)
+      that don't require text content to be meaningful
+
+    Note: Structural elements like ul, div, span without text or media
+    are still considered empty, as they need their own content.
+    """
+    if element.get_text(strip=True):
+        return True
+    # Recursively check for self-contained elements (svg, img, video, etc.)
+    return element.find(_SELF_CONTAINED_ELEMENTS) is not None
+
+
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     """Check for issues with elements whose IDs or classes start with
     `populate-`."""
@@ -1171,7 +1193,7 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
         if (
             isinstance(element_id, str)
             and element_id.startswith("populate-")
-            and not element.get_text(strip=True)
+            and not _has_content(element)
         ):
             _append_to_list(
                 issues, f"<{element.name}> with id='{element_id}' is empty"
@@ -1180,8 +1202,8 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
         element_classes = element.get("class")
         if isinstance(element_classes, list):
             for class_name in element_classes:
-                if class_name.startswith("populate-") and not element.get_text(
-                    strip=True
+                if class_name.startswith("populate-") and not _has_content(
+                    element
                 ):
                     _append_to_list(
                         issues,
