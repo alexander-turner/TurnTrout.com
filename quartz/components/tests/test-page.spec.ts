@@ -623,6 +623,65 @@ for (const theme of ["light", "dark"]) {
   })
 }
 
+test.describe("Elvish toggle", () => {
+  test("clicking elvish text toggles between Tengwar and English", async ({ page }) => {
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    // Initially should show Tengwar (elvish-tengwar visible, elvish-translation hidden)
+    const tengwar = elvishText.locator(".elvish-tengwar")
+    const translation = elvishText.locator(".elvish-translation")
+
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeHidden()
+
+    // Click to toggle to English
+    await elvishText.click()
+
+    await expect(tengwar).toBeHidden()
+    await expect(translation).toBeVisible()
+
+    // Click again to toggle back to Tengwar
+    await elvishText.click()
+
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeHidden()
+  })
+
+  test("toggling elvish text does not cause layout shift", async ({ page }) => {
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    // Get the bounding box before toggle
+    const boxBefore = await elvishText.boundingBox()
+    expect(boxBefore).not.toBeNull()
+
+    // Click to toggle to English
+    await elvishText.click()
+
+    // Get the bounding box after toggle
+    const boxAfter = await elvishText.boundingBox()
+    expect(boxAfter).not.toBeNull()
+
+    // Height should remain the same (within 1px tolerance for rounding)
+    expect(boxAfter!.height).toBeCloseTo(boxBefore!.height, 0)
+  })
+
+  test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    // Click to toggle to English
+    await elvishText.click()
+
+    // Check that text-decoration-style is still dotted
+    const textDecorationStyle = await elvishText.evaluate(
+      (el) => window.getComputedStyle(el).textDecorationStyle,
+    )
+    expect(textDecorationStyle).toBe("dotted")
+  })
+})
+
 test.describe("Video Speed Controller visibility", () => {
   test("hides VSC controller for no-vsc videos after img", async ({ page }) => {
     await page.evaluate(() => {
