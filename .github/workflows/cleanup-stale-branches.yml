@@ -1,0 +1,58 @@
+name: Cleanup stale branches
+on:
+  schedule:
+    - cron: "0 0 1 * *" # First of each month at midnight UTC
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Delete stale branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Delete branches with no commits in the last 90 days
+          # Excludes: main, dev, plotly, and any branch with an open PR
+
+          REPO="${{ github.repository }}"
+          CUTOFF_DATE=$(date -d "90 days ago" --iso-8601)
+
+          echo "Deleting branches with no commits since $CUTOFF_DATE"
+          echo "Protected branches: main, dev, plotly"
+
+          # Get all branches except protected ones
+          gh api repos/$REPO/branches --paginate --jq '.[].name' | while read -r branch; do
+            # Skip protected branches
+            if [[ "$branch" == "main" || "$branch" == "dev" || "$branch" == "plotly" ]]; then
+              echo "Skipping protected branch: $branch"
+              continue
+            fi
+
+            # Get last commit date for branch
+            LAST_COMMIT=$(gh api "repos/$REPO/branches/$branch" --jq '.commit.commit.committer.date' 2>/dev/null || echo "")
+
+            if [[ -z "$LAST_COMMIT" ]]; then
+              echo "Could not get commit date for $branch, skipping"
+              continue
+            fi
+
+            # Compare dates
+            if [[ "$LAST_COMMIT" < "$CUTOFF_DATE" ]]; then
+              # Check if branch has an open PR
+              OPEN_PR=$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq 'length')
+
+              if [[ "$OPEN_PR" -gt 0 ]]; then
+                echo "Skipping $branch (has open PR)"
+                continue
+              fi
+
+              echo "Deleting stale branch: $branch (last commit: $LAST_COMMIT)"
+              gh api -X DELETE "repos/$REPO/git/refs/heads/$branch" || echo "Failed to delete $branch"
+            fi
+          done
+
+          echo "Cleanup complete"
