@@ -5,12 +5,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 import { type GlobalConfiguration } from "../cfg"
 import { RenderPublicationInfo } from "./ContentMeta"
 
-/**
- * Format an array of authors into a readable string.
- * - Single author: "Alex Turner"
- * - Two authors: "Alex Turner and John Doe"
- * - Three+ authors: "Alex Turner, John Doe, and Jane Smith"
- */
+// skipcq: JS-D1001
 export function formatAuthors(authors: string[]): string {
   if (authors.length === 0) return "Alex Turner"
   if (authors.length === 1) return authors[0]
