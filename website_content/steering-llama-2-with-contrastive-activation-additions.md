@@ -104,12 +104,12 @@ The vector was computed using A/B questions. We wanted to find out if the steeri
 
 For each dataset, we took held-out questions (not used to form the steering vector) but hid the A/B answers. The models wrote free-form answers. Then Claude 2 evaluated whether the free-form answer was e.g. sycophantic. By this metric, both models do extremely well.
 
-## Llama-2-13B-chat
+## Llama-2 13B Chat
 
 ![A line chart showing the effect of steering vectors on Llama-2 behaviors. The x-axis shows "Subtracted," "Baseline," and "Added" settings. For all six behaviors—Corrigibility, Power-Seeking, Survival Instinct, Myopia, Coordination with other AIs, and Sycophancy—the percentage of matching responses increases when the vector is added and decreases when subtracted.](https://assets.turntrout.com/static/images/posts/ibaycic76o6lkwtjzhoq.avif){style="width:80%"}
 Figure: Adding steering vectors to layer 15 of Llama-2-13b-chat. "Subtracted" means the steering vector has a coefficient of -1, and "Added" entails a coefficient of +1.
 
-## Llama-2-7B-chat
+## Llama-2 7B Chat
 
 ![Like the 13B model, Llama-2-7B-chat also responds strongly to the steering vectors.](https://assets.turntrout.com/static/images/posts/hr981dj7nxov5yaoifbn.avif){style="width:80%"}
 
