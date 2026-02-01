@@ -100,7 +100,6 @@ const massTransforms: [RegExp | string, string][] = [
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   [/(?<tag><\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$<tag>\n\n"], // Ensure there is a newline after an HTML tag
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
-  [/\bbibtex\b/gi, "BibTeX"], // Normalize BibTeX capitalization
 ]
 
 // skipcq: JS-D1001
