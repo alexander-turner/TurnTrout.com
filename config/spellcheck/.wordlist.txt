@@ -3104,3 +3104,9 @@ Zack's
 pre-push
 preload
 transclusions
+DOMs
+Hallo
+README's
+regexes
+½
+1ˢᵗ
