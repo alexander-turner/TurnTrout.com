@@ -1133,4 +1133,4 @@ Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
 Quality gates
-: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`.
+: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the pre-push hook was bypassed.
