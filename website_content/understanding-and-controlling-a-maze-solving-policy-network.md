@@ -45,6 +45,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2
 description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.
+createBibtex: true
 ---
 
 

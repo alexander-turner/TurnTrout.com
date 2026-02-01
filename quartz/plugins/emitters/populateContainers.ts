@@ -10,6 +10,11 @@ import { visit } from "unist-util-visit"
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
+import {
+  getBibtexForSlug,
+  isBibtexCachePopulated,
+  createBibtexDetailsBlock,
+} from "../transformers/bibtex"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
@@ -254,6 +259,31 @@ export const generateFaviconContent = (): ContentGenerator => {
 }
 
 /**
+ * Converts an HTML file path to a slug by removing the .html extension.
+ * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
+ * @returns The slug (e.g., "design" or "posts/foo")
+ */
+export function htmlFileToSlug(htmlFile: string): string {
+  return htmlFile.replace(/\.html$/, "")
+}
+
+/**
+ * Generates BibTeX content for a specific page.
+ * @param slug - The slug of the page
+ * @returns A content generator that returns the BibTeX block elements
+ */
+export const generateBibtexContent = (slug: string): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const bibtexContent = getBibtexForSlug(slug)
+    if (!bibtexContent) {
+      throw new Error(`No BibTeX content found for slug: ${slug}`)
+    }
+
+    return [createBibtexDetailsBlock(bibtexContent)]
+  }
+}
+
+/**
  * Configuration for populating an element by ID or class with generated content.
  */
 export interface ElementPopulatorConfig {
@@ -427,6 +457,19 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
         }
 
         for (const className of classes) {
+          // Handle populate-bibtex specially since it's page-specific
+          if (className === "populate-bibtex") {
+            if (!isBibtexCachePopulated()) {
+              throw new Error(
+                "BibTeX cache is empty but populate-bibtex elements were found. " +
+                  "Ensure the BibTeX transformer runs before PopulateContainers.",
+              )
+            }
+            const slug = htmlFileToSlug(htmlFile)
+            configs.push({ className, generator: generateBibtexContent(slug) })
+            continue
+          }
+
           const generator = populatorMap.get(className)
           if (!generator) {
             logger.warn(`No generator found for populate class: ${className}`)

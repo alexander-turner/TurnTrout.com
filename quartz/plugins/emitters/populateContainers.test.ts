@@ -15,11 +15,13 @@ jest.unstable_mockModule("child_process", () => ({
 }))
 
 import fs from "fs"
-import { type Element } from "hast"
+import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
+import { VFile } from "vfile"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
+import { type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
 
 const { minFaviconCount, defaultPath } = simpleConstants
@@ -845,5 +847,143 @@ describe("PopulateContainers", () => {
         })
       })
     })
+
+    describe("htmlFileToSlug", () => {
+      it.each([
+        ["design.html", "design"],
+        ["posts/my-post.html", "posts/my-post"],
+        ["folder/index.html", "folder/index"],
+        ["deep/nested/page.html", "deep/nested/page"],
+        ["index.html", "index"],
+      ])("converts %s to %s", (input, expected) => {
+        expect(populateModule.htmlFileToSlug(input)).toBe(expected)
+      })
+    })
+
+    describe("generateBibtexContent", () => {
+      it("throws when no bibtex content found", async () => {
+        const generator = populateModule.generateBibtexContent("nonexistent-slug")
+        await expect(generator()).rejects.toThrow(
+          "No BibTeX content found for slug: nonexistent-slug",
+        )
+      })
+
+      it("returns bibtex block when content exists in cache", async () => {
+        // Import the bibtex module to populate the cache
+        const bibtexModule = await import("../transformers/bibtex")
+        bibtexModule.clearBibtexCache()
+
+        // Create a transformer and run it to populate the cache
+        const { VFile } = await import("vfile")
+        const { h } = await import("hastscript")
+        const file = new VFile("")
+        file.data = {
+          frontmatter: { title: "Test Article", createBibtex: true, date_published: "2022-06-15" },
+          slug: "test-bibtex-slug" as FullSlug,
+        }
+        const tree: Root = {
+          type: "root",
+          children: [h("div", { id: "trout-ornament-container" })],
+        }
+
+        const plugin = bibtexModule.Bibtex({ baseUrl: "turntrout.com" })
+        const htmlPlugins = plugin.htmlPlugins?.({} as BuildCtx)
+        const transformerFactory = htmlPlugins?.[0] as () => (tree: Root, file: VFile) => void
+        transformerFactory()(tree, file)
+
+        // Now test the generator
+        const generator = populateModule.generateBibtexContent("test-bibtex-slug")
+        const elements = await generator()
+
+        expect(elements).toHaveLength(1)
+        expect(elements[0].tagName).toBe("details")
+        expect(elements[0].properties?.className).toContain("bibtex-citation")
+
+        // Clean up
+        bibtexModule.clearBibtexCache()
+      })
+    })
+  })
+
+  describe("populate-bibtex integration", () => {
+    it("throws when bibtex cache is empty but populate-bibtex elements exist", async () => {
+      // Clear the cache to ensure it's empty
+      const bibtexModule = await import("../transformers/bibtex")
+      bibtexModule.clearBibtexCache()
+
+      // Mock the HTML file with a populate-bibtex span
+      jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("test-page.html")) {
+          return '<html><body><span class="populate-bibtex"></span></body></html>'
+        }
+        return "<html><body></body></html>"
+      })
+
+      mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+        const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+        if (patternStr.includes(".html")) {
+          return ["test-page.html"]
+        }
+        return []
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow(
+        "BibTeX cache is empty but populate-bibtex elements were found",
+      )
+    })
+
+    it("populates bibtex spans in HTML files", async () => {
+      // Import the bibtex module to populate the cache
+      const bibtexModule = await import("../transformers/bibtex")
+      bibtexModule.clearBibtexCache()
+
+      // Create a transformer and run it to populate the cache
+      const { VFile } = await import("vfile")
+      const { h } = await import("hastscript")
+      const file = new VFile("")
+      file.data = {
+        frontmatter: { title: "Design Page", createBibtex: true, date_published: "2022-06-15" },
+        slug: "design" as FullSlug,
+      }
+      const tree: Root = {
+        type: "root",
+        children: [h("div", { id: "trout-ornament-container" })],
+      }
+
+      const plugin = bibtexModule.Bibtex({ baseUrl: "turntrout.com" })
+      const htmlPlugins = plugin.htmlPlugins?.({} as BuildCtx)
+      const transformerFactory = htmlPlugins?.[0] as () => (tree: Root, file: VFile) => void
+      transformerFactory()(tree, file)
+
+      // Mock the HTML file with a populate-bibtex span
+      jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("design.html")) {
+          return '<html><body><span class="populate-bibtex"></span></body></html>'
+        }
+        return "<html><body></body></html>"
+      })
+
+      mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+        const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+        if (patternStr.includes(".html")) {
+          return ["design.html"]
+        }
+        return []
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      // Check that the bibtex content was written
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0]?.[1] as string
+      expect(writtenContent).toContain("bibtex-citation")
+      expect(writtenContent).toContain("title = {Design")
+
+      // Clean up
+      bibtexModule.clearBibtexCache()
+    }, 15000)
   })
 })

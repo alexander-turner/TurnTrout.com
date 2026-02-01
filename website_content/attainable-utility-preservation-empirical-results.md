@@ -40,6 +40,7 @@ original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utili
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
 date_updated: 2026-01-25 23:47:56.984113
+createBibtex: true
 ---
 
 

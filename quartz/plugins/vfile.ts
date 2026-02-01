@@ -28,6 +28,7 @@ export interface FrontmatterData {
   "next-post-title"?: string
   "lw-linkpost-url"?: string
   authors?: string
+  createBibtex?: boolean
   created?: string | Date
   children?: string[]
   [key: string]: unknown

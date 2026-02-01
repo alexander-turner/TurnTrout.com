@@ -274,6 +274,7 @@ Berglund
 Berkson's
 Betley
 Bhatt
+BibTeX
 Biderman
 Bigg
 Bijuu

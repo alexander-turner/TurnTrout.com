@@ -42,6 +42,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0
 description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
+createBibtex: true
 ---
 
 

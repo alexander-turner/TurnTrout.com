@@ -689,6 +689,7 @@ const massTransforms: [RegExp, string][] = [
   // Model naming standardization
   [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
   [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
+  [new RegExp(`${wb}bibtex${wbe}`, "gi"), "BibTeX"], // Normalize BibTeX capitalization
 ]
 
 export function massTransformText(text: string): string {

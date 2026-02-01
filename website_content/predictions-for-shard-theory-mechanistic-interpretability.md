@@ -43,6 +43,7 @@ skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before
   the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 

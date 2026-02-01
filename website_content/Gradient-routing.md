@@ -16,6 +16,7 @@ original_url: https://www.lesswrong.com/posts/nLRKKCTtwQgvozLTN/gradient-routing
 date_published: 2024-12-05 16:17:06.041179
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
+createBibtex: true
 ---
 
 
