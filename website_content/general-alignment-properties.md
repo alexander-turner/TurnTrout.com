@@ -38,6 +38,7 @@ skip_import: 'true'
 description: Comparing how AIXI and humans acquire values reveals important differences
   in how these agents interact with the world.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 
