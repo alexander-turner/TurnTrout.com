@@ -72,6 +72,52 @@ describe("generateBibtexEntry", () => {
       // citation.js handles special characters in BibTeX
       expectations: ["author = {", "title = {"],
     },
+    {
+      name: "handles French diacritics",
+      frontmatter: {
+        title: "Test",
+        authors: "François Müller",
+        date_published: "2022-06-15",
+      },
+      // citation.js escapes diacritics with LaTeX commands
+      expectations: ["ller, Fran", "ois}"],
+    },
+    {
+      name: "handles German umlauts",
+      frontmatter: {
+        title: "Test",
+        authors: "Jürgen Schröder",
+        date_published: "2022-06-15",
+      },
+      expectations: ["der, J", "rgen}"],
+    },
+    {
+      name: "handles Spanish characters",
+      frontmatter: {
+        title: "Test",
+        authors: "José García",
+        date_published: "2022-06-15",
+      },
+      expectations: ["a, Jos"],
+    },
+    {
+      name: "handles Nordic characters",
+      frontmatter: {
+        title: "Test",
+        authors: "Søren Ødegård",
+        date_published: "2022-06-15",
+      },
+      expectations: ["rd, S", "ren}"],
+    },
+    {
+      name: "handles Polish characters",
+      frontmatter: {
+        title: "Test",
+        authors: "Stanisław Łukasiewicz",
+        date_published: "2022-06-15",
+      },
+      expectations: ["ukasiewicz, Stanis"],
+    },
   ])("$name", ({ frontmatter, expectations }) => {
     const result = generateBibtexEntry(
       frontmatter as FrontmatterData,
@@ -92,10 +138,31 @@ describe("generateBibtexEntry", () => {
     expect(result).toContain("month = {6}")
   })
 
-  it("throws when date_published is missing", () => {
-    expect(() =>
-      generateBibtexEntry({ title: "Test" } as FrontmatterData, "turntrout.com", "test-slug"),
-    ).toThrow("date_published is required for BibTeX generation (slug: test-slug)")
+  it("throws when date_published is missing on CI", () => {
+    const originalCI = process.env.CI
+    process.env.CI = "true"
+    try {
+      expect(() =>
+        generateBibtexEntry({ title: "Test" } as FrontmatterData, "turntrout.com", "test-slug"),
+      ).toThrow("date_published is required for BibTeX generation (slug: test-slug)")
+    } finally {
+      process.env.CI = originalCI
+    }
+  })
+
+  it("uses current date when date_published is missing locally", () => {
+    const originalCI = process.env.CI
+    delete process.env.CI
+    try {
+      const result = generateBibtexEntry(
+        { title: "Test" } as FrontmatterData,
+        "turntrout.com",
+        "test-slug",
+      )
+      expect(result).toContain(`year = {${new Date().getFullYear()}}`)
+    } finally {
+      process.env.CI = originalCI
+    }
   })
 })
 
@@ -194,11 +261,17 @@ describe("Bibtex plugin", () => {
       ).toThrow('Trout ornament with id "trout-ornament-container" not found in tree')
     })
 
-    it("throws when date_published is missing", () => {
-      const tree = createMockTree()
-      expect(() => transformer(tree, createMockFile({ createBibtex: true }))).toThrow(
-        "date_published is required for BibTeX generation",
-      )
+    it("throws when date_published is missing on CI", () => {
+      const originalCI = process.env.CI
+      process.env.CI = "true"
+      try {
+        const tree = createMockTree()
+        expect(() => transformer(tree, createMockFile({ createBibtex: true }))).toThrow(
+          "date_published is required for BibTeX generation",
+        )
+      } finally {
+        process.env.CI = originalCI
+      }
     })
 
     it("handles missing frontmatter", () => {

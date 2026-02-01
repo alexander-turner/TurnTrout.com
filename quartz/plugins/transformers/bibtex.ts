@@ -71,13 +71,14 @@ export function generateBibtexEntry(
   const title = frontmatter.title
   const author = (frontmatter.authors as string | undefined) ?? "Alex Turner"
 
-  // Require publication date
+  // Require publication date (only enforce on CI to allow local development)
   const datePublished = frontmatter.date_published
-  if (!datePublished) {
+  if (!datePublished && process.env.CI) {
     throw new Error(`date_published is required for BibTeX generation (slug: ${slug})`)
   }
 
-  const date = new Date(datePublished as string | Date)
+  // Use current date as fallback for local development
+  const date = datePublished ? new Date(datePublished as string | Date) : new Date()
   const year = date.getFullYear()
   const month = date.getMonth() + 1 // CSL uses 1-indexed months
 
