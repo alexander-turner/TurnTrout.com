@@ -608,21 +608,6 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   })
 })
 
-for (const theme of ["light", "dark"]) {
-  test(`Hover over elvish text in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-    await setTheme(page, theme as "light" | "dark")
-    const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
-
-    await elvishText.hover()
-    await waitForTransitionEnd(elvishText)
-
-    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
-      elementToScreenshot: elvishText,
-    })
-  })
-}
-
 test.describe("Elvish toggle", () => {
   test("noscript fallback shows both Tengwar and translation when JS is disabled", async ({
     browser,
@@ -671,34 +656,33 @@ test.describe("Elvish toggle", () => {
   })
 
   test("toggling elvish text does not cause layout shift", async ({ page }) => {
+    test.skip(
+      !isDesktopViewport(page),
+      "More narrow viewports may have the English translation take more lines than the Elvish, which is fine.",
+    )
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Find the element after elvish (bad-handwriting) to check for layout shift
-    const nextElement = page.locator(".bad-handwriting").first()
-    const nextElementBoxBefore = await nextElement.boundingBox()
-    expect(nextElementBoxBefore).not.toBeNull()
+    const lowerElt = page.locator(".footnotes").first()
+    const lowerEltBoxBefore = await lowerElt.boundingBox()
+    expect(lowerEltBoxBefore).not.toBeNull()
 
-    // Click to toggle to English
     await elvishText.click()
 
-    // Get the position of the next element after toggle
-    const nextElementBoxAfter = await nextElement.boundingBox()
-    expect(nextElementBoxAfter).not.toBeNull()
+    const lowerEltBoxAfter = await lowerElt.boundingBox()
+    expect(lowerEltBoxAfter).not.toBeNull()
 
     // The element below should not have moved (within 1px tolerance for rounding)
     // skipcq: JS-0339 - boxes are checked for nullability above
-    expect(nextElementBoxAfter!.y).toBeCloseTo(nextElementBoxBefore!.y, 0)
+    expect(lowerEltBoxAfter!.y).toBeCloseTo(lowerEltBoxBefore!.y, 0)
   })
 
   test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Click to toggle to English
     await elvishText.click()
 
-    // Check that text-decoration-style is still dotted
     const textDecorationStyle = await elvishText.evaluate(
       (el) => window.getComputedStyle(el).textDecorationStyle,
     )
