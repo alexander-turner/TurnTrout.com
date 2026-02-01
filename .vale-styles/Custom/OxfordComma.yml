@@ -1,0 +1,73 @@
+extends: existence
+message: "Use the Oxford comma in '%s'."
+link: https://en.wikipedia.org/wiki/Serial_comma
+scope: sentence
+level: warning
+# Match "word, word and word" patterns that look like lists missing the Oxford comma.
+# More precise than the Microsoft rule to avoid false positives.
+tokens:
+  # Match: "A, B and C" or "A, B, C and D" patterns (single words)
+  - '\b\w+(?:,\s+\w+)+\s+and\s+\w+\b'
+exceptions:
+  # Common idiomatic phrases that aren't lists
+  - now and then
+  - now and again
+  - more and more
+  - less and less
+  - again and again
+  - time and again
+  - over and over
+  - on and on
+  - up and down
+  - back and forth
+  - here and there
+  - this and that
+  - ins and outs
+  - ups and downs
+  - ifs and buts
+  - pros and cons
+  - dos and don'ts
+  - trial and error
+  - above and beyond
+  - plain and simple
+  - safe and sound
+  - null and void
+  - far and wide
+  - few and far between
+  - first and foremost
+  - loud and clear
+  - short and sweet
+  - sick and tired
+  - alive and well
+  - born and bred
+  - cut and dried
+  - dead and buried
+  - done and dusted
+  - fair and square
+  - free and clear
+  - high and dry
+  - high and low
+  - hit and miss
+  - hue and cry
+  - lean and mean
+  - lock and key
+  - lost and found
+  - neat and tidy
+  - nice and easy
+  - odds and ends
+  - one and only
+  - out and about
+  - peace and quiet
+  - prim and proper
+  - pure and simple
+  - rough and tumble
+  - rules and regulations
+  - salt and pepper
+  - signed and sealed
+  - slow and steady
+  - spick and span
+  - sweet and sour
+  - thick and thin
+  - vim and vigor
+  - wear and tear
+  - wine and dine
