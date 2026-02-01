@@ -127,6 +127,7 @@ $fonts-dir: "/static/styles/fonts";
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
 @include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
+
 // Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F) for better ligatures
 // and diacritic placement compared to Tengwar Annatar's Dan Smith encoding
 
@@ -164,6 +165,7 @@ em {
   font-family: Elvish, serif;
   line-height: 2.2;
   cursor: pointer;
+
   // Gentle indicator that text is interactive - subtle dotted underline
   // Using 50% opacity for WCAG contrast compliance
   text-decoration: underline;
@@ -224,7 +226,7 @@ em {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }

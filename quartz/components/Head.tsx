@@ -199,6 +199,7 @@ export default (() => {
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
+          {/* skipcq: JS-0440 - Safe: static CSS string, not user input */}
           <style
             dangerouslySetInnerHTML={{
               __html: `

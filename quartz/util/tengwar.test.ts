@@ -34,7 +34,7 @@ describe("tengwar utilities", () => {
 
     it("should preserve spaces", () => {
       expect(danSmithToUnicode("1 q")).toBe(
-        String.fromCodePoint(0xe000) + " " + String.fromCodePoint(0xe001),
+        `${String.fromCodePoint(0xe000)} ${String.fromCodePoint(0xe001)}`,
       )
     })
 
