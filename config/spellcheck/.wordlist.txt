@@ -2019,7 +2019,6 @@ Coeff
 Coldplay
 Collman
 ConceptNet
-Confusionn
 Corrigibility's
 CorrigibilityPM
 Corrigibilitypolicy
@@ -2470,7 +2469,6 @@ Yay
 Yoshua
 Youtube
 Yu
-Yudkowksy
 Yun
 ZFC
 Zack

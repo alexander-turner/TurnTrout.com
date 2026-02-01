@@ -206,7 +206,7 @@ The upper and lower Riemann integrals can be defined as the infimum and supremum
 
 Consider the curried function $g_f : [P]\to \mathbb{R}$, which takes a partition and computes its corresponding Riemann sum with respect to the predefined function. Then clearly this function is monotonic with respect to the refinement of the partition; the extremum is not necessarily achieved by any given partition in the refinement sequence, but rather the closest bound on what you can get with _any_ partition.
 
-### Riemann-Stieltjes Confusionn
+### Riemann-Stieltjes Confusion
 
 The book doesn't lay it out cleanly, so I will: the Riemann-Stieltjes integral allows us to use custom length functions to weight different parts of the function differently. I recommend working through a simple case like $\alpha(x) = x^2$ in your head: $\int_1^3x\,d\alpha$ (how do the piecewise constant Riemann-Stieltjes integrals of majorizing and minorizing functions change as you iteratively refine the coarsest partition possible?).
 
