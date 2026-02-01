@@ -9,8 +9,6 @@ import type { FrontmatterData } from "../../vfile"
 
 import { BuildCtx } from "../../../util/ctx"
 import {
-  extractLastName,
-  generateCitationKey,
   generateBibtexEntry,
   insertBibtexBeforeOrnament,
   Bibtex,
@@ -40,46 +38,6 @@ function createTransformer(baseUrl = "turntrout.com"): (tree: Root, file: VFile)
   const transformerFactory = htmlPlugins?.[0] as () => (tree: Root, file: VFile) => void
   return transformerFactory()
 }
-
-describe("extractLastName", () => {
-  it.each([
-    ["Alex Turner", "turner"],
-    ["Turner", "turner"],
-    ["Alex Turner, John Doe", "turner"],
-    ["Alex Turner & John Doe", "turner"],
-    ["  Alex   Turner  ", "turner"],
-  ])("extracts last name from %j → %j", (input, expected) => {
-    expect(extractLastName(input)).toBe(expected)
-  })
-
-  it.each([[""], ["   "]])("throws for invalid input %j", (input) => {
-    expect(() => extractLastName(input)).toThrow("Author name cannot be empty")
-  })
-})
-
-describe("generateCitationKey", () => {
-  it.each([
-    ["Alex Turner", 2022, "Looking back on my PhD", "turner2022lookingbackonmyphd"],
-    ["Alex Turner, John Doe", 2023, "Paper Title", "turner2023papertitle"],
-    ["Alex Turner & John Doe", 2023, "Test", "turner2023test"],
-    ["Turner", 2022, "Test: A Study of $100 & More!", "turner2022testastudyof100more"],
-  ])("generates key from (%j, %d, %j) → %j", (author, year, title, expected) => {
-    expect(generateCitationKey(author, year, title)).toBe(expected)
-  })
-
-  it("truncates long titles to 20 characters", () => {
-    const result = generateCitationKey(
-      "Turner",
-      2022,
-      "A Very Long Title That Exceeds Twenty Characters Significantly",
-    )
-    expect(result).toBe("turner2022averylongtitlethatex")
-  })
-
-  it("throws for empty author", () => {
-    expect(() => generateCitationKey("", 2022, "My Article")).toThrow("Author name cannot be empty")
-  })
-})
 
 describe("generateBibtexEntry", () => {
   it.each([
@@ -132,6 +90,12 @@ describe("generateBibtexEntry", () => {
       "test",
     )
     expect(result).toContain("month = {6}")
+  })
+
+  it("throws when date_published is missing", () => {
+    expect(() =>
+      generateBibtexEntry({ title: "Test" } as FrontmatterData, "turntrout.com", "test-slug"),
+    ).toThrow("date_published is required for BibTeX generation (slug: test-slug)")
   })
 })
 
@@ -216,7 +180,7 @@ describe("Bibtex plugin", () => {
       const tree = createMockTree()
       createTransformer("example.com")(
         tree,
-        createMockFile({ createBibtex: true, permalink: "test" }),
+        createMockFile({ createBibtex: true, permalink: "test", date_published: "2022-06-15" }),
       )
 
       const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
@@ -225,8 +189,15 @@ describe("Bibtex plugin", () => {
 
     it("throws when ornament is missing", () => {
       const tree = createMockTree([h("div", { id: "not-ornament" })])
+      expect(() =>
+        transformer(tree, createMockFile({ createBibtex: true, date_published: "2022-06-15" })),
+      ).toThrow('Trout ornament with id "trout-ornament-container" not found in tree')
+    })
+
+    it("throws when date_published is missing", () => {
+      const tree = createMockTree()
       expect(() => transformer(tree, createMockFile({ createBibtex: true }))).toThrow(
-        'Trout ornament with id "trout-ornament-container" not found in tree',
+        "date_published is required for BibTeX generation",
       )
     })
 
@@ -236,18 +207,6 @@ describe("Bibtex plugin", () => {
       file.data = {}
       transformer(tree, file)
       expect(tree.children).toHaveLength(1)
-    })
-
-    it("handles missing slug", () => {
-      const tree = createMockTree()
-      const file = new VFile("")
-      file.data = { frontmatter: { title: "Test", createBibtex: true } as FrontmatterData }
-      transformer(tree, file)
-
-      const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
-      expect((code.children[0] as { value: string }).value).toContain(
-        "url = {https://turntrout.com/}",
-      )
     })
 
     it("caches bibtex content for later retrieval", () => {
