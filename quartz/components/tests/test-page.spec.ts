@@ -664,6 +664,7 @@ test.describe("Elvish toggle", () => {
     expect(boxAfter).not.toBeNull()
 
     // Height should remain the same (within 1px tolerance for rounding)
+    // skipcq: JS-0339 - boxBefore and boxAfter are checked for nullability above
     expect(boxAfter!.height).toBeCloseTo(boxBefore!.height, 0)
   })
 
