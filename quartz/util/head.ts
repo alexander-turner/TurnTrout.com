@@ -1,4 +1,5 @@
 import { type GlobalConfiguration } from "../cfg"
+import { formatAuthors } from "../components/Authors"
 import { formatTitle } from "../components/component_utils"
 import { simpleConstants, faviconUrl } from "../components/constants"
 import { type QuartzPluginData } from "../plugins/vfile"
@@ -29,7 +30,7 @@ function maybeRenderAuthorTags(authors: string[] | undefined): string {
   if (!authors || authors.length === 0) {
     return ""
   }
-  const authorsString = authors.join(", ")
+  const authorsString = formatAuthors(authors)
   return `
     <meta name="twitter:label1" content="Written by" />
     <meta name="twitter:data1" content="${escapeHTML(authorsString)}" />

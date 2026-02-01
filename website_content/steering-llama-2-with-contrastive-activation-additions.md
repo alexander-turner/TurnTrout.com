@@ -27,8 +27,7 @@ authors:
   - Nick Gabrieli
   - Meg Tong
   - Evan Hubinger
-  - and
-  Alex Turner
+  - Alex Turner
 tags:
   - corrigibility
   - AI

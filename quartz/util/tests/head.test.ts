@@ -296,7 +296,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta name="twitter:label1" content="Written by" />')
-      expect(result).toContain('<meta name="twitter:data1" content="John Doe, Jane Smith" />')
+      expect(result).toContain('<meta name="twitter:data1" content="John Doe and Jane Smith" />')
     })
 
     it("should not include author meta tags when authors are missing", () => {

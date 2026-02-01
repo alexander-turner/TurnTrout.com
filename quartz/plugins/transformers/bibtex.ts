@@ -61,7 +61,7 @@ function parseAuthorName(authorName: string): { given?: string; family: string }
 /**
  * Parses an array of author names into CSL-JSON author format.
  */
-function parseAuthors(authors: string[]): Array<{ given?: string; family: string }> {
+export function parseAuthors(authors: string[]): Array<{ given?: string; family: string }> {
   return authors.map(parseAuthorName)
 }
 
