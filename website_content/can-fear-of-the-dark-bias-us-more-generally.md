@@ -45,7 +45,7 @@ There was a long-lasting man-made sound outside my home last night. I couldn't c
 
 Now, supposing there had been a psychopathic murderer outside my house, it wasn't like I was at much more risk at night, since I was planning on staying indoors. This seems like a pretty clear manifestation of [nychtophobia](https://s3.amazonaws.com/academia.edu.documents/37725610/Nyctophobia_article.pdf?response-content-disposition=inline%3B%20filename%3DNyctophobia_From_imagined_to_realistic_f.pdf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWOWYYGZ2Y53UL3A%2F20191222%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20191222T201333Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=78100b25f213dab9e788488847a10e642cd75b1fd5d2a8e05baabac6cd8c6055): fear of the dark magnifying our fears of being attacked or victimized.
 
-My question is: does this apply more generally? Might we be more risk-averse at night, or otherwise biased?[^1] Suppose I plan to soon leave work and walk home along a dimly lit path. Then suppose I make an unrelated decision - am I more likely to be conservative or fearful in weighing that decision, above and beyond the normal effects of having recently considered something slightly distressing?
+My question is: does this apply more generally? Might we be more risk-averse at night, or otherwise biased?[^1] Suppose I plan to soon leave work and walk home along a dimly lit path. Then suppose I make an unrelated decision - am I more likely to be conservative or fearful in weighing that decision, beyond the normal effects of having recently considered something slightly distressing?
 
 <hr/>
 
