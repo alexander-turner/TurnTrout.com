@@ -13,7 +13,7 @@ card_image:
 aliases:
   - bidpo
   - steering-postmortem
-  - bidpo-postmertem
+  - bidpo-postmortem
   - steering-gemini
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo

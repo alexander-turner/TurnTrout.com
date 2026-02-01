@@ -56,7 +56,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 <hr/>
 
-> [!quote] [Eliezer Yudkowksy](https://www.lesswrong.com/posts/CpvyhFy9WvCNsifkY/discussion-with-eliezer-yudkowsky-on-agi-interventions)
+> [!quote] [Eliezer Yudkowsky](https://www.lesswrong.com/posts/CpvyhFy9WvCNsifkY/discussion-with-eliezer-yudkowsky-on-agi-interventions)
 > corrigibility \[is\] "anti-natural" in a certain sense that makes it incredibly hard to, e.g. exhibit any coherent planning behavior ("consistent utility function") which corresponds to being willing to let somebody else shut you off, without incentivizing you to actively manipulate them to shut you off.
 
 Surprisingly, I wasn't able to find any formal analysis of this situation. I did the analysis, and it turned out to be straightforward and fruitful.
