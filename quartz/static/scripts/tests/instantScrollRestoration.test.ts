@@ -279,7 +279,6 @@ describe("instantScrollRestoration", () => {
         getPropertyValue: () => "0px",
       })) as unknown as typeof window.getComputedStyle
 
-      // Run RAF callbacks - should find element now
       runRafCallbacks()
 
       expect(scrollToMock).toHaveBeenCalledWith(0, 200)
@@ -298,12 +297,8 @@ describe("instantScrollRestoration", () => {
       })
 
       loadScript()
-
-      // Run more than MAX_ATTEMPTS callbacks
       runRafCallbacks(200)
 
-      // Should have queued exactly 181 callbacks (initial + 180 attempts)
-      // requestAnimationFrame should have been called 181 times total
       expect(global.requestAnimationFrame).toHaveBeenCalled()
     })
   })
@@ -329,13 +324,9 @@ describe("instantScrollRestoration", () => {
       loadScript()
       runRafCallbacks() // Initial scroll to 500
 
-      // Simulate drift - something moved the scroll
-      currentScrollY = 510
-
-      // Run monitoring frames
+      currentScrollY = 510 // Simulate drift
       runRafCallbacks(5)
 
-      // Should have corrected back to 500
       expect(scrollToMock).toHaveBeenLastCalledWith(0, 500)
     })
 
@@ -348,25 +339,18 @@ describe("instantScrollRestoration", () => {
       loadScript()
       runRafCallbacks() // Initial scroll
 
-      // Simulate user wheel interaction
       window.dispatchEvent(new Event("wheel"))
 
-      // Simulate large scroll (user action)
       let currentScrollY = 600
       Object.defineProperty(window, "scrollY", {
         get: () => currentScrollY,
         configurable: true,
       })
-
-      // Dispatch scroll event
       window.dispatchEvent(new Event("scroll"))
-
-      // Run more frames
       runRafCallbacks(10)
 
-      // Should NOT have tried to correct back to 500 after user interaction
+      // Last programmatic scroll should be before user interaction
       const lastCall = scrollToMock.mock.calls[scrollToMock.mock.calls.length - 1]
-      // The last programmatic scroll should be before user interaction
       expect(lastCall).toEqual([0, 500])
     })
 
@@ -395,17 +379,13 @@ describe("instantScrollRestoration", () => {
       loadScript()
       runRafCallbacks() // Initial scroll to 500
 
-      // Simulate large drift within forgiveness window (< 150ms, frame < 3)
-      currentScrollY = 600 // 100px drift > 60px threshold
-      mockTime = 50 // Within 150ms window
-
-      // Dispatch scroll event
+      // Large drift within forgiveness window (< 150ms, frame < 3)
+      currentScrollY = 600
+      mockTime = 50
       window.dispatchEvent(new Event("scroll"))
 
-      // First large drift should be forgiven, monitoring should continue
       runRafCallbacks(2)
 
-      // Should correct back since drift was forgiven
       expect(scrollToMock).toHaveBeenLastCalledWith(0, 500)
 
       performance.now = originalNow
@@ -422,12 +402,10 @@ describe("instantScrollRestoration", () => {
         })
 
         loadScript()
-        runRafCallbacks() // Initial scroll
+        runRafCallbacks()
 
-        // Simulate user interaction
         window.dispatchEvent(new Event(eventType))
 
-        // Simulate scroll after interaction
         let currentScrollY = 600
         Object.defineProperty(window, "scrollY", {
           get: () => currentScrollY,
@@ -435,7 +413,6 @@ describe("instantScrollRestoration", () => {
         })
         window.dispatchEvent(new Event("scroll"))
 
-        // Should have detected user interaction
         expect(console.debug).toHaveBeenCalledWith(
           expect.stringContaining("User scroll detected"),
         )
