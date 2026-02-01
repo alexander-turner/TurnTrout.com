@@ -17,7 +17,7 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string
+  authors?: string // Stored as comma-joined string for search indexing
 }
 
 let currentSearchTerm = ""
@@ -938,7 +938,7 @@ const formatForDisplay = (
     slug,
     title: match(term, data[slug].title ?? ""),
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors,
+    authors: data[slug].authors?.join(", "),
   }
 }
 
@@ -1075,7 +1075,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors,
+      authors: fileData.authors?.join(", "),
     })
   })
 

@@ -20,7 +20,14 @@ af-num-comments-on-upload: 0
 title: "Paper: Understanding and Controlling a Maze-Solving Policy Network"
 lw-latest-edit: 2023-10-13T02:22:44.726000Z
 lw-is-linkpost: "true"
-authors: Alex Turner, Ulisse Mini, Peli Grietzer, Mrinank Sharma, Austin Meek, Monte MacDiarmid, and Lisa Thiergart
+authors:
+  - Alex Turner
+  - Ulisse Mini
+  - Peli Grietzer
+  - Mrinank Sharma
+  - Austin Meek
+  - Monte MacDiarmid
+  - Lisa Thiergart
 tags:
   - AI
   - shard-theory

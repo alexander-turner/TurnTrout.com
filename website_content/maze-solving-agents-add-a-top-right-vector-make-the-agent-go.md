@@ -19,7 +19,10 @@ af-num-comments-on-upload: 7
 title: "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
 lw-latest-edit: 2023-04-17T00:53:43.463000Z
 lw-is-linkpost: "false"
-authors: Alex Turner, Peli Grietzer, and Lisa Thiergart
+authors:
+  - Alex Turner
+  - Peli Grietzer
+  - Lisa Thiergart
 tags:
   - AI
   - activation-engineering

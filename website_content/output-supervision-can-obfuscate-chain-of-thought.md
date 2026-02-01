@@ -6,7 +6,11 @@ tags:
   - mats-program
   - reinforcement-learning
 description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
-authors: Jacob Drori, Luke Marks, Alex Cloud, and Alex Turner
+authors:
+  - Jacob Drori
+  - Luke Marks
+  - Alex Cloud
+  - Alex Turner
 createBibtex: true
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.jpg

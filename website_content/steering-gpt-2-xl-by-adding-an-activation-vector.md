@@ -19,7 +19,12 @@ af-num-comments-on-upload: 63
 title: Steering GPT-2-XL by adding an activation vector
 lw-latest-edit: 2024-02-19T23:31:07.877000Z
 lw-is-linkpost: "false"
-authors: Alex Turner, Monte MacDiarmid, David Udell, Lisa Thiergart, and Ulisse Mini
+authors:
+  - Alex Turner
+  - Monte MacDiarmid
+  - David Udell
+  - Lisa Thiergart
+  - Ulisse Mini
 tags:
   - AI
   - shard-theory

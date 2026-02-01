@@ -20,7 +20,9 @@ af-num-comments-on-upload: 34
 title: Seeking Power is Often Convergently Instrumental in MDPs
 lw-latest-edit: 2023-05-16T20:14:29.355000Z
 lw-is-linkpost: "true"
-authors: Alex Turner and Logan Riggs
+authors:
+  - Alex Turner
+  - Logan Riggs
 tags:
   - AI
   - instrumental-convergence

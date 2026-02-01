@@ -20,7 +20,9 @@ af-num-comments-on-upload: 42
 title: Humans provide an untapped wealth of evidence about alignment
 lw-latest-edit: 2023-01-01T19:52:16.131000Z
 lw-is-linkpost: "false"
-authors: Alex Turner and Quintin Pope
+authors:
+  - Alex Turner
+  - Quintin Pope
 tags:
   - AI
   - shard-theory
