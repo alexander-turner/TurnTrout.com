@@ -58,5 +58,7 @@ export function initializeElvishElements(): void {
   }
 }
 
-// Register with SPA navigation
-document.addEventListener("nav", initializeElvishElements);
+// Register with SPA navigation (only in browser)
+if (typeof document !== "undefined") {
+  document.addEventListener("nav", initializeElvishElements);
+}
