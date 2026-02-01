@@ -620,6 +620,43 @@ describe("Asset Dimensions Plugin", () => {
     })
   })
 
+  describe("extractMaskUrl", () => {
+    it.each([
+      {
+        description: "extracts URL from standard --mask-url style",
+        style: "--mask-url: url(https://example.com/icon.svg);",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "extracts URL with spaces around colon",
+        style: "--mask-url:   url(https://example.com/icon.svg);",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "extracts URL from style with other properties",
+        style: "color: red; --mask-url: url(https://example.com/icon.svg); width: 24px;",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "returns null for undefined style",
+        style: undefined,
+        expected: null,
+      },
+      {
+        description: "returns null for style without --mask-url",
+        style: "color: red; width: 24px;",
+        expected: null,
+      },
+      {
+        description: "returns null for empty string",
+        style: "",
+        expected: null,
+      },
+    ])("$description", ({ style, expected }) => {
+      expect(AssetProcessor.extractMaskUrl(style)).toBe(expected)
+    })
+  })
+
   describe("collectAssetNodes", () => {
     it.each([
       {
@@ -678,6 +715,51 @@ describe("Asset Dimensions Plugin", () => {
           { tagName: "video", src: "video2.mp4" },
           { tagName: "video", src: "figure.mp4" },
           { tagName: "video", src: "source.mp4" },
+        ],
+      },
+      {
+        description: "svg elements with --mask-url style (CSS-mask favicons)",
+        tree: {
+          type: "root",
+          children: [
+            h("svg", {
+              class: "favicon",
+              style: "--mask-url: url(https://example.com/favicon1.svg);",
+            }) as Element,
+            h("p", [
+              h("svg", {
+                class: "favicon",
+                style: "--mask-url: url(https://example.com/favicon2.svg);",
+              }) as Element,
+            ]) as Element,
+            h("svg", { style: "color: red;" }) as Element, // No --mask-url
+            h("svg") as Element, // No style at all
+            h("img", {
+              style: "--mask-url: url(https://example.com/not-collected.svg);",
+            }) as Element, // img tags don't use mask-url extraction
+          ],
+        } as Root,
+        expected: [
+          { tagName: "svg", src: "https://example.com/favicon1.svg" },
+          { tagName: "svg", src: "https://example.com/favicon2.svg" },
+        ],
+      },
+      {
+        description: "mixed elements: img with src, svg with src, svg with mask-url",
+        tree: {
+          type: "root",
+          children: [
+            h("img", { src: "image.png" }) as Element,
+            h("svg", { src: "direct-src.svg" }) as Element,
+            h("svg", {
+              style: "--mask-url: url(https://example.com/mask-favicon.svg);",
+            }) as Element,
+          ],
+        } as Root,
+        expected: [
+          { tagName: "img", src: "image.png" },
+          { tagName: "svg", src: "direct-src.svg" },
+          { tagName: "svg", src: "https://example.com/mask-favicon.svg" },
         ],
       },
       {
