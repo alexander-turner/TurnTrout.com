@@ -1,6 +1,6 @@
 import type { Element, Root } from "hast"
 
-import escapeLatex from "escape-latex"
+import Cite from "citation-js"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
@@ -37,21 +37,6 @@ export function isBibtexCachePopulated(): boolean {
   return bibtexCache.size > 0
 }
 
-const MONTH_NAMES = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "may",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "oct",
-  "nov",
-  "dec",
-] as const
-
 /**
  * Extracts the last name from an author string.
  * Takes the first author (before comma or ampersand), then the last word.
@@ -86,7 +71,29 @@ export function generateCitationKey(author: string, year: number, title: string)
 }
 
 /**
- * Generates a BibTeX entry for an article.
+ * Parses an author string into CSL-JSON author format.
+ * Handles formats like "Alex Turner", "Alex Turner, John Doe", "Turner & Doe"
+ */
+function parseAuthors(authorString: string): Array<{ given?: string; family: string }> {
+  // Split by comma or ampersand
+  const authors = authorString
+    .split(/[,&]/)
+    .map((a) => a.trim())
+    .filter((a) => a.length > 0)
+
+  return authors.map((author) => {
+    const words = author.split(/\s+/).filter((w) => w.length > 0)
+    if (words.length === 1) {
+      return { family: words[0] }
+    }
+    // Last word is family name, rest is given name
+    const family = words.pop()!
+    return { given: words.join(" "), family }
+  })
+}
+
+/**
+ * Generates a BibTeX entry for an article using citation.js.
  */
 export function generateBibtexEntry(
   frontmatter: FrontmatterData,
@@ -100,7 +107,7 @@ export function generateBibtexEntry(
   const datePublished = frontmatter.date_published
   const date = datePublished ? new Date(datePublished as string | Date) : new Date()
   const year = date.getFullYear()
-  const month = MONTH_NAMES[date.getMonth()]
+  const month = date.getMonth() + 1 // CSL uses 1-indexed months
 
   // Generate URL from permalink or slug
   const permalink = frontmatter.permalink as string | undefined
@@ -109,19 +116,33 @@ export function generateBibtexEntry(
   // Generate citation key
   const citationKey = generateCitationKey(author, year, title)
 
-  // Build the BibTeX entry
-  const lines = [
-    `@misc{${citationKey},`,
-    `  author = {${escapeLatex(author)}},`,
-    `  title = {${escapeLatex(title)}},`,
-    `  year = {${year}},`,
-    `  month = ${month},`,
-    `  url = {${url}},`,
-    `  note = {Accessed: ${new Date().toISOString().split("T")[0]}}`,
-    "}",
-  ]
+  // Create CSL-JSON entry
+  const cslEntry = {
+    id: citationKey,
+    type: "webpage",
+    title,
+    author: parseAuthors(author),
+    issued: { "date-parts": [[year, month]] },
+    URL: url,
+    accessed: {
+      "date-parts": [[new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()]],
+    },
+  }
 
-  return lines.join("\n")
+  // Convert to BibTeX using citation.js
+  const cite = new Cite(cslEntry)
+  return cite.format("bibtex", { format: "text" })
+}
+
+/**
+ * Creates a BibTeX details block element for displaying citation information.
+ * This helper is shared between the transformer and the populateContainers emitter.
+ */
+export function createBibtexDetailsBlock(bibtexContent: string): Element {
+  return h("details", { class: "bibtex-citation" }, [
+    h("summary", "Cite this article (BibTeX)"),
+    h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
+  ])
 }
 
 /**
@@ -160,10 +181,7 @@ export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): v
   const { parent, index } = findOrnamentLocation(tree)
 
   const citationHeading = h("h1", "Citation")
-  const bibtexBlock = h("details", { class: "bibtex-citation" }, [
-    h("summary", "Cite this article (BibTeX)"),
-    h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
-  ])
+  const bibtexBlock = createBibtexDetailsBlock(bibtexContent)
 
   parent.children.splice(index, 0, citationHeading, bibtexBlock)
 }

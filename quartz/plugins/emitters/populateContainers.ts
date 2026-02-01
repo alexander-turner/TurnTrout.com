@@ -8,7 +8,11 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
-import { getBibtexForSlug, isBibtexCachePopulated } from "../transformers/bibtex"
+import {
+  getBibtexForSlug,
+  isBibtexCachePopulated,
+  createBibtexDetailsBlock,
+} from "../transformers/bibtex"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -278,12 +282,7 @@ export const generateBibtexContent = (slug: string): ContentGenerator => {
       throw new Error(`No BibTeX content found for slug: ${slug}`)
     }
 
-    return [
-      h("details", { class: "bibtex-citation" }, [
-        h("summary", "BibTeX"),
-        h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
-      ]),
-    ]
+    return [createBibtexDetailsBlock(bibtexContent)]
   }
 }
 
@@ -462,13 +461,13 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
 
         for (const className of classes) {
           // Handle populate-bibtex specially since it's page-specific
-          if (className === "populate-bibtex" && !isBibtexCachePopulated()) {
-            throw new Error(
-              "BibTeX cache is empty but populate-bibtex elements were found. " +
-                "Ensure the BibTeX transformer runs before PopulateContainers.",
-            )
-          }
           if (className === "populate-bibtex") {
+            if (!isBibtexCachePopulated()) {
+              throw new Error(
+                "BibTeX cache is empty but populate-bibtex elements were found. " +
+                  "Ensure the BibTeX transformer runs before PopulateContainers.",
+              )
+            }
             const slug = htmlFileToSlug(htmlFile)
             configs.push({ className, generator: generateBibtexContent(slug) })
             continue

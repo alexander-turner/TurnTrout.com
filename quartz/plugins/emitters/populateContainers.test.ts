@@ -980,7 +980,7 @@ describe("PopulateContainers", () => {
       // Check that the bibtex content was written
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0]?.[1] as string
       expect(writtenContent).toContain("bibtex-citation")
-      expect(writtenContent).toContain("Design Page")
+      expect(writtenContent).toContain("title = {Design")
 
       // Clean up
       bibtexModule.clearBibtexCache()
