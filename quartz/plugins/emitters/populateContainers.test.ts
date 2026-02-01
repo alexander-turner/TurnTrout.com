@@ -538,6 +538,27 @@ describe("PopulateContainers", () => {
           },
         })
       })
+
+      it("should generate accessible favicon element when alt text provided", async () => {
+        const altText = "A trout jumping to the left."
+        const generator = populateModule.generateSpecialFaviconContent(
+          specialFaviconPaths.turntrout,
+          altText,
+        )
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+
+        const faviconElement = elements[0].children[0] as Element
+        expect(faviconElement).toMatchObject({
+          tagName: "svg",
+          properties: {
+            role: "img",
+            "aria-label": altText,
+          },
+        })
+        // Should not have hidden properties when accessible
+        expect(faviconElement.properties["aria-hidden"]).toBeUndefined()
+      })
     })
 
     describe("populateElements", () => {
