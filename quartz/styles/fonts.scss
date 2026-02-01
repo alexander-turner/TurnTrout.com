@@ -114,7 +114,7 @@ $fonts-dir: "/static/styles/fonts";
 // To convert phonetic Quenya/Sindarin text to PUA Tengwar:
 //   pip install glaemscribe
 //   from glaemscribe import transcribe
-//   transcribe("Ai! laurië lantar", mode='quenya')  # Returns PUA-encoded string
+//   transcribe("Ai! laurië lantar", mode='quenya')  
 
 body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
