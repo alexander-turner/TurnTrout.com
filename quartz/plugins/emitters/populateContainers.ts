@@ -186,9 +186,12 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
 }
 
 // skipcq: JS-D1001
-export const generateSpecialFaviconContent = (faviconPath: string): ContentGenerator => {
+export const generateSpecialFaviconContent = (
+  faviconPath: string,
+  altText = "",
+): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    const faviconElement = createFaviconElement(faviconPath)
+    const faviconElement = createFaviconElement(faviconPath, altText)
     return [h("span", { className: "favicon-span" }, [faviconElement])]
   }
 }
@@ -331,8 +334,14 @@ const createPopulatorMap = (
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
-    ["populate-turntrout-favicon", generateSpecialFaviconContent(specialFaviconPaths.turntrout)],
-    ["populate-anchor-favicon", generateSpecialFaviconContent(specialFaviconPaths.anchor)],
+    [
+      "populate-turntrout-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),
+    ],
+    [
+      "populate-anchor-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.anchor, "A counterclockwise arrow."),
+    ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
