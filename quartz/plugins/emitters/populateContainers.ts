@@ -8,13 +8,13 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { createWinstonLogger } from "../../util/log"
+import { joinSegments, type FilePath } from "../../util/path"
 import {
   getBibtexForSlug,
   isBibtexCachePopulated,
   createBibtexDetailsBlock,
 } from "../transformers/bibtex"
-import { createWinstonLogger } from "../../util/log"
-import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,

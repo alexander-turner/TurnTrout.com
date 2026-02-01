@@ -87,8 +87,9 @@ function parseAuthors(authorString: string): Array<{ given?: string; family: str
       return { family: words[0] }
     }
     // Last word is family name, rest is given name
-    const family = words.pop()!
-    return { given: words.join(" "), family }
+    const family = words.at(-1) ?? ""
+    const given = words.slice(0, -1).join(" ")
+    return { given, family }
   })
 }
 
