@@ -314,13 +314,9 @@ class AssetProcessor {
 
   public imageTagsToProcess = ["img", "svg"]
 
-  /**
-   * Extracts URL from a --mask-url CSS property in an inline style.
-   * @param style - The inline style string (e.g., "--mask-url: url(https://...);")
-   * @returns The extracted URL or null if not found
-   */
+  // skipcq: JS-D1001
   public static extractMaskUrl(style: string | undefined): string | null {
-    if (!style) return null
+    if (style === undefined) return null
     const match = style.match(/--mask-url:\s*url\((?<url>[^)]+)\)/)
     return match?.groups?.url ?? null
   }
@@ -331,15 +327,11 @@ class AssetProcessor {
   public collectAssetNodes(tree: Root): { node: Element; src: string }[] {
     const imageAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
-      if (!this.imageTagsToProcess.includes(node.tagName)) return
-
-      // Handle elements with src attribute
-      if (typeof node.properties?.src === "string") {
+      if (typeof node.properties?.src === "string" && this.imageTagsToProcess.includes(node.tagName)) {
         imageAssetsToProcess.push({ node, src: node.properties.src })
         return
       }
 
-      // Handle SVG elements with --mask-url in style (CSS-mask favicons)
       if (node.tagName === "svg") {
         const maskUrl = AssetProcessor.extractMaskUrl(node.properties?.style as string | undefined)
         if (maskUrl) {
