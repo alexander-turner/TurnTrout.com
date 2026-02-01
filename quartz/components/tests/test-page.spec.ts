@@ -652,20 +652,21 @@ test.describe("Elvish toggle", () => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Get the bounding box before toggle
-    const boxBefore = await elvishText.boundingBox()
-    expect(boxBefore).not.toBeNull()
+    // Find the element after elvish (bad-handwriting) to check for layout shift
+    const nextElement = page.locator(".bad-handwriting").first()
+    const nextElementBoxBefore = await nextElement.boundingBox()
+    expect(nextElementBoxBefore).not.toBeNull()
 
     // Click to toggle to English
     await elvishText.click()
 
-    // Get the bounding box after toggle
-    const boxAfter = await elvishText.boundingBox()
-    expect(boxAfter).not.toBeNull()
+    // Get the position of the next element after toggle
+    const nextElementBoxAfter = await nextElement.boundingBox()
+    expect(nextElementBoxAfter).not.toBeNull()
 
-    // Height should remain the same (within 1px tolerance for rounding)
-    // skipcq: JS-0339 - boxBefore and boxAfter are checked for nullability above
-    expect(boxAfter!.height).toBeCloseTo(boxBefore!.height, 0)
+    // The element below should not have moved (within 1px tolerance for rounding)
+    // skipcq: JS-0339 - boxes are checked for nullability above
+    expect(nextElementBoxAfter!.y).toBeCloseTo(nextElementBoxBefore!.y, 0)
   })
 
   test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
