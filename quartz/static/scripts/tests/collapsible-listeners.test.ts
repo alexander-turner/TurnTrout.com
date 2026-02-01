@@ -6,6 +6,7 @@ import { jest, describe, it, beforeAll, beforeEach, afterEach, expect } from "@j
 import { readFileSync } from "fs"
 import { join, dirname } from "path"
 import { fileURLToPath } from "url"
+
 import type { FullSlug } from "../../../util/path"
 
 const __filename = fileURLToPath(import.meta.url)
