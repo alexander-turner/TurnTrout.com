@@ -197,7 +197,6 @@ export default (() => {
         />
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
-        <script defer src="/static/scripts/elvish-toggle.js" spa-preserve />
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
           <style

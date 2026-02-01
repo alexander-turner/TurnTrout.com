@@ -1,15 +1,17 @@
 // skipcq: JS-W1028
-import React from "react"
+import React from "react";
 
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
-import clipboardScript from "./scripts/clipboard.inline"
-import clipboardStyle from "./styles/clipboard.scss"
+import clipboardScript from "./scripts/clipboard.inline";
+// Side-effect import: registers nav event listener for Elvish toggle
+import "./scripts/elvish-toggle";
+import clipboardStyle from "./styles/clipboard.scss";
 import {
   type QuartzComponent,
   type QuartzComponentConstructor,
   type QuartzComponentProps,
-} from "./types"
+} from "./types";
 
 const searchInterface = (
   <div className="search" role="region" aria-label="Displays search results.">
@@ -27,7 +29,7 @@ const searchInterface = (
       </div>
     </div>
   </div>
-)
+);
 
 const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   // The quartz-body children are the three main sections of the page: left, center, and right bars
@@ -36,10 +38,10 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
       {searchInterface}
       <div id="quartz-body">{children}</div>
     </>
-  )
-}
+  );
+};
 
-Body.afterDOMLoaded = clipboardScript
-Body.css = clipboardStyle
+Body.afterDOMLoaded = clipboardScript;
+Body.css = clipboardStyle;
 
-export default (() => Body) satisfies QuartzComponentConstructor
+export default (() => Body) satisfies QuartzComponentConstructor;
