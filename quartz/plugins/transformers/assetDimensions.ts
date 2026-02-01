@@ -313,17 +313,30 @@ class AssetProcessor {
   }
 
   public imageTagsToProcess = ["img", "svg"]
+
+  // skipcq: JS-D1001
+  public static extractMaskUrl(style: string | undefined): string | null {
+    if (style === undefined) return null
+    const match = style.match(/--mask-url:\s*url\((?<url>[^)]+)\)/)
+    return match?.groups?.url ?? null
+  }
+
   /**
    * Collects all asset nodes (images and videos) from the AST tree that need dimension processing.
    */
   public collectAssetNodes(tree: Root): { node: Element; src: string }[] {
     const imageAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
-      if (
-        this.imageTagsToProcess.includes(node.tagName) &&
-        typeof node.properties?.src === "string"
-      ) {
+      if (typeof node.properties?.src === "string" && this.imageTagsToProcess.includes(node.tagName)) {
         imageAssetsToProcess.push({ node, src: node.properties.src })
+        return
+      }
+
+      if (node.tagName === "svg") {
+        const maskUrl = AssetProcessor.extractMaskUrl(node.properties?.style as string | undefined)
+        if (maskUrl) {
+          imageAssetsToProcess.push({ node, src: maskUrl })
+        }
       }
     })
 

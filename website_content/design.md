@@ -5,7 +5,8 @@ tags:
   - website
   - open-source
 description: Showing off and explaining this site's beauty.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -14,6 +15,7 @@ aliases:
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2026-01-20 10:53:02.330875
 no_dropcap: false
+createBibtex: true
 ---
 
 
@@ -668,7 +670,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <img alt="A trout jumping to the left." src="https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg"/> favicon appears for links to other pages within this site, while the <img alt="A counterclockwise arrow." src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg"/> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The <span id="populate-turntrout-favicon"></span> favicon appears for links to other pages within this site, while the <span id="populate-anchor-favicon"></span> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -854,6 +856,11 @@ Table: A rebalanced table which pleases the eyes.
 
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
+
+Automatic BibTeX citations
+: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. For example, this article's citation is:
+
+: <span class="populate-bibtex"></span>
 
 # Deployment pipeline
 
@@ -1138,4 +1145,4 @@ Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
 Quality gates
-: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`.
+: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the pre-push hook was bypassed.

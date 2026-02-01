@@ -19,7 +19,9 @@ af-num-comments-on-upload: 6
 title: Residual stream norms grow exponentially over the forward pass
 lw-latest-edit: 2023-05-08T16:36:55.402000Z
 lw-is-linkpost: "false"
-authors: Stefan Heimersheim and Alex Turner
+authors:
+  - Stefan Heimersheim
+  - Alex Turner
 tags:
   - AI
 aliases:
@@ -163,7 +165,7 @@ We know that both `attn_out` and `mlp_out` grow exponentially. In the next two s
 
 ## Analyzing the Attention weights
 
-**What do want to get evidence on?**
+**What do we want to get evidence on?**
 : We want to know why `attn_out` grows exponentially with layer number: Is the growth a property inherent to the Attention weights in each of the layers (theory 1), or is the growth relying on properties of the residual stream (theory 2).
 
 **What test do we run and why does that give us evidence?**
@@ -193,7 +195,7 @@ What we actually found
 
 ## Analyzing the MLP weights
 
-**What do want to get evidence on?**
+**What do we want to get evidence on?**
 : We want to know why `mlp_out` grows exponentially with layer number: Is the growth a property inherent to the MLP weights in each of the layers (theory 1), or is the growth relying on properties of the residual stream (theory 2).
 
 **What test do we run and why does that give us evidence?**

@@ -8,7 +8,13 @@ tags:
   - deepmind
 description: "Simple & effective: train the AI to behave as if the jailbreak were
   not present. Explores activation-level training of Gemini 2.5 Flash."
-authors: Alex Irpan* and Alex Turner*, Mark Kurzeja, David Elson, and Rohin Shah
+authors:
+  - Alex Irpan
+  - Alex Turner
+  - Mark Kurzeja
+  - David Elson
+  - Rohin Shah
+createBibtex: true
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -131,17 +137,5 @@ More philosophically, perhaps model alignment doesn’t always involve saying ex
 
 > [!thanks] Acknowledgments
 > Zachary Kenton and Rif A. Saurous gave feedback on paper drafts. Neel Nanda and Arthur Conmy commented on early research directions.
-
-```bibtex
-@misc{irpan2025consistencytraininghelpsstop,
-      title={Consistency Training Helps Stop Sycophancy and Jailbreaks}, 
-      author={Alex Irpan and Alexander Matt Turner and Mark Kurzeja and David K. Elson and Rohin Shah},
-      year={2025},
-      eprint={2510.27062},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2510.27062}, 
-}
-```
 
 [^1]:  We tried a third baseline. Negative Preference Optimization (NPO, [Zhang et al., 2024](https://arxiv.org/abs/2404.05868)) is similar to DPO but only uses harmful responses. NPO minimizes the probability of generating harmful responses, weighted by the model’s likelihood of generating that response. We tried NPO based on its strong performance in [Yousefpour et al. (2025)](https://aclanthology.org/2025.acl-long.1173/). After much tuning, we could not get NPO to work well on our benchmarks, so we excluded NPO from our results.

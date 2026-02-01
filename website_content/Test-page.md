@@ -5,12 +5,14 @@ no_dropcap: "false"
 tags:
   - website
 description: Displaying the features of the website for use in visual regression testing.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
 date_updated: 2026-01-01 20:00:17.441157
+createBibtex: true
 ---
 
 
