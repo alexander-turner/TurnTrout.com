@@ -10,6 +10,7 @@ import {
   handleElvishClick,
   createHelpText,
   initializeElvishElements,
+  ELVISH_NOSCRIPT_CSS,
 } from "./elvish-toggle"
 
 describe("elvish-toggle", () => {
@@ -220,6 +221,15 @@ describe("elvish-toggle", () => {
 
       const el = document.querySelector(".elvish") as HTMLElement
       expect(el.getAttribute("role")).toBe("button")
+    })
+  })
+
+  describe("ELVISH_NOSCRIPT_CSS", () => {
+    it("should contain CSS rules for noscript fallback", () => {
+      expect(ELVISH_NOSCRIPT_CSS).toContain(".elvish")
+      expect(ELVISH_NOSCRIPT_CSS).toContain(".elvish-tengwar")
+      expect(ELVISH_NOSCRIPT_CSS).toContain(".elvish-translation")
+      expect(ELVISH_NOSCRIPT_CSS).toContain("display: inline")
     })
   })
 })
