@@ -3,55 +3,14 @@
  */
 
 import { describe, it, beforeEach, afterEach, expect } from "@jest/globals"
-import { type FullSlug } from "../../../util/path"
+import { readFileSync } from "fs"
+import { join } from "path"
+import { type FullSlug } from "../../util/path"
 
-// Load the script by evaluating it (since it's plain JS with side effects)
+// Load and execute the actual script file
 const loadElvishToggle = () => {
-  // The script attaches a "nav" event listener, so we need to simulate that
-  const scriptContent = `
-    function toggleElvish() {
-      this.classList.toggle("show-translation");
-      const isShowing = this.classList.contains("show-translation");
-      this.setAttribute("aria-pressed", isShowing ? "true" : "false");
-    }
-
-    function handleElvishKeydown(e) {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleElvish.call(this);
-      }
-    }
-
-    function handleElvishClick(e) {
-      if (e.target.closest("a")) return;
-      toggleElvish.call(this);
-    }
-
-    document.addEventListener("nav", function () {
-      const elvishElements = document.querySelectorAll(".elvish");
-
-      for (const el of elvishElements) {
-        if (el.dataset.elvishInitialized) continue;
-        el.dataset.elvishInitialized = "true";
-
-        el.setAttribute("tabindex", "0");
-        el.setAttribute("role", "button");
-        el.setAttribute("aria-pressed", "false");
-        el.setAttribute("aria-describedby", "elvish-help");
-
-        el.addEventListener("click", handleElvishClick);
-        el.addEventListener("keydown", handleElvishKeydown);
-      }
-
-      if (!document.getElementById("elvish-help")) {
-        const helpText = document.createElement("span");
-        helpText.id = "elvish-help";
-        helpText.className = "visually-hidden";
-        helpText.textContent = "Toggle between Elvish and English translation";
-        document.body.appendChild(helpText);
-      }
-    });
-  `
+  const scriptPath = join(__dirname, "elvish-toggle.js")
+  const scriptContent = readFileSync(scriptPath, "utf-8")
   eval(scriptContent)
 }
 
