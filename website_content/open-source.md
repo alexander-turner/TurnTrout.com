@@ -61,8 +61,8 @@ I basically graded all libraries on a subset of [my unit tests](https://github.c
 
 | Feature | Example | `smartypants` | `tipograph` | `smartquotes` | `punctilio` |
 |--------:|:-------:|:-------:|:-------:|:-------:|:-------:|
-| Smart quotes | <span class="no-formatting">"hello"</span> → "hello" | ✓ | ✓ | ✓ | ✓ |
-| Leading apostrophe | <span class="no-formatting">'Twas</span> → 'Twas | ✗ | ✗ | ✓ | ✓ |
+| Smart quotes | <span class="no-formatting">"hello"</span> → “hello” | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | <span class="no-formatting">'Twas</span> → ’Twas | ✗ | ✗ | ✓ | ✓ |
 | Em dash | <span class="no-formatting">--</span> → — | ✓ | ✗ | ✗ | ✓ |
 | En dash (ranges) | <span class="no-formatting">1-5</span> → 1–5 | ✗ | ✓ | ✗ | ✓ |
 | Minus sign | <span class="no-formatting">-5</span> → −5 | ✗ | ✓ | ✗ | ✓ |
@@ -77,7 +77,7 @@ I basically graded all libraries on a subset of [my unit tests](https://github.c
 | Superscripts | <span class="no-formatting">1st</span> → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
 | Localization | American/British | ✗ | ✗ | ✗ | ✓ |
 | Ligatures | <span class="no-formatting">??</span> → ⁇ | ✗ | ✓ | ✗ | ✓ |
-| Non-English quotes | <span class="no-formatting">„Hallo"</span> (German) | ✗ | ✓ | ✗ | ✗ |
+| Non-English quotes | „Hallo" (German) | ✗ | ✓ | ✗ | ✗ |
 
 As far as I can tell, `punctilio`’s only missing feature is non-English quote support. I don’t have a personal reason to use non-English localization, but feel free to make a pull request!
 
