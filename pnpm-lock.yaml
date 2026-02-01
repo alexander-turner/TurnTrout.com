@@ -153,8 +153,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.4
+        version: 1.0.4
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -7636,8 +7636,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@1.0.1:
-    resolution: {integrity: sha512-HBCT3F8Tj1yeUgAT4qbHMqeIx/NotWVbJNatdmPFxvhY5ve57263h+8zS9gwgu65WCtNrBSc1+HdMdMhHAcS+A==}
+  punctilio@1.0.4:
+    resolution: {integrity: sha512-+ZEGEc61c3+Z8OcuqRZwRJ73vu5kAfhBkkfA5ARwHnFi0VI+lS50ZcQGyXV1k4uyP9zSMxe1RIbgxZzFiz/iEg==}
     engines: {node: '>=18.0.0'}
 
   punycode@1.4.1:
@@ -18511,7 +18511,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@1.0.1: {}
+  punctilio@1.0.4: {}
 
   punycode@1.4.1: {}
 

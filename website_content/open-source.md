@@ -47,8 +47,10 @@ I tested `punctilio` 0.4 against [`smartypants`](https://www.npmjs.com/package/s
 
 | Input | `smartypants` | `punctilio` |
 |:-----:|:-----------------:|:-------:|
-| She said—"Hi!" | She said—”Hi!” (✗) | She said—“Hi!” (✓) |
-| 5x5 |  5x5 (✗) |  5×5 (✓) |
+| <span class="no-formatting">She said--"Hi!"</span> | <span class="no-formatting">She said—”Hi!” (✗)</span> | <span class="no-formatting">She said—“Hi!” (✓)</span> |
+| <span class="no-formatting">5x5</span> | <span class="no-formatting">5x5 (✗)</span> | <span class="no-formatting">5×5 (✓)</span> |
+
+
 
 I basically graded all libraries on a subset of [my unit tests](https://github.com/alexander-turner/punctilio/tree/main/src/tests), selected to represent a wide range of features.
 
@@ -61,23 +63,23 @@ I basically graded all libraries on a subset of [my unit tests](https://github.c
 
 | Feature | Example | `smartypants` | `tipograph` | `smartquotes` | `punctilio` |
 |--------:|:-------:|:-------:|:-------:|:-------:|:-------:|
-| Smart quotes | "hello" → “hello” | ✓ | ✓ | ✓ | ✓ |
-| Leading apostrophe | 'Twas → ’Twas | ✗ | ✗ | ✓ | ✓ |
-| Em dash | -- → — | ✓ | ✗ | ✗ | ✓ |
-| En dash (ranges) | 1-5 → 1–5 | ✗ | ✓ | ✗ | ✓ |
-| Minus sign | -5 → −5 | ✗ | ✓ | ✗ | ✓ |
-| Ellipsis | ... → … | ✓ | ✓ | ✗ | ✓ |
-| Multiplication | 5x5 → 5×5 | ✗ | ✗ | ✗ | ✓ |
-| Math symbols | != → ≠ | ✗ | ✓ | ✗ | ✓ |
-| Legal symbols | (c) → © | ✗ | © only | ✗ | ✓ |
-| Arrows | -> → → | ✗ | ✓ | ✗ | ✓ |
-| Prime marks | 5'10" → 5′10″ | ✗ | ✓ | ✓ | ✓ |
-| Degrees | 20 C → 20 °C | ✗ | ✗ | ✗ | ✓ |
-| Fractions | 1/2 → ½ | ✗ | ✗ | ✗ | ✓ |
-| Superscripts | 1st → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
+| Smart quotes | <span class="no-formatting">"hello"</span> → “hello” | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | <span class="no-formatting">'Twas</span> → ’Twas | ✗ | ✗ | ✓ | ✓ |
+| Em dash | <span class="no-formatting">--</span> → — | ✓ | ✗ | ✗ | ✓ |
+| En dash (ranges) | <span class="no-formatting">1-5</span> → 1–5 | ✗ | ✓ | ✗ | ✓ |
+| Minus sign | <span class="no-formatting">-5</span> → −5 | ✗ | ✓ | ✗ | ✓ |
+| Ellipsis | <span class="no-formatting">...</span> → … | ✓ | ✓ | ✗ | ✓ |
+| Multiplication | <span class="no-formatting">5x5</span> → 5×5 | ✗ | ✗ | ✗ | ✓ |
+| Math symbols | <span class="no-formatting">!=</span> → ≠ | ✗ | ✓ | ✗ | ✓ |
+| Legal symbols | <span class="no-formatting">(c)</span> → © | ✗ | © only | ✗ | ✓ |
+| Arrows | <span class="no-formatting">-></span> → → | ✗ | ✓ | ✗ | ✓ |
+| Prime marks | <span class="no-formatting">5'10"</span> → 5′10″ | ✗ | ✓ | ✓ | ✓ |
+| Degrees | <span class="no-formatting">20 C</span> → 20 °C | ✗ | ✗ | ✗ | ✓ |
+| Fractions | <span class="no-formatting">1/2</span> → ½ | ✗ | ✗ | ✗ | ✓ |
+| Superscripts | <span class="no-formatting">1st</span> → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
 | Localization | American/British | ✗ | ✗ | ✗ | ✓ |
-| Ligatures | ?? → ⁇ | ✗ | ✓ | ✗ | ✓ |
-| Non-English quotes | „Hallo" (German) | ✗ | ✓ | ✗ | ✗ |
+| Ligatures | <span class="no-formatting">??</span> → ⁇ | ✗ | ✓ | ✗ | ✓ |
+| Non-English quotes | „Hallo” (German) | ✗ | ✓ | ✗ | ✗ |
 
 As far as I can tell, `punctilio`’s only missing feature is non-English quote support. I don’t have a personal reason to use non-English localization, but feel free to make a pull request!
 
@@ -99,7 +101,7 @@ As far as I can tell, `punctilio`’s only missing feature is non-English quote 
 
 ## Options
 
-`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, this README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
+`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, the README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
 
 ```typescript
 transform(text, {

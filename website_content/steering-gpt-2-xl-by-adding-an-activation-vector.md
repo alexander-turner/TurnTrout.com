@@ -1071,10 +1071,10 @@ $$
 
 White notes that high-quality smile vectors must be computed from gender-balanced averages, otherwise the smile vector also decreases masculinity:
 
-> The approach of building attribute vectors from means of labeled data has been noted to suffer from correlated labels (Larsen et al., 2016). While many correlations would be expected from ground truths (e.g.: heavy makeup and wearing lipstick) we discovered others that appear to be from sampling bias. For example, male and smiling attributes have unexpected negative correlations because women in the CelebA dataset are much more likely to be smiling than men.
-
-...
-
+> The approach of building attribute vectors from means of labeled data has been noted to suffer from correlated labels (Larsen et al., 2016). While many correlations would be expected from ground truths (e.g., heavy makeup and wearing lipstick) we discovered others that appear to be from sampling bias. For example, male and smiling attributes have unexpected negative correlations because women in the CelebA dataset are much more likely to be smiling than men.
+>
+> …
+> 
 > As an example, the two attributes smiling and mouth open are highly correlated in the CelebA training set (Table 2). This is not surprising, as  
 > physically most people photographed smiling would also have their mouth open. However by forcing these attributes to be balanced, we can construct two decoupled attribute vectors. This allows for more flexibility in applying each attribute separately to varying degrees
 
