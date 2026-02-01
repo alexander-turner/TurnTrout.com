@@ -77,7 +77,7 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
-      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-site-favicon"></span></body></html>'
+      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
     })
 
     if (urlCache) {
@@ -514,17 +514,29 @@ describe("PopulateContainers", () => {
       })
     })
 
-    describe("generateSiteFaviconContent", () => {
-      it("should generate site favicon element", async () => {
-        const generator = populateModule.generateSiteFaviconContent()
+    describe("generateSpecialFaviconContent", () => {
+      it.each([
+        ["turntrout", specialFaviconPaths.turntrout],
+        ["anchor", specialFaviconPaths.anchor],
+      ])("should generate %s favicon element", async (_name, faviconPath) => {
+        const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
         expect(elements).toHaveLength(1)
-        expect(elements[0].tagName).toBe("span")
-        expect(elements[0].properties?.className).toContain("favicon-span")
-        const faviconElement = elements[0].children[0] as Element
-        expect(faviconElement.tagName).toBe("svg")
-        expect(faviconElement.properties?.class).toContain("favicon")
-        expect(faviconElement.properties?.style).toContain(specialFaviconPaths.turntrout)
+
+        const wrapperSpan = elements[0]
+        expect(wrapperSpan).toMatchObject({
+          tagName: "span",
+          properties: { className: expect.arrayContaining(["favicon-span"]) },
+        })
+
+        const faviconElement = wrapperSpan.children[0] as Element
+        expect(faviconElement).toMatchObject({
+          tagName: "svg",
+          properties: {
+            class: expect.stringContaining("favicon"),
+            style: expect.stringContaining(faviconPath),
+          },
+        })
       })
     })
 
