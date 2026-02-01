@@ -22,7 +22,6 @@ const config = {
     "/node_modules/",
     "quartz/cli/",
     "quartz/depgraph\\.ts",
-    "quartz/plugins/emitters/static\\.ts",
     "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
