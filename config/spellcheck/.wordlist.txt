@@ -992,6 +992,10 @@ Llama-3.1-8B
 Llama-3.1-8B-Instruct
 Llama-3.1-70B
 Llama-3.1-405B
+LLAMA-1
+LLAMA-2
+LLAMA-3.1-70B
+LLAMA-3.1-405B
 LoRA
 Lubana
 Lyft
@@ -2608,6 +2612,7 @@ Dotiwalla
 Dragan
 Flavien
 GPT-4o
+GPT-4-o
 Prost
 polyamorous
 Callout
