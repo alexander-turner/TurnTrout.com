@@ -1,7 +1,6 @@
 import { describe, it, expect } from "@jest/globals"
 
 import { type FilePath } from "../../util/path"
-
 import { isLocalFavicon, shouldCopyToRoot } from "./static"
 
 describe("isLocalFavicon", () => {

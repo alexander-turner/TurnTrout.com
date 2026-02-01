@@ -686,6 +686,9 @@ const massTransforms: [RegExp, string][] = [
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
   [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
+  // Model naming standardization
+  [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
+  [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
 ]
 
 export function massTransformText(text: string): string {

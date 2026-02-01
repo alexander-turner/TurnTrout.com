@@ -153,8 +153,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.4
+        version: 1.0.4
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -242,6 +242,9 @@ importers:
       subfont:
         specifier: 6.12.5
         version: 6.12.5(@types/babel__core@7.20.5)
+      tengwar:
+        specifier: ^1.2.6
+        version: 1.2.6
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -2878,6 +2881,9 @@ packages:
   arrify@1.0.1:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
+
+  asap@2.0.6:
+    resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
 
   asn1.js@4.10.1:
     resolution: {integrity: sha512-p32cOF5q0Zqs9uBiONKYLm6BClCoBCM5O9JfeUSlnQLBTxYdTK+pW+nXflm8UkKd2UYlEbYz5qEi0JuZR9ckSw==}
@@ -7299,6 +7305,9 @@ packages:
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
 
+  pop-iterate@1.0.1:
+    resolution: {integrity: sha512-HRCx4+KJE30JhX84wBN4+vja9bNfysxg1y28l0DuJmkoaICiv2ZSilKddbS48pq50P8d2erAhqDLbp47yv3MbQ==}
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -7636,8 +7645,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@1.0.1:
-    resolution: {integrity: sha512-HBCT3F8Tj1yeUgAT4qbHMqeIx/NotWVbJNatdmPFxvhY5ve57263h+8zS9gwgu65WCtNrBSc1+HdMdMhHAcS+A==}
+  punctilio@1.0.4:
+    resolution: {integrity: sha512-+ZEGEc61c3+Z8OcuqRZwRJ73vu5kAfhBkkfA5ARwHnFi0VI+lS50ZcQGyXV1k4uyP9zSMxe1RIbgxZzFiz/iEg==}
     engines: {node: '>=18.0.0'}
 
   punycode@1.4.1:
@@ -7662,6 +7671,13 @@ packages:
 
   pure-rand@6.1.0:
     resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
+
+  q@2.0.3:
+    resolution: {integrity: sha512-gv6vLGcmAOg96/fgo3d9tvA4dJNZL3fMyBqVRrGxQ+Q/o4k9QzbJ3NQF9cOO/71wRodoXhaPgphvMFU68qVAJQ==}
+    deprecated: |-
+      You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
+      (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qified@0.5.3:
     resolution: {integrity: sha512-kXuQdQTB6oN3KhI6V4acnBSZx8D2I4xzZvn9+wFLLFCoBNQY/sFnCW6c43OL7pOQ2HvGV4lnWIXNmgfp7cTWhQ==}
@@ -8827,6 +8843,10 @@ packages:
   syntax-error@1.4.0:
     resolution: {integrity: sha512-YPPlu67mdnHGTup2A8ff7BC2Pjq0e0Yp/IyTFN03zWO0RcK07uLcbi7C2KpGR2FvWbaB0+bfE27a+sBKebSo7w==}
 
+  system@1.3.0:
+    resolution: {integrity: sha512-KnZkPZptdo06cCatjUiCBQyYdQWBuUOkHsnF6ADjJ7WWp2cOkG1D29u3cg8B1voH3JPyPrupZMLh07kEfE/uiw==}
+    hasBin: true
+
   table-layout@0.4.5:
     resolution: {integrity: sha512-zTvf0mcggrGeTe/2jJ6ECkJHAQPIYEwDoqsiqBjI24mvRmQbInK5jq33fyypaCBxX08hMkfmdOqj6haT33EqWw==}
     engines: {node: '>=4.0.0'}
@@ -8872,6 +8892,9 @@ packages:
   tempy@3.1.0:
     resolution: {integrity: sha512-7jDLIdD2Zp0bDe5r3D2qtkd1QOCacylBuL7oa4udvN6v2pqr4+LcCr67C8DR1zkpaZ8XosF5m1yQSabKAW6f2g==}
     engines: {node: '>=14.16'}
+
+  tengwar@1.2.6:
+    resolution: {integrity: sha512-iN64d1CM1bo2VzacAYDRpHQtBBVhzuC+BKIQfXWfUYi7QreR3Q4SsdeOz/eTdAYTMZi8tNuM4mAiMmJIKwliXA==}
 
   terser@5.44.1:
     resolution: {integrity: sha512-t/R3R/n0MSwnnazuPpPNVO60LX0SKL45pyl9YlvxIdkH0Of7D5qM2EVe+yASRIlY5pZ73nclYJfNANGWPwFDZw==}
@@ -9490,6 +9513,9 @@ packages:
   wawoff2@2.0.1:
     resolution: {integrity: sha512-r0CEmvpH63r4T15ebFqeOjGqU4+EgTx4I510NtK35EMciSdcTxCw3Byy3JnBonz7iyIFZ0AbVo0bbFpEVuhCYA==}
     hasBin: true
+
+  weak-map@1.0.8:
+    resolution: {integrity: sha512-lNR9aAefbGPpHO7AEnY0hCFjz1eTkWCXYvkTRrTHs9qv8zJp+SkVYpzfLIFXQQiG3tVvbNFQgVg2bQS8YGgxyw==}
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
@@ -12387,6 +12413,8 @@ snapshots:
       is-array-buffer: 3.0.5
 
   arrify@1.0.1: {}
+
+  asap@2.0.6: {}
 
   asn1.js@4.10.1:
     dependencies:
@@ -18175,6 +18203,8 @@ snapshots:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
 
+  pop-iterate@1.0.1: {}
+
   possible-typed-array-names@1.1.0: {}
 
   postcss-calc@8.2.4(postcss@8.5.6):
@@ -18511,7 +18541,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@1.0.1: {}
+  punctilio@1.0.4: {}
 
   punycode@1.4.1: {}
 
@@ -18571,6 +18601,12 @@ snapshots:
       - utf-8-validate
 
   pure-rand@6.1.0: {}
+
+  q@2.0.3:
+    dependencies:
+      asap: 2.0.6
+      pop-iterate: 1.0.1
+      weak-map: 1.0.8
 
   qified@0.5.3:
     dependencies:
@@ -20140,6 +20176,10 @@ snapshots:
     dependencies:
       acorn-node: 1.8.2
 
+  system@1.3.0:
+    dependencies:
+      q: 2.0.3
+
   table-layout@0.4.5:
     dependencies:
       array-back: 2.0.0
@@ -20234,6 +20274,10 @@ snapshots:
       temp-dir: 3.0.0
       type-fest: 2.19.0
       unique-string: 3.0.0
+
+  tengwar@1.2.6:
+    dependencies:
+      system: 1.3.0
 
   terser@5.44.1:
     dependencies:
@@ -20901,6 +20945,8 @@ snapshots:
   wawoff2@2.0.1:
     dependencies:
       argparse: 2.0.1
+
+  weak-map@1.0.8: {}
 
   web-namespaces@2.0.1: {}
 

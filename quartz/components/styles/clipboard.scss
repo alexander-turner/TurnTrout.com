@@ -16,6 +16,7 @@ pre {
 .clipboard-button {
   display: flex;
   position: absolute;
+  z-index: 1;
   margin: $base-margin;
   padding: 0;
   color: var(--midground);
