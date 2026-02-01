@@ -109,8 +109,12 @@ $fonts-dir: "/static/styles/fonts";
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
 @include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
 
-// Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F) for better ligatures
-// and diacritic placement compared to Tengwar Annatar's Dan Smith encoding
+// Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F).
+// Content must be encoded with PUA codepoints, NOT Dan Smith encoding (Latin chars).
+// To convert phonetic Quenya/Sindarin text to PUA Tengwar:
+//   pip install glaemscribe
+//   from glaemscribe import transcribe
+//   transcribe("Ai! laurië lantar", mode='quenya')  
 
 body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
