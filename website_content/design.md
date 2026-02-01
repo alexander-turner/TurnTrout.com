@@ -469,8 +469,8 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ## Formatting enhancement
 
-> [!quote] [Punctilio: The best English typography library](/open-source#punctilio-the-best-english-typography-library)
-> ![[/open-source#punctilio-the-best-english-typography-library]]
+> [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
+> ![[/open-source#punctilio-for-meticulous-typography]]
 
 |                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
