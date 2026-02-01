@@ -39,11 +39,18 @@ export function isBibtexCachePopulated(): boolean {
 
 /**
  * Parses an author string into CSL-JSON author format.
- * Handles formats like "Alex Turner", "Alex Turner & John Doe"
+ * Handles formats like "Alex Turner", "Alex Turner & John Doe",
+ * "A, B, and C" (Oxford comma), "A, B and C"
  */
 function parseAuthors(authorString: string): Array<{ given?: string; family: string }> {
-  const authors = authorString
-    .split(/&/)
+  // Normalize separators: replace ", and " and " and " with comma, then split
+  const normalized = authorString
+    .replace(/,\s+and\s+/gi, ", ") // Oxford comma: ", and " -> ", "
+    .replace(/\s+and\s+/gi, ", ") // " and " -> ", "
+    .replace(/\s*&\s*/g, ", ") // " & " -> ", "
+
+  const authors = normalized
+    .split(/,/)
     .map((a) => a.trim())
     .filter((a) => a.length > 0)
 

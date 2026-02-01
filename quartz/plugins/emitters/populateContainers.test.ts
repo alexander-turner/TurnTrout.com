@@ -851,9 +851,9 @@ describe("PopulateContainers", () => {
     describe("htmlFileToSlug", () => {
       it.each([
         ["design.html", "design"],
-        ["posts/my-post.html", "my-post"],
-        ["folder/index.html", "index"],
-        ["deep/nested/page.html", "page"],
+        ["posts/my-post.html", "posts/my-post"],
+        ["folder/index.html", "folder/index"],
+        ["deep/nested/page.html", "deep/nested/page"],
         ["index.html", "index"],
       ])("converts %s to %s", (input, expected) => {
         expect(populateModule.htmlFileToSlug(input)).toBe(expected)

@@ -73,6 +73,33 @@ describe("generateBibtexEntry", () => {
       expectations: ["author = {", "title = {"],
     },
     {
+      name: "handles comma-separated authors",
+      frontmatter: {
+        title: "Test",
+        authors: "Alex Irpan, Alex Turner, Mark Kurzeja",
+        date_published: "2022-06-15",
+      },
+      expectations: ["Irpan, Alex", "Turner, Alex", "Kurzeja, Mark"],
+    },
+    {
+      name: "handles Oxford comma with and",
+      frontmatter: {
+        title: "Test",
+        authors: "Alex Irpan, Alex Turner, and Rohin Shah",
+        date_published: "2022-06-15",
+      },
+      expectations: ["Irpan, Alex", "Turner, Alex", "Shah, Rohin"],
+    },
+    {
+      name: "handles and without Oxford comma",
+      frontmatter: {
+        title: "Test",
+        authors: "Alex Turner and Rohin Shah",
+        date_published: "2022-06-15",
+      },
+      expectations: ["Turner, Alex", "Shah, Rohin"],
+    },
+    {
       name: "handles French diacritics",
       frontmatter: {
         title: "Test",

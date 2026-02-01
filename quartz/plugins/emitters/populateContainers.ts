@@ -259,15 +259,12 @@ export const generateFaviconContent = (): ContentGenerator => {
 }
 
 /**
- * Converts an HTML file path to a slug by extracting the filename without extension.
+ * Converts an HTML file path to a slug by removing the .html extension.
  * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
- * @returns The slug (e.g., "design" or "foo")
+ * @returns The slug (e.g., "design" or "posts/foo")
  */
 export function htmlFileToSlug(htmlFile: string): string {
-  // Get everything after the last slash (or the whole string if no slash)
-  const filename = htmlFile.includes("/") ? htmlFile.slice(htmlFile.lastIndexOf("/") + 1) : htmlFile
-  // Remove .html extension
-  return filename.replace(/\.html$/, "")
+  return htmlFile.replace(/\.html$/, "")
 }
 
 /**
