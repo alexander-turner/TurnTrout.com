@@ -36,6 +36,7 @@ skip_import: true
 description: Open questions on controlling language models at runtime via activation
   engineering.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 

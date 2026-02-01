@@ -16,6 +16,7 @@ aliases:
   - protect-datasets
 date_published: 2025-07-23 08:30:43.433349
 date_updated: 2025-08-14 23:57:58.815232
+createBibtex: true
 ---
 
 Dataset contamination is bad for several reasons. Most obviously, when benchmarks are included in AI training data, those benchmarks no longer measure generalization -- the AI may have been directly taught the answers. Even more concerningly, if your data promote negative "stereotypes" about AIs, they might become self-fulfilling prophecies, training future models to exhibit those same behaviors.

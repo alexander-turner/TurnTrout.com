@@ -39,6 +39,7 @@ skip_import: true
 description: Steering Llama-2 towards or away from various traits using sample-efficient
   steering vectors.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 
