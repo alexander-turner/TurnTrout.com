@@ -5381,13 +5381,6 @@ def test_check_top_level_paragraphs_end_with_punctuation(
             '<img width="100" height="50">',
             [],
         ),
-        # Long URL should be truncated
-        (
-            '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
-            [
-                "<img> missing width, height: https://example.com/very/long/path/to/im...eighty/characters/in/total/length.png"
-            ],
-        ),
     ],
 )
 def test_check_images_have_dimensions(html: str, expected_issues: list[str]):

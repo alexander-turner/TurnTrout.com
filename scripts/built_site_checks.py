@@ -647,20 +647,17 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
         width = img.get("width")
         height = img.get("height")
 
-        if not width or not height:
-            src = img.get("src", "unknown")
-            # Truncate long URLs for readability
-            src_str = str(src)
-            if len(src_str) > 80:
-                src_str = src_str[:40] + "..." + src_str[-37:]
+        if width and height:
+            continue
 
-            missing = []
-            if not width:
-                missing.append("width")
-            if not height:
-                missing.append("height")
+        missing = []
+        if not width:
+            missing.append("width")
+        if not height:
+            missing.append("height")
 
-            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+        src = img.get("src")
+        issues.append(f"<img> missing {', '.join(missing)}: {src}")
 
     return issues
 
