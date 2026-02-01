@@ -1,4 +1,5 @@
 import { describe, it, expect } from "@jest/globals"
+
 import { danSmithToUnicode, NAMARIE_LINES } from "./tengwar"
 
 describe("tengwar utilities", () => {
