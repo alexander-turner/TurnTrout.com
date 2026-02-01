@@ -15,6 +15,8 @@ import {
   insertBibtexBeforeOrnament,
   populateBibtexSpans,
   Bibtex,
+  getBibtexForSlug,
+  clearBibtexCache,
 } from "../bibtex"
 import { ornamentNode } from "../trout_hr"
 
@@ -268,5 +270,39 @@ describe("Bibtex plugin", () => {
       const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
       expect((code.children[0] as { value: string }).value).toContain("url = {https://turntrout.com/}")
     })
+
+    it("caches bibtex content for later retrieval", () => {
+      clearBibtexCache()
+      const tree = createMockTree()
+      const file = createMockFile({ createBibtex: true, date_published: "2022-06-15" })
+      transformer(tree, file)
+
+      const cached = getBibtexForSlug("test-slug")
+      expect(cached).toBeDefined()
+      expect(cached).toContain("@misc{")
+      expect(cached).toContain("Test Title")
+    })
+  })
+})
+
+describe("Bibtex cache", () => {
+  beforeEach(() => {
+    clearBibtexCache()
+  })
+
+  it("returns undefined for unknown slug", () => {
+    expect(getBibtexForSlug("unknown-slug")).toBeUndefined()
+  })
+
+  it("clears all cached content", () => {
+    const transformer = createTransformer()
+    const tree = createMockTree()
+    transformer(tree, createMockFile({ createBibtex: true, date_published: "2022-06-15" }))
+
+    expect(getBibtexForSlug("test-slug")).toBeDefined()
+
+    clearBibtexCache()
+
+    expect(getBibtexForSlug("test-slug")).toBeUndefined()
   })
 })

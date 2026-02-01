@@ -11,6 +11,28 @@ import type { FrontmatterData } from "../vfile"
 import { troutContainerId } from "./trout_hr"
 import { hasClass } from "./utils"
 
+/**
+ * Cache for storing generated BibTeX content, keyed by slug.
+ * Populated during transform phase, accessed during emit phase by populateContainers.
+ */
+const bibtexCache = new Map<string, string>()
+
+/**
+ * Gets the cached BibTeX content for a given slug.
+ * @param slug - The slug of the page
+ * @returns The BibTeX content, or undefined if not found
+ */
+export function getBibtexForSlug(slug: string): string | undefined {
+  return bibtexCache.get(slug)
+}
+
+/**
+ * Clears the bibtex cache. Used primarily for testing.
+ */
+export function clearBibtexCache(): void {
+  bibtexCache.clear()
+}
+
 const MONTH_NAMES = [
   "jan",
   "feb",
@@ -152,6 +174,7 @@ export function populateBibtexSpans(tree: Root, bibtexContent: string): number {
 
 /**
  * Transforms the AST to add a BibTeX citation block before the trout ornament.
+ * Also caches the BibTeX content for later use by populateContainers.
  */
 function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
   const frontmatter = file.data.frontmatter
@@ -163,8 +186,10 @@ function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
   const slug = file.data.slug ?? ""
   const bibtexContent = generateBibtexEntry(frontmatter, baseUrl, slug)
 
+  // Cache for populateContainers to use later
+  bibtexCache.set(slug, bibtexContent)
+
   insertBibtexBeforeOrnament(tree, bibtexContent)
-  populateBibtexSpans(tree, bibtexContent)
 }
 
 interface BibtexOptions {
