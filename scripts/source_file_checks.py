@@ -1,6 +1,7 @@
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
+import argparse
 import re
 import shutil
 import subprocess
@@ -44,6 +45,15 @@ def check_required_fields(metadata: dict) -> List[str]:
             errors.append(f"Empty {field} field")
 
     return errors
+
+
+def check_publication_date(metadata: dict) -> List[str]:
+    """Check that date_published exists (skips pages with hide_metadata)."""
+    if not metadata or metadata.get("hide_metadata"):
+        return []
+    if not metadata.get("date_published"):
+        return ["Missing or empty date_published field"]
+    return []
 
 
 def check_cover_image_alt(metadata: dict) -> List[str]:
@@ -660,6 +670,8 @@ def check_file_data(
     existing_urls: PathMap,
     file_path: Path,
     all_posts_metadata: Dict[str, dict],
+    *,
+    check_publication_dates: bool = False,
 ) -> MetadataIssues:
     """
     Check a single file's metadata and content for various issues.
@@ -669,6 +681,7 @@ def check_file_data(
         existing_urls: Map of known URLs to their file paths
         file_path: Path to the file being checked
         all_posts_metadata: Map of file paths to their metadata for all posts
+        check_publication_dates: If True, also check that date_published exists
 
     Returns:
         Dictionary mapping check names to lists of error messages
@@ -689,6 +702,9 @@ def check_file_data(
         "footnote_references": check_footnote_references(text),
         "invalid_filename": check_spaces_in_path(file_path),
     }
+
+    if check_publication_dates:
+        issues["publication_date"] = check_publication_date(metadata)
 
     if metadata:
         urls = get_all_urls(metadata)
@@ -878,7 +894,20 @@ def build_sequence_data(markdown_files: List[Path]) -> Dict[str, dict]:
     return all_sequence_data
 
 
-def main() -> None:
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Check source files for issues."
+    )
+    parser.add_argument(
+        "--check-publication-dates",
+        action="store_true",
+        help="Check that all posts have a date_published field (used in CI)",
+    )
+    return parser.parse_args()
+
+
+def main(check_publication_dates: bool = False) -> None:
     """Check source files for issues."""
     git_root = script_utils.get_git_root()
     content_dir = git_root / "website_content"
@@ -903,7 +932,11 @@ def main() -> None:
         if metadata:
             rel_path = file_path.relative_to(git_root)
             issues = check_file_data(
-                metadata, existing_urls, file_path, all_sequence_data
+                metadata,
+                existing_urls,
+                file_path,
+                all_sequence_data,
+                check_publication_dates=check_publication_dates,
             )
             if any(lst for lst in issues.values()):
                 has_errors = True
@@ -922,4 +955,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    main(check_publication_dates=args.check_publication_dates)

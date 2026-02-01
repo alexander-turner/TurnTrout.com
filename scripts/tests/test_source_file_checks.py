@@ -2282,3 +2282,52 @@ def test_check_footnote_references(
     errors = source_file_checks.check_footnote_references(text)
     # Sort both lists for comparison since order may vary
     assert sorted(errors) == sorted(expected_errors)
+
+
+_MISSING_DATE_ERR = ["Missing or empty date_published field"]
+
+
+@pytest.mark.parametrize(
+    "metadata,expected_errors",
+    [
+        ({"date_published": "2024-01-01"}, []),
+        ({"title": "Test"}, _MISSING_DATE_ERR),
+        ({"date_published": ""}, _MISSING_DATE_ERR),
+        ({"date_published": None}, _MISSING_DATE_ERR),
+        ({}, []),  # Empty metadata handled by check_required_fields
+        ({"hide_metadata": True}, []),  # Skipped when hide_metadata is true
+    ],
+)
+def test_check_publication_date(
+    metadata: Dict[str, Any], expected_errors: List[str]
+) -> None:
+    """Test the check_publication_date function."""
+    assert source_file_checks.check_publication_date(metadata) == expected_errors
+
+
+@pytest.mark.parametrize("check_dates,should_fail", [(True, True), (False, False)])
+def test_main_publication_dates_flag(
+    git_repo_setup, quartz_project_structure, monkeypatch, check_dates, should_fail
+) -> None:
+    """Test main() behavior with/without --check-publication-dates flag."""
+    content_dir = quartz_project_structure["content"]
+    tmp_path = git_repo_setup["root"]
+
+    (content_dir / "test.md").write_text(
+        """---
+title: Test Post
+description: Test Description
+permalink: /test
+tags: [test]
+---
+"""
+    )
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
+
+    if should_fail:
+        with pytest.raises(SystemExit, match="1"):
+            source_file_checks.main(check_publication_dates=check_dates)
+    else:
+        source_file_checks.main(check_publication_dates=check_dates)
