@@ -311,7 +311,7 @@ I haven't seriously looked into these questions yet.
 
 - Why do firms in a cartel have individual incentive to raise price above competitive?
 
-  - i.e.: Why isn't competitive pricing a Nash? If one firm unilaterally raised prices, wouldn't the other firms just sell more in their wake?
+  - Why isn't competitive pricing a Nash? If one firm unilaterally raised prices, wouldn't the other firms just sell more in their wake?
 
 - What is the shadow banking system?
 - Study the impossible trinity of [international economics](https://en.wikipedia.org/wiki/Impossible_trinity).

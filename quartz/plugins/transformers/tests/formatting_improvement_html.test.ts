@@ -437,6 +437,14 @@ describe("HTMLFormattingImprovement", () => {
       ["Gemini Pro 3", "Gemini 3 Pro"],
       ["Gemini Pro 3-shot", "Gemini Pro 3-shot"],
       ["Gemini Pro 2.5", "Gemini 2.5 Pro"],
+      // Model naming standardization
+      ["LLAMA-2", "Llama-2"],
+      ["LLAMA-3.1-70B", "Llama-3.1-70B"],
+      ["LLAMA-1", "Llama-1"],
+      ["Llama-2", "Llama-2"], // Already correct, no change
+      ["GPT-4-o", "GPT-4o"],
+      ["gpt-4-o", "GPT-4o"],
+      ["GPT-4o", "GPT-4o"], // Already correct, no change
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
