@@ -51,3 +51,116 @@ exceptions:
   - slow and steady
   - sweet and sour
   - wear and tear
+  # Compound technical/academic phrases (single conceptual units)
+  - partial and directional
+  - characteristic and minimal
+  - absolute and conditional
+  - prior and conditional
+  - inverse and implicit
+  - contractions and fixed
+  - words and thoughts
+  - surprise and elation
+  - units and buildings
+  - curiosity and protectiveness
+  - about and for
+  - now and far
+  # Compound verb phrases describing single actions
+  - considering and discarding
+  - retouched and detailed
+  - generated and tabulated
+  - created and destroyed
+  - blindfolded and half-deaf
+  - opened and closed
+  - started and stopped
+  - bought and sold
+  - copied and pasted
+  - dragged and dropped
+  - picked and chosen
+  - tried and tested
+  - signed and dated
+  - washed and dried
+  - cooked and served
+  - read and understood
+  - seen and heard
+  - touched and felt
+  - loved and hated
+  - praised and criticized
+  - approved and rejected
+  - accepted and declined
+  # Common noun pairs that form single concepts
+  - men and women
+  - boys and girls
+  - brothers and sisters
+  - mothers and fathers
+  - sons and daughters
+  - kings and queens
+  - lords and ladies
+  - friends and family
+  - kith and kin
+  - flesh and blood
+  - heart and soul
+  - mind and body
+  - body and soul
+  - life and death
+  - heaven and hell
+  - good and evil
+  - right and wrong
+  - black and white
+  - day and night
+  - night and day
+  - land and sea
+  - fire and ice
+  - sun and moon
+  - stars and planets
+  - time and space
+  - cause and effect
+  - form and function
+  - theory and practice
+  - art and science
+  - law and order
+  - crime and punishment
+  - war and peace
+  - love and hate
+  - joy and sorrow
+  - pleasure and pain
+  - health and safety
+  - research and development
+  - supply and demand
+  - profit and loss
+  - assets and liabilities
+  - income and expenses
+  - imports and exports
+  - input and output
+  - hardware and software
+  - front and back
+  - left and right
+  - top and bottom
+  - inside and outside
+  - before and after
+  - sooner and later
+  - sooner or later
+  # Compound adverb phrases
+  - easily and more
+  - quickly and easily
+  - slowly and carefully
+  - safely and securely
+  # Compound subject phrases with pronouns
+  - they and the
+  - you and I
+  - he and she
+  - him and her
+  - we and they
+  # Double and single (for punctuation discussions)
+  - double and single
+  - opening and closing
+  # Math variables (common patterns)
+  - A and B
+  - B and C
+  - X and Y
+  - x and y
+  # Site-specific exceptions
+  - digitized and freely
+  - Kuhn and Noschese
+  - blindfolded and half
+  # Footnote patterns (Vale parses these oddly)
+  - 2 and let
