@@ -1168,7 +1168,8 @@ _SELF_CONTAINED_ELEMENTS = frozenset(
 
 
 def _has_content(element: Tag) -> bool:
-    """Check if an element has meaningful content.
+    """
+    Check if an element has meaningful content.
 
     An element is considered to have content if it has:
     - Non-whitespace text content, OR
