@@ -526,6 +526,20 @@ describe("PopulateContainers", () => {
       })
     })
 
+    describe("generateAnchorFaviconContent", () => {
+      it("should generate anchor favicon element", async () => {
+        const generator = populateModule.generateAnchorFaviconContent()
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+        expect(elements[0].tagName).toBe("span")
+        expect(elements[0].properties?.className).toContain("favicon-span")
+        const faviconElement = elements[0].children[0] as Element
+        expect(faviconElement.tagName).toBe("svg")
+        expect(faviconElement.properties?.class).toContain("favicon")
+        expect(faviconElement.properties?.style).toContain(specialFaviconPaths.anchor)
+      })
+    })
+
     describe("populateElements", () => {
       it.each([
         [

@@ -186,11 +186,21 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
 }
 
 /**
- * Generates the site's own favicon element.
+ * Generates the site's own favicon element (turntrout).
  */
 export const generateSiteFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(specialFaviconPaths.turntrout)
+    return [h("span", { className: "favicon-span" }, [faviconElement])]
+  }
+}
+
+/**
+ * Generates the anchor favicon element for same-page links.
+ */
+export const generateAnchorFaviconContent = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const faviconElement = createFaviconElement(specialFaviconPaths.anchor)
     return [h("span", { className: "favicon-span" }, [faviconElement])]
   }
 }
@@ -334,6 +344,8 @@ const createPopulatorMap = (
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
     ["populate-site-favicon", generateSiteFaviconContent()],
+    ["populate-turntrout-favicon", generateSiteFaviconContent()],
+    ["populate-anchor-favicon", generateAnchorFaviconContent()],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
