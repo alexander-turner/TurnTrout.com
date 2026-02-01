@@ -8,7 +8,12 @@ tags:
   - mats-program
 description: Isolate capabilities to known parts of a network. Helps with interpretability, robust unlearning, and scalable oversight.
 date-published: ""
-authors: Alex Cloud, Jacob Goldman-Wetzler, Evžen Wybitul, Joseph Miller, and Alex Turner
+authors:
+  - Alex Cloud
+  - Jacob Goldman-Wetzler
+  - Evžen Wybitul
+  - Joseph Miller
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 lw-linkpost-url: https://arxiv.org/abs/2410.04332

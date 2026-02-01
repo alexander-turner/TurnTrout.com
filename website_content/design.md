@@ -5,7 +5,8 @@ tags:
   - website
   - open-source
 description: Showing off and explaining this site's beauty.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:

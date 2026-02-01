@@ -21,7 +21,13 @@ af-num-comments-on-upload: 23
 title: Steering Llama-2 with contrastive activation additions
 lw-latest-edit: 2024-02-13T03:16:20.193000Z
 lw-is-linkpost: "true"
-authors: Nina Rimsky, Wuschel Schulz, Nick Gabrieli, Meg Tong, Evan Hubinger, and
+authors:
+  - Nina Rimsky
+  - Wuschel Schulz
+  - Nick Gabrieli
+  - Meg Tong
+  - Evan Hubinger
+  - and
   Alex Turner
 tags:
   - corrigibility

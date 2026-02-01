@@ -43,7 +43,11 @@ describe("generateBibtexEntry", () => {
   it.each([
     {
       name: "basic entry",
-      frontmatter: { title: "Test Article", authors: "Alex Turner", date_published: "2022-06-15" },
+      frontmatter: {
+        title: "Test Article",
+        authors: ["Alex Turner"],
+        date_published: "2022-06-15",
+      },
       expectations: [
         "@misc{",
         "author = {Turner, Alex}",
@@ -66,44 +70,26 @@ describe("generateBibtexEntry", () => {
       name: "escapes special characters",
       frontmatter: {
         title: "Test & Study: 100% Results",
-        authors: "Turner & Doe",
+        authors: ["Turner", "Doe"],
         date_published: "2022-06-15",
       },
       // citation.js handles special characters in BibTeX
       expectations: ["author = {", "title = {"],
     },
     {
-      name: "handles comma-separated authors",
+      name: "handles multiple authors",
       frontmatter: {
         title: "Test",
-        authors: "Alex Irpan, Alex Turner, Mark Kurzeja",
+        authors: ["Alex Irpan", "Alex Turner", "Mark Kurzeja"],
         date_published: "2022-06-15",
       },
       expectations: ["Irpan, Alex", "Turner, Alex", "Kurzeja, Mark"],
     },
     {
-      name: "handles Oxford comma with and",
-      frontmatter: {
-        title: "Test",
-        authors: "Alex Irpan, Alex Turner, and Rohin Shah",
-        date_published: "2022-06-15",
-      },
-      expectations: ["Irpan, Alex", "Turner, Alex", "Shah, Rohin"],
-    },
-    {
-      name: "handles and without Oxford comma",
-      frontmatter: {
-        title: "Test",
-        authors: "Alex Turner and Rohin Shah",
-        date_published: "2022-06-15",
-      },
-      expectations: ["Turner, Alex", "Shah, Rohin"],
-    },
-    {
       name: "handles French diacritics",
       frontmatter: {
         title: "Test",
-        authors: "François Müller",
+        authors: ["François Müller"],
         date_published: "2022-06-15",
       },
       // citation.js escapes diacritics with LaTeX commands
@@ -113,7 +99,7 @@ describe("generateBibtexEntry", () => {
       name: "handles German umlauts",
       frontmatter: {
         title: "Test",
-        authors: "Jürgen Schröder",
+        authors: ["Jürgen Schröder"],
         date_published: "2022-06-15",
       },
       expectations: ["der, J", "rgen}"],
@@ -122,7 +108,7 @@ describe("generateBibtexEntry", () => {
       name: "handles Spanish characters",
       frontmatter: {
         title: "Test",
-        authors: "José García",
+        authors: ["José García"],
         date_published: "2022-06-15",
       },
       expectations: ["a, Jos"],
@@ -131,7 +117,7 @@ describe("generateBibtexEntry", () => {
       name: "handles Nordic characters",
       frontmatter: {
         title: "Test",
-        authors: "Søren Ødegård",
+        authors: ["Søren Ødegård"],
         date_published: "2022-06-15",
       },
       expectations: ["rd, S", "ren}"],
@@ -140,7 +126,7 @@ describe("generateBibtexEntry", () => {
       name: "handles Polish characters",
       frontmatter: {
         title: "Test",
-        authors: "Stanisław Łukasiewicz",
+        authors: ["Stanisław Łukasiewicz"],
         date_published: "2022-06-15",
       },
       expectations: ["ukasiewicz, Stanis"],

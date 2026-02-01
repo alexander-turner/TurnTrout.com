@@ -6,7 +6,8 @@ tags:
   - personal
   - open-source
 description: "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities."
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:

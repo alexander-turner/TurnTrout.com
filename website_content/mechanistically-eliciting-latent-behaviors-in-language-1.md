@@ -19,7 +19,9 @@ af-num-comments-on-upload: 20
 title: Mechanistically Eliciting Latent Behaviors in Language Models
 lw-latest-edit: 2024-05-23T20:29:09.224000Z
 lw-is-linkpost: "false"
-authors: Andrew Mack and Alex Turner
+authors:
+  - Andrew Mack
+  - Alex Turner
 tags:
   - AI
   - mats-program

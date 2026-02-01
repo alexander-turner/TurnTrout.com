@@ -21,7 +21,12 @@ af-num-comments-on-upload: 2
 title: "ActAdd: Steering Language Models without Optimization"
 lw-latest-edit: 2023-11-06T16:33:20.505000Z
 lw-is-linkpost: "true"
-authors: Alex Turner, Lisa Thiergart, David Udell, Ulisse Mini, and Monte MacDiarmid
+authors:
+  - Alex Turner
+  - Lisa Thiergart
+  - David Udell
+  - Ulisse Mini
+  - Monte MacDiarmid
 tags:
   - AI
   - activation-engineering

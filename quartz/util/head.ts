@@ -25,13 +25,14 @@ interface HeadProps {
 }
 
 // skipcq: JS-D1001
-function maybeRenderAuthorTags(authors: string | undefined): string {
-  if (!authors) {
+function maybeRenderAuthorTags(authors: string[] | undefined): string {
+  if (!authors || authors.length === 0) {
     return ""
   }
+  const authorsString = authors.join(", ")
   return `
     <meta name="twitter:label1" content="Written by" />
-    <meta name="twitter:data1" content="${escapeHTML(authors)}" />
+    <meta name="twitter:data1" content="${escapeHTML(authorsString)}" />
   `
 }
 
@@ -73,7 +74,7 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
   }
   const imageTags = renderImageTags(cardImageUrl, altCardText)
 
-  const authors = fileData.frontmatter?.authors as string | undefined
+  const authors = fileData.frontmatter?.authors
   const videoPreview = fileData.frontmatter?.video_preview_link as string | undefined
   const videoTags = videoPreview ? maybeProduceVideoTag(videoPreview) : ""
 

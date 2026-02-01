@@ -5,23 +5,33 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 import { type GlobalConfiguration } from "../cfg"
 import { RenderPublicationInfo } from "./ContentMeta"
 
+/**
+ * Format an array of authors into a readable string.
+ * - Single author: "Alex Turner"
+ * - Two authors: "Alex Turner and John Doe"
+ * - Three+ authors: "Alex Turner, John Doe, and Jane Smith"
+ */
+function formatAuthors(authors: string[]): string {
+  if (authors.length === 0) return "Alex Turner"
+  if (authors.length === 1) return authors[0]
+  if (authors.length === 2) return `${authors[0]} and ${authors[1]}`
+  return `${authors.slice(0, -1).join(", ")}, and ${authors.at(-1)}`
+}
+
 const Authors: QuartzComponent = ({ fileData, cfg }: QuartzComponentProps) => {
   if (fileData.frontmatter?.hide_metadata || fileData.frontmatter?.hide_authors) {
     return null
   }
 
-  let authors = "Alex Turner"
-  if (fileData.frontmatter?.authors) {
-    authors = fileData.frontmatter.authors as string
-  }
-  authors = `By ${authors}`
+  const authorList = fileData.frontmatter?.authors ?? ["Alex Turner"]
+  const authorsText = `By ${formatAuthors(authorList)}`
 
   // Add the publication info
   const publicationInfo = RenderPublicationInfo(cfg as GlobalConfiguration, fileData)
 
   return (
     <div className="authors">
-      <p>{authors}</p>
+      <p>{authorsText}</p>
       {publicationInfo && <p>{publicationInfo}</p>}
     </div>
   )

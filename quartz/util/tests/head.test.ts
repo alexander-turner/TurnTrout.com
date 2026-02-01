@@ -116,7 +116,7 @@ describe("renderHead", () => {
       const data = createMockData({
         title: "Complete Test",
         description: "Complete description",
-        authors: "Test Author",
+        authors: ["Test Author"],
       })
 
       const result = renderHead({
@@ -286,7 +286,7 @@ describe("renderHead", () => {
   describe("author handling", () => {
     it("should include author meta tags when authors are provided", () => {
       const data = createMockData({
-        authors: "John Doe, Jane Smith",
+        authors: ["John Doe", "Jane Smith"],
       })
 
       const result = renderHead({
@@ -457,7 +457,7 @@ describe("renderHead", () => {
 
   it("should escape special characters in author names", () => {
     const data = createMockData({
-      authors: "Author <Name>",
+      authors: ["Author <Name>"],
     })
 
     const result = renderHead({

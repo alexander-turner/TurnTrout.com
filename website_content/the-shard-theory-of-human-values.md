@@ -19,7 +19,9 @@ af-num-comments-on-upload: 33
 title: The shard theory of human values
 lw-latest-edit: 2023-06-05T21:14:25.014000Z
 lw-is-linkpost: "false"
-authors: Quintin Pope and Alex Turner
+authors:
+  - Quintin Pope
+  - Alex Turner
 tags:
   - rationality
   - shard-theory

@@ -19,7 +19,12 @@ af-num-comments-on-upload: 22
 title: Understanding and controlling a maze-solving policy network
 lw-latest-edit: 2023-06-07T01:47:42.456000Z
 lw-is-linkpost: "false"
-authors: Alex Turner, Peli Grietzer, Ulisse Mini, Monte MacDiarmid, and David Udell
+authors:
+  - Alex Turner
+  - Peli Grietzer
+  - Ulisse Mini
+  - Monte MacDiarmid
+  - David Udell
 tags:
   - AI
   - mats-program

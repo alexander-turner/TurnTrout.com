@@ -6,7 +6,11 @@ tags:
   - AI
   - open-source
 description: A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.
-authors: Alex Turner, Dipika Khullar, Ed Turner, and Roy Rinberg
+authors:
+  - Alex Turner
+  - Dipika Khullar
+  - Ed Turner
+  - Roy Rinberg
 hideSubscriptionLinks: false
 card_image: 
 aliases:

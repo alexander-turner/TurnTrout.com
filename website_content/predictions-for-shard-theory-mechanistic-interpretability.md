@@ -20,7 +20,10 @@ af-num-comments-on-upload: 6
 title: Predictions for shard theory mechanistic interpretability results
 lw-latest-edit: 2023-03-03T21:31:03.903000Z
 lw-is-linkpost: 'false'
-authors: Alex Turner, Ulisse Mini, and Peli Grietzer
+authors:
+  - Alex Turner
+  - Ulisse Mini
+  - Peli Grietzer
 tags:
   - AI
   - mats-program

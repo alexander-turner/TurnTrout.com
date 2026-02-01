@@ -7,7 +7,11 @@ tags:
   - specification-gaming
   - mats-program
 description: "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts."
-authors: Ariana Azarbal, Victor Gillioz, Alex Cloud, and Alex Turner
+authors:
+  - Ariana Azarbal
+  - Victor Gillioz
+  - Alex Cloud
+  - Alex Turner
 createBibtex: true
 card_image:
 card_image_alt:

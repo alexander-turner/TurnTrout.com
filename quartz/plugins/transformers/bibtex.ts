@@ -38,32 +38,31 @@ export function isBibtexCachePopulated(): boolean {
 }
 
 /**
- * Parses an author string into CSL-JSON author format.
- * Handles formats like "Alex Turner", "Alex Turner & John Doe",
- * "A, B, and C" (Oxford comma), "A, B and C"
+ * Parses a single author name into CSL-JSON author format.
+ * Assumes "First Middle Last" format where the last word is the family name.
  */
-function parseAuthors(authorString: string): Array<{ given?: string; family: string }> {
-  // Normalize separators: replace ", and " and " and " with comma, then split
-  const normalized = authorString
-    .replace(/,\s+and\s+/gi, ", ") // Oxford comma: ", and " -> ", "
-    .replace(/\s+and\s+/gi, ", ") // " and " -> ", "
-    .replace(/\s*&\s*/g, ", ") // " & " -> ", "
+function parseAuthorName(authorName: string): { given?: string; family: string } {
+  const words = authorName
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0)
+  if (words.length === 0) {
+    return { family: "Unknown" }
+  }
+  if (words.length === 1) {
+    return { family: words[0] }
+  }
+  // Last word is family name, rest is given name
+  const family = words.at(-1) ?? ""
+  const given = words.slice(0, -1).join(" ")
+  return { given, family }
+}
 
-  const authors = normalized
-    .split(/,/)
-    .map((a) => a.trim())
-    .filter((a) => a.length > 0)
-
-  return authors.map((author) => {
-    const words = author.split(/\s+/).filter((w) => w.length > 0)
-    if (words.length === 1) {
-      return { family: words[0] }
-    }
-    // Last word is family name, rest is given name
-    const family = words.at(-1) ?? ""
-    const given = words.slice(0, -1).join(" ")
-    return { given, family }
-  })
+/**
+ * Parses an array of author names into CSL-JSON author format.
+ */
+function parseAuthors(authors: string[]): Array<{ given?: string; family: string }> {
+  return authors.map(parseAuthorName)
 }
 
 /**
@@ -76,7 +75,7 @@ export function generateBibtexEntry(
   slug: string,
 ): string {
   const title = frontmatter.title
-  const author = (frontmatter.authors as string | undefined) ?? "Alex Turner"
+  const authors = frontmatter.authors ?? ["Alex Turner"]
 
   // Require publication date (only enforce on CI to allow local development)
   const datePublished = frontmatter.date_published
@@ -97,7 +96,7 @@ export function generateBibtexEntry(
   const cslEntry = {
     type: "webpage",
     title,
-    author: parseAuthors(author),
+    author: parseAuthors(authors),
     issued: { "date-parts": [[year, month]] },
     URL: url,
     accessed: {

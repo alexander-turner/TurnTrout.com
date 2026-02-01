@@ -19,7 +19,9 @@ af-num-comments-on-upload: 6
 title: "Attainable Utility Preservation: Empirical Results"
 lw-latest-edit: 2021-06-15T16:55:30.263000Z
 lw-is-linkpost: "false"
-authors: Alex Turner and Neale Ratzlaff
+authors:
+  - Alex Turner
+  - Neale Ratzlaff
 tags:
   - impact-regularization
   - AI
