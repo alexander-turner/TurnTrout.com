@@ -2554,6 +2554,63 @@ def test_check_consecutive_periods(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
+        # Valid Tengwar text (PUA characters U+E000-U+E07F)
+        (
+            '<span lang="qya">\uE000\uE001\uE002</span>',
+            [],
+        ),
+        # Valid Tengwar with punctuation
+        (
+            '<span lang="qya">\uE000\uE001: \uE002!</span>',
+            [],
+        ),
+        # Valid Tengwar with allowed special chars (en-dash, em-dash, middle dot)
+        (
+            '<span lang="qya">\uE000—\uE001–\uE002⸱</span>',
+            [],
+        ),
+        # Empty Tengwar element (should be skipped)
+        (
+            '<span lang="qya">   </span>',
+            [],
+        ),
+        # Invalid: contains arrow character (corruption from text processing)
+        (
+            '<span lang="qya">\uE000⤴\uE001</span>',
+            ["Invalid chars ['⤴ (U+2934)'] in Tengwar: \uE000⤴\uE001..."],
+        ),
+        # Invalid: contains double arrow (another corruption indicator)
+        (
+            '<span lang="qya">\uE000⇔\uE001</span>',
+            ["Invalid chars ['⇔ (U+21D4)'] in Tengwar: \uE000⇔\uE001..."],
+        ),
+        # Invalid: contains Latin letters (wrong encoding)
+        (
+            '<span lang="qya">ABC</span>',
+            ["Invalid chars ['A (U+0041)', 'B (U+0042)', 'C (U+0043)'] in Tengwar: ABC..."],
+        ),
+        # No Quenya elements
+        (
+            '<span lang="en">Hello</span>',
+            [],
+        ),
+        # Nested Quenya elements
+        (
+            '<div lang="qya"><span>\uE000</span><span>X</span></div>',
+            ["Invalid chars ['X (U+0058)'] in Tengwar: \uE000X..."],
+        ),
+    ],
+)
+def test_check_tengwar_characters(html, expected):
+    """Test the check_tengwar_characters function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_tengwar_characters(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
         # Test favicon directly under span with correct class (valid)
         (
             '<span class="favicon-span"><img class="favicon" src="test.ico"></span>',
