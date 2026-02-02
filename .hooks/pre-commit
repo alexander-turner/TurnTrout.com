@@ -21,23 +21,22 @@ if command -v conda &>/dev/null && [ "$CONDA_DEFAULT_ENV" != "website" ]; then
   conda activate website 2>/dev/null || true
 fi
 
-# Store file modification times before formatting (cross-platform)
-touch /tmp/before_format /tmp/after_format
+# Set stat format based on OS (macOS uses -f, Linux uses -c)
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/before_format
+  STAT_FMT="-f %m %N"
 else
-  find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -c "%Y %n" {} \; >/tmp/before_format
+  STAT_FMT="-c %Y %n"
 fi
+
+# Store file modification times before formatting
+touch /tmp/before_format /tmp/after_format
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat $STAT_FMT {} \; >/tmp/before_format
 
 docformatter --in-place "$GIT_ROOT"/scripts/**.py --config "$GIT_ROOT"/config/python/pyproject.toml
 pyupgrade "$GIT_ROOT"/scripts/**.py
 
 # Store file modification times after formatting
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/after_format
-else
-  find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -c "%Y %n" {} \; >/tmp/after_format
-fi
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat $STAT_FMT {} \; >/tmp/after_format
 
 # Compare and stage only modified files
 diff /tmp/before_format /tmp/after_format | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
