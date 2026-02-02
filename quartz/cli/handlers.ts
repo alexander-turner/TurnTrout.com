@@ -177,7 +177,6 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
     // Use the dynamically constructed path in the import statement
     const { default: buildQuartz } = await import(modulePath)
-
     cleanupBuild = await buildQuartz(argv, buildMutex, clientRefresh)
 
     clientRefresh()

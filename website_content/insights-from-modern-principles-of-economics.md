@@ -112,9 +112,13 @@ So let's go.
 
 > [!quote] Modern Principles of Economics
 >
+<!-- vale Custom.OxfordComma = NO -->
+
 > The prisoners were dying of scurvy, typhoid fever, and smallpox, but nothing was killing them more than bad incentives. In 1787, the British government had hired sea captains to ship convicted felons to Australia. Conditions on board the ships were monstrous; some even said the conditions were worse than on slave ships. On one voyage, more than one-third of the men died and the rest arrived beaten, starved, and sick. A first mate remarked cruelly of the convicts, "Let them die and be damned, the owners have \[already\] been paid for their passage."
 >
 > The British public had no love for the convicts, but it wasn't prepared to give them a death sentence either. Newspapers editorialized in favor of better conditions, clergy appealed to the captains' sense of humanity, and legislators passed regulations requiring better food and water, light and air, and proper medical care. Yet the death rate remained shockingly high. Nothing appeared to be working until an economist suggested something new. Can you guess what the economist suggested?
+
+<!-- vale Custom.OxfordComma = YES -->
 >
 > Instead of paying the captains for each prisoner placed on board ship in Great Britain, the economist suggested paying for each prisoner that walked off the ship in Australia. In 1793 , the new system was implemented and immediately the survival rate shot up to 99%. One astute observer explained what had happened: "Economy beat sentiment and benevolence."
 >

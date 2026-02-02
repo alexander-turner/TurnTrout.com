@@ -1,3 +1,7 @@
 #!/bin/sh
 
-npx --no -- commitlint --edit "$1" --config config/javascript/commitlint.config.js
+# Run commitlint if available via pnpm, otherwise skip
+git_root="$(git rev-parse --show-toplevel)"
+if command -v pnpm >/dev/null 2>&1 && [ -f "$git_root/node_modules/.bin/commitlint" ]; then
+  pnpm exec commitlint --edit "$1" --config config/javascript/commitlint.config.js
+fi

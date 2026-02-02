@@ -78,9 +78,11 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Enable hooks**: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
+
+**Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
 **Pre-push** (main branch only):
 
@@ -187,6 +189,7 @@ Per `.cursorrules` and `design.md`:
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
+- In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
 ### Testing
 

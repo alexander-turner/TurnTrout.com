@@ -47,7 +47,9 @@ card_image_alt: A patriotic man smirks and looks up at a surveillance camera wit
 
 [^pic]: Picture credit to [ProPublica.](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
 
-George's story isn't an isolated incident. ProPublica [found that "more than 170 US citizens have been held by immigration agents. They’ve been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will) As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
+<!-- vale Custom.OxfordComma = NO -->
+George's story isn't an isolated incident. ProPublica [found that "more than 170 US citizens have been held by immigration agents. They've been kicked, dragged and detained for days."](https://www.propublica.org/article/immigration-dhs-american-citizens-arrested-detained-against-will)
+<!-- vale Custom.OxfordComma = YES --> As of October 2025, ICE has become a lawless, unaccountable agency  -- a starving, rabid dog let off its leash. Generally, rabid dogs are not empowered by the full force of the US federal government. This one is. That same government has declared its political opponents to be "domestic extremists" and pursues a naked agenda of persecution.
 
 > [!warning] Authoritarianism is here. Protect yourself.
 > The Trump regime views its political opponents as literal enemies of the state:
@@ -454,7 +456,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 > [!question] These keys are expensive. Do I really need two?
 > I know they aren't cheap. [Software 2FA is pretty good, too](#use-proton-authenticator-as-your-2fa-app). However, hardware keys make you basically immune to being remotely hacked on your most important accounts (though someone could still do it if they were physically present). That immunity brings security but also peace of mind. To check which services accept YubiKeys before you buy, check out [the 2FA directory](https://2fa.directory/int/?q=u2f#backup). Since you're at least using Bitwarden, I think hardware keys are still worth it unless you're on a tight budget.
 >
-> At *minimum*, you need two keys. If you just had one key, you're one "oops I lost it" away from being *locked out of your most important accounts*. Scary! By keeping a backup safe and sound, even your home burning down shouldn't destroy both of your keys.
+> At *minimum*, you need two keys. If you just had one key, you're one "oops I lost it" away from being *locked out of your most important accounts*. Scary! By keeping a backup secure, even your home burning down shouldn't destroy both of your keys.
 >
 > For convenience, you might even get a third key: a YubiKey 5C Nano (an additional \$65) which you always leave plugged into one of your computer's USB-C ports. This can't be your main key because you'd be unable to access your accounts on mobile unless you always have your computer with you (and thus the Nano as well).
 >

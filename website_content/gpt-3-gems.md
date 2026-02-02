@@ -364,6 +364,8 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 
 ## Lórien, Unstained
 
+<!-- vale Custom.OxfordComma = NO -->
+
 > [!quote]
 >
 > **The others** **cast themselves down upon the fragrant grass, but Frodo stood awhile still lost in wonder. It seemed to him that he had stepped through a high window that looked on a vanished world. A light was upon it for which his language had no name. All that he saw was shapely, but the shapes seemed at once clear cut, as if they had been first conceived and drawn at the uncovering of his eyes, and ancient as if they had endured for ever. He saw no colour but those he knew, gold and white and blue and green, but they were fresh and poignant, as if he had at that moment first perceived them and made for them names new and wonderful. In winter here no heart could mourn for summer or for spring. No blemish or sickness or deformity could be seen in anything that grew upon the earth. On the land of Lórien, there was no stain.**
@@ -397,6 +399,8 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > "So do I," said Frodo. "But we have an appointment to keep, and it is a long way. We should get going."
 >
 > Sam sighed, and nodded. He got to his feet, and followed his master back to the road.
+
+<!-- vale Custom.OxfordComma = YES -->
 
 ## Bilbo the Deceiver
 
@@ -544,6 +548,8 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 
 ## Bill's Dog
 
+<!-- vale Custom.OxfordComma = NO -->
+
 > [!quote]
 >
 > **Bill looked down at Jessie, his favorite golden retriever.** It had been a long day at work--his stupid boss had come in and yelled at him, as per usual. Of course, Bill just took it. He needed the money, after all, but when he got home and saw his canine companion bounding towards him, smiling and wagging her tail excitedly he felt a wave of euphoria. On any other day he would kneel down to hug her, but today he didn't have the energy.
@@ -557,6 +563,8 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 > "I'm so bored, Jess," he told her sadly. The dog continued to stare blankly upward. "Is that all life is worth to you? Just lying around and relaxing? Hell, even a coma would be more interesting..." With this, he picked up the half-asleep dog and carried her into the bedroom. Laying her on the bed, he continued to talk, "We've got to live while we're young, girl. Hey, why don't we go out? It's been a while since we've done that. Go out and do something fun, just you and me."
 >
 > At this point the dog was already half asleep. She would've agreed to going bungee jumping without checking the cords first if he suggested it. "Tomorrow," Bill told her, "we'll wake up early and take a drive out into the country, just you and me. Like we used to.
+
+<!-- vale Custom.OxfordComma = YES -->
 
 ## The Canine Betrayal
 
