@@ -201,3 +201,5 @@ Per `.cursorrules` and `design.md`:
 ### Pull Requests
 
 When suggesting a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md. Then edit CLAUDE.md to be more useful in the future.
+
+Update the PR description whenever significant and relevant changes are made to keep it accurate. Provide the updated description in a markdown code block.
