@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
-import type { BuildCtx } from "../../../util/ctx"
+import type { BuildCtx } from "../../util/ctx"
 
 import {
   PopulateExternalMarkdown,
@@ -12,7 +12,7 @@ import {
   resetFetchFunction,
   type ExternalMarkdownSource,
   type FetchFunction,
-} from "../populateExternalMarkdown"
+} from "./populateExternalMarkdown"
 
 describe("PopulateExternalMarkdown", () => {
   let mockFetch: jest.MockedFunction<FetchFunction>
@@ -106,7 +106,7 @@ describe("PopulateExternalMarkdown", () => {
         "test-project": { owner: "user", repo: "project" },
       }
 
-      const input = "Before\n\n<!-- populate-readme:test-project -->\n\nAfter"
+      const input = 'Before\n\n<span class="populate-test-project-readme"></span>\n\nAfter'
       const result = populateExternalContent(input, sources)
 
       expect(result).toBe("Before\n\n# Fetched README\n\nAfter")
@@ -125,7 +125,7 @@ describe("PopulateExternalMarkdown", () => {
       }
 
       const input =
-        "<!-- populate-readme:project-a -->\n\n---\n\n<!-- populate-readme:project-b -->"
+        '<span class="populate-project-a-readme"></span>\n\n---\n\n<span class="populate-project-b-readme"></span>'
       const result = populateExternalContent(input, sources)
 
       expect(result).toBe("Content A\n\n---\n\nContent B")
@@ -142,7 +142,7 @@ describe("PopulateExternalMarkdown", () => {
         },
       }
 
-      const input = "<!-- populate-readme:project -->"
+      const input = '<span class="populate-project-readme"></span>'
       const result = populateExternalContent(input, sources)
 
       expect(result).toBe("# Content")
@@ -156,9 +156,9 @@ describe("PopulateExternalMarkdown", () => {
       }
 
       // First call
-      populateExternalContent("<!-- populate-readme:project -->", sources)
+      populateExternalContent('<span class="populate-project-readme"></span>', sources)
       // Second call with same source
-      populateExternalContent("<!-- populate-readme:project -->", sources)
+      populateExternalContent('<span class="populate-project-readme"></span>', sources)
 
       // Should only fetch once due to caching
       expect(mockFetch).toHaveBeenCalledTimes(1)
@@ -167,9 +167,9 @@ describe("PopulateExternalMarkdown", () => {
     it("should throw on missing source", () => {
       const sources: Record<string, ExternalMarkdownSource> = {}
 
-      expect(() => populateExternalContent("<!-- populate-readme:unknown -->", sources)).toThrow(
-        'No source configured for placeholder "unknown"',
-      )
+      expect(() =>
+        populateExternalContent('<span class="populate-unknown-readme"></span>', sources),
+      ).toThrow('No source configured for placeholder "unknown"')
     })
 
     it("should throw on fetch error", () => {
@@ -181,19 +181,19 @@ describe("PopulateExternalMarkdown", () => {
         project: { owner: "user", repo: "project" },
       }
 
-      const input = "<!-- populate-readme:project -->"
+      const input = '<span class="populate-project-readme"></span>'
 
       expect(() => populateExternalContent(input, sources)).toThrow("Network error")
     })
 
-    it("should handle placeholder with spaces", () => {
+    it("should handle placeholder with extra whitespace", () => {
       mockFetch.mockReturnValue("Content")
 
       const sources: Record<string, ExternalMarkdownSource> = {
         project: { owner: "user", repo: "project" },
       }
 
-      const input = "<!-- populate-readme:project -->"
+      const input = '<span  class="populate-project-readme" ></span>'
       const result = populateExternalContent(input, sources)
 
       expect(result).toBe("Content")
@@ -227,7 +227,7 @@ describe("PopulateExternalMarkdown", () => {
       })
       const mockCtx = {} as BuildCtx
 
-      const input = "Before\n<!-- populate-readme:my-project -->\nAfter"
+      const input = 'Before\n<span class="populate-my-project-readme"></span>\nAfter'
       const result = plugin.textTransform?.(mockCtx, input)
 
       expect(result).toBe("Before\n# README Content\nAfter")
@@ -243,7 +243,7 @@ describe("PopulateExternalMarkdown", () => {
       })
       const mockCtx = {} as BuildCtx
 
-      const input = Buffer.from("<!-- populate-readme:project -->")
+      const input = Buffer.from('<span class="populate-project-readme"></span>')
       const result = plugin.textTransform?.(mockCtx, input)
 
       expect(result).toBe("Buffer content")
@@ -253,7 +253,7 @@ describe("PopulateExternalMarkdown", () => {
       const plugin = PopulateExternalMarkdown({ sources: {} })
       const mockCtx = {} as BuildCtx
 
-      const input = "<!-- populate-readme:unknown -->"
+      const input = '<span class="populate-unknown-readme"></span>'
 
       expect(() => plugin.textTransform?.(mockCtx, input)).toThrow(
         'No source configured for placeholder "unknown"',

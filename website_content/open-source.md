@@ -27,7 +27,7 @@ date_updated: 2025-12-18 09:42:00.251916
 
 Subtitle: Install with `npm install punctilio`.
 
-<!-- populate-readme:punctilio -->
+<span class="populate-punctilio-readme"></span>
 
 # This website
 

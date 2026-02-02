@@ -121,9 +121,10 @@ function getContent(name: string, source: ExternalMarkdownSource): string {
 
 /**
  * Regular expression to match populate-readme placeholders.
- * Format: <!-- populate-readme:name -->
+ * Format: <span class="populate-NAME-readme"></span>
+ * Matches self-closing spans and spans with empty content.
  */
-const placeholderRegex = /<!-- ?populate-readme:(?<name>[\w-]+) ?-->/g
+const placeholderRegex = /<span\s+class="populate-(?<name>[\w-]+)-readme"\s*>(?:<\/span>)?/g
 
 /**
  * Populates external markdown content into the source.
@@ -163,7 +164,7 @@ export const PopulateExternalMarkdown: QuartzTransformerPlugin<PopulateExternalM
       const content = typeof src === "string" ? src : src.toString()
 
       // Quick check: if no placeholders, skip processing
-      if (!content.includes("populate-readme:")) {
+      if (!content.includes("-readme")) {
         return content
       }
 
