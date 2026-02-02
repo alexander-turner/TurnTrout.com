@@ -2,95 +2,112 @@
 # Session setup script for Claude Code
 # Installs dependencies and configures environment for git hooks
 
+set -uo pipefail
+
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+TIMESTAMPS_REPO="alexander-turner/.timestamps"
 
-# Add local bin to PATH for this session
+#######################################
+# Helpers
+#######################################
+
+warn() { echo "Warning: $1" >&2; }
+die() {
+  echo "ERROR: $1" >&2
+  exit 1
+}
+is_root() { [ "$(id -u)" = "0" ]; }
+
+github_url() {
+  local repo="$1"
+  if [ -n "${GH_TOKEN:-}" ]; then
+    echo "https://x-access-token:${GH_TOKEN}@github.com/${repo}"
+  else
+    echo "https://github.com/${repo}"
+  fi
+}
+
+# Install a command via pip if missing
+pip_install_if_missing() {
+  local cmd="$1" pkg="${2:-$1}"
+  if ! command -v "$cmd" &>/dev/null; then
+    pip3 install --quiet "$pkg" || warn "Failed to install $pkg"
+  fi
+}
+
+# Install a command via webi if missing
+webi_install_if_missing() {
+  local cmd="$1"
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "Installing $cmd..."
+    curl -sS "https://webi.sh/$cmd" | sh >/dev/null 2>&1 || warn "Failed to install $cmd"
+  fi
+}
+
+#######################################
+# PATH setup
+#######################################
+
 export PATH="$HOME/.local/bin:$PATH"
-
-# Write to CLAUDE_ENV_FILE to persist PATH for subsequent Bash commands
-if [ -n "$CLAUDE_ENV_FILE" ]; then
+if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
 fi
 
-# Install Python tools if missing
-if ! command -v docformatter &>/dev/null || ! command -v ots &>/dev/null; then
-  echo "Installing Python tools..."
-  pip3 install --quiet docformatter pyupgrade opentimestamps-client || echo "Warning: Failed to install Python tools"
-fi
+#######################################
+# Tool installation (optional - warn on failure)
+#######################################
 
-# Install shfmt if missing (uses webi - works without root)
-if ! command -v shfmt &>/dev/null; then
-  echo "Installing shfmt..."
-  curl -sS https://webi.sh/shfmt | sh >/dev/null 2>&1 || echo "Warning: Failed to install shfmt"
-fi
+echo "Installing tools..."
+pip_install_if_missing docformatter
+pip_install_if_missing pyupgrade
+pip_install_if_missing ots opentimestamps-client
+webi_install_if_missing shfmt
+webi_install_if_missing gh
 
-# Install shellcheck if missing
-if ! command -v shellcheck &>/dev/null; then
-  echo "Installing shellcheck..."
-  if [ "$(id -u)" = "0" ]; then
-    apt-get update -qq && apt-get install -y -qq shellcheck || echo "Warning: Failed to install shellcheck"
-  else
-    echo "Warning: shellcheck requires root to install via apt-get"
+if ! command -v shellcheck &>/dev/null && is_root; then
+  if ! { apt-get update -qq && apt-get install -y -qq shellcheck; } 2>/dev/null; then
+    warn "Failed to install shellcheck"
   fi
 fi
 
-# Install gh CLI if missing
-if ! command -v gh &>/dev/null; then
-  echo "Installing GitHub CLI..."
-  if [ "$(id -u)" = "0" ]; then
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg |
-      tee /usr/share/keyrings/githubcli-archive-keyring.gpg >/dev/null &&
-      chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg &&
-      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" |
-      tee /etc/apt/sources.list.d/github-cli.list >/dev/null &&
-      apt-get update -qq &&
-      apt-get install -y -qq gh || echo "Warning: Failed to install gh via apt"
-  else
-    # Try webi as fallback for non-root
-    curl -sS https://webi.sh/gh | sh >/dev/null 2>&1 || echo "Warning: Failed to install gh"
-  fi
-fi
+#######################################
+# Git setup (required - fail on error)
+#######################################
 
-# Clone .timestamps repo if missing (required for post-commit hooks)
+# Clone .timestamps repo (required for post-commit hooks)
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
   echo "Cloning .timestamps repo..."
   rm -rf "$PROJECT_DIR/.timestamps" 2>/dev/null
-  if [ -n "$GH_TOKEN" ]; then
-    git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps" "$PROJECT_DIR/.timestamps" || {
-      echo "ERROR: Failed to clone .timestamps repo. Post-commit hooks will not work."
-      exit 1
-    }
-  else
-    git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" || {
-      echo "ERROR: Failed to clone .timestamps repo. Post-commit hooks will not work."
-      exit 1
-    }
-  fi
+  git clone --quiet "$(github_url "$TIMESTAMPS_REPO")" "$PROJECT_DIR/.timestamps" ||
+    die "Failed to clone .timestamps repo. Post-commit hooks will not work."
 fi
 
-# Configure .timestamps repo auth if GH_TOKEN is set
-if [ -n "$GH_TOKEN" ] && [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
-  git -C "$PROJECT_DIR/.timestamps" remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps"
+# Ensure .timestamps has correct auth (in case it was cloned without token)
+if [ -n "${GH_TOKEN:-}" ] && [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
+  git -C "$PROJECT_DIR/.timestamps" remote set-url origin "$(github_url "$TIMESTAMPS_REPO")"
 fi
 
-# Enable git hooks
 cd "$PROJECT_DIR" || exit 1
 git config core.hooksPath .hooks
 
-# Configure gh auth if GH_TOKEN is set
-if [ -n "$GH_TOKEN" ] && command -v gh &>/dev/null; then
+#######################################
+# GitHub CLI auth
+#######################################
+
+if [ -n "${GH_TOKEN:-}" ] && command -v gh &>/dev/null; then
   echo "Configuring GitHub authentication..."
-  echo "$GH_TOKEN" | gh auth login --with-token 2>&1 || echo "Warning: Failed to authenticate with GitHub"
+  echo "$GH_TOKEN" | gh auth login --with-token 2>&1 || warn "Failed to authenticate with GitHub"
 fi
 
-# Install dependencies if needed
+#######################################
+# Project dependencies
+#######################################
+
 if [ ! -d "$PROJECT_DIR/node_modules" ]; then
   echo "Installing Node dependencies..."
-  pnpm install --silent || echo "Warning: Failed to install Node dependencies"
+  pnpm install --silent || warn "Failed to install Node dependencies"
 fi
 
-if command -v uv &>/dev/null; then
-  uv sync --quiet || true
-fi
+command -v uv &>/dev/null && uv sync --quiet 2>/dev/null
 
 echo "Session setup complete"
