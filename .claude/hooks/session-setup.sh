@@ -85,6 +85,10 @@ fi
 # Ensure .timestamps has correct auth (in case it was cloned without token)
 if [ -n "${GH_TOKEN:-}" ] && [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
   git -C "$PROJECT_DIR/.timestamps" remote set-url origin "$(github_url "$TIMESTAMPS_REPO")"
+  # Verify push access works (fetch with auth should succeed if push would)
+  if ! git -C "$PROJECT_DIR/.timestamps" ls-remote --quiet origin &>/dev/null; then
+    die "Cannot access .timestamps repo with GH_TOKEN. Check token has push permissions to $TIMESTAMPS_REPO"
+  fi
 fi
 
 cd "$PROJECT_DIR" || exit 1
