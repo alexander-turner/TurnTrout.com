@@ -78,7 +78,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Enable hooks**: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
@@ -192,6 +192,7 @@ Per `.cursorrules` and `design.md`:
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
+- In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
 ### Testing
 
@@ -201,3 +202,9 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
+
+### Pull Requests
+
+When suggesting a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md. Then edit CLAUDE.md to be more useful in the future.
+
+Update the PR description whenever significant and relevant changes are made to keep it accurate. Provide the updated description in a markdown code block. Do not include a "test plan."
