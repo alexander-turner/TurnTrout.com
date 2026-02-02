@@ -8,9 +8,10 @@ import type {
   Response as NodeFetchResponse,
 } from "node-fetch"
 
+import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
+
 import type { BuildCtx } from "../../../util/ctx"
 
-import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
 import { type SpawnSyncReturns, type spawnSync } from "child_process"
 // skipcq: JS-W1028
 import fsExtra from "fs-extra"
