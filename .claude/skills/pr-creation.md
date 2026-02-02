@@ -1,5 +1,7 @@
 # Pull Request Creation Skill
 
+**IMPORTANT: Always follow this skill before creating any PR.** Do not skip steps, especially the self-critique.
+
 This skill guides Claude through creating high-quality pull requests with mandatory self-critique before submission.
 
 ## When to Use
