@@ -41,24 +41,38 @@ jobs:
             const runUrl = context.payload.workflow_run.html_url;
             const headSha = context.payload.workflow_run.head_sha.substring(0, 7);
 
-            // Check if we already commented about this specific failure
+            // Check how many times we've commented about this workflow failing
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
             });
 
-            const markerComment = `<!-- failed-check-${context.payload.workflow_run.id} -->`;
-            const alreadyCommented = comments.some(comment =>
-              comment.body && comment.body.includes(markerComment)
-            );
+            const runMarker = `<!-- failed-check-${context.payload.workflow_run.id} -->`;
+            const workflowMarker = `<!-- workflow:${workflowName} -->`;
 
-            if (alreadyCommented) {
+            // Skip if we already commented about this specific run
+            const alreadyCommentedOnRun = comments.some(comment =>
+              comment.body && comment.body.includes(runMarker)
+            );
+            if (alreadyCommentedOnRun) {
               console.log('Already commented on this failure, skipping');
               return;
             }
 
-            const body = `${markerComment}
+            // Count how many times we've commented about this workflow failing
+            const failureCount = comments.filter(comment =>
+              comment.body && comment.body.includes(workflowMarker)
+            ).length;
+
+            const maxAttempts = 2;
+            if (failureCount >= maxAttempts) {
+              console.log(`Already commented ${failureCount} times about ${workflowName} failures, skipping (max: ${maxAttempts})`);
+              return;
+            }
+
+            const body = `${runMarker}
+${workflowMarker}
 @claude The **${workflowName}** workflow [failed](${runUrl}) on commit ${headSha}. Please investigate and fix the issue.`;
 
             await github.rest.issues.createComment({
