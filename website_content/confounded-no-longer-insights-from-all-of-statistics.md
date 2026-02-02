@@ -52,9 +52,13 @@ date_updated: 2026-01-25 23:47:56.984113
 
 
 
+<!-- vale Custom.OxfordComma = NO -->
+
 > [!quote]Larry Wasserman, _All of Statistics_
 >
 > Using fancy tools like neural nets, boosting and support vector machines without understanding basic statistics is like doing brain surgery before knowing how to use a bandaid.
+
+<!-- vale Custom.OxfordComma = YES -->
 
 # Foreword
 

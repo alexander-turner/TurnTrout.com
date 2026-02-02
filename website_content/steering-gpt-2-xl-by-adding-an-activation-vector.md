@@ -984,7 +984,7 @@ However, activation additions may end up only contributing modestly to direct al
 This work was completed by the shard theory model internals team:
 
 Alex Turner (lead)
-: Had the idea for activation additions, implemented many core features, designed many experiments and found many steering vectors, managed the team, wrote much of the post, edited and gave feedback on others' contributions.
+: Had the idea for activation additions, implemented many core features, designed many experiments, and found many steering vectors, managed the team, wrote much of the post, edited, and gave feedback on others' contributions.
 
 Monte MacDiarmid (researcher)
 : Code, experiments, quantitative results.

@@ -13,6 +13,7 @@ tokens:
   - a penny saved is a penny earned
   - a tough row to hoe
   - a word to the wise
+  - above and beyond
   - ace in the hole
   - acid test
   - add insult to injury
@@ -27,6 +28,7 @@ tokens:
   - all your eggs in one basket
   - all's fair in love and war
   - all's well that ends well
+  - alive and well
   - almighty dollar
   - American as apple pie
   - an axe to grind
@@ -191,6 +193,7 @@ tokens:
   - don't rock the boat
   - don't step on anyone's toes
   - don't take any wooden nickels
+  - done and dusted
   - down and out
   - down at the heels
   - down in the dumps
@@ -220,6 +223,7 @@ tokens:
   - eyes peeled
   - face the music
   - facts of life
+  - fair and square
   - fair weather friend
   - fall by the wayside
   - fan the flames
@@ -400,6 +404,7 @@ tokens:
   - law of the jungle
   - law of the land
   - lay down the law
+  - lean and mean
   - leaps and bounds
   - let sleeping dogs lie
   - let the cat out of the bag
@@ -429,6 +434,7 @@ tokens:
   - looking a gift horse in the mouth
   - looks like death warmed over
   - loose cannon
+  - loud and clear
   - lose your head
   - lose your temper
   - loud as a horn
@@ -547,6 +553,7 @@ tokens:
   - pitter patter of little feet
   - plain as day
   - plain as the nose on your face
+  - plain and simple
   - play by the rules
   - play your cards right
   - playing the field
@@ -557,11 +564,13 @@ tokens:
   - poor as a church mouse
   - pot calling the kettle black
   - presidential timber
+  - prim and proper
   - pretty as a picture
   - pull a fast one
   - pull your punches
   - pulled no punches
   - pulling your leg
+  - pure and simple
   - pure as the driven snow
   - put it in a nutshell
   - put one over on you
@@ -600,6 +609,7 @@ tokens:
   - running in circles
   - sad but true
   - sadder but wiser
+  - safe and sound
   - salt of the earth
   - scared stiff
   - scared to death
@@ -619,6 +629,7 @@ tokens:
   - shot in the dark
   - shoulder to the wheel
   - sick as a dog
+  - sick and tired
   - sigh of relief
   - signed, sealed, and delivered
   - sink or swim
@@ -637,6 +648,7 @@ tokens:
   - spare the rod, spoil the child
   - speak of the devil
   - spilled the beans
+  - spick and span
   - spinning your wheels
   - spitting image of
   - spoke with relish
@@ -731,6 +743,7 @@ tokens:
   - various and sundry
   - vested interest
   - viable alternative
+  - vim and vigor
   - waiting for the other shoe to drop
   - wakeup call
   - warm welcome
@@ -760,6 +773,7 @@ tokens:
   - wild goose chase
   - will wonders never cease?
   - wisdom of the ages
+  - wine and dine
   - wise as an owl
   - wolf at the door
   - wool pulled over our eyes
