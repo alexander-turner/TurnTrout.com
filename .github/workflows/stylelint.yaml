@@ -3,8 +3,19 @@ name: Stylelint SCSS
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**/*.scss"
+      - "config/stylelint/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main", "dev"]
+    paths:
+      - "quartz/**/*.scss"
+      - "config/stylelint/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read

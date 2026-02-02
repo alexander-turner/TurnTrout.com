@@ -3,8 +3,19 @@ name: Source file checks
 on:
   push:
     branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "quartz/**"
+      - "scripts/source_file_checks.py"
+      - "config/**"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main", "dev"]
+    paths:
+      - "website_content/**"
+      - "quartz/**"
+      - "scripts/source_file_checks.py"
+      - "config/**"
+      - ".github/actions/**"
 
 permissions:
   actions: read

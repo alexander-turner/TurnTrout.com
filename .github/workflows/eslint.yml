@@ -12,9 +12,19 @@ name: JavaScript linting
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "config/javascript/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main", "dev"]
+    paths:
+      - "quartz/**"
+      - "config/javascript/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   schedule:
     - cron: "16 12 * * 4"
 

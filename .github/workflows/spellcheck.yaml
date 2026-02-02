@@ -3,8 +3,13 @@ name: Spellcheck
 on:
   push:
     branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "config/spellcheck/**"
   pull_request:
-    branches: ["main", "dev"]
+    paths:
+      - "website_content/**"
+      - "config/spellcheck/**"
 
 permissions:
   actions: read
