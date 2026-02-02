@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# First initialize conda
-CONDA="/opt/homebrew/anaconda3/bin/conda"
-eval "$("$CONDA" shell.bash hook)"
-
-# Then check and activate environment
-if [ "$CONDA_DEFAULT_ENV" != "website" ]; then
-  conda activate website
-fi
-
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Check if .timestamps directory exists
@@ -18,18 +9,30 @@ if [ ! -d "$GIT_ROOT/.timestamps" ]; then
   exit 1
 fi
 
-# Store file modification times before formatting
-touch /tmp/before_format /tmp/after_format
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/before_format
+# Use unique temp files to avoid conflicts with parallel commits
+BEFORE_FORMAT=$(mktemp)
+AFTER_FORMAT=$(mktemp)
+trap 'rm -f "$BEFORE_FORMAT" "$AFTER_FORMAT"' EXIT
 
-docformatter --in-place "$GIT_ROOT"/scripts/**.py --config "$GIT_ROOT"/config/python/pyproject.toml
-pyupgrade "$GIT_ROOT"/scripts/**.py
+# Use cross-platform stat syntax
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  STAT_CMD='stat -f "%m %N"'
+else
+  STAT_CMD='stat -c "%Y %n"'
+fi
+
+# Store file modification times before formatting
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec sh -c "$STAT_CMD \"\$1\"" _ {} \; >"$BEFORE_FORMAT"
+
+# Format Python files (use find to get proper glob expansion)
+find "$GIT_ROOT"/scripts -name "*.py" -type f -print0 | xargs -0 docformatter --in-place --config "$GIT_ROOT"/config/python/pyproject.toml 2>/dev/null || true
+find "$GIT_ROOT"/scripts -name "*.py" -type f -print0 | xargs -0 pyupgrade 2>/dev/null || true
 
 # Store file modification times after formatting
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat -f "%m %N" {} \; >/tmp/after_format
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec sh -c "$STAT_CMD \"\$1\"" _ {} \; >"$AFTER_FORMAT"
 
 # Compare and stage only modified files
-diff /tmp/before_format /tmp/after_format | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
+diff "$BEFORE_FORMAT" "$AFTER_FORMAT" | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
 
 # Run normal lint-staged using pnpm instead of npx to avoid npm warnings
 pnpm exec lint-staged --allow-empty
