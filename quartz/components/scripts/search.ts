@@ -1103,7 +1103,6 @@ async function initializeSearch(): Promise<void> {
   }
   const originalPlaceholder = searchBar?.placeholder
   searchBar.placeholder = "Loading search..."
-  searchBar.disabled = true
 
   try {
     // Create the index
@@ -1122,13 +1121,15 @@ async function initializeSearch(): Promise<void> {
     searchInitializing = false
 
     // Restore search bar state
-    searchBar.disabled = false
     if (originalPlaceholder) {
       searchBar.placeholder = originalPlaceholder
     }
     updatePlaceholder(searchBar)
-    // Refocus after re-enabling (disabling causes focus loss)
-    searchBar.focus()
+
+    // If user typed while loading, trigger a search now
+    if (searchBar.value.trim() !== "") {
+      searchBar.dispatchEvent(new Event("input", { bubbles: true }))
+    }
   }
 }
 
