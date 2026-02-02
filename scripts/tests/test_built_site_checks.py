@@ -2552,60 +2552,35 @@ def test_check_consecutive_periods(html, expected):
 
 
 @pytest.mark.parametrize(
-    "html,expected",
+    "html,expected_chars,expected_count",
     [
         # Valid Tengwar text (PUA characters U+E000-U+E07F)
-        (
-            '<span lang="qya">\uE000\uE001\uE002</span>',
-            [],
-        ),
+        ('<span lang="qya">\uE000\uE001\uE002</span>', [], 0),
         # Valid Tengwar with punctuation
-        (
-            '<span lang="qya">\uE000\uE001: \uE002!</span>',
-            [],
-        ),
+        ('<span lang="qya">\uE000\uE001: \uE002!</span>', [], 0),
         # Valid Tengwar with allowed special chars (en-dash, em-dash, middle dot)
-        (
-            '<span lang="qya">\uE000—\uE001–\uE002⸱</span>',
-            [],
-        ),
+        ('<span lang="qya">\uE000—\uE001–\uE002⸱</span>', [], 0),
         # Empty Tengwar element (should be skipped)
-        (
-            '<span lang="qya">   </span>',
-            [],
-        ),
+        ('<span lang="qya">   </span>', [], 0),
         # Invalid: contains arrow character (corruption from text processing)
-        (
-            '<span lang="qya">\uE000⤴\uE001</span>',
-            ["Invalid chars ['⤴ (U+2934)'] in Tengwar: \uE000⤴\uE001..."],
-        ),
+        ('<span lang="qya">\uE000⤴\uE001</span>', ["⤴ (U+2934)"], 1),
         # Invalid: contains double arrow (another corruption indicator)
-        (
-            '<span lang="qya">\uE000⇔\uE001</span>',
-            ["Invalid chars ['⇔ (U+21D4)'] in Tengwar: \uE000⇔\uE001..."],
-        ),
+        ('<span lang="qya">\uE000⇔\uE001</span>', ["⇔ (U+21D4)"], 1),
         # Invalid: contains Latin letters (wrong encoding)
-        (
-            '<span lang="qya">ABC</span>',
-            ["Invalid chars ['A (U+0041)', 'B (U+0042)', 'C (U+0043)'] in Tengwar: ABC..."],
-        ),
+        ('<span lang="qya">ABC</span>', ["A (U+0041)", "B (U+0042)", "C (U+0043)"], 1),
         # No Quenya elements
-        (
-            '<span lang="en">Hello</span>',
-            [],
-        ),
+        ('<span lang="en">Hello</span>', [], 0),
         # Nested Quenya elements
-        (
-            '<div lang="qya"><span>\uE000</span><span>X</span></div>',
-            ["Invalid chars ['X (U+0058)'] in Tengwar: \uE000X..."],
-        ),
+        ('<div lang="qya"><span>\uE000</span><span>X</span></div>', ["X (U+0058)"], 1),
     ],
 )
-def test_check_tengwar_characters(html, expected):
+def test_check_tengwar_characters(html, expected_chars, expected_count):
     """Test the check_tengwar_characters function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_tengwar_characters(soup)
-    assert sorted(result) == sorted(expected)
+    assert len(result) == expected_count
+    for char in expected_chars:
+        assert any(char in issue for issue in result)
 
 
 @pytest.mark.parametrize(

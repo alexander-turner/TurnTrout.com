@@ -1049,11 +1049,9 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
                 if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
                     invalid_chars.add(f"{char} (U+{ord(char):04X})")
 
-            # Sort for deterministic output
-            sorted_chars = sorted(invalid_chars)
             _append_to_list(
                 issues,
-                f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
+                f"Invalid chars {invalid_chars} in Tengwar: {text[:50]}...",
             )
 
     return issues
