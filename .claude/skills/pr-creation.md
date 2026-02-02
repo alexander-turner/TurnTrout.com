@@ -120,6 +120,28 @@ EOF
 
 Provide the PR URL and title to the user.
 
+## Updating the PR Description
+
+**After each subsequent commit**, update the PR description to reflect the new changes:
+
+```bash
+gh pr edit --body "$(cat <<'EOF'
+## Summary
+<Updated summary reflecting all changes>
+
+## Changes
+<Updated list of all changes, including new commits>
+
+## Testing
+<Updated testing information>
+
+https://claude.ai/code/session_...
+EOF
+)"
+```
+
+This keeps reviewers informed of the PR's current state without requiring them to parse individual commits.
+
 ## Error Handling
 
 - **Critique finds issues**: Fix them before proceeding
