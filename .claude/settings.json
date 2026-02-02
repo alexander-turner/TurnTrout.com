@@ -11,46 +11,6 @@
           }
         ]
       }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash(git push*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && cat .claude/skills/pre-pr-checklist.md"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash(gh pr *)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && cat .claude/skills/pre-pr-checklist.md"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash(gh pr create*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '=== WAITING FOR CI ===' && sleep 10 && gh pr checks --watch 2>&1"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash(git push*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '=== CHECKING PR STATUS ===' && sleep 10 && gh pr checks --watch 2>&1"
-          }
-        ]
-      }
     ]
   }
 }
