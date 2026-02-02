@@ -3,7 +3,23 @@ name: Built site checks
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/built_site_checks.py"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   pull_request:
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/built_site_checks.py"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
