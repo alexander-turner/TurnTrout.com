@@ -1006,7 +1006,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.["""]*\.', str(element)):
+            if re.search(r'(?!\.\.\?)\.["""\u201c\u201d]*\.', str(element)):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1049,9 +1049,11 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
                 if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
                     invalid_chars.add(f"{char} (U+{ord(char):04X})")
 
+            # Sort for deterministic output
+            sorted_chars = sorted(invalid_chars)
             _append_to_list(
                 issues,
-                f"Invalid chars {invalid_chars} in Tengwar: {text[:50]}...",
+                f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
             )
 
     return issues
