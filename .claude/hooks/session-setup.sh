@@ -55,7 +55,16 @@ fi
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
   echo "Cloning .timestamps repo..."
   rm -rf "$PROJECT_DIR/.timestamps" 2>/dev/null
-  git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" || echo "Warning: Failed to clone .timestamps"
+  if [ -n "$GH_TOKEN" ]; then
+    git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps" "$PROJECT_DIR/.timestamps" || echo "Warning: Failed to clone .timestamps"
+  else
+    git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" || echo "Warning: Failed to clone .timestamps"
+  fi
+fi
+
+# Configure .timestamps repo auth if GH_TOKEN is set
+if [ -n "$GH_TOKEN" ] && [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
+  git -C "$PROJECT_DIR/.timestamps" remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps"
 fi
 
 # Enable git hooks
