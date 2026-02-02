@@ -196,3 +196,7 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
+
+### Pull Requests
+
+When suggesting a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md. Then edit CLAUDE.md to be more useful in the future.
