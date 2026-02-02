@@ -111,7 +111,9 @@ export async function countPlaywrightTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export const PYTEST_COUNT_CMD = "bash -lc '.venv/bin/pytest --collect-only -q' 2>&1 | tail -20"
+// Override addopts to avoid requiring plugins (--cov, -n) that may not be installed
+export const PYTEST_COUNT_CMD =
+  "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
 
 // skipcq: JS-D1001
 export async function countPythonTests(): Promise<number> {
