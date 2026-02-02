@@ -39,6 +39,23 @@ export function isBibtexCachePopulated(): boolean {
 }
 
 /**
+ * Rebuilds the bibtex cache from processed content.
+ * Called during emit phase to restore cache state that may have been lost
+ * when content was processed in worker threads.
+ */
+export function rebuildBibtexCacheFromContent(
+  content: Array<[unknown, { data?: { slug?: string; bibtexContent?: string } }]>,
+): void {
+  for (const [, file] of content) {
+    const slug = file.data?.slug
+    const bibtexContent = file.data?.bibtexContent
+    if (slug && bibtexContent) {
+      bibtexCache.set(slug, bibtexContent)
+    }
+  }
+}
+
+/**
  * Parses a single author name into CSL-JSON author format using humanparser.
  * Handles edge cases like compound surnames (van Beethoven), suffixes (Jr., III), etc.
  */
