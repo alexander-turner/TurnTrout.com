@@ -35,6 +35,11 @@ const remarkCaptionsCodeFix = () => (tree: HTMLRoot) => {
 export type QuartzProcessor = Processor<Root, Root, HTMLRoot>
 export function createProcessor(ctx: BuildCtx): QuartzProcessor {
   const transformers = ctx.cfg.plugins.transformers
+  const offline = ctx.argv.offline ?? false
+
+  // Use pre-mermaid strategy in offline mode for faster builds (client-side rendering)
+  // Use inline-svg for production builds (server-side rendering, better SEO)
+  const mermaidStrategy = offline ? "pre-mermaid" : "inline-svg"
 
   return (
     unified()
@@ -52,7 +57,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
       .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })
       // Rehype plugins
       .use(rehypeMermaid, {
-        strategy: "inline-svg",
+        strategy: mermaidStrategy,
         mermaidConfig: {
           theme: "default",
           themeVariables: { lineColor: "var(--gray)" },
@@ -154,8 +159,9 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
   const perf = new PerfTimer()
   const log = createWinstonLogger("parse")
 
-  // rough heuristics: 128 gives enough time for v8 to JIT and optimize parsing code paths
-  const CHUNK_SIZE = 128
+  // Use smaller chunks to enable parallelization with worker threads
+  // With 155 files and CHUNK_SIZE=32, we get 4 workers processing in parallel
+  const CHUNK_SIZE = 32
   const concurrency = ctx.argv.concurrency ?? clamp(fps.length / CHUNK_SIZE, 1, 4)
 
   let res: ProcessedContent[] = []

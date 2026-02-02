@@ -32,7 +32,46 @@ interface BuildArguments {
   port: number
   wsPort: number
 }
+
+const CRITICAL_CSS_CACHE_FILE = "quartz/.quartz-cache/critical.css"
 let cachedCriticalCSS = ""
+
+/**
+ * Loads cached critical CSS from disk if available
+ */
+async function loadCachedCriticalCSS(): Promise<void> {
+  if (cachedCriticalCSS !== "") return
+  try {
+    cachedCriticalCSS = await fsPromises.readFile(CRITICAL_CSS_CACHE_FILE, "utf-8")
+    console.log("Loaded cached critical CSS from disk")
+  } catch {
+    // Cache file doesn't exist, will generate fresh
+  }
+}
+
+/**
+ * Saves critical CSS to disk for persistence across builds
+ */
+async function saveCriticalCSSToCache(css: string): Promise<void> {
+  try {
+    await fsPromises.mkdir(path.dirname(CRITICAL_CSS_CACHE_FILE), { recursive: true })
+    await fsPromises.writeFile(CRITICAL_CSS_CACHE_FILE, css, "utf-8")
+  } catch (err) {
+    console.warn(`Warning: Could not save critical CSS cache: ${err}`)
+  }
+}
+
+/**
+ * Invalidates the cached critical CSS (both memory and disk)
+ */
+async function invalidateCriticalCSSCache(): Promise<void> {
+  cachedCriticalCSS = ""
+  try {
+    await fsPromises.unlink(CRITICAL_CSS_CACHE_FILE)
+  } catch {
+    // File might not exist, that's fine
+  }
+}
 
 /**
  * Resets the cached critical CSS (for testing purposes)
@@ -40,6 +79,8 @@ let cachedCriticalCSS = ""
 export function resetCriticalCSSCache(): void {
   cachedCriticalCSS = ""
 }
+
+export { invalidateCriticalCSSCache, loadCachedCriticalCSS, CRITICAL_CSS_CACHE_FILE }
 
 /**
  * Checks if a port is available by attempting to listen on it
@@ -80,6 +121,8 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
   generateScss()
   console.log("SCSS variables generated successfully!")
 
+  // Load cached critical CSS from disk if available
+  await loadCachedCriticalCSS()
   const ctx: Context = await context({
     entryPoints: [fp],
     outfile: cacheFile,
@@ -177,7 +220,6 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
     // Use the dynamically constructed path in the import statement
     const { default: buildQuartz } = await import(modulePath)
-
     cleanupBuild = await buildQuartz(argv, buildMutex, clientRefresh)
 
     clientRefresh()
@@ -312,7 +354,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     ],
   }).on("all", async (_event, fp) => {
     if (fp.endsWith(".scss")) {
-      cachedCriticalCSS = ""
+      await invalidateCriticalCSSCache()
       console.log(chalk.yellow("SCSS change detected, invalidating critical CSS cache."))
     }
     await build(clientRefresh)
@@ -427,6 +469,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       }
 
       cachedCriticalCSS = css + replacedCss
+      await saveCriticalCSSToCache(cachedCriticalCSS)
       console.log("Cached critical CSS with manually-provided styles")
     } catch (error) {
       console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)
