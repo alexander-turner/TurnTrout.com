@@ -7,11 +7,23 @@
       },
       {
         "type": "command",
-        "command": "[ -d .timestamps ] || git clone https://github.com/alexander-turner/.timestamps .timestamps && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] .timestamps ready\""
+        "command": "[ -d .timestamps/.git ] || git clone https://github.com/alexander-turner/.timestamps .timestamps && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] .timestamps ready\""
       },
       {
         "type": "command",
         "command": "command -v ots >/dev/null 2>&1 || pip3 install -q opentimestamps-client && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] opentimestamps ready\""
+      },
+      {
+        "type": "command",
+        "command": "command -v docformatter >/dev/null 2>&1 || pip3 install -q docformatter && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] docformatter ready\""
+      },
+      {
+        "type": "command",
+        "command": "command -v pyupgrade >/dev/null 2>&1 || pip3 install -q pyupgrade && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] pyupgrade ready\""
+      },
+      {
+        "type": "command",
+        "command": "[ -d node_modules ] || pnpm install && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] node_modules ready\""
       }
     ]
   }

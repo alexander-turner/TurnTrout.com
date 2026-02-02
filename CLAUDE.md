@@ -187,6 +187,7 @@ Per `.cursorrules` and `design.md`:
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
+- In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
 ### Testing
 

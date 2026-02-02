@@ -12,10 +12,11 @@ rollback() {
   exit 1
 }
 
-# Check if .timestamps is a git repo (skip if just a directory)
+# Check if .timestamps is a git repo
 if [ ! -d "$timestamps_repo/.git" ]; then
-  echo "WARNING: .timestamps is not a git repo, skipping OpenTimestamp proof"
-  exit 0
+  echo "ERROR: .timestamps is not a git repo!"
+  echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+  exit 1
 fi
 
 # Find ots binary (check multiple locations)
@@ -27,8 +28,9 @@ elif command -v ots >/dev/null 2>&1; then
 fi
 
 if [ -z "$OTS_BIN" ]; then
-  echo "WARNING: ots not found, skipping OpenTimestamp proof"
-  exit 0
+  echo "ERROR: ots not found!"
+  echo "Install with: pip3 install opentimestamps-client"
+  exit 1
 fi
 
 mkdir -p "$timestamps_dir"
@@ -58,11 +60,11 @@ cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
 git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
 
-# Push to timestamps repo - warn but don't rollback if no push access
+# Push to timestamps repo
 if ! git push --quiet 2>/dev/null; then
-  echo "WARNING: Could not push to .timestamps repo (no credentials?). Timestamp committed locally."
+  echo "ERROR: Could not push to .timestamps repo (no credentials?)."
   cd "$git_root" || exit 1
-  exit 0
+  exit 1
 fi
 
 cd "$git_root" || exit 1

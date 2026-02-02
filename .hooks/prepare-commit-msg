@@ -37,21 +37,22 @@ try {
   // attempt generation (Git will surface any real error).
 }
 
-// Get API key from envchain (skip gracefully if not available)
+// Get API key from envchain
 let API_KEY
 try {
   const result = execSync("envchain ai sh -c 'echo $REDPILL_API_KEY'", {
     encoding: "utf8",
   })
   API_KEY = result?.trim()
-} catch {
-  // envchain not available - skip auto-generation
-  process.exit(0)
+} catch (error) {
+  console.error("Error: Failed to retrieve REDPILL_API_KEY from envchain")
+  console.error("Make sure you have set it with: envchain --set ai REDPILL_API_KEY")
+  process.exit(1)
 }
 
 if (!API_KEY) {
-  // API key not configured - skip auto-generation
-  process.exit(0)
+  console.error("Error: REDPILL_API_KEY is empty in envchain")
+  process.exit(1)
 }
 
 async function generateCommitMessage() {
