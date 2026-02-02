@@ -13,7 +13,7 @@ if [ -n "$CLAUDE_ENV_FILE" ]; then
 fi
 
 # Install Python tools if missing
-if ! command -v docformatter &>/dev/null; then
+if ! command -v docformatter &>/dev/null || ! command -v ots &>/dev/null; then
   echo "Installing Python tools..."
   pip3 install --quiet docformatter pyupgrade opentimestamps-client || echo "Warning: Failed to install Python tools"
 fi
