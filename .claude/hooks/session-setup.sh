@@ -51,14 +51,20 @@ if ! command -v gh &>/dev/null; then
   fi
 fi
 
-# Clone .timestamps repo if missing
+# Clone .timestamps repo if missing (required for post-commit hooks)
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
   echo "Cloning .timestamps repo..."
   rm -rf "$PROJECT_DIR/.timestamps" 2>/dev/null
   if [ -n "$GH_TOKEN" ]; then
-    git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps" "$PROJECT_DIR/.timestamps" || echo "Warning: Failed to clone .timestamps"
+    git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps" "$PROJECT_DIR/.timestamps" || {
+      echo "ERROR: Failed to clone .timestamps repo. Post-commit hooks will not work."
+      exit 1
+    }
   else
-    git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" || echo "Warning: Failed to clone .timestamps"
+    git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" || {
+      echo "ERROR: Failed to clone .timestamps repo. Post-commit hooks will not work."
+      exit 1
+    }
   fi
 fi
 
