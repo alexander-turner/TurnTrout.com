@@ -12,6 +12,27 @@ rollback() {
   exit 1
 }
 
+# Check if .timestamps is a git repo
+if [ ! -d "$timestamps_repo/.git" ]; then
+  echo "ERROR: .timestamps is not a git repo!"
+  echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+  exit 1
+fi
+
+# Find ots binary (check multiple locations)
+OTS_BIN=""
+if [ -x "/opt/homebrew/anaconda3/envs/website/bin/ots" ]; then
+  OTS_BIN="/opt/homebrew/anaconda3/envs/website/bin/ots"
+elif command -v ots >/dev/null 2>&1; then
+  OTS_BIN="$(command -v ots)"
+fi
+
+if [ -z "$OTS_BIN" ]; then
+  echo "ERROR: ots not found!"
+  echo "Install with: pip3 install opentimestamps-client"
+  exit 1
+fi
+
 mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
@@ -38,5 +59,12 @@ done
 cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
 git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
-git push --quiet || rollback "Failed to push timestamp files!"
+
+# Push to timestamps repo
+if ! git push --quiet 2>/dev/null; then
+  echo "ERROR: Could not push to .timestamps repo (no credentials?)."
+  cd "$git_root"
+  exit 1
+fi
+
 cd "$git_root" || exit 1

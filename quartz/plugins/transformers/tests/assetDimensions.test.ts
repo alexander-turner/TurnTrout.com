@@ -16,6 +16,8 @@ import { h } from "hastscript"
 import os from "os"
 import path from "path"
 
+import type { BuildCtx } from "../../../util/ctx"
+
 const testVideoUrl = "https://assets.turntrout.com/video.mp4"
 const mockVideoData = Buffer.from("fakevideocontent")
 const mockVideoWidth = 640
@@ -1006,7 +1008,8 @@ describe("Asset Dimensions Plugin", () => {
       const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       const img1Node = tree.children[0] as Element
@@ -1051,7 +1054,8 @@ describe("Asset Dimensions Plugin", () => {
       const tree: Root = { type: "root", children: [] }
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       expect(tree.children).toHaveLength(0)
@@ -1067,10 +1071,32 @@ describe("Asset Dimensions Plugin", () => {
         ],
       }
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       expect(mockedFetch).not.toHaveBeenCalled()
+    })
+
+    it("should skip remote assets in offline mode", async () => {
+      const cdnImgSrc = "https://assets.turntrout.com/static/images/test.avif"
+      const tree: Root = {
+        type: "root",
+        children: [h("img", { src: cdnImgSrc }) as Element],
+      }
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: { offline: true } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      // In offline mode, remote assets should not be fetched
+      expect(mockedFetch).not.toHaveBeenCalled()
+
+      // The image should not have dimensions added (since we skipped the fetch)
+      const imgNode = tree.children[0] as Element
+      expect(imgNode.properties?.width).toBeUndefined()
+      expect(imgNode.properties?.height).toBeUndefined()
     })
   })
 
