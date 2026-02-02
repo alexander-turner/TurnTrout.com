@@ -1,5 +1,7 @@
 # Pull Request Creation Skill
 
+**IMPORTANT: Always follow this skill before creating any PR.** Do not skip steps, especially the self-critique.
+
 This skill guides Claude through creating high-quality pull requests with mandatory self-critique before submission.
 
 ## When to Use
@@ -148,3 +150,7 @@ This keeps reviewers informed of the PR's current state without requiring them t
 - **Tests fail**: Fix the tests, don't skip them
 - **gh not authenticated**: User should run `gh auth login`
 - **Push fails**: Check branch permissions and remote configuration
+
+## Self-Improvement
+
+When creating a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md or skill files. Then edit them to be more useful in the future.

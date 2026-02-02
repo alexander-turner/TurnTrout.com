@@ -82,10 +82,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
-**Pull requests**: See `.claude/skills/pr-creation.md` for the full workflow. Key points:
-- Run self-critique before creating PRs
-- Update the PR description after each commit to reflect new changes
-- Use `gh pr edit --body` to update existing PR descriptions
+**Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
 **Pre-push** (main branch only):
 
@@ -202,9 +199,3 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
-
-### Pull Requests
-
-When suggesting a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md. Then edit CLAUDE.md to be more useful in the future.
-
-Update the PR description whenever significant and relevant changes are made to keep it accurate. Provide the updated description in a markdown code block. Do not include a "test plan."
