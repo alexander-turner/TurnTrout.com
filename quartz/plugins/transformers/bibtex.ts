@@ -107,7 +107,17 @@ export function generateBibtexEntry(
 
   // Convert to BibTeX using citation.js
   const cite = new Cite(cslEntry)
-  return cite.format("bibtex", { format: "text" })
+  let bibtex = cite.format("bibtex", { format: "text" })
+
+  // Strip citation.js's aggressive title-case protection braces
+  // It wraps every capitalized word like {Word} which is noisy for non-LaTeX use
+  bibtex = bibtex.replace(/title = \{(?<titleContent>.+)\}/s, (_match, titleContent: string) => {
+    // Remove protective braces around single words: {Word} → Word
+    const cleaned = titleContent.replace(/\{(?<word>\w+)\}/g, "$<word>")
+    return `title = {${cleaned}}`
+  })
+
+  return bibtex
 }
 
 /**

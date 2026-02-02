@@ -51,7 +51,7 @@ describe("generateBibtexEntry", () => {
       expectations: [
         "@misc{",
         "author = {Turner, Alex}",
-        "title = {Test {Article}}",
+        "title = {Test Article}",
         "year = {2022}",
         "url = {https://turntrout.com/test-article}",
       ],
