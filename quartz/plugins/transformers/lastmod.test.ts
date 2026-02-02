@@ -1,17 +1,11 @@
 /**
  * @jest-environment node
  */
-import { beforeEach, describe, expect, it, jest } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import { coerceDate, CreatedModifiedDate } from "./lastmod"
 
 describe("coerceDate", () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(jest.fn())
-
-  beforeEach(() => {
-    consoleSpy.mockClear()
-  })
-
   it.each([
     ["ISO 8601 date", "2024-01-19T00:47:04.621Z", new Date("2024-01-19T00:47:04.621Z")],
     ["date with space separator", "2024-01-19 20:10:07", new Date("2024-01-19T20:10:07")],
@@ -20,35 +14,27 @@ describe("coerceDate", () => {
   ])("parses valid date: %s", (_, input, expected) => {
     const result = coerceDate("test.md", input)
     expect(result.getTime()).toBe(expected.getTime())
-    expect(consoleSpy).not.toHaveBeenCalled()
   })
 
-  it("returns current date for undefined input without warning", () => {
+  it("returns current date for undefined input", () => {
     const before = Date.now()
     const result = coerceDate("test.md", undefined)
     const after = Date.now()
     expect(result.getTime()).toBeGreaterThanOrEqual(before)
     expect(result.getTime()).toBeLessThanOrEqual(after)
-    expect(consoleSpy).not.toHaveBeenCalled()
   })
 
   it.each([
-    ["Unix epoch (0)", 0, '"0"'],
-    ["invalid string", "not-a-date", '"not-a-date"'],
-  ])("warns and returns current date for %s", (_, input, expectedWarning) => {
-    const before = Date.now()
-    const result = coerceDate("test.md", input)
-    const after = Date.now()
-    expect(result.getTime()).toBeGreaterThanOrEqual(before)
-    expect(result.getTime()).toBeLessThanOrEqual(after)
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(`invalid date ${expectedWarning}`))
+    ["Unix epoch (0)", 0],
+    ["invalid string", "not-a-date"],
+  ])("throws for invalid date: %s", (_, input) => {
+    expect(() => coerceDate("test.md", input)).toThrow("Invalid date")
   })
 
-  it("includes file path and documentation link in warning", () => {
-    coerceDate("my/custom/path.md", "invalid")
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("my/custom/path.md"))
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("developer.mozilla.org/en-US/docs/Web/JavaScript"),
+  it("includes file path and documentation link in error", () => {
+    expect(() => coerceDate("my/custom/path.md", "invalid")).toThrow("my/custom/path.md")
+    expect(() => coerceDate("test.md", "invalid")).toThrow(
+      "developer.mozilla.org/en-US/docs/Web/JavaScript",
     )
   })
 })

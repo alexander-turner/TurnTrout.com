@@ -6,8 +6,8 @@ export function coerceDate(fp: string, d: MaybeDate): Date {
   const parsedDate = typeof d === "number" ? new Date(d) : new Date(d as string)
   const isInvalidDate = isNaN(parsedDate.getTime()) || parsedDate.getTime() === 0
   if (isInvalidDate && d !== undefined) {
-    console.log(
-      `\nWarning: found invalid date "${d}" in \`${fp}\`. Supported formats: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format`,
+    throw new Error(
+      `Invalid date "${d}" in \`${fp}\`. Supported formats: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format`,
     )
   }
   return isInvalidDate ? new Date() : parsedDate
