@@ -38,6 +38,24 @@ export function isBibtexCachePopulated(): boolean {
 }
 
 /**
+ * Rebuilds the bibtex cache from processed content.
+ * This is necessary because when parsing happens in worker threads,
+ * the cache is populated in the workers but not in the main thread.
+ * Call this before emitting to ensure the cache is populated.
+ */
+export function rebuildBibtexCacheFromContent(
+  content: Array<[unknown, { data: { slug?: string; bibtexContent?: string } }]>,
+): void {
+  for (const [, file] of content) {
+    const slug = file.data.slug
+    const bibtexContent = file.data.bibtexContent
+    if (slug && bibtexContent) {
+      bibtexCache.set(slug, bibtexContent)
+    }
+  }
+}
+
+/**
  * Parses a single author name into CSL-JSON author format.
  * Assumes "First Middle Last" format where the last word is the family name.
  */
@@ -177,6 +195,9 @@ function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
 
   // Cache for populateContainers to use later
   bibtexCache.set(slug, bibtexContent)
+
+  // Store in file.data so it survives worker thread serialization
+  file.data.bibtexContent = bibtexContent
 
   insertBibtexBeforeOrnament(tree, bibtexContent)
 }

@@ -656,7 +656,12 @@ This is a plain code block without a language specified.
 
 Elvish
 <!-- spellchecker-disable -->
-: <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
+
+: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
+
+: <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+
 <!-- spellchecker-enable -->
 
 Scrawled handwriting

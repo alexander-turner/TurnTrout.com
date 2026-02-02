@@ -15,6 +15,8 @@ import {
   getBibtexForSlug,
   clearBibtexCache,
   isBibtexCachePopulated,
+  rebuildBibtexCacheFromContent,
+  parseAuthors,
 } from "../bibtex"
 import { ornamentNode } from "../trout_hr"
 
@@ -340,5 +342,39 @@ describe("Bibtex cache", () => {
     transformer(tree, createMockFile({ createBibtex: true, date_published: "2022-06-15" }))
 
     expect(isBibtexCachePopulated()).toBe(true)
+  })
+
+  describe("parseAuthors", () => {
+    it("returns Unknown for empty author name", () => {
+      expect(parseAuthors([""])).toEqual([{ family: "Unknown" }])
+      expect(parseAuthors(["   "])).toEqual([{ family: "Unknown" }])
+    })
+  })
+
+  describe("rebuildBibtexCacheFromContent", () => {
+    it("rebuilds cache from content with bibtexContent", () => {
+      const content = [
+        [{}, { data: { slug: "page-1", bibtexContent: "@article{page1}" } }],
+        [{}, { data: { slug: "page-2", bibtexContent: "@article{page2}" } }],
+      ] as Parameters<typeof rebuildBibtexCacheFromContent>[0]
+
+      rebuildBibtexCacheFromContent(content)
+
+      expect(getBibtexForSlug("page-1")).toBe("@article{page1}")
+      expect(getBibtexForSlug("page-2")).toBe("@article{page2}")
+    })
+
+    it("skips entries without slug or bibtexContent", () => {
+      const content = [
+        [{}, { data: { slug: "has-slug" } }],
+        [{}, { data: { bibtexContent: "@article{no-slug}" } }],
+        [{}, { data: {} }],
+      ] as Parameters<typeof rebuildBibtexCacheFromContent>[0]
+
+      rebuildBibtexCacheFromContent(content)
+
+      expect(getBibtexForSlug("has-slug")).toBeUndefined()
+      expect(isBibtexCachePopulated()).toBe(false)
+    })
   })
 })
