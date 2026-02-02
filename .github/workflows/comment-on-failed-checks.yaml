@@ -23,6 +23,9 @@ permissions:
   pull-requests: write
   actions: read
 
+concurrency:
+  group: comment-on-failure-${{ github.event.workflow_run.pull_requests[0].number }}
+
 jobs:
   comment-on-failure:
     # Only run if the workflow failed and was triggered by a PR from a claude/ branch
@@ -43,57 +46,58 @@ jobs:
             const headSha = context.payload.workflow_run.head_sha.substring(0, 7);
 
             const trackerMarker = '<!-- claude-failure-tracker -->';
-            const maxAttempts = 2;
+            const maxAttempts = 2; // Stop pinging after 2 failures per workflow
 
-            // Find existing tracker comment
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
+            try {
+              // Find existing tracker comment (paginate to handle PRs with many comments)
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
 
-            const trackerComment = comments.find(c => c.body?.includes(trackerMarker));
+              const trackerComment = comments.find(c => c.body?.includes(trackerMarker));
 
-            // Parse existing failures from tracker comment
-            // Format: <!-- failures:{"Workflow":[{"run":123,"sha":"abc"},...],...} -->
-            let failures = {};
-            if (trackerComment) {
-              const match = trackerComment.body.match(/<!-- failures:(\{.*?\}) -->/);
-              if (match) {
-                try {
-                  failures = JSON.parse(match[1]);
-                } catch (e) {
-                  console.log('Failed to parse failures JSON, starting fresh');
+              // Parse existing failures from tracker comment
+              // Format: <!-- failures:{"Workflow":[{"run":123,"sha":"abc"},...],...} -->
+              let failures = {};
+              if (trackerComment) {
+                const match = trackerComment.body.match(/<!-- failures:(\{.*?\}) -->/);
+                if (match) {
+                  try {
+                    failures = JSON.parse(match[1]);
+                  } catch (e) {
+                    console.log('Failed to parse failures JSON, starting fresh');
+                  }
                 }
               }
-            }
 
-            // Check if we already tracked this specific run
-            if (failures[workflowName]?.some(f => f.run === runId)) {
-              console.log(`Already tracked run ${runId} for ${workflowName}, skipping`);
-              return;
-            }
+              // Check if we already tracked this specific run
+              if (failures[workflowName]?.some(f => f.run === runId)) {
+                console.log(`Already tracked run ${runId} for ${workflowName}, skipping`);
+                return;
+              }
 
-            // Check if workflow has exceeded max attempts
-            const workflowAttempts = failures[workflowName]?.length || 0;
-            if (workflowAttempts >= maxAttempts) {
-              console.log(`${workflowName} has ${workflowAttempts} failures (max: ${maxAttempts}), skipping`);
-              return;
-            }
+              // Check if workflow has exceeded max attempts
+              const workflowAttempts = failures[workflowName]?.length || 0;
+              if (workflowAttempts >= maxAttempts) {
+                console.log(`${workflowName} has ${workflowAttempts} failures (max: ${maxAttempts}), skipping`);
+                return;
+              }
 
-            // Add new failure
-            if (!failures[workflowName]) {
-              failures[workflowName] = [];
-            }
-            failures[workflowName].push({ run: runId, sha: headSha, url: runUrl });
+              // Add new failure
+              if (!failures[workflowName]) {
+                failures[workflowName] = [];
+              }
+              failures[workflowName].push({ run: runId, sha: headSha, url: runUrl });
 
-            // Build comment body
-            const failureLines = Object.entries(failures).map(([name, runs]) => {
-              const latest = runs[runs.length - 1];
-              return `- **${name}** [failed](${latest.url}) on commit ${latest.sha} (attempt ${runs.length}/${maxAttempts})`;
-            }).join('\n');
+              // Build comment body
+              const failureLines = Object.entries(failures).map(([name, runs]) => {
+                const latest = runs[runs.length - 1];
+                return `- **${name}** [failed](${latest.url}) on commit ${latest.sha} (attempt ${runs.length}/${maxAttempts})`;
+              }).join('\n');
 
-            const body = `${trackerMarker}
+              const body = `${trackerMarker}
 <!-- failures:${JSON.stringify(failures)} -->
 @claude The following workflows have failed:
 
@@ -101,20 +105,23 @@ ${failureLines}
 
 Please investigate and fix the issues.`;
 
-            if (trackerComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: trackerComment.id,
-                body: body,
-              });
-              console.log(`Updated tracker comment for ${workflowName} failure`);
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: body,
-              });
-              console.log(`Created tracker comment for ${workflowName} failure`);
+              if (trackerComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: trackerComment.id,
+                  body: body,
+                });
+                console.log(`Updated tracker comment for ${workflowName} failure`);
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: body,
+                });
+                console.log(`Created tracker comment for ${workflowName} failure`);
+              }
+            } catch (error) {
+              core.setFailed(`Failed to comment on PR: ${error.message}`);
             }
