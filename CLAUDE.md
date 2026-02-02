@@ -80,7 +80,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
 
-**Pre-commit**: Runs lint-staged formatters/linters on changed files
+**Pre-commit**: Runs lint-staged formatters/linters on changed files. **Never skip pre-commit hooks with `--no-verify`** - always fix the underlying issues instead.
 
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
