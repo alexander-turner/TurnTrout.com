@@ -1,0 +1,12 @@
+#!/bin/bash
+# Pre-commit hook: Format and lint staged files
+# Customize the lint-staged configuration in package.json
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Run lint-staged if available (via pnpm or npm)
+if command -v pnpm >/dev/null 2>&1 && [ -f "$GIT_ROOT/node_modules/.bin/lint-staged" ]; then
+  pnpm exec lint-staged --allow-empty
+elif command -v npm >/dev/null 2>&1 && [ -f "$GIT_ROOT/node_modules/.bin/lint-staged" ]; then
+  npx lint-staged --allow-empty
+fi

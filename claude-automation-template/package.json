@@ -1,0 +1,29 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "description": "Project with Claude Code automation",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Add your dev command'",
+    "build": "echo 'Add your build command'",
+    "start": "echo 'Add your start command'",
+    "test": "echo 'Add your test command'",
+    "lint": "echo 'Add your lint command (e.g., eslint .)'",
+    "check": "echo 'Add your type check command (e.g., tsc --noEmit)'",
+    "format": "prettier --write ."
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,md,yaml,yml}": [
+      "prettier --write"
+    ],
+    "*.sh": [
+      "shfmt -i 2 -w"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0"
+  }
+}

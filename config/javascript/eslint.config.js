@@ -76,6 +76,7 @@ export default [
       "**/*.min.ts",
       "quartz/i18n/",
       ".venv/",
+      "claude-automation-template/",
     ],
   },
 

@@ -1,0 +1,37 @@
+name: Node tests
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/node-tests.yaml"
+  pull_request:
+    paths:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/node-tests.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Run tests
+        run: pnpm test

@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # npm/pnpm ecosystem
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    versioning-strategy: auto
+
+  # Python uv ecosystem (if using uv.lock)
+  # Uncomment if you use Python with uv
+  # - package-ecosystem: "uv"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #   versioning-strategy: auto
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

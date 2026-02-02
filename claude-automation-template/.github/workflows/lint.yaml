@@ -1,0 +1,40 @@
+name: Lint
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/lint.yaml"
+  pull_request:
+    paths:
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.js"
+      - "**/*.jsx"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/lint.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Lint
+        run: pnpm lint

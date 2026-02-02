@@ -1,0 +1,12 @@
+#!/bin/sh
+# Commit message hook: Validate conventional commit format
+# Uses commitlint with @commitlint/config-conventional
+
+git_root="$(git rev-parse --show-toplevel)"
+
+# Run commitlint if available via pnpm or npm
+if command -v pnpm >/dev/null 2>&1 && [ -f "$git_root/node_modules/.bin/commitlint" ]; then
+  pnpm exec commitlint --edit "$1" --config config/javascript/commitlint.config.js
+elif command -v npm >/dev/null 2>&1 && [ -f "$git_root/node_modules/.bin/commitlint" ]; then
+  npx commitlint --edit "$1" --config config/javascript/commitlint.config.js
+fi
