@@ -396,10 +396,10 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">For now the Kindler, Varda, the Queen of the Stars,</span></span>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
 >
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">and out of a grey country darkness lies</span></span>
 >
@@ -414,7 +414,7 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">   :</span><span class="elvish-translation">Farewell! Maybe thou shalt find Valimar.</span></span>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
 >
 
 <!-- spellchecker-enable -->
