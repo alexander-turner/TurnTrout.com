@@ -7,10 +7,11 @@ import { rehype } from "rehype"
 import { VFile } from "vfile"
 
 import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
+import { flattenTextNodes } from "punctilio/rehype"
+
 import {
   massTransformText,
   getTextContent,
-  flattenTextNodes,
   improveFormatting,
   spacesAroundSlashes,
   transformElement,
@@ -1045,50 +1046,17 @@ describe("assertSmartQuotesMatch", () => {
   })
 })
 
-describe("flattenTextNodes and getTextContent", () => {
-  const ignoreNone = () => false
-  const ignoreCode = (n: Element) => n.tagName === "code"
-
+describe("getTextContent", () => {
   const testNodes = {
     empty: h("", []),
     simple: h("p", "Hello, world!"),
     nested: h("div", ["This is ", h("em", "emphasized"), " text."]),
-    withCode: h("div", ["This is ", h("code", "ignored"), " text."]),
-    emptyAndComment: h("div", [h("span"), { type: "comment", value: "This is a comment" }]),
-    deeplyNested: h("div", ["Level 1 ", h("span", ["Level 2 ", h("em", "Level 3")]), " End"]),
   }
 
-  describe("flattenTextNodes", () => {
-    it("should handle various node structures", () => {
-      expect(flattenTextNodes(testNodes.empty, ignoreNone)).toEqual([])
-      expect(flattenTextNodes(testNodes.simple, ignoreNone)).toEqual([
-        { type: "text", value: "Hello, world!" },
-      ])
-      expect(flattenTextNodes(testNodes.nested, ignoreNone)).toEqual([
-        { type: "text", value: "This is " },
-        { type: "text", value: "emphasized" },
-        { type: "text", value: " text." },
-      ])
-      expect(flattenTextNodes(testNodes.withCode, ignoreCode)).toEqual([
-        { type: "text", value: "This is " },
-        { type: "text", value: " text." },
-      ])
-      expect(flattenTextNodes(testNodes.emptyAndComment, ignoreNone)).toEqual([])
-      expect(flattenTextNodes(testNodes.deeplyNested, ignoreNone)).toEqual([
-        { type: "text", value: "Level 1 " },
-        { type: "text", value: "Level 2 " },
-        { type: "text", value: "Level 3" },
-        { type: "text", value: " End" },
-      ])
-    })
-  })
-
-  describe("getTextContent", () => {
-    it("should handle various node structures", () => {
-      expect(getTextContent(testNodes.empty)).toBe("")
-      expect(getTextContent(testNodes.simple)).toBe("Hello, world!")
-      expect(getTextContent(testNodes.nested)).toBe("This is emphasized text.")
-    })
+  it("should handle various node structures", () => {
+    expect(getTextContent(testNodes.empty)).toBe("")
+    expect(getTextContent(testNodes.simple)).toBe("Hello, world!")
+    expect(getTextContent(testNodes.nested)).toBe("This is emphasized text.")
   })
 })
 
