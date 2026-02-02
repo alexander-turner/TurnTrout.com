@@ -9,15 +9,14 @@ import type {
 } from "node-fetch"
 
 import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
-
-import type { BuildCtx } from "../../../util/ctx"
-
 import { type SpawnSyncReturns, type spawnSync } from "child_process"
 // skipcq: JS-W1028
 import fsExtra from "fs-extra"
 import { h } from "hastscript"
 import os from "os"
 import path from "path"
+
+import type { BuildCtx } from "../../../util/ctx"
 
 const testVideoUrl = "https://assets.turntrout.com/video.mp4"
 const mockVideoData = Buffer.from("fakevideocontent")
