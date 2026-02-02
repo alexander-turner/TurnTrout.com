@@ -260,5 +260,19 @@ describe("CreatedModifiedDate", () => {
       // lastmod should take priority
       expect(mockFile.data.dates?.modified.toISOString()).toContain("2024-01-01")
     })
+
+    it("correctly parses published date with ISO format", async () => {
+      const transformer = CreatedModifiedDate({ priority: ["frontmatter"] })
+      const plugins = transformer.markdownPlugins!(mockBuildCtx)
+      const plugin = plugins[0] as () => (tree: never, file: MockFile) => Promise<void>
+      const processor = plugin()
+      const mockFile = createMockFile({
+        date_published: "2024-01-19T00:47:04.621Z",
+      })
+
+      await processor({} as never, mockFile)
+
+      expect(mockFile.data.dates?.published.toISOString()).toBe("2024-01-19T00:47:04.621Z")
+    })
   })
 })

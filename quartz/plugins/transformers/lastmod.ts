@@ -14,7 +14,7 @@ const defaultOptions: Options = {
 }
 
 export function coerceDate(fp: string, d: MaybeDate): Date {
-  const dt = new Date(d as string)
+  const dt = typeof d === "number" ? new Date(d) : new Date(d as string)
   const invalidDate = isNaN(dt.getTime()) || dt.getTime() === 0
   if (invalidDate && d !== undefined) {
     console.log(
