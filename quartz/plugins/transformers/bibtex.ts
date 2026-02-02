@@ -2,6 +2,7 @@ import type { Element, Root } from "hast"
 
 import Cite from "citation-js"
 import { h } from "hastscript"
+import humanparser from "humanparser"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
@@ -38,24 +39,27 @@ export function isBibtexCachePopulated(): boolean {
 }
 
 /**
- * Parses a single author name into CSL-JSON author format.
- * Assumes "First Middle Last" format where the last word is the family name.
+ * Parses a single author name into CSL-JSON author format using humanparser.
+ * Handles edge cases like compound surnames (van Beethoven), suffixes (Jr., III), etc.
  */
 function parseAuthorName(authorName: string): { given?: string; family: string } {
-  const words = authorName
-    .trim()
-    .split(/\s+/)
-    .filter((w) => w.length > 0)
-  if (words.length === 0) {
+  const trimmed = authorName.trim()
+  if (!trimmed) {
     return { family: "Unknown" }
   }
-  if (words.length === 1) {
-    return { family: words[0] }
+
+  const parsed = humanparser.parseName(trimmed)
+
+  // Handle single-word names (e.g., "Madonna") where humanparser puts it in firstName
+  if (!parsed.lastName) {
+    return { family: parsed.firstName || "Unknown" }
   }
-  // Last word is family name, rest is given name
-  const family = words.at(-1) ?? ""
-  const given = words.slice(0, -1).join(" ")
-  return { given, family }
+
+  // Construct given name from firstName and middleName
+  const givenParts = [parsed.firstName, parsed.middleName].filter(Boolean)
+  const given = givenParts.length > 0 ? givenParts.join(" ") : undefined
+
+  return { given, family: parsed.lastName }
 }
 
 /**
@@ -99,9 +103,6 @@ export function generateBibtexEntry(
     author: parseAuthors(authors),
     issued: { "date-parts": [[year, month]] },
     URL: url,
-    accessed: {
-      "date-parts": [[new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()]],
-    },
   }
 
   // Convert to BibTeX using citation.js

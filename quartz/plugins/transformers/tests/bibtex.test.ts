@@ -86,14 +86,53 @@ describe("generateBibtexEntry", () => {
       expectations: ["Irpan, Alex", "Turner, Alex", "Kurzeja, Mark"],
     },
     {
+      name: "handles compound surnames",
+      frontmatter: {
+        title: "Test",
+        authors: ["Ludwig van Beethoven"],
+        date_published: "2022-06-15",
+      },
+      expectations: ["van Beethoven, Ludwig"],
+    },
+    {
+      name: "handles suffixes like Jr.",
+      frontmatter: {
+        title: "Test",
+        authors: ["Martin Luther King Jr."],
+        date_published: "2022-06-15",
+      },
+      // humanparser correctly separates the suffix, giving "King, Martin Luther"
+      expectations: ["King, Martin Luther"],
+    },
+    {
+      name: "handles empty author name",
+      frontmatter: {
+        title: "Test",
+        authors: ["", "Alex Turner"],
+        date_published: "2022-06-15",
+      },
+      // Empty name becomes "Unknown", so we just check Alex Turner is there
+      expectations: ["Turner, Alex"],
+    },
+    {
+      name: "handles single-word author name (family only)",
+      frontmatter: {
+        title: "Test",
+        authors: ["Madonna"],
+        date_published: "2022-06-15",
+      },
+      // Single name becomes family name only, citation.js wraps in double braces
+      expectations: ["author = {{Madonna}}"],
+    },
+    {
       name: "handles French diacritics",
       frontmatter: {
         title: "Test",
         authors: ["François Müller"],
         date_published: "2022-06-15",
       },
-      // citation.js escapes diacritics with LaTeX commands
-      expectations: ["ller, Fran", "ois}"],
+      // citation.js escapes diacritics with LaTeX commands: ü → \" u, ç → \c c
+      expectations: ['M{\\" u}ller', "{\\c c}ois"],
     },
     {
       name: "handles German umlauts",
@@ -102,7 +141,8 @@ describe("generateBibtexEntry", () => {
         authors: ["Jürgen Schröder"],
         date_published: "2022-06-15",
       },
-      expectations: ["der, J", "rgen}"],
+      // ö → \" o, ü → \" u
+      expectations: ['Schr{\\" o}der', 'J{\\" u}rgen'],
     },
     {
       name: "handles Spanish characters",
@@ -111,7 +151,8 @@ describe("generateBibtexEntry", () => {
         authors: ["José García"],
         date_published: "2022-06-15",
       },
-      expectations: ["a, Jos"],
+      // é → \' e, í → \' i
+      expectations: ["Garc{\\' i}a", "Jos{\\' e}"],
     },
     {
       name: "handles Nordic characters",
@@ -120,7 +161,8 @@ describe("generateBibtexEntry", () => {
         authors: ["Søren Ødegård"],
         date_published: "2022-06-15",
       },
-      expectations: ["rd, S", "ren}"],
+      // ø → \o{}, Ø → \O{}, å → \r a
+      expectations: ["\\O{}deg", "{\\r a}rd", "S\\o{}ren"],
     },
     {
       name: "handles Polish characters",
@@ -129,7 +171,8 @@ describe("generateBibtexEntry", () => {
         authors: ["Stanisław Łukasiewicz"],
         date_published: "2022-06-15",
       },
-      expectations: ["ukasiewicz, Stanis"],
+      // Ł → \L{}, ł → \l{}
+      expectations: ["\\L{}ukasiewicz", "Stanis\\l{}aw"],
     },
   ])("$name", ({ frontmatter, expectations }) => {
     const result = generateBibtexEntry(
@@ -293,6 +336,20 @@ describe("Bibtex plugin", () => {
       file.data = {}
       transformer(tree, file)
       expect(tree.children).toHaveLength(1)
+    })
+
+    it("handles missing slug (uses empty string)", () => {
+      const tree = createMockTree()
+      const file = new VFile("")
+      file.data = {
+        frontmatter: { title: "Test", createBibtex: true, date_published: "2022-06-15" },
+        // No slug provided
+      }
+      transformer(tree, file)
+      expect(tree.children).toHaveLength(3)
+      // Check that the URL uses empty slug
+      const code = ((tree.children[1] as Element).children[1] as Element).children[0] as Element
+      expect((code.children[0] as { value: string }).value).toContain("https://turntrout.com/")
     })
 
     it("caches bibtex content for later retrieval", () => {
