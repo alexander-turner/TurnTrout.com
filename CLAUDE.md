@@ -188,6 +188,15 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 
+### Quote Characters
+
+**WARNING**: Claude cannot visually distinguish between straight quotes (`"` U+0022) and curly quotes (`"` U+201C, `"` U+201D). When modifying code containing quote characters in regexes or strings:
+
+- Use explicit Unicode escapes (`\u201c`, `\u201d`) instead of literal curly quotes
+- Never use `sed` or similar tools to modify lines containing mixed quote types
+- Verify quote characters with `python3 -c "print(repr(line))"` before and after changes
+- The `check_consecutive_periods` regex in `built_site_checks.py` is particularly sensitive to this
+
 ### Testing
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
