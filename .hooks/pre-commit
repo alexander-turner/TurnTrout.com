@@ -9,37 +9,30 @@ if [ ! -d "$GIT_ROOT/.timestamps" ]; then
   exit 1
 fi
 
-# Try to initialize conda (works on both macOS and Linux)
-if [ -f "/opt/homebrew/anaconda3/bin/conda" ]; then
-  eval "$(/opt/homebrew/anaconda3/bin/conda shell.bash hook)"
-elif command -v conda &>/dev/null; then
-  eval "$(conda shell.bash hook)"
-fi
+# Use unique temp files to avoid conflicts with parallel commits
+BEFORE_FORMAT=$(mktemp)
+AFTER_FORMAT=$(mktemp)
+trap 'rm -f "$BEFORE_FORMAT" "$AFTER_FORMAT"' EXIT
 
-# Activate website environment if available
-if command -v conda &>/dev/null && [ "$CONDA_DEFAULT_ENV" != "website" ]; then
-  conda activate website 2>/dev/null || true
-fi
-
-# Set stat format based on OS (macOS uses -f, Linux uses -c)
+# Use cross-platform stat syntax
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  STAT_FMT="-f %m %N"
+  STAT_CMD='stat -f "%m %N"'
 else
-  STAT_FMT="-c %Y %n"
+  STAT_CMD='stat -c "%Y %n"'
 fi
 
 # Store file modification times before formatting
-touch /tmp/before_format /tmp/after_format
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat $STAT_FMT {} \; >/tmp/before_format
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec sh -c "$STAT_CMD \"\$1\"" _ {} \; >"$BEFORE_FORMAT"
 
-docformatter --in-place "$GIT_ROOT"/scripts/**.py --config "$GIT_ROOT"/config/python/pyproject.toml
-pyupgrade "$GIT_ROOT"/scripts/**.py
+# Format Python files (use find to get proper glob expansion)
+find "$GIT_ROOT"/scripts -name "*.py" -type f -print0 | xargs -0 docformatter --in-place --config "$GIT_ROOT"/config/python/pyproject.toml 2>/dev/null || true
+find "$GIT_ROOT"/scripts -name "*.py" -type f -print0 | xargs -0 pyupgrade 2>/dev/null || true
 
 # Store file modification times after formatting
-find "$GIT_ROOT"/scripts -name "*.py" -type f -exec stat $STAT_FMT {} \; >/tmp/after_format
+find "$GIT_ROOT"/scripts -name "*.py" -type f -exec sh -c "$STAT_CMD \"\$1\"" _ {} \; >"$AFTER_FORMAT"
 
 # Compare and stage only modified files
-diff /tmp/before_format /tmp/after_format | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
+diff "$BEFORE_FORMAT" "$AFTER_FORMAT" | grep ">" | cut -d' ' -f3- | xargs -I {} git add {}
 
 # Run lint-staged using pnpm
 pnpm exec lint-staged --allow-empty

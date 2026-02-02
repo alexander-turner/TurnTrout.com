@@ -82,6 +82,11 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
+**Pull requests**: See `.claude/skills/pr-creation.md` for the full workflow. Key points:
+- Run self-critique before creating PRs
+- Update the PR description after each commit to reflect new changes
+- Use `gh pr edit --body` to update existing PR descriptions
+
 **Pre-push** (main branch only):
 
 - Stashes uncommitted changes

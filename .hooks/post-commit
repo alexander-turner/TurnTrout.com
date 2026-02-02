@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 commit_hash="$(git rev-parse HEAD)"
 git_root="$(git rev-parse --show-toplevel)"
@@ -38,7 +38,7 @@ txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
 # Try to create timestamp with relaxed requirements (accept 1 calendar response, 10s timeout)
-ots_output=$("$OTS_BIN" stamp -m 1 --timeout 10 "$txt_file" 2>&1)
+ots_output=$(ots stamp -m 1 --timeout 10 "$txt_file" 2>&1)
 ots_exit=$?
 
 if [ $ots_exit -ne 0 ]; then
