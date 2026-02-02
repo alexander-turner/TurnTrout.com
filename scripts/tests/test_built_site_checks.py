@@ -3382,7 +3382,8 @@ def test_main_root_files_issues(
     monkeypatch,
     disable_md_requirement,
 ):
-    """Test main() when root files (robots.txt, favicon.svg, and favicon.ico) are missing."""
+    """Test main() when root files (robots.txt, favicon.svg, and favicon.ico)
+    are missing."""
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
@@ -3549,7 +3550,8 @@ def test_main_skips_alias_files(
     monkeypatch,
     disable_md_requirement,
 ):
-    """Ensure alias pages are not checked.
+    """
+    Ensure alias pages are not checked.
 
     This covers the `files_to_skip` behavior in [`built_site_checks._process_html_files()`](scripts/built_site_checks.py:1818).
     """
@@ -4994,7 +4996,8 @@ def test_check_populate_elements_nonempty(html, expected):
 
 
 def test_check_populate_elements_nonempty_non_string_id():
-    """Test check_populate_elements_nonempty with element id that is not a string."""
+    """Test check_populate_elements_nonempty with element id that is not a
+    string."""
     html = '<div id="populate-test"></div>'
     soup = BeautifulSoup(html, "html.parser")
     element = soup.find(id="populate-test")
@@ -5107,7 +5110,8 @@ def test_has_content(html: str, expected: bool):
     ],
 )
 def test_check_html_tags_in_text(html, expected):
-    """Test the check_html_tags_in_text function.
+    """
+    Test the check_html_tags_in_text function.
 
     Note: HTML closing tags like </span> must be escaped as &lt;/span&gt; in the test HTML
     so that BeautifulSoup doesn't parse them as actual HTML structure. When the HTML is
@@ -5215,7 +5219,8 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool):
 def test_check_article_dropcap_first_letter_comprehensive(
     html: str, expected_issues: list[str]
 ):
-    """Comprehensive tests for [`check_article_dropcap_first_letter()`](scripts/built_site_checks.py:109)."""
+    """Comprehensive tests for [`check_article_dropcap_first_letter()`](scripts/
+    built_site_checks.py:109)."""
     soup = BeautifulSoup(html, "html.parser")
     issues = built_site_checks.check_article_dropcap_first_letter(soup)
     assert issues == expected_issues
@@ -5386,7 +5391,8 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
 def test_check_top_level_paragraphs_end_with_punctuation(
     html: str, expected_issues: list[str]
 ):
-    """Comprehensive tests for [`check_top_level_paragraphs_end_with_punctuation()`](scripts/built_site_checks.py:135)."""
+    """Comprehensive tests for [`check_top_level_paragraphs_end_with_punctuation
+    ()`](scripts/built_site_checks.py:135)."""
     soup = BeautifulSoup(html, "html.parser")
     issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
         soup

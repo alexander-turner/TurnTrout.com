@@ -1,4 +1,4 @@
-"""Tests for replace_asset_staging_refs.py"""
+"""Tests for replace_asset_staging_refs.py."""
 
 from pathlib import Path
 
