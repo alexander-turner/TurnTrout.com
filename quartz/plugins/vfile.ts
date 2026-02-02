@@ -52,6 +52,8 @@ export interface Data {
   blocks?: BlockData
   dates?: { created?: Date; modified?: Date; published?: Date }
   children?: string[]
+  /** BibTeX citation content, stored during transform for cross-thread access */
+  bibtexContent?: string
   [key: string]: unknown
 }
 
