@@ -54,124 +54,66 @@ describe("coerceDate", () => {
 })
 
 describe("CreatedModifiedDate", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
+  type MockFile = {
+    data: {
+      filePath: string
+      frontmatter?: Record<string, unknown>
+      dates?: { created: Date; modified: Date; published: Date }
+    }
+  }
+
+  const createMockFile = (frontmatter: Record<string, unknown> = {}): MockFile => ({
+    data: { filePath: "test.md", frontmatter },
   })
 
-  it.each([
-    [undefined],
-    [{}],
-    [{ priority: ["frontmatter" as const] }],
-  ])("creates transformer with options: %j", (opts) => {
-    const transformer = CreatedModifiedDate(opts)
+  const getProcessor = () => {
+    const transformer = CreatedModifiedDate()
+    const markdownPlugins = transformer.markdownPlugins
+    if (!markdownPlugins) throw new Error("markdownPlugins not defined")
+    const plugins = markdownPlugins({} as never)
+    return (plugins[0] as () => (tree: never, file: MockFile) => Promise<void>)()
+  }
+
+  it("returns transformer with correct name", () => {
+    const transformer = CreatedModifiedDate()
     expect(transformer.name).toBe("CreatedModifiedDate")
-    expect(typeof transformer.markdownPlugins).toBe("function")
   })
 
-  describe("markdownPlugins with frontmatter priority", () => {
-    type MockFile = {
-      data: {
-        filePath: string
-        frontmatter?: Record<string, unknown>
-        dates?: { created: Date; modified: Date; published: Date }
-      }
-      cwd: string
-    }
+  it("extracts date_published as created and published", async () => {
+    const processor = getProcessor()
+    const mockFile = createMockFile({ date_published: "2024-01-15" })
 
-    const createMockFile = (
-      frontmatter: Record<string, unknown> = {},
-      filePath = "test.md",
-    ): MockFile => ({
-      data: { filePath, frontmatter },
-      cwd: "/test/cwd",
-    })
+    await processor({} as never, mockFile)
 
-    const mockBuildCtx = {} as never
+    expect(mockFile.data.dates?.created.toISOString()).toContain("2024-01-15")
+    expect(mockFile.data.dates?.published.toISOString()).toContain("2024-01-15")
+  })
 
-    const getProcessor = () => {
-      const transformer = CreatedModifiedDate({ priority: ["frontmatter"] })
-      const markdownPlugins = transformer.markdownPlugins
-      if (!markdownPlugins) throw new Error("markdownPlugins not defined")
-      const plugins = markdownPlugins(mockBuildCtx)
-      return (plugins[0] as () => (tree: never, file: MockFile) => Promise<void>)()
-    }
+  it("extracts date_updated as modified", async () => {
+    const processor = getProcessor()
+    const mockFile = createMockFile({ date_updated: "2024-01-20" })
 
-    it("extracts dates from date, lastmod, and date_published frontmatter", async () => {
-      const processor = getProcessor()
-      const mockFile = createMockFile({
-        date: "2024-01-15",
-        lastmod: "2024-01-20",
-        date_published: "2024-01-15",
-      })
+    await processor({} as never, mockFile)
 
-      await processor({} as never, mockFile)
+    expect(mockFile.data.dates?.modified.toISOString()).toContain("2024-01-20")
+  })
 
-      expect(mockFile.data.dates?.created.toISOString()).toContain("2024-01-15")
-      expect(mockFile.data.dates?.modified.toISOString()).toContain("2024-01-20")
-      expect(mockFile.data.dates?.published.toISOString()).toContain("2024-01-15")
-    })
+  it("handles missing frontmatter", async () => {
+    const processor = getProcessor()
+    const mockFile = { data: { filePath: "test.md" } } as unknown as MockFile
 
-    it("uses date_published as fallback for created", async () => {
-      const processor = getProcessor()
-      const mockFile = createMockFile({ date_published: "2024-01-15" })
+    await processor({} as never, mockFile)
 
-      await processor({} as never, mockFile)
+    const now = Date.now()
+    expect(mockFile.data.dates?.created.getTime()).toBeGreaterThan(now - 1000)
+  })
 
-      expect(mockFile.data.dates?.created.toISOString()).toContain("2024-01-15")
-    })
+  it("handles missing filePath", async () => {
+    const processor = getProcessor()
+    const mockFile = { data: {} } as unknown as MockFile
 
-    it.each([
-      ["date_updated", { date_updated: "2024-01-20" }],
-      ["updated", { updated: "2024-01-18" }],
-      ["last-modified", { "last-modified": "2024-01-19" }],
-    ])("uses %s as fallback for modified", async (_, frontmatter) => {
-      const processor = getProcessor()
-      const mockFile = createMockFile(frontmatter)
+    await processor({} as never, mockFile)
 
-      await processor({} as never, mockFile)
-
-      expect(mockFile.data.dates?.modified).toBeDefined()
-      expect(mockFile.data.dates?.modified.getFullYear()).toBe(2024)
-    })
-
-    it("handles file with no frontmatter", async () => {
-      const processor = getProcessor()
-      const mockFile = { data: { filePath: "test.md", frontmatter: undefined }, cwd: "/test/cwd" } as unknown as MockFile
-
-      await processor({} as never, mockFile)
-
-      expect(mockFile.data.dates?.created).toBeDefined()
-    })
-
-    it("handles empty filePath", async () => {
-      const processor = getProcessor()
-      const mockFile = { data: { filePath: "", frontmatter: { date: "2024-01-15" } }, cwd: "/test/cwd" } as unknown as MockFile
-
-      await processor({} as never, mockFile)
-
-      expect(mockFile.data.dates?.created).toBeDefined()
-    })
-
-    it.each([
-      ["date over date_published for created", { date: "2024-01-01", date_published: "2024-01-15" }, "created", "2024-01-01"],
-      ["lastmod over date_updated for modified", { lastmod: "2024-01-01", date_updated: "2024-01-20" }, "modified", "2024-01-01"],
-    ])("prioritizes %s", async (_, frontmatter, field, expectedDate) => {
-      const processor = getProcessor()
-      const mockFile = createMockFile(frontmatter)
-
-      await processor({} as never, mockFile)
-
-      const dates = mockFile.data.dates as Record<string, Date>
-      expect(dates[field].toISOString()).toContain(expectedDate)
-    })
-
-    it("correctly parses published date with ISO format", async () => {
-      const processor = getProcessor()
-      const mockFile = createMockFile({ date_published: "2024-01-19T00:47:04.621Z" })
-
-      await processor({} as never, mockFile)
-
-      expect(mockFile.data.dates?.published.toISOString()).toBe("2024-01-19T00:47:04.621Z")
-    })
+    expect(mockFile.data.dates).toBeDefined()
   })
 })

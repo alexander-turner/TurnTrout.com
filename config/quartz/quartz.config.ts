@@ -56,9 +56,7 @@ const config: QuartzConfig = {
   plugins: {
     transformers: [
       FrontMatter(),
-      CreatedModifiedDate({
-        priority: ["frontmatter", "filesystem"],
-      }),
+      CreatedModifiedDate(),
       TextFormattingImprovement(),
       Twemoji(),
       SyntaxHighlighting({
