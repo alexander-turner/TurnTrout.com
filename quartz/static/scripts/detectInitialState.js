@@ -31,9 +31,13 @@
   // Pre-load checkbox states
   // Use Object.keys for better performance than iterating localStorage.length
   window.__quartz_checkbox_states = new Map()
+  window.__quartz_collapsible_states = new Map()
   Object.keys(localStorage).forEach((key) => {
     if (key.includes("-checkbox-")) {
       window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
+    } else if (key.includes("-collapsible-")) {
+      // Store whether the collapsible is collapsed (true = collapsed)
+      window.__quartz_collapsible_states.set(key, localStorage.getItem(key) === "true")
     }
   })
 })()
