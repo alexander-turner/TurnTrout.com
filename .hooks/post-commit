@@ -63,7 +63,7 @@ git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollb
 # Push to timestamps repo
 if ! git push --quiet 2>/dev/null; then
   echo "ERROR: Could not push to .timestamps repo (no credentials?)."
-  cd "$git_root" || exit 1
+  cd "$git_root"
   exit 1
 fi
 
