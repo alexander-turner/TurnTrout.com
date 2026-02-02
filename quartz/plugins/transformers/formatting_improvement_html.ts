@@ -6,7 +6,11 @@ import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
-import { charsToMoveIntoLinkFromRight } from "../../components/constants"
+import {
+  charsToMoveIntoLinkFromRight,
+  markerChar,
+  hatTipPlaceholder,
+} from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
@@ -106,14 +110,15 @@ export function assertSmartQuotesMatch(input: string): void {
   }
 }
 
-export const markerChar = "\uE000"
+// Re-export markerChar for backward compatibility with existing imports
+export { markerChar } from "../../components/constants"
 
 /**
  * Marker-aware word boundary patterns.
  * Regular \b matches at word/non-word transitions, but markers (non-word chars)
  * can create false boundaries between text that should be connected.
  *
- * Example: "xReLU" has no word boundary before 'R', but "x\uE000ReLU" (with marker)
+ * Example: "xReLU" has no word boundary before 'R', but "x\uF000ReLU" (with marker)
  * would have a false boundary. These patterns reject boundaries caused by markers.
  *
  * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
@@ -214,10 +219,7 @@ export function transformElement(
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
-  const hatTipPlaceholder = "\uE010"
-
-  // First replace h/t with the placeholder character
+  // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
   text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
@@ -225,7 +227,7 @@ export function spacesAroundSlashes(text: string): string {
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
   const slashRegex =
-    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uE000)?\/(?<markerAfter>\uE000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
+    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uF000)?\/(?<markerAfter>\uF000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
       spaceBefore: string

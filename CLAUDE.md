@@ -148,7 +148,7 @@ When pushing to main, these checks run automatically:
 5. Markdown link validation
 6. Frontmatter validation
 7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, etc.)
+8. Built site checks (no localhost links, all favicons wrapped, Tengwar character validation, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
 11. Publication date updates
