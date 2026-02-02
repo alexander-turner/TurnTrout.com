@@ -252,6 +252,21 @@ sup {
   line-height: 0; // Don't push other lines away
 }
 
+@keyframes swim {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(3px) rotate(1.5deg);
+  }
+
+  75% {
+    transform: translateX(-3px) rotate(-1.5deg);
+  }
+}
+
 #trout-ornament-container {
   align-items: center;
   display: flex;
@@ -278,6 +293,12 @@ sup {
     margin-bottom: calc(2 * $base-margin);
     filter: light-dark(none, invert(66%)) !important;
     opacity: light-dark(0.5, 1);
+  }
+
+  // Swimming animation on hover/tap
+  &:hover > img,
+  &:active > img {
+    animation: swim 1s ease-in-out infinite;
   }
 
   // Right text flourish
