@@ -15,9 +15,10 @@ jobs:
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: read
-      pages: write
       id-token: write
+      pages: write
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
