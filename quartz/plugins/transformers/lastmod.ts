@@ -26,6 +26,28 @@ export function coerceDate(fp: string, d: MaybeDate): Date {
 }
 
 export type MaybeDate = undefined | string | number
+type Frontmatter = Record<string, unknown>
+
+/** Extract created date from frontmatter, checking standard field names */
+function getCreatedFromFrontmatter(frontmatter: Frontmatter): MaybeDate {
+  return (frontmatter.date as MaybeDate) || (frontmatter.date_published as MaybeDate)
+}
+
+/** Extract modified date from frontmatter, checking standard field names */
+function getModifiedFromFrontmatter(frontmatter: Frontmatter): MaybeDate {
+  return (
+    (frontmatter.lastmod as MaybeDate) ||
+    (frontmatter.updated as MaybeDate) ||
+    (frontmatter["last-modified"] as MaybeDate) ||
+    (frontmatter.date_updated as MaybeDate)
+  )
+}
+
+/** Extract published date from frontmatter */
+function getPublishedFromFrontmatter(frontmatter: Frontmatter): MaybeDate {
+  return frontmatter.date_published as MaybeDate
+}
+
 export const CreatedModifiedDate: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
 ) => {
@@ -52,14 +74,9 @@ export const CreatedModifiedDate: QuartzTransformerPlugin<Partial<Options> | und
                 }
                 modified ||= st.mtimeMs
               } else if (source === "frontmatter" && file.data.frontmatter) {
-                created ||= file.data.frontmatter.date as MaybeDate
-                created ||= file.data.frontmatter.date_published as MaybeDate
-                modified ||= file.data.frontmatter.lastmod as MaybeDate
-                modified ||= file.data.frontmatter.updated as MaybeDate
-                modified ||= file.data.frontmatter["last-modified"] as MaybeDate
-                modified ||= file.data.frontmatter.date_updated as MaybeDate
-                const dateStr = file.data.frontmatter.date_published || undefined
-                published ||= dateStr as MaybeDate
+                created ||= getCreatedFromFrontmatter(file.data.frontmatter)
+                modified ||= getModifiedFromFrontmatter(file.data.frontmatter)
+                published ||= getPublishedFromFrontmatter(file.data.frontmatter)
               } else if (source === "git") {
                 if (!repo) {
                   // Get a reference to the main git repo.

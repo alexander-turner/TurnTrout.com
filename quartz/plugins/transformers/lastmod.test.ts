@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { coerceDate, CreatedModifiedDate } from "./lastmod"
 
 describe("coerceDate", () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {})
+  const consoleSpy = jest.spyOn(console, "log").mockImplementation(jest.fn())
 
   beforeEach(() => {
     consoleSpy.mockClear()
@@ -90,7 +90,9 @@ describe("CreatedModifiedDate", () => {
 
     const getProcessor = () => {
       const transformer = CreatedModifiedDate({ priority: ["frontmatter"] })
-      const plugins = transformer.markdownPlugins!(mockBuildCtx)
+      const markdownPlugins = transformer.markdownPlugins
+      if (!markdownPlugins) throw new Error("markdownPlugins not defined")
+      const plugins = markdownPlugins(mockBuildCtx)
       return (plugins[0] as () => (tree: never, file: MockFile) => Promise<void>)()
     }
 
