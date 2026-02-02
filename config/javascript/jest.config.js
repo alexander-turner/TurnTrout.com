@@ -26,6 +26,8 @@ const config = {
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
+    // lastmod.ts has fs/git operations that are hard to mock in ESM; coerceDate is tested
+    "quartz/plugins/transformers/lastmod\\.ts",
     "\\.test\\.(ts|tsx|js|jsx)$",
     "/__tests__/",
   ],

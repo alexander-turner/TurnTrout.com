@@ -13,7 +13,7 @@ const defaultOptions: Options = {
   priority: ["frontmatter", "git", "filesystem"],
 }
 
-function coerceDate(fp: string, d: MaybeDate): Date {
+export function coerceDate(fp: string, d: MaybeDate): Date {
   const dt = new Date(d as string)
   const invalidDate = isNaN(dt.getTime()) || dt.getTime() === 0
   if (invalidDate && d !== undefined) {
@@ -25,7 +25,7 @@ function coerceDate(fp: string, d: MaybeDate): Date {
   return invalidDate ? new Date() : dt
 }
 
-type MaybeDate = undefined | string | number
+export type MaybeDate = undefined | string | number
 export const CreatedModifiedDate: QuartzTransformerPlugin<Partial<Options> | undefined> = (
   userOpts,
 ) => {
@@ -46,16 +46,20 @@ export const CreatedModifiedDate: QuartzTransformerPlugin<Partial<Options> | und
             for (const source of opts.priority) {
               if (source === "filesystem") {
                 const st = await fs.promises.stat(fullFp)
-                created ||= st.birthtimeMs
+                // birthtimeMs returns 0 on Linux systems without birth time support
+                if (st.birthtimeMs > 0) {
+                  created ||= st.birthtimeMs
+                }
                 modified ||= st.mtimeMs
               } else if (source === "frontmatter" && file.data.frontmatter) {
                 created ||= file.data.frontmatter.date as MaybeDate
+                created ||= file.data.frontmatter.date_published as MaybeDate
                 modified ||= file.data.frontmatter.lastmod as MaybeDate
                 modified ||= file.data.frontmatter.updated as MaybeDate
                 modified ||= file.data.frontmatter["last-modified"] as MaybeDate
+                modified ||= file.data.frontmatter.date_updated as MaybeDate
                 const dateStr = file.data.frontmatter.date_published || undefined
-                // const publishedTime = new Date(dateStr).getTime()
-                published ||= (new Date(dateStr as string).getTime() as MaybeDate) || undefined
+                published ||= dateStr as MaybeDate
               } else if (source === "git") {
                 if (!repo) {
                   // Get a reference to the main git repo.
