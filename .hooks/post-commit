@@ -14,9 +14,7 @@ rollback() {
 
 # Check if .timestamps is a git repo
 if [ ! -d "$timestamps_repo/.git" ]; then
-  echo "ERROR: .timestamps is not a git repo!"
-  echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
-  exit 1
+  rollback ".timestamps is not a git repo! Clone with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
 fi
 
 # Find ots binary (check multiple locations)
@@ -28,9 +26,7 @@ elif command -v ots >/dev/null 2>&1; then
 fi
 
 if [ -z "$OTS_BIN" ]; then
-  echo "ERROR: ots not found!"
-  echo "Install with: pip3 install opentimestamps-client"
-  exit 1
+  rollback "ots not found! Install with: pip3 install opentimestamps-client"
 fi
 
 mkdir -p "$timestamps_dir"
@@ -62,9 +58,7 @@ git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollb
 
 # Push to timestamps repo
 if ! git push --quiet 2>/dev/null; then
-  echo "ERROR: Could not push to .timestamps repo (no credentials?)."
-  cd "$git_root"
-  exit 1
+  rollback "Could not push to .timestamps repo (no credentials?). Check session-setup.sh."
 fi
 
 cd "$git_root" || exit 1
