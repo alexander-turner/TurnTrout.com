@@ -97,6 +97,40 @@ export function stripBadges(content: string): string {
 }
 
 /**
+ * Converts height-style prime marks (e.g., 5'10") to proper Unicode primes.
+ * Only converts patterns that look like measurements (number + quote + number + double-quote).
+ * Does not convert content inside backticks (code spans).
+ */
+export function convertPrimeMarks(content: string): string {
+  // Split by backticks to preserve code spans
+  const parts = content.split(/(`[^`]+`)/g)
+
+  return parts
+    .map((part, index) => {
+      // Odd indices are code spans, skip them
+      if (index % 2 === 1) {
+        return part
+      }
+      // Convert measurement patterns like 5'10" to 5′10″
+      // Using Unicode: ′ (U+2032) for feet, ″ (U+2033) for inches
+      return part.replace(/(\d+)'(\d+)"/g, "$1\u2032$2\u2033")
+    })
+    .join("")
+}
+
+/**
+ * Creates a composed transform function for punctilio README content.
+ * Applies: stripBadges and prime mark conversion.
+ */
+export function createPunctilioTransform(): (content: string) => string {
+  return (content: string): string => {
+    let result = stripBadges(content)
+    result = convertPrimeMarks(result)
+    return result
+  }
+}
+
+/**
  * Gets or fetches content for a given source, using cache when available.
  */
 function getContent(name: string, source: ExternalMarkdownSource): string {
