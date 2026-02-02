@@ -12,10 +12,12 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build
+pnpm build        # Production build (SLOW: ~5+ minutes, avoid unless necessary)
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
 ```
+
+**Note**: `pnpm build` is slow. For validation, prefer running `pnpm test` and `pnpm check` instead.
 
 ### Testing
 
