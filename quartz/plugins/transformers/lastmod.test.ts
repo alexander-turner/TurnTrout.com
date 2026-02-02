@@ -108,6 +108,17 @@ describe("CreatedModifiedDate", () => {
     expect(mockFile.data.dates?.created.getTime()).toBeGreaterThan(now - 1000)
   })
 
+  it("handles new article without date fields", async () => {
+    const processor = getProcessor()
+    const mockFile = createMockFile({ title: "New Article" }) // has frontmatter, no dates
+
+    await processor({} as never, mockFile)
+
+    const now = Date.now()
+    expect(mockFile.data.dates?.created.getTime()).toBeGreaterThan(now - 1000)
+    expect(mockFile.data.dates?.modified.getTime()).toBeGreaterThan(now - 1000)
+  })
+
   it("handles missing filePath", async () => {
     const processor = getProcessor()
     const mockFile = { data: {} } as unknown as MockFile

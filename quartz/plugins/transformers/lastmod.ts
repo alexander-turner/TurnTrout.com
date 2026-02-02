@@ -4,13 +4,13 @@ export type MaybeDate = undefined | string | number
 
 export function coerceDate(fp: string, d: MaybeDate): Date {
   const parsedDate = typeof d === "number" ? new Date(d) : new Date(d as string)
-  const invalidDate = isNaN(parsedDate.getTime()) || parsedDate.getTime() === 0
-  if (invalidDate && d !== undefined) {
+  const isInvalidDate = isNaN(parsedDate.getTime()) || parsedDate.getTime() === 0
+  if (isInvalidDate && d !== undefined) {
     console.log(
       `\nWarning: found invalid date "${d}" in \`${fp}\`. Supported formats: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format`,
     )
   }
-  return invalidDate ? new Date() : parsedDate
+  return isInvalidDate ? new Date() : parsedDate
 }
 
 export const CreatedModifiedDate: QuartzTransformerPlugin = () => ({
@@ -19,9 +19,8 @@ export const CreatedModifiedDate: QuartzTransformerPlugin = () => ({
     return [
       () => async (_tree, file) => {
         const fp = file.data.filePath || ""
-        const fm = file.data.frontmatter
-        const published = fm?.date_published as MaybeDate
-        const modified = fm?.date_updated as MaybeDate
+        const published = file.data.frontmatter?.date_published as MaybeDate
+        const modified = file.data.frontmatter?.date_updated as MaybeDate
 
         file.data.dates = {
           created: coerceDate(fp, published),
