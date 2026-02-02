@@ -150,7 +150,7 @@ When pushing to main, these checks run automatically:
 5. Markdown link validation
 6. Frontmatter validation
 7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, etc.)
+8. Built site checks (no localhost links, all favicons wrapped, Tengwar character validation, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
 11. Publication date updates
@@ -190,6 +190,21 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
+
+### Imports and Exports
+
+- Never create re-exports for "backward compatibility" - update importers to use the canonical source
+- Constants should be imported from their defining module (e.g., `markerChar` from `constants.ts`)
+- When moving constants to a shared location, update all importers in the same commit
+
+### Quote Characters
+
+**WARNING**: Claude cannot visually distinguish between straight quotes (`"` U+0022) and curly quotes (`"` U+201C, `"` U+201D). When modifying code containing quote characters in regexes or strings:
+
+- Use explicit Unicode escapes (`\u201c`, `\u201d`) instead of literal curly quotes
+- Never use `sed` or similar tools to modify lines containing mixed quote types
+- Verify quote characters with `python3 -c "print(repr(line))"` before and after changes
+- The `check_consecutive_periods` regex in `built_site_checks.py` is particularly sensitive to this
 
 ### Testing
 
