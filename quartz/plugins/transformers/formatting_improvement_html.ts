@@ -110,8 +110,6 @@ export function assertSmartQuotesMatch(input: string): void {
   }
 }
 
-// Re-export markerChar for backward compatibility with existing imports
-export { markerChar } from "../../components/constants"
 
 /**
  * Marker-aware word boundary patterns.
@@ -226,8 +224,10 @@ export function spacesAroundSlashes(text: string): string {
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
-  const slashRegex =
-    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uF000)?\/(?<markerAfter>\uF000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
+  const slashRegex = new RegExp(
+    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=\\S)(?!/)`,
+    "gu",
+  )
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
       spaceBefore: string

@@ -6,7 +6,7 @@ import { symbolTransform } from "punctilio"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
-import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
+import { charsToMoveIntoLinkFromRight, markerChar } from "../../../components/constants"
 import {
   massTransformText,
   getTextContent,
@@ -25,7 +25,6 @@ import {
   applyTextTransforms,
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
-  markerChar,
   toSkip,
   SKIP_TAGS,
   FRACTION_SKIP_TAGS,

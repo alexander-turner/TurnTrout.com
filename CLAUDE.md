@@ -188,6 +188,12 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 
+### Imports and Exports
+
+- Never create re-exports for "backward compatibility" - update importers to use the canonical source
+- Constants should be imported from their defining module (e.g., `markerChar` from `constants.ts`)
+- When moving constants to a shared location, update all importers in the same commit
+
 ### Quote Characters
 
 **WARNING**: Claude cannot visually distinguish between straight quotes (`"` U+0022) and curly quotes (`"` U+201C, `"` U+201D). When modifying code containing quote characters in regexes or strings:

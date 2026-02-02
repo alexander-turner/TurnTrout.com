@@ -1006,7 +1006,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.["""\u201c\u201d]*\.', str(element)):
+            if re.search(r'(?!\.\.\?)\.[\u0022\u201c\u201d]*\.', str(element)):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1039,22 +1039,21 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
     # Find all elements with Quenya language attribute
     for element in _tags_only(soup.find_all(attrs={"lang": "qya"})):
         text = element.get_text()
-        if not text.strip():
+        if not text.strip() or _TENGWAR_VALID_PATTERN.match(text):
             continue
 
-        if not _TENGWAR_VALID_PATTERN.match(text):
-            # Find the invalid characters for debugging
-            invalid_chars = set()
-            for char in text:
-                if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
-                    invalid_chars.add(f"{char} (U+{ord(char):04X})")
+        # Find the invalid characters for debugging
+        invalid_chars = set()
+        for char in text:
+            if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
+                invalid_chars.add(f"{char} (U+{ord(char):04X})")
 
-            # Sort for deterministic output
-            sorted_chars = sorted(invalid_chars)
-            _append_to_list(
-                issues,
-                f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
-            )
+        # Sort for deterministic output
+        sorted_chars = sorted(invalid_chars)
+        _append_to_list(
+            issues,
+            f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
+        )
 
     return issues
 
