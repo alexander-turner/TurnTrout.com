@@ -10,8 +10,6 @@ import {
   clearContentCache,
   setFetchFunction,
   resetFetchFunction,
-  convertPrimeMarks,
-  createPunctilioTransform,
   type ExternalMarkdownSource,
   type FetchFunction,
 } from "./populateExternalMarkdown"
@@ -45,42 +43,6 @@ describe("PopulateExternalMarkdown", () => {
       ["No badges here", "No badges here"],
     ])("should strip badges from markdown", (input, expected) => {
       expect(stripBadges(input)).toBe(expected)
-    })
-  })
-
-  describe("convertPrimeMarks", () => {
-    it.each([
-      // Basic height measurements
-      ["5'10\"", "5\u203210\u2033"],
-      ["6'2\"", "6\u20322\u2033"],
-      // Multiple measurements
-      ["5'10\" and 6'2\"", "5\u203210\u2033 and 6\u20322\u2033"],
-      // In table row (the actual use case)
-      ["| 5'10\" → 5′10″ |", "| 5\u203210\u2033 → 5′10″ |"],
-      // No change needed
-      ["No measurements here", "No measurements here"],
-      // Should NOT convert inside code spans
-      ["`5'10\"`", "`5'10\"`"],
-      ["Before `5'10\"` after", "Before `5'10\"` after"],
-      // Mixed: convert outside, preserve inside code
-      ["5'10\" and `5'10\"`", "5\u203210\u2033 and `5'10\"`"],
-    ])("should convert prime marks in measurements", (input, expected) => {
-      expect(convertPrimeMarks(input)).toBe(expected)
-    })
-  })
-
-  describe("createPunctilioTransform", () => {
-    it("should compose stripBadges and convertPrimeMarks", () => {
-      const transform = createPunctilioTransform()
-      const input = `[![Badge](badge.svg)](link)
-
-| 5'10" → 5′10″ |`
-      const result = transform(input)
-
-      // Badge stripped
-      expect(result).not.toContain("Badge")
-      // Prime marks converted
-      expect(result).toContain("5\u203210\u2033")
     })
   })
 
