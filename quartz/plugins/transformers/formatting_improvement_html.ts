@@ -2,6 +2,7 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { niceQuotes, hyphenReplace, symbolTransform } from "punctilio"
+import { flattenTextNodes } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -38,32 +39,6 @@ export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as con
  * CSS classes that indicate content should skip formatting.
  */
 export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
-
-/**
- * Flattens text nodes in an element tree into a single array
- * @param node - The element or element content to process
- * @param ignoreNode - Function to determine which nodes to skip
- * @returns Array of Text nodes
- */
-export function flattenTextNodes(
-  node: Element | ElementContent,
-  ignoreNode: (n: Element) => boolean,
-): Text[] {
-  if (ignoreNode(node as Element)) {
-    return []
-  }
-
-  if (node.type === "text") {
-    return [node as Text]
-  }
-
-  if (node.type === "element" && "children" in node) {
-    return node.children.flatMap((child) => flattenTextNodes(child, ignoreNode))
-  }
-
-  // For other node types (like comments), return an empty array
-  return []
-}
 
 /**
  * Extracts concatenated text content from an element

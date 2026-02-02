@@ -125,9 +125,9 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ### Text Processing
 
-- Smart quotes conversion (custom regex, 45 unit tests)
+- Typography transformations use `punctilio` library (quotes, dashes, symbols)
+- `flattenTextNodes` imported from `punctilio/rehype` for HTML AST traversal
 - Automatic smallcaps for 3+ consecutive capitals (excluding Roman numerals)
-- Hyphen → en-dash/em-dash conversion
 - Dropcaps using EB Garamond with CSS pseudo-elements
 
 ### Site Features
