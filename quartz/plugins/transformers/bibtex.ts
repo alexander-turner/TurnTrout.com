@@ -189,6 +189,9 @@ function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
   // Cache for populateContainers to use later
   bibtexCache.set(slug, bibtexContent)
 
+  // Store in file.data so it survives worker thread serialization
+  file.data.bibtexContent = bibtexContent
+
   insertBibtexBeforeOrnament(tree, bibtexContent)
 }
 

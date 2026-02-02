@@ -7,8 +7,23 @@ concurrency:
 on:
   push:
     branches: ["main", "dev", "no-layout-shift"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+      - ".github/lighthouse-*.json"
   pull_request:
-    branches: ["main", "dev", "no-layout-shift"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+      - ".github/lighthouse-*.json"
 
 jobs:
   build_and_deploy:
