@@ -30,7 +30,8 @@ def test_html_content():
 
 @pytest.fixture
 def test_server_and_files(tmp_path, test_html_content):
-    """Set up a local HTTP server and create test HTML files in public directory."""
+    """Set up a local HTTP server and create test HTML files in public
+    directory."""
     # Create a temporary directory structure with mock git repo
     tmp_dir = tmp_path / "linkchecker_test"
     tmp_dir.mkdir()
