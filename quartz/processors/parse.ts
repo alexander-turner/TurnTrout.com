@@ -35,11 +35,6 @@ const remarkCaptionsCodeFix = () => (tree: HTMLRoot) => {
 export type QuartzProcessor = Processor<Root, Root, HTMLRoot>
 export function createProcessor(ctx: BuildCtx): QuartzProcessor {
   const transformers = ctx.cfg.plugins.transformers
-  const offline = ctx.argv.offline ?? false
-
-  // Use pre-mermaid strategy in offline mode for faster builds (client-side rendering)
-  // Use inline-svg for production builds (server-side rendering, better SEO)
-  const mermaidStrategy = offline ? "pre-mermaid" : "inline-svg"
 
   return (
     unified()
@@ -57,7 +52,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
       .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })
       // Rehype plugins
       .use(rehypeMermaid, {
-        strategy: mermaidStrategy,
+        strategy: "inline-svg",
         mermaidConfig: {
           theme: "default",
           themeVariables: { lineColor: "var(--gray)" },

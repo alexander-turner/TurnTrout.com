@@ -115,9 +115,4 @@ export const BuildArgv = {
     default: false,
     describe: "skip network-requiring transforms like favicon downloads",
   },
-  skipCriticalCSS: {
-    boolean: true,
-    default: false,
-    describe: "skip critical CSS generation for faster builds",
-  },
 }
