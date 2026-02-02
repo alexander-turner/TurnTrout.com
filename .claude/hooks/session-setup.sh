@@ -58,8 +58,7 @@ fi
 #######################################
 
 echo "Installing tools..."
-pip_install_if_missing docformatter
-pip_install_if_missing pyupgrade
+# docformatter and pyupgrade are managed by uv.lock, not pip
 pip_install_if_missing ots opentimestamps-client
 webi_install_if_missing shfmt
 webi_install_if_missing gh
