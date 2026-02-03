@@ -84,6 +84,8 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
+**Template sync**: Updates from [claude-automation-template](https://github.com/alexander-turner/claude-automation-template) sync daily via GitHub Actions. Manual trigger: Actions → "Sync from Template" → "Run workflow".
+
 **Pre-push** (main branch only):
 
 - Stashes uncommitted changes
