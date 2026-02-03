@@ -1,0 +1,124 @@
+name: Sync from Template
+
+# Syncs updates from the template repository automatically.
+# Runs daily or manually via "Run workflow" button.
+# No setup required - works out of the box.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Show what would be synced without making changes"
+        required: false
+        default: "false"
+        type: boolean
+  schedule:
+    # Run daily at 9am UTC
+    - cron: "0 9 * * *"
+
+env:
+  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  # Only sync core automation files that don't need customization
+  SYNC_PATHS: ".claude .hooks .github/workflows/template-sync.yaml .github/workflows/dependabot-auto-merge.yaml"
+  # These are excluded because they require project-specific customization
+  # (comment-on-failed-checks needs workflow names, lint/test need project scripts)
+  EXCLUDE_PATHS: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout child repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout template repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TEMPLATE_REPO }}
+          path: _template
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Sync template files
+        id: sync
+        run: |
+          set -e
+          changes=""
+
+          for path in $SYNC_PATHS; do
+            # Skip if in exclude list
+            skip=false
+            for exclude in $EXCLUDE_PATHS; do
+              if [ "$path" = "$exclude" ]; then
+                skip=true
+                break
+              fi
+            done
+            [ "$skip" = "true" ] && continue
+
+            # Check if path exists in template
+            if [ ! -e "_template/$path" ]; then
+              echo "Warning: $path not found in template, skipping"
+              continue
+            fi
+
+            # Create parent directory if needed
+            parent_dir=$(dirname "$path")
+            [ "$parent_dir" != "." ] && mkdir -p "$parent_dir"
+
+            # Copy from template
+            if [ -d "_template/$path" ]; then
+              cp -r "_template/$path" "$parent_dir/"
+            else
+              cp "_template/$path" "$path"
+            fi
+
+            # Track changes
+            if git diff --quiet -- "$path" 2>/dev/null; then
+              echo "No changes in $path"
+            else
+              changes="$changes $path"
+              echo "Updated: $path"
+            fi
+          done
+
+          # Clean up
+          rm -rf _template
+
+          # Set output
+          if [ -n "$changes" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "changed_paths=$changes" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show diff (dry run)
+        if: inputs.dry-run == 'true' && steps.sync.outputs.has_changes == 'true'
+        run: |
+          echo "=== Changes that would be made ==="
+          git diff
+
+      - name: Create Pull Request
+        if: inputs.dry-run != 'true' && steps.sync.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync from template repository"
+          title: "chore: sync from template repository"
+          body: |
+            This PR syncs updates from the template repository.
+
+            **Updated paths:**
+            ${{ steps.sync.outputs.changed_paths }}
+
+            **Template repository:** ${{ env.TEMPLATE_REPO }}
+
+            Please review the changes and merge if appropriate.
+          branch: template-sync
+          delete-branch: true
