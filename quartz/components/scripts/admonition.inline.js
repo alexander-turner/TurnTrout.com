@@ -1,22 +1,36 @@
 /**
- * Generates a unique ID for a collapsible based on slug and index.
- * @param {number} index The index of the collapsible on the page
+ * Generates a unique ID for a collapsible based on slug and title.
+ * Uses the shared function from detectInitialState.js if available,
+ * otherwise falls back to local implementation.
+ * @param {string} titleText The title text of the admonition
  * @returns {string} The unique ID
  */
-function collapsibleId(index) {
-  const slug = window.document.body.dataset.slug
-  return `${slug}-collapsible-${index}`
+function collapsibleId(titleText) {
+  const slug = document.body?.dataset?.slug || ""
+  if (window.__quartz_collapsible_id) {
+    return window.__quartz_collapsible_id(slug, titleText)
+  }
+  // Fallback implementation (matches detectInitialState.js)
+  const normalizedTitle = (titleText || "untitled")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 50)
+  return `${slug}-collapsible-${normalizedTitle}`
 }
 
 /**
- * Saves the collapsed state of an admonition to localStorage.
+ * Saves the collapsed state of an admonition to localStorage and cache.
  * @param {string} id The unique ID of the collapsible
  * @param {boolean} isCollapsed Whether the admonition is collapsed
  */
 function saveCollapsibleState(id, isCollapsed) {
   localStorage.setItem(id, isCollapsed ? "true" : "false")
-  const states = window.__quartz_collapsible_states || new Map()
-  states.set(id, isCollapsed)
+  // Update the shared state cache (ensure it exists)
+  if (!window.__quartz_collapsible_states) {
+    window.__quartz_collapsible_states = new Map()
+  }
+  window.__quartz_collapsible_states.set(id, isCollapsed)
 }
 
 /**
@@ -53,22 +67,30 @@ function closeAdmonition(event) {
 
 /**
  * Initializes all collapsible admonitions on the page.
+ * State restoration is handled by MutationObserver in detectInitialState.js
+ * for zero layout shift. This function sets up click handlers and ensures
+ * IDs are set for any collapsibles that might have been missed.
  */
 function setupAdmonition() {
   const collapsible = document.getElementsByClassName("admonition is-collapsible")
   const states = window.__quartz_collapsible_states || new Map()
 
-  Array.from(collapsible).forEach((div, index) => {
-    const id = collapsibleId(index)
-    div.dataset.collapsibleId = id
+  Array.from(collapsible).forEach((div) => {
+    // Ensure ID is set (MutationObserver should have done this, but be safe)
+    if (!div.dataset.collapsibleId) {
+      const titleEl = div.querySelector(".admonition-title")
+      const titleText = titleEl?.textContent?.trim() || ""
+      const id = collapsibleId(titleText)
+      div.dataset.collapsibleId = id
 
-    // Restore saved state to avoid layout shift
-    if (states.has(id)) {
-      const isCollapsed = states.get(id)
-      if (isCollapsed) {
-        div.classList.add("is-collapsed")
-      } else {
-        div.classList.remove("is-collapsed")
+      // Apply saved state if not already applied
+      if (states.has(id)) {
+        const isCollapsed = states.get(id)
+        if (isCollapsed) {
+          div.classList.add("is-collapsed")
+        } else {
+          div.classList.remove("is-collapsed")
+        }
       }
     }
 
