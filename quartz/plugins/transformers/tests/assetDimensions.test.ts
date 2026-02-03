@@ -261,13 +261,16 @@ describe("Asset Dimensions Plugin", () => {
 
       await assetProcessor.maybeSaveAssetDimensions()
 
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
+      // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
-        tempFilePath,
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        actualAssetDimensionsFilePath,
+      )
       expect(assetProcessor["needToSaveCache"]).toBe(false)
 
       renameSpy.mockRestore()
@@ -320,6 +323,81 @@ describe("Asset Dimensions Plugin", () => {
       expect(writeFileSpy).toHaveBeenCalled()
       expect(renameSpy).not.toHaveBeenCalled()
       renameSpy.mockRestore()
+    })
+
+    it("should silently handle ENOENT on rename (another worker saved)", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const enoentError = new Error("ENOENT") as NodeJS.ErrnoException
+      enoentError.code = "ENOENT"
+      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(enoentError as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      // Should not throw - ENOENT is handled gracefully
+      await assetProcessor.maybeSaveAssetDimensions()
+
+      expect(writeFileSpy).toHaveBeenCalled()
+      expect(renameSpy).toHaveBeenCalled()
+      expect(unlinkSpy).toHaveBeenCalled()
+      expect(assetProcessor["needToSaveCache"]).toBe(false)
+
+      writeFileSpy.mockRestore()
+      renameSpy.mockRestore()
+      unlinkSpy.mockRestore()
+    })
+
+    it("should re-throw non-ENOENT errors on rename", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const permError = new Error("Permission denied") as NodeJS.ErrnoException
+      permError.code = "EACCES"
+      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(permError as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Permission denied")
+
+      expect(writeFileSpy).toHaveBeenCalled()
+      expect(renameSpy).toHaveBeenCalled()
+      expect(unlinkSpy).toHaveBeenCalled() // Cleanup attempted
+
+      writeFileSpy.mockRestore()
+      renameSpy.mockRestore()
+      unlinkSpy.mockRestore()
+    })
+
+    it("should ignore cleanup errors when rename fails", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      const enoentError = new Error("ENOENT") as NodeJS.ErrnoException
+      enoentError.code = "ENOENT"
+      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(enoentError as never)
+      // Cleanup also fails - should be ignored
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockRejectedValue(new Error("Already deleted"))
+
+      // Should not throw - both ENOENT and cleanup error are handled gracefully
+      await assetProcessor.maybeSaveAssetDimensions()
+
+      expect(unlinkSpy).toHaveBeenCalled()
+      expect(assetProcessor["needToSaveCache"]).toBe(false)
+
+      writeFileSpy.mockRestore()
+      renameSpy.mockRestore()
+      unlinkSpy.mockRestore()
     })
   })
 
@@ -1042,9 +1120,17 @@ describe("Asset Dimensions Plugin", () => {
       assetProcessor.setDirectDirtyFlag(true)
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
-      expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      // Temp file includes process.pid and timestamp for uniqueness
+      const tempFilePattern = new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        expect.any(String),
+        "utf-8",
+      )
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        actualAssetDimensionsFilePath,
+      )
 
       readFileMock.mockRestore()
       renameSpy.mockRestore()
