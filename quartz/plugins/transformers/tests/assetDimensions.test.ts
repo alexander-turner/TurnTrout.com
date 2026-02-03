@@ -325,79 +325,34 @@ describe("Asset Dimensions Plugin", () => {
       renameSpy.mockRestore()
     })
 
-    it("should silently handle ENOENT on rename (another worker saved)", async () => {
+    it("should cleanup temp file and rethrow on rename error", async () => {
       const cacheData: AssetDimensionMap = {
         "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
       }
       assetProcessor.setDirectCache(cacheData)
       assetProcessor.setDirectDirtyFlag(true)
 
-      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
-      const enoentError = new Error("ENOENT") as NodeJS.ErrnoException
-      enoentError.code = "ENOENT"
-      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(enoentError as never)
-      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
-
-      // Should not throw - ENOENT is handled gracefully
-      await assetProcessor.maybeSaveAssetDimensions()
-
-      expect(writeFileSpy).toHaveBeenCalled()
-      expect(renameSpy).toHaveBeenCalled()
-      expect(unlinkSpy).toHaveBeenCalled()
-      expect(assetProcessor["needToSaveCache"]).toBe(false)
-
-      writeFileSpy.mockRestore()
-      renameSpy.mockRestore()
-      unlinkSpy.mockRestore()
-    })
-
-    it("should re-throw non-ENOENT errors on rename", async () => {
-      const cacheData: AssetDimensionMap = {
-        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
-      }
-      assetProcessor.setDirectCache(cacheData)
-      assetProcessor.setDirectDirtyFlag(true)
-
-      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
-      const permError = new Error("Permission denied") as NodeJS.ErrnoException
-      permError.code = "EACCES"
-      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(permError as never)
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Permission denied") as never)
       const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
 
       await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Permission denied")
-
-      expect(writeFileSpy).toHaveBeenCalled()
-      expect(renameSpy).toHaveBeenCalled()
-      expect(unlinkSpy).toHaveBeenCalled() // Cleanup attempted
-
-      writeFileSpy.mockRestore()
-      renameSpy.mockRestore()
-      unlinkSpy.mockRestore()
+      expect(unlinkSpy).toHaveBeenCalled()
     })
 
-    it("should ignore cleanup errors when rename fails", async () => {
+    it("should rethrow rename error even if cleanup fails", async () => {
       const cacheData: AssetDimensionMap = {
         "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
       }
       assetProcessor.setDirectCache(cacheData)
       assetProcessor.setDirectDirtyFlag(true)
 
-      const writeFileSpy = jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
-      const enoentError = new Error("ENOENT") as NodeJS.ErrnoException
-      enoentError.code = "ENOENT"
-      const renameSpy = jest.spyOn(fs, "rename").mockRejectedValue(enoentError as never)
-      // Cleanup also fails - should be ignored
-      const unlinkSpy = jest.spyOn(fs, "unlink").mockRejectedValue(new Error("Already deleted"))
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Rename failed") as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockRejectedValue(new Error("Cleanup failed"))
 
-      // Should not throw - both ENOENT and cleanup error are handled gracefully
-      await assetProcessor.maybeSaveAssetDimensions()
-
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
       expect(unlinkSpy).toHaveBeenCalled()
-      expect(assetProcessor["needToSaveCache"]).toBe(false)
-
-      writeFileSpy.mockRestore()
-      renameSpy.mockRestore()
-      unlinkSpy.mockRestore()
     })
   })
 

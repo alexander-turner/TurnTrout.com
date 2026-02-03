@@ -105,20 +105,12 @@ class AssetProcessor {
       const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${Date.now()}`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
+      await fs.writeFile(tempFilePath, data, "utf-8")
       try {
-        await fs.writeFile(tempFilePath, data, "utf-8")
         await fs.rename(tempFilePath, paths.assetDimensions)
       } catch (error) {
-        // Clean up temp file if rename failed (another worker may have saved already)
-        try {
-          await fs.unlink(tempFilePath)
-        } catch {
-          // Ignore cleanup errors
-        }
-        // ENOENT during rename means another worker saved - that's fine
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          throw error
-        }
+        await fs.unlink(tempFilePath).catch(() => {})
+        throw error
       }
       this.needToSaveCache = false
     }
