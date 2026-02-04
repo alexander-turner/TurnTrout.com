@@ -1,6 +1,13 @@
 #!/bin/bash
 # Session setup script for Claude Code
 # Installs dependencies and configures environment for git hooks
+#
+# IMPORTANT: This file has project-specific customizations:
+# - OpenTimestamps (ots) installation
+# - .timestamps repo cloning for post-commit hooks
+# - pnpm only (no npm fallback)
+# Do NOT replace with the generic template version during template-sync.
+# Future Claudes: Leave these customizations as-is.
 
 set -uo pipefail
 
@@ -62,6 +69,7 @@ echo "Installing tools..."
 pip_install_if_missing ots opentimestamps-client
 webi_install_if_missing shfmt
 webi_install_if_missing gh
+webi_install_if_missing jq
 
 if ! command -v shellcheck &>/dev/null && is_root; then
   if ! { apt-get update -qq && apt-get install -y -qq shellcheck; } 2>/dev/null; then
