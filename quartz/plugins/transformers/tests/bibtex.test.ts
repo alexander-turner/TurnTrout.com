@@ -47,8 +47,13 @@ describe("generateBibtexEntry", () => {
       expectations: ["url = {https://turntrout.com/custom-url}"],
     },
     {
-      name: "default author",
+      name: "default author when undefined",
       frontmatter: { title: "Test", date_published: "2022-06-15" },
+      expectations: ["Alex Turner"],
+    },
+    {
+      name: "default author when empty array",
+      frontmatter: { title: "Test", authors: [], date_published: "2022-06-15" },
       expectations: ["Alex Turner"],
     },
     {

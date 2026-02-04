@@ -41,7 +41,8 @@ export function generateBibtexEntry(
   slug: string,
 ): string {
   const title = frontmatter.title
-  const authors = frontmatter.authors ?? ["Alex Turner"]
+  const authors =
+    frontmatter.authors && frontmatter.authors.length > 0 ? frontmatter.authors : ["Alex Turner"]
 
   const datePublished = frontmatter.date_published
   if (!datePublished && process.env.CI) {
