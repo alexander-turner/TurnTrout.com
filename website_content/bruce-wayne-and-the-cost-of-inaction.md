@@ -19,7 +19,9 @@ af-num-comments-on-upload: 0
 title: Bruce Wayne and the Cost of Inaction
 lw-latest-edit: 2022-10-03T21:46:11.379000Z
 lw-is-linkpost: "false"
-authors: Alex Turner and Josh Turner
+authors:
+  - Alex Turner
+  - Josh Turner
 tags:
   - rationality
   - fiction

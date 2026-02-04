@@ -43,6 +43,15 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
+// Private Use Area marker characters (U+F000 range to avoid conflict with Tengwar fonts at U+E000)
+export const markerChar = "\uF000" // Used for text transformation markers
+export const hatTipPlaceholder = "\uF010" // Used for h/t placeholder
+export const twemojiIgnoreChars = {
+  emojiReplacement: "\uF001",
+  doubleArrow: "\uF002", // ⇔
+  upRightArrow: "\uF003", // ↗
+} as const
+
 // Computed constants
 export const faviconUrl = `/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 

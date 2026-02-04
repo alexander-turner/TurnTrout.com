@@ -3,6 +3,7 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
+import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
@@ -16,7 +17,7 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string
+  authors?: string // Stored as comma-joined string for search indexing
 }
 
 let currentSearchTerm = ""
@@ -167,12 +168,8 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
   return `${beginning}${slice}${end}`
 }
 
-/**
- * Escapes special characters in a string for use in RegExp
- */
-export function escapeRegExp(text: string) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
+// Re-export escapeRegExp from centralized escape utilities
+export { escapeRegExp } from "../../util/escape"
 
 /**
  * Creates a span element with the class "match" and the given text
@@ -941,7 +938,7 @@ const formatForDisplay = (
     slug,
     title: match(term, data[slug].title ?? ""),
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors,
+    authors: data[slug].authors?.join(", "),
   }
 }
 
@@ -1078,7 +1075,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors,
+      authors: fileData.authors?.join(", "),
     })
   })
 

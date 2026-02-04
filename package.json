@@ -93,10 +93,13 @@
     "beepbeep": "1.3.0",
     "chalk": "5.3.0",
     "chokidar": "4.0.3",
+    "citation-js": "^0.7.22",
     "clean-css": "5.3.3",
     "cli-spinner": "0.2.10",
     "d3-color": "3.1.0",
     "esbuild-sass-plugin": "3.3.1",
+    "escape-latex": "^1.2.0",
+    "escape-string-regexp": "^5.0.0",
     "fast-xml-parser": "5.3.4",
     "find-git-root": "1.0.4",
     "flexsearch": "0.7.43",
@@ -122,7 +125,7 @@
     "pretty-bytes": "6.1.1",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "^1.0.4",
+    "punctilio": "^1.0.5",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "reading-time": "1.5.0",
@@ -152,6 +155,7 @@
     "shiki": "1.3.0",
     "source-map-support": "0.5.21",
     "subfont": "6.12.5",
+    "tengwar": "^1.2.6",
     "title-case": "4.3.2",
     "to-vfile": "8.0.0",
     "toml": "3.0.0",
@@ -221,6 +225,7 @@
     "@types/clean-css": "4.2.11",
     "@types/cli-spinner": "0.2.3",
     "@types/d3": "7.4.3",
+    "@types/escape-latex": "^0.1.36",
     "@types/fs-extra": "11.0.4",
     "@types/hast": "3.0.4",
     "@types/jest": "29.5.13",
@@ -312,6 +317,10 @@
       "tmp": "0.2.4",
       "@eslint/plugin-kit": "0.3.4",
       "qs": "6.14.1"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "citation-js",
+      "punctilio"
+    ]
   }
 }

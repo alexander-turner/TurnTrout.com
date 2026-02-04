@@ -3,6 +3,7 @@ import type { BuildCtx } from "../util/ctx"
 
 import { injectCriticalCSSIntoHTMLFiles } from "../cli/handlers"
 import { getStaticResourcesFromPlugins } from "../plugins"
+import { rebuildBibtexCacheFromContent } from "../plugins/transformers/bibtex"
 import { createWinstonLogger } from "../util/log"
 import { PerfTimer } from "../util/perf"
 import { trace } from "../util/trace"
@@ -11,6 +12,9 @@ export async function emitContent(ctx: BuildCtx, content: ProcessedContent[]) {
   const { argv, cfg } = ctx
   const perf = new PerfTimer()
   const log = createWinstonLogger("emit")
+
+  // Rebuild bibtex cache from content that may have been parsed in worker threads
+  rebuildBibtexCacheFromContent(content)
 
   log.info("Emitting output files")
 
