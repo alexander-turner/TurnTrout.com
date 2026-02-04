@@ -1,5 +1,7 @@
 public
 **.md
 **.min.*
+**.yaml
+**.yml
 node_modules
 .quartz-cache
