@@ -1,7 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace, symbolTransform } from "punctilio"
+import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -268,6 +268,8 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 // Don't check for invariance
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
+  // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
+  (text: string) => primeMarks(text, { separator: markerChar }),
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
