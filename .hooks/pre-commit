@@ -1,25 +1,20 @@
 #!/bin/bash
+# Pre-commit hook: Format and lint staged files
+# Customize the lint-staged configuration in package.json
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
-# Check if .timestamps directory exists
-if [ ! -d "$GIT_ROOT/.timestamps" ]; then
-  echo "ERROR: .timestamps directory not found!"
-  echo "Please clone it with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
-  exit 1
+# Check if lint-staged is installed
+if [ ! -f "$GIT_ROOT/node_modules/.bin/lint-staged" ]; then
+  echo "Warning: lint-staged not found. Run 'pnpm install' to enable pre-commit formatting." >&2
+  exit 0
 fi
 
-# Get staged Python files only
-STAGED_PY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' | while read -r f; do echo "$GIT_ROOT/$f"; done)
-
-if [ -n "$STAGED_PY_FILES" ]; then
-  # Format only staged Python files (use uv run for Python tools managed by uv.lock)
-  echo "$STAGED_PY_FILES" | xargs -r uv run docformatter --in-place --config "$GIT_ROOT"/config/python/pyproject.toml 2>/dev/null || true
-  echo "$STAGED_PY_FILES" | xargs -r uv run pyupgrade 2>/dev/null || true
-
-  # Re-stage formatted files
-  echo "$STAGED_PY_FILES" | xargs -r git add
+# Run lint-staged (via pnpm or npm)
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec lint-staged --allow-empty
+elif command -v npm >/dev/null 2>&1; then
+  npx lint-staged --allow-empty
+else
+  echo "Warning: Neither pnpm nor npm found. Skipping lint-staged." >&2
 fi
-
-# Run lint-staged using pnpm
-pnpm exec lint-staged --allow-empty
