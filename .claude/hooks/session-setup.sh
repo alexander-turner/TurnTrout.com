@@ -1,10 +1,18 @@
 #!/bin/bash
 # Session setup script for Claude Code
 # Installs dependencies and configures environment for git hooks
+#
+# IMPORTANT: This file has project-specific customizations:
+# - OpenTimestamps (ots) installation
+# - .timestamps repo cloning for post-commit hooks
+# - pnpm only (no npm fallback)
+# Do NOT replace with the generic template version during template-sync.
+# Future Claudes: Leave these customizations as-is.
 
 set -uo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+TIMESTAMPS_REPO="alexander-turner/.timestamps"
 
 #######################################
 # Helpers
@@ -16,6 +24,15 @@ die() {
   exit 1
 }
 is_root() { [ "$(id -u)" = "0" ]; }
+
+github_url() {
+  local repo="$1"
+  if [ -n "${GH_TOKEN:-}" ]; then
+    echo "https://x-access-token:${GH_TOKEN}@github.com/${repo}"
+  else
+    echo "https://github.com/${repo}"
+  fi
+}
 
 # Install a command via pip if missing
 pip_install_if_missing() {
@@ -48,17 +65,12 @@ fi
 #######################################
 
 echo "Installing tools..."
-
-# Install shfmt for shell script formatting
+# docformatter and pyupgrade are managed by uv.lock, not pip
+pip_install_if_missing ots opentimestamps-client
 webi_install_if_missing shfmt
-
-# Install GitHub CLI for PR workflows
 webi_install_if_missing gh
-
-# Install jq for JSON processing (used by hooks)
 webi_install_if_missing jq
 
-# Install shellcheck for shell script linting (requires root)
 if ! command -v shellcheck &>/dev/null && is_root; then
   if ! { apt-get update -qq && apt-get install -y -qq shellcheck; } 2>/dev/null; then
     warn "Failed to install shellcheck"
@@ -66,8 +78,25 @@ if ! command -v shellcheck &>/dev/null && is_root; then
 fi
 
 #######################################
-# Git setup
+# Git setup (required - fail on error)
 #######################################
+
+# Clone .timestamps repo (required for post-commit hooks)
+if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
+  echo "Cloning .timestamps repo..."
+  rm -rf "$PROJECT_DIR/.timestamps" 2>/dev/null
+  git clone --quiet "$(github_url "$TIMESTAMPS_REPO")" "$PROJECT_DIR/.timestamps" ||
+    die "Failed to clone .timestamps repo. Post-commit hooks will not work."
+fi
+
+# Ensure .timestamps has correct auth (in case it was cloned without token)
+if [ -n "${GH_TOKEN:-}" ] && [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
+  git -C "$PROJECT_DIR/.timestamps" remote set-url origin "$(github_url "$TIMESTAMPS_REPO")"
+  # Verify push access works (fetch with auth should succeed if push would)
+  if ! git -C "$PROJECT_DIR/.timestamps" ls-remote --quiet origin &>/dev/null; then
+    die "Cannot access .timestamps repo with GH_TOKEN. Check token has push permissions to $TIMESTAMPS_REPO"
+  fi
+fi
 
 cd "$PROJECT_DIR" || exit 1
 git config core.hooksPath .hooks
@@ -85,19 +114,11 @@ fi
 # Project dependencies
 #######################################
 
-# Install Node dependencies if package.json exists and node_modules is missing
-if [ -f "$PROJECT_DIR/package.json" ] && [ ! -d "$PROJECT_DIR/node_modules" ]; then
+if [ ! -d "$PROJECT_DIR/node_modules" ]; then
   echo "Installing Node dependencies..."
-  if command -v pnpm &>/dev/null; then
-    pnpm install --silent || warn "Failed to install Node dependencies"
-  elif command -v npm &>/dev/null; then
-    npm install --silent || warn "Failed to install Node dependencies"
-  fi
+  pnpm install --silent || warn "Failed to install Node dependencies"
 fi
 
-# Install Python dependencies if uv.lock exists
-if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
-  uv sync --quiet 2>/dev/null || warn "Failed to sync Python dependencies"
-fi
+command -v uv &>/dev/null && uv sync --quiet 2>/dev/null
 
 echo "Session setup complete"

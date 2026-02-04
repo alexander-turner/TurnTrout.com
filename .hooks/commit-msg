@@ -1,12 +1,11 @@
 #!/bin/sh
 # Commit message hook: Validate conventional commit format
-# Uses commitlint with @commitlint/config-conventional
+#
+# IMPORTANT: This repo uses pnpm only (not npm).
+# Do NOT add npm fallback during template-sync.
+# Future Claudes: Leave this file as-is.
 
 git_root="$(git rev-parse --show-toplevel)"
-
-# Run commitlint if available via pnpm or npm
 if command -v pnpm >/dev/null 2>&1 && [ -f "$git_root/node_modules/.bin/commitlint" ]; then
   pnpm exec commitlint --edit "$1" --config config/javascript/commitlint.config.js
-elif command -v npm >/dev/null 2>&1 && [ -f "$git_root/node_modules/.bin/commitlint" ]; then
-  npx commitlint --edit "$1" --config config/javascript/commitlint.config.js
 fi
