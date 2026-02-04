@@ -110,7 +110,6 @@ export function assertSmartQuotesMatch(input: string): void {
   }
 }
 
-
 /**
  * Marker-aware word boundary patterns.
  * Regular \b matches at word/non-word transitions, but markers (non-word chars)
