@@ -15,9 +15,11 @@ import {
   Latex,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
+  PopulateExternalMarkdown,
   RecentPostsPage,
   RemoveDrafts,
   Static,
+  stripBadges,
   SyntaxHighlighting,
   TableOfContents,
   TagAcronyms,
@@ -57,6 +59,15 @@ const config: QuartzConfig = {
   plugins: {
     transformers: [
       FrontMatter(),
+      PopulateExternalMarkdown({
+        sources: {
+          punctilio: {
+            owner: "alexander-turner",
+            repo: "punctilio",
+            transform: stripBadges,
+          },
+        },
+      }),
       CreatedModifiedDate(),
       TextFormattingImprovement(),
       Twemoji(),

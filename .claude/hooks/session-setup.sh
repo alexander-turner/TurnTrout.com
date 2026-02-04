@@ -108,7 +108,13 @@ fi
 
 if [ ! -d "$PROJECT_DIR/node_modules" ]; then
   echo "Installing Node dependencies..."
-  pnpm install --silent || warn "Failed to install Node dependencies"
+  pnpm install --silent || die "Failed to install Node dependencies"
+fi
+
+# Ensure markdownlint-cli is installed (required for pre-commit hooks)
+if [ ! -x "$PROJECT_DIR/node_modules/.bin/markdownlint" ]; then
+  echo "Installing markdownlint-cli..."
+  pnpm install --silent || die "Failed to install markdownlint-cli"
 fi
 
 command -v uv &>/dev/null && uv sync --quiet 2>/dev/null
