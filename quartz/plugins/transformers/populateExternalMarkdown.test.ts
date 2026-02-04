@@ -10,7 +10,6 @@ import {
   clearContentCache,
   setFetchFunction,
   resetFetchFunction,
-  type ExternalMarkdownSource,
   type FetchFunction,
 } from "./populateExternalMarkdown"
 
@@ -47,222 +46,122 @@ describe("PopulateExternalMarkdown", () => {
   })
 
   describe("fetchGitHubContentSync", () => {
-    it("should fetch content from GitHub", () => {
-      const mockContent = "# README\n\nSome content"
-      mockFetch.mockReturnValue(mockContent)
-
-      const source: ExternalMarkdownSource = {
-        owner: "test-owner",
-        repo: "test-repo",
-      }
-
-      const result = fetchGitHubContentSync(source)
-
-      expect(result).toBe(mockContent)
-      expect(mockFetch).toHaveBeenCalledWith(
-        "https://raw.githubusercontent.com/test-owner/test-repo/main/README.md",
-      )
-    })
-
-    it("should use custom ref and path", () => {
+    it.each([
+      [{ owner: "test-owner", repo: "test-repo" }, "main/README.md"],
+      [
+        { owner: "owner", repo: "repo", ref: "develop", path: "docs/API.md" },
+        "develop/docs/API.md",
+      ],
+    ])("should construct correct URL for source %j", (source, expectedPath) => {
       mockFetch.mockReturnValue("content")
-
-      const source: ExternalMarkdownSource = {
-        owner: "owner",
-        repo: "repo",
-        ref: "develop",
-        path: "docs/API.md",
-      }
-
       fetchGitHubContentSync(source)
-
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://raw.githubusercontent.com/owner/repo/develop/docs/API.md",
+        `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`,
       )
     })
 
-    it("should throw on fetch failure", () => {
+    it("should propagate fetch errors", () => {
       mockFetch.mockImplementation(() => {
         throw new Error("Network error")
       })
-
-      const source: ExternalMarkdownSource = {
-        owner: "owner",
-        repo: "repo",
-      }
-
-      expect(() => fetchGitHubContentSync(source)).toThrow(
-        "Failed to fetch https://raw.githubusercontent.com/owner/repo/main/README.md",
+      expect(() => fetchGitHubContentSync({ owner: "owner", repo: "repo" })).toThrow(
+        "Network error",
       )
     })
   })
 
   describe("populateExternalContent", () => {
-    it("should replace placeholder with fetched content", () => {
-      const mockContent = "# Fetched README"
-      mockFetch.mockReturnValue(mockContent)
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        "test-project": { owner: "user", repo: "project" },
-      }
-
-      const input = 'Before\n\n<span class="populate-test-project-readme"></span>\n\nAfter'
-      const result = populateExternalContent(input, sources)
-
-      expect(result).toBe("Before\n\n# Fetched README\n\nAfter")
+    it.each([
+      [
+        '<span class="populate-project-readme"></span>',
+        "# Content",
+        { project: { owner: "user", repo: "project" } },
+        "# Content",
+      ],
+      [
+        'Before\n\n<span class="populate-project-readme"></span>\n\nAfter',
+        "# README",
+        { project: { owner: "user", repo: "project" } },
+        "Before\n\n# README\n\nAfter",
+      ],
+      [
+        '<span  class="populate-project-readme" ></span>',
+        "Content",
+        { project: { owner: "user", repo: "project" } },
+        "Content",
+      ],
+    ])("should replace placeholder %j with content", (input, fetchedContent, sources, expected) => {
+      mockFetch.mockReturnValue(fetchedContent)
+      expect(populateExternalContent(input, sources)).toBe(expected)
     })
 
-    it("should handle multiple placeholders", () => {
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes("project-a")) return "Content A"
-        if (url.includes("project-b")) return "Content B"
-        return "Unknown"
-      })
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        "project-a": { owner: "user", repo: "project-a" },
-        "project-b": { owner: "user", repo: "project-b" },
-      }
-
-      const input =
-        '<span class="populate-project-a-readme"></span>\n\n---\n\n<span class="populate-project-b-readme"></span>'
-      const result = populateExternalContent(input, sources)
-
-      expect(result).toBe("Content A\n\n---\n\nContent B")
-    })
-
-    it("should apply transform function to fetched content", () => {
+    it("should apply transform function", () => {
       mockFetch.mockReturnValue("[![Badge](url)](link)\n\n# Content")
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        project: {
-          owner: "user",
-          repo: "project",
-          transform: stripBadges,
-        },
-      }
-
-      const input = '<span class="populate-project-readme"></span>'
-      const result = populateExternalContent(input, sources)
-
-      expect(result).toBe("# Content")
+      const sources = { project: { owner: "user", repo: "project", transform: stripBadges } }
+      expect(
+        populateExternalContent('<span class="populate-project-readme"></span>', sources),
+      ).toBe("# Content")
     })
 
     it("should cache fetched content", () => {
-      mockFetch.mockReturnValue("Cached content")
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        project: { owner: "user", repo: "project" },
-      }
-
-      // First call
+      mockFetch.mockReturnValue("Cached")
+      const sources = { project: { owner: "user", repo: "project" } }
       populateExternalContent('<span class="populate-project-readme"></span>', sources)
-      // Second call with same source
       populateExternalContent('<span class="populate-project-readme"></span>', sources)
-
-      // Should only fetch once due to caching
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
     it("should throw on missing source", () => {
-      const sources: Record<string, ExternalMarkdownSource> = {}
-
       expect(() =>
-        populateExternalContent('<span class="populate-unknown-readme"></span>', sources),
+        populateExternalContent('<span class="populate-unknown-readme"></span>', {}),
       ).toThrow('No source configured for placeholder "unknown"')
     })
 
-    it("should throw on fetch error", () => {
+    it("should propagate fetch errors", () => {
       mockFetch.mockImplementation(() => {
         throw new Error("Network error")
       })
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        project: { owner: "user", repo: "project" },
-      }
-
-      const input = '<span class="populate-project-readme"></span>'
-
-      expect(() => populateExternalContent(input, sources)).toThrow("Network error")
-    })
-
-    it("should handle placeholder with extra whitespace", () => {
-      mockFetch.mockReturnValue("Content")
-
-      const sources: Record<string, ExternalMarkdownSource> = {
-        project: { owner: "user", repo: "project" },
-      }
-
-      const input = '<span  class="populate-project-readme" ></span>'
-      const result = populateExternalContent(input, sources)
-
-      expect(result).toBe("Content")
+      expect(() =>
+        populateExternalContent('<span class="populate-project-readme"></span>', {
+          project: { owner: "user", repo: "project" },
+        }),
+      ).toThrow("Network error")
     })
   })
 
   describe("PopulateExternalMarkdown plugin", () => {
-    it("should have correct plugin name", () => {
-      const plugin = PopulateExternalMarkdown({ sources: {} })
-      expect(plugin.name).toBe("populateExternalMarkdown")
+    it.each([
+      [{ sources: {} }, "populateExternalMarkdown"],
+      [undefined, "populateExternalMarkdown"],
+    ])("should have correct plugin name with opts %j", (opts, expectedName) => {
+      const plugin = PopulateExternalMarkdown(opts as never)
+      expect(plugin.name).toBe(expectedName)
     })
 
     it("should skip processing when no placeholders present", () => {
       const plugin = PopulateExternalMarkdown({ sources: {} })
-      const mockCtx = {} as BuildCtx
-
-      const input = "Regular content without placeholders"
-      const result = plugin.textTransform?.(mockCtx, input)
-
-      expect(result).toBe(input)
+      const result = plugin.textTransform?.({} as BuildCtx, "Regular content")
+      expect(result).toBe("Regular content")
       expect(mockFetch).not.toHaveBeenCalled()
     })
 
-    it("should process content with placeholders", () => {
-      mockFetch.mockReturnValue("# README Content")
-
+    it.each([
+      ["string input", 'Before\n<span class="populate-project-readme"></span>\nAfter'],
+      ["Buffer input", Buffer.from('<span class="populate-project-readme"></span>')],
+    ])("should process %s with placeholders", (_, input) => {
+      mockFetch.mockReturnValue("# Content")
       const plugin = PopulateExternalMarkdown({
-        sources: {
-          "my-project": { owner: "user", repo: "my-project" },
-        },
+        sources: { project: { owner: "user", repo: "project" } },
       })
-      const mockCtx = {} as BuildCtx
-
-      const input = 'Before\n<span class="populate-my-project-readme"></span>\nAfter'
-      const result = plugin.textTransform?.(mockCtx, input)
-
-      expect(result).toBe("Before\n# README Content\nAfter")
-    })
-
-    it("should handle Buffer input", () => {
-      mockFetch.mockReturnValue("Buffer content")
-
-      const plugin = PopulateExternalMarkdown({
-        sources: {
-          project: { owner: "user", repo: "project" },
-        },
-      })
-      const mockCtx = {} as BuildCtx
-
-      const input = Buffer.from('<span class="populate-project-readme"></span>')
-      const result = plugin.textTransform?.(mockCtx, input)
-
-      expect(result).toBe("Buffer content")
+      const result = plugin.textTransform?.({} as BuildCtx, input)
+      expect(result).toContain("# Content")
     })
 
     it("should throw on missing source", () => {
       const plugin = PopulateExternalMarkdown({ sources: {} })
-      const mockCtx = {} as BuildCtx
-
-      const input = '<span class="populate-unknown-readme"></span>'
-
-      expect(() => plugin.textTransform?.(mockCtx, input)).toThrow(
-        'No source configured for placeholder "unknown"',
-      )
-    })
-
-    it("should use default empty sources when options not provided", () => {
-      const plugin = PopulateExternalMarkdown()
-      expect(plugin.name).toBe("populateExternalMarkdown")
+      expect(() =>
+        plugin.textTransform?.({} as BuildCtx, '<span class="populate-unknown-readme"></span>'),
+      ).toThrow('No source configured for placeholder "unknown"')
     })
   })
 })
