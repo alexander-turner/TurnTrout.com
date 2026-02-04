@@ -1,6 +1,5 @@
 import type { Code, Heading, PhrasingContent, Root, RootContent, Text } from "mdast"
 
-import Cite from "citation-js"
 import { VFile } from "vfile"
 
 /** Extracts text content from MDAST phrasing content nodes. */
@@ -12,7 +11,28 @@ import type { QuartzTransformerPlugin } from "../types"
 import type { FrontmatterData } from "../vfile"
 
 /**
- * Generates a BibTeX entry for an article using citation.js.
+ * Extracts the last name from an author string.
+ * Handles "First Last" and "Last, First" formats.
+ */
+function getLastName(author: string): string {
+  if (author.includes(",")) {
+    return author.split(",")[0].trim()
+  }
+  const parts = author.trim().split(/\s+/)
+  return parts[parts.length - 1]
+}
+
+/**
+ * Generates a citation key: LastName + Year + FirstTitleWord
+ */
+function generateCitationKey(authors: string[], year: number, title: string): string {
+  const lastName = getLastName(authors[0])
+  const firstWord = title.split(/\s+/)[0].replace(/[^a-zA-Z]/g, "")
+  return `${lastName}${year}${firstWord}`
+}
+
+/**
+ * Generates a BibTeX entry for an article.
  * @throws Error if date_published is not present in frontmatter on CI
  */
 export function generateBibtexEntry(
@@ -30,25 +50,19 @@ export function generateBibtexEntry(
 
   const date = datePublished ? new Date(datePublished as string | Date) : new Date()
   const year = date.getFullYear()
-  const month = date.getMonth() + 1
 
   const permalink = frontmatter.permalink as string | undefined
   const url = `https://${baseUrl}/${permalink ?? slug}`
 
-  // Use 'literal' to pass author names as-is - citation.js handles formatting
-  const cslEntry = {
-    type: "webpage",
-    title,
-    author: authors.map((name) => ({ literal: name })),
-    issued: { "date-parts": [[year, month]] },
-    URL: url,
-    accessed: {
-      "date-parts": [[new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()]],
-    },
-  }
+  const citationKey = generateCitationKey(authors, year, title ?? "Untitled")
+  const authorString = authors.join(" and ")
 
-  const cite = new Cite(cslEntry)
-  return cite.format("bibtex", { format: "text" })
+  return `@misc{${citationKey},
+  author = {${authorString}},
+  title = {${title}},
+  year = {${year}},
+  url = {${url}},
+}`
 }
 
 /**

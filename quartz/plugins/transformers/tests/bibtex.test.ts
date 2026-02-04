@@ -71,13 +71,40 @@ describe("generateBibtexEntry", () => {
     }
   })
 
-  it("includes month in output", () => {
+  it("generates correct citation key (LastName + Year + FirstWord)", () => {
     const result = generateBibtexEntry(
-      { title: "Test", date_published: "2022-06-15" },
+      { title: "Testing site features", authors: ["Alex Turner"], date_published: "2024-12-15" },
       "turntrout.com",
       "test",
     )
-    expect(result).toContain("month = {6}")
+    expect(result).toContain("@misc{Turner2024Testing,")
+  })
+
+  it("handles Last, First author format", () => {
+    const result = generateBibtexEntry(
+      { title: "Test Article", authors: ["Turner, Alex"], date_published: "2022-06-15" },
+      "turntrout.com",
+      "test",
+    )
+    expect(result).toContain("@misc{Turner2022Test,")
+  })
+
+  it("joins multiple authors with 'and'", () => {
+    const result = generateBibtexEntry(
+      { title: "Test", authors: ["Alex Turner", "John Doe"], date_published: "2022-06-15" },
+      "turntrout.com",
+      "test",
+    )
+    expect(result).toContain("author = {Alex Turner and John Doe}")
+  })
+
+  it("uses 'Untitled' in citation key when title is missing", () => {
+    const result = generateBibtexEntry(
+      { authors: ["Alex Turner"], date_published: "2022-06-15" } as FrontmatterData,
+      "turntrout.com",
+      "test",
+    )
+    expect(result).toContain("@misc{Turner2022Untitled,")
   })
 
   it("throws when date_published is missing on CI", () => {
