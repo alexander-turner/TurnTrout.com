@@ -96,6 +96,7 @@
   "scrollTolerance": 30,
   "listTolerance": 5,
   "maxCardImageSizeKb": 300,
+  "playwrightConfigs": 9,
   "specialDomainMappings": [
     {
       "pattern": "^.*transformer-circuits\\.pub",
