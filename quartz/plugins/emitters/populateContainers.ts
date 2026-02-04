@@ -26,7 +26,7 @@ import {
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb } = simpleConstants
+const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -380,6 +380,11 @@ const createPopulatorMap = (
     [
       "populate-playwright-test-count",
       generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-playwright-configs", generateConstantContent(playwrightConfigs.toLocaleString())],
+    [
+      "populate-playwright-total-tests",
+      generateConstantContent((stats.playwrightTestCount * playwrightConfigs).toLocaleString()),
     ],
     ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
     ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],
