@@ -31,9 +31,77 @@
   // Pre-load checkbox states
   // Use Object.keys for better performance than iterating localStorage.length
   window.__quartz_checkbox_states = new Map()
+  window.__quartz_collapsible_states = new Map()
   Object.keys(localStorage).forEach((key) => {
     if (key.includes("-checkbox-")) {
       window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
+    } else if (key.includes("-collapsible-")) {
+      // Store whether the collapsible is collapsed (true = collapsed)
+      window.__quartz_collapsible_states.set(key, localStorage.getItem(key) === "true")
     }
   })
+
+  /**
+   * Simple hash function for content-based IDs.
+   * @param {string} str - String to hash
+   * @returns {string} 8-character hex hash
+   */
+  function hashContent(str) {
+    let hash = 5381
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
+    }
+    return (hash >>> 0).toString(16).padStart(8, "0")
+  }
+
+  // Track hash occurrences for tiebreaker index
+  const hashCounts = new Map()
+
+  /** Resets hash counts (called on SPA navigation to ensure consistent IDs). */
+  window.__quartz_reset_collapsible_counts = () => hashCounts.clear()
+
+  /**
+   * Generates a stable collapsible ID based on content hash with index tiebreaker.
+   * Uses hash of title+content so IDs are stable across reordering.
+   * Index only distinguishes identical collapsibles on the same page.
+   * @param {string} slug - The page slug
+   * @param {string} content - The full content (title + body text)
+   * @returns {string} Unique ID like "slug-collapsible-abc12345-0"
+   */
+  window.__quartz_collapsible_id = (slug, content) => {
+    const hash = hashContent(content || "empty")
+    const key = `${slug}-${hash}`
+    const index = hashCounts.get(key) || 0
+    hashCounts.set(key, index + 1)
+    return `${slug}-collapsible-${hash}-${index}`
+  }
+
+  /**
+   * Applies saved collapsible state immediately when element is added to DOM.
+   * Called by MutationObserver to prevent layout shift.
+   */
+  function applyCollapsibleState(element) {
+    const slug = document.body?.dataset?.slug
+    if (!slug) return
+    const title = element.querySelector(".admonition-title")?.textContent?.trim() || ""
+    const body = element.querySelector(".admonition-content")?.textContent?.trim() || ""
+    const id = window.__quartz_collapsible_id(slug, title + body)
+    element.dataset.collapsibleId = id
+    if (window.__quartz_collapsible_states.has(id)) {
+      element.classList.toggle("is-collapsed", window.__quartz_collapsible_states.get(id))
+    }
+  }
+
+  // MutationObserver applies saved state before first paint to prevent layout shift
+  const collapsibleObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue
+        if (node.classList?.contains("is-collapsible")) applyCollapsibleState(node)
+        node.querySelectorAll?.(".admonition.is-collapsible").forEach(applyCollapsibleState)
+      }
+    }
+  })
+  collapsibleObserver.observe(document.documentElement, { childList: true, subtree: true })
+  window.addEventListener("load", () => collapsibleObserver.disconnect(), { once: true })
 })()
