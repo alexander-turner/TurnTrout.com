@@ -26,6 +26,7 @@ const documentType = FlexSearch.Document<Item>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
 let searchInitializing = false
+let initializationPromise: Promise<void> | null = null
 
 /**
  * Creates and configures a new FlexSearch index
@@ -992,10 +993,8 @@ async function displayResults(
 async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout) return
 
-  // Initialize search on first input if not already initialized
-  if (!searchInitialized && !searchInitializing) {
-    await initializeSearch()
-  }
+  // Ensure search is initialized (waits if initialization is in progress)
+  await initializeSearch()
 
   if (!index) return
 
@@ -1091,44 +1090,56 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
  */
 /* istanbul ignore next */
 async function initializeSearch(): Promise<void> {
-  if (searchInitialized || searchInitializing) return
+  // If already initialized, nothing to do
+  if (searchInitialized) return
+
+  // If initialization is in progress, wait for it to complete
+  if (searchInitializing && initializationPromise) {
+    await initializationPromise
+    return
+  }
 
   searchInitializing = true
 
-  // Show loading indicator
-  const searchBar = document.getElementById("search-bar") as HTMLInputElement
-  if (!searchBar) {
-    console.error("Can't locate the #search-bar element.")
-    return
-  }
-  const originalPlaceholder = searchBar?.placeholder
-  searchBar.placeholder = "Loading search..."
-
-  try {
-    // Create the index
-    index = createSearchIndex()
-
-    // Fetch and fill the index with data
-    if (data) {
-      await fillDocument(data)
+  // Create a promise that other callers can await
+  initializationPromise = (async () => {
+    // Show loading indicator
+    const searchBar = document.getElementById("search-bar") as HTMLInputElement
+    if (!searchBar) {
+      console.error("Can't locate the #search-bar element.")
+      return
     }
+    const originalPlaceholder = searchBar?.placeholder
+    searchBar.placeholder = "Loading search..."
 
-    searchInitialized = true
-  } catch (error) {
-    console.error("Error initializing search:", error)
-    searchBar.placeholder = "Search failed to load."
-  } finally {
-    searchInitializing = false
+    try {
+      // Create the index
+      index = createSearchIndex()
 
-    // Restore search bar state
-    if (originalPlaceholder) {
-      searchBar.placeholder = originalPlaceholder
+      // Fetch and fill the index with data
+      if (data) {
+        await fillDocument(data)
+      }
+
+      searchInitialized = true
+    } catch (error) {
+      console.error("Error initializing search:", error)
+      searchBar.placeholder = "Search failed to load."
+    } finally {
+      searchInitializing = false
+
+      // Restore search bar state
+      if (originalPlaceholder) {
+        searchBar.placeholder = originalPlaceholder
+      }
+      updatePlaceholder(searchBar)
+
+      // Ensure focus is maintained (needed for non-Chromium browsers)
+      searchBar.focus()
     }
-    updatePlaceholder(searchBar)
+  })()
 
-    // Ensure focus is maintained (needed for non-Chromium browsers)
-    searchBar.focus()
-  }
+  await initializationPromise
 }
 
 /*
