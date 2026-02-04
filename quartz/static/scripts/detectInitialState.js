@@ -42,18 +42,39 @@
   })
 
   /**
-   * Generates a stable collapsible ID based on slug and title (not index).
-   * Title-based IDs ensure state persists even if admonitions are reordered.
-   * @param {string} slug - The page slug
-   * @param {string} titleText - The admonition title text
-   * @returns {string} Unique ID like "slug-collapsible-normalized-title"
+   * Simple hash function for content-based IDs.
+   * @param {string} str - String to hash
+   * @returns {string} 8-character hex hash
    */
-  window.__quartz_collapsible_id = (slug, titleText) =>
-    `${slug}-collapsible-${(titleText || "untitled")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 50)}`
+  function hashContent(str) {
+    let hash = 5381
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
+    }
+    return (hash >>> 0).toString(16).padStart(8, "0")
+  }
+
+  // Track hash occurrences for tiebreaker index
+  const hashCounts = new Map()
+
+  /** Resets hash counts (called on SPA navigation to ensure consistent IDs). */
+  window.__quartz_reset_collapsible_counts = () => hashCounts.clear()
+
+  /**
+   * Generates a stable collapsible ID based on content hash with index tiebreaker.
+   * Uses hash of title+content so IDs are stable across reordering.
+   * Index only distinguishes identical collapsibles on the same page.
+   * @param {string} slug - The page slug
+   * @param {string} content - The full content (title + body text)
+   * @returns {string} Unique ID like "slug-collapsible-abc12345-0"
+   */
+  window.__quartz_collapsible_id = (slug, content) => {
+    const hash = hashContent(content || "empty")
+    const key = `${slug}-${hash}`
+    const index = hashCounts.get(key) || 0
+    hashCounts.set(key, index + 1)
+    return `${slug}-collapsible-${hash}-${index}`
+  }
 
   /**
    * Applies saved collapsible state immediately when element is added to DOM.
@@ -62,10 +83,9 @@
   function applyCollapsibleState(element) {
     const slug = document.body?.dataset?.slug
     if (!slug) return
-    const id = window.__quartz_collapsible_id(
-      slug,
-      element.querySelector(".admonition-title")?.textContent?.trim() || "",
-    )
+    const title = element.querySelector(".admonition-title")?.textContent?.trim() || ""
+    const body = element.querySelector(".admonition-content")?.textContent?.trim() || ""
+    const id = window.__quartz_collapsible_id(slug, title + body)
     element.dataset.collapsibleId = id
     if (window.__quartz_collapsible_states.has(id)) {
       element.classList.toggle("is-collapsed", window.__quartz_collapsible_states.get(id))
