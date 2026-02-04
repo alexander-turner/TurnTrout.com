@@ -86,9 +86,9 @@ export function stripBadges(content: string): string {
 
 function getContent(name: string, source: ExternalMarkdownSource): string {
   const cacheKey = `${source.owner}/${source.repo}/${source.ref ?? "main"}/${source.path ?? "README.md"}`
-
-  if (contentCache.has(cacheKey)) {
-    return contentCache.get(cacheKey)!
+  const cached = contentCache.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
   }
 
   let content = fetchGitHubContentSync(source)
