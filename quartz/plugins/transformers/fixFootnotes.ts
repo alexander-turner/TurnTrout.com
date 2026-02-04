@@ -43,10 +43,13 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
-// skipcq: JS-D1001
-export function hasFootnoteHeading(sectionElement: Element): boolean {
-  return sectionElement.children.some((child: ElementContent) => {
-    if (child.type !== "element" || child.tagName !== "h1") {
+/**
+ * Finds the index of a footnote heading (h1 or h2) with id="footnote-label".
+ * Returns -1 if not found. Checks for h2 as well because remark-gfm generates h2.
+ */
+export function findFootnoteHeadingIndex(sectionElement: Element): number {
+  return sectionElement.children.findIndex((child: ElementContent) => {
+    if (child.type !== "element" || (child.tagName !== "h1" && child.tagName !== "h2")) {
       return false
     }
     const id = child.properties?.id
@@ -55,16 +58,31 @@ export function hasFootnoteHeading(sectionElement: Element): boolean {
 }
 
 // skipcq: JS-D1001
+export function hasFootnoteHeading(sectionElement: Element): boolean {
+  return findFootnoteHeadingIndex(sectionElement) !== -1
+}
+
+// skipcq: JS-D1001
 export function createFootnoteHeading(): Element {
   return h("h1", { id: "footnote-label", className: ["sr-only"] }, ["Footnotes"])
 }
 
 /**
- * Adds the footnote heading to a section if it doesn't already have one.
+ * Ensures the section has an h1 footnote heading.
+ * - If no heading exists, adds one
+ * - If an h2 heading exists (from remark-gfm), upgrades it to h1
  */
 export function addHeadingToSection(sectionElement: Element): void {
-  if (!hasFootnoteHeading(sectionElement)) {
+  const headingIndex = findFootnoteHeadingIndex(sectionElement)
+  if (headingIndex === -1) {
     sectionElement.children.unshift(createFootnoteHeading() as ElementContent)
+    return
+  }
+
+  // Upgrade existing h2 to h1 if needed
+  const existingHeading = sectionElement.children[headingIndex] as Element
+  if (existingHeading.tagName === "h2") {
+    existingHeading.tagName = "h1"
   }
 }
 
@@ -116,13 +134,13 @@ export function cleanupIframeFootnoteText(tree: Root): void {
  * Fixes malformed footnotes sections that can occur when raw HTML (like iframes)
  * appears at the end of a document. The issue manifests as:
  * 1. Missing <section data-footnotes> wrapper
- * 2. Missing <h2 id="footnote-label"> heading
+ * 2. Missing <h1 id="footnote-label"> heading
  * 3. Footnotes text content appearing inside iframe tags
  *
  * This plugin:
  * 1. Finds footnote lists (ol elements with li children that have user-content-fn- ids)
  * 2. Ensures they're wrapped in a proper section with data-footnotes attribute
- * 3. Adds the footnote-label heading if missing
+ * 3. Adds the footnote-label heading if missing (or upgrades h2 to h1 for compatibility)
  * 4. Cleans up any text nodes that were placed incorrectly in iframes
  */
 export const FixFootnotes: QuartzTransformerPlugin = () => {

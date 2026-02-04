@@ -49,7 +49,11 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
       .use(remarkDefinitionList)
       .use(remarkCaptions)
       .use(remarkCaptionsCodeFix)
-      .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })
+      .use(remarkRehype, {
+        allowDangerousHtml: true,
+        handlers: defListHastHandlers,
+        footnoteLabelTagName: "h1", // Use h1 instead of default h2 for footnotes section
+      })
       // Rehype plugins
       .use(rehypeMermaid, {
         strategy: "inline-svg",
