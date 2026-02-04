@@ -56,6 +56,11 @@ cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
 git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
 
+# Pull and rebase before pushing to handle divergent branches
+if ! git pull --rebase --quiet origin master 2>/dev/null; then
+  rollback "Could not pull from .timestamps repo."
+fi
+
 # Push to timestamps repo
 if ! git push --quiet 2>/dev/null; then
   rollback "Could not push to .timestamps repo (no credentials?). Check session-setup.sh."
