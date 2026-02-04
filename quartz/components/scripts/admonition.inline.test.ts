@@ -217,4 +217,84 @@ describe("admonition.inline collapsible state persistence", () => {
     admonition.querySelector<HTMLElement>(".admonition-title")!.click()
     expect((window as WindowWithStates).__quartz_collapsible_states).toBeInstanceOf(Map)
   })
+
+  describe("stress tests", () => {
+    it("handles 100 collapsibles efficiently", () => {
+      for (let i = 0; i < 100; i++)
+        document.body.appendChild(createAdmonition(false, `Title ${i}`, `Content ${i}`))
+      const start = performance.now()
+      dispatchNav()
+      expect(performance.now() - start).toBeLessThan(500)
+      expect(document.querySelectorAll("[data-collapsible-id]")).toHaveLength(100)
+      // All should have unique IDs
+      const ids = new Set(
+        [...document.querySelectorAll("[data-collapsible-id]")].map(
+          (el) => (el as HTMLElement).dataset.collapsibleId,
+        ),
+      )
+      expect(ids.size).toBe(100)
+    })
+
+    it("handles 50 identical collapsibles with correct indices", () => {
+      for (let i = 0; i < 50; i++)
+        document.body.appendChild(createAdmonition(false, "Quote", "Same"))
+      dispatchNav()
+      const ids = [...document.querySelectorAll("[data-collapsible-id]")].map(
+        (el) => (el as HTMLElement).dataset.collapsibleId,
+      )
+      const hash = hashContent("QuoteSame")
+      ids.forEach((id, i) => expect(id).toBe(`test-page-collapsible-${hash}-${i}`))
+    })
+
+    it("handles rapid toggle cycles", () => {
+      const admonition = createAdmonition(false, "Toggle", "Test")
+      document.body.appendChild(admonition)
+      dispatchNav()
+      const title = admonition.querySelector<HTMLElement>(".admonition-title")!
+      for (let i = 0; i < 50; i++) {
+        title.click() // close
+        admonition.click() // open
+      }
+      expect(admonition.classList.contains("is-collapsed")).toBe(false)
+      expect(localStorage.getItem(admonition.dataset.collapsibleId!)).toBe("false")
+    })
+
+    it("handles large content (10KB)", () => {
+      const largeContent = "x".repeat(10000)
+      const admonition = createAdmonition(false, "Large", largeContent)
+      document.body.appendChild(admonition)
+      dispatchNav()
+      expect(admonition.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
+    })
+
+    it("handles unicode and special characters", () => {
+      const admonition = createAdmonition(false, "日本語タイトル 🎉", "Ñoño émoji 中文 العربية")
+      document.body.appendChild(admonition)
+      dispatchNav()
+      expect(admonition.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
+      admonition.querySelector<HTMLElement>(".admonition-title")!.click()
+      expect(localStorage.getItem(admonition.dataset.collapsibleId!)).toBe("true")
+    })
+
+    it("handles multiple SPA navigations correctly", () => {
+      const admonition1 = createAdmonition(false, "Note", "First")
+      document.body.appendChild(admonition1)
+      dispatchNav()
+      const id1 = admonition1.dataset.collapsibleId
+      // Simulate SPA navigation
+      document.body.innerHTML = ""
+      const admonition2 = createAdmonition(false, "Note", "First")
+      document.body.appendChild(admonition2)
+      dispatchNav()
+      expect(admonition2.dataset.collapsibleId).toBe(id1) // Same content = same ID after reset
+    })
+
+    it("produces different hashes for similar content", () => {
+      const admonition1 = createAdmonition(false, "AB", "C")
+      const admonition2 = createAdmonition(false, "A", "BC")
+      document.body.append(admonition1, admonition2)
+      dispatchNav()
+      expect(admonition1.dataset.collapsibleId).not.toBe(admonition2.dataset.collapsibleId)
+    })
+  })
 })
