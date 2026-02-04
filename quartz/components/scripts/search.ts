@@ -1126,6 +1126,9 @@ async function initializeSearch(): Promise<void> {
     }
     updatePlaceholder(searchBar)
 
+    // Ensure focus is maintained (needed for non-Chromium browsers)
+    searchBar.focus()
+
     // If user typed while loading, trigger a search now
     if (searchBar.value.trim() !== "") {
       searchBar.dispatchEvent(new Event("input", { bubbles: true }))
