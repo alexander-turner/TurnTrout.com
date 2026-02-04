@@ -119,6 +119,9 @@ importers:
       hastscript:
         specifier: 9.0.1
         version: 9.0.1
+      humanparser:
+        specifier: ^2.7.0
+        version: 2.7.0
       is-absolute-url:
         specifier: 4.0.1
         version: 4.0.1
@@ -345,6 +348,9 @@ importers:
       '@types/hast':
         specifier: 3.0.4
         version: 3.0.4
+      '@types/humanparser':
+        specifier: ^1.1.8
+        version: 1.1.8
       '@types/jest':
         specifier: 29.5.13
         version: 29.5.13
@@ -2509,6 +2515,9 @@ packages:
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
+
+  '@types/humanparser@1.1.8':
+    resolution: {integrity: sha512-C2toRY48y3JPb+dbhXQC8N3BNMFC4glWAoY/lv1/9yooso/TB3hhPuDhJJ/CgQ4D+SFHU91lrz446m/epV0dwg==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -5351,6 +5360,9 @@ packages:
   human-signals@5.0.0:
     resolution: {integrity: sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==}
     engines: {node: '>=16.17.0'}
+
+  humanparser@2.7.0:
+    resolution: {integrity: sha512-SyuUACd48ey150QUZHVPMcGZwbn48naoJCN80LVA6RHZ5i7iQO9FcXvsOpqi2DEGGtymyp+SenaqaGQ3ik7dvA==}
 
   husky@9.1.7:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
@@ -12141,6 +12153,8 @@ snapshots:
 
   '@types/http-cache-semantics@4.0.4': {}
 
+  '@types/humanparser@1.1.8': {}
+
   '@types/istanbul-lib-coverage@2.0.6': {}
 
   '@types/istanbul-lib-report@3.0.3':
@@ -15724,6 +15738,8 @@ snapshots:
   human-signals@2.1.0: {}
 
   human-signals@5.0.0: {}
+
+  humanparser@2.7.0: {}
 
   husky@9.1.7: {}
 

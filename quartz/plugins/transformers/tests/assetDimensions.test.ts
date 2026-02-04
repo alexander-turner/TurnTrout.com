@@ -261,13 +261,16 @@ describe("Asset Dimensions Plugin", () => {
 
       await assetProcessor.maybeSaveAssetDimensions()
 
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
+      // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
-        tempFilePath,
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        actualAssetDimensionsFilePath,
+      )
       expect(assetProcessor["needToSaveCache"]).toBe(false)
 
       renameSpy.mockRestore()
@@ -320,6 +323,36 @@ describe("Asset Dimensions Plugin", () => {
       expect(writeFileSpy).toHaveBeenCalled()
       expect(renameSpy).not.toHaveBeenCalled()
       renameSpy.mockRestore()
+    })
+
+    it("should cleanup temp file and rethrow on rename error", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Permission denied") as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Permission denied")
+      expect(unlinkSpy).toHaveBeenCalled()
+    })
+
+    it("should rethrow rename error even if cleanup fails", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Rename failed") as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockRejectedValue(new Error("Cleanup failed"))
+
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
+      expect(unlinkSpy).toHaveBeenCalled()
     })
   })
 
@@ -1042,9 +1075,17 @@ describe("Asset Dimensions Plugin", () => {
       assetProcessor.setDirectDirtyFlag(true)
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
-      expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      // Temp file includes process.pid and timestamp for uniqueness
+      const tempFilePattern = new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        expect.any(String),
+        "utf-8",
+      )
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        actualAssetDimensionsFilePath,
+      )
 
       readFileMock.mockRestore()
       renameSpy.mockRestore()
