@@ -40,6 +40,7 @@ export const {
   tightScrollTolerance,
   scrollTolerance,
   listTolerance,
+  playwrightConfigs,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 

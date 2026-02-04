@@ -109,9 +109,9 @@ class AssetProcessor {
       try {
         await fs.rename(tempFilePath, paths.assetDimensions)
       } catch (error) {
-        // Clean up temp file on failure
-        await fs.unlink(tempFilePath).catch(() => {})
-        // ENOENT means another worker may have saved successfully, or the temp file was already cleaned up.
+        // Clean up temp file on failure (ignore errors - file may already be gone)
+        await fs.unlink(tempFilePath).catch(() => undefined)
+        // ENOENT means another worker may have saved successfully, or there was a race
         // In either case, the cache should be saved, so we can continue
         if ((error as NodeJS.ErrnoException).code === "ENOENT") {
           this.needToSaveCache = false
