@@ -31,7 +31,7 @@
       "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
-    "*.json": [
+    "*.json !**/.asset_dimensions.json": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
     "*.{js,jsx,ts,tsx}": [
