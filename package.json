@@ -12,7 +12,7 @@
   },
   "scripts": {
     "docs": "tsx quartz/bootstrap-cli.ts build --serve -d docs",
-    "check": "tsc --noEmit -p config/typescript/tsconfig.json && pnpm prettier . --check --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+    "check": "tsc --noEmit -p config/typescript/tsconfig.json && pnpm prettier . --check --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore && pnpm exec stylelint 'quartz/**/*.scss' --config config/stylelint/.stylelintrc.json",
     "format": "pnpm prettier . --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
     "test": "node --experimental-vm-modules --no-warnings --localstorage-file=/tmp/jest-localstorage.json node_modules/jest/bin/jest.js --coverage --config config/javascript/jest.config.js",
     "dev": "tsx quartz/bootstrap-cli.ts build --serve",
@@ -28,8 +28,8 @@
   },
   "lint-staged": {
     "*.{css,scss}": [
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
-      "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix"
+      "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
     "*.json": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"

@@ -1,9 +1,6 @@
 {
   "plugins": ["stylelint-declaration-strict-value", "./scss-custom-property-interpolation.js"],
-  "extends": [
-    "stylelint-config-standard-scss",
-    "stylelint-prettier/recommended"
-  ],
+  "extends": ["stylelint-config-standard-scss"],
   "rules": {
     "no-invalid-double-slash-comments": null,
     "no-descending-specificity": null,
