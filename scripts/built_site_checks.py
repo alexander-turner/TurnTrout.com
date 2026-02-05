@@ -2058,7 +2058,7 @@ def check_citation_uniqueness(public_dir: Path) -> list[str]:
                 continue
 
             citation_keys = extract_citation_keys_from_html(soup)
-            for key in citation_keys:
+            for key in set(citation_keys):  # Deduplicate keys within same file
                 if key not in citation_to_files:
                     citation_to_files[key] = []
                 citation_to_files[key].append(str(file_path.relative_to(public_dir)))

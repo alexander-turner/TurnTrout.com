@@ -5615,3 +5615,18 @@ def test_check_citation_uniqueness_skips_redirects(mock_environment):
     result = built_site_checks.check_citation_uniqueness(public_dir)
     # Should not report duplicate because redirect is skipped
     assert result == []
+
+
+def test_check_citation_uniqueness_no_false_positive_nested_code(mock_environment):
+    """Test that nested pre/code doesn't cause false positive duplicates."""
+    public_dir = mock_environment["public_dir"]
+
+    # Typical rehype-pretty-code output: <pre><code>...</code></pre>
+    # The key appears in both elements but should only be counted once per file
+    nested_html = '<html><body><pre><code>@misc{Turner2024Nested,\n}</code></pre></body></html>'
+
+    (public_dir / "page.html").write_text(nested_html)
+
+    result = built_site_checks.check_citation_uniqueness(public_dir)
+    # Should not report duplicate - it's the same key in the same file
+    assert result == []
