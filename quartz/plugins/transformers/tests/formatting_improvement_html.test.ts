@@ -9,28 +9,30 @@ import { VFile } from "vfile"
 import { charsToMoveIntoLinkFromRight, markerChar } from "../../../components/constants"
 import {
   massTransformText,
-  getTextContent,
-  flattenTextNodes,
   improveFormatting,
   spacesAroundSlashes,
-  transformElement,
-  assertSmartQuotesMatch,
   l_pRegex,
-  collectTransformableElements,
   identifyLinkNode,
   moveQuotesBeforeLink,
-  getFirstTextNode,
   replaceFractions,
   timeTransform,
   applyTextTransforms,
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
+  arrowsToWrap,
+} from "../formatting_improvement_html"
+import {
+  getTextContent,
+  flattenTextNodes,
+  transformElement,
+  assertSmartQuotesMatch,
+  collectTransformableElements,
+  getFirstTextNode,
   toSkip,
   SKIP_TAGS,
   FRACTION_SKIP_TAGS,
   SKIP_CLASSES,
-} from "../formatting_improvement_html"
-import { arrowsToWrap } from "../formatting_improvement_html"
+} from "../punctilio-rehype"
 
 // Unicode constants for readable test expectations
 // (punctilio exports these in constants.js but not from the main entry point)
