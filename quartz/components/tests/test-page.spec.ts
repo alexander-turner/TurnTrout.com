@@ -608,85 +608,20 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   })
 })
 
-test.describe("Elvish toggle", () => {
-  test("clicking elvish text toggles between Tengwar and English", async ({ page }) => {
+for (const theme of ["light", "dark"]) {
+  test(`Hover over elvish text in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+    await setTheme(page, theme as "light" | "dark")
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    // Initially should show Tengwar (elvish-tengwar visible, elvish-translation hidden)
-    const tengwar = elvishText.locator(".elvish-tengwar")
-    const translation = elvishText.locator(".elvish-translation")
+    await elvishText.hover()
+    await waitForTransitionEnd(elvishText)
 
-    await expect(tengwar).toBeVisible()
-    await expect(translation).toBeHidden()
-
-    // Click to toggle to English
-    await elvishText.click()
-
-    await expect(tengwar).toBeHidden()
-    await expect(translation).toBeVisible()
-
-    // Click again to toggle back to Tengwar
-    await elvishText.click()
-
-    await expect(tengwar).toBeVisible()
-    await expect(translation).toBeHidden()
+    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
+      elementToScreenshot: elvishText,
+    })
   })
-
-  test("toggling elvish text does not cause layout shift", async ({ page }) => {
-    test.skip(
-      !isDesktopViewport(page),
-      "More narrow viewports may have the English translation take more lines than the Elvish, which is fine.",
-    )
-    const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
-
-    const lowerElt = page.locator(".footnotes").first()
-    const lowerEltBoxBefore = await lowerElt.boundingBox()
-    expect(lowerEltBoxBefore).not.toBeNull()
-
-    await elvishText.click()
-
-    const lowerEltBoxAfter = await lowerElt.boundingBox()
-    expect(lowerEltBoxAfter).not.toBeNull()
-
-    // The element below should not have moved (within 1px tolerance for rounding)
-    // skipcq: JS-0339 - boxes are checked for nullability above
-    expect(lowerEltBoxAfter!.y).toBeCloseTo(lowerEltBoxBefore!.y, 0)
-  })
-
-  test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
-    const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
-
-    await elvishText.click()
-
-    const textDecorationStyle = await elvishText.evaluate(
-      (el) => window.getComputedStyle(el).textDecorationStyle,
-    )
-    expect(textDecorationStyle).toBe("dotted")
-  })
-
-  test("noscript fallback shows both Tengwar and translation when JS is disabled", async ({
-    browser,
-  }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false })
-    const page = await context.newPage()
-
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-    const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
-
-    const tengwar = elvishText.locator(".elvish-tengwar")
-    const translation = elvishText.locator(".elvish-translation")
-
-    await expect(tengwar).toBeVisible()
-    await expect(translation).toBeVisible()
-
-    await context.close()
-  })
-})
+}
 
 test.describe("Video Speed Controller visibility", () => {
   test("hides VSC controller for no-vsc videos after img", async ({ page }) => {

@@ -6,6 +6,14 @@ import process from "node:process"
 
 import { contentCacheFolder } from "./constants.js"
 
+export function escapePath(fp) {
+  return fp
+    .replace(/\\ /g, " ") // unescape spaces
+    .replace(/^".*"$/, "$1")
+    .replace(/^'.*"$/, "$1")
+    .trim()
+}
+
 // skipcq: JS-0045
 export function exitIfCancel(val) {
   if (isCancel(val)) {

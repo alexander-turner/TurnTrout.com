@@ -40,7 +40,6 @@ skip_import: true
 description: "A technical deep dive exploring how to align an AI with the goal of
   creating diamonds, rather than more nebulous human values. "
 date_updated: 2025-11-22 00:21:52.667251
-createBibtex: true
 ---
 
 

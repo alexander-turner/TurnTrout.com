@@ -19,12 +19,7 @@ af-num-comments-on-upload: 63
 title: Steering GPT-2-XL by adding an activation vector
 lw-latest-edit: 2024-02-19T23:31:07.877000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Monte MacDiarmid
-  - David Udell
-  - Lisa Thiergart
-  - Ulisse Mini
+authors: Alex Turner, Monte MacDiarmid, David Udell, Lisa Thiergart, and Ulisse Mini
 tags:
   - AI
   - shard-theory
@@ -43,7 +38,6 @@ original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-x
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
 date_updated: 2026-01-25 23:47:56.984113
-createBibtex: true
 ---
 
 
@@ -1003,7 +997,17 @@ Ulisse Mini (researcher)
 >
 > This work was supported by a grant from the Long-Term Future Fund.
 
-The [`activation_additions`](https://github.com/montemac/activation_additions) repository contains our code.
+The [`activation_additions`](https://github.com/montemac/activation_additions) repository contains our code. To cite this work:
+
+```bibtex
+@article{turner2023steering,
+    title={Steering GPT-2-XL by adding an activation vector},
+    author={Turner, Alex and M., Monte and Udell, David and Thiergart, Lisa and Mini, Ulisse},
+    journal={AI Alignment Forum},
+    year={2023},
+    note={\url{https://www.alignmentforum.org/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector}}
+}
+```
 
 # Appendix 1: Related work
 

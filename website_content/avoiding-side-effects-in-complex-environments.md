@@ -21,9 +21,7 @@ af-num-comments-on-upload: 8
 title: Avoiding Side Effects in Complex Environments
 lw-latest-edit: 2020-12-12T00:43:10.508000Z
 lw-is-linkpost: "true"
-authors:
-  - Alex Turner
-  - Neale Ratzlaff
+authors: Alex Turner and Neale Ratzlaff
 tags:
   - AI
   - impact-regularization

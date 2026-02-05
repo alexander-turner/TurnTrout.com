@@ -20,9 +20,7 @@ af-num-comments-on-upload: 1
 title: Game-theoretic Alignment in terms of Attainable Utility
 lw-latest-edit: 2021-06-08T12:36:09.299000Z
 lw-is-linkpost: 'false'
-authors:
-  - Jacob Stavrianos
-  - Alex Turner
+authors: Jacob Stavrianos and Alex Turner
 tags:
   - game-theory
   - AI

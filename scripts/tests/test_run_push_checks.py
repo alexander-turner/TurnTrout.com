@@ -85,8 +85,7 @@ def test_find_quartz_process(mock_process):
 
 
 def test_find_quartz_process_with_invalid_cmdline():
-    """Test finding Quartz process skips processes with None or short
-    cmdline."""
+    """Test finding Quartz process skips processes with None or short cmdline."""
     # Test with None cmdline
     mock_proc_none = MagicMock()
     mock_proc_none.info = {"cmdline": None}

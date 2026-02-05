@@ -4,9 +4,6 @@ import React from "react"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import clipboardScript from "./scripts/clipboard.inline"
-// @ts-expect-error Not a module but a script
-// skipcq: JS-W1028
-import elvishToggleScript from "./scripts/elvish-toggle.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {
   type QuartzComponent,
@@ -42,7 +39,7 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   )
 }
 
-Body.afterDOMLoaded = clipboardScript + elvishToggleScript
+Body.afterDOMLoaded = clipboardScript
 Body.css = clipboardStyle
 
 export default (() => Body) satisfies QuartzComponentConstructor

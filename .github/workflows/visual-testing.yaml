@@ -14,14 +14,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "**/*.spec.ts"
-      - "quartz/components/scripts/**"
-      - "quartz/components/styles/**"
-      - "config/playwright/**"
-      - "config/lostpixel/**"
 
 permissions:
   actions: read

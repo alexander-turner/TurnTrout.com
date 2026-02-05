@@ -5,12 +5,7 @@ import { h } from "hastscript"
 import { type Plugin } from "unified"
 import { visit } from "unist-util-visit"
 
-import {
-  emojiReplacement,
-  twemojiBaseUrl,
-  emojisToReplace,
-  twemojiIgnoreChars,
-} from "../../components/constants"
+import { emojiReplacement, twemojiBaseUrl, emojisToReplace } from "../../components/constants"
 import { twemoji } from "./modules/twemoji.min"
 
 export interface TwemojiOptions {
@@ -97,11 +92,11 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
   return newNodes
 }
 
-// Characters to protect from twemoji processing by temporarily replacing with PUA characters
+// private-use unicode; html formatting uses E000
 export const ignoreMap = new Map<string, string>([
-  [emojiReplacement, twemojiIgnoreChars.emojiReplacement],
-  ["⇔", twemojiIgnoreChars.doubleArrow],
-  ["↗", twemojiIgnoreChars.upRightArrow],
+  [emojiReplacement, "\uE001"],
+  ["⇔", "\uE002"],
+  ["↗", "\uE003"],
 ])
 
 /**

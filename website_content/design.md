@@ -5,8 +5,7 @@ tags:
   - website
   - open-source
 description: Showing off and explaining this site's beauty.
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -15,7 +14,6 @@ aliases:
 date_published: 2024-10-31 23:14:34.832290
 date_updated: 2026-01-20 10:53:02.330875
 no_dropcap: false
-createBibtex: true
 ---
 
 
@@ -366,56 +364,51 @@ Figure: _Ligatures_ transform sequences of characters (like "<span style="font-v
 ![Demonstrating how the monospace font aligns the x-height and cap-heights of common bigrams like 'Fl'.](https://assets.turntrout.com/static/images/posts/letter_pairs-1.avif)
 Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
 
-My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Artano" renders Elvish glyphs in proper Quenya mode.
+My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Annatar" renders Elvish glyphs.
 
 <!-- spellchecker-disable -->
 
 > [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
 >
-> Subtitle: Click a line to see the translation
+> Subtitle: Hover over a line to translate
 >
 > <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></div>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
+> <em><span class="elvish" data-content="Ah! like gold fall the leaves in the wind,">hEÁ jyE7\`B\`V j1pE6E j8"\#\`B 8\~M75%5$ =</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">long years numberless as the wings of trees!</span></span>
+> <em><span class="elvish" data-content="long years numberless as the wings of trees!">h\~V5\`B \~M5\~N1t%\`V rÈ 6\~Ct6E j\#27E5^Á</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">The years have passed like swift draughts</span></span>
+> <em><span class="elvish" data-content="The years have passed like swift draughts">h\~V5\`B rÈ j1pT\`V hj&26E r\#\~C5\`B6R</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">of the sweet mead in lofty halls beyond the West,</span></span>
+> <em><span class="elvish" data-content="of the sweet mead in lofty halls beyond the West,">t\`B 7Yt^6E2\`B j8È%\`'\t7Tr&\~N7r\$\`C</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">beneath the blue vaults of Varda</span></span>
+> <em><span class="elvish" data-content="beneath the blue vaults of Varda">2P\#\~M5\`V qj\$¸\`C = r6E2\`N 1j\$¸t&6E</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">wherein the stars tremble</span></span>
+> <em><span class="elvish" data-content="wherein the stars tremble in the song of her voice, holy and queenly.">5\`M jhM5\`B h8"\#5\$ 11pTj%6E \`B j\$5\$\`B</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
->
-> <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">     </span><span class="elvish-translation">Who now shall refill the cup for me?</span></span>
+> <em><span class="elvish" data-content="Who now shall refill the cup for me?">\~Nt7E\`Û\`N hE71R\~C7\`B\j\~B75%5\$ -</span></em>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">For now the Kindler, Varda, the Queen of the Stars,</span></span>
->
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
+> <em><span class="elvish" data-content="For now the Kindler, Varda, the Queen of the Stars,">8\~B t5\# \`B hj&t\`C 55% 5\$zé1pEr&\`CÀ</span></em>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
+> <em><span class="elvish" data-content="from Mount Everwhite has uplifted her hands like clouds,">5\# 8\~B 11pTj\#¸\`V r6E2\`C hYj^8"^\`V\`N</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">and out of a grey country darkness lies</span></span>
+> <em><span class="elvish" data-content="and all paths are drowned deep in shadow;">rÈ e5\#\`Û\`C6 t\~C7\`Û\`C1 j\$1pR\~C7\`B 6Y15\#\`V =</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   ⸱</span><span class="elvish-translation">on the foaming waves between us,</span></span>
+> <em><span class="elvish" data-content="and out of a grey country darkness">6E j%\`VÛ 1\`B6R 2P&j&\~Cr\`V jwP&j&\`VÂ</span></em>
 >
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">     :</span><span class="elvish-translation">and mist covers the jewels of Calacirya for ever.</span></span>
+> <em><span class="elvish" data-content="lies on the foaming waves between us,">6E 82P%5\#\~N7\`Bj\$¸\`N zhE1\`C t6Y5\`B\`V</span></em>
 >
-> <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+> <em><span class="elvish" data-content="and mist covers the jewels of Calacirya for ever.">\`B ej\#tj\#5"%6E wP%\`V t1R = 6E 9\~B8\`B\`V</span></em>
 >
-> <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">   :</span><span class="elvish-translation">Farewell! Maybe thou shalt find Valimar.</span></span>
+> <em><span class="elvish" data-content="Now lost, lost to those from the East is Valimar!">1pU\~Mq\`C zj\#iD7T\`Û\`N t\~B7\`B hYj\#\`V -</span></em>
 >
 > <br>
-> <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
+> <em><span class="elvish" data-content="Farewell! Maybe thou shalt find Valimar.">8\~B r5\#y\`C 5\~C = 6\~Ntj\$¸\`N r5\#y\`C = rj\#t%6EÁ</span></em>
 >
+> <br>
+> <em><span class="elvish" data-content="Maybe even thou shalt find it. Farewell!">5t\#\~C7\`B\`VÁ 5hE 97Tr&j\#\`VÛ rj\#t%6E -</span></em>
 
 <!-- spellchecker-enable -->
 
@@ -857,9 +850,6 @@ Table: A rebalanced table which pleases the eyes.
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
 
-Automatic BibTeX citations
-: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post.
-
 # Deployment pipeline
 
 I quickly learned the importance of _comprehensive tests and documentation_. The repository now has strong code health. My test suite protects my site from _so_ many errors. Before a new commit touches the live site, it must pass a gauntlet of challenges:
@@ -1135,7 +1125,7 @@ ots --no-bitcoin verify "files/ABC012.txt.ots"
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 
 Site functionality
-: I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
+: I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) - 9 combinations in total. Therefore, I need to run 9 x 175 = 1,602 tests, each of which takes up to 90 seconds.
 
 : Sadly, Playwright test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
 

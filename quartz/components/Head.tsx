@@ -12,7 +12,6 @@ import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
-import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle"
 import {
   type QuartzComponent,
   type QuartzComponentConstructor,
@@ -142,18 +141,9 @@ export default (() => {
 
     const staticScripts = [
       // Inline the detect-initial-state script to prevent FOUC
-      {
-        id: "detect-initial-state",
-        src: "/static/scripts/detectInitialState.js",
-      },
-      {
-        id: "instant-scroll-restoration",
-        src: "/static/scripts/instantScrollRestoration.js",
-      },
-      {
-        id: "lock-video-playback-rate",
-        src: "/static/scripts/lockVideoPlaybackRate.js",
-      },
+      { id: "detect-initial-state", src: "/static/scripts/detectInitialState.js" },
+      { id: "instant-scroll-restoration", src: "/static/scripts/instantScrollRestoration.js" },
+      { id: "lock-video-playback-rate", src: "/static/scripts/lockVideoPlaybackRate.js" },
     ]
 
     return (
@@ -175,13 +165,6 @@ export default (() => {
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
-        {/* Show Elvish translations when JavaScript is disabled */}
-        <noscript>
-          <style
-            // skipcq: JS-0440 - Safe: static CSS string, not user input
-            dangerouslySetInnerHTML={{ __html: ELVISH_NOSCRIPT_CSS }}
-          />
-        </noscript>
         {analyticsScript}
         {js
           .filter((resource) => resource.loadTime === "beforeDOMReady")

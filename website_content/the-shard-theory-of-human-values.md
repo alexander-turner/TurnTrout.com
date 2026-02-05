@@ -19,9 +19,7 @@ af-num-comments-on-upload: 33
 title: The shard theory of human values
 lw-latest-edit: 2023-06-05T21:14:25.014000Z
 lw-is-linkpost: "false"
-authors:
-  - Quintin Pope
-  - Alex Turner
+authors: Quintin Pope and Alex Turner
 tags:
   - rationality
   - shard-theory
@@ -49,7 +47,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/human_shards.
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
-createBibtex: true
 ---
 
 

@@ -20,9 +20,7 @@ af-num-comments-on-upload: 34
 title: Seeking Power is Often Convergently Instrumental in MDPs
 lw-latest-edit: 2023-05-16T20:14:29.355000Z
 lw-is-linkpost: "true"
-authors:
-  - Alex Turner
-  - Logan Riggs
+authors: Alex Turner and Logan Riggs
 tags:
   - AI
   - instrumental-convergence
@@ -44,7 +42,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
-createBibtex: true
 ---
 
 
