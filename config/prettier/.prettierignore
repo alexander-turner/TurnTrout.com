@@ -12,4 +12,4 @@ node_modules
 coverage/
 htmlcov/
 # Large auto-generated cache file - Prettier corrupts it
-quartz/plugins/transformers/.asset_dimensions.json
+**/.asset_dimensions.json
