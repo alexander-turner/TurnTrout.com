@@ -499,6 +499,37 @@ def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
     return unrendered_transclusions
 
 
+# ASCII emoticons that should be converted to twemoji by TextFormattingImprovement
+_UNRENDERED_EMOTICON_PATTERN = re.compile(
+    r"(?<= |^)(?:;\)|:\)|:\()(?= |$)", re.MULTILINE
+)
+
+
+def check_unrendered_emoticons(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for ASCII emoticons that should have been converted to twemoji.
+
+    The TextFormattingImprovement transformer converts :), ;), and :( to their
+    corresponding Unicode emoji when surrounded by spaces or at string
+    boundaries.
+    """
+    unrendered_emoticons: list[str] = []
+
+    for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):  # pragma: no cover
+            continue
+        if element.strip() and not should_skip(element):
+            matches = _UNRENDERED_EMOTICON_PATTERN.findall(str(element))
+            if matches:
+                _append_to_list(
+                    unrendered_emoticons,
+                    str(element),
+                    prefix=f"Unrendered emoticon {matches}: ",
+                )
+
+    return unrendered_emoticons
+
+
 def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     """Check for unrendered subtitle lines."""
     unrendered_subtitles: list[str] = []
@@ -1498,6 +1529,7 @@ def check_file_for_issues(
         ),
         "html_tags_in_text": check_html_tags_in_text(soup),
         "unrendered_transclusions": check_unrendered_transclusions(soup),
+        "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
