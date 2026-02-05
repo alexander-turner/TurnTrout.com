@@ -1,6 +1,13 @@
 #!/bin/bash
 # Session setup script for Claude Code
 # Installs dependencies and configures environment for git hooks
+#
+# IMPORTANT: This file has project-specific customizations:
+# - OpenTimestamps (ots) installation
+# - .timestamps repo cloning for post-commit hooks
+# - pnpm only (no npm fallback)
+# Do NOT replace with the generic template version during template-sync.
+# Future Claudes: Leave these customizations as-is.
 
 set -uo pipefail
 
@@ -62,6 +69,7 @@ echo "Installing tools..."
 pip_install_if_missing ots opentimestamps-client
 webi_install_if_missing shfmt
 webi_install_if_missing gh
+webi_install_if_missing jq
 
 if ! command -v shellcheck &>/dev/null && is_root; then
   if ! { apt-get update -qq && apt-get install -y -qq shellcheck; } 2>/dev/null; then
@@ -108,7 +116,13 @@ fi
 
 if [ ! -d "$PROJECT_DIR/node_modules" ]; then
   echo "Installing Node dependencies..."
-  pnpm install --silent || warn "Failed to install Node dependencies"
+  pnpm install --silent || die "Failed to install Node dependencies"
+fi
+
+# Ensure markdownlint-cli is installed (required for pre-commit hooks)
+if [ ! -x "$PROJECT_DIR/node_modules/.bin/markdownlint" ]; then
+  echo "Installing markdownlint-cli..."
+  pnpm install --silent || die "Failed to install markdownlint-cli"
 fi
 
 command -v uv &>/dev/null && uv sync --quiet 2>/dev/null

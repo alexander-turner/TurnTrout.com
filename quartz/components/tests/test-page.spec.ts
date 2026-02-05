@@ -608,20 +608,85 @@ test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, te
   })
 })
 
-for (const theme of ["light", "dark"]) {
-  test(`Hover over elvish text in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-    await setTheme(page, theme as "light" | "dark")
+test.describe("Elvish toggle", () => {
+  test("clicking elvish text toggles between Tengwar and English", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
-    await elvishText.hover()
-    await waitForTransitionEnd(elvishText)
+    // Initially should show Tengwar (elvish-tengwar visible, elvish-translation hidden)
+    const tengwar = elvishText.locator(".elvish-tengwar")
+    const translation = elvishText.locator(".elvish-translation")
 
-    await takeRegressionScreenshot(page, testInfo, `elvish-text-hover-${theme}`, {
-      elementToScreenshot: elvishText,
-    })
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeHidden()
+
+    // Click to toggle to English
+    await elvishText.click()
+
+    await expect(tengwar).toBeHidden()
+    await expect(translation).toBeVisible()
+
+    // Click again to toggle back to Tengwar
+    await elvishText.click()
+
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeHidden()
   })
-}
+
+  test("toggling elvish text does not cause layout shift", async ({ page }) => {
+    test.skip(
+      !isDesktopViewport(page),
+      "More narrow viewports may have the English translation take more lines than the Elvish, which is fine.",
+    )
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    const lowerElt = page.locator(".footnotes").first()
+    const lowerEltBoxBefore = await lowerElt.boundingBox()
+    expect(lowerEltBoxBefore).not.toBeNull()
+
+    await elvishText.click()
+
+    const lowerEltBoxAfter = await lowerElt.boundingBox()
+    expect(lowerEltBoxAfter).not.toBeNull()
+
+    // The element below should not have moved (within 1px tolerance for rounding)
+    // skipcq: JS-0339 - boxes are checked for nullability above
+    expect(lowerEltBoxAfter!.y).toBeCloseTo(lowerEltBoxBefore!.y, 0)
+  })
+
+  test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    await elvishText.click()
+
+    const textDecorationStyle = await elvishText.evaluate(
+      (el) => window.getComputedStyle(el).textDecorationStyle,
+    )
+    expect(textDecorationStyle).toBe("dotted")
+  })
+
+  test("noscript fallback shows both Tengwar and translation when JS is disabled", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false })
+    const page = await context.newPage()
+
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+    const elvishText = page.locator(".elvish").first()
+    await elvishText.scrollIntoViewIfNeeded()
+
+    const tengwar = elvishText.locator(".elvish-tengwar")
+    const translation = elvishText.locator(".elvish-translation")
+
+    await expect(tengwar).toBeVisible()
+    await expect(translation).toBeVisible()
+
+    await context.close()
+  })
+})
 
 test.describe("Video Speed Controller visibility", () => {
   test("hides VSC controller for no-vsc videos after img", async ({ page }) => {
@@ -878,6 +943,94 @@ test.describe("Checkboxes", () => {
     })
 
     expect(hasLocalStorageKey).toBe(true)
+  })
+
+  test.describe("state restoration before first paint", () => {
+    const clearCheckboxKeys = () => {
+      const keysToRemove = Object.keys(localStorage).filter((key) =>
+        key.startsWith("test-page-checkbox-"),
+      )
+      keysToRemove.forEach((key) => localStorage.removeItem(key))
+    }
+
+    // Ensure clean slate before each test
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(clearCheckboxKeys)
+    })
+
+    // Clean up after each test
+    test.afterEach(async ({ page }) => {
+      await page.evaluate(clearCheckboxKeys)
+    })
+
+    test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
+      page,
+    }) => {
+      // This test verifies that checkbox state restoration happens synchronously
+      // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
+      // Without this fix, users would see a flash of the wrong checkbox state.
+
+      const checkboxKey = "test-page-checkbox-0"
+
+      // Set up localStorage BEFORE page load to simulate a returning user
+      // who previously checked the first checkbox (which defaults to unchecked in HTML)
+      await page.addInitScript(
+        ({ key }) => {
+          localStorage.setItem(key, "true")
+        },
+        { key: checkboxKey },
+      )
+
+      // Navigate to page and wait only for DOM content (not full load)
+      // This gives us the earliest possible moment to check checkbox state
+      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+
+      // Immediately check checkbox state WITHOUT dispatching nav event
+      // Before the fix, this would return the HTML default (unchecked)
+      // After the fix, the MutationObserver restores state before we can check
+      const checkboxStateBeforeNav = await page.evaluate(() => {
+        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+        return checkbox?.checked
+      })
+
+      expect(checkboxStateBeforeNav).toBe(true)
+    })
+
+    const checkboxTestCases = [
+      { index: 0, savedState: true, description: "checked" },
+      { index: 1, savedState: false, description: "unchecked" },
+      { index: 2, savedState: true, description: "checked" },
+    ]
+
+    for (const { index, savedState, description } of checkboxTestCases) {
+      test(`Checkbox ${index} state (${description}) is restored before first paint`, async ({
+        page,
+      }) => {
+        const checkboxKey = `test-page-checkbox-${index}`
+
+        // Set up localStorage BEFORE page load
+        await page.addInitScript(
+          ({ key, state }) => {
+            localStorage.setItem(key, state ? "true" : "false")
+          },
+          { key: checkboxKey, state: savedState },
+        )
+
+        await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+
+        // Check checkbox state immediately without dispatching nav event
+        const checkboxState = await page.evaluate(
+          ({ idx }) => {
+            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+            const checkbox = checkboxes[idx] as HTMLInputElement
+            return checkbox?.checked
+          },
+          { idx: index },
+        )
+
+        expect(checkboxState).toBe(savedState)
+      })
+    }
   })
 })
 

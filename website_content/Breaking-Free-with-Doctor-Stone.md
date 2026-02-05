@@ -6,7 +6,8 @@ tags:
   - fiction
   - personal
 description: Dr. Stone is an anime which blends science and altruistic determination. Also, it slaps.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/ibB0q34.jpg
 aliases:

@@ -1,5 +1,9 @@
 public
 **.md
 **.min.*
+**.yaml
+**.yml
 node_modules
 .quartz-cache
+**/.github/workflows/*.yaml
+.github/

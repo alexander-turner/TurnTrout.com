@@ -11,6 +11,40 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git push*|gh pr *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && uvx docformatter --check scripts/*.py 2>&1 && cat .claude/skills/pre-pr-checklist.md"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash(git push*|gh pr create*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== WAITING FOR CI ===' && sleep 600 && gh pr checks --watch 2>&1"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-ci-on-stop.sh",
+            "timeout": 300
+          }
+        ]
+      }
     ]
   }
 }

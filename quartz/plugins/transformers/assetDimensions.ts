@@ -101,11 +101,24 @@ class AssetProcessor {
   // Save asset dimensions if needed
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
-      const tempFilePath = `${paths.assetDimensions}.tmp`
+      // Use unique temp file to avoid race conditions with parallel workers
+      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${Date.now()}`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
       await fs.writeFile(tempFilePath, data, "utf-8")
-      await fs.rename(tempFilePath, paths.assetDimensions)
+      try {
+        await fs.rename(tempFilePath, paths.assetDimensions)
+      } catch (error) {
+        // Clean up temp file on failure (ignore errors - file may already be gone)
+        await fs.unlink(tempFilePath).catch(() => undefined)
+        // ENOENT means another worker may have saved successfully, or there was a race
+        // In either case, the cache should be saved, so we can continue
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          this.needToSaveCache = false
+          return
+        }
+        throw error
+      }
       this.needToSaveCache = false
     }
   }
@@ -329,7 +342,10 @@ class AssetProcessor {
   public collectAssetNodes(tree: Root): { node: Element; src: string }[] {
     const imageAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
-      if (typeof node.properties?.src === "string" && this.imageTagsToProcess.includes(node.tagName)) {
+      if (
+        typeof node.properties?.src === "string" &&
+        this.imageTagsToProcess.includes(node.tagName)
+      ) {
         imageAssetsToProcess.push({ node, src: node.properties.src })
         return
       }
