@@ -1,3 +1,8 @@
+---
+# prettier-ignore
+description: Guide for creating high-quality pull requests with mandatory self-critique
+---
+
 # Pull Request Creation Skill
 
 **IMPORTANT: Always follow this skill before creating any PR.** Do not skip steps, especially the self-critique.
@@ -78,7 +83,7 @@ Review the critique and fix legitimate issues:
 
 Ensure quality checks pass before creating the PR.
 
-**TypeScript changes:**
+**TypeScript/JavaScript changes:**
 
 ```bash
 pnpm check        # Type checking (if applicable)
@@ -130,9 +135,20 @@ EOF
 - Note any breaking changes
 - Include the Claude session URL at the end
 
-### Step 6: Report Result
+### Step 6: Wait for CI Checks
 
-Provide the PR URL and title to the user.
+After creating the PR, wait for all CI checks to complete:
+
+1. Use `gh pr checks <pr-number> --watch` to monitor check status
+2. If any checks fail, investigate the failure and fix the issues
+3. Push fixes and wait for checks again
+4. Only proceed once all checks pass
+
+**Important:** Do not consider the PR ready until all CI checks are green.
+
+### Step 7: Report Result
+
+Provide the PR URL and title to the user, confirming that all CI checks have passed.
 
 ## Updating the PR Description
 
