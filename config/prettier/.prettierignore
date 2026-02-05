@@ -7,3 +7,5 @@ node_modules
 .quartz-cache
 **/.github/workflows/*.yaml
 .github/
+coverage/
+.venv/
