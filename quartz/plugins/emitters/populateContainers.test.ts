@@ -55,6 +55,7 @@ describe("PopulateContainers", () => {
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
       if (command.includes("git rev-list")) return "100\n"
+      if (command.includes('git log --all --oneline --grep="claude.ai/code/session"')) return "50\n"
       if (command.includes("pnpm test")) return "Tests:       100 passed, 100 total\n"
       if (command.includes("pytest --collect-only")) return "1293 tests collected in 0.50s\n"
       if (command.includes('grep -r "test("')) return "10\n"
@@ -72,10 +73,10 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-container"></div></body></html>'
       }
       if (pathStr.includes("design.html")) {
-        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-ai-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
-      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
+      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-ai-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
     })
 
     if (urlCache) {
@@ -756,6 +757,28 @@ describe("PopulateContainers", () => {
       })
     })
 
+    describe("countAICommits", () => {
+      it("should count commits with claude.ai/code/session in message", async () => {
+        mockExecSync.mockReturnValue("246\n")
+
+        const count = await populateModule.countAICommits()
+
+        expect(count).toBe(246)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'git log --all --oneline --grep="claude.ai/code/session" | wc -l',
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should handle zero AI commits", async () => {
+        mockExecSync.mockReturnValue("0\n")
+
+        const count = await populateModule.countAICommits()
+
+        expect(count).toBe(0)
+      })
+    })
+
     describe("countJsTestFiles", () => {
       it("should count JS/TS tests from pnpm test output", async () => {
         mockExecSync.mockReturnValue("Tests:       1234 passed, 1234 total\n")
@@ -862,6 +885,7 @@ describe("PopulateContainers", () => {
       it("should compute all statistics in parallel", async () => {
         mockExecSync
           .mockReturnValueOnce("4943\n")
+          .mockReturnValueOnce("246\n")
           .mockReturnValueOnce("Tests:       1234 passed, 1234 total\n")
           .mockReturnValueOnce("158\n")
           .mockReturnValueOnce("1293 tests collected in 0.50s\n")
@@ -871,6 +895,7 @@ describe("PopulateContainers", () => {
 
         expect(stats).toEqual({
           commitCount: 4943,
+          aiCommitCount: 246,
           jsTestCount: 1234,
           playwrightTestCount: 158,
           pytestCount: 1293,

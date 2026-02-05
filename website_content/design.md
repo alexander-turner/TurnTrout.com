@@ -811,6 +811,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 | Metric                       | Count                                                |
 | ---------------------------: | :--------------------------------------------------- |
 | Total commits                | <span class="populate-commit-count"></span>          |
+| AI-assisted commits          | <span class="populate-ai-commit-count"></span>       |
 | TypeScript unit tests        | <span class="populate-js-test-count"></span>         |
 | Python unit tests            | <span class="populate-pytest-count"></span>          |
 | Playwright integration tests | <span class="populate-playwright-test-count"></span> |

@@ -93,6 +93,14 @@ export async function countGitCommits(author: string): Promise<number> {
 }
 
 // skipcq: JS-D1001
+export async function countAICommits(): Promise<number> {
+  const output = execSync('git log --all --oneline --grep="claude.ai/code/session" | wc -l', {
+    encoding: "utf-8",
+  })
+  return parseInt(output.trim(), 10)
+}
+
+// skipcq: JS-D1001
 export async function countJsTests(): Promise<number> {
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
@@ -138,6 +146,7 @@ export async function countLinesOfCode(): Promise<number> {
 
 export interface RepoStats {
   commitCount: number
+  aiCommitCount: number
   jsTestCount: number
   playwrightTestCount: number
   pytestCount: number
@@ -146,16 +155,17 @@ export interface RepoStats {
 
 // skipcq: JS-D1001
 export async function computeRepoStats(): Promise<RepoStats> {
-  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
       countGitCommits("Alex Turner"),
+      countAICommits(),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
       countLinesOfCode(),
     ])
 
-  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -355,6 +365,7 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    ["populate-ai-commit-count", generateConstantContent(stats.aiCommitCount.toLocaleString())],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",
