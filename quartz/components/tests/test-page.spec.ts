@@ -955,7 +955,7 @@ test.describe("Checkboxes", () => {
 
     // Ensure clean slate before each test
     test.beforeEach(async ({ page }) => {
-      await page.addInitScript(`(${clearCheckboxKeys.toString()})()`)
+      await page.addInitScript(clearCheckboxKeys)
     })
 
     // Clean up after each test
