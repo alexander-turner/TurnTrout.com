@@ -7,6 +7,7 @@ This skill guides Claude through creating high-quality pull requests with mandat
 ## When to Use
 
 Use this skill when:
+
 - Creating a pull request for completed work
 - The user asks to "create a PR", "open a pull request", or similar
 
@@ -39,23 +40,27 @@ Before creating the PR, gather information about the changes:
 > Review the code changes for this PR and provide a critical assessment. Look for:
 >
 > **Problems:**
+>
 > - Logic errors, bugs, or unhandled edge cases
 > - Security vulnerabilities (OWASP top 10)
 > - Race conditions, memory leaks, or resource management issues
 >
 > **Best Practices:**
+>
 > - Does the code follow existing patterns in the codebase?
 > - Are there unnecessary abstractions or over-engineering?
 > - Is error handling appropriate (fail loudly for critical issues)?
 > - Is there duplicated logic that should use shared helpers?
 >
 > **Bloat Detection:**
+>
 > - Unnecessary code, comments, or documentation
 > - Features beyond what was requested
 > - Backwards-compatibility hacks that can just be deleted
 > - Premature abstractions or hypothetical future requirements
 >
 > **Testing:**
+>
 > - Are tests adequate for the changes?
 > - Are tests focused and non-duplicative?
 >
@@ -76,8 +81,9 @@ Ensure quality checks pass before creating the PR.
 **TypeScript changes:**
 
 ```bash
-pnpm check        # Type checking
-pnpm test         # Tests with 100% coverage
+pnpm check        # Type checking (if applicable)
+pnpm test         # Run tests
+pnpm lint         # Run linter
 ```
 
 **Note**: Do NOT run `pnpm build` for validation - it takes 5+ minutes. Use `pnpm check` and `pnpm test` instead. The full build runs in CI after the PR is created.
@@ -85,12 +91,13 @@ pnpm test         # Tests with 100% coverage
 **Python changes:**
 
 ```bash
-conda activate website
 mypy <changed_files>
 pylint <changed_files>
 ruff check <changed_files>
-pytest <test_files>    # Run tests in matching test files (e.g., foo.py -> test_foo.py)
+pytest <test_files>
 ```
+
+Customize these commands based on your project's tooling.
 
 ### Step 5: Push and Create the Pull Request
 
@@ -117,6 +124,7 @@ EOF
 **Title format:** Use imperative mood with optional type prefix (`fix:`, `feat:`, `refactor:`, `docs:`, `test:`)
 
 **Body guidelines:**
+
 - Focus the summary on the "why"
 - List concrete changes
 - Note any breaking changes
@@ -154,7 +162,3 @@ This keeps reviewers informed of the PR's current state without requiring them t
 - **Tests fail**: Fix the tests, don't skip them
 - **gh not authenticated**: User should run `gh auth login`
 - **Push fails**: Check branch permissions and remote configuration
-
-## Self-Improvement
-
-When creating a PR, also consider your interaction with the user. Find the most important instruction mismatches, if any, which could be fixed in general with CLAUDE.md or skill files. Then edit them to be more useful in the future.
