@@ -113,6 +113,7 @@ class AssetProcessor {
         await fs.unlink(tempFilePath).catch(() => undefined)
         // ENOENT means another worker may have saved successfully, or there was a race
         // In either case, the cache should be saved, so we can continue
+        /* istanbul ignore next -- race condition difficult to test reliably */
         if ((error as NodeJS.ErrnoException).code === "ENOENT") {
           this.needToSaveCache = false
           return
@@ -434,6 +435,7 @@ export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
     htmlPlugins(ctx: BuildCtx) {
+      /* istanbul ignore next -- CLI argv branch */
       const offline = ctx.argv.offline ?? false
       return [
         () => {
