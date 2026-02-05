@@ -2003,6 +2003,78 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
 
 REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")
 
+# Pattern to match citation keys in BibTeX entries: @misc{CitationKey,
+_CITATION_KEY_PATTERN = re.compile(r"@misc\{([^,]+),")
+
+
+def extract_citation_keys_from_html(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract BibTeX citation keys from code blocks in HTML.
+
+    Looks for @misc{CitationKey, patterns in code elements.
+
+    Returns:
+        list of citation keys found in the page
+    """
+    citation_keys: list[str] = []
+
+    # BibTeX blocks are in code elements (after rehype-pretty-code processing)
+    for code_element in soup.find_all(["code", "pre"]):
+        text = code_element.get_text()
+        matches = _CITATION_KEY_PATTERN.findall(text)
+        citation_keys.extend(matches)
+
+    return citation_keys
+
+
+def check_citation_uniqueness(public_dir: Path) -> list[str]:
+    """
+    Check that all BibTeX citation keys across the site are unique.
+
+    Scans all HTML files for BibTeX code blocks and reports any duplicate
+    citation keys.
+
+    Returns:
+        list of strings describing duplicate citation keys
+    """
+    # Map citation key -> list of files where it appears
+    citation_to_files: Dict[str, list[str]] = {}
+
+    for root, _, files in os.walk(public_dir):
+        root_path = Path(root)
+        if "drafts" in root_path.parts:
+            continue
+
+        for file in files:
+            if not file.endswith(".html"):
+                continue
+
+            file_path = root_path / file
+            # Read and parse HTML directly for testability
+            with open(file_path, encoding="utf-8") as f:
+                soup = BeautifulSoup(f.read(), "html.parser")
+
+            if script_utils.is_redirect(soup):
+                continue
+
+            citation_keys = extract_citation_keys_from_html(soup)
+            for key in citation_keys:
+                if key not in citation_to_files:
+                    citation_to_files[key] = []
+                citation_to_files[key].append(str(file_path.relative_to(public_dir)))
+
+    # Find duplicates (keys appearing in more than one file)
+    issues: list[str] = []
+    for key, files_list in sorted(citation_to_files.items()):
+        if len(files_list) > 1:
+            files_str = ", ".join(files_list)
+            issues.append(
+                f"Duplicate citation key '{key}' found in {len(files_list)} files: "
+                f"{files_str}"
+            )
+
+    return issues
+
 
 def check_root_files_location(base_dir: Path) -> list[str]:
     """Check that required files exist in the root directory."""
@@ -2089,6 +2161,12 @@ def main() -> None:
         args.check_fonts,
         defined_css_vars,
     )
+
+    # Check for duplicate citation keys across all pages
+    citation_issues = check_citation_uniqueness(_PUBLIC_DIR)
+    if citation_issues:
+        _print_issues(_PUBLIC_DIR, {"duplicate_citations": citation_issues})
+        overall_issues_found = True
 
     if overall_issues_found or html_issues_found:
         sys.exit(1)

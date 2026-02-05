@@ -5500,3 +5500,118 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_images_have_dimensions(soup)
     assert sorted(result) == sorted(expected_issues)
+
+
+# Citation uniqueness tests
+@pytest.mark.parametrize(
+    "html,expected_keys",
+    [
+        # Single citation in code block
+        (
+            '<code>@misc{Turner2024Design,\n  author = {Alex Turner},\n}</code>',
+            ["Turner2024Design"],
+        ),
+        # Citation in pre block
+        (
+            '<pre>@misc{Smith2023Test,\n  author = {John Smith},\n}</pre>',
+            ["Smith2023Test"],
+        ),
+        # Multiple citations in one code block
+        (
+            '<code>@misc{First2024One,\n}\n@misc{Second2024Two,\n}</code>',
+            ["First2024One", "Second2024Two"],
+        ),
+        # No citations
+        (
+            "<code>some other code</code>",
+            [],
+        ),
+        # Citation outside code block (should not be found)
+        (
+            "<p>@misc{NotFound,}</p>",
+            [],
+        ),
+        # Nested code block (key found in both pre and code)
+        (
+            '<pre><code>@misc{Nested2024Key,\n}</code></pre>',
+            ["Nested2024Key", "Nested2024Key"],
+        ),
+    ],
+)
+def test_extract_citation_keys_from_html(html: str, expected_keys: list[str]):
+    """Test extracting citation keys from HTML."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.extract_citation_keys_from_html(soup)
+    assert sorted(result) == sorted(expected_keys)
+
+
+def test_check_citation_uniqueness_no_duplicates(mock_environment):
+    """Test citation uniqueness check with no duplicates."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create two HTML files with unique citation keys
+    html1 = '<html><body><code>@misc{Turner2024Design,\n}</code></body></html>'
+    html2 = '<html><body><code>@misc{Smith2023Test,\n}</code></body></html>'
+
+    (public_dir / "page1.html").write_text(html1)
+    (public_dir / "page2.html").write_text(html2)
+
+    result = built_site_checks.check_citation_uniqueness(public_dir)
+    assert result == []
+
+
+def test_check_citation_uniqueness_with_duplicates(mock_environment):
+    """Test citation uniqueness check detects duplicates."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create two HTML files with the same citation key
+    html1 = '<html><body><code>@misc{Turner2024The,\n}</code></body></html>'
+    html2 = '<html><body><code>@misc{Turner2024The,\n}</code></body></html>'
+
+    (public_dir / "page1.html").write_text(html1)
+    (public_dir / "page2.html").write_text(html2)
+
+    result = built_site_checks.check_citation_uniqueness(public_dir)
+    assert len(result) == 1
+    assert "Turner2024The" in result[0]
+    assert "2 files" in result[0]
+
+
+def test_check_citation_uniqueness_skips_drafts(mock_environment):
+    """Test that citation uniqueness check skips drafts directory."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create a drafts subdirectory with a duplicate citation
+    drafts_dir = public_dir / "drafts"
+    drafts_dir.mkdir()
+
+    html1 = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
+    html2 = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
+
+    (public_dir / "page1.html").write_text(html1)
+    (drafts_dir / "draft.html").write_text(html2)
+
+    result = built_site_checks.check_citation_uniqueness(public_dir)
+    # Should not report duplicate because drafts are skipped
+    assert result == []
+
+
+def test_check_citation_uniqueness_skips_redirects(mock_environment):
+    """Test that citation uniqueness check skips redirect pages."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create a redirect page (contains http-equiv="refresh")
+    redirect_html = """
+    <html>
+    <head><meta http-equiv="refresh" content="0; url=/other"></head>
+    <body><code>@misc{Turner2024Same,\n}</code></body>
+    </html>
+    """
+    normal_html = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
+
+    (public_dir / "redirect.html").write_text(redirect_html)
+    (public_dir / "normal.html").write_text(normal_html)
+
+    result = built_site_checks.check_citation_uniqueness(public_dir)
+    # Should not report duplicate because redirect is skipped
+    assert result == []
