@@ -623,9 +623,7 @@ function convertImagesToYouTubeEmbeds(tree: HtmlRoot): void {
     if (node.tagName === "img" && typeof node.properties.src === "string") {
       const match = ytLinkRegex.exec(node.properties.src)
       const videoId =
-        match?.groups?.videoId && match.groups.videoId.length === 11
-          ? match.groups.videoId
-          : null
+        match?.groups?.videoId && match.groups.videoId.length === 11 ? match.groups.videoId : null
       const playlistMatch = ytPlaylistLinkRegex.exec(node.properties.src)
       const playlistId = playlistMatch?.groups?.playlistId
       if (videoId) {
