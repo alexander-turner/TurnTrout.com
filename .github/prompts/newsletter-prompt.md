@@ -167,9 +167,8 @@ For the rest of my life, I'll donate at least 10% of my post-tax income to effec
 3. **Personal voice**: "I built", "I realized", not "is now available"
 4. **Humor**: "What a tragedy would befall my intellectual legacy..."
 5. **Brevity**: Cut the fluff, no "Minor updates" subsections
-6. **No "Find Me Elsewhere"**: Only include if specifically relevant
-7. **Formatting**: Simpler, less nested structure
-8. **Explanations**: Add context that helps readers understand WHY something matters ("This helps readers find the part they searched for")
+6. **Formatting**: Simpler, less nested structure
+7. **Explanations**: Add context that helps readers understand WHY something matters ("This helps readers find the part they searched for")
 
 ## Article Descriptions
 
@@ -178,10 +177,3 @@ When summarizing articles, use the `description` field from the article's frontm
 ## Links
 
 All article links should use the production domain: `https://turntrout.com/[slug]`
-
-Common slugs:
-- Privacy guide: `turntrout.com/privacy`
-- Advanced privacy: `turntrout.com/advanced-privacy`
-- Team Shard: `turntrout.com/team-shard`
-- Open source: `turntrout.com/open-source`
-- About: `turntrout.com/about`
