@@ -354,6 +354,27 @@ describe("Asset Dimensions Plugin", () => {
       await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
       expect(unlinkSpy).toHaveBeenCalled()
     })
+
+    it("should handle ENOENT during rename (race condition) by clearing dirty flag", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest
+        .spyOn(fs, "rename")
+        .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      // Should not throw, just handle the race condition gracefully
+      await assetProcessor.maybeSaveAssetDimensions()
+
+      expect(unlinkSpy).toHaveBeenCalled()
+      // Dirty flag should be cleared after ENOENT (another worker may have saved)
+      expect(assetProcessor["needToSaveCache"]).toBe(false)
+    })
   })
 
   describe("getAssetDimensionsFfprobe", () => {
@@ -1120,11 +1141,15 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("should skip remote assets in offline mode", async () => {
-      const cdnImgSrc = "https://assets.turntrout.com/static/images/test.avif"
+      // Use a unique URL to avoid cache contamination from other tests
+      const cdnImgSrc = "https://assets.turntrout.com/static/images/offline-test-unique.avif"
       const tree: Root = {
         type: "root",
         children: [h("img", { src: cdnImgSrc }) as Element],
       }
+      // Ensure cache is empty for this URL
+      assetProcessor.resetDirectCacheAndDirtyFlag()
+      jest.spyOn(fs, "readFile").mockResolvedValueOnce("{}" as never)
 
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: true } } as BuildCtx
@@ -1138,6 +1163,28 @@ describe("Asset Dimensions Plugin", () => {
       const imgNode = tree.children[0] as Element
       expect(imgNode.properties?.width).toBeUndefined()
       expect(imgNode.properties?.height).toBeUndefined()
+    })
+
+    it("should default to online mode when argv.offline is undefined", async () => {
+      // Use a unique URL to avoid cache contamination from other tests
+      const cdnImgSrc = "https://assets.turntrout.com/static/images/online-default-unique.avif"
+      const tree: Root = {
+        type: "root",
+        children: [h("img", { src: cdnImgSrc }) as Element],
+      }
+      // Ensure cache is empty for this URL
+      assetProcessor.resetDirectCacheAndDirtyFlag()
+      jest.spyOn(fs, "readFile").mockResolvedValueOnce("{}" as never)
+      mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      // argv.offline is undefined, should default to false (online mode)
+      const mockCtx = { argv: {} } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      // In online mode (default), remote assets should be fetched
+      expect(mockedFetch).toHaveBeenCalledWith(cdnImgSrc)
     })
   })
 

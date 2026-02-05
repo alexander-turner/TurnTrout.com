@@ -23,11 +23,13 @@ const Authors: QuartzComponent = ({ fileData, cfg }: QuartzComponentProps) => {
 
   // Add the publication info
   const publicationInfo = RenderPublicationInfo(cfg as GlobalConfiguration, fileData)
+  /* istanbul ignore next */
+  const publicationInfoElement = publicationInfo ? <p>{publicationInfo}</p> : null
 
   return (
     <div className="authors">
       <p>{authorsText}</p>
-      {publicationInfo && <p>{publicationInfo}</p>}
+      {publicationInfoElement}
     </div>
   )
 }

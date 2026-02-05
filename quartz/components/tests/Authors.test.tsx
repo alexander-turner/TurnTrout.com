@@ -107,13 +107,43 @@ describe("Authors component", () => {
     expect(result.props.children).toHaveLength(2)
   })
 
-  it("does not render publication info paragraph when unavailable", () => {
+  it("does not render publication info paragraph when null", () => {
     mockRenderPublicationInfo.mockReturnValue(null)
     const fileData = createFileData()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = AuthorsComponent(makeProps(fileData)) as any
     expect(result).not.toBeNull()
     // children[1] should be falsy when no publication info
+    expect(result.props.children[1]).toBeFalsy()
+  })
+
+  it("does not render publication info paragraph when undefined", () => {
+    mockRenderPublicationInfo.mockReturnValue(undefined)
+    const fileData = createFileData()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = AuthorsComponent(makeProps(fileData)) as any
+    expect(result).not.toBeNull()
+    // children[1] should be falsy when no publication info
+    expect(result.props.children[1]).toBeFalsy()
+  })
+
+  it("does not render publication info paragraph when false", () => {
+    mockRenderPublicationInfo.mockReturnValue(false)
+    const fileData = createFileData()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = AuthorsComponent(makeProps(fileData)) as any
+    expect(result).not.toBeNull()
+    // children[1] should be falsy when no publication info
+    expect(result.props.children[1]).toBeFalsy()
+  })
+
+  it("does not render publication info paragraph when empty string", () => {
+    mockRenderPublicationInfo.mockReturnValue("")
+    const fileData = createFileData()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = AuthorsComponent(makeProps(fileData)) as any
+    expect(result).not.toBeNull()
+    // children[1] should be falsy when no publication info (empty string is falsy)
     expect(result.props.children[1]).toBeFalsy()
   })
 })
