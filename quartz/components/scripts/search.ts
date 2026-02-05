@@ -3,7 +3,6 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
-import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
@@ -17,7 +16,7 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string // Stored as comma-joined string for search indexing
+  authors?: string
 }
 
 let currentSearchTerm = ""
@@ -27,7 +26,6 @@ const documentType = FlexSearch.Document<Item>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
 let searchInitializing = false
-let initializationPromise: Promise<void> | null = null
 
 /**
  * Creates and configures a new FlexSearch index
@@ -169,8 +167,12 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
   return `${beginning}${slice}${end}`
 }
 
-// Re-export escapeRegExp from centralized escape utilities
-export { escapeRegExp } from "../../util/escape"
+/**
+ * Escapes special characters in a string for use in RegExp
+ */
+export function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
 
 /**
  * Creates a span element with the class "match" and the given text
@@ -939,7 +941,7 @@ const formatForDisplay = (
     slug,
     title: match(term, data[slug].title ?? ""),
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors?.join(", "),
+    authors: data[slug].authors,
   }
 }
 
@@ -990,8 +992,10 @@ async function displayResults(
 async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout) return
 
-  // Ensure search is initialized (waits if initialization is in progress)
-  await initializeSearch()
+  // Initialize search on first input if not already initialized
+  if (!searchInitialized && !searchInitializing) {
+    await initializeSearch()
+  }
 
   if (!index) return
 
@@ -1074,7 +1078,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors?.join(", "),
+      authors: fileData.authors,
     })
   })
 
@@ -1087,56 +1091,45 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
  */
 /* istanbul ignore next */
 async function initializeSearch(): Promise<void> {
-  // If already initialized, nothing to do
-  if (searchInitialized) return
-
-  // If initialization is in progress, wait for it to complete
-  if (searchInitializing && initializationPromise) {
-    await initializationPromise
-    return
-  }
+  if (searchInitialized || searchInitializing) return
 
   searchInitializing = true
 
-  // Create a promise that other callers can await
-  initializationPromise = (async () => {
-    // Show loading indicator
-    const searchBar = document.getElementById("search-bar") as HTMLInputElement
-    if (!searchBar) {
-      console.error("Can't locate the #search-bar element.")
-      return
+  // Show loading indicator
+  const searchBar = document.getElementById("search-bar") as HTMLInputElement
+  if (!searchBar) {
+    console.error("Can't locate the #search-bar element.")
+    return
+  }
+  const originalPlaceholder = searchBar?.placeholder
+  searchBar.placeholder = "Loading search..."
+  searchBar.disabled = true
+
+  try {
+    // Create the index
+    index = createSearchIndex()
+
+    // Fetch and fill the index with data
+    if (data) {
+      await fillDocument(data)
     }
-    const originalPlaceholder = searchBar?.placeholder
-    searchBar.placeholder = "Loading search..."
 
-    try {
-      // Create the index
-      index = createSearchIndex()
+    searchInitialized = true
+  } catch (error) {
+    console.error("Error initializing search:", error)
+    searchBar.placeholder = "Search failed to load."
+  } finally {
+    searchInitializing = false
 
-      // Fetch and fill the index with data
-      if (data) {
-        await fillDocument(data)
-      }
-
-      searchInitialized = true
-    } catch (error) {
-      console.error("Error initializing search:", error)
-      searchBar.placeholder = "Search failed to load."
-    } finally {
-      searchInitializing = false
-
-      // Restore search bar state
-      if (originalPlaceholder) {
-        searchBar.placeholder = originalPlaceholder
-      }
-      updatePlaceholder(searchBar)
-
-      // Ensure focus is maintained (needed for non-Chromium browsers)
-      searchBar.focus()
+    // Restore search bar state
+    searchBar.disabled = false
+    if (originalPlaceholder) {
+      searchBar.placeholder = originalPlaceholder
     }
-  })()
-
-  await initializationPromise
+    updatePlaceholder(searchBar)
+    // Refocus after re-enabling (disabling causes focus loss)
+    searchBar.focus()
+  }
 }
 
 /*

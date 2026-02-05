@@ -6,8 +6,7 @@ tags:
   - AI
   - mats-program
 description: Our gradient routing technique can force an interpretable inner representation. Each dimension corresponds to a digit. Play with a demo!
-authors:
-  - Jacob Goldman-Wetzler
+authors: Jacob Goldman-Wetzler
 hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 aliases:

@@ -27,8 +27,7 @@ export interface FrontmatterData {
   "next-post-slug"?: string
   "next-post-title"?: string
   "lw-linkpost-url"?: string
-  authors?: string[]
-  createBibtex?: boolean
+  authors?: string
   created?: string | Date
   children?: string[]
   [key: string]: unknown
@@ -52,8 +51,6 @@ export interface Data {
   blocks?: BlockData
   dates?: { created?: Date; modified?: Date; published?: Date }
   children?: string[]
-  /** BibTeX citation content, stored during transform for cross-thread access */
-  bibtexContent?: string
   [key: string]: unknown
 }
 

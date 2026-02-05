@@ -6,7 +6,7 @@ import { symbolTransform } from "punctilio"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
-import { charsToMoveIntoLinkFromRight, markerChar } from "../../../components/constants"
+import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
 import {
   massTransformText,
   getTextContent,
@@ -25,6 +25,7 @@ import {
   applyTextTransforms,
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
+  markerChar,
   toSkip,
   SKIP_TAGS,
   FRACTION_SKIP_TAGS,
@@ -444,12 +445,6 @@ describe("HTMLFormattingImprovement", () => {
       ["GPT-4-o", "GPT-4o"],
       ["gpt-4-o", "GPT-4o"],
       ["GPT-4o", "GPT-4o"], // Already correct, no change
-      // BibTeX capitalization
-      ["bibtex", "BibTeX"],
-      ["BIBTEX", "BibTeX"],
-      ["Bibtex", "BibTeX"],
-      ["BibTeX", "BibTeX"], // Already correct, no change
-      ["Use bibtex for citations", "Use BibTeX for citations"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)

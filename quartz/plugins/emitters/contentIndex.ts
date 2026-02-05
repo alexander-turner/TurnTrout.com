@@ -26,7 +26,7 @@ export type ContentDetails = {
   content: string
   richContent?: string
   date?: Date
-  authors?: string[]
+  authors?: string
   description?: string
 }
 
@@ -73,13 +73,12 @@ function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
 }
 
 /**
- * Transforms a description string by applying text transforms and then escaping for XML.
- * Text transforms are applied first (smart quotes, etc.), then the result is escaped
- * to be safe for XML/RSS output.
+ * Transforms a description string by escaping HTML entities and applying text transforms.
  */
 const textTransformDescription = (description: string): string => {
-  const transformed = applyTextTransforms(description)
-  return escapeHTML(transformed)
+  const escapedDescription = description.replaceAll(/&/g, "&amp;")
+  const massTransformed = applyTextTransforms(escapedDescription)
+  return massTransformed
 }
 
 /**
@@ -193,7 +192,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
               : undefined,
             date,
             description: (file.data.description as string) ?? undefined,
-            authors: file.data.frontmatter?.authors,
+            authors: file.data.frontmatter?.authors as string | undefined,
           })
         }
       }

@@ -5,14 +5,12 @@ no_dropcap: "false"
 tags:
   - website
 description: Displaying the features of the website for use in visual regression testing.
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
 date_updated: 2026-01-01 20:00:17.441157
-createBibtex: true
 ---
 
 
@@ -656,12 +654,7 @@ This is a plain code block without a language specified.
 
 Elvish
 <!-- spellchecker-disable -->
-: <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-
-: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
-
-: <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
-
+: <em><span class="elvish" data-content="Ah! like gold fall the leaves in the wind,">hEÁ jyE7\`B\`V j1pE6E j8"\#\`B 8\~M75%5$ =</span></em>
 <!-- spellchecker-enable -->
 
 Scrawled handwriting

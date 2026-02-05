@@ -127,7 +127,7 @@ describe("AliasRedirects", () => {
       title: "Test Page",
       description: "Test description",
       aliases: ["alias1", "alias2"],
-      authors: ["Test Author"],
+      authors: "Test Author",
       card_image: "test-image.jpg",
     },
   })

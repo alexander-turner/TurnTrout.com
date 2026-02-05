@@ -1,16 +1,12 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
+import { niceQuotes, hyphenReplace, symbolTransform } from "punctilio"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
-import {
-  charsToMoveIntoLinkFromRight,
-  markerChar,
-  hatTipPlaceholder,
-} from "../../components/constants"
+import { charsToMoveIntoLinkFromRight } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
@@ -110,12 +106,14 @@ export function assertSmartQuotesMatch(input: string): void {
   }
 }
 
+export const markerChar = "\uE000"
+
 /**
  * Marker-aware word boundary patterns.
  * Regular \b matches at word/non-word transitions, but markers (non-word chars)
  * can create false boundaries between text that should be connected.
  *
- * Example: "xReLU" has no word boundary before 'R', but "x\uF000ReLU" (with marker)
+ * Example: "xReLU" has no word boundary before 'R', but "x\uE000ReLU" (with marker)
  * would have a false boundary. These patterns reject boundaries caused by markers.
  *
  * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
@@ -216,17 +214,18 @@ export function transformElement(
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
+  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
+  const hatTipPlaceholder = "\uE010"
+
+  // First replace h/t with the placeholder character
   text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
-  const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=\\S)(?!/)`,
-    "gu",
-  )
+  const slashRegex =
+    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uE000)?\/(?<markerAfter>\uE000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
       spaceBefore: string
@@ -267,8 +266,6 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 // Don't check for invariance
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
-  // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
-  (text: string) => primeMarks(text, { separator: markerChar }),
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
@@ -323,11 +320,8 @@ export function formatLNumbers(tree: Root): void {
         newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
       }
 
-      // The regex guarantees these named groups always exist
-      const { prefix, number } = match.groups as { prefix: string; number: string }
-
       // Add the space/start of line
-      newNodes.push({ type: "text", value: prefix })
+      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -337,7 +331,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: number }],
+        children: [{ type: "text", value: match.groups?.number ?? "" }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -692,7 +686,6 @@ const massTransforms: [RegExp, string][] = [
   // Model naming standardization
   [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
   [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
-  [new RegExp(`${wb}bibtex${wbe}`, "gi"), "BibTeX"], // Normalize BibTeX capitalization
 ]
 
 export function massTransformText(text: string): string {

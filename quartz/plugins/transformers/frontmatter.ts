@@ -59,13 +59,15 @@ function transformTag(tag: string): string {
   return newTag
 }
 
-function coerceToArray(input: string | string[], lowercase = true): string[] | undefined {
+function coerceToArray(input: string | string[]): string[] | undefined {
   if (input === undefined || input === null) return undefined
 
   // coerce to array
   if (!Array.isArray(input)) {
-    const parts = input.toString().split(",")
-    input = lowercase ? parts.map((tag: string) => tag.toLowerCase()) : parts.map((s) => s.trim())
+    input = input
+      .toString()
+      .split(",")
+      .map((tag: string) => tag.toLowerCase())
   }
 
   // remove all non-strings
@@ -111,9 +113,6 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
             )
             if (cssclasses) data.cssclasses = cssclasses
 
-            const authors = coerceToArray(coalesceAliases(data, ["authors", "author"]) || [], false)
-            if (authors) data.authors = authors
-
             // Fill out frontmatter data
             file.data.frontmatter = data as QuartzPluginData["frontmatter"]
 
@@ -136,7 +135,6 @@ declare module "vfile" {
     } & Partial<{
         tags: string[]
         aliases: string[]
-        authors: string[]
         description: string
         draft: boolean
         lang: string

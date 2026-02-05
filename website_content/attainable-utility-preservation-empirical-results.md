@@ -19,9 +19,7 @@ af-num-comments-on-upload: 6
 title: "Attainable Utility Preservation: Empirical Results"
 lw-latest-edit: 2021-06-15T16:55:30.263000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Neale Ratzlaff
+authors: Alex Turner and Neale Ratzlaff
 tags:
   - impact-regularization
   - AI
@@ -42,7 +40,6 @@ original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utili
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
 date_updated: 2026-01-25 23:47:56.984113
-createBibtex: true
 ---
 
 

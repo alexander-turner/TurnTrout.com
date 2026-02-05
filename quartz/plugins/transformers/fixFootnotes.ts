@@ -46,8 +46,7 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
 // skipcq: JS-D1001
 export function hasFootnoteHeading(sectionElement: Element): boolean {
   return sectionElement.children.some((child: ElementContent) => {
-    // Check for both h1 and h2 (remark-gfm-footnotes generates h2)
-    if (child.type !== "element" || (child.tagName !== "h1" && child.tagName !== "h2")) {
+    if (child.type !== "element" || child.tagName !== "h2") {
       return false
     }
     const id = child.properties?.id
@@ -57,7 +56,7 @@ export function hasFootnoteHeading(sectionElement: Element): boolean {
 
 // skipcq: JS-D1001
 export function createFootnoteHeading(): Element {
-  return h("h1", { id: "footnote-label", className: ["sr-only"] }, ["Footnotes"])
+  return h("h2", { id: "footnote-label", className: ["sr-only"] }, ["Footnotes"])
 }
 
 /**

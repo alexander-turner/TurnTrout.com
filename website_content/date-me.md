@@ -1,8 +1,7 @@
 ---
 permalink: date-me
 title: I'm that "other fish in the sea"
-authors:
-  - Alex
+authors: Alex
 hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘

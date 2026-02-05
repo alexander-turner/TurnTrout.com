@@ -20,9 +20,7 @@ af-num-comments-on-upload: 42
 title: Humans provide an untapped wealth of evidence about alignment
 lw-latest-edit: 2023-01-01T19:52:16.131000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Quintin Pope
+authors: Alex Turner and Quintin Pope
 tags:
   - AI
   - shard-theory
@@ -46,7 +44,6 @@ skip_import: "true"
 description: "I argue for studying the only known example of aligned intelligence:
   humans. Stop speculating about AIXI and diamonds - look at humans!"
 date_updated: 2025-11-22 00:21:52.667251
-createBibtex: true
 ---
 
 
