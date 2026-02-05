@@ -105,7 +105,12 @@ describe("generateBibtexEntry", () => {
 
   it("uses permalink for citation key when available", () => {
     const result = generateBibtexEntry(
-      { title: "Test", permalink: "design", authors: ["Alex Turner"], date_published: "2022-06-15" },
+      {
+        title: "Test",
+        permalink: "design",
+        authors: ["Alex Turner"],
+        date_published: "2022-06-15",
+      },
       "turntrout.com",
       "the-design-of-this-website",
     )
