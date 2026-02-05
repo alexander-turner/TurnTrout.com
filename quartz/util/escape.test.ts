@@ -4,7 +4,10 @@ import { escapeHTML } from "./escape"
 
 describe("escapeHTML", () => {
   it.each([
-    ['<script>alert("XSS");</script> & \'test\'', "&lt;script&gt;alert(&quot;XSS&quot;);&lt;/script&gt; &amp; &#039;test&#039;"],
+    [
+      "<script>alert(\"XSS\");</script> & 'test'",
+      "&lt;script&gt;alert(&quot;XSS&quot;);&lt;/script&gt; &amp; &#039;test&#039;",
+    ],
     ["foo & bar", "foo &amp; bar"],
     ["a < b", "a &lt; b"],
     ["a > b", "a &gt; b"],
