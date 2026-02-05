@@ -946,14 +946,21 @@ test.describe("Checkboxes", () => {
   })
 
   test.describe("state restoration before first paint", () => {
-    // Clean up all test-page checkbox keys after each test
+    const clearCheckboxKeys = () => {
+      const keysToRemove = Object.keys(localStorage).filter((key) =>
+        key.startsWith("test-page-checkbox-"),
+      )
+      keysToRemove.forEach((key) => localStorage.removeItem(key))
+    }
+
+    // Ensure clean slate before each test
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript(`(${clearCheckboxKeys.toString()})()`)
+    })
+
+    // Clean up after each test
     test.afterEach(async ({ page }) => {
-      await page.evaluate(() => {
-        const keysToRemove = Object.keys(localStorage).filter((key) =>
-          key.startsWith("test-page-checkbox-"),
-        )
-        keysToRemove.forEach((key) => localStorage.removeItem(key))
-      })
+      await page.evaluate(clearCheckboxKeys)
     })
 
     test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
