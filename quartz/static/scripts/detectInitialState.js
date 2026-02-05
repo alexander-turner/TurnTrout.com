@@ -84,4 +84,20 @@
   })
   collapsibleObserver.observe(document.documentElement, { childList: true, subtree: true })
   window.addEventListener("load", () => collapsibleObserver.disconnect(), { once: true })
+
+  // Restore checkbox states as soon as they appear in the DOM (before first paint)
+  const restoreCheckboxState = (checkbox, index) => {
+    const slug = document.body?.dataset?.slug
+    if (!slug) return
+    const checkboxId = `${slug}-checkbox-${index}`
+    const savedState = window.__quartz_checkbox_states.get(checkboxId)
+    if (savedState !== undefined) checkbox.checked = savedState
+  }
+
+  const checkboxObserver = new MutationObserver(() => {
+    const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+    if (checkboxes.length > 0) checkboxes.forEach(restoreCheckboxState)
+  })
+  checkboxObserver.observe(document.documentElement, { childList: true, subtree: true })
+  window.addEventListener("load", () => checkboxObserver.disconnect(), { once: true })
 })()
