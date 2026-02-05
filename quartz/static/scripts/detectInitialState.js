@@ -61,16 +61,9 @@
   observer.observe(document.documentElement, { childList: true, subtree: true })
 
   // Clean up observer after page loads
-  const cleanup = () => {
-    observer.disconnect()
-    // Final pass to ensure all checkboxes are restored
-    const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-    checkboxes.forEach(restoreCheckboxState)
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", cleanup)
+    document.addEventListener("DOMContentLoaded", () => observer.disconnect())
   } else {
-    cleanup()
+    observer.disconnect()
   }
 })()
