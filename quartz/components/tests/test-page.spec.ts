@@ -66,13 +66,13 @@ async function setDummyContentMeta(page: Page) {
     const publicationStr = document.querySelector(".publication-str")
     if (publicationStr) {
       publicationStr.innerHTML =
-        'Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
+        'Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="date-ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
     }
 
     const lastUpdatedStr = document.querySelector(".last-updated-str")
     if (lastUpdatedStr) {
       lastUpdatedStr.innerHTML =
-        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
+        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="date-ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
     const backlinksUl = document.querySelector("#backlinks-admonition ul")
