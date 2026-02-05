@@ -39,12 +39,12 @@ describe("generateBibtexEntry", () => {
         authors: ["Alex Turner"],
         date_published: "2022-06-15",
       },
-      expectations: ["@misc{", "Alex Turner", "title = {Test", "year = {2022}"],
+      expectations: ["@misc{", "Alex Turner", 'title = "Test', "year = 2022"],
     },
     {
       name: "with permalink",
       frontmatter: { title: "Test", permalink: "custom-url", date_published: "2022-06-15" },
-      expectations: ["url = {https://turntrout.com/custom-url}"],
+      expectations: ['url = "https://turntrout.com/custom-url"'],
     },
     {
       name: "default author when undefined",
@@ -100,12 +100,17 @@ describe("generateBibtexEntry", () => {
       "turntrout.com",
       "test",
     )
-    expect(result).toContain("author = {Alex Turner and John Doe}")
+    expect(result).toContain('author = "Alex Turner and John Doe"')
   })
 
   it("uses permalink for citation key when available", () => {
     const result = generateBibtexEntry(
-      { title: "Test", permalink: "design", authors: ["Alex Turner"], date_published: "2022-06-15" },
+      {
+        title: "Test",
+        permalink: "design",
+        authors: ["Alex Turner"],
+        date_published: "2022-06-15",
+      },
       "turntrout.com",
       "the-design-of-this-website",
     )
@@ -142,7 +147,7 @@ describe("generateBibtexEntry", () => {
         "turntrout.com",
         "test-slug",
       )
-      expect(result).toContain(`year = {${new Date().getFullYear()}}`)
+      expect(result).toContain(`year = ${new Date().getFullYear()}`)
     } finally {
       process.env.CI = originalCI
     }

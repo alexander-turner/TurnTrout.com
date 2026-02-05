@@ -72,10 +72,10 @@ export function generateBibtexEntry(
   const authorString = authors.join(" and ")
 
   return `@misc{${citationKey},
-  author = {${authorString}},
-  title = {${title}},
-  year = {${year}},
-  url = {${url}},
+  author = "${authorString}",
+  title = "${title}",
+  year = ${year},
+  url = "${url}"
 }`
 }
 
