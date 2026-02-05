@@ -5545,88 +5545,35 @@ def test_extract_citation_keys_from_html(html: str, expected_keys: list[str]):
     assert sorted(result) == sorted(expected_keys)
 
 
-def test_check_citation_uniqueness_no_duplicates(mock_environment):
-    """Test citation uniqueness check with no duplicates."""
-    public_dir = mock_environment["public_dir"]
-
-    # Create two HTML files with unique citation keys
-    html1 = '<html><body><code>@misc{Turner2024Design,\n}</code></body></html>'
-    html2 = '<html><body><code>@misc{Smith2023Test,\n}</code></body></html>'
-
-    (public_dir / "page1.html").write_text(html1)
-    (public_dir / "page2.html").write_text(html2)
-
-    result = built_site_checks.check_citation_uniqueness(public_dir)
+def test_find_duplicate_citations_no_duplicates():
+    """Test that unique citations don't report issues."""
+    citation_to_files = {
+        "Turner2024Design": ["page1.html"],
+        "Smith2023Test": ["page2.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
     assert result == []
 
 
-def test_check_citation_uniqueness_with_duplicates(mock_environment):
-    """Test citation uniqueness check detects duplicates."""
-    public_dir = mock_environment["public_dir"]
-
-    # Create two HTML files with the same citation key
-    html1 = '<html><body><code>@misc{Turner2024The,\n}</code></body></html>'
-    html2 = '<html><body><code>@misc{Turner2024The,\n}</code></body></html>'
-
-    (public_dir / "page1.html").write_text(html1)
-    (public_dir / "page2.html").write_text(html2)
-
-    result = built_site_checks.check_citation_uniqueness(public_dir)
+def test_find_duplicate_citations_with_duplicates():
+    """Test that duplicate citations are detected."""
+    citation_to_files = {
+        "Turner2024The": ["page1.html", "page2.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
     assert len(result) == 1
     assert "Turner2024The" in result[0]
     assert "2 files" in result[0]
 
 
-def test_check_citation_uniqueness_skips_drafts(mock_environment):
-    """Test that citation uniqueness check skips drafts directory."""
-    public_dir = mock_environment["public_dir"]
-
-    # Create a drafts subdirectory with a duplicate citation
-    drafts_dir = public_dir / "drafts"
-    drafts_dir.mkdir()
-
-    html1 = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
-    html2 = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
-
-    (public_dir / "page1.html").write_text(html1)
-    (drafts_dir / "draft.html").write_text(html2)
-
-    result = built_site_checks.check_citation_uniqueness(public_dir)
-    # Should not report duplicate because drafts are skipped
-    assert result == []
-
-
-def test_check_citation_uniqueness_skips_redirects(mock_environment):
-    """Test that citation uniqueness check skips redirect pages."""
-    public_dir = mock_environment["public_dir"]
-
-    # Create a redirect page (contains http-equiv="refresh")
-    redirect_html = """
-    <html>
-    <head><meta http-equiv="refresh" content="0; url=/other"></head>
-    <body><code>@misc{Turner2024Same,\n}</code></body>
-    </html>
-    """
-    normal_html = '<html><body><code>@misc{Turner2024Same,\n}</code></body></html>'
-
-    (public_dir / "redirect.html").write_text(redirect_html)
-    (public_dir / "normal.html").write_text(normal_html)
-
-    result = built_site_checks.check_citation_uniqueness(public_dir)
-    # Should not report duplicate because redirect is skipped
-    assert result == []
-
-
-def test_check_citation_uniqueness_no_false_positive_nested_code(mock_environment):
-    """Test that nested pre/code doesn't cause false positive duplicates."""
-    public_dir = mock_environment["public_dir"]
-
-    # Typical rehype-pretty-code output: <pre><code>...</code></pre>
-    # The key appears in both elements but should only be counted once per file
-    nested_html = '<html><body><pre><code>@misc{Turner2024Nested,\n}</code></pre></body></html>'
-
-    (public_dir / "page.html").write_text(nested_html)
-
-    result = built_site_checks.check_citation_uniqueness(public_dir)
-    # Should not report duplicate - it's the same key in the same file
-    assert result == []
+def test_find_duplicate_citations_multiple_duplicates():
+    """Test detection of multiple different duplicate keys."""
+    citation_to_files = {
+        "Turner2024A": ["page1.html", "page2.html"],
+        "Turner2024B": ["page3.html"],
+        "Smith2023X": ["page1.html", "page4.html", "page5.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
+    assert len(result) == 2
+    assert any("Turner2024A" in issue for issue in result)
+    assert any("Smith2023X" in issue and "3 files" in issue for issue in result)

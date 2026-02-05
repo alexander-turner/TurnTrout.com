@@ -9,7 +9,7 @@ import re
 import subprocess
 import sys
 import urllib.parse
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
@@ -2027,43 +2027,10 @@ def extract_citation_keys_from_html(soup: BeautifulSoup) -> list[str]:
     return citation_keys
 
 
-def check_citation_uniqueness(public_dir: Path) -> list[str]:
-    """
-    Check that all BibTeX citation keys across the site are unique.
-
-    Scans all HTML files for BibTeX code blocks and reports any duplicate
-    citation keys.
-
-    Returns:
-        list of strings describing duplicate citation keys
-    """
-    # Map citation key -> list of files where it appears
-    citation_to_files: Dict[str, list[str]] = {}
-
-    for root, _, files in os.walk(public_dir):
-        root_path = Path(root)
-        if "drafts" in root_path.parts:
-            continue
-
-        for file in files:
-            if not file.endswith(".html"):
-                continue
-
-            file_path = root_path / file
-            # Read and parse HTML directly for testability
-            with open(file_path, encoding="utf-8") as f:
-                soup = BeautifulSoup(f.read(), "html.parser")
-
-            if script_utils.is_redirect(soup):
-                continue
-
-            citation_keys = extract_citation_keys_from_html(soup)
-            for key in set(citation_keys):  # Deduplicate keys within same file
-                if key not in citation_to_files:
-                    citation_to_files[key] = []
-                citation_to_files[key].append(str(file_path.relative_to(public_dir)))
-
-    # Find duplicates (keys appearing in more than one file)
+def _find_duplicate_citations(
+    citation_to_files: Dict[str, list[str]],
+) -> list[str]:
+    """Find citation keys that appear in multiple files."""
     issues: list[str] = []
     for key, files_list in sorted(citation_to_files.items()):
         if len(files_list) > 1:
@@ -2072,8 +2039,22 @@ def check_citation_uniqueness(public_dir: Path) -> list[str]:
                 f"Duplicate citation key '{key}' found in {len(files_list)} files: "
                 f"{files_str}"
             )
-
     return issues
+
+
+def _maybe_collect_citation_keys(
+    file_path: Path,
+    public_dir: Path,
+    citation_to_files: Dict[str, list[str]],
+) -> None:
+    """Extract citation keys from file and add to collection if not a redirect."""
+    soup = script_utils.parse_html_file(file_path)
+    if script_utils.is_redirect(soup):
+        return
+
+    rel_path = str(file_path.relative_to(public_dir))
+    for key in set(extract_citation_keys_from_html(soup)):
+        citation_to_files[key].append(rel_path)
 
 
 def check_root_files_location(base_dir: Path) -> list[str]:
@@ -2099,6 +2080,7 @@ def _process_html_files(
     issues_found_in_html = False
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
+    citation_to_files: Dict[str, list[str]] = defaultdict(list)
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2134,6 +2116,14 @@ def _process_html_files(
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
 
+            _maybe_collect_citation_keys(file_path, public_dir, citation_to_files)
+
+    # Check for duplicate citation keys across all files
+    citation_issues = _find_duplicate_citations(citation_to_files)
+    if citation_issues:
+        _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
     return issues_found_in_html
 
 
@@ -2162,14 +2152,8 @@ def main() -> None:
         defined_css_vars,
     )
 
-    # Check for duplicate citation keys across all pages
-    citation_issues = check_citation_uniqueness(_PUBLIC_DIR)
-    if citation_issues:
-        _print_issues(_PUBLIC_DIR, {"duplicate_citations": citation_issues})
-        overall_issues_found = True
-
     if overall_issues_found or html_issues_found:
-        sys.exit(1)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
