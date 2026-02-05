@@ -1006,7 +1006,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.[\u0022\u201c\u201d]*\.', str(element)):
+            if re.search(r"(?!\.\.\?)\.[\u0022\u201c\u201d]*\.", str(element)):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -2071,7 +2071,7 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
-def _process_html_files(
+def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
     check_fonts: bool,
@@ -2118,7 +2118,9 @@ def _process_html_files(
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
 
-            _maybe_collect_citation_keys(file_path, public_dir, citation_to_files)
+            _maybe_collect_citation_keys(
+                file_path, public_dir, citation_to_files
+            )
 
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
