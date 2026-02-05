@@ -226,11 +226,7 @@
           &:hover,
           &:focus,
           &.focus {
-            background: color-mix(
-              in srgb,
-              var(--midground-faint) 40%,
-              var(--background)
-            );
+            background: color-mix(in srgb, var(--midground-faint) 40%, var(--background));
           }
 
           & > h3 {

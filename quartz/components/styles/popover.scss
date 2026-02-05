@@ -64,8 +64,7 @@
           & li {
             counter-increment: sublist-popover; // Increment the sublist counter for nested list items
             &::marker {
-              content: counters(list-popover, ".") "."
-                counters(sublist-popover, "."); // Display combined list and sublist counters for nested list items
+              content: counters(list-popover, ".") "." counters(sublist-popover, "."); // Display combined list and sublist counters for nested list items
             }
 
             &:first-child {
@@ -99,8 +98,7 @@
           counter-increment: footnote-popover-sublist;
 
           & li::marker {
-            content: counters(footnote-popover, ".") "."
-              counters(footnote-popover-sublist, ".");
+            content: counters(footnote-popover, ".") "." counters(footnote-popover-sublist, ".");
           }
         }
       }
