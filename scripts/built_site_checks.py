@@ -2049,6 +2049,7 @@ def _maybe_collect_citation_keys(
 ) -> None:
     """Extract citation keys from file and add to collection if not a
     redirect."""
+    # skipcq: PTC-W6004 -- file_path comes from iterating over trusted local files
     with open(file_path, encoding="utf-8") as f:
         soup = BeautifulSoup(f.read(), "html.parser")
     if script_utils.is_redirect(soup):
