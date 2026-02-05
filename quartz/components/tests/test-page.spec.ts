@@ -945,92 +945,86 @@ test.describe("Checkboxes", () => {
     expect(hasLocalStorageKey).toBe(true)
   })
 
-  test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
-    page,
-  }) => {
-    // This test verifies that checkbox state restoration happens synchronously
-    // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
-    // Without this fix, users would see a flash of the wrong checkbox state.
-
-    const testSlug = "test-page"
-    const checkboxKey = `${testSlug}-checkbox-0`
-
-    // Set up localStorage BEFORE page load to simulate a returning user
-    // who previously checked the first checkbox (which defaults to unchecked in HTML)
-    await page.addInitScript(
-      ({ key }) => {
-        localStorage.setItem(key, "true")
-      },
-      { key: checkboxKey },
-    )
-
-    // Navigate to page and wait only for DOM content (not full load)
-    // This gives us the earliest possible moment to check checkbox state
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
-
-    // Immediately check checkbox state WITHOUT dispatching nav event
-    // Before the fix, this would return the HTML default (unchecked)
-    // After the fix, the MutationObserver restores state before we can check
-    const checkboxStateBeforeNav = await page.evaluate(() => {
-      const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
-      return checkbox?.checked
+  test.describe("state restoration before first paint", () => {
+    // Clean up all test-page checkbox keys after each test
+    test.afterEach(async ({ page }) => {
+      await page.evaluate(() => {
+        const keysToRemove = Object.keys(localStorage).filter((key) =>
+          key.startsWith("test-page-checkbox-"),
+        )
+        keysToRemove.forEach((key) => localStorage.removeItem(key))
+      })
     })
 
-    expect(checkboxStateBeforeNav).toBe(true)
-
-    // Clean up localStorage
-    await page.evaluate(
-      ({ key }) => {
-        localStorage.removeItem(key)
-      },
-      { key: checkboxKey },
-    )
-  })
-
-  const checkboxTestCases = [
-    { index: 0, savedState: true, description: "checked" },
-    { index: 1, savedState: false, description: "unchecked" },
-    { index: 2, savedState: true, description: "checked" },
-  ]
-
-  for (const { index, savedState, description } of checkboxTestCases) {
-    test(`Checkbox ${index} state (${description}) is restored before first paint`, async ({
+    test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
       page,
     }) => {
-      const testSlug = "test-page"
-      const checkboxKey = `${testSlug}-checkbox-${index}`
+      // This test verifies that checkbox state restoration happens synchronously
+      // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
+      // Without this fix, users would see a flash of the wrong checkbox state.
 
-      // Set up localStorage BEFORE page load
+      const checkboxKey = "test-page-checkbox-0"
+
+      // Set up localStorage BEFORE page load to simulate a returning user
+      // who previously checked the first checkbox (which defaults to unchecked in HTML)
       await page.addInitScript(
-        ({ key, state }) => {
-          localStorage.setItem(key, state ? "true" : "false")
-        },
-        { key: checkboxKey, state: savedState },
-      )
-
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
-
-      // Check checkbox state immediately without dispatching nav event
-      const checkboxState = await page.evaluate(
-        ({ idx }) => {
-          const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-          const checkbox = checkboxes[idx] as HTMLInputElement
-          return checkbox?.checked
-        },
-        { idx: index },
-      )
-
-      expect(checkboxState).toBe(savedState)
-
-      // Clean up
-      await page.evaluate(
         ({ key }) => {
-          localStorage.removeItem(key)
+          localStorage.setItem(key, "true")
         },
         { key: checkboxKey },
       )
+
+      // Navigate to page and wait only for DOM content (not full load)
+      // This gives us the earliest possible moment to check checkbox state
+      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+
+      // Immediately check checkbox state WITHOUT dispatching nav event
+      // Before the fix, this would return the HTML default (unchecked)
+      // After the fix, the MutationObserver restores state before we can check
+      const checkboxStateBeforeNav = await page.evaluate(() => {
+        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+        return checkbox?.checked
+      })
+
+      expect(checkboxStateBeforeNav).toBe(true)
     })
-  }
+
+    const checkboxTestCases = [
+      { index: 0, savedState: true, description: "checked" },
+      { index: 1, savedState: false, description: "unchecked" },
+      { index: 2, savedState: true, description: "checked" },
+    ]
+
+    for (const { index, savedState, description } of checkboxTestCases) {
+      test(`Checkbox ${index} state (${description}) is restored before first paint`, async ({
+        page,
+      }) => {
+        const checkboxKey = `test-page-checkbox-${index}`
+
+        // Set up localStorage BEFORE page load
+        await page.addInitScript(
+          ({ key, state }) => {
+            localStorage.setItem(key, state ? "true" : "false")
+          },
+          { key: checkboxKey, state: savedState },
+        )
+
+        await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+
+        // Check checkbox state immediately without dispatching nav event
+        const checkboxState = await page.evaluate(
+          ({ idx }) => {
+            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+            const checkbox = checkboxes[idx] as HTMLInputElement
+            return checkbox?.checked
+          },
+          { idx: index },
+        )
+
+        expect(checkboxState).toBe(savedState)
+      })
+    }
+  })
 })
 
 test.describe("Popovers on different page types", () => {
