@@ -2,9 +2,12 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
+import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
+
+import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
@@ -12,14 +15,36 @@ import {
   hatTipPlaceholder,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import {
-  FRACTION_SKIP_TAGS,
-  getTextContent,
-  transformElement,
-  toSkip,
-  collectTransformableElements,
-} from "./punctilio-rehype"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex } from "./utils"
+
+/**
+ * Tags that should be skipped during text transformation.
+ * Content inside these elements won't have formatting improvements applied.
+ */
+export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+
+/**
+ * Tags that should be skipped during fraction replacement.
+ * Includes SKIP_TAGS plus "a" (links) to avoid breaking URLs.
+ */
+export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as const
+
+/**
+ * CSS classes that indicate content should skip formatting.
+ */
+export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
+
+export function toSkip(node: Element): boolean {
+  if (node.type === "element") {
+    const elementNode = node as ElementMaybeWithParent
+    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
+    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
+    const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
+
+    return skipTag || skipClass || isFootnoteRef
+  }
+  return false
+}
 
 /**
  * @module HTMLFormattingImprovement
@@ -634,25 +659,27 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       rearrangeLinkPunctuation(node as Element, index, parent as Element)
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
-      const eltsToTransform = collectTransformableElements(node as Element)
-      eltsToTransform.forEach((elt) => {
-        for (const transform of uncheckedTextTransformers) {
-          transformElement(elt, transform, toSkip, false)
-        }
+      if (node.type === "element") {
+        const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+        eltsToTransform.forEach((elt) => {
+          for (const transform of uncheckedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, false)
+          }
 
-        for (const transform of checkedTextTransformers) {
-          transformElement(elt, transform, toSkip, true)
-        }
+          for (const transform of checkedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, true)
+          }
 
-        // Don't replace slashes in fractions, but give breathing room
-        // to others
-        const slashPredicate = (n: Element) => {
-          return !hasClass(n, "fraction") && n?.tagName !== "a"
-        }
-        if (slashPredicate(elt)) {
-          transformElement(elt, spacesAroundSlashes, toSkip, true)
-        }
-      })
+          // Don't replace slashes in fractions, but give breathing room
+          // to others
+          const slashPredicate = (n: Element) => {
+            return !hasClass(n, "fraction") && n?.tagName !== "a"
+          }
+          if (slashPredicate(elt)) {
+            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
+          }
+        })
+      }
     })
 
     if (!resolvedOptions.skipFirstLetter) {
