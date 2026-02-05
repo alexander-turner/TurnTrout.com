@@ -72,7 +72,7 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-container"></div></body></html>'
       }
       if (pathStr.includes("design.html")) {
-        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
       return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
@@ -876,6 +876,18 @@ describe("PopulateContainers", () => {
           pytestCount: 1293,
           linesOfCode: 83635,
         })
+      })
+    })
+
+    describe("htmlFileToSlug", () => {
+      it.each([
+        ["design.html", "design"],
+        ["posts/my-post.html", "posts/my-post"],
+        ["folder/index.html", "folder/index"],
+        ["deep/nested/page.html", "deep/nested/page"],
+        ["index.html", "index"],
+      ])("converts %s to %s", (input, expected) => {
+        expect(populateModule.htmlFileToSlug(input)).toBe(expected)
       })
     })
   })

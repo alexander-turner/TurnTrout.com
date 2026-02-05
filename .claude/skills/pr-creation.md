@@ -78,13 +78,15 @@ Review the critique and fix legitimate issues:
 
 Ensure quality checks pass before creating the PR.
 
-**TypeScript/JavaScript changes:**
+**TypeScript changes:**
 
 ```bash
 pnpm check        # Type checking (if applicable)
 pnpm test         # Run tests
 pnpm lint         # Run linter
 ```
+
+**Note**: Do NOT run `pnpm build` for validation - it takes 5+ minutes. Use `pnpm check` and `pnpm test` instead. The full build runs in CI after the PR is created.
 
 **Python changes:**
 

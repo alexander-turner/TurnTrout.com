@@ -647,20 +647,17 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
         width = img.get("width")
         height = img.get("height")
 
-        if not width or not height:
-            src = img.get("src", "unknown")
-            # Truncate long URLs for readability
-            src_str = str(src)
-            if len(src_str) > 80:
-                src_str = src_str[:40] + "..." + src_str[-37:]
+        if width and height:
+            continue
 
-            missing = []
-            if not width:
-                missing.append("width")
-            if not height:
-                missing.append("height")
+        missing = []
+        if not width:
+            missing.append("width")
+        if not height:
+            missing.append("height")
 
-            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+        src = img.get("src")
+        issues.append(f"<img> missing {', '.join(missing)}: {src}")
 
     return issues
 
@@ -1009,7 +1006,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.["“”]*\.', str(element)):
+            if re.search(r'(?!\.\.\?)\.[\u0022\u201c\u201d]*\.', str(element)):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1017,6 +1014,48 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
                 )
 
     return problematic_texts
+
+
+# Tengwar fonts use Private Use Area U+E000-U+E07F
+# Valid Tengwar text can also contain punctuation and whitespace
+_TENGWAR_VALID_PATTERN = re.compile(
+    r"^[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]*$"
+)
+
+
+def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that Quenya (lang="qya") text only contains valid Tengwar characters.
+
+    Tengwar fonts use Private Use Area characters U+E000-U+E07F.
+    If other characters appear (like arrows ⤴ or ⇔), it indicates
+    text processing corruption.
+
+    Returns:
+        list of strings describing invalid Tengwar text
+    """
+    issues: list[str] = []
+
+    # Find all elements with Quenya language attribute
+    for element in _tags_only(soup.find_all(attrs={"lang": "qya"})):
+        text = element.get_text()
+        if not text.strip() or _TENGWAR_VALID_PATTERN.match(text):
+            continue
+
+        # Find the invalid characters for debugging
+        invalid_chars = set()
+        for char in text:
+            if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
+                invalid_chars.add(f"{char} (U+{ord(char):04X})")
+
+        # Sort for deterministic output
+        sorted_chars = sorted(invalid_chars)
+        _append_to_list(
+            issues,
+            f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
+        )
+
+    return issues
 
 
 def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
@@ -1163,7 +1202,17 @@ def _check_populate_commit_count(
 
 
 _SELF_CONTAINED_ELEMENTS = frozenset(
-    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+    {
+        "svg",
+        "img",
+        "video",
+        "audio",
+        "iframe",
+        "object",
+        "embed",
+        "canvas",
+        "picture",
+    }
 )
 
 
@@ -1465,6 +1514,7 @@ def check_file_for_issues(
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),
+        "invalid_tengwar_characters": check_tengwar_characters(soup),
     }
 
     if should_check_fonts:
