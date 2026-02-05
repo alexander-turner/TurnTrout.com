@@ -2047,8 +2047,10 @@ def _maybe_collect_citation_keys(
     public_dir: Path,
     citation_to_files: Dict[str, list[str]],
 ) -> None:
-    """Extract citation keys from file and add to collection if not a redirect."""
-    soup = script_utils.parse_html_file(file_path)
+    """Extract citation keys from file and add to collection if not a
+    redirect."""
+    with open(file_path, encoding="utf-8") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
     if script_utils.is_redirect(soup):
         return
 
