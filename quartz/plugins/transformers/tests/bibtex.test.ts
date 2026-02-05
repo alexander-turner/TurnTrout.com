@@ -76,22 +76,22 @@ describe("generateBibtexEntry", () => {
     }
   })
 
-  it("generates correct citation key (LastName + Year + FirstWord)", () => {
+  it("generates correct citation key (LastName + Year + PascalCaseSlug)", () => {
     const result = generateBibtexEntry(
       { title: "Testing site features", authors: ["Alex Turner"], date_published: "2024-12-15" },
       "turntrout.com",
-      "test",
+      "shard-theory",
     )
-    expect(result).toContain("@misc{Turner2024Testing,")
+    expect(result).toContain("@misc{Turner2024ShardTheory,")
   })
 
   it("handles Last, First author format", () => {
     const result = generateBibtexEntry(
       { title: "Test Article", authors: ["Turner, Alex"], date_published: "2022-06-15" },
       "turntrout.com",
-      "test",
+      "my-article",
     )
-    expect(result).toContain("@misc{Turner2022Test,")
+    expect(result).toContain("@misc{Turner2022MyArticle,")
   })
 
   it("joins multiple authors with 'and'", () => {
@@ -103,13 +103,22 @@ describe("generateBibtexEntry", () => {
     expect(result).toContain("author = {Alex Turner and John Doe}")
   })
 
-  it("uses 'Untitled' in citation key when title is missing", () => {
+  it("uses permalink for citation key when available", () => {
     const result = generateBibtexEntry(
-      { authors: ["Alex Turner"], date_published: "2022-06-15" } as FrontmatterData,
+      { title: "Test", permalink: "design", authors: ["Alex Turner"], date_published: "2022-06-15" },
       "turntrout.com",
-      "test",
+      "the-design-of-this-website",
     )
-    expect(result).toContain("@misc{Turner2022Untitled,")
+    expect(result).toContain("@misc{Turner2022Design,")
+  })
+
+  it("uses slug for citation key when no permalink", () => {
+    const result = generateBibtexEntry(
+      { title: "Test", authors: ["Alex Turner"], date_published: "2022-06-15" } as FrontmatterData,
+      "turntrout.com",
+      "understanding-and-controlling",
+    )
+    expect(result).toContain("@misc{Turner2022UnderstandingAndControlling,")
   })
 
   it("throws when date_published is missing on CI", () => {
