@@ -3,6 +3,7 @@ public
 **.min.*
 **.yaml
 **.yml
+**.scss
 node_modules
 .quartz-cache
 **/.github/workflows/*.yaml
