@@ -25,11 +25,21 @@
     "PostToolUse": [
       {
         "matcher": "Bash(gh pr create*)",
-        "hook": "echo '=== WAITING FOR CI ===' && sleep 10 && gh pr checks --watch 2>&1"
+        "hook": "echo '=== WAITING FOR CI ===' && sleep 600 && gh pr checks --watch 2>&1"
       },
       {
         "matcher": "Bash(git push*)",
-        "hook": "echo '=== CHECKING PR STATUS ===' && sleep 10 && gh pr checks --watch 2>&1"
+        "hook": "echo '=== WAITING FOR CI ===' && sleep 600 && gh pr checks --watch 2>&1"
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-ci-on-stop.sh",
+            "timeout": 300
+          }
+        ]
       }
     ]
   }
