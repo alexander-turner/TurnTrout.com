@@ -71,6 +71,8 @@ const config: QuartzConfig = {
       CreatedModifiedDate(),
       TextFormattingImprovement(),
       Twemoji(),
+      TroutOrnamentHr(),
+      Bibtex(),
       SyntaxHighlighting({
         theme: {
           light: "github-light",
@@ -92,8 +94,6 @@ const config: QuartzConfig = {
       rehypeCustomSpoiler(),
       rehypeCustomSubtitle(),
       TagAcronyms(),
-      TroutOrnamentHr(),
-      Bibtex(),
       AfterArticle(),
       AddFavicons(),
       ColorVariables(),

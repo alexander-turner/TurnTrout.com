@@ -1,94 +1,39 @@
-import type { Element, Root } from "hast"
+import type { Code, Heading, PhrasingContent, Root, RootContent, Text } from "mdast"
 
-import Cite from "citation-js"
-import { h } from "hastscript"
-import humanparser from "humanparser"
-import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
+
+/** Extracts text content from MDAST phrasing content nodes. */
+function getTextContent(children: PhrasingContent[]): string {
+  return children.map((child) => (child.type === "text" ? child.value : "")).join("")
+}
 
 import type { QuartzTransformerPlugin } from "../types"
 import type { FrontmatterData } from "../vfile"
 
-import { troutContainerId } from "./trout_hr"
-
 /**
- * Cache for storing generated BibTeX content, keyed by slug.
- * Populated during transform phase, accessed during emit phase by populateContainers.
+ * Extracts the last name from an author string.
+ * Handles "First Last" and "Last, First" formats.
  */
-const bibtexCache = new Map<string, string>()
-
-/**
- * Gets the cached BibTeX content for a given slug.
- * @param slug - The slug of the page
- * @returns The BibTeX content, or undefined if not found
- */
-export function getBibtexForSlug(slug: string): string | undefined {
-  return bibtexCache.get(slug)
-}
-
-/**
- * Clears the bibtex cache. Used primarily for testing.
- */
-export function clearBibtexCache(): void {
-  bibtexCache.clear()
-}
-
-// skipcq: JS-D1001
-export function isBibtexCachePopulated(): boolean {
-  return bibtexCache.size > 0
-}
-
-/**
- * Rebuilds the bibtex cache from processed content.
- * Called during emit phase to restore cache state that may have been lost
- * when content was processed in worker threads.
- */
-export function rebuildBibtexCacheFromContent(
-  content: Array<[unknown, { data?: { slug?: string; bibtexContent?: string } }]>,
-): void {
-  for (const [, file] of content) {
-    const slug = file.data?.slug
-    const bibtexContent = file.data?.bibtexContent
-    if (slug && bibtexContent) {
-      bibtexCache.set(slug, bibtexContent)
-    }
+function getLastName(author: string): string {
+  if (author.includes(",")) {
+    return author.split(",")[0].trim()
   }
+  const parts = author.trim().split(/\s+/)
+  return parts[parts.length - 1]
 }
 
 /**
- * Parses a single author name into CSL-JSON author format using humanparser.
- * Handles edge cases like compound surnames (van Beethoven), suffixes (Jr., III), etc.
+ * Generates a citation key: LastName + Year + FirstTitleWord
  */
-function parseAuthorName(authorName: string): { given?: string; family: string } {
-  const trimmed = authorName.trim()
-  if (!trimmed) {
-    return { family: "Unknown" }
-  }
-
-  const parsed = humanparser.parseName(trimmed)
-
-  // Handle single-word names (e.g., "Madonna") where humanparser puts it in firstName
-  if (!parsed.lastName) {
-    return { family: parsed.firstName || "Unknown" }
-  }
-
-  // Construct given name from firstName and middleName
-  const givenParts = [parsed.firstName, parsed.middleName].filter(Boolean)
-  const given = givenParts.length > 0 ? givenParts.join(" ") : undefined
-
-  return { given, family: parsed.lastName }
+function generateCitationKey(authors: string[], year: number, title: string): string {
+  const lastName = getLastName(authors[0])
+  const firstWord = title.split(/\s+/)[0].replace(/[^a-zA-Z]/g, "")
+  return `${lastName}${year}${firstWord}`
 }
 
 /**
- * Parses an array of author names into CSL-JSON author format.
- */
-export function parseAuthors(authors: string[]): Array<{ given?: string; family: string }> {
-  return authors.map(parseAuthorName)
-}
-
-/**
- * Generates a BibTeX entry for an article using citation.js.
- * @throws Error if date_published is not present in frontmatter
+ * Generates a BibTeX entry for an article.
+ * @throws Error if date_published is not present in frontmatter on CI
  */
 export function generateBibtexEntry(
   frontmatter: FrontmatterData,
@@ -96,132 +41,95 @@ export function generateBibtexEntry(
   slug: string,
 ): string {
   const title = frontmatter.title
-  const authors = frontmatter.authors ?? ["Alex Turner"]
+  const authors =
+    frontmatter.authors && frontmatter.authors.length > 0 ? frontmatter.authors : ["Alex Turner"]
 
-  // Require publication date (only enforce on CI to allow local development)
   const datePublished = frontmatter.date_published
   if (!datePublished && process.env.CI) {
     throw new Error(`date_published is required for BibTeX generation (slug: ${slug})`)
   }
 
-  // Use current date as fallback for local development
   const date = datePublished ? new Date(datePublished as string | Date) : new Date()
   const year = date.getFullYear()
-  const month = date.getMonth() + 1 // CSL uses 1-indexed months
 
-  // Generate URL from permalink or slug
   const permalink = frontmatter.permalink as string | undefined
   const url = `https://${baseUrl}/${permalink ?? slug}`
 
-  // Create CSL-JSON entry - citation.js generates the citation key automatically
-  const cslEntry = {
-    type: "webpage",
-    title,
-    author: parseAuthors(authors),
-    issued: { "date-parts": [[year, month]] },
-    URL: url,
-  }
+  const citationKey = generateCitationKey(authors, year, title ?? "Untitled")
+  const authorString = authors.join(" and ")
 
-  // Convert to BibTeX using citation.js
-  const cite = new Cite(cslEntry)
-  let bibtex = cite.format("bibtex", { format: "text" })
-
-  // Strip citation.js's aggressive title-case protection braces
-  // It wraps every capitalized word like {Word} which is noisy for non-LaTeX use
-  bibtex = bibtex.replace(/title = \{(?<titleContent>.+)\}/s, (_match, titleContent: string) => {
-    // Remove protective braces around single words: {Word} → Word
-    const cleaned = titleContent.replace(/\{(?<word>\w+)\}/g, "$<word>")
-    return `title = {${cleaned}}`
-  })
-
-  return bibtex
+  return `@misc{${citationKey},
+  author = {${authorString}},
+  title = {${title}},
+  year = {${year}},
+  url = {${url}},
+}`
 }
 
 /**
- * Creates a BibTeX details block element for displaying citation information.
- * This helper is shared between the transformer and the populateContainers emitter.
+ * Finds the index where Citation section should be inserted.
+ * Returns the index of the first h1 containing "Appendix", or end of document.
  */
-export function createBibtexDetailsBlock(bibtexContent: string): Element {
-  return h("details", { class: "bibtex-citation" }, [
-    h("summary", "Cite this article (BibTeX)"),
-    h("pre", [h("code", { class: "language-bibtex" }, bibtexContent)]),
-  ])
-}
-
-/**
- * Finds the trout ornament element and its parent in the tree.
- * @returns Object containing the parent element and the index of the ornament
- * @throws Error if the ornament is not found
- */
-function findOrnamentLocation(tree: Root): { parent: Root; index: number } {
-  let result: { parent: Root; index: number } | null = null
-
-  visit(tree, "element", (node: Element, index, parent) => {
-    if (
-      node.tagName === "div" &&
-      node.properties?.id === troutContainerId &&
-      parent?.type === "root" &&
-      index !== undefined
-    ) {
-      result = { parent, index }
-      return false // Stop traversing
+export function findInsertionIndex(tree: Root): number {
+  for (let i = 0; i < tree.children.length; i++) {
+    const node = tree.children[i]
+    if (node.type === "heading" && node.depth === 1) {
+      const text = getTextContent(node.children).toLowerCase()
+      if (text.includes("appendix")) {
+        return i
+      }
     }
-    return true
-  })
-
-  if (!result) {
-    throw new Error(`Trout ornament with id "${troutContainerId}" not found in tree`)
   }
-
-  return result
+  return tree.children.length
 }
 
 /**
- * Inserts a BibTeX code block with a "Citation" heading before the trout ornament.
- * @throws Error if the trout ornament is not found in the tree
+ * Creates MDAST nodes for the Citation section.
  */
-export function insertBibtexBeforeOrnament(tree: Root, bibtexContent: string): void {
-  const { parent, index } = findOrnamentLocation(tree)
-
-  const citationHeading = h("h1", "Citation")
-  const bibtexBlock = createBibtexDetailsBlock(bibtexContent)
-
-  parent.children.splice(index, 0, citationHeading, bibtexBlock)
-}
-
-/**
- * Transforms the AST to add a BibTeX citation block before the trout ornament.
- * Also caches the BibTeX content for later use by populateContainers.
- */
-function bibtexTransform(tree: Root, file: VFile, baseUrl: string) {
-  const frontmatter = file.data.frontmatter
-
-  if (!frontmatter?.createBibtex) {
-    return
+export function createCitationNodes(bibtexContent: string): RootContent[] {
+  const heading: Heading = {
+    type: "heading",
+    depth: 1,
+    children: [{ type: "text", value: "Citation" } as Text],
   }
-
-  const slug = file.data.slug ?? ""
-  const bibtexContent = generateBibtexEntry(frontmatter, baseUrl, slug)
-
-  // Cache for populateContainers to use later
-  bibtexCache.set(slug, bibtexContent)
-
-  // Store in file.data so it survives worker thread serialization
-  file.data.bibtexContent = bibtexContent
-
-  insertBibtexBeforeOrnament(tree, bibtexContent)
+  const codeBlock: Code = {
+    type: "code",
+    lang: "bibtex",
+    value: bibtexContent.trim(),
+  }
+  return [heading, codeBlock]
 }
 
 interface BibtexOptions {
   baseUrl?: string
 }
 
-// skipcq: JS-D1001
+/**
+ * Transformer that adds a BibTeX citation block to articles with createBibtex: true.
+ * Inserts before the first "Appendix" h1 or at the end of the document.
+ * Uses MDAST so the code block flows through rehype-pretty-code for syntax highlighting.
+ */
 export const Bibtex: QuartzTransformerPlugin<BibtexOptions> = (opts?: BibtexOptions) => {
   const baseUrl = opts?.baseUrl ?? "turntrout.com"
 
   return {
     name: "BibtexTransformer",
-    htmlPlugins: () => [() => (tree: Root, file: VFile) => bibtexTransform(tree, file, baseUrl)],
+    markdownPlugins() {
+      return [
+        () => (tree: Root, file: VFile) => {
+          const frontmatter = file.data.frontmatter
+          if (!frontmatter?.createBibtex) {
+            return
+          }
+
+          const slug = file.data.slug ?? ""
+          const bibtexContent = generateBibtexEntry(frontmatter, baseUrl, slug)
+          const insertIndex = findInsertionIndex(tree)
+          const citationNodes = createCitationNodes(bibtexContent)
+
+          tree.children.splice(insertIndex, 0, ...citationNodes)
+        },
+      ]
+    },
   }
 }

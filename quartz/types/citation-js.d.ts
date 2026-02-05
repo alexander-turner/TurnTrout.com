@@ -8,7 +8,8 @@ declare module "citation-js" {
 
   interface CSLAuthor {
     given?: string
-    family: string
+    family?: string
+    literal?: string
   }
 
   interface CSLDate {

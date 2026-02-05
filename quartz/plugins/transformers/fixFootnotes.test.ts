@@ -70,12 +70,17 @@ describe("FixFootnotes helpers", () => {
 
   describe("hasFootnoteHeading", () => {
     it.each([
-      [footnoteSection(true), true, "section with heading"],
+      [footnoteSection(true), true, "section with h1 heading"],
       [footnoteSection(false), false, "section without heading"],
       [
         h("section", [h("h1", { id: "wrong-id" }, ["Footnotes"]), footnoteList()]) as Element,
         false,
         "section with wrong heading id",
+      ],
+      [
+        h("section", [h("h2", { id: "footnote-label" }, ["Footnotes"]), footnoteList()]) as Element,
+        true,
+        "section with h2 heading (remark-gfm-footnotes style)",
       ],
     ])("returns %s for %s", (section, expected) => {
       expect(hasFootnoteHeading(section)).toBe(expected)
