@@ -354,6 +354,25 @@ describe("Asset Dimensions Plugin", () => {
       await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
       expect(unlinkSpy).toHaveBeenCalled()
     })
+
+    it("should silently succeed on ENOENT rename error (race condition)", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest
+        .spyOn(fs, "rename")
+        .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      // Should not throw - ENOENT is silently handled
+      await assetProcessor.maybeSaveAssetDimensions()
+      expect(unlinkSpy).toHaveBeenCalled()
+      expect(assetProcessor["needToSaveCache"]).toBe(false)
+    })
   })
 
   describe("getAssetDimensionsFfprobe", () => {
@@ -1101,6 +1120,17 @@ describe("Asset Dimensions Plugin", () => {
 
       expect(tree.children).toHaveLength(0)
       expect(mockedFetch).not.toHaveBeenCalled()
+    })
+
+    it("should default to online mode when offline is undefined", async () => {
+      const tree: Root = { type: "root", children: [] }
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: {} } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      expect(tree.children).toHaveLength(0)
     })
 
     it("should handle tree with no images", async () => {
