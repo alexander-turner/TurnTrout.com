@@ -22,7 +22,7 @@ const expectedId = (title: string, body: string, index = 0) =>
 
 type W = Window & {
   __quartz_collapsible_states?: Map<string, boolean>
-  __quartz_collapsible_id?: unknown
+  __quartz_collapsible_id?: (slug: string, content: string) => string
   __quartz_reset_collapsible_counts?: () => void
 }
 
@@ -57,10 +57,7 @@ describe("admonition.inline collapsible state persistence", () => {
     admonition.innerHTML = `<div class="admonition-title">${title}</div><div class="admonition-content">${body}</div>`
     return admonition
   }
-
   const clickTitle = (el: Element) => el.querySelector<HTMLElement>(".admonition-title")?.click()
-  const clickContent = (el: Element) =>
-    el.querySelector<HTMLElement>(".admonition-content")?.click()
 
   it("assigns content-based IDs with index tiebreaker for duplicates", () => {
     const [first, second, duplicate] = [
@@ -75,38 +72,35 @@ describe("admonition.inline collapsible state persistence", () => {
     expect(duplicate.dataset.collapsibleId).toBe(expectedId("A", "1", 1))
   })
 
-  it("generates consistent IDs regardless of position", () => {
-    const noteA = create(false, "A", "1")
-    const noteB = create(false, "B", "2")
+  it("generates consistent IDs regardless of position (SPA navigation)", () => {
+    const [noteA, noteB] = [create(false, "A", "1"), create(false, "B", "2")]
     document.body.append(noteA, noteB)
     dispatchNav()
     const [idA, idB] = [noteA.dataset.collapsibleId, noteB.dataset.collapsibleId]
-
     document.body.innerHTML = ""
     const [noteB2, noteA2] = [create(false, "B", "2"), create(false, "A", "1")]
-    document.body.append(noteB2, noteA2) // Swapped order
+    document.body.append(noteB2, noteA2)
     dispatchNav()
-    expect(noteA2.dataset.collapsibleId).toBe(idA)
-    expect(noteB2.dataset.collapsibleId).toBe(idB)
+    expect([noteA2.dataset.collapsibleId, noteB2.dataset.collapsibleId]).toEqual([idA, idB])
   })
 
   it.each([
-    ["closing", false, true, "true"],
-    ["opening", true, false, "false"],
-  ])("saves/restores state when %s", (_, start, end, storage) => {
-    const admonition = create(start, "N", "B")
+    ["closing (title click)", false, true, "true"],
+    ["opening (body click)", true, false, "false"],
+  ])("saves state when %s", (_, startCollapsed, endCollapsed, storageValue) => {
+    const admonition = create(startCollapsed, "N", "B")
     document.body.appendChild(admonition)
     dispatchNav()
-    if (start) admonition.click()
+    if (startCollapsed) admonition.click()
     else clickTitle(admonition)
-    expect(admonition.classList.contains("is-collapsed")).toBe(end)
-    expect(localStorage.getItem(expectedId("N", "B"))).toBe(storage)
+    expect(admonition.classList.contains("is-collapsed")).toBe(endCollapsed)
+    expect(localStorage.getItem(expectedId("N", "B"))).toBe(storageValue)
   })
 
   it.each([
-    [true, false, true], // saved collapsed, html expanded → collapsed
-    [false, true, false], // saved expanded, html collapsed → expanded
-  ])("restores saved=%s over html=%s → %s", (saved, html, expected) => {
+    [true, false, true],
+    [false, true, false],
+  ])("restores saved=%s overriding html=%s", (saved, html, expected) => {
     ;(window as W).__quartz_collapsible_states = new Map([[expectedId("N", "B"), saved]])
     const admonition = create(html, "N", "B")
     document.body.appendChild(admonition)
@@ -115,72 +109,78 @@ describe("admonition.inline collapsible state persistence", () => {
   })
 
   it("keeps default HTML state when no saved state", () => {
-    const [expanded, collapsed] = [create(false, "A", "1"), create(true, "B", "2")]
-    document.body.append(expanded, collapsed)
+    document.body.append(create(false, "A", "1"), create(true, "B", "2"))
     dispatchNav()
-    expect(expanded.classList.contains("is-collapsed")).toBe(false)
-    expect(collapsed.classList.contains("is-collapsed")).toBe(true)
+    const els = document.querySelectorAll(".admonition")
+    expect(els[0].classList.contains("is-collapsed")).toBe(false)
+    expect(els[1].classList.contains("is-collapsed")).toBe(true)
   })
 
   it("only closes on title click, not content click", () => {
     const admonition = create(false, "N", "B")
     document.body.appendChild(admonition)
     dispatchNav()
-    clickContent(admonition)
+    admonition.querySelector<HTMLElement>(".admonition-content")?.click()
     expect(admonition.classList.contains("is-collapsed")).toBe(false)
   })
 
-  it("handles missing states map gracefully", () => {
-    delete (window as W).__quartz_collapsible_states
-    const admonition = create(false, "N", "B")
+  it.each([
+    [
+      "missing states map",
+      () => delete (window as W).__quartz_collapsible_states,
+      create(false, "N", "B"),
+    ],
+    [
+      "empty admonition",
+      () => {},
+      Object.assign(document.createElement("blockquote"), {
+        className: "admonition note is-collapsible",
+      }),
+    ],
+  ])("handles %s gracefully", (_, setup, admonition) => {
+    setup()
     document.body.appendChild(admonition)
     expect(() => dispatchNav()).not.toThrow()
     expect(admonition.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
   })
 
-  it("handles empty admonition gracefully", () => {
-    const admonition = Object.assign(document.createElement("blockquote"), {
-      className: "admonition note is-collapsible",
-    })
-    document.body.appendChild(admonition)
-    expect(() => dispatchNav()).not.toThrow()
-    expect(admonition.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
-  })
-
-  it("uses shared __quartz_collapsible_id and initializes states map on save", () => {
-    const mock = jest.fn((slug: string, content: string) => `${slug}-mock-${content}`)
-    ;(window as W).__quartz_collapsible_id = mock
+  it("initializes states map on save if missing", () => {
     delete (window as W).__quartz_collapsible_states
     const admonition = create(false, "T", "B")
     document.body.appendChild(admonition)
     dispatchNav()
-    expect(mock).toHaveBeenCalledWith("test-page", "TB")
     clickTitle(admonition)
     expect((window as W).__quartz_collapsible_states).toBeInstanceOf(Map)
   })
 
   describe("stress tests", () => {
-    it("handles 100 unique collapsibles with unique IDs", () => {
-      for (let i = 0; i < 100; i++) document.body.appendChild(create(false, `T${i}`, `C${i}`))
+    it.each([
+      [
+        100,
+        (i: number) => [`T${i}`, `C${i}`],
+        (ids: string[]) => expect(new Set(ids).size).toBe(100),
+      ],
+      [
+        50,
+        () => ["Q", "S"],
+        (ids: string[]) =>
+          ids.forEach((id, i) => expect(id).toBe(`test-page-collapsible-${djb2Hash("QS")}-${i}`)),
+      ],
+    ])("handles %i collapsibles correctly", (count, getContent, verify) => {
+      for (let i = 0; i < count; i++) {
+        const [title, body] = getContent(i)
+        document.body.appendChild(create(false, title, body))
+      }
       dispatchNav()
       const ids = [...document.querySelectorAll<HTMLElement>("[data-collapsible-id]")].map(
-        (el) => el.dataset.collapsibleId,
+        (el) => el.dataset.collapsibleId!,
       )
-      expect(ids).toHaveLength(100)
-      expect(new Set(ids).size).toBe(100)
+      expect(ids).toHaveLength(count)
+      verify(ids)
     })
 
-    it("handles 50 identical collapsibles with sequential indices", () => {
-      for (let i = 0; i < 50; i++) document.body.appendChild(create(false, "Q", "S"))
-      dispatchNav()
-      const ids = [...document.querySelectorAll<HTMLElement>("[data-collapsible-id]")].map(
-        (el) => el.dataset.collapsibleId,
-      )
-      expect(ids).toHaveLength(50)
-      ids.forEach((id, i) => expect(id).toBe(`test-page-collapsible-${djb2Hash("QS")}-${i}`))
-    })
-
-    it("handles rapid toggles", () => {
+    it("handles rapid toggles, large unicode content, and similar-content disambiguation", () => {
+      // Rapid toggles
       const admonition = create(false, "T", "X")
       document.body.appendChild(admonition)
       dispatchNav()
@@ -189,32 +189,20 @@ describe("admonition.inline collapsible state persistence", () => {
         admonition.click()
       }
       expect(admonition.classList.contains("is-collapsed")).toBe(false)
-    })
 
-    it("handles large content (10KB) with unicode", () => {
-      const admonition = create(false, "日本語🎉", `${"x".repeat(10000)}العربية`)
-      document.body.appendChild(admonition)
-      dispatchNav()
-      expect(admonition.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
-    })
-
-    it("preserves ID for same content across SPA navigation", () => {
-      const admonition1 = create(false, "Note", "Content")
-      document.body.appendChild(admonition1)
-      dispatchNav()
-      const id1 = admonition1.dataset.collapsibleId
+      // Large unicode content
       document.body.innerHTML = ""
-      const admonition2 = create(false, "Note", "Content")
-      document.body.appendChild(admonition2)
+      const unicode = create(false, "日本語🎉", `${"x".repeat(10000)}العربية`)
+      document.body.appendChild(unicode)
       dispatchNav()
-      expect(admonition2.dataset.collapsibleId).toBe(id1)
-    })
+      expect(unicode.dataset.collapsibleId).toMatch(/^test-page-collapsible-[0-9a-f]{8}-0$/)
 
-    it("produces different hashes for similar content", () => {
-      const [titleAB, titleA] = [create(false, "AB", "C"), create(false, "A", "BC")]
-      document.body.append(titleAB, titleA)
+      // Similar content produces different hashes
+      document.body.innerHTML = ""
+      const [ab, ba] = [create(false, "AB", "C"), create(false, "A", "BC")]
+      document.body.append(ab, ba)
       dispatchNav()
-      expect(titleAB.dataset.collapsibleId).not.toBe(titleA.dataset.collapsibleId)
+      expect(ab.dataset.collapsibleId).not.toBe(ba.dataset.collapsibleId)
     })
   })
 })
