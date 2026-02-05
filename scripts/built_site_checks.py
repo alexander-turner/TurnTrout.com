@@ -500,8 +500,10 @@ def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
 
 
 # ASCII emoticons that should be converted to twemoji by TextFormattingImprovement
+# Note: We use capturing groups instead of variable-width lookbehind since Python's
+# re module doesn't support `(?<= |^)` (alternation makes lookbehind variable-width)
 _UNRENDERED_EMOTICON_PATTERN = re.compile(
-    r"(?<= |^)(?:;\)|:\)|:\()(?= |$)", re.MULTILINE
+    r"(?:^| )(;\)|:\)|:\()(?= |$)", re.MULTILINE
 )
 
 
