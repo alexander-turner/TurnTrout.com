@@ -28,21 +28,19 @@
     autoplayEnabled ? "block" : "none",
   )
 
-  // Pre-load checkbox states
-  // Use Object.keys for better performance than iterating localStorage.length
-  window.__quartz_checkbox_states = new Map()
-  window.__quartz_collapsible_states = new Map()
-  Object.keys(localStorage).forEach((key) => {
-    if (key.includes("-checkbox-")) {
-      window.__quartz_checkbox_states.set(key, localStorage.getItem(key) === "true")
-    } else if (key.includes("-collapsible-")) {
-      // Store whether the collapsible is collapsed (true = collapsed)
-      window.__quartz_collapsible_states.set(key, localStorage.getItem(key) === "true")
+  // Pre-load boolean states from localStorage into Maps
+  const loadBooleanStates = (keyPattern) => {
+    const states = new Map()
+    for (const key of Object.keys(localStorage)) {
+      if (key.includes(keyPattern)) states.set(key, localStorage.getItem(key) === "true")
     }
-  })
+    return states
+  }
+  window.__quartz_checkbox_states = loadBooleanStates("-checkbox-")
+  window.__quartz_collapsible_states = loadBooleanStates("-collapsible-")
 
-  /** djb2 hash → 8-char hex */
-  function hashContent(str) {
+  /** djb2 hash → 8-char hex. Exposed on window for reuse by other scripts. */
+  window.__quartz_hash = (str) => {
     let hash = 5381
     for (let i = 0; i < str.length; i++) hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
     return (hash >>> 0).toString(16).padStart(8, "0")
@@ -53,7 +51,7 @@
 
   /** Generates collapsible ID from content hash with index tiebreaker for duplicates. */
   window.__quartz_collapsible_id = (slug, content) => {
-    const hash = hashContent(content || "empty")
+    const hash = window.__quartz_hash(content || "empty")
     const key = `${slug}-${hash}`
     const index = hashCounts.get(key) || 0
     hashCounts.set(key, index + 1)
