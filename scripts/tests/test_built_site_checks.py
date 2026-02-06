@@ -2550,11 +2550,12 @@ def test_extract_flat_paragraph_texts():
 
 
 def test_extract_flat_paragraph_texts_skips_nav_footer():
-    """Paragraphs inside nav/footer/header are skipped."""
+    """Paragraphs inside nav/footer/header/sequence-links are skipped."""
     html = """
     <nav><p>PreviousLessons</p></nav>
     <footer><p>2025Apply</p></footer>
     <header><p>Site header text</p></header>
+    <div class="sequence-links"><p><em>Previous</em>Reward is enough</p></div>
     <p>Normal paragraph.</p>
     """
     soup = BeautifulSoup(html, "html.parser")
@@ -2637,8 +2638,8 @@ def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
         patch("shutil.which", return_value="/usr/bin/pnpm"),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.return_value = subprocess.CompletedProcess(
-            args=[], returncode=1, stdout=stdout, stderr=""
+        mock_run.side_effect = subprocess.CalledProcessError(
+            returncode=1, cmd=[], output=stdout, stderr=""
         )
         result = built_site_checks._spellcheck_flattened_paragraphs(
             {"page.html": ["Hello wrold."]}
@@ -2656,8 +2657,8 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
         patch("shutil.which", return_value="/usr/bin/pnpm"),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.return_value = subprocess.CompletedProcess(
-            args=[], returncode=1, stdout="some warning text", stderr=""
+        mock_run.side_effect = subprocess.CalledProcessError(
+            returncode=1, cmd=[], output="some warning text", stderr=""
         )
         result = built_site_checks._spellcheck_flattened_paragraphs(
             {"page.html": ["test"]}

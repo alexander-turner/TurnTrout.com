@@ -2168,8 +2168,10 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     for element in _tags_only(soup.find_all("p")):
         if should_skip(element):
             continue
-        # Skip paragraphs inside navigation / footer / header
+        # Skip paragraphs inside navigation / footer / header / sequence links
         if element.find_parent(["nav", "footer", "header"]):
+            continue
+        if element.find_parent(class_="sequence-links"):
             continue
 
         # Work on a copy to avoid mutating the original soup
@@ -2198,6 +2200,29 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     return paragraphs
 
 
+def _write_paragraphs_to_tempfile(
+    paragraph_map: dict[str, list[str]],
+) -> tuple[Path, dict[int, str]]:
+    """Write paragraph texts to a temp file and return path + line mapping."""
+    line_to_source: dict[int, str] = {}
+    line_num = 1
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-rendered-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp:
+        for file_path, paragraphs in paragraph_map.items():
+            for para in paragraphs:
+                tmp.write(f"{para}\n")
+                line_to_source[line_num] = file_path
+                line_num += 1
+        return Path(tmp.name), line_to_source
+
+
 def _spellcheck_flattened_paragraphs(
     paragraph_map: dict[str, list[str]],
 ) -> list[str]:
@@ -2219,29 +2244,11 @@ def _spellcheck_flattened_paragraphs(
         return ["pnpm not found — skipping rendered-text spellcheck"]
 
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
     issues: list[str] = []
 
-    # Build line-number → source-file mapping for error reporting
-    line_to_source: dict[int, str] = {}
-    line_num = 1
-
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        suffix=".txt",
-        dir=_GIT_ROOT,
-        prefix=".spellcheck-rendered-",
-        delete=False,
-        encoding="utf-8",
-    ) as tmp:
-        tmp_path = Path(tmp.name)
-        for file_path, paragraphs in paragraph_map.items():
-            for para in paragraphs:
-                tmp.write(f"{para}\n")
-                line_to_source[line_num] = file_path
-                line_num += 1
-
     try:
-        result = subprocess.run(  # noqa: S603
+        subprocess.run(  # noqa: S603
             [
                 pnpm,
                 "exec",
@@ -2260,22 +2267,23 @@ def _spellcheck_flattened_paragraphs(
             ],
             capture_output=True,
             text=True,
+            check=True,
             cwd=str(_GIT_ROOT),
         )
-
-        if result.returncode != 0 and result.stdout:
-            for line in result.stdout.splitlines():
-                line = line.strip()
-                if not line or "warning" not in line:
-                    continue
-                # Try to extract line number and prepend source file
-                match = re.match(r".+?:(\d+):\d+", line)
-                if match:
-                    ln = int(match.group(1))
-                    source = line_to_source.get(ln, "unknown")
-                    issues.append(f"[{source}] {line}")
-                else:
-                    issues.append(line)
+    except subprocess.CalledProcessError as exc:
+        stdout = exc.stdout or ""
+        for line in stdout.splitlines():
+            line = line.strip()
+            if not line or "warning" not in line:
+                continue
+            # Try to extract line number and prepend source file
+            match = re.match(r".+?:(\d+):\d+", line)
+            if match:
+                ln = int(match.group(1))
+                source = line_to_source.get(ln, "unknown")
+                issues.append(f"[{source}] {line}")
+            else:
+                issues.append(line)
     finally:
         tmp_path.unlink(missing_ok=True)
 
