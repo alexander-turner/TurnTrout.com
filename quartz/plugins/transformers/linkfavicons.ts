@@ -170,7 +170,7 @@ export function normalizeFaviconListEntry(entry: string): string {
 /** Whitelist/blacklist entries normalized through the same PSL pipeline as hostnames. */
 const faviconCountWhitelistComputed = [
   ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist.map(normalizeFaviconListEntry),
+  ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
 const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeFaviconListEntry)
