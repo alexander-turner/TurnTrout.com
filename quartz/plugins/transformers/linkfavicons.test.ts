@@ -561,6 +561,33 @@ describe("Favicon Utilities", () => {
       expect(element.properties["aria-hidden"]).toBe("true")
       expect(element.properties["aria-focusable"]).toBe("false")
     })
+
+    it.each([
+      [
+        "https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg",
+        "A trout jumping to the left.",
+      ],
+      [
+        "https://assets.turntrout.com/static/images/external-favicons/anchor.svg",
+        "A counterclockwise arrow.",
+      ],
+    ])(
+      "should create accessible svg element when description provided for %s",
+      (urlString, description) => {
+        const element = linkfavicons.createFaviconElement(urlString, description)
+        expect(element.type).toBe("element")
+        expect(element.tagName).toBe("svg")
+        expect(element.properties.class).toBe("favicon")
+        expect(element.properties.style).toBe(`--mask-url: url(${urlString});`)
+        expect(element.children).toEqual([])
+        // Accessible SVG properties
+        expect(element.properties.role).toBe("img")
+        expect(element.properties["aria-label"]).toBe(description)
+        // Should NOT have hidden properties
+        expect(element.properties["aria-hidden"]).toBeUndefined()
+        expect(element.properties["aria-focusable"]).toBeUndefined()
+      },
+    )
   })
 
   describe("linkfavicons.insertFavicon", () => {
@@ -1238,7 +1265,7 @@ describe("linkfavicons.downloadImage", () => {
 
   it("should throw if write stream fails", async () => {
     const url = "https://example.com/image.png"
-    const imagePath = path.join(tempDir, "readonly-dir", "image.png")
+    const imagePath = path.join(tempDir, "image.png")
     const mockContent = "Mock image content"
     const mockResponse = new Response(mockContent, {
       status: 200,
@@ -1247,22 +1274,13 @@ describe("linkfavicons.downloadImage", () => {
 
     jest.spyOn(global, "fetch").mockResolvedValueOnce(mockResponse)
 
-    // Create a directory that doesn't allow writing
-    const readonlyDir = path.join(tempDir, "readonly-dir")
-    // skipcq: JS-P1003
-    await fsExtra.ensureDir(readonlyDir)
-    // skipcq: JS-P1003
-    await fsExtra.chmod(readonlyDir, 0o444) // Read-only permissions
+    // Mock mkdir to throw an error - works in sandboxed environments
+    // where file permission restrictions don't apply (e.g., running as root)
+    jest.spyOn(fs.promises, "mkdir").mockRejectedValueOnce(new Error("EACCES: permission denied"))
 
-    try {
-      await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
-        "Failed to write image",
-      )
-    } finally {
-      // skipcq: JS-P1003
-      // Restore permissions so cleanup works
-      await fsExtra.chmod(readonlyDir, 0o755)
-    }
+    await expect(linkfavicons.downloadImage(url, imagePath)).rejects.toThrow(
+      "Failed to write image",
+    )
   })
 })
 

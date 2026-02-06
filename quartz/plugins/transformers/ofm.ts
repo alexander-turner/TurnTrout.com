@@ -38,52 +38,52 @@ export const externalLinkRegex = /^https?:\/\//i
 
 /** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
 export const wikilinkRegex = new RegExp(
-  /!?\[\[([^[\]|#\\]+)?(#+(?:[^[\]|#\\]+)?)?(\\?\|[^[\]#]+)?\]\]/,
+  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+(?:[^[\]|#\\]+)?)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
 /** Matches Markdown tables with header, separator, and body rows. */
 export const tableRegex = new RegExp(
-  /^\|([^\n])+\|\n(\|)( ?:?-{3,}:? ?\|)+\n(\|([^\n])+\|\n?)+/,
+  /^\|(?:[^\n])+\|\n(?:\|)(?:[ ]?:?-{3,}:?[ ]?\|)+\n(?:\|(?:[^\n])+\|\n?)+/,
   "gm",
 )
 
 /** Regular expression to match wikilinks within tables for escaping purposes */
-export const tableWikilinkRegex = new RegExp(/(!?\[\[[^\]]*?\]\])/, "g")
+export const tableWikilinkRegex = new RegExp(/(?<wikilink>!?\[\[[^\]]*?\]\])/, "g")
 
 /** Regular expression to match highlight syntax (==text==) */
-const highlightRegex = new RegExp(/[=]{2}([^=]+)[=]{2}/, "g")
+const highlightRegex = new RegExp(/[=]{2}(?<content>[^=]+)[=]{2}/, "g")
 
 /** Regular expression to match Obsidian-style comments (%%comment%%) */
 const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
 
 /** Regular expression to match admonition syntax ([!type][fold]) */
-const admonitionRegex = new RegExp(/^\[!(\w+)\]([+-]?)/)
+const admonitionRegex = new RegExp(/^\[!(?<type>\w+)\](?<collapse>[+-]?)/)
 
 /** Regular expression to match admonition lines in blockquotes */
 const admonitionLineRegex = new RegExp(/^> *\[!\w+\][+-]?.*$/, "gm")
 
 /** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
-  /(?:^| )#((?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
+  /(?:^| )#(?<tag>(?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
   "gu",
 )
 
 /** Regular expression to match block references (^blockid) */
-const blockReferenceRegex = new RegExp(/\^([-_A-Za-z0-9]+)$/, "g")
+const blockReferenceRegex = new RegExp(/\^(?<blockId>[-_A-Za-z0-9]+)$/, "g")
 
 /** Regular expression to match YouTube video URLs */
-const ytLinkRegex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+const ytLinkRegex = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)(?<videoId>[^#&?]*).*/
 
 /** Regular expression to match YouTube playlist parameters */
-const ytPlaylistLinkRegex = /[?&]list=([^#?&]*)/
+const ytPlaylistLinkRegex = /[?&]list=(?<playlistId>[^#?&]*)/
 
 /** Regular expression to match video file extensions */
-const videoExtensionRegex = new RegExp(/\.(mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
+const videoExtensionRegex = new RegExp(/\.(?:mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
 
 /** Regular expression to parse image embed dimensions and alt text */
 const wikilinkImageEmbedRegex = new RegExp(
-  /^(?<alt>(?!^\d*x?\d*$).*?)?(\|?\s*?(?<width>\d+)(x(?<height>\d+))?)?$/,
+  /^(?<alt>(?!^\d*x?\d*$).*?)?(?:\|?\s*?(?<width>\d+)(?:x(?<height>\d+))?)?$/,
 )
 
 /** Extended ElementData interface for custom HAST element properties. */
@@ -280,9 +280,11 @@ const processAdmonitionBlockquote = (node: Blockquote): void => {
   const remainingText = remainingLines.join("\n")
 
   const match = admonitionRegex.exec(firstLine)
-  if (!match) return
+  if (!match?.groups) return
 
-  const [admonitionDirective, typeString, collapseChar] = match
+  const admonitionDirective = match[0]
+  const typeString = match.groups.type
+  const collapseChar = match.groups.collapse
   const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
   const collapse = collapseChar === "+" || collapseChar === "-"
   const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
@@ -467,6 +469,7 @@ export function processWikilink(
 const createTagProcessor =
   (file: VFile): ReplaceFunction =>
   (_value: string, tag: string) => {
+    // Note: mdast-util-find-and-replace passes capture groups positionally
     if (/^\d+$/.test(tag)) {
       return false
     }
@@ -506,9 +509,9 @@ function applyRegexReplacements(tree: Root, file: VFile, opts: OFMOptions): void
   if (opts.highlight) {
     replacements.push([
       highlightRegex,
-      (_value: string, ...capture: string[]) => {
-        const [inner] = capture
-        return createHighlightElement(inner)
+      // Note: mdast-util-find-and-replace passes capture groups positionally
+      (_value: string, content: string) => {
+        return createHighlightElement(content)
       },
     ])
   }
@@ -594,8 +597,8 @@ function parseBlockReferences(tree: HtmlRoot, file: VFile): void {
       if (last?.type === "text" && typeof last.value === "string") {
         blockReferenceRegex.lastIndex = 0
         const match = blockReferenceRegex.exec(last.value)
-        if (match) {
-          const blockId = match[1]
+        if (match?.groups) {
+          const blockId = match.groups.blockId
           if (file.data.blocks && !file.data.blocks[blockId]) {
             // Remove the block reference from the text
             last.value = last.value.replace(blockReferenceRegex, "")
@@ -619,9 +622,12 @@ function convertImagesToYouTubeEmbeds(tree: HtmlRoot): void {
   visit(tree, "element", (node) => {
     if (node.tagName === "img" && typeof node.properties.src === "string") {
       const match = ytLinkRegex.exec(node.properties.src)
-      const videoId = match && match[2].length === 11 ? match[2] : null
+      const videoId =
+        match?.groups?.videoId && match.groups.videoId.length === 11
+          ? match.groups.videoId
+          : null
       const playlistMatch = ytPlaylistLinkRegex.exec(node.properties.src)
-      const playlistId = playlistMatch?.[1]
+      const playlistId = playlistMatch?.groups?.playlistId
       if (videoId) {
         node.tagName = "iframe"
         node.properties = createYouTubeEmbed(videoId, playlistId)

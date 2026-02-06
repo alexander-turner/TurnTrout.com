@@ -798,7 +798,6 @@ Coeff
 Coldplay
 Collman
 ConceptNet
-Confusionn
 Corrigibility's
 CorrigibilityPM
 Corrigibilitypolicy
@@ -986,6 +985,16 @@ Llama-2-13b-chat
 Llama-2-7B-Chat
 Llama-2-7B-chat
 Llama-2-chat-7B
+Llama-1
+Llama-3
+Llama-3.1-8B
+Llama-3.1-8B-Instruct
+Llama-3.1-70B
+Llama-3.1-405B
+LLAMA-1
+LLAMA-2
+LLAMA-3.1-70B
+LLAMA-3.1-405B
 LoRA
 Lubana
 Lyft
@@ -1239,7 +1248,6 @@ Yay
 Yoshua
 Youtube
 Yu
-Yudkowksy
 Yun
 ZFC
 Zack
@@ -2602,9 +2610,8 @@ Dotiwalla
 Dragan
 Flavien
 GPT-4o
-Prost
-
 GPT-4-o
+Prost
 polyamorous
 Callout
 Shoggoth
@@ -3104,3 +3111,9 @@ Zack's
 pre-push
 preload
 transclusions
+DOMs
+Hallo
+README's
+regexes
+½
+1ˢᵗ

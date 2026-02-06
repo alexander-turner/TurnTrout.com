@@ -1,14 +1,13 @@
-import { describe, it, expect, test } from "@jest/globals"
+import { describe, it, expect } from "@jest/globals"
 import { type Element, type ElementContent, type Parent, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
+import { symbolTransform } from "punctilio"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
 import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
 import {
-  hyphenReplace,
-  niceQuotes,
   massTransformText,
   getTextContent,
   flattenTextNodes,
@@ -16,11 +15,8 @@ import {
   spacesAroundSlashes,
   transformElement,
   assertSmartQuotesMatch,
-  enDashNumberRange,
-  minusReplace,
   l_pRegex,
   collectTransformableElements,
-  enDashDateRange,
   identifyLinkNode,
   moveQuotesBeforeLink,
   getFirstTextNode,
@@ -30,8 +26,20 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   markerChar,
+  toSkip,
+  SKIP_TAGS,
+  FRACTION_SKIP_TAGS,
+  SKIP_CLASSES,
 } from "../formatting_improvement_html"
 import { arrowsToWrap } from "../formatting_improvement_html"
+
+// Unicode constants for readable test expectations
+// (punctilio exports these in constants.js but not from the main entry point)
+const LEFT_DOUBLE_QUOTE = "\u201C" // "
+const RIGHT_DOUBLE_QUOTE = "\u201D" // "
+const LEFT_SINGLE_QUOTE = "\u2018" // '
+const RIGHT_SINGLE_QUOTE = "\u2019" // '
+const MULTIPLICATION = "\u00D7" // ×
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -56,71 +64,6 @@ function testHtmlFormattingImprovement(
 
 describe("HTMLFormattingImprovement", () => {
   describe("Quotes", () => {
-    it.each([
-      ['"This is a quote", she said.', "“This is a quote”, she said."],
-      ['"aren\'t "groups of functions". ', "“aren’t “groups of functions.” "],
-      ['"This is a quote," she said.', "“This is a quote”, she said."],
-      ['"This is a quote!".', "“This is a quote!”."],
-      ['"This is a quote?".', "“This is a quote?”."],
-      ['"This is a quote..." he trailed off.', "“This is a quote...” he trailed off."],
-      ['She said, "This is a quote."', "She said, “This is a quote.”"],
-      ['"Hello." Mary', "“Hello.” Mary"],
-      ['"Hello." (Mary)', "“Hello.” (Mary)"],
-      ["He said, 'Hi'", "He said, ‘Hi’"],
-      ['"I am" so "tired" of "these" "quotes".', "“I am” so “tired” of “these” “quotes.”"],
-      ['"world model";', "“world model”;"],
-      ['"party"/"wedding."', "“party”/“wedding.”"],
-      ['"Hi \'Trout!"', "“Hi ’Trout!”"],
-      ["“scope insensitivity”", "“scope insensitivity”"],
-      [
-        "strategy s's return is good, even as d's return is bad",
-        "strategy s’s return is good, even as d’s return is bad",
-      ],
-      ["He wanted 'power.'", "He wanted ‘power.’"], // Test end of line
-      [
-        '"how many ways can this function be implemented?".',
-        "“how many ways can this function be implemented?”.",
-      ],
-      ['SSL.")', "SSL.”)"],
-      ["can't multiply\"?", "can’t multiply”?"],
-      ["I'd", "I’d"],
-      ["I don't'nt want to go", "I don’t’nt want to go"],
-      ['with "scope insensitivity":', "with “scope insensitivity”:"],
-      ['("the best")', "(“the best”)"],
-      ['"\'sup"', "“’sup”"], // Apostrophes always point down
-      ["'SUP", "’SUP"],
-      ["Rock 'n' Roll", "Rock ’n’ Roll"],
-      ["I was born in '99", "I was born in ’99"],
-      ["'99 tigers weren't a match", "’99 tigers weren’t a match"],
-      ["I'm not the best, haven't you heard?", "I’m not the best, haven’t you heard?"],
-      ["Hey, 'sup 'this is a single quote'", "Hey, ’sup ‘this is a single quote’"],
-      ["'the best',", "‘the best’,"],
-      ["'I lost the game.'", "‘I lost the game.’"],
-      ["I hate you.'\"", "I hate you.’”"],
-      ['"This is a quote"...', "“This is a quote”..."],
-      ['He said, "This is a quote"...', "He said, “This is a quote”..."],
-      ["The 'function space')", "The ‘function space’)"],
-      ["The 'function space'—", "The ‘function space’—"],
-      ['"... What is this?"', "“... What is this?”"],
-      ['"/"', "“/”"],
-      ['"Game"/"Life"', "“Game”/“Life”"],
-      ['"Test:".', "“Test:”."],
-      ['"Test...".', "“Test...”."],
-      ['"To maximize reward…".', "“To maximize reward…”."],
-      ['"Test"s', "“Test”s"],
-      ['not confident in that plan - "', "not confident in that plan - ”"],
-      ["What do you think?']", "What do you think?’]"],
-      ["\"anti-'survival incentive' incentive\"", "“anti-‘survival incentive’ incentive”"],
-      ["('survival incentive')", "(‘survival incentive’)"],
-      [
-        'In English, you always read words starting from the left. Therefore, "when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. \'↗000,023’"',
-        "In English, you always read words starting from the left. Therefore, “when reading to discover the magnitude of a number, saccade your eyes to the right end of e.g. ‘↗000,023’”",
-      ],
-    ])('should fix quotes in "%s"', (input, expected) => {
-      const processedHtml = niceQuotes(input)
-      expect(processedHtml).toBe(expected)
-    })
-
     // Handle HTML inputs
     it.each([
       [
@@ -137,11 +80,11 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<dl><dd>Multipliers like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>". </dd></dl>',
-        '<dl><dd>Multipliers like “2×” are 2× more pleasant than “<span class="no-formatting">2x</span>.” </dd></dl>',
+        `<dl><dd>Multipliers like ${LEFT_DOUBLE_QUOTE}2${MULTIPLICATION}${RIGHT_DOUBLE_QUOTE} are 2${MULTIPLICATION} more pleasant than ${LEFT_DOUBLE_QUOTE}<span class="no-formatting">2x</span>.${RIGHT_DOUBLE_QUOTE} </dd></dl>`,
       ],
       [
         '<p>Suppose you tell me, "<code>TurnTrout</code>", we definitely</p>',
-        "<p>Suppose you tell me, “<code>TurnTrout</code>”, we definitely</p>",
+        `<p>Suppose you tell me, ${LEFT_DOUBLE_QUOTE}<code>TurnTrout</code>,${RIGHT_DOUBLE_QUOTE} we definitely</p>`,
       ],
       [
         '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
@@ -152,12 +95,12 @@ describe("HTMLFormattingImprovement", () => {
         "<div><p>not confident in that plan—”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>",
       ],
       [
-        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></div>",
-        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>‘I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></div>",
+        "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></div>",
+        `<div><div></div><div><p><strong>small voice.</strong></p><p><strong>${LEFT_SINGLE_QUOTE}I will take the Ring,${RIGHT_SINGLE_QUOTE} he</strong> <strong>said, ${LEFT_SINGLE_QUOTE}though I do not know the way.${RIGHT_SINGLE_QUOTE}</strong></p></div></div>`,
       ],
       [
         "<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></blockquote></article>",
-        "<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>‘I will take the Ring’, he</strong> <strong>said, ‘though I do not know the way.’</strong></p></div></blockquote></article>",
+        `<article><blockquote><div>Testestes</div><div><p><strong>small voice.</strong></p><p><strong>${LEFT_SINGLE_QUOTE}I will take the Ring,${RIGHT_SINGLE_QUOTE} he</strong> <strong>said, ${LEFT_SINGLE_QUOTE}though I do not know the way.${RIGHT_SINGLE_QUOTE}</strong></p></div></blockquote></article>`,
       ],
       [
         '<blockquote class="admonition quote" data-admonition="quote"> <div class="admonition-title"><div class="admonition-icon"></div><div class="admonition-title-inner">Checking that HTML formatting is applied to each paragraph element </div></div> <div class="admonition-content"><p>Comes before the single quote</p><p>\'I will take the Ring\'</p></div> </blockquote>',
@@ -311,6 +254,68 @@ describe("HTMLFormattingImprovement", () => {
     )
   })
 
+  describe("spacesAroundSlashes marker invariance", () => {
+    // Testing marker invariance for spacesAroundSlashes
+    // Original error: "at : / , , ." became "at :  / , , ." (extra space)
+    // Root cause: marker character is treated as non-whitespace by the regex
+
+    it("spacesAroundSlashes is invariant with marker after colon (no space)", () => {
+      // Pattern: colon, marker, slash - no space between
+      const textWithMarker = `:${markerChar}/`
+      const textWithoutMarker = ":/"
+
+      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
+      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+
+    it("spacesAroundSlashes should be invariant with marker before slash (after space)", () => {
+      // Pattern: colon, space, marker, slash - marker is right before slash
+      // This is the bug case: regex (?<=[\S]) sees marker as non-whitespace
+      // and adds a space, but without marker the space already exists
+      const textWithMarker = `: ${markerChar}/ ,`
+      const textWithoutMarker = ": / ,"
+
+      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
+      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      // This test verifies the fix works - both should produce same result
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+
+    it("spacesAroundSlashes should be invariant with marker before slash followed by comma (no space after)", () => {
+      // Pattern from CI failure: "at : /," where element boundary is between space and slash
+      const textWithMarker = `at : ${markerChar}/,`
+      const textWithoutMarker = "at : /,"
+
+      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
+      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+
+    it("symbolTransform is invariant with colon-slash pattern", () => {
+      const textWithMarker = `: ${markerChar}/ ,`
+      const textWithoutMarker = ": / ,"
+
+      const transformedWithMarker = symbolTransform(textWithMarker, {
+        separator: markerChar,
+        includeArrows: false,
+      })
+      const transformedWithoutMarker = symbolTransform(textWithoutMarker, {
+        separator: markerChar,
+        includeArrows: false,
+      })
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+    })
+  })
+
   describe("Fractions", () => {
     it.each([
       ["<p>There are 1/2 left.</p>", '<p>There are <span class="fraction">1/2</span> left.</p>'],
@@ -348,11 +353,26 @@ describe("HTMLFormattingImprovement", () => {
       const processedHtml = timeTransform(input)
       expect(processedHtml).toBe(expected)
     })
+
+    it("timeTransform is marker-invariant with footnote followed by Am", () => {
+      // From CI failure: "<sup>15</sup> Am I" flattens to "15" + marker + " Am I"
+      // Both should transform to "15 a.m. I" for invariance
+      const textWithMarker = `15${markerChar} Am I`
+      const textWithoutMarker = "15 Am I"
+
+      const transformedWithMarker = timeTransform(textWithMarker)
+      const transformedWithoutMarker = timeTransform(textWithoutMarker)
+      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+      expect(strippedResult).toBe(transformedWithoutMarker)
+      expect(strippedResult).toBe("15 a.m. I")
+    })
   })
 
   describe("Mass transforms", () => {
+    // Note: !=, multiplication (5x1), and ellipsis (...) are now handled by punctilio's symbolTransform
+    // These tests cover site-specific transforms in massTransformText
     it.each([
-      ["There are 1 != 2 left.", "There are 1 ≠ 2 left."],
       ["The data are i.i.d.", "The data are IID"],
       ["The frappe", "The frappé"],
       ["The latte", "The latté"],
@@ -365,11 +385,8 @@ describe("HTMLFormattingImprovement", () => {
       ["Naively", "Naïvely"],
       ["Don't be naive", "Don't be naïve"],
       ["Dojo", "Dōjō"],
-      ["5x1", "5×1"],
       ["regex", "RegEx"],
       ["regexpressions", "regexpressions"],
-      ["Who are you...?", "Who are you…?"],
-      ["Who are you...what do you want?", "Who are you… what do you want?"],
       ["Chateau", "Château"],
       ["chateau", "château"],
       ["github", "GitHub"],
@@ -387,6 +404,7 @@ describe("HTMLFormattingImprovement", () => {
       ["WiFi", "Wi-Fi"],
       ["WI-FI", "Wi-Fi"],
       ["wiFi", "Wi-Fi"],
+      ["regexes", "RegExes"],
       ["Connect to the wi-fi network", "Connect to the Wi-Fi network"],
       ["The wi-fi is down", "The Wi-Fi is down"],
       ["My open-source", "My open source"],
@@ -395,6 +413,21 @@ describe("HTMLFormattingImprovement", () => {
       ["i.e., this is a test", "i.e. this is a test"],
       ["(e.g., this is a test)", "(e.g. this is a test)"],
       ["(i.e., this is a test)", "(i.e. this is a test)"],
+      // Test variations of e.g. and i.e. with marker-aware word boundaries
+      ["eg this is a test", "e.g. this is a test"],
+      ["ie this is a test", "i.e. this is a test"],
+      ["e.g this is a test", "e.g. this is a test"],
+      ["i.e this is a test", "i.e. this is a test"],
+      ["eg. this is a test", "e.g. this is a test"],
+      ["ie. this is a test", "i.e. this is a test"],
+      ["E.G., this is a test", "e.g. this is a test"],
+      ["I.E., this is a test", "i.e. this is a test"],
+      ["EG this is a test", "e.g. this is a test"],
+      ["IE this is a test", "i.e. this is a test"],
+      // Should not transform when not at word boundaries
+      ["egie", "egie"], // 'eg' in middle of word should not match
+      ["diet", "diet"], // 'ie' in middle of word should not match
+      ["piece", "piece"], // 'ie' in middle of word should not match
       ["macos", "macOS"],
       ["MacOS", "macOS"],
       ["MACOS", "macOS"],
@@ -404,30 +437,200 @@ describe("HTMLFormattingImprovement", () => {
       ["Gemini Pro 3", "Gemini 3 Pro"],
       ["Gemini Pro 3-shot", "Gemini Pro 3-shot"],
       ["Gemini Pro 2.5", "Gemini 2.5 Pro"],
+      // Model naming standardization
+      ["LLAMA-2", "Llama-2"],
+      ["LLAMA-3.1-70B", "Llama-3.1-70B"],
+      ["LLAMA-1", "Llama-1"],
+      ["Llama-2", "Llama-2"], // Already correct, no change
+      ["GPT-4-o", "GPT-4o"],
+      ["gpt-4-o", "GPT-4o"],
+      ["GPT-4o", "GPT-4o"], // Already correct, no change
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
     })
 
-    it.each([
-      ["I have 3x apples and 5x oranges.", "I have 3× apples and 5× oranges."],
-      ["The word 'box' should not be changed.", "The word 'box' should not be changed."],
-      ["-5x is negative.", "-5× is negative."], // Negative numbers
-      ["3.14x pi is fun.", "3.14× pi is fun."], // Decimals
-      ["5*5 area", "5×5 area"], // Asterisk
-      ["12345x is a big number.", "12345× is a big number."], // Large numbers
-      ["0.001x is small.", "0.001× is small."], // Small numbers
-      ["I have 2x apples and 1.5x oranges.", "I have 2× apples and 1.5× oranges."], // Combined cases
-      ["This is 3x larger.", "This is 3× larger."], // HTML context
-    ])("correctly handles '%s'", (input, expected) => {
-      const result = massTransformText(input)
-      expect(result).toBe(expected)
+    describe("Marker invariance for e.g. and i.e. transforms", () => {
+      // Test that the marker-aware word boundary patterns work correctly
+      // when markers are present between word characters
+      it("should be marker-invariant for 'e.g.' at start of text", () => {
+        const textWithMarker = `${markerChar}e.g. test`
+        const textWithoutMarker = "e.g. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should be marker-invariant for 'i.e.' at start of text", () => {
+        const textWithMarker = `${markerChar}i.e. test`
+        const textWithoutMarker = "i.e. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
+
+      it("should be marker-invariant for 'eg' followed by marker", () => {
+        const textWithMarker = `eg${markerChar} test`
+        const textWithoutMarker = "eg test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should be marker-invariant for 'ie.' followed by marker", () => {
+        // Test "ie." (with period) followed by marker
+        const textWithMarker = `ie.${markerChar} test`
+        const textWithoutMarker = "ie. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
+
+      it("should not transform 'eg' in middle of word with marker (e.g., 'regex')", () => {
+        const textWithMarker = `reg${markerChar}ex`
+        const textWithoutMarker = "regex"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(transformedWithoutMarker).toBe("RegEx")
+        expect(strippedResult).toBe("regex")
+      })
+
+      it("should not transform 'ie' in middle of word with marker (e.g., 'piece')", () => {
+        // Pattern: "p" + "ie" + marker + "ce" - marker between 'ie' and 'ce'
+        const textWithMarker = `pie${markerChar}ce`
+        const textWithoutMarker = "piece"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("piece")
+      })
+
+      it("should handle 'e.g.,' with marker between elements", () => {
+        // Simulates: "<em>e.g.</em>, test" which becomes "e.g." + marker + ", test"
+        const textWithMarker = `e.g.${markerChar}, test`
+        const textWithoutMarker = "e.g., test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should handle 'i.e.,' with marker between elements", () => {
+        // Simulates: "<em>i.e.</em>, test" which becomes "i.e." + marker + ", test"
+        const textWithMarker = `i.e.${markerChar}, test`
+        const textWithoutMarker = "i.e., test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
     })
 
-    it("doesn't replace 'x' in words", () => {
-      const input = "The word 'box' should not be changed."
-      const result = massTransformText(input)
-      expect(result).toBe(input) // No change expected
+    describe("HTML integration for e.g. and i.e.", () => {
+      it.each([
+        ["<p><em>eg</em> test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><em>e.g.</em>, test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><strong>ie</strong> test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p><strong>i.e.</strong>, test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p>(<em>eg</em> test)</p>", "<p>(<em>e.g.</em> test)</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+  })
+
+  describe("Punctilio symbolTransform integration (end-to-end HTML)", () => {
+    describe("Not equals", () => {
+      it.each([
+        ["<p>1 != 2</p>", "<p>1 ≠ 2</p>"],
+        ["<p>x!=y</p>", "<p>x≠y</p>"],
+        ["<p><code>a != b</code></p>", "<p><code>a != b</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Multiplication", () => {
+      it.each([
+        ["<p>5x1</p>", "<p>5×1</p>"],
+        ["<p>3 x 4</p>", "<p>3 × 4</p>"],
+        ["<p>2*3</p>", "<p>2×3</p>"],
+        ["<p>I have 3x apples</p>", "<p>I have 3× apples</p>"],
+        ["<p>-2 x 3 = -6</p>", "<p>−2 × 3 = −6</p>"],
+        ["<p>The word box should not change</p>", "<p>The word box should not change</p>"],
+        ["<p><code>5x5</code></p>", "<p><code>5x5</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Ellipsis", () => {
+      it.each([
+        ["<p>Wait...</p>", "<p>Wait…</p>"],
+        ["<p>What...?</p>", "<p>What…?</p>"],
+        ["<p>Hmm...well</p>", "<p>Hmm… well</p>"],
+        ["<p><code>...</code></p>", "<p><code>...</code></p>"], // Preserved in code
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Math symbols", () => {
+      it.each([
+        ["<p>+/-</p>", "<p>±</p>"],
+        ["<p>~=</p>", "<p>≈</p>"],
+        ["<p>>=</p>", "<p>≥</p>"],
+        ["<p><=</p>", "<p>≤</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
+    })
+
+    describe("Legal symbols", () => {
+      it.each([
+        ["<p>(c)</p>", "<p>©</p>"],
+        ["<p>(C)</p>", "<p>©</p>"],
+        ["<p>(r)</p>", "<p>®</p>"],
+        ["<p>(R)</p>", "<p>®</p>"],
+        ["<p>(tm)</p>", "<p>™</p>"],
+        ["<p>(TM)</p>", "<p>™</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
     })
   })
 
@@ -457,36 +660,6 @@ describe("HTMLFormattingImprovement", () => {
 
   describe("Hyphens", () => {
     it.each([
-      ["This is a - hyphen.", "This is a—hyphen."],
-      ["This is an — em dash.", "This is an—em dash."],
-      ["word — word", "word—word"],
-      ["word ---", "word—"],
-      ["word— word", "word—word"],
-      ["word —word", "word—word"],
-      ['"I love dogs." - Me', '"I love dogs." — Me'],
-      ["- Me", "— Me"], // Don't delete space after dash at the start of a line
-      ["-- Me", "— Me"],
-      ["Hi-- what do you think?", "Hi—what do you think?"],
-      [
-        "—such behaviors still have to be retrodicted",
-        "—such behaviors still have to be retrodicted",
-      ], // Don't delete space after dash at the start of a line
-      ["\n---\n", "\n---\n"], // Retain horizontal rules
-      ["emphasis” —", "emphasis”—"], // small quotations should not retain space
-      ["- First level\n - Second level", "— First level\n - Second level"], // Don't replace hyphens in lists, first is ok
-      ["> - First level", "> - First level"], // Quoted unordered lists should not be changed
-      [
-        "reward… — [Model-based RL, Desires, Brains, Wireheading](https://www.alignmentforum.org/posts/K5ikTdaNymfWXQHFb/model-based-rl-desires-brains-wireheading#Self_aware_desires_1__wireheading)",
-        "reward… — [Model-based RL, Desires, Brains, Wireheading](https://www.alignmentforum.org/posts/K5ikTdaNymfWXQHFb/model-based-rl-desires-brains-wireheading#Self_aware_desires_1__wireheading)",
-      ], // Don't condense em dashes right after ellipses
-      ["a browser- or OS-specific fashion", "a browser- or OS-specific fashion"], // Retain hyphen in compound words
-      ["since--as you know", "since—as you know"], // Replace double+ hyphens in words with em dash
-    ])('should replace hyphens in "%s"', (input, expected) => {
-      const result = hyphenReplace(input)
-      expect(result).toBe(expected)
-    })
-
-    it.each([
       ["<code>This is a - hyphen.</code>", "<code>This is a - hyphen.</code>"],
       ["<p>I think that -<em> despite</em></p>", "<p>I think that—<em>despite</em></p>"],
       [
@@ -508,36 +681,6 @@ describe("HTMLFormattingImprovement", () => {
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
-    })
-
-    test("replaces multiple dashes within words", () => {
-      expect(hyphenReplace("Since--as you know")).toBe("Since—as you know")
-      expect(hyphenReplace("word---another")).toBe("word—another")
-    })
-
-    test("handles dashes at the start of a line", () => {
-      expect(hyphenReplace("- This is a list item")).toBe("— This is a list item")
-      expect(hyphenReplace("--- Indented list item")).toBe("— Indented list item")
-      expect(hyphenReplace("Line 1\n- Line 2")).toBe("Line 1\n— Line 2")
-    })
-
-    test("removes spaces around em dashes", () => {
-      expect(hyphenReplace("word — another")).toBe("word—another")
-      expect(hyphenReplace("word—  another")).toBe("word—another")
-      expect(hyphenReplace("word  —another")).toBe("word—another")
-    })
-
-    test("handles em dashes at the start of a line", () => {
-      expect(hyphenReplace("—Start of line")).toBe("— Start of line")
-      expect(hyphenReplace("Line 1\n—Line 2")).toBe("Line 1\n— Line 2")
-      expect(hyphenReplace("— Already correct")).toBe("— Already correct")
-    })
-
-    test("converts number ranges to en dashes", () => {
-      expect(hyphenReplace("Pages 1-5")).toBe("Pages 1–5")
-      expect(hyphenReplace("2000-2020")).toBe("2000–2020")
-      expect(hyphenReplace("2018-2021. Then 1-3")).toBe("2018–2021. Then 1–3")
-      expect(hyphenReplace("p.10-15")).toBe("p.10–15")
     })
   })
   describe("transformParagraph", () => {
@@ -585,13 +728,6 @@ describe("HTMLFormattingImprovement", () => {
       ["$1.50-$3.50", "$1.50–$3.50"], // Dollar amounts with decimals
       ["$1-3", "$1–3"], // Dollar amounts with single digit
     ]
-    it.each([...testCases, ["1 - 2", "1 - 2"]])(
-      'should replace hyphens with en dashes in number ranges: "%s"',
-      (input, expected) => {
-        const result = enDashNumberRange(input)
-        expect(result).toBe(expected)
-      },
-    )
 
     it.each(testCases)(
       "should replace hyphens with en dashes in number ranges: %s (end-to-end)",
@@ -663,7 +799,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com">Link</a>",</p>',
-      '<p><a href="https://example.com">Link”,</a></p>',
+      `<p><a href="https://example.com">Link,${RIGHT_DOUBLE_QUOTE}</a></p>`,
     ],
     [
       '<p><a href="https://example.com">Link</a>" k</p>',
@@ -1126,19 +1262,6 @@ describe("removeSpaceBeforeSup", () => {
 })
 
 describe("minusReplace", () => {
-  it.each([
-    ["The temperature is -5 degrees.", "The temperature is −5 degrees."],
-    ["This is a well-known fact.", "This is a well-known fact."],
-    ["The value is -3.14.", "The value is −3.14."],
-    ["The value is - 3.", "The value is − 3."],
-    ["Values are -1, -2, and -3.", "Values are −1, −2, and −3."],
-    ["Use the -option flag.", "Use the -option flag."],
-    ["(-3)", "(−3)"],
-    ['"-3', '"−3'],
-  ])("transforms '%s' to '%s'", (input, expected) => {
-    expect(minusReplace(input)).toBe(expected)
-  })
-
   // Test ${chr} handling
   const tableBefore =
     '<table><thead><tr><th style="text-align:right;">Before</th><th style="text-align:left;">After</th></tr></thead><tbody><tr><td style="text-align:right;"><span class="no-formatting">-2 x 3 = -6</span></td><td style="text-align:left;">-2 x 3 = -6</td></tr></tbody></table>'
@@ -1262,39 +1385,68 @@ describe("Skip Formatting", () => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
   })
+
+  describe("Footnote references", () => {
+    // Footnote refs have data-footnote-ref attribute; their number text shouldn't be transformed
+    // Note: rehype serializes boolean attributes as `data-footnote-ref=""`
+    it.each([
+      [
+        "skip text inside footnote reference elements",
+        '<p>Some text<sup><a href="#fn-1" data-footnote-ref>15</a></sup> Am I right?</p>',
+        '<p>Some text<sup><a href="#fn-1" data-footnote-ref="">15</a></sup> Am I right?</p>',
+      ],
+      [
+        "not transform footnote ref number into time pattern",
+        // This is the specific bug case: "15" + " Am I" should NOT become "15 a.m. I"
+        "<p><sup><a data-footnote-ref>15</a></sup> Am I correct?</p>",
+        '<p><sup><a data-footnote-ref="">15</a></sup> Am I correct?</p>',
+      ],
+      [
+        "still transform text outside footnote refs normally",
+        '<p>Meet at 3 PM<sup><a href="#fn-1" data-footnote-ref>1</a></sup> for coffee.</p>',
+        '<p>Meet at 3 p.m.<sup><a href="#fn-1" data-footnote-ref="">1</a></sup> for coffee.</p>',
+      ],
+      [
+        "handle multiple footnote refs in same paragraph",
+        "<p>First<sup><a data-footnote-ref>1</a></sup> and second<sup><a data-footnote-ref>2</a></sup>.</p>",
+        // Note: punctuation gets moved into the second link due to rearrangeLinkPunctuation
+        '<p>First<sup><a data-footnote-ref="">1</a></sup> and second<sup><a data-footnote-ref="">2.</a></sup></p>',
+      ],
+    ])("should %s", (_description, input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
+  })
+
+  describe("toSkip function", () => {
+    it.each(SKIP_TAGS)("should skip <%s> elements", (tagName) => {
+      const element = h(tagName, {}, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it.each(SKIP_CLASSES)("should skip elements with class '%s'", (className) => {
+      const element = h("p", { className }, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it("should not skip <svg> elements (removed from skip list)", () => {
+      const element = h("svg", {}, []) as Element
+      expect(toSkip(element)).toBe(false)
+    })
+
+    it("should skip elements with data-footnote-ref attribute", () => {
+      const element = h("a", { dataFootnoteRef: true }, []) as Element
+      expect(toSkip(element)).toBe(true)
+    })
+
+    it("should return false for non-element nodes", () => {
+      const textNode = { type: "text", value: "hello" } as unknown as Element
+      expect(toSkip(textNode)).toBe(false)
+    })
+  })
 })
 
 describe("Date Range", () => {
-  it.each([
-    ["Jan-Mar", "Jan–Mar"],
-    ["January-March", "January–March"],
-    ["Aug-Dec", "Aug–Dec"],
-    ["February-April", "February–April"],
-    ["May-September", "May–September"],
-    ["Oct-Dec 2023", "Oct–Dec 2023"],
-    ["January-December", "January–December"],
-    // Test cases that should not be modified
-    ["Pre-existing", "Pre-existing"],
-    ["non-month", "non-month"],
-    ["May-be", "May-be"],
-    ["March-ing", "March-ing"],
-  ])('should handle date ranges in "%s"', (input, expected) => {
-    const result = enDashDateRange(input)
-    expect(result).toBe(expected)
-  })
-
-  it("should handle multiple date ranges in text", () => {
-    const input = "Period Jan-Mar and Jul-Sep showed growth"
-    const expected = "Period Jan–Mar and Jul–Sep showed growth"
-    expect(enDashDateRange(input)).toBe(expected)
-  })
-
-  it("should preserve surrounding text", () => {
-    const input = "The Jan-Mar quarter (Q1)"
-    const expected = "The Jan–Mar quarter (Q1)"
-    expect(enDashDateRange(input)).toBe(expected)
-  })
-
   it("should handle end-to-end HTML formatting", () => {
     const input = "<p>Revenue from Jan-Mar exceeded Apr-Jun.</p>"
     const expected = "<p>Revenue from Jan–Mar exceeded Apr–Jun.</p>"
@@ -1613,6 +1765,25 @@ describe("replaceFractions", () => {
 
     // Verify the transformation actually happened
     expect(result).not.toBe(originalTextContent)
+  })
+
+  describe("FRACTION_SKIP_TAGS", () => {
+    it.each(FRACTION_SKIP_TAGS)("should not convert fractions inside <%s> elements", (tagName) => {
+      // Skip 'a' tag test here since it needs href, test separately
+      if (tagName === "a") return
+
+      const input = `<${tagName}>1/2</${tagName}>`
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(input)
+    })
+
+    it("should not convert fractions inside <a> elements (to preserve URLs)", () => {
+      const input = '<a href="https://example.com/page/1/2">link with 1/2</a>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      // Should NOT convert the 1/2 to a fraction
+      expect(processedHtml).not.toContain('<span class="fraction">')
+      expect(processedHtml).toContain("1/2")
+    })
   })
 })
 

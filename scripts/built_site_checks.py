@@ -146,8 +146,13 @@ def check_top_level_paragraphs_end_with_punctuation(
     for article in soup.find_all("article"):
         paragraphs = article.find_all("p", recursive=False)
         for p in paragraphs:
-            if not isinstance(p, Tag) or "subtitle" in script_utils.get_classes(
-                p
+            if not isinstance(p, Tag):
+                continue
+            classes = script_utils.get_classes(p)
+            if (
+                "subtitle" in classes
+                or "page-listing-title" in classes
+                or p.find(class_="transclude")
             ):
                 continue
 
@@ -624,6 +629,40 @@ def check_asset_references(
         check_asset(str(script["src"]))
 
     return missing_assets
+
+
+def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all images have explicit width and height attributes.
+
+    This prevents layout shift and catches cases where sizing is missing
+    (e.g., inline favicons that render at their natural large size).
+
+    Returns:
+        list of image descriptions missing width/height attributes
+    """
+    issues: list[str] = []
+
+    for img in _tags_only(soup.find_all("img")):
+        width = img.get("width")
+        height = img.get("height")
+
+        if not width or not height:
+            src = img.get("src", "unknown")
+            # Truncate long URLs for readability
+            src_str = str(src)
+            if len(src_str) > 80:
+                src_str = src_str[:40] + "..." + src_str[-37:]
+
+            missing = []
+            if not width:
+                missing.append("width")
+            if not height:
+                missing.append("height")
+
+            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
 
 
 def check_katex_elements_for_errors(soup: BeautifulSoup) -> list[str]:
@@ -1123,6 +1162,29 @@ def _check_populate_commit_count(
     return issues
 
 
+_SELF_CONTAINED_ELEMENTS = frozenset(
+    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+)
+
+
+def _has_content(element: Tag) -> bool:
+    """
+    Check if an element has meaningful content.
+
+    An element is considered to have content if it has:
+    - Non-whitespace text content, OR
+    - Self-contained media/visual elements (svg, img, video, etc.)
+      that don't require text content to be meaningful
+
+    Note: Structural elements like ul, div, span without text or media
+    are still considered empty, as they need their own content.
+    """
+    if element.get_text(strip=True):
+        return True
+    # Recursively check for self-contained elements (svg, img, video, etc.)
+    return element.find(_SELF_CONTAINED_ELEMENTS) is not None
+
+
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     """Check for issues with elements whose IDs or classes start with
     `populate-`."""
@@ -1135,7 +1197,7 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
         if (
             isinstance(element_id, str)
             and element_id.startswith("populate-")
-            and not element.get_text(strip=True)
+            and not _has_content(element)
         ):
             _append_to_list(
                 issues, f"<{element.name}> with id='{element_id}' is empty"
@@ -1144,8 +1206,8 @@ def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
         element_classes = element.get("class")
         if isinstance(element_classes, list):
             for class_name in element_classes:
-                if class_name.startswith("populate-") and not element.get_text(
-                    strip=True
+                if class_name.startswith("populate-") and not _has_content(
+                    element
                 ):
                     _append_to_list(
                         issues,
@@ -1388,6 +1450,7 @@ def check_file_for_issues(
         "html_tags_in_text": check_html_tags_in_text(soup),
         "unrendered_transclusions": check_unrendered_transclusions(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
+        "images_missing_dimensions": check_images_have_dimensions(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),

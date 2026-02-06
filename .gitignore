@@ -60,3 +60,4 @@ scripts/*.json
 
 # AI 
 AGENTS.md
+.venv/

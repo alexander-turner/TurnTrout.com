@@ -1,6 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
+import { niceQuotes, hyphenReplace, symbolTransform } from "punctilio"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -10,7 +11,6 @@ import { type QuartzTransformerPlugin } from "../types"
 import {
   replaceRegex,
   fractionRegex,
-  numberRegex,
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
@@ -21,6 +21,23 @@ import {
  * @module HTMLFormattingImprovement
  * A plugin that improves text formatting in HTML content by applying various typographic enhancements
  */
+
+/**
+ * Tags that should be skipped during text transformation.
+ * Content inside these elements won't have formatting improvements applied.
+ */
+export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+
+/**
+ * Tags that should be skipped during fraction replacement.
+ * Includes SKIP_TAGS plus "a" (links) to avoid breaking URLs.
+ */
+export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as const
+
+/**
+ * CSS classes that indicate content should skip formatting.
+ */
+export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
 
 /**
  * Flattens text nodes in an element tree into a single array
@@ -90,7 +107,25 @@ export function assertSmartQuotesMatch(input: string): void {
 }
 
 export const markerChar = "\uE000"
-const chr = markerChar
+
+/**
+ * Marker-aware word boundary patterns.
+ * Regular \b matches at word/non-word transitions, but markers (non-word chars)
+ * can create false boundaries between text that should be connected.
+ *
+ * Example: "xReLU" has no word boundary before 'R', but "x\uE000ReLU" (with marker)
+ * would have a false boundary. These patterns reject boundaries caused by markers.
+ *
+ * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
+ * A "false" end boundary: word_char + marker(s) + word_char (same pattern)
+ *
+ * wb: word boundary, reject if preceded by (word char + markers)
+ * wbe: word boundary, reject if followed by (markers + word char)
+ */
+// Start of word: word boundary, not preceded by word+marker(s) pattern
+const wb = `(?<!\\w${markerChar}*)\\b`
+// End of word: word boundary, not followed by marker(s)+word pattern
+const wbe = `\\b(?!${markerChar}*\\w)`
 /* Sometimes I want to transform the text content of a paragraph (e.g.
 by adding smart quotes). But that paragraph might contain multiple child
 elements. If I transform each of the child elements individually, the
@@ -140,6 +175,11 @@ export function transformElement(
   const transformedFragments = transformedContent.split(markerChar).slice(0, -1)
 
   if (transformedFragments.length !== textNodes.length) {
+    console.error("Text node count mismatch debug info:")
+    console.error("  Before:", JSON.stringify(markedContent))
+    console.error("  After:", JSON.stringify(transformedContent))
+    console.error("  Expected fragments:", textNodes.length)
+    console.error("  Actual fragments:", transformedFragments.length)
     throw new Error("Transformation altered the number of text nodes")
   }
 
@@ -148,12 +188,20 @@ export function transformElement(
   })
 
   if (checkTransformInvariance) {
-    const strippedContent = markedContent.replace(markerChar, "")
-    const strippedTransformed = transformedContent.replace(markerChar, "")
+    const strippedContent = markedContent.replaceAll(markerChar, "")
+    const strippedTransformed = transformedContent.replaceAll(markerChar, "")
     const expected = transform(strippedContent)
 
     // istanbul ignore next
     if (expected !== strippedTransformed) {
+      console.error("Transform invariance check failed!")
+      console.error("=== Original (with markers) ===")
+      console.error(JSON.stringify(markedContent))
+      console.error("=== Expected (transform on stripped) ===")
+      console.error(JSON.stringify(expected))
+      console.error("=== Actual (stripped after transform) ===")
+      console.error(JSON.stringify(strippedTransformed))
+      console.error("=== END ===")
       throw new Error(
         `Transform invariance check failed: expected "${expected}" but got "${strippedTransformed}"`,
       )
@@ -162,102 +210,42 @@ export function transformElement(
 }
 
 /**
- * Converts standard quotes to typographic smart quotes
- */
-export function niceQuotes(text: string): string {
-  // Single quotes //
-  // Ending comes first so as to not mess with the open quote
-  const afterEndingSinglePatterns = '\\s\\.!?;,\\)—\\-\\]"'
-  const afterEndingSingle = `(?=${chr}?(?:s${chr}?)?(?:[${afterEndingSinglePatterns}]|$))`
-  const endingSingle = `(?<=[^\\s“'])[']${afterEndingSingle}`
-  text = text.replace(new RegExp(endingSingle, "gm"), "’")
-
-  // Contractions are sandwiched between two letters
-  const contraction = `(?<=[A-Za-z])['’](?=${chr}?[a-zA-Z])`
-  text = text.replace(new RegExp(contraction, "gm"), "’")
-
-  // Apostrophes always point down
-  //  Whitelist for eg rock 'n' roll
-  const apostropheWhitelist = "(?=n’ )"
-  const endQuoteNotContraction = `(?!${contraction})’${afterEndingSingle}`
-  //  Convert to apostrophe if not followed by an end quote
-  const apostropheRegex = new RegExp(
-    `(?<=^|[^\\w])'(${apostropheWhitelist}|(?![^‘'\\n]*${endQuoteNotContraction}))`,
-    "gm",
-  )
-  text = text.replace(apostropheRegex, "’")
-
-  // Beginning single quotes
-  const beginningSingle = `((?:^|[\\s“"\\-\\(])${chr}?)['](?=${chr}?\\S)`
-  text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘")
-
-  // Double quotes //
-  const beginningDouble = new RegExp(
-    `(?<=^|[\\s\\(\\/\\[\\{\\-—${chr}])(?<beforeChr>${chr}?)["](?<afterChr>(${chr}[ .,])|(?=${chr}?\\.{3}|${chr}?[^\\s\\)\\—,!?${chr};:.\\}]))`,
-    "gm",
-  )
-  text = text.replace(beginningDouble, "$<beforeChr>“$<afterChr>")
-
-  // Open quote after brace (generally in math mode)
-  text = text.replace(new RegExp(`(?<=\\{)(${chr}? )?["]`, "g"), "$1“")
-
-  // note: Allowing 2 chrs in a row
-  const endingDouble = `([^\\s\\(])["](${chr}?)(?=${chr}|[\\s/\\).,;—:\\-\\}!?s]|$)`
-  text = text.replace(new RegExp(endingDouble, "g"), "$1”$2")
-
-  // If end of line, replace with right double quote
-  text = text.replace(new RegExp(`["](${chr}?)$`, "g"), "”$1")
-  // If single quote has a right double quote after it, replace with right single and then double
-  text = text.replace(/'(?=”)/gu, "’")
-
-  // Punctuation //
-  // Periods inside quotes
-  const periodRegex = new RegExp(`(?<![!?:\\.…])(${chr}?)([’”])(${chr}?)(?!\\.\\.\\.)\\.`, "g")
-  text = text.replace(periodRegex, "$1.$2$3")
-
-  // Commas outside of quotes
-  const commaRegex = new RegExp(`(?<![!?]),(${chr}?[”’])`, "g")
-  text = text.replace(commaRegex, "$1,")
-
-  return text
-}
-
-/**
  * Space out slashes in text
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // Use a private-use Unicode character as placeholder
-  const h_t_placeholder_char = "\uE010"
+  // Use a private-use Unicode character as placeholder for "h/t" (hat tip)
+  const hatTipPlaceholder = "\uE010"
 
   // First replace h/t with the placeholder character
-  text = text.replace(/\b(h\/t)\b/g, h_t_placeholder_char)
+  text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
   // Can't allow num on both sides, because it'll mess up fractions
-  const slashRegex = /(?<![\d/<])(?<=[\S]) ?\/ ?(?=\S)(?!\/)/g
-  text = text.replace(slashRegex, " / ")
+  // Use function replacement to preserve markers while avoiding double spaces
+  // Markers go OUTSIDE the spaces so content stays in correct HTML elements
+  const slashRegex =
+    /(?<![\d/<])(?<=[\S])(?<spaceBefore> ?)(?<markerBefore>\uE000)?\/(?<markerAfter>\uE000)?(?<spaceAfter> ?)(?=\S)(?!\/)/gu
+  text = text.replace(slashRegex, (...args) => {
+    const groups = args.at(-1) as {
+      spaceBefore: string
+      markerBefore: string | undefined
+      markerAfter: string | undefined
+      spaceAfter: string
+    }
+    const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
+    // Add space only if not already present
+    // Place markers outside spaces: marker-space-slash-space-marker
+    const pre = spaceBefore || " "
+    const post = spaceAfter || " "
+    return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
+  })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
   text = text.replace(numberSlashThenNonNumber, " / ")
 
   // Restore the h/t occurrences
-  return text.replace(new RegExp(h_t_placeholder_char, "g"), "h/t")
-}
-
-/**
- * Replaces hyphens with en dashes in number ranges
- *  Number ranges should use en dashes, not hyphens.
- *  Allows for page numbers in the form "p.206-207" or "$100-$200"
- */
-export function enDashNumberRange(text: string): string {
-  return text.replace(
-    new RegExp(
-      `\\b(?<![a-zA-Z.])((?:p\\.?|\\$)?\\d[\\d.,]*${chr}?)-(${chr}?\\$?\\d[\\d.,]*)(?!\\.\\d)\\b`,
-      "g",
-    ),
-    "$1–$2",
-  )
+  return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
@@ -274,105 +262,14 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
   })
 }
 
-/**
- * Replaces various dash types with appropriate alternatives
- * @returns The text with improved dash usage
- */
-export function hyphenReplace(text: string) {
-  text = minusReplace(text)
-
-  // Handle dashes with potential spaces and optional marker character
-  //  Being right after chr is a sufficient condition for being an em
-  //  dash, as it indicates the start of a new line
-  const preDash = new RegExp(`((?<markerBeforeTwo>${chr}?)[ ]+|(?<markerBeforeThree>${chr}))`)
-  // Want eg " - " to be replaced with "—"
-  const surroundedDash = new RegExp(
-    `(?<=[^\\s>]|^)${preDash.source}[~–—-]+[ ]*(?<markerAfter>${chr}?)([ ]+|$)`,
-    "g",
-  )
-
-  // Replace surrounded dashes with em dash
-  text = text.replace(surroundedDash, "$<markerBeforeTwo>$<markerBeforeThree>—$<markerAfter>")
-
-  // "Since--as you know" should be "Since—as you know"
-  const multipleDashInWords = new RegExp(
-    `(?<=[A-Za-z\\d])(?<markerBefore>${chr}?)[~–—-]{2,}(?<markerAfter>${chr}?)(?=[A-Za-z\\d ])`,
-    "g",
-  )
-  text = text.replace(multipleDashInWords, "$<markerBefore>—$<markerAfter>")
-
-  // Handle dashes at the start of a line
-  text = text.replace(new RegExp(`^(${chr})?[-]+ `, "gm"), "$1— ")
-
-  // Create a regex for spaces around em dashes, allowing for optional spaces around the em dash
-  const spacesAroundEM = new RegExp(
-    `(?<markerBefore>${chr}?)[ ]*—[ ]*(?<markerAfter>${chr}?)[ ]*`,
-    "g",
-  )
-  // Remove spaces around em dashes
-  text = text.replace(spacesAroundEM, "$<markerBefore>—$<markerAfter>")
-
-  // Handle special case after quotation marks
-  const postQuote = new RegExp(`(?<quote>[.!?]${chr}?['"’”]${chr}?|…)${spacesAroundEM.source}`, "g")
-  text = text.replace(postQuote, "$<quote> $<markerBefore>—$<markerAfter> ")
-
-  // Handle em dashes at the start of a line
-  const startOfLine = new RegExp(`^${spacesAroundEM.source}(?<after>[A-Z0-9])`, "gm")
-  text = text.replace(startOfLine, "$<markerBefore>—$<markerAfter> $<after>")
-
-  text = enDashNumberRange(text)
-  text = enDashDateRange(text)
-
-  return text
-}
-
-const minusRegex = new RegExp(`(^|[\\s\\(${chr}"“])-(\\s?\\d*\\.?\\d+)`, "gm")
-/**
- * Replaces hyphens with minus signs in numerical contexts
- */
-export function minusReplace(text: string): string {
-  return text.replaceAll(minusRegex, "$1−$2")
-}
-
-export const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-].join("|")
-
-/**
- * Replaces hyphens with en dashes in month ranges
- * Handles abbreviated and full month names. Included in hyphenReplace()
- * @returns The text with en dashes in month ranges
- */
-export function enDashDateRange(text: string): string {
-  return text.replace(new RegExp(`\\b(${months}${chr}?)-(${chr}?(?:${months}))\\b`, "g"), "$1–$2")
-}
-
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance
-const uncheckedTextTransformers = [hyphenReplace, niceQuotes]
+const uncheckedTextTransformers = [
+  (text: string) => hyphenReplace(text, { separator: markerChar }),
+  (text: string) => niceQuotes(text, { separator: markerChar }),
+  // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
+  (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
+]
 
 // Check for invariance
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
@@ -400,7 +297,7 @@ export function isCode(node: Element): boolean {
   return node.tagName === "code"
 }
 
-export const l_pRegex = /(\s|^)L(\d+)\b(?!\.)/g
+export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -424,7 +321,7 @@ export function formatLNumbers(tree: Root): void {
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match[1] })
+      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -434,7 +331,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match[2] }],
+        children: [{ type: "text", value: match.groups?.number ?? "" }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -495,7 +392,7 @@ export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "�
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowRegex = new RegExp(`(${arrowsToWrap.join("|")})`, "g")
+  const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -727,6 +624,24 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
+/**
+ * Normalizes "e.g." and "i.e." abbreviations to standard format.
+ * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
+ */
+export function normalizeAbbreviations(text: string): string {
+  // Pattern: word-start + "e" + optional "." + "g" + optional trailing "." +
+  // optional marker (captured) + optional comma with optional marker (captured)
+  // Must be followed by word boundary, space, marker, or end of string
+  const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
+  const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
+  const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
+
+  text = text.replace(new RegExp(egPattern, "gi"), "e.g.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(new RegExp(iePattern, "gi"), "i.e.$<abbrevMarker>$<commaMarker>")
+
+  return text
+}
+
 export function plusToAmpersand(text: string): string {
   const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
   const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
@@ -734,8 +649,9 @@ export function plusToAmpersand(text: string): string {
 }
 
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
-//  At the end, watch out for double periods
-const amPmRegex = /(?<=\d ?)(?<time>[AP])(?:\.M\.|M)\.?/gi
+// At the end, watch out for double periods
+// Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
+const amPmRegex = new RegExp(`(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`, "gi")
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
     const groups = args[args.length - 1] as { time: string }
@@ -744,41 +660,39 @@ export function timeTransform(text: string): string {
   return text.replace(amPmRegex, matchFunction)
 }
 
-const massTransforms: [RegExp | string, string][] = [
+// Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
+// Use marker-aware word boundaries (wb/wbe) to prevent markers from creating false word boundaries
+const massTransforms: [RegExp, string][] = [
   [/\u00A0/gu, " "], // Replace non-breaking spaces
-  [/!=/g, "≠"],
-  [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
-  [/\b([Ff])rappe\b/g, "$1rappé"],
-  [/\b([Ll])atte\b/g, "$1atté"],
-  [/\b([Cc])liche\b/g, "$1liché"],
-  [/(?<=[Aa]n |[Tt]he )\b([Ee])xpose\b/g, "$1xposé"],
-  [/wi-?fi/gi, "Wi-Fi"], // "wi-fi" to "Wi-Fi"
-  [/\b([Dd])eja vu\b/g, "$1éjà vu"],
-  [/\bgithub\b/gi, "GitHub"],
-  [/(?<=\b| )([Vv])oila(?=\b|$)/g, "$1oilà"],
-  [/\b([Nn])aive/g, "$1aïve"],
-  [/\b([Cc])hateau\b/g, "$1hâteau"],
-  [/\b([Dd])ojo/g, "$1ōjō"],
-  [/\bregex\b/gi, "RegEx"],
-  [/\brelu\b/gi, "RELU"],
-  [`(${numberRegex.source})[x\\*]\\b`, "$1×"], // Pretty multiplier
-  [/\b(\d+ ?)x( ?\d+)\b/g, "$1×$2"], // Multiplication sign
-  [/\.{3}/g, "…"], // Ellipsis
-  [/…(?=\w)/gu, "… "], // Space after ellipsis
-  [/\b([Oo])pen-source\b/g, "$1pen source"],
-  [/\bmarkdown\b/g, "Markdown"],
-  [/e\.g\.,/g, "e.g."],
-  [/i\.e\.,/g, "i.e."],
+  [new RegExp(`${wb}(?:i\\.i\\.d\\.|iid)`, "gi"), "IID"],
+  [new RegExp(`${wb}(?<letter>[Ff])rappe${wbe}`, "g"), "$<letter>rappé"],
+  [new RegExp(`${wb}(?<letter>[Ll])atte${wbe}`, "g"), "$<letter>atté"],
+  [new RegExp(`${wb}(?<letter>[Cc])liche${wbe}`, "g"), "$<letter>liché"],
+  [new RegExp(`(?<=[Aa]n |[Tt]he )${wb}(?<letter>[Ee])xpose${wbe}`, "g"), "$<letter>xposé"],
+  [/wi-?fi/gi, "Wi-Fi"],
+  [new RegExp(`${wb}(?<letter>[Dd])eja vu${wbe}`, "g"), "$<letter>éjà vu"],
+  [new RegExp(`${wb}github${wbe}`, "gi"), "GitHub"],
+  [new RegExp(`(?<=${wb}| )(?<letter>[Vv])oila(?=${wbe}|$)`, "g"), "$<letter>oilà"],
+  [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
+  [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
+  [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
+  [new RegExp(`${wb}regex(?<plural>e?s)?${wbe}`, "gi"), "RegEx$<plural>"],
+  [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
+  [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
+  [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
-  [/Gemini (\w+) (\d(?:\.\d)?)(?!-)/g, "Gemini $2 $1"],
+  [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
+  // Model naming standardization
+  [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
+  [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
 ]
 
 export function massTransformText(text: string): string {
-  for (const [pattern, replacement] of massTransforms) {
-    const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")
+  for (const [regex, replacement] of massTransforms) {
     text = text.replace(regex, replacement)
   }
+  text = normalizeAbbreviations(text)
   return text
 }
 
@@ -835,12 +749,12 @@ export function setFirstLetterAttribute(tree: Root): void {
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
-    const skipTag = ["code", "script", "style", "pre"].includes(elementNode.tagName)
-    const skipClass = ["no-formatting", "elvish", "bad-handwriting"].some((cls) =>
-      hasClass(elementNode, cls),
-    )
+    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
+    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
+    // Skip footnote references - their number text shouldn't be transformed
+    const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
 
-    return skipTag || skipClass
+    return skipTag || skipClass || isFootnoteRef
   }
   return false
 }
@@ -850,7 +764,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
     hasAncestor(
       parent as Element,
       (ancestor) =>
-        ["code", "pre", "a", "script", "style"].includes(ancestor.tagName) ||
+        (FRACTION_SKIP_TAGS as readonly string[]).includes(ancestor.tagName) ||
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||

@@ -1,0 +1,52 @@
+name: Python linting
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  python-lint:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Run mypy
+        run: |
+          uv run python -m mypy \
+            --config-file config/python/mypy.ini \
+            scripts/*.py
+
+      - name: Run docformatter check
+        run: |
+          uv run python -m docformatter \
+            --check \
+            --config config/python/pyproject.toml \
+            scripts/*.py
+
+      - name: Run pylint
+        run: |
+          uv run python -m pylint \
+            --rcfile config/python/.pylintrc \
+            .

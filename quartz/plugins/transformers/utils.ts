@@ -4,18 +4,18 @@ import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
 
 export const urlRegex = new RegExp(
-  /(https?:\/\/)(?<domain>([\da-z.-]+\.)+)(?<path>[/?=\w.-]+(\([\w.\-,() ]*\))?)(?=\))/g,
+  /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z.-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
 )
 
 const linkText = /\[(?<linkText>[^\]]+)\]/
 const linkURL = /\((?<linkURL>[^#].*?)\)/ // Ignore internal links, capture as little as possible
 export const mdLinkRegex = new RegExp(linkText.source + linkURL.source, "g")
 
-export const integerRegex = /\d{1,3}(,?\d{3})*/u
-export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(\\.\\d+)?`, "u")
+export const integerRegex = /\d{1,3}(?:,?\d{3})*/u
+export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(?:\\.\\d+)?`, "u")
 
 // A fraction is a digit followed by a slash and another digit
-const ordinalSuffixes = /(st|nd|rd|th)/
+const ordinalSuffixes = /(?:st|nd|rd|th)/
 export const fractionRegex = new RegExp(
   `(?<![\\w/\\.]|${numberRegex.source})(?!9/11)(?<numerator>${integerRegex.source})\\/(?<denominator>${integerRegex.source})(?<ordinal>${ordinalSuffixes.source})?(?!${numberRegex.source}|\\d)(?![\\w/])`,
   "gm",

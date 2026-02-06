@@ -22,6 +22,101 @@ date_updated: 2025-12-18 09:42:00.251916
 
 
 
+# Punctilio for meticulous typography
+
+Subtitle: Install with `npm install punctilio`.
+
+> *punctilio* (n.): precise observance of formalities.
+
+The best typography package for English.
+
+```typescript
+import { transform } from 'punctilio'
+
+transform('"It\'s a beautiful thing, the destruction of words..." -- 1984')
+// → “It’s a beautiful thing, the destruction of words…” — 1984
+```
+
+## Why punctilio?
+
+As far as I can tell, `punctilio` is the most reliable and feature-complete. I originally built `punctilio`'s logic for `TurnTrout.com`. I wrote and sharpened the core regexes sporadically over several months, exhaustively testing edge cases. Eventually, I decided to spin off the functionality into its own package.
+
+I tested `punctilio` 0.4 against [`smartypants`](https://www.npmjs.com/package/smartypants) 0.2.2, [`tipograph`](https://www.npmjs.com/package/tipograph) 0.7.4, and [`smartquotes`](https://www.npmjs.com/package/smartquotes) 2.3.2.[^python] These other packages have spotty feature coverage and inconsistent impact on text. For example, `smartypants` mishandles quotes after em dashes (though quite hard to see in GitHub's font) and lacks multiplication sign support.
+
+[^python]: The Python typography libraries I found were closely related to the JavaScript packages, so I don’t include Python tests.
+
+| Input | `smartypants` | `punctilio` |
+|:-----:|:-----------------:|:-------:|
+| <span class="no-formatting">She said--"Hi!"</span> | <span class="no-formatting">She said—”Hi!” (✗)</span> | <span class="no-formatting">She said—“Hi!” (✓)</span> |
+| <span class="no-formatting">5x5</span> | <span class="no-formatting">5x5 (✗)</span> | <span class="no-formatting">5×5 (✓)</span> |
+
+
+
+I basically graded all libraries on a subset of [my unit tests](https://github.com/alexander-turner/punctilio/tree/main/src/tests), selected to represent a wide range of features.
+
+| Package | Score |
+|--------:|:------|
+| `punctilio` | 79/82 (96%) |
+| `tipograph` | 48/82 (59%) |
+| `smartquotes` | 30/82 (37%) |
+| `smartypants` | 28/82 (35%) |
+
+| Feature | Example | `smartypants` | `tipograph` | `smartquotes` | `punctilio` |
+|--------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Smart quotes | <span class="no-formatting">"hello"</span> → “hello” | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | <span class="no-formatting">'Twas</span> → ’Twas | ✗ | ✗ | ✓ | ✓ |
+| Em dash | <span class="no-formatting">--</span> → — | ✓ | ✗ | ✗ | ✓ |
+| En dash (ranges) | <span class="no-formatting">1-5</span> → 1–5 | ✗ | ✓ | ✗ | ✓ |
+| Minus sign | <span class="no-formatting">-5</span> → −5 | ✗ | ✓ | ✗ | ✓ |
+| Ellipsis | <span class="no-formatting">...</span> → … | ✓ | ✓ | ✗ | ✓ |
+| Multiplication | <span class="no-formatting">5x5</span> → 5×5 | ✗ | ✗ | ✗ | ✓ |
+| Math symbols | <span class="no-formatting">!=</span> → ≠ | ✗ | ✓ | ✗ | ✓ |
+| Legal symbols | <span class="no-formatting">(c)</span> → © | ✗ | © only | ✗ | ✓ |
+| Arrows | <span class="no-formatting">-></span> → → | ✗ | ✓ | ✗ | ✓ |
+| Prime marks | <span class="no-formatting">5'10"</span> → 5′10″ | ✗ | ✓ | ✓ | ✓ |
+| Degrees | <span class="no-formatting">20 C</span> → 20 °C | ✗ | ✗ | ✗ | ✓ |
+| Fractions | <span class="no-formatting">1/2</span> → ½ | ✗ | ✗ | ✗ | ✓ |
+| Superscripts | <span class="no-formatting">1st</span> → 1ˢᵗ | ✗ | ✗ | ✗ | ✓ |
+| Localization | American/British | ✗ | ✗ | ✗ | ✓ |
+| Ligatures | <span class="no-formatting">??</span> → ⁇ | ✗ | ✓ | ✗ | ✓ |
+| Non-English quotes | „Hallo” (German) | ✗ | ✓ | ✗ | ✗ |
+
+As far as I can tell, `punctilio`’s only missing feature is non-English quote support. I don’t have a personal reason to use non-English localization, but feel free to make a pull request!
+
+> [!quote]- Works with HTML DOMs via separation boundaries
+>
+> Other typography libraries either transform plain strings or operate on AST nodes individually (`retext-smartypants` [can’t map changes back to HTML](https://github.com/rehypejs/rehype-retext)). But real HTML has text spanning multiple elements—if you concatenate text from `<em>Wait</em>...`, transform it, then try to split it back, you've lost track of where `</em>` belonged.
+>
+> `punctilio` introduces *separation boundaries*. First, insert a “separator” character (default: `U+E000`) at each element boundary before transforming (like at the start and end of an `<em>`). Every regex allows this character mid-pattern without breaking matches. For example, `.[SEP]..` still becomes `…[SEP]`. `punctilio` validates the output by ensuring the separator count remains the same.
+>
+> ```typescript
+> import { transform, DEFAULT_SEPARATOR } from 'punctilio'
+> 
+> transform(`"Wait${DEFAULT_SEPARATOR}"`)
+> // → `“Wait”${DEFAULT_SEPARATOR}`
+> // The separator doesn’t block the information that this should be an end-quote!
+> ```
+>
+> Use via a DOM walker tracks which text node each segment came from, inserts separators between them, transforms the combined string, then splits on separators to update each node. Use the `separator` option if `U+E000` conflicts with your content. For an example of how to integrate this functionality, see [my website’s code](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/plugins/transformers/formatting_improvement_html.ts).
+
+## Options
+
+`punctilio` doesn’t enable all transformations by default. Fractions and degrees tend to match too aggressively (perfectly applying the degree transformation requires semantic meaning). Superscript letters and punctuation ligatures have spotty font support—on GitHub, the README’s font doesn’t even support the example superscript! Furthermore, `ligatures = true` can change the meaning of text by collapsing question and exclamation marks.
+
+```typescript
+transform(text, {
+  punctuationStyle: 'american' | 'british' | 'none',  // default: 'american'
+  dashStyle: 'american' | 'british' | 'none',         // default: 'american'
+
+  symbols: true,         // math, legal, arrows
+  collapseSpaces: true,  // normalize whitespace
+  fractions: false,      // 1/2 → ½
+  degrees: false,        // 20 C → 20 °C
+  superscript: false,    // 1st → 1ˢᵗ
+  ligatures: false,      // ??? → ⁇, ?! → ⁈, !? → ⁉, !!! → !
+})
+```
+
 # This website
 
 Subtitle: I've made <span class="populate-commit-count"></span> commits. That's over halfway to being over 9,000!
@@ -46,7 +141,7 @@ Subtitle: Install with `pip install alt-text-llm`.
 
 When I started writing in 2018, I didn't include alt text. Over the years, over 500 un-alt'ed images piled up. These (mostly) aren't simple images of geese or sunsets. Most of my images are technical, from graphs of experimental results to [hand-drawn AI alignment comics](/reframing-impact). Describing these assets was a major slog, so I turned to automation.
 
-To implement [accessibility best practices](https://www.section508.gov/create/alternative-text/), I needed alt text that didn't describe the image so much as _communicate the information the image is supposed to communicate._ None of the scattershot AI projects I found met the bar, so I wrote my own package.
+To implement [accessibility best practices](https://www.section508.gov/create/alternative-text/), I needed alt text that didn't describe the image so much as *communicate the information the image is supposed to communicate.* None of the scattershot AI projects I found met the bar, so I wrote my own package.
 
 [`alt-text-llm`](https://github.com/alexander-turner/alt-text-llm) is an AI-powered tool for generating and managing alt text in Markdown files. Originally developed for this website, `alt-text-llm` streamlines the process of making web content accessible. The package detects assets missing alt text, suggests context-aware descriptions, and provides an interactive reviewing interface in the terminal.
 

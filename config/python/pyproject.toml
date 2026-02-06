@@ -12,13 +12,15 @@ dependencies = [
     "opentimestamps-client",
     "pandas",
     "pillow",
-    "protobuf",
+    "protobuf>=6.33.4",
     "psutil",
+    "pyasn1>=0.6.2",
     "pytest",
     "pytest-cov",
     "pytest-xdist",
     "pyyaml",
     "requests",
+    "urllib3>=2.6.0",
     "rich",
     "ruamel-yaml",
     "tqdm",
@@ -35,7 +37,7 @@ dependencies = [
     "types-psutil>=7.1.3.20251125",
     "types-tqdm>=4.67.0.20250809",
     "docformatter>=1.7.7",
-    "pylint>=4.0.3",
+    "pylint>=4.0.4",
 ]
 
 [tool.black]
@@ -56,7 +58,8 @@ line_length = 80
 addopts = "--cov=scripts --cov-report=html -n auto"
 testpaths = ["scripts/tests"]
 markers = [
-    "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)"
+    "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)",
+    "requires_r2: mark test as requiring R2 credentials (skipped in CI without credentials)"
 ]
 
 [tool.docformatter]

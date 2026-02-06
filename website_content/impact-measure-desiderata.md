@@ -41,7 +41,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 If we can penalize some quantity of "impact on the world", we can have unaligned agents whose impact - and thereby negative effect - is small.
 
-The long-term goal of impact measure research is to find a measure which neatly captures our intuitive understanding of "impact", which doesn't have allow cheap workarounds, which doesn't fail in really weird ways, and so on. For example, when you really think through some existing approaches (like [whitelisting](/whitelisting-impact-measure)), [you see that the impact measure secretly also applies to things _humans_ do](/overcoming-clinginess-in-impact-measures).
+The long-term goal of impact measure research is to find a measure which neatly captures our intuitive understanding of "impact", which doesn't allow cheap workarounds, which doesn't fail in really weird ways, and so on. For example, when you really think through some existing approaches (like [whitelisting](/whitelisting-impact-measure)), [you see that the impact measure secretly also applies to things _humans_ do](/overcoming-clinginess-in-impact-measures).
 
 No approaches to date meet these standards. What do we even require of an impact measure we hope to make safe for use with arbitrarily powerful agents?
 

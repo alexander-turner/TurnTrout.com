@@ -1,0 +1,117 @@
+extends: existence
+message: "Use the Oxford comma in '%s'."
+link: https://en.wikipedia.org/wiki/Serial_comma
+scope: sentence
+level: warning
+# Match lowercase "word, word and word" patterns to catch lists missing the Oxford comma.
+# Lowercase-only avoids false positives from proper nouns (author names, places, math variables).
+tokens:
+  - '\b[a-z]+(?:,\s+[a-z]+)+\s+and\s+[a-z]+\b'
+exceptions:
+  # Common idiomatic phrases that aren't lists
+  # (Trite clichés like "safe and sound" are handled by proselint.Cliches)
+  - now and then
+  - now and again
+  - more and more
+  - less and less
+  - again and again
+  - time and again
+  - over and over
+  - on and on
+  - up and down
+  - back and forth
+  - here and there
+  - this and that
+  - ins and outs
+  - ups and downs
+  - ifs and buts
+  - pros and cons
+  - null and void
+  - far and wide
+  - short and sweet
+  - born and bred
+  - dead and buried
+  - free and clear
+  - high and low
+  - hit and miss
+  - hue and cry
+  - lock and key
+  - lost and found
+  - neat and tidy
+  - nice and easy
+  - odds and ends
+  - one and only
+  - out and about
+  - peace and quiet
+  - rough and tumble
+  - rules and regulations
+  - salt and pepper
+  - slow and steady
+  - sweet and sour
+  - wear and tear
+  # Compound technical/academic phrases
+  - partial and directional
+  - absolute and conditional
+  - prior and conditional
+  - inverse and implicit
+  - contractions and fixed
+  - characteristic and minimal
+  - words and thoughts
+  - now and far
+  - about and for
+  - surprise and elation
+  - units and buildings
+  # Compound verb phrases
+  - blindfolded and half
+  - opened and closed
+  - started and stopped
+  - bought and sold
+  - copied and pasted
+  - dragged and dropped
+  - tried and tested
+  - seen and heard
+  - considering and discarding
+  - retouched and detailed
+  - generated and tabulated
+  # Compound subject phrases
+  - they and the
+  # Common noun pairs
+  - men and women
+  - boys and girls
+  - friends and family
+  - kith and kin
+  - flesh and blood
+  - heart and soul
+  - mind and body
+  - body and soul
+  - life and death
+  - good and evil
+  - right and wrong
+  - black and white
+  - day and night
+  - night and day
+  - land and sea
+  - fire and ice
+  - sun and moon
+  - time and space
+  - cause and effect
+  - form and function
+  - theory and practice
+  - art and science
+  - law and order
+  - war and peace
+  - love and hate
+  - supply and demand
+  - profit and loss
+  - input and output
+  - front and back
+  - left and right
+  - top and bottom
+  - inside and outside
+  - before and after
+  - sooner or later
+  # Compound adverb phrases
+  - easily and more
+  - quickly and easily
+  - slowly and carefully
+  - safely and securely

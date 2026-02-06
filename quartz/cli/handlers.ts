@@ -20,7 +20,6 @@ import { WebSocketServer, type WebSocket } from "ws"
 
 import { generateScss, generateScssRecord } from "../styles/generate-variables"
 import {
-  version,
   fp,
   cacheFile, // @ts-expect-error Importing from a JS file, no types
 } from "./constants.js"
@@ -71,7 +70,7 @@ export async function checkPortAvailability(port: number): Promise<void> {
  * Handles `npx quartz build`
  */
 export async function handleBuild(argv: BuildArguments): Promise<void> {
-  console.log(chalk.bgGreen.black(`\n turntrout.com v${version} \n`))
+  console.log(chalk.bgGreen.black("\n turntrout.com \n"))
 
   if (argv.serve) {
     await checkPortAvailability(argv.port)
@@ -103,7 +102,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       {
         name: "inline-script-loader",
         setup(build) {
-          build.onLoad({ filter: /\.inline\.(ts|js)$/ }, async (args) => {
+          build.onLoad({ filter: /\.inline\.(?:ts|js)$/ }, async (args) => {
             let pathText: string = await fsPromises.readFile(args.path, "utf8")
 
             // Remove default exports that we manually inserted
@@ -178,7 +177,6 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
     // Use the dynamically constructed path in the import statement
     const { default: buildQuartz } = await import(modulePath)
-
     cleanupBuild = await buildQuartz(argv, buildMutex, clientRefresh)
 
     clientRefresh()

@@ -9,9 +9,10 @@ on:
     branches: ["main", "dev"]
 
 permissions:
+  actions: read
   contents: read
-  pages: write
   id-token: write
+  pages: write
 
 jobs:
   prepare-deploy:
@@ -63,7 +64,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|Run eslint scanning|DeepSource:.*|lighthouse_(desktop|mobile)|build \(>=22\))$'
+          check-regexp: '^(visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|Run eslint scanning|DeepSource:.*|lighthouse_(desktop|mobile)|build \(>=22\)|python-lint|vale|stylelint|source-file-checks|python-tests|built-site-checks|spellcheck|linkchecker)$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"

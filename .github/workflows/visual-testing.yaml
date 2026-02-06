@@ -6,22 +6,27 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "dev", "jest-coverage"]
-  pull_request:
-    branches: ["main", "dev"]
+    branches: ["main", "jest-coverage"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
   visual-testing:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ github.actor == 'dependabot[bot]' && fromJSON('["1/20"]') || fromJSON('["1/20", "2/20", "3/20", "4/20", "5/20", "6/20", "7/20", "8/20", "9/20", "10/20", "11/20", "12/20", "13/20", "14/20", "15/20", "16/20", "17/20", "18/20", "19/20", "20/20"]') }}
+        shard: ["1/20", "2/20", "3/20", "4/20", "5/20", "6/20", "7/20", "8/20", "9/20", "10/20", "11/20", "12/20", "13/20", "14/20", "15/20", "16/20", "17/20", "18/20", "19/20", "20/20"]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

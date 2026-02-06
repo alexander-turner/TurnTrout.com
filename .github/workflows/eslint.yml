@@ -12,9 +12,19 @@ name: JavaScript linting
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "config/javascript/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "config/javascript/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   schedule:
     - cron: "16 12 * * 4"
 
@@ -24,6 +34,7 @@ jobs:
     name: Run eslint scanning
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: read
       security-events: write
     steps:

@@ -1,0 +1,54 @@
+name: Python tests
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  python-tests:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup build environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish
+          pip install linkchecker
+
+      - name: Install ImageMagick 7 via Homebrew
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install imagemagick
+          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+
+      - name: Add node_modules/.bin to PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
+      - name: Run pytest
+        run: |
+          uv run python -m pytest scripts \
+            -m "not requires_r2" \
+            --config-file config/python/pyproject.toml

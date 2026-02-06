@@ -149,7 +149,7 @@ export const renderLinkpostInfo = (fileData: QuartzPluginData): JSX.Element | nu
   let displayText = linkpostUrl
 
   const url = new URL(linkpostUrl)
-  displayText = url.hostname.replace(/^(https?:\/\/)?(www\.)?/, "")
+  displayText = url.hostname.replace(/^(?:https?:\/\/)?(?:www\.)?/, "")
 
   return (
     <span className="linkpost-info">

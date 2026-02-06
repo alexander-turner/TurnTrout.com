@@ -1,5 +1,6 @@
 """Utility functions for scripts/ directory."""
 
+import functools
 import json
 import shutil
 import subprocess
@@ -21,6 +22,34 @@ def load_shared_constants() -> dict:  # pragma: no cover
 
 
 _executable_cache: Dict[str, str] = {}
+
+
+@functools.lru_cache(maxsize=1)
+def _get_imagemagick_version() -> int:
+    """
+    Detect ImageMagick version (6 or 7).
+
+    Defaults to 6 if unclear.
+    """
+    magick_path = shutil.which("magick")
+    if not magick_path:
+        return 6
+
+    result = subprocess.run(
+        [magick_path, "-version"], capture_output=True, text=True, check=False
+    )
+    return 7 if "ImageMagick 7" in result.stdout else 6
+
+
+def get_imagemagick_command(operation: str) -> list[str]:
+    """Get ImageMagick command for an operation (handles IM6 vs IM7)."""
+    if _get_imagemagick_version() == 7:
+        return [find_executable("magick"), operation]
+
+    operation_path = shutil.which(operation)
+    if not operation_path:
+        raise FileNotFoundError(f"ImageMagick '{operation}' not found.")
+    return [operation_path]
 
 
 def find_executable(name: str) -> str:

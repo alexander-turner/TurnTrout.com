@@ -16,6 +16,8 @@ import { h } from "hastscript"
 import os from "os"
 import path from "path"
 
+import type { BuildCtx } from "../../../util/ctx"
+
 const testVideoUrl = "https://assets.turntrout.com/video.mp4"
 const mockVideoData = Buffer.from("fakevideocontent")
 const mockVideoWidth = 640
@@ -259,13 +261,16 @@ describe("Asset Dimensions Plugin", () => {
 
       await assetProcessor.maybeSaveAssetDimensions()
 
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
+      // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
-        tempFilePath,
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        actualAssetDimensionsFilePath,
+      )
       expect(assetProcessor["needToSaveCache"]).toBe(false)
 
       renameSpy.mockRestore()
@@ -318,6 +323,36 @@ describe("Asset Dimensions Plugin", () => {
       expect(writeFileSpy).toHaveBeenCalled()
       expect(renameSpy).not.toHaveBeenCalled()
       renameSpy.mockRestore()
+    })
+
+    it("should cleanup temp file and rethrow on rename error", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Permission denied") as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Permission denied")
+      expect(unlinkSpy).toHaveBeenCalled()
+    })
+
+    it("should rethrow rename error even if cleanup fails", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest.spyOn(fs, "rename").mockRejectedValue(new Error("Rename failed") as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockRejectedValue(new Error("Cleanup failed"))
+
+      await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
+      expect(unlinkSpy).toHaveBeenCalled()
     })
   })
 
@@ -620,6 +655,43 @@ describe("Asset Dimensions Plugin", () => {
     })
   })
 
+  describe("extractMaskUrl", () => {
+    it.each([
+      {
+        description: "extracts URL from standard --mask-url style",
+        style: "--mask-url: url(https://example.com/icon.svg);",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "extracts URL with spaces around colon",
+        style: "--mask-url:   url(https://example.com/icon.svg);",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "extracts URL from style with other properties",
+        style: "color: red; --mask-url: url(https://example.com/icon.svg); width: 24px;",
+        expected: "https://example.com/icon.svg",
+      },
+      {
+        description: "returns null for undefined style",
+        style: undefined,
+        expected: null,
+      },
+      {
+        description: "returns null for style without --mask-url",
+        style: "color: red; width: 24px;",
+        expected: null,
+      },
+      {
+        description: "returns null for empty string",
+        style: "",
+        expected: null,
+      },
+    ])("$description", ({ style, expected }) => {
+      expect(AssetProcessor.extractMaskUrl(style)).toBe(expected)
+    })
+  })
+
   describe("collectAssetNodes", () => {
     it.each([
       {
@@ -678,6 +750,51 @@ describe("Asset Dimensions Plugin", () => {
           { tagName: "video", src: "video2.mp4" },
           { tagName: "video", src: "figure.mp4" },
           { tagName: "video", src: "source.mp4" },
+        ],
+      },
+      {
+        description: "svg elements with --mask-url style (CSS-mask favicons)",
+        tree: {
+          type: "root",
+          children: [
+            h("svg", {
+              class: "favicon",
+              style: "--mask-url: url(https://example.com/favicon1.svg);",
+            }) as Element,
+            h("p", [
+              h("svg", {
+                class: "favicon",
+                style: "--mask-url: url(https://example.com/favicon2.svg);",
+              }) as Element,
+            ]) as Element,
+            h("svg", { style: "color: red;" }) as Element, // No --mask-url
+            h("svg") as Element, // No style at all
+            h("img", {
+              style: "--mask-url: url(https://example.com/not-collected.svg);",
+            }) as Element, // img tags don't use mask-url extraction
+          ],
+        } as Root,
+        expected: [
+          { tagName: "svg", src: "https://example.com/favicon1.svg" },
+          { tagName: "svg", src: "https://example.com/favicon2.svg" },
+        ],
+      },
+      {
+        description: "mixed elements: img with src, svg with src, svg with mask-url",
+        tree: {
+          type: "root",
+          children: [
+            h("img", { src: "image.png" }) as Element,
+            h("svg", { src: "direct-src.svg" }) as Element,
+            h("svg", {
+              style: "--mask-url: url(https://example.com/mask-favicon.svg);",
+            }) as Element,
+          ],
+        } as Root,
+        expected: [
+          { tagName: "img", src: "image.png" },
+          { tagName: "svg", src: "direct-src.svg" },
+          { tagName: "svg", src: "https://example.com/mask-favicon.svg" },
         ],
       },
       {
@@ -924,7 +1041,8 @@ describe("Asset Dimensions Plugin", () => {
       const renameSpy = jest.spyOn(fs, "rename").mockResolvedValue(undefined as never)
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       const img1Node = tree.children[0] as Element
@@ -957,9 +1075,17 @@ describe("Asset Dimensions Plugin", () => {
       assetProcessor.setDirectDirtyFlag(true)
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
-      const tempFilePath = `${actualAssetDimensionsFilePath}.tmp`
-      expect(writeFileSpy).toHaveBeenCalledWith(tempFilePath, expect.any(String), "utf-8")
-      expect(renameSpy).toHaveBeenCalledWith(tempFilePath, actualAssetDimensionsFilePath)
+      // Temp file includes process.pid and timestamp for uniqueness
+      const tempFilePattern = new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        expect.any(String),
+        "utf-8",
+      )
+      expect(renameSpy).toHaveBeenCalledWith(
+        expect.stringMatching(tempFilePattern),
+        actualAssetDimensionsFilePath,
+      )
 
       readFileMock.mockRestore()
       renameSpy.mockRestore()
@@ -969,7 +1095,8 @@ describe("Asset Dimensions Plugin", () => {
       const tree: Root = { type: "root", children: [] }
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       expect(tree.children).toHaveLength(0)
@@ -985,10 +1112,32 @@ describe("Asset Dimensions Plugin", () => {
         ],
       }
       const pluginInstance = addAssetDimensionsFromSrc()
-      const transformer = pluginInstance.htmlPlugins()[0]()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
       expect(mockedFetch).not.toHaveBeenCalled()
+    })
+
+    it("should skip remote assets in offline mode", async () => {
+      const cdnImgSrc = "https://assets.turntrout.com/static/images/test.avif"
+      const tree: Root = {
+        type: "root",
+        children: [h("img", { src: cdnImgSrc }) as Element],
+      }
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: { offline: true } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      // In offline mode, remote assets should not be fetched
+      expect(mockedFetch).not.toHaveBeenCalled()
+
+      // The image should not have dimensions added (since we skipped the fetch)
+      const imgNode = tree.children[0] as Element
+      expect(imgNode.properties?.width).toBeUndefined()
+      expect(imgNode.properties?.height).toBeUndefined()
     })
   })
 

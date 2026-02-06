@@ -4953,6 +4953,37 @@ description: Test description
             '<span class="some-class populate-commit-count another-class"></span>',
             ["<span> with class='populate-commit-count' is empty"],
         ),
+        # Element with child SVG element but no text (valid - used for favicons)
+        (
+            '<span id="populate-turntrout-favicon"><span class="favicon-span"><svg class="favicon"></svg></span></span>',
+            [],
+        ),
+        # Element with child img element but no text (valid)
+        (
+            '<span id="populate-test"><img src="test.png" alt="test"></span>',
+            [],
+        ),
+        # Element with nested child elements but no text anywhere (valid)
+        (
+            '<div id="populate-container"><span><svg></svg></span></div>',
+            [],
+        ),
+        # Multiple favicon populate elements with SVG children (valid)
+        (
+            """
+            <span id="populate-turntrout-favicon"><span class="favicon-span"><svg></svg></span></span>
+            <span id="populate-anchor-favicon"><span class="favicon-span"><svg></svg></span></span>
+            """,
+            [],
+        ),
+        # Mixed: one with content (child element), one truly empty (invalid)
+        (
+            """
+            <span id="populate-good"><img src="test.png"></span>
+            <span id="populate-bad"></span>
+            """,
+            ["<span> with id='populate-bad' is empty"],
+        ),
     ],
 )
 def test_check_populate_elements_nonempty(html, expected):
@@ -4973,6 +5004,51 @@ def test_check_populate_elements_nonempty_non_string_id():
     result = built_site_checks.check_populate_elements_nonempty(soup)
     # Should skip the element with non-string id, so no errors
     assert result == []
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Empty element
+        ("<div></div>", False),
+        # Element with text content
+        ("<div>Hello</div>", True),
+        # Element with whitespace only (stripped, so empty)
+        ("<div>   </div>", False),
+        # Element with structural child element but no text/media (still empty)
+        ("<div><span></span></div>", False),
+        # Element with empty ul (structural, still empty)
+        ("<div><ul></ul></div>", False),
+        # Element with SVG child (self-contained, has content)
+        ("<div><svg></svg></div>", True),
+        # Element with img child (self-contained, has content)
+        ("<div><img src='test.png'></div>", True),
+        # Element with video child (self-contained, has content)
+        ("<div><video></video></div>", True),
+        # Element with audio child (self-contained, has content)
+        ("<div><audio></audio></div>", True),
+        # Element with iframe child (self-contained, has content)
+        ("<div><iframe src='test.html'></iframe></div>", True),
+        # Element with nested structure containing SVG
+        ("<span><span class='favicon-span'><svg></svg></span></span>", True),
+        # Element with only NavigableString children (newlines/whitespace)
+        ("<div>\n</div>", False),
+        # Element with both text and child element
+        ("<div>Text<span></span></div>", True),
+        # Deeply nested empty structural elements (still empty)
+        ("<div><span><div><p></p></div></span></div>", False),
+        # Deeply nested with SVG at the end (has content)
+        ("<div><span><div><svg></svg></div></span></div>", True),
+        # Picture element (self-contained, has content)
+        ("<div><picture><source><img></picture></div>", True),
+    ],
+)
+def test_has_content(html: str, expected: bool):
+    """Test the _has_content helper function."""
+    soup = BeautifulSoup(html, "html.parser")
+    element = soup.find()
+    assert element is not None
+    assert built_site_checks._has_content(element) == expected
 
 
 @pytest.mark.parametrize(
@@ -5275,6 +5351,16 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
                 "Paragraph ends with invalid character 'd' Also invalid",
             ],
         ),
+        # page-listing-title class should be skipped
+        (
+            '<article><p class="page-listing-title">Title without punctuation</p></article>',
+            [],
+        ),
+        # Paragraphs containing transcluded content should be skipped
+        (
+            '<article><p><span class="transclude">Transcluded content without punct</span></p></article>',
+            [],
+        ),
         # Footnote with invalid ending
         (
             '<article><p>No punct<a id="user-content-fnref-1">1</a></p></article>',
@@ -5306,3 +5392,82 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         soup
     )
     assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: image with both width and height
+        (
+            '<img src="test.png" width="100" height="50">',
+            [],
+        ),
+        # Valid: multiple images all with dimensions
+        (
+            """
+            <img src="a.png" width="100" height="50">
+            <img src="b.png" width="200" height="100">
+            """,
+            [],
+        ),
+        # Invalid: missing width
+        (
+            '<img src="test.png" height="50">',
+            ["<img> missing width: test.png"],
+        ),
+        # Invalid: missing height
+        (
+            '<img src="test.png" width="100">',
+            ["<img> missing height: test.png"],
+        ),
+        # Invalid: missing both width and height
+        (
+            '<img src="test.png">',
+            ["<img> missing width, height: test.png"],
+        ),
+        # Invalid: empty width attribute
+        (
+            '<img src="test.png" width="" height="50">',
+            ["<img> missing width: test.png"],
+        ),
+        # Invalid: empty height attribute
+        (
+            '<img src="test.png" width="100" height="">',
+            ["<img> missing height: test.png"],
+        ),
+        # Multiple images, some valid some invalid
+        (
+            """
+            <img src="valid.png" width="100" height="50">
+            <img src="no-dims.png">
+            <img src="no-height.png" width="100">
+            """,
+            [
+                "<img> missing width, height: no-dims.png",
+                "<img> missing height: no-height.png",
+            ],
+        ),
+        # No images at all
+        (
+            "<p>No images here</p>",
+            [],
+        ),
+        # Image with no src attribute
+        (
+            '<img width="100" height="50">',
+            [],
+        ),
+        # Long URL should be truncated
+        (
+            '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
+            [
+                "<img> missing width, height: https://example.com/very/long/path/to/im...eighty/characters/in/total/length.png"
+            ],
+        ),
+    ],
+)
+def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
+    """Test the check_images_have_dimensions function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_images_have_dimensions(soup)
+    assert sorted(result) == sorted(expected_issues)

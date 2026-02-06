@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 commit_hash="$(git rev-parse HEAD)"
 git_root="$(git rev-parse --show-toplevel)"
@@ -12,12 +12,29 @@ rollback() {
   exit 1
 }
 
+# Check if .timestamps is a git repo
+if [ ! -d "$timestamps_repo/.git" ]; then
+  rollback ".timestamps is not a git repo! Clone with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+fi
+
+# Find ots binary (check multiple locations)
+OTS_BIN=""
+if [ -x "/opt/homebrew/anaconda3/envs/website/bin/ots" ]; then
+  OTS_BIN="/opt/homebrew/anaconda3/envs/website/bin/ots"
+elif command -v ots >/dev/null 2>&1; then
+  OTS_BIN="$(command -v ots)"
+fi
+
+if [ -z "$OTS_BIN" ]; then
+  rollback "ots not found! Install with: pip3 install opentimestamps-client"
+fi
+
 mkdir -p "$timestamps_dir"
 txt_file="$timestamps_dir/$commit_hash.txt"
 printf '%s' "$commit_hash" >"$txt_file"
 
 # Try to create timestamp with relaxed requirements (accept 1 calendar response, 10s timeout)
-ots_output=$(/opt/homebrew/anaconda3/envs/website/bin/ots stamp -m 1 --timeout 10 "$txt_file" 2>&1)
+ots_output=$(ots stamp -m 1 --timeout 10 "$txt_file" 2>&1)
 ots_exit=$?
 
 if [ $ots_exit -ne 0 ]; then
@@ -38,5 +55,15 @@ done
 cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
 git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
 git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
-git push --quiet || rollback "Failed to push timestamp files!"
+
+# Pull and rebase before pushing to handle divergent branches
+if ! git pull --rebase --quiet origin master 2>/dev/null; then
+  rollback "Could not pull from .timestamps repo."
+fi
+
+# Push to timestamps repo
+if ! git push --quiet 2>/dev/null; then
+  rollback "Could not push to .timestamps repo (no credentials?). Check session-setup.sh."
+fi
+
 cd "$git_root" || exit 1

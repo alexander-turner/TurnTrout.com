@@ -10,6 +10,12 @@ import {
   isElementChecked,
 } from "./visual_utils"
 
+/** Type guard that asserts a value is defined, using expect for the assertion */
+function assertDefined<T>(value: T | null | undefined): asserts value is T {
+  expect(value).toBeDefined()
+  expect(value).not.toBeNull()
+}
+
 type TestFixtures = {
   dummyLink: Locator
 }
@@ -337,6 +343,65 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await expect(popover).toBeHidden()
 })
 
+test.describe("Footnote popovers", () => {
+  test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    const popoverInner = popover.locator(".popover-inner")
+
+    // Should NOT contain the li wrapper (footnote content is unwrapped)
+    await expect(popoverInner.locator('li[id^="user-content-fn-"]')).toHaveCount(0)
+
+    // Should NOT contain the back arrow link
+    await expect(popoverInner.locator("[data-footnote-backref]")).toHaveCount(0)
+
+    // Should NOT contain the article title or other page elements
+    await expect(popoverInner.locator("#article-title-popover")).toHaveCount(0)
+    await expect(popoverInner.locator("h1")).toHaveCount(0)
+    await expect(popoverInner.locator("article")).toHaveCount(0)
+
+    // Should contain footnote content (verify it has some content)
+    const content = popoverInner
+    await expect(content).not.toBeEmpty()
+  })
+
+  test("Footnote popover size reflects content size", async ({ page }) => {
+    // Find the footnote with a table (should be larger)
+    const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
+    await tableFootnoteRef.scrollIntoViewIfNeeded()
+    await tableFootnoteRef.hover()
+
+    const tablePopover = page.locator(".popover")
+    await expect(tablePopover).toBeVisible()
+    const tablePopoverBox = await tablePopover.boundingBox()
+    assertDefined(tablePopoverBox)
+    const tableHeight = tablePopoverBox.height
+
+    // Move mouse away to close popover
+    await page.mouse.move(0, 0)
+    await expect(tablePopover).toBeHidden()
+
+    // Find a simple footnote (should be smaller)
+    const simpleFootnoteRef = page.locator('a[href="#user-content-fn-nested"]')
+    await simpleFootnoteRef.scrollIntoViewIfNeeded()
+    await simpleFootnoteRef.hover()
+
+    const simplePopover = page.locator(".popover")
+    await expect(simplePopover).toBeVisible()
+    const simplePopoverBox = await simplePopover.boundingBox()
+    assertDefined(simplePopoverBox)
+    const simpleHeight = simplePopoverBox.height
+
+    // Table footnote should be significantly taller than simple footnote
+    expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
+  })
+})
+
 test.describe("Popover checkbox state preservation", () => {
   const baseSelector = "h1 + ol #checkbox-0"
 
@@ -376,6 +441,7 @@ test.describe("Popover checkbox state preservation", () => {
     await linkToHover.hover()
 
     const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
     await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
       elementToScreenshot: popover,
       preserveSiblings: true, // Need this to take screenshot
