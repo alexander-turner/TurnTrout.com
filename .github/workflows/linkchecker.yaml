@@ -3,10 +3,24 @@ name: Link checker
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:

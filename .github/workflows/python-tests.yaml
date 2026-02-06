@@ -3,10 +3,22 @@ name: Python tests
 on:
   push:
     branches: ["main"]
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "scripts/**"
+      - "config/python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/actions/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:

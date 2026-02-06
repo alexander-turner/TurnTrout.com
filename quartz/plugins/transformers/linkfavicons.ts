@@ -581,6 +581,8 @@ export interface FaviconNode extends Element {
     "data-domain"?: string
     "aria-hidden"?: "true" | "false"
     "aria-focusable"?: "true" | "false"
+    role?: "img"
+    "aria-label"?: string
   }
 }
 
@@ -598,6 +600,12 @@ export function createFaviconElement(urlString: string, description = ""): Favic
   if (urlString.endsWith(".svg")) {
     // istanbul ignore next
     const domain = urlString.match(/\/(?<domain>[^/]+)\.svg$/)?.groups?.domain || ""
+
+    // When description is provided, make SVG accessible; otherwise hide it
+    const accessibilityProps = description
+      ? ({ role: "img", "aria-label": description } as const)
+      : ({ "aria-hidden": "true", "aria-focusable": "false" } as const)
+
     return {
       type: "element",
       tagName: "svg",
@@ -606,8 +614,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
         class: "favicon",
         "data-domain": domain,
         style: `--mask-url: url(${urlString});`,
-        "aria-hidden": "true",
-        "aria-focusable": "false",
+        ...accessibilityProps,
       },
     }
   }

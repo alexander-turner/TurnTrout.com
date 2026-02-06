@@ -6,10 +6,24 @@ name: Node tests
 on:
   push:
     branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "jest.config.js"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "jest.config.js"
+      - ".github/actions/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:

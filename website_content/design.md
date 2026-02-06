@@ -168,7 +168,7 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 ## Color should accent content
 
-When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
+When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel, and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
 
 During the build process, I convert all naive CSS assignments of `color:red` (<span style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
@@ -469,6 +469,9 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ## Formatting enhancement
 
+> [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
+> ![[/open-source#punctilio-for-meticulous-typography]]
+
 |                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
@@ -660,7 +663,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The  <img alt="A trout jumping to the left." src="https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg"/> favicon appears for links to other pages within this site, while the <img alt="A counterclockwise arrow." src="https://assets.turntrout.com/static/images/external-favicons/anchor.svg"/> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The <span id="populate-turntrout-favicon"></span> favicon appears for links to other pages within this site, while the <span id="populate-anchor-favicon"></span> icon is used for within-page links.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -1130,4 +1133,4 @@ Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
 Quality gates
-: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`.
+: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the pre-push hook was bypassed.

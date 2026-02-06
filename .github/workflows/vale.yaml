@@ -3,10 +3,16 @@ name: Vale prose linting
 on:
   push:
     branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "config/vale/**"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "config/vale/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:

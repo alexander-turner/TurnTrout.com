@@ -1,0 +1,236 @@
+name: Sync from Template
+
+# Syncs updates from the template repository automatically.
+# Runs daily or manually via "Run workflow" button.
+# No setup required - works out of the box.
+#
+# When conflicts are detected (local customizations vs template updates),
+# the PR will include detailed conflict information for Claude to help resolve.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Show what would be synced without making changes"
+        required: false
+        default: "false"
+        type: boolean
+  schedule:
+    # Run daily at 9am UTC
+    - cron: "0 9 * * *"
+
+env:
+  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  # Only sync core automation files that don't need customization
+  SYNC_PATHS: ".claude .hooks .github/workflows/template-sync.yaml .github/workflows/dependabot-auto-merge.yaml"
+  # These are excluded because they require project-specific customization
+  # (comment-on-failed-checks needs workflow names, lint/test need project scripts)
+  EXCLUDE_PATHS: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout child repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout template repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TEMPLATE_REPO }}
+          path: _template
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Sync template files with conflict detection
+        id: sync
+        run: |
+          set -e
+
+          # Initialize tracking files
+          : > /tmp/conflict_files.txt
+          : > /tmp/conflict_report.md
+
+          # Function to process a single file
+          process_file() {
+            local rel_path="$1"
+            local template_file="_template/$rel_path"
+
+            # Create parent directory if needed
+            local parent_dir=$(dirname "$rel_path")
+            [ "$parent_dir" != "." ] && mkdir -p "$parent_dir"
+
+            if [ ! -f "$rel_path" ]; then
+              # New file from template - no conflict
+              cp "$template_file" "$rel_path"
+              echo "Added: $rel_path"
+              return
+            fi
+
+            # File exists locally - check if it differs from template
+            if diff -q "$rel_path" "$template_file" > /dev/null 2>&1; then
+              # Files are identical - no action needed
+              return
+            fi
+
+            # Files differ - this is a potential conflict
+            # The local version may have customizations we want to preserve
+            echo "CONFLICT: $rel_path (local differs from template)"
+            echo "$rel_path" >> /tmp/conflict_files.txt
+
+            # Generate conflict report showing both versions
+            {
+              echo "### \`$rel_path\`"
+              echo ""
+              echo "<details>"
+              echo "<summary>View conflict details</summary>"
+              echo ""
+              echo "**Your current version:**"
+              echo "\`\`\`"
+              head -100 "$rel_path"
+              [ "$(wc -l < "$rel_path")" -gt 100 ] && echo "... (truncated)"
+              echo "\`\`\`"
+              echo ""
+              echo "**Template version:**"
+              echo "\`\`\`"
+              head -100 "$template_file"
+              [ "$(wc -l < "$template_file")" -gt 100 ] && echo "... (truncated)"
+              echo "\`\`\`"
+              echo ""
+              echo "**Diff (your version → template):**"
+              echo "\`\`\`diff"
+              diff -u "$rel_path" "$template_file" | head -80 || true
+              echo "\`\`\`"
+              echo "</details>"
+              echo ""
+            } >> /tmp/conflict_report.md
+
+            # DO NOT overwrite - preserve local version for manual review
+            # The PR will show the template wants changes but won't force them
+            echo "  -> Preserved local version (manual merge required)"
+          }
+
+          # Process each sync path
+          for path in $SYNC_PATHS; do
+            # Skip if in exclude list
+            skip=false
+            for exclude in $EXCLUDE_PATHS; do
+              if [ "$path" = "$exclude" ]; then
+                skip=true
+                break
+              fi
+            done
+            [ "$skip" = "true" ] && continue
+
+            # Check if path exists in template
+            if [ ! -e "_template/$path" ]; then
+              echo "Warning: $path not found in template, skipping"
+              continue
+            fi
+
+            # Handle directories by processing files individually
+            # Note: Using process substitution to avoid subshell variable scope issues
+            if [ -d "_template/$path" ]; then
+              while IFS= read -r template_file; do
+                rel_path="${template_file#_template/}"
+                process_file "$rel_path"
+              done < <(find "_template/$path" -type f)
+            else
+              process_file "$path"
+            fi
+          done
+
+          # Clean up template
+          rm -rf _template
+
+          # Check for conflicts
+          if [ -s /tmp/conflict_files.txt ]; then
+            conflicts=$(tr '\n' ' ' < /tmp/conflict_files.txt)
+            echo "has_conflicts=true" >> $GITHUB_OUTPUT
+            echo "conflict_files=$conflicts" >> $GITHUB_OUTPUT
+
+            # Store conflict report using unique delimiter to avoid collisions
+            echo "conflict_report<<CONFLICT_REPORT_DELIMITER_7f3d9a" >> $GITHUB_OUTPUT
+            cat /tmp/conflict_report.md >> $GITHUB_OUTPUT
+            echo "CONFLICT_REPORT_DELIMITER_7f3d9a" >> $GITHUB_OUTPUT
+
+            # Create marker file to ensure PR is created even if only conflicts exist
+            echo "Template updates available for: $conflicts" > .template-sync-conflicts
+          else
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+            # Remove marker if no conflicts
+            rm -f .template-sync-conflicts
+          fi
+
+          # Check for any changes (new files added)
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            # Combine changed and new files, convert newlines to spaces
+            {
+              git diff --name-only
+              git ls-files --others --exclude-standard
+            } | tr '\n' ' ' | { read -r changed_paths; echo "changed_paths=$changed_paths" >> $GITHUB_OUTPUT; }
+          fi
+
+      - name: Show diff (dry run)
+        if: inputs.dry-run == 'true' && steps.sync.outputs.has_changes == 'true'
+        run: |
+          echo "=== Changes that would be made ==="
+          git diff
+          if [ "${{ steps.sync.outputs.has_conflicts }}" = "true" ]; then
+            echo ""
+            echo "=== CONFLICTS DETECTED ==="
+            echo "The following files have local customizations that would be overwritten:"
+            echo "${{ steps.sync.outputs.conflict_files }}"
+          fi
+
+      - name: Create Pull Request
+        if: inputs.dry-run != 'true' && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true')
+        id: create-pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync from template repository"
+          title: "chore: sync from template repository"
+          body: |
+            This PR syncs updates from the template repository.
+
+            **Updated paths:** ${{ steps.sync.outputs.changed_paths }}
+
+            **Template repository:** ${{ env.TEMPLATE_REPO }}
+
+            ${{ steps.sync.outputs.has_conflicts == 'true' && '---
+
+            ## ⚠️ Manual Merge Required
+
+            The following files differ between your repository and the template. **Your local versions have been preserved** - this PR only adds new files.
+
+            ### Files Requiring Manual Merge
+
+            ' || '' }}${{ steps.sync.outputs.conflict_report }}
+
+            ---
+            Please review the changes and merge if appropriate.
+          branch: template-sync
+          delete-branch: true
+          labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,needs-conflict-resolution' || 'template-sync' }}
+
+      - name: Ask Claude for merge suggestions
+        if: inputs.dry-run != 'true' && steps.sync.outputs.has_conflicts == 'true' && steps.create-pr.outputs.pull-request-number
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          pr_number: ${{ steps.create-pr.outputs.pull-request-number }}
+          prompt: |
+            This template sync PR has conflicts - files that differ between the local repo and template.
+            The local versions have been preserved. Please suggest how to merge each conflicting file,
+            keeping project-specific customizations while adopting template improvements.
+
+            Be concise. For each file, suggest what to keep from local vs adopt from template.

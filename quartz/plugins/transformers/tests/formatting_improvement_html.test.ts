@@ -441,6 +441,7 @@ describe("HTMLFormattingImprovement", () => {
       ["WiFi", "Wi-Fi"],
       ["WI-FI", "Wi-Fi"],
       ["wiFi", "Wi-Fi"],
+      ["regexes", "RegExes"],
       ["Connect to the wi-fi network", "Connect to the Wi-Fi network"],
       ["The wi-fi is down", "The Wi-Fi is down"],
       ["My open-source", "My open source"],
@@ -449,6 +450,21 @@ describe("HTMLFormattingImprovement", () => {
       ["i.e., this is a test", "i.e. this is a test"],
       ["(e.g., this is a test)", "(e.g. this is a test)"],
       ["(i.e., this is a test)", "(i.e. this is a test)"],
+      // Test variations of e.g. and i.e. with marker-aware word boundaries
+      ["eg this is a test", "e.g. this is a test"],
+      ["ie this is a test", "i.e. this is a test"],
+      ["e.g this is a test", "e.g. this is a test"],
+      ["i.e this is a test", "i.e. this is a test"],
+      ["eg. this is a test", "e.g. this is a test"],
+      ["ie. this is a test", "i.e. this is a test"],
+      ["E.G., this is a test", "e.g. this is a test"],
+      ["I.E., this is a test", "i.e. this is a test"],
+      ["EG this is a test", "e.g. this is a test"],
+      ["IE this is a test", "i.e. this is a test"],
+      // Should not transform when not at word boundaries
+      ["egie", "egie"], // 'eg' in middle of word should not match
+      ["diet", "diet"], // 'ie' in middle of word should not match
+      ["piece", "piece"], // 'ie' in middle of word should not match
       ["macos", "macOS"],
       ["MacOS", "macOS"],
       ["MACOS", "macOS"],
@@ -458,9 +474,134 @@ describe("HTMLFormattingImprovement", () => {
       ["Gemini Pro 3", "Gemini 3 Pro"],
       ["Gemini Pro 3-shot", "Gemini Pro 3-shot"],
       ["Gemini Pro 2.5", "Gemini 2.5 Pro"],
+      // Model naming standardization
+      ["LLAMA-2", "Llama-2"],
+      ["LLAMA-3.1-70B", "Llama-3.1-70B"],
+      ["LLAMA-1", "Llama-1"],
+      ["Llama-2", "Llama-2"], // Already correct, no change
+      ["GPT-4-o", "GPT-4o"],
+      ["gpt-4-o", "GPT-4o"],
+      ["GPT-4o", "GPT-4o"], // Already correct, no change
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
+    })
+
+    describe("Marker invariance for e.g. and i.e. transforms", () => {
+      // Test that the marker-aware word boundary patterns work correctly
+      // when markers are present between word characters
+      it("should be marker-invariant for 'e.g.' at start of text", () => {
+        const textWithMarker = `${markerChar}e.g. test`
+        const textWithoutMarker = "e.g. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should be marker-invariant for 'i.e.' at start of text", () => {
+        const textWithMarker = `${markerChar}i.e. test`
+        const textWithoutMarker = "i.e. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
+
+      it("should be marker-invariant for 'eg' followed by marker", () => {
+        const textWithMarker = `eg${markerChar} test`
+        const textWithoutMarker = "eg test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should be marker-invariant for 'ie.' followed by marker", () => {
+        // Test "ie." (with period) followed by marker
+        const textWithMarker = `ie.${markerChar} test`
+        const textWithoutMarker = "ie. test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
+
+      it("should not transform 'eg' in middle of word with marker (e.g., 'regex')", () => {
+        const textWithMarker = `reg${markerChar}ex`
+        const textWithoutMarker = "regex"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(transformedWithoutMarker).toBe("RegEx")
+        expect(strippedResult).toBe("regex")
+      })
+
+      it("should not transform 'ie' in middle of word with marker (e.g., 'piece')", () => {
+        // Pattern: "p" + "ie" + marker + "ce" - marker between 'ie' and 'ce'
+        const textWithMarker = `pie${markerChar}ce`
+        const textWithoutMarker = "piece"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("piece")
+      })
+
+      it("should handle 'e.g.,' with marker between elements", () => {
+        // Simulates: "<em>e.g.</em>, test" which becomes "e.g." + marker + ", test"
+        const textWithMarker = `e.g.${markerChar}, test`
+        const textWithoutMarker = "e.g., test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("e.g. test")
+      })
+
+      it("should handle 'i.e.,' with marker between elements", () => {
+        // Simulates: "<em>i.e.</em>, test" which becomes "i.e." + marker + ", test"
+        const textWithMarker = `i.e.${markerChar}, test`
+        const textWithoutMarker = "i.e., test"
+
+        const transformedWithMarker = massTransformText(textWithMarker)
+        const transformedWithoutMarker = massTransformText(textWithoutMarker)
+        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+
+        expect(strippedResult).toBe(transformedWithoutMarker)
+        expect(strippedResult).toBe("i.e. test")
+      })
+    })
+
+    describe("HTML integration for e.g. and i.e.", () => {
+      it.each([
+        ["<p><em>eg</em> test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><em>e.g.</em>, test</p>", "<p><em>e.g.</em> test</p>"],
+        ["<p><strong>ie</strong> test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p><strong>i.e.</strong>, test</p>", "<p><strong>i.e.</strong> test</p>"],
+        ["<p>(<em>eg</em> test)</p>", "<p>(<em>e.g.</em> test)</p>"],
+      ])("transforms '%s' to '%s'", (input, expected) => {
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      })
     })
   })
 
@@ -1294,7 +1435,7 @@ describe("Skip Formatting", () => {
       [
         "not transform footnote ref number into time pattern",
         // This is the specific bug case: "15" + " Am I" should NOT become "15 a.m. I"
-        '<p><sup><a data-footnote-ref>15</a></sup> Am I correct?</p>',
+        "<p><sup><a data-footnote-ref>15</a></sup> Am I correct?</p>",
         '<p><sup><a data-footnote-ref="">15</a></sup> Am I correct?</p>',
       ],
       [
@@ -1304,7 +1445,7 @@ describe("Skip Formatting", () => {
       ],
       [
         "handle multiple footnote refs in same paragraph",
-        '<p>First<sup><a data-footnote-ref>1</a></sup> and second<sup><a data-footnote-ref>2</a></sup>.</p>',
+        "<p>First<sup><a data-footnote-ref>1</a></sup> and second<sup><a data-footnote-ref>2</a></sup>.</p>",
         // Note: punctuation gets moved into the second link due to rearrangeLinkPunctuation
         '<p>First<sup><a data-footnote-ref="">1</a></sup> and second<sup><a data-footnote-ref="">2.</a></sup></p>',
       ],
@@ -1664,17 +1805,14 @@ describe("replaceFractions", () => {
   })
 
   describe("FRACTION_SKIP_TAGS", () => {
-    it.each(FRACTION_SKIP_TAGS)(
-      "should not convert fractions inside <%s> elements",
-      (tagName) => {
-        // Skip 'a' tag test here since it needs href, test separately
-        if (tagName === "a") return
+    it.each(FRACTION_SKIP_TAGS)("should not convert fractions inside <%s> elements", (tagName) => {
+      // Skip 'a' tag test here since it needs href, test separately
+      if (tagName === "a") return
 
-        const input = `<${tagName}>1/2</${tagName}>`
-        const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(input)
-      },
-    )
+      const input = `<${tagName}>1/2</${tagName}>`
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(input)
+    })
 
     it("should not convert fractions inside <a> elements (to preserve URLs)", () => {
       const input = '<a href="https://example.com/page/1/2">link with 1/2</a>'

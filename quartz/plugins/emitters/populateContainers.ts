@@ -111,7 +111,9 @@ export async function countPlaywrightTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export const PYTEST_COUNT_CMD = "bash -lc '.venv/bin/pytest --collect-only -q' 2>&1 | tail -20"
+// Override addopts to avoid requiring plugins (--cov, -n) that may not be installed
+export const PYTEST_COUNT_CMD =
+  "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
 
 // skipcq: JS-D1001
 export async function countPythonTests(): Promise<number> {
@@ -185,12 +187,13 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
   )
 }
 
-/**
- * Generates the site's own favicon element.
- */
-export const generateSiteFaviconContent = (): ContentGenerator => {
+// skipcq: JS-D1001
+export const generateSpecialFaviconContent = (
+  faviconPath: string,
+  altText = "",
+): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    const faviconElement = createFaviconElement(specialFaviconPaths.turntrout)
+    const faviconElement = createFaviconElement(faviconPath, altText)
     return [h("span", { className: "favicon-span" }, [faviconElement])]
   }
 }
@@ -333,7 +336,14 @@ const createPopulatorMap = (
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
-    ["populate-site-favicon", generateSiteFaviconContent()],
+    [
+      "populate-turntrout-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),
+    ],
+    [
+      "populate-anchor-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.anchor, "A counterclockwise arrow."),
+    ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],

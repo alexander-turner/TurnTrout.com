@@ -8,6 +8,8 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
+import type { BuildCtx } from "../../util/ctx"
+
 import { createWinstonLogger } from "../../util/log"
 
 const logger = createWinstonLogger("assetDimensions")
@@ -99,11 +101,17 @@ class AssetProcessor {
   // Save asset dimensions if needed
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
-      const tempFilePath = `${paths.assetDimensions}.tmp`
+      // Use unique temp file to avoid race conditions with parallel workers
+      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${Date.now()}`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
       await fs.writeFile(tempFilePath, data, "utf-8")
-      await fs.rename(tempFilePath, paths.assetDimensions)
+      try {
+        await fs.rename(tempFilePath, paths.assetDimensions)
+      } catch (error) {
+        await fs.unlink(tempFilePath).catch(() => {})
+        throw error
+      }
       this.needToSaveCache = false
     }
   }
@@ -161,7 +169,7 @@ class AssetProcessor {
    * Determine whether a given source string points to a remote (HTTP/S) resource.
    * Any non-HTTP(S) protocol (including "file://" and relative or absolute paths) is considered local.
    */
-  private static isRemoteUrl(src: string): boolean {
+  public static isRemoteUrl(src: string): boolean {
     try {
       const parsed = new URL(src)
       return parsed.protocol === "http:" || parsed.protocol === "https:"
@@ -313,6 +321,14 @@ class AssetProcessor {
   }
 
   public imageTagsToProcess = ["img", "svg"]
+
+  // skipcq: JS-D1001
+  public static extractMaskUrl(style: string | undefined): string | null {
+    if (style === undefined) return null
+    const match = style.match(/--mask-url:\s*url\((?<url>[^)]+)\)/)
+    return match?.groups?.url ?? null
+  }
+
   /**
    * Collects all asset nodes (images and videos) from the AST tree that need dimension processing.
    */
@@ -320,10 +336,18 @@ class AssetProcessor {
     const imageAssetsToProcess: { node: Element; src: string }[] = []
     visit(tree, "element", (node: Element) => {
       if (
-        this.imageTagsToProcess.includes(node.tagName) &&
-        typeof node.properties?.src === "string"
+        typeof node.properties?.src === "string" &&
+        this.imageTagsToProcess.includes(node.tagName)
       ) {
         imageAssetsToProcess.push({ node, src: node.properties.src })
+        return
+      }
+
+      if (node.tagName === "svg") {
+        const maskUrl = AssetProcessor.extractMaskUrl(node.properties?.style as string | undefined)
+        if (maskUrl) {
+          imageAssetsToProcess.push({ node, src: maskUrl })
+        }
       }
     })
 
@@ -345,16 +369,23 @@ class AssetProcessor {
    * @param assetInfo - Object containing the DOM node and source URL
    * @param currentDimensionsCache - The current dimensions cache
    * @param retries - Number of retry attempts for remote assets
+   * @param offline - If true, skip remote fetches and use cached dimensions only
    */
   public async processAsset(
     assetInfo: { node: Element; src: string },
     currentDimensionsCache: AssetDimensionMap,
     retries = numRetries,
+    offline = false,
   ): Promise<void> {
     const { node, src } = assetInfo
     let dims = currentDimensionsCache[src]
 
     if (!dims) {
+      // In offline mode, skip fetching uncached remote assets
+      if (offline && AssetProcessor.isRemoteUrl(src)) {
+        logger.debug(`Skipping remote asset in offline mode: ${src}`)
+        return
+      }
       const fetchedDims = await this.fetchAndParseAssetDimensions(src, retries)
       if (fetchedDims) {
         dims = fetchedDims
@@ -390,11 +421,13 @@ export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
 
 /**
  * Creates a Quartz plugin that adds width, height, and aspect-ratio CSS to image and video elements.
+ * In offline mode, uses cached dimensions only and skips remote asset fetches.
  */
 export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
-    htmlPlugins() {
+    htmlPlugins(ctx: BuildCtx) {
+      const offline = ctx.argv.offline ?? false
       return [
         () => {
           return async (tree: Root) => {
@@ -402,7 +435,12 @@ export const addAssetDimensionsFromSrc = () => {
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
-              await assetProcessor.processAsset(assetInfo, currentDimensionsCache, numRetries)
+              await assetProcessor.processAsset(
+                assetInfo,
+                currentDimensionsCache,
+                numRetries,
+                offline,
+              )
             }
             if (assetProcessor["needToSaveCache"]) {
               await assetProcessor.maybeSaveAssetDimensions()

@@ -3,10 +3,22 @@ name: Source file checks
 on:
   push:
     branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "quartz/**"
+      - "scripts/source_file_checks.py"
+      - "config/**"
+      - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    paths:
+      - "website_content/**"
+      - "quartz/**"
+      - "scripts/source_file_checks.py"
+      - "config/**"
+      - ".github/actions/**"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -27,4 +39,4 @@ jobs:
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
       - name: Run source file checks
-        run: uv run python scripts/source_file_checks.py
+        run: uv run python scripts/source_file_checks.py --check-publication-dates

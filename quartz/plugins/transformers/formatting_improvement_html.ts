@@ -478,13 +478,15 @@ export function formatLNumbers(tree: Root): void {
     const newNodes: (Text | Element)[] = []
 
     while ((match = l_pRegex.exec(node.value)) !== null) {
+      const { prefix, number } = match.groups as { prefix: string; number: string }
+
       // Add text before the match
       if (match.index > lastIndex) {
         newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
+      newNodes.push({ type: "text", value: prefix })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -494,7 +496,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match.groups?.number ?? "" }],
+        children: [{ type: "text", value: number }],
       })
 
       lastIndex = l_pRegex.lastIndex
@@ -794,6 +796,24 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
+/**
+ * Normalizes "e.g." and "i.e." abbreviations to standard format.
+ * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
+ */
+export function normalizeAbbreviations(text: string): string {
+  // Pattern: word-start + "e" + optional "." + "g" + optional trailing "." +
+  // optional marker (captured) + optional comma with optional marker (captured)
+  // Must be followed by word boundary, space, marker, or end of string
+  const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
+  const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
+  const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
+
+  text = text.replace(new RegExp(egPattern, "gi"), "e.g.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(new RegExp(iePattern, "gi"), "i.e.$<abbrevMarker>$<commaMarker>")
+
+  return text
+}
+
 export function plusToAmpersand(text: string): string {
   const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
   const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
@@ -828,21 +848,23 @@ const massTransforms: [RegExp, string][] = [
   [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
   [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
   [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
-  [new RegExp(`${wb}regex${wbe}`, "gi"), "RegEx"],
+  [new RegExp(`${wb}regex(?<plural>e?s)?${wbe}`, "gi"), "RegEx$<plural>"],
   [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
   [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
   [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
-  [/e\.g\.,/g, "e.g."],
-  [/i\.e\.,/g, "i.e."],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
   [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
+  // Model naming standardization
+  [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
+  [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
 ]
 
 export function massTransformText(text: string): string {
   for (const [regex, replacement] of massTransforms) {
     text = text.replace(regex, replacement)
   }
+  text = normalizeAbbreviations(text)
   return text
 }
 

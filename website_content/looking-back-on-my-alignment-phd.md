@@ -149,7 +149,7 @@ I think I [got significantly smarter in 2018–2019](/swimming-upstream), and ke
 >
 > I remember a sunny summer day in 2019, sitting in the grass with Daniel Filan at UC Berkeley. He recommended putting together an end-to-end picture of the alignment problem. I remember feeling pretty uncomfortable about that, feeling that I wouldn't understand which alignment problems go where in my diagram ("do embedded agency failures crop up _here_, or _there_?"). Wouldn't it just make more sense to read more alignment papers and naturally refine those views over time?
 >
-> This was a rationalization, plain and simple. At no point do you feel ready to put all the pieces together. If you feel totally comfortable about how alignment fits together such that Daniel's exercise does not _push you_ on some level, we have either _already_ solved the alignment problem, or you are deluded.
+> This was a rationalization. At no point do you feel ready to put all the pieces together. If you feel totally comfortable about how alignment fits together such that Daniel's exercise does not _push you_ on some level, we have either _already_ solved the alignment problem, or you are deluded.
 >
 > I did not feel ready, and I was not ready, and I should have done it anyways. But I focused on more comfortable work with well-defined boundaries, because it felt good to knock out new theorems. Whether or not those theorems were useful and important to alignment, that was a mistake. So I stayed in my alignment comfort zone. I should have stopped working on impact measures and power-seeking way earlier than I did, even though I did end up doing some cool work.
 
