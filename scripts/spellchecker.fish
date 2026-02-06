@@ -1,7 +1,8 @@
+set -l GIT_ROOT (git rev-parse --show-toplevel)
 set -l TEMP_DICT "/tmp/candidate_wordlist.txt"
-set -l PERM_DICT "config/spellcheck/.wordlist.txt"
+set -l PERM_DICT "$GIT_ROOT/config/spellcheck/.wordlist.txt"
 
-scripts/spellcheck.sh --generate-dictionary $TEMP_DICT
+$GIT_ROOT/scripts/spellcheck.sh --generate-dictionary $TEMP_DICT
 
 # Check if spellchecker found errors
 if test $status -ne 0
@@ -23,5 +24,5 @@ if test $status -ne 0
     trash-put $TEMP_DICT
 
     # Run spellcheck again with the updated dictionary
-    scripts/spellcheck.sh; or exit
+    $GIT_ROOT/scripts/spellcheck.sh; or exit
 end

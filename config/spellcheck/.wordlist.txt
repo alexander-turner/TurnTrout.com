@@ -5862,10 +5862,7 @@ bignote-tpi
 frowny-face
 geo-guessing
 motte-and-bailey
-non-neglible
-non-negligble
 pre-installed
-pre-requisite
 pre-training
 section-to-transclude
 well-intentioned
