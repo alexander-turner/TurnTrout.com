@@ -37,12 +37,6 @@ const logger = createWinstonLogger("linkFavicons")
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-const faviconCountWhitelistComputed = [
-  ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
 // istanbul ignore if
 if (!fs.existsSync(faviconUrlsFile)) {
   try {
@@ -163,18 +157,23 @@ function normalizeHostname(hostname: string): string {
 }
 
 /**
- * Normalize a blacklist entry (underscore-separated hostname) through the same
- * PSL pipeline used for real hostnames, so entries like "playpen_icomtek_csir_co_za"
- * are automatically reduced to "icomtek_co_za" — matching what getQuartzPath produces.
+ * Normalize an underscore-separated hostname entry through the same PSL pipeline
+ * used for real hostnames, so entries like "playpen_icomtek_csir_co_za" are
+ * automatically reduced to "csir_co_za" — matching what getQuartzPath produces.
  */
-export function normalizeBlacklistEntry(entry: string): string {
+export function normalizeFaviconListEntry(entry: string): string {
   const hostname = entry.replaceAll("_", ".")
   const normalized = normalizeHostname(hostname)
   return normalized.replaceAll(".", "_")
 }
 
-/** Blacklist entries normalized through the same PSL pipeline as hostnames. */
-const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeBlacklistEntry)
+/** Whitelist/blacklist entries normalized through the same PSL pipeline as hostnames. */
+const faviconCountWhitelistComputed = [
+  ...Object.values(specialFaviconPaths),
+  ...faviconCountWhitelist.map(normalizeFaviconListEntry),
+  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
+]
+const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeFaviconListEntry)
 
 /**
  * Normalizes a favicon path for counting by removing format-specific extensions.
