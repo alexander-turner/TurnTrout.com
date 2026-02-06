@@ -134,4 +134,46 @@ test.describe("Collapsible admonition state persistence", () => {
     // IDs should be identical
     expect(idsAfterNav).toEqual(initialIds)
   })
+
+  test("state is restored before first paint (no layout shift)", async ({ page }) => {
+    // First, get the collapsible IDs and their default states
+    const collapsibleData = await getCollapsibles(page).evaluateAll((els) =>
+      els.map((el) => ({
+        id: (el as HTMLElement).dataset.collapsibleId,
+        defaultCollapsed: el.classList.contains("is-collapsed"),
+      })),
+    )
+    expect(collapsibleData.length).toBeGreaterThan(0)
+
+    // Pick a collapsible and set its localStorage to the OPPOSITE of its default
+    const target = collapsibleData[0]
+    const savedState = !target.defaultCollapsed
+
+    // Set up localStorage BEFORE page loads
+    await page.addInitScript(
+      ({ id, collapsed }) => {
+        localStorage.setItem(id, collapsed ? "true" : "false")
+      },
+      { id: target.id as string, collapsed: savedState },
+    )
+
+    // Reload and capture screenshot immediately at domcontentloaded
+    await page.reload({ waitUntil: "domcontentloaded" })
+    const firstScreenshot = await getCollapsibles(page).first().screenshot()
+
+    // Wait for full load
+    await page.waitForLoadState("load")
+    const afterLoadScreenshot = await getCollapsibles(page).first().screenshot()
+
+    // Screenshots should be identical - state was applied before first paint
+    expect(Buffer.from(firstScreenshot).toString("base64")).toEqual(
+      Buffer.from(afterLoadScreenshot).toString("base64"),
+    )
+
+    // Verify the state was correctly applied (opposite of default)
+    const actualState = await getCollapsibles(page)
+      .first()
+      .evaluate((el) => el.classList.contains("is-collapsed"))
+    expect(actualState).toBe(savedState)
+  })
 })
