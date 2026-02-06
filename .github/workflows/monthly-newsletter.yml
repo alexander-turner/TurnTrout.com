@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   generate-newsletter:
@@ -103,6 +102,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set"
+            exit 1
+          fi
+
           # Read gathered data
           COMMITS=$(cat /tmp/commits.txt | head -200)
           FEATURES=$(cat /tmp/features.txt 2>/dev/null || echo "None found")
@@ -149,7 +153,7 @@ jobs:
           ESCAPED_PROMPT=$(cat /tmp/full-prompt.md | jq -Rs .)
 
           # Call Claude API
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
@@ -163,25 +167,42 @@ jobs:
             }")
 
           # Extract the text content
-          NEWSLETTER=$(echo "$RESPONSE" | jq -r '.content[0].text // "Error generating newsletter"')
+          NEWSLETTER=$(echo "$RESPONSE" | jq -r '.content[0].text')
+          if [ -z "$NEWSLETTER" ] || [ "$NEWSLETTER" = "null" ]; then
+            echo "::error::Claude API returned no content. Response: $RESPONSE"
+            exit 1
+          fi
 
           # Save to file
           echo "$NEWSLETTER" > /tmp/newsletter-draft.md
 
           echo "Newsletter draft generated"
 
-      - name: Create GitHub Issue with draft
+      - name: Send newsletter draft via email
         env:
-          GH_TOKEN: ${{ github.token }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::error::RESEND_API_KEY secret is not set"
+            exit 1
+          fi
+
           DRAFT=$(cat /tmp/newsletter-draft.md)
-          gh issue create \
-            --title "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
-            --body "**Commits:** ${{ steps.commits.outputs.commit_count }}
 
-          ---
+          # Build JSON payload with jq for proper escaping
+          jq -n \
+            --arg from "Newsletter Bot <newsletter@turntrout.com>" \
+            --arg to "alex@turntrout.com" \
+            --arg subject "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
+            --arg text "$DRAFT" \
+            '{from: $from, to: [$to], subject: $subject, text: $text}' > /tmp/email.json
 
-          $DRAFT"
+          RESPONSE=$(curl -sf -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/email.json)
+
+          echo "Email sent: $RESPONSE"
 
       - name: Update last run date
         run: |
