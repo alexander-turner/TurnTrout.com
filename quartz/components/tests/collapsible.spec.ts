@@ -38,6 +38,7 @@ test.describe("Collapsible admonition state persistence", () => {
     // Get initial state and ID
     const initiallyCollapsed = await first.evaluate((el) => el.classList.contains("is-collapsed"))
     const id = await first.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    expect(id).toBeDefined()
 
     // Click title to toggle
     await first.locator(".admonition-title").click()
@@ -47,7 +48,10 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(newState).toBe(!initiallyCollapsed)
 
     // Verify localStorage was updated
-    const stored = await page.evaluate((collapsibleId) => localStorage.getItem(collapsibleId), id)
+    const stored = await page.evaluate(
+      (collapsibleId) => localStorage.getItem(collapsibleId),
+      id as string,
+    )
     expect(stored).toBe(newState ? "true" : "false")
   })
 
