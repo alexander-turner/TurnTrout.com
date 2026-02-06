@@ -135,8 +135,14 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(idsAfterNav).toEqual(initialIds)
   })
 
-  test("state is restored before first paint (no layout shift)", async ({ page }) => {
-    // First, get the collapsible IDs and their default states
+  test("state is restored before first paint (no layout shift)", async ({ browser }) => {
+    // Create a fresh context with localStorage pre-set BEFORE any navigation
+    const context = await browser.newContext()
+    const page = await context.newPage()
+
+    // First, visit the page to get collapsible IDs
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
     const collapsibleData = await getCollapsibles(page).evaluateAll((els) =>
       els.map((el) => ({
         id: (el as HTMLElement).dataset.collapsibleId,
@@ -149,20 +155,16 @@ test.describe("Collapsible admonition state persistence", () => {
     const target = collapsibleData[0]
     const savedState = !target.defaultCollapsed
 
-    // Create a new context with localStorage pre-set BEFORE navigation
-    const context = await page.context().browser()!.newContext()
-    const newPage = await context.newPage()
-
-    // Inject localStorage before any page loads
-    await newPage.addInitScript(
+    // Set localStorage directly
+    await page.evaluate(
       ({ id, collapsed }) => {
         localStorage.setItem(id, collapsed ? "true" : "false")
       },
       { id: target.id as string, collapsed: savedState },
     )
 
-    // Set up CLS monitoring before navigation
-    await newPage.addInitScript(() => {
+    // Set up CLS monitoring before reload
+    await page.addInitScript(() => {
       ;(window as unknown as { __cls: number }).__cls = 0
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
@@ -175,18 +177,18 @@ test.describe("Collapsible admonition state persistence", () => {
       }).observe({ type: "layout-shift", buffered: true })
     })
 
-    // Navigate to the page
-    await newPage.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    // Reload the page - localStorage should persist, and state should be applied before paint
+    await page.reload({ waitUntil: "load" })
 
     // Verify the state was correctly applied (opposite of default)
-    const actualState = await newPage
+    const actualState = await page
       .locator(".admonition.is-collapsible")
       .first()
       .evaluate((el) => el.classList.contains("is-collapsed"))
     expect(actualState).toBe(savedState)
 
     // Check that CLS is minimal (no layout shift from state restoration)
-    const cls = await newPage.evaluate(() => (window as unknown as { __cls: number }).__cls)
+    const cls = await page.evaluate(() => (window as unknown as { __cls: number }).__cls)
     expect(cls).toBeLessThan(0.1) // CLS < 0.1 is considered "good"
 
     await context.close()
