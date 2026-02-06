@@ -45,7 +45,7 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   )
 }
 
-Body.afterDOMLoaded = clipboardScript + elvishToggleScript + smallCapsCopyScript
+Body.afterDOMLoaded = [clipboardScript, elvishToggleScript, smallCapsCopyScript]
 Body.css = clipboardStyle
 
 export default (() => Body) satisfies QuartzComponentConstructor

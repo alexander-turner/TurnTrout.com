@@ -21,7 +21,7 @@ export type QuartzComponentProps = {
 export type QuartzComponent = ComponentType<QuartzComponentProps> & {
   css?: string
   beforeDOMLoaded?: string
-  afterDOMLoaded?: string
+  afterDOMLoaded?: string | string[]
 }
 
 export type QuartzComponentConstructor<Options extends object | undefined = undefined> = (
