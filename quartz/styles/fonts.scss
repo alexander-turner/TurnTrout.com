@@ -373,7 +373,9 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// Avoid sidebars
+// Body text ordinals (like "21st place") use lining-nums for visual consistency.
+// Date ordinals (.date-ordinal-num) intentionally have no styling so they
+// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
 article .ordinal-num {
   font-variant-numeric: lining-nums;
 }
