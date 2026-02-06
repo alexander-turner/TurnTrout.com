@@ -2475,6 +2475,59 @@ def test_check_link_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # The original bug: "9combinations" from transform eating whitespace
+        (
+            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            ["Missing space before: 9<abbr>Combinations</abbr>"],
+        ),
+        # Properly spaced smallcaps
+        (
+            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            [],
+        ),
+        # Missing space after smallcaps
+        (
+            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket</p>',
+            ["Missing space after: <abbr>Nasa</abbr>launched a rocket"],
+        ),
+        # Allowed punctuation after smallcaps
+        *[
+            (
+                f'<p>The <abbr class="small-caps">Nasa</abbr>{char}s</p>',
+                [],
+            )
+            for char in ("\u2019", ".", ",", "!", "?", ")", "]", ";", ":")
+        ],
+        # Allowed chars before smallcaps
+        *[
+            (
+                f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
+                [],
+            )
+            for char in ("(", "[", " ", "-", "\u2014")
+        ],
+        # Properly spaced ordinal (realistic transform output)
+        (
+            '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
+            [],
+        ),
+        # Regular abbr/span without formatting classes — not checked
+        (
+            "<p>9<abbr>combinations</abbr> test</p>",
+            [],
+        ),
+    ],
+)
+def test_check_inline_formatting_spacing(html, expected):
+    """Test spacing checks around transform-produced inline elements."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_formatting_spacing(soup)
+    assert sorted(result) == sorted(expected)
+
+
 @pytest.fixture()
 def spell_checker():
     """Create a SpellChecker with a small custom wordlist for tests."""
@@ -2487,19 +2540,24 @@ def spell_checker():
 @pytest.mark.parametrize(
     "html,expected_fragments",
     [
-        # The original bug: "9combinations" from transform eating whitespace
+        # Transform concatenation now caught by check_inline_formatting_spacing;
+        # spellcheck uses separator=" " so these become valid separate tokens.
         (
             '<p>9<abbr class="small-caps">Combinations</abbr> of strategies.</p>',
-            ["9combinations"],
+            [],
         ),
-        # Word+word concatenation from transform
         (
             '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket.</p>',
-            ["nasalaunched"],
+            [],
         ),
-        # Properly spaced — no issues
+        # Actual misspelling in article text
         (
-            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies.</p>',
+            "<p>This sentense has a typo.</p>",
+            ["sentense"],
+        ),
+        # Listing page concatenation (dates+titles) — no false positives
+        (
+            "<p><span>12/5/2024</span><span>Gradient Routing</span></p>",
             [],
         ),
         # Code blocks should be ignored

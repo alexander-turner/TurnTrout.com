@@ -1523,6 +1523,7 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
+        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "rendered_text_spelling": check_rendered_text_spelling(
             soup, spell_checker
         ),
@@ -1776,6 +1777,37 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
     return problematic_links
 
 
+_INLINE_FORMATTING_SELECTORS = (
+    "abbr.small-caps",
+    "span.ordinal-num",
+    "sup.ordinal-suffix",
+    "span.fraction",
+    "span.monospace-arrow",
+    "span.right-arrow",
+)
+
+
+def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
+    """
+    Check spacing around transform-produced inline elements.
+
+    Catches whitespace-eating bugs from HAST transformers that wrap text in
+    inline elements (e.g. "9combinations" from a missing space before a
+    smallcaps ``<abbr>``).
+    """
+    issues: list[str] = []
+    selector = ", ".join(_INLINE_FORMATTING_SELECTORS)
+    for element in _tags_only(soup.select(selector)):
+        issues.extend(
+            _check_element_spacing(
+                element,
+                ALLOWED_ELT_PRECEDING_CHARS,
+                ALLOWED_ELT_FOLLOWING_CHARS,
+            )
+        )
+    return issues
+
+
 # ── Rendered-text spellcheck ──────────────────────────────────────────
 
 # Tokenizer: sequences of letters/digits/apostrophes that contain at
@@ -1804,6 +1836,22 @@ def build_spell_checker(wordlist_path: Path | None = None) -> SpellChecker:
     return spell
 
 
+def _get_spellcheck_text(element: Tag) -> str:
+    """
+    Extract visible text with spaces between child elements.
+
+    Like ``get_non_code_text`` but uses ``separator=" "`` so that
+    adjacent elements (e.g. date + title in a listing) don't produce
+    concatenated tokens.
+    """
+    temp = BeautifulSoup(str(element), "html.parser")
+    for el in temp.find_all(["code", "pre", "script", "style"]) + temp.find_all(
+        class_=["katex", "katex-display"]
+    ):
+        el.decompose()
+    return temp.get_text(separator=" ")
+
+
 def check_rendered_text_spelling(
     soup: BeautifulSoup,
     spell_checker: SpellChecker | None = None,
@@ -1825,7 +1873,7 @@ def check_rendered_text_spelling(
         if should_skip(element):
             continue
 
-        text = script_utils.get_non_code_text(element)
+        text = _get_spellcheck_text(element)
         tokens = _WORD_TOKEN_RE.findall(text)
 
         # Only check tokens that contain at least one letter
