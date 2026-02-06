@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   generate-newsletter:
@@ -170,18 +169,24 @@ jobs:
 
           echo "Newsletter draft generated"
 
-      - name: Create GitHub Issue with draft
+      - name: Send email via Resend
         env:
-          GH_TOKEN: ${{ github.token }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           DRAFT=$(cat /tmp/newsletter-draft.md)
-          gh issue create \
-            --title "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
-            --body "**Commits:** ${{ steps.commits.outputs.commit_count }}
 
-          ---
+          # Build JSON payload
+          jq -n \
+            --arg from "Newsletter Bot <onboarding@resend.dev>" \
+            --arg to "alex@turntrout.com" \
+            --arg subject "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
+            --arg text "$DRAFT" \
+            '{from: $from, to: $to, subject: $subject, text: $text}' > /tmp/email.json
 
-          $DRAFT"
+          curl -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/email.json
 
       - name: Update last run date
         run: |
