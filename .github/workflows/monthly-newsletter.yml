@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   generate-newsletter:
@@ -169,23 +170,18 @@ jobs:
 
           echo "Newsletter draft generated"
 
-      - name: Send email
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "Newsletter Draft - ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}"
-          to: alex@turntrout.com
-          from: TurnTrout Newsletter Bot <${{ secrets.SMTP_USERNAME }}>
-          body: |
-            Newsletter draft for commits from ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}.
+      - name: Create GitHub Issue with draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DRAFT=$(cat /tmp/newsletter-draft.md)
+          gh issue create \
+            --title "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
+            --body "**Commits:** ${{ steps.commits.outputs.commit_count }}
 
-            Total commits: ${{ steps.commits.outputs.commit_count }}
+          ---
 
-            See attached markdown file for the full draft.
-          attachments: /tmp/newsletter-draft.md
+          $DRAFT"
 
       - name: Update last run date
         run: |
