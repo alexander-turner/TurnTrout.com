@@ -132,7 +132,7 @@ describe("admonition.inline collapsible state persistence", () => {
     ],
     [
       "empty admonition",
-      () => {},
+      () => undefined,
       Object.assign(document.createElement("blockquote"), {
         className: "admonition note is-collapsible",
       }),
@@ -172,9 +172,9 @@ describe("admonition.inline collapsible state persistence", () => {
         document.body.appendChild(create(false, title, body))
       }
       dispatchNav()
-      const ids = [...document.querySelectorAll<HTMLElement>("[data-collapsible-id]")].map(
-        (el) => el.dataset.collapsibleId!,
-      )
+      const ids = [...document.querySelectorAll<HTMLElement>("[data-collapsible-id]")]
+        .map((el) => el.dataset.collapsibleId)
+        .filter((id): id is string => id !== undefined)
       expect(ids).toHaveLength(count)
       verify(ids)
     })
