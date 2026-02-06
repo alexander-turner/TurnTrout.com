@@ -25,7 +25,6 @@ export function uppercaseSmallCapsInHtml(html: string): string {
   return doc.body.innerHTML
 }
 
-/** Uppercases all text in an element */
 function uppercaseAllText(element: Element): void {
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
   let textNode: Text | null
@@ -34,7 +33,6 @@ function uppercaseAllText(element: Element): void {
   }
 }
 
-/** Uppercases text from small-caps elements in plain text selection */
 export function uppercaseSmallCapsInSelection(
   selection: Selection,
   isEntirelyInSmallCaps: boolean,
@@ -44,12 +42,10 @@ export function uppercaseSmallCapsInSelection(
   const range = selection.getRangeAt(0)
   const fragment = range.cloneContents()
 
-  // Create a temporary container to work with the fragment
   const tempDiv = document.createElement("div")
   tempDiv.appendChild(fragment)
 
   if (isEntirelyInSmallCaps) {
-    // Selection is entirely within small-caps, uppercase everything
     uppercaseAllText(tempDiv)
   } else {
     // Find all small-caps elements and uppercase their text
@@ -95,7 +91,7 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
   event.preventDefault()
 
   const fixedHtml = isEntirelyInSmallCaps
-    ? tempDiv.innerHTML.toUpperCase()
+    ? tempDiv.innerHTML
     : uppercaseSmallCapsInHtml(tempDiv.innerHTML)
   const fixedText = uppercaseSmallCapsInSelection(selection, isEntirelyInSmallCaps)
 

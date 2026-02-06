@@ -32,10 +32,22 @@ function createClipboardEvent(type = "copy"): MockClipboardEvent {
   return event
 }
 
+function getSelection(): Selection {
+  const selection = window.getSelection()
+  if (!selection) throw new Error("No selection")
+  return selection
+}
+
+function querySelector<T extends Element>(selector: string): T {
+  const el = document.querySelector<T>(selector)
+  if (!el) throw new Error(`Element not found: ${selector}`)
+  return el
+}
+
 function selectContents(selector: string): Selection {
   const range = document.createRange()
-  range.selectNodeContents(document.querySelector(selector)!)
-  const selection = window.getSelection()!
+  range.selectNodeContents(querySelector(selector))
+  const selection = getSelection()
   selection.removeAllRanges()
   selection.addRange(range)
   return selection
@@ -80,8 +92,8 @@ describe("smallcaps-copy", () => {
 
   describe("uppercaseSmallCapsInSelection", () => {
     it("returns empty string for empty selection", () => {
-      window.getSelection()!.removeAllRanges()
-      expect(uppercaseSmallCapsInSelection(window.getSelection()!, false)).toBe("")
+      getSelection().removeAllRanges()
+      expect(uppercaseSmallCapsInSelection(getSelection(), false)).toBe("")
     })
 
     it.each([
@@ -96,15 +108,13 @@ describe("smallcaps-copy", () => {
     ])("%s", (_, html, isEntirelyInSmallCaps, expected) => {
       document.body.innerHTML = html
       selectContents("body")
-      expect(uppercaseSmallCapsInSelection(window.getSelection()!, isEntirelyInSmallCaps)).toBe(
-        expected,
-      )
+      expect(uppercaseSmallCapsInSelection(getSelection(), isEntirelyInSmallCaps)).toBe(expected)
     })
   })
 
   describe("handleSmallCapsCopy", () => {
     it("does nothing when selection is empty", () => {
-      window.getSelection()!.removeAllRanges()
+      getSelection().removeAllRanges()
       const event = createClipboardEvent()
       handleSmallCapsCopy(event as unknown as ClipboardEvent)
       expect(event.defaultPrevented).toBe(false)
@@ -141,12 +151,14 @@ describe("smallcaps-copy", () => {
 
     it("handles partial selection within small-caps element", () => {
       document.body.innerHTML = '<p><abbr class="small-caps">nasa program</abbr></p>'
-      const textNode = document.querySelector("abbr")!.firstChild!
+      const abbr = querySelector("abbr")
+      const textNode = abbr.firstChild
+      if (!textNode) throw new Error("No text node")
       const range = document.createRange()
       range.setStart(textNode, 0)
       range.setEnd(textNode, 4) // Select "nasa"
-      window.getSelection()!.removeAllRanges()
-      window.getSelection()!.addRange(range)
+      getSelection().removeAllRanges()
+      getSelection().addRange(range)
 
       const event = createClipboardEvent()
       handleSmallCapsCopy(event as unknown as ClipboardEvent)
@@ -156,12 +168,14 @@ describe("smallcaps-copy", () => {
 
     it("does nothing when ancestor has small-caps but selection doesn't include them", () => {
       document.body.innerHTML = '<p>Normal text <abbr class="small-caps">api</abbr> more text</p>'
-      const textNode = document.querySelector("p")!.firstChild!
+      const p = querySelector("p")
+      const textNode = p.firstChild
+      if (!textNode) throw new Error("No text node")
       const range = document.createRange()
       range.setStart(textNode, 0)
       range.setEnd(textNode, 6) // Select "Normal"
-      window.getSelection()!.removeAllRanges()
-      window.getSelection()!.addRange(range)
+      getSelection().removeAllRanges()
+      getSelection().addRange(range)
 
       const event = createClipboardEvent()
       handleSmallCapsCopy(event as unknown as ClipboardEvent)

@@ -577,7 +577,7 @@ How do the following sentences feel to read?
 1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
 2. Signed in the 1990's, NAFTA was a trade deal.
 
-Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI.
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, clipboard copy events are intercepted to restore uppercase letters.
 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
