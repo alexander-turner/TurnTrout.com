@@ -65,10 +65,12 @@ describe("UprightPunctuation", () => {
     })
   })
 
-  describe("skips code/pre/script/style", () => {
+  describe("skips code/pre/script/style/no-formatting", () => {
     it.each([
       ["<p><em><code>(text)</code></em></p>"],
       ["<pre><em>(text)</em></pre>"],
+      ["<script><em>(text)</em></script>"],
+      ["<style><em>(text)</em></style>"],
       ['<p><em><span class="no-formatting">(text)</span></em></p>'],
     ])("leaves %s unchanged", (input) => {
       expect(process(input)).toBe(input)
