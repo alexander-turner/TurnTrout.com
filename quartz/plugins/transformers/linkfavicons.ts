@@ -499,7 +499,7 @@ async function downloadFromGoogle(
       return faviconPath
     }
   } catch (downloadErr) {
-    logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
+    logger.warn(`Failed to download favicon for ${hostname}: ${downloadErr}`)
     urlCache.set(faviconPath, defaultPath) // Cache the failure
   }
   return null
