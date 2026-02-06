@@ -287,6 +287,34 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 }
 
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
+/**
+ * Wraps right single quotes (U+2019) before digits in a span for kerning adjustment.
+ * EB Garamond has excessive spacing between the apostrophe glyph and digits,
+ * which looks especially bad in year abbreviations like '25.
+ */
+const apostropheBeforeDigitRegex = /\u2019(?=\d)/g
+export function fixApostropheKerning(tree: Root): void {
+  visitParents(tree, "text", (node, ancestors) => {
+    const parent = ancestors[ancestors.length - 1] as Parent
+    if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
+
+    const index = parent.children.indexOf(node as ElementContent)
+    replaceRegex(
+      node,
+      index,
+      parent,
+      apostropheBeforeDigitRegex,
+      () => ({
+        before: "",
+        replacedMatch: "\u2019",
+        after: "",
+      }),
+      () => false,
+      "span.apostrophe-kern",
+    )
+  })
+}
+
 export function formatOrdinalSuffixes(tree: Root): void {
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -690,6 +718,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
     formatArrows(tree)
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
+    fixApostropheKerning(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }

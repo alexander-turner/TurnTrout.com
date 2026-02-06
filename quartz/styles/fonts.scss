@@ -248,6 +248,12 @@ dt {
   margin-bottom: 1em;
 }
 
+// EB Garamond has excessive right-side bearing on the right single quote (U+2019)
+// which creates a visible gap before digits in year abbreviations like '25
+.apostrophe-kern {
+  margin-right: -0.1em;
+}
+
 .small-caps,
 article[data-use-dropcap="true"] > p:first-of-type::first-line,
 article[data-use-dropcap="true"] > p:first-of-type .small-caps {

@@ -86,7 +86,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
-        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
+        '<p>I was born in <span class="apostrophe-kern">’</span>94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
       ],
       [
         '<div><p>not confident in that plan - "</p><p>"Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>',
@@ -1925,6 +1925,28 @@ describe("Ordinal Suffixes", () => {
     const input = "<p>(1st) [2nd] {3rd}</p>"
     const expected =
       '<p>(<span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>) [<span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>] {<span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup>}</p>'
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(processedHtml).toBe(expected)
+  })
+})
+
+describe("Apostrophe Kerning", () => {
+  it.each([
+    // Year abbreviation
+    [
+      `<p>summer of ${RIGHT_SINGLE_QUOTE}25</p>`,
+      `<p>summer of <span class="apostrophe-kern">${RIGHT_SINGLE_QUOTE}</span>25</p>`,
+    ],
+    // Multiple year abbreviations
+    [
+      `<p>${RIGHT_SINGLE_QUOTE}24 and ${RIGHT_SINGLE_QUOTE}25</p>`,
+      `<p><span class="apostrophe-kern">${RIGHT_SINGLE_QUOTE}</span>24 and <span class="apostrophe-kern">${RIGHT_SINGLE_QUOTE}</span>25</p>`,
+    ],
+    // Apostrophe before non-digit should not be wrapped
+    [`<p>I${RIGHT_SINGLE_QUOTE}m fine</p>`, `<p>I${RIGHT_SINGLE_QUOTE}m fine</p>`],
+    // Inside code should not be wrapped
+    [`<code>${RIGHT_SINGLE_QUOTE}25</code>`, `<code>${RIGHT_SINGLE_QUOTE}25</code>`],
+  ])("wraps apostrophe before digits for kerning: %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
   })
