@@ -324,6 +324,57 @@ describe("Favicon Utilities", () => {
         "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
       )
     })
+    describe("unnormalized SVG fallback", () => {
+      const subdomainHost = "open.spotify.com"
+
+      beforeEach(() => {
+        linkfavicons.urlCache.clear()
+      })
+
+      it("should find SVG locally via unnormalized hostname", async () => {
+        jest
+          .spyOn(fs.promises, "stat")
+          // Normalized SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+          // Unnormalized SVG found
+          .mockResolvedValueOnce({ size: 1000 } as fs.Stats)
+
+        // Normalized CDN SVG 404
+        jest
+          .spyOn(global, "fetch")
+          .mockResolvedValueOnce(
+            new Response("", { status: 404, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+
+        const result = await linkfavicons.MaybeSaveFavicon(subdomainHost)
+        expect(result).toBe("/static/images/external-favicons/open_spotify_com.svg")
+      })
+
+      it("should find SVG on CDN via unnormalized hostname", async () => {
+        jest
+          .spyOn(fs.promises, "stat")
+          // Normalized SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+          // Unnormalized local SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+
+        jest
+          .spyOn(global, "fetch")
+          // Normalized CDN SVG 404
+          .mockResolvedValueOnce(
+            new Response("", { status: 404, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+          // Unnormalized CDN SVG 200
+          .mockResolvedValueOnce(
+            new Response("SVG", { status: 200, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+
+        const result = await linkfavicons.MaybeSaveFavicon(subdomainHost)
+        expect(result).toBe(
+          "https://assets.turntrout.com/static/images/external-favicons/open_spotify_com.svg",
+        )
+      })
+    })
   })
 
   describe("GetQuartzPath", () => {
@@ -1827,9 +1878,15 @@ describe("getQuartzPath hostname normalization", () => {
       // Counts are stored without extensions (format-agnostic)
       faviconCounts.set(linkfavicons.normalizePathForCounting(normalizedPath), minFaviconCount + 1)
 
-      // Mock SVG check (404), then AVIF check (200)
+      // Mock fetch: normalized SVG (404), unnormalized SVG (404), AVIF (200)
       jest
         .spyOn(global, "fetch")
+        .mockResolvedValueOnce(
+          new Response("", {
+            status: 404,
+            headers: { "Content-Type": "image/svg+xml" },
+          }),
+        )
         .mockResolvedValueOnce(
           new Response("", {
             status: 404,
@@ -1843,9 +1900,10 @@ describe("getQuartzPath hostname normalization", () => {
           }),
         )
 
-      // Mock fs.promises.stat: SVG not found, PNG not found
+      // Mock fs.promises.stat: normalized SVG not found, unnormalized SVG not found, PNG not found
       jest
         .spyOn(fs.promises, "stat")
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
         .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
         .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
 

@@ -559,6 +559,17 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
   const cdnSvg = await checkCdnSvg(svgPath, updatedPath, hostname)
   if (cdnSvg !== null) return cdnSvg
 
+  // Check un-normalized hostname for SVG (e.g., open_spotify_com.svg when normalized is spotify_com.svg)
+  const unnormalizedHostname = hostname.replace(/^www\./, "").replace(/\./g, "_")
+  const unnormalizedSvgPath = `/${faviconFolder}/${unnormalizedHostname}.svg`
+  if (unnormalizedSvgPath !== svgPath) {
+    const unnormalizedLocalSvg = await checkLocalSvg(unnormalizedSvgPath, updatedPath, hostname)
+    if (unnormalizedLocalSvg !== null) return unnormalizedLocalSvg
+
+    const unnormalizedCdnSvg = await checkCdnSvg(unnormalizedSvgPath, updatedPath, hostname)
+    if (unnormalizedCdnSvg !== null) return unnormalizedCdnSvg
+  }
+
   // Return cached AVIF if we have it and no SVG was found
   if (cached !== null) return cached
 
