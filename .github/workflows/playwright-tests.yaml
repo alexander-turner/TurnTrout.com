@@ -15,10 +15,11 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "**/*.spec.ts"
       - "quartz/components/scripts/**"
+      - "quartz/static/scripts/**"
       - "quartz/components/styles/**"
       - "config/playwright/**"
 

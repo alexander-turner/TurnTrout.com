@@ -368,6 +368,7 @@ describe("Asset Dimensions Plugin", () => {
         .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
       const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
 
+      // Should not throw - ENOENT means another worker succeeded
       await assetProcessor.maybeSaveAssetDimensions()
       expect(unlinkSpy).toHaveBeenCalled()
       expect(assetProcessor["needToSaveCache"]).toBe(false)
@@ -1156,6 +1157,21 @@ describe("Asset Dimensions Plugin", () => {
       const imgNode = tree.children[0] as Element
       expect(imgNode.properties?.width).toBeUndefined()
       expect(imgNode.properties?.height).toBeUndefined()
+    })
+
+    it("should default to online mode when offline flag is not provided", async () => {
+      const tree: Root = {
+        type: "root",
+        children: [h("p", ["No assets"]) as Element],
+      }
+      const pluginInstance = addAssetDimensionsFromSrc()
+      // argv without offline property to test the ?? false branch
+      const mockCtx = { argv: {} } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      // Should work without errors (offline defaults to false)
+      expect(tree.children).toHaveLength(1)
     })
   })
 

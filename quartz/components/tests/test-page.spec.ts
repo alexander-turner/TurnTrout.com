@@ -613,6 +613,9 @@ test.describe("Elvish toggle", () => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
+
     // Initially should show Tengwar (elvish-tengwar visible, elvish-translation hidden)
     const tengwar = elvishText.locator(".elvish-tengwar")
     const translation = elvishText.locator(".elvish-translation")
@@ -641,6 +644,9 @@ test.describe("Elvish toggle", () => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
+
     const lowerElt = page.locator(".footnotes").first()
     const lowerEltBoxBefore = await lowerElt.boundingBox()
     expect(lowerEltBoxBefore).not.toBeNull()
@@ -658,6 +664,9 @@ test.describe("Elvish toggle", () => {
   test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
+
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
 
     await elvishText.click()
 
