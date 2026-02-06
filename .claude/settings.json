@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && uvx docformatter --check scripts/*.py 2>&1 && cat .claude/skills/pre-pr-checklist.md"
+            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && uvx docformatter --check scripts/*.py 2>&1 && scripts/spellcheck.sh 2>&1 && cat .claude/skills/pre-pr-checklist.md"
           }
         ]
       }
