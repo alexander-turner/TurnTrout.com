@@ -2,7 +2,7 @@ name: Link checker
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
       - "website_content/**"

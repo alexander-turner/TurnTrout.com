@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "jest-coverage"]
+    branches: ["main", "dev", "jest-coverage"]
     paths:
       - "quartz/**"
       - "website_content/**"

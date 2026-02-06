@@ -2,7 +2,7 @@ name: Source file checks
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "website_content/**"
       - "quartz/**"

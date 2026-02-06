@@ -11,7 +11,7 @@ name: JavaScript linting
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
       - "config/javascript/**"

@@ -2,7 +2,7 @@ name: Python linting
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "scripts/**"
       - "config/python/**"
