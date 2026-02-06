@@ -2478,6 +2478,107 @@ def test_check_link_spacing(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
+        # The original bug: "9combinations" from transform eating whitespace
+        (
+            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            [
+                "Missing space before: 9<abbr>Combinations</abbr>",
+            ],
+        ),
+        # Properly spaced smallcaps
+        (
+            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            [],
+        ),
+        # Missing space after smallcaps
+        (
+            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket</p>',
+            [
+                "Missing space after: <abbr>Nasa</abbr>launched a rocket",
+            ],
+        ),
+        # Allowed punctuation after smallcaps
+        *[
+            (
+                f'<p>The <abbr class="small-caps">Nasa</abbr>{char}s</p>',
+                [],
+            )
+            for char in ("\u2019", ".", ",", "!", "?", ")", "]", ";", ":")
+        ],
+        # Allowed chars before smallcaps (open paren, open bracket, etc.)
+        *[
+            (
+                f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
+                [],
+            )
+            for char in ("(", "[", " ", "-", "—")
+        ],
+        # Ordinal number missing space before
+        (
+            '<p>the3<span class="ordinal-num">rd</span> time</p>',
+            [
+                "Missing space before: the3<span>rd</span>",
+            ],
+        ),
+        # Ordinal suffix: digit before + no space after
+        (
+            '<p>1<sup class="ordinal-suffix">st</sup>place</p>',
+            [
+                "Missing space before: 1<sup>st</sup>",
+                "Missing space after: <sup>st</sup>place",
+            ],
+        ),
+        # Properly spaced ordinal (realistic transform output)
+        (
+            '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
+            [],
+        ),
+        # Fraction missing space after
+        (
+            '<p>about <span class="fraction">1/2</span>cup of flour</p>',
+            [
+                "Missing space after: <span>1/2</span>cup of flour",
+            ],
+        ),
+        # Properly spaced fraction
+        (
+            '<p>about <span class="fraction">1/2</span> cup of flour</p>',
+            [],
+        ),
+        # Arrow missing space before
+        (
+            '<p>go here<span class="right-arrow">\u2192</span> now</p>',
+            [
+                "Missing space before: go here<span>\u2192</span>",
+            ],
+        ),
+        # Monospace arrow properly spaced
+        (
+            '<p>go <span class="monospace-arrow">\u2190</span> back</p>',
+            [],
+        ),
+        # No siblings (element is only child) - no issues
+        (
+            '<p><abbr class="small-caps">Nasa</abbr></p>',
+            [],
+        ),
+        # Regular abbr/span without formatting classes - not checked
+        (
+            "<p>9<abbr>combinations</abbr> test</p>",
+            [],
+        ),
+    ],
+)
+def test_check_inline_formatting_spacing(html, expected):
+    """Test spacing checks around transform-produced inline elements."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_formatting_spacing(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
         # Basic consecutive periods
         (
             "<p>Test..</p>",
