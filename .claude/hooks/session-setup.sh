@@ -77,6 +77,12 @@ if ! command -v shellcheck &>/dev/null && is_root; then
   fi
 fi
 
+if ! command -v fish &>/dev/null && is_root; then
+  if ! apt-get install -y -qq fish 2>/dev/null; then
+    warn "Failed to install fish (needed for fish_indent in lint-staged)"
+  fi
+fi
+
 #######################################
 # Git setup (required - fail on error)
 #######################################
