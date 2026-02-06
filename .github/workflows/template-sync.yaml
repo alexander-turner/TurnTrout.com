@@ -185,10 +185,8 @@ jobs:
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             # Combine changed and new files, convert newlines to spaces
-            {
-              git diff --name-only
-              git ls-files --others --exclude-standard
-            } | tr '\n' ' ' | { read -r changed_paths; echo "changed_paths=$changed_paths" >> $GITHUB_OUTPUT; }
+            changed_paths=$({ git diff --name-only; git ls-files --others --exclude-standard; } | tr '\n' ' ')
+            echo "changed_paths=$changed_paths" >> $GITHUB_OUTPUT
           fi
 
       - name: Show diff (dry run)
