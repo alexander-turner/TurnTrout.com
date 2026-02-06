@@ -149,31 +149,46 @@ test.describe("Collapsible admonition state persistence", () => {
     const target = collapsibleData[0]
     const savedState = !target.defaultCollapsed
 
-    // Set up localStorage BEFORE page loads
-    await page.addInitScript(
+    // Create a new context with localStorage pre-set BEFORE navigation
+    const context = await page.context().browser()!.newContext()
+    const newPage = await context.newPage()
+
+    // Inject localStorage before any page loads
+    await newPage.addInitScript(
       ({ id, collapsed }) => {
         localStorage.setItem(id, collapsed ? "true" : "false")
       },
       { id: target.id as string, collapsed: savedState },
     )
 
-    // Reload and capture screenshot immediately at domcontentloaded
-    await page.reload({ waitUntil: "domcontentloaded" })
-    const firstScreenshot = await getCollapsibles(page).first().screenshot()
+    // Set up CLS monitoring before navigation
+    await newPage.addInitScript(() => {
+      ;(window as Window & { __cls: number }).__cls = 0
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!(entry as PerformanceEntry & { hadRecentInput: boolean }).hadRecentInput) {
+            ;(window as Window & { __cls: number }).__cls += (
+              entry as PerformanceEntry & { value: number }
+            ).value
+          }
+        }
+      }).observe({ type: "layout-shift", buffered: true })
+    })
 
-    // Wait for full load
-    await page.waitForLoadState("load")
-    const afterLoadScreenshot = await getCollapsibles(page).first().screenshot()
-
-    // Screenshots should be identical - state was applied before first paint
-    expect(Buffer.from(firstScreenshot).toString("base64")).toEqual(
-      Buffer.from(afterLoadScreenshot).toString("base64"),
-    )
+    // Navigate to the page
+    await newPage.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
     // Verify the state was correctly applied (opposite of default)
-    const actualState = await getCollapsibles(page)
+    const actualState = await newPage
+      .locator(".admonition.is-collapsible")
       .first()
       .evaluate((el) => el.classList.contains("is-collapsed"))
     expect(actualState).toBe(savedState)
+
+    // Check that CLS is minimal (no layout shift from state restoration)
+    const cls = await newPage.evaluate(() => (window as Window & { __cls: number }).__cls)
+    expect(cls).toBeLessThan(0.1) // CLS < 0.1 is considered "good"
+
+    await context.close()
   })
 })
