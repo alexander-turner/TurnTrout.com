@@ -1815,16 +1815,7 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
 # "9combinations" is one token (flagged as unknown).
 _WORD_TOKEN_RE = re.compile(r"[a-zA-Z0-9]+(?:['\u2019][a-zA-Z]+)*")
 
-_SPELLCHECK_ELEMENTS = (
-    "p",
-    "dt",
-    "dd",
-    "li",
-    "figcaption",
-    "td",
-    "th",
-    *(f"h{i}" for i in range(1, 7)),
-)
+_SPELLCHECK_ELEMENTS = ("p",)
 
 
 def build_spell_checker(wordlist_path: Path | None = None) -> SpellChecker:
