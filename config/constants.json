@@ -58,32 +58,7 @@
     "mlr_press",
     "openpgp",
     "playwright_dev",
-    "mozilla_org",
-    "gabgoh_github_io",
-    "fortmann-roe_com",
-    "avoiding-side-effects_github_io",
-    "confirmlabs_org",
-    "googleusercontent_com",
-    "projectlawful_com",
-    "econlib_org",
-    "montana_edu",
-    "kajsotala_fi",
-    "ucla_edu",
-    "yorku_ca",
-    "equilibriabook_com",
-    "openaipublic_blob_core_windows_net",
-    "jamesaung_com",
-    "xriskfunding_com",
-    "alexinfanger_github_io",
-    "uni-tuebingen_de",
-    "geomarketing_com",
-    "nh_gov",
-    "catsarch_com",
-    "privatedrop_github_io",
-    "unacast_s3_amazonaws_com",
-    "pylint_org",
-    "katex_org",
-    "aypan17_github_io"
+    "mozilla_org"
   ],
   "sessionStoragePondVideoKey": "pond-video-timestamp",
   "pondVideoId": "pond-video",
@@ -146,10 +121,6 @@
     {
       "pattern": "^xcancel\\.com$",
       "to": "x.com"
-    },
-    {
-      "pattern": "^mastodon-analytics\\.com$",
-      "to": "mastodon.social"
     }
   ]
 }
