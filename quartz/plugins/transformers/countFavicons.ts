@@ -139,8 +139,23 @@ function countLinksInMarkdownTree(tree: MDRoot): void {
 }
 
 /**
+ * Applies text transforms from configured transformer plugins to raw file content.
+ * This ensures that dynamically injected content (e.g., from PopulateExternalMarkdown)
+ * is included in the link count.
+ */
+function applyTextTransforms(ctx: BuildCtx, content: string): string {
+  let result: string | Buffer = content
+  for (const plugin of ctx.cfg.plugins.transformers.filter((p) => p.textTransform)) {
+    result = plugin.textTransform?.(ctx, result) ?? result
+  }
+  return typeof result === "string" ? result : result.toString()
+}
+
+/**
  * Pre-processes all markdown files to count links before HTML conversion.
  * This must complete before AddFavicons processes any files.
+ * Applies text transforms first so that dynamically injected content
+ * (e.g., external README files) is included in the count.
  */
 export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Promise<void> {
   logger.debug(`Counting links across ${filePaths.length} files`)
@@ -151,7 +166,9 @@ export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Pr
   for (const filePath of filePaths) {
     try {
       const file = await read(filePath)
-      const tree = processor.parse(file) as MDRoot
+      const rawContent = file.value.toString().trim()
+      const transformedContent = applyTextTransforms(ctx, rawContent)
+      const tree = processor.parse(transformedContent) as MDRoot
       countLinksInMarkdownTree(tree)
     } catch (error) {
       logger.error(`Failed to count links in ${filePath}: ${error}`)

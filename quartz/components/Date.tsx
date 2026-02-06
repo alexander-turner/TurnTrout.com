@@ -75,7 +75,7 @@ export function formatDate(
     suffix = getOrdinalSuffix(day)
     if (formatOrdinalSuffix) {
       suffix = `<span class="ordinal-suffix"${extraOrdinalStyling ? ` style="${extraOrdinalStyling}"` : ""}>${suffix}</span>`
-      day = `<span class="ordinal-num">${day}</span>`
+      day = `<span class="date-ordinal-num">${day}</span>`
     }
   }
   return `${month} ${day}${suffix}, ${year}`
