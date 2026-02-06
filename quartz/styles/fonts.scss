@@ -63,12 +63,7 @@ $heading-sizes: (
 // FONT SETUP
 $fonts-dir: "/static/styles/fonts";
 
-@mixin font-face(
-  $font-family,
-  $file-name,
-  $ext: ".woff2",
-  $font-features: none
-) {
+@mixin font-face($font-family, $file-name, $ext: ".woff2", $font-features: none) {
   @font-face {
     font-family: $font-family;
     font-optical-sizing: auto;
@@ -83,16 +78,14 @@ $fonts-dir: "/static/styles/fonts";
 
 @font-face {
   font-family: "EBGaramondInitialsF1";
-  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2")
-    format("woff2");
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2") format("woff2");
   font-display: block;
   -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
 }
 
 @font-face {
   font-family: "EBGaramondInitialsF2";
-  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2")
-    format("woff2");
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2") format("woff2");
   font-display: block;
   -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 }
@@ -106,24 +99,12 @@ $fonts-dir: "/static/styles/fonts";
   font-display: swap;
 }
 
-@include font-face(
-  "EBGaramondOriginal",
-  "EBGaramond/EBGaramond08-Regular-original",
-  ".woff2"
-);
+@include font-face("EBGaramondOriginal", "EBGaramond/EBGaramond08-Regular-original", ".woff2");
 @include font-face("EBGaramond12", "EBGaramond/EBGaramond12-Regular", ".woff2");
-@include font-face(
-  "EBGaramond12Italic",
-  "EBGaramond/EBGaramond12-Regular",
-  ".woff2"
-);
+@include font-face("EBGaramond12Italic", "EBGaramond/EBGaramond12-Regular", ".woff2");
 
 // Less commonly used
-@include font-face(
-  "DejaVuSerifCondensed-Bold",
-  "DejaVuSerifCondensed-Bold-subset",
-  ".woff2"
-);
+@include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
 @include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
@@ -186,11 +167,7 @@ em {
 
   // Hover state - show hint that clicking will reveal translation
   &:hover {
-    text-decoration-color: color-mix(
-      in srgb,
-      var(--foreground) 70%,
-      transparent
-    );
+    text-decoration-color: color-mix(in srgb, var(--foreground) 70%, transparent);
   }
 
   // Focus state for keyboard users
@@ -396,7 +373,9 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// Avoid sidebars
+// Body text ordinals (like "21st place") use lining-nums for visual consistency.
+// Date ordinals (.date-ordinal-num) intentionally have no styling so they
+// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
 article .ordinal-num {
   font-variant-numeric: lining-nums;
 }

@@ -2555,23 +2555,37 @@ def test_check_consecutive_periods(html, expected):
     "html,expected",
     [
         # Valid Tengwar text (PUA characters U+E000-U+E07F)
-        ('<span lang="qya">\uE000\uE001\uE002</span>', []),
+        ('<span lang="qya">\ue000\ue001\ue002</span>', []),
         # Valid Tengwar with punctuation
-        ('<span lang="qya">\uE000\uE001: \uE002!</span>', []),
+        ('<span lang="qya">\ue000\ue001: \ue002!</span>', []),
         # Valid Tengwar with allowed special chars (en-dash, em-dash, middle dot)
-        ('<span lang="qya">\uE000—\uE001–\uE002⸱</span>', []),
+        ('<span lang="qya">\ue000—\ue001–\ue002⸱</span>', []),
         # Empty Tengwar element (should be skipped)
         ('<span lang="qya">   </span>', []),
         # Invalid: contains arrow character (corruption from text processing)
-        ('<span lang="qya">\uE000⤴\uE001</span>', ["Invalid chars ['⤴ (U+2934)'] in Tengwar: \uE000⤴\uE001..."]),
+        (
+            '<span lang="qya">\ue000⤴\ue001</span>',
+            ["Invalid chars ['⤴ (U+2934)'] in Tengwar: \ue000⤴\ue001..."],
+        ),
         # Invalid: contains double arrow (another corruption indicator)
-        ('<span lang="qya">\uE000⇔\uE001</span>', ["Invalid chars ['⇔ (U+21D4)'] in Tengwar: \uE000⇔\uE001..."]),
+        (
+            '<span lang="qya">\ue000⇔\ue001</span>',
+            ["Invalid chars ['⇔ (U+21D4)'] in Tengwar: \ue000⇔\ue001..."],
+        ),
         # Invalid: contains Latin letters (wrong encoding)
-        ('<span lang="qya">ABC</span>', ["Invalid chars ['A (U+0041)', 'B (U+0042)', 'C (U+0043)'] in Tengwar: ABC..."]),
+        (
+            '<span lang="qya">ABC</span>',
+            [
+                "Invalid chars ['A (U+0041)', 'B (U+0042)', 'C (U+0043)'] in Tengwar: ABC..."
+            ],
+        ),
         # No Quenya elements
         ('<span lang="en">Hello</span>', []),
         # Nested Quenya elements
-        ('<div lang="qya"><span>\uE000</span><span>X</span></div>', ["Invalid chars ['X (U+0058)'] in Tengwar: \uE000X..."]),
+        (
+            '<div lang="qya"><span>\ue000</span><span>X</span></div>',
+            ["Invalid chars ['X (U+0058)'] in Tengwar: \ue000X..."],
+        ),
     ],
 )
 def test_check_tengwar_characters(html, expected):
@@ -3218,13 +3232,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
@@ -4417,6 +4429,47 @@ def test_check_unrendered_transclusions(html, expected):
 
 
 @pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Winking face at end of line
+        (
+            "<p>Join Team Shard! ;)</p>",
+            ["Unrendered emoticon [';)']: Join Team Shard! ;)"],
+        ),
+        # Smiling face
+        (
+            "<p>Hello :) there</p>",
+            ["Unrendered emoticon [':)']: Hello :) there"],
+        ),
+        # Frowning face
+        ("<p>That's sad :(</p>", ["Unrendered emoticon [':(']: That's sad :("]),
+        # No emoticons - just punctuation
+        ("<p>Function call: foo();</p>", []),
+        # No emoticons - already converted to emoji
+        ("<p>Join Team Shard! 😉</p>", []),
+        # In code block - should be skipped
+        ("<code>;)</code>", []),
+        ("<pre>:)</pre>", []),
+        # Multiple emoticons in same text
+        (
+            "<p>Hello :) and goodbye ;)</p>",
+            ["Unrendered emoticon [':)', ';)']: Hello :) and goodbye ;)"],
+        ),
+        # Emoticon not surrounded by space/boundary - should not match
+        ("<p>foo;)bar</p>", []),
+        ("<p>a:)b</p>", []),
+        # At start of string
+        ("<p>:) Hello</p>", ["Unrendered emoticon [':)']: :) Hello"]),
+    ],
+)
+def test_check_unrendered_emoticons(html, expected):
+    """Test the check_unrendered_emoticons function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_emoticons(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
     "input_text,expected",
     [
         # Smart quotes normalization
@@ -5500,3 +5553,80 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_images_have_dimensions(soup)
     assert sorted(result) == sorted(expected_issues)
+
+
+# Citation uniqueness tests
+@pytest.mark.parametrize(
+    "html,expected_keys",
+    [
+        # Single citation in code block
+        (
+            "<code>@misc{Turner2024Design,\n  author = {Alex Turner},\n}</code>",
+            ["Turner2024Design"],
+        ),
+        # Citation in pre block
+        (
+            "<pre>@misc{Smith2023Test,\n  author = {John Smith},\n}</pre>",
+            ["Smith2023Test"],
+        ),
+        # Multiple citations in one code block
+        (
+            "<code>@misc{First2024One,\n}\n@misc{Second2024Two,\n}</code>",
+            ["First2024One", "Second2024Two"],
+        ),
+        # No citations
+        (
+            "<code>some other code</code>",
+            [],
+        ),
+        # Citation outside code block (should not be found)
+        (
+            "<p>@misc{NotFound,}</p>",
+            [],
+        ),
+        # Nested code block (key found in both pre and code)
+        (
+            "<pre><code>@misc{Nested2024Key,\n}</code></pre>",
+            ["Nested2024Key", "Nested2024Key"],
+        ),
+    ],
+)
+def test_extract_citation_keys_from_html(html: str, expected_keys: list[str]):
+    """Test extracting citation keys from HTML."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.extract_citation_keys_from_html(soup)
+    assert sorted(result) == sorted(expected_keys)
+
+
+def test_find_duplicate_citations_no_duplicates():
+    """Test that unique citations don't report issues."""
+    citation_to_files = {
+        "Turner2024Design": ["page1.html"],
+        "Smith2023Test": ["page2.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
+    assert result == []
+
+
+def test_find_duplicate_citations_with_duplicates():
+    """Test that duplicate citations are detected."""
+    citation_to_files = {
+        "Turner2024The": ["page1.html", "page2.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
+    assert len(result) == 1
+    assert "Turner2024The" in result[0]
+    assert "2 files" in result[0]
+
+
+def test_find_duplicate_citations_multiple_duplicates():
+    """Test detection of multiple different duplicate keys."""
+    citation_to_files = {
+        "Turner2024A": ["page1.html", "page2.html"],
+        "Turner2024B": ["page3.html"],
+        "Smith2023X": ["page1.html", "page4.html", "page5.html"],
+    }
+    result = built_site_checks._find_duplicate_citations(citation_to_files)
+    assert len(result) == 2
+    assert any("Turner2024A" in issue for issue in result)
+    assert any("Smith2023X" in issue and "3 files" in issue for issue in result)

@@ -23,12 +23,23 @@ function getLastName(author: string): string {
 }
 
 /**
- * Generates a citation key: LastName + Year + FirstTitleWord
+ * Converts a hyphenated slug to PascalCase.
+ * e.g., "shard-theory" → "ShardTheory", "design" → "Design"
  */
-function generateCitationKey(authors: string[], year: number, title: string): string {
+function slugToPascalCase(slug: string): string {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join("")
+}
+
+/**
+ * Generates a citation key: LastName + Year + PascalCaseSlug
+ */
+function generateCitationKey(authors: string[], year: number, slug: string): string {
   const lastName = getLastName(authors[0])
-  const firstWord = title.split(/\s+/)[0].replace(/[^a-zA-Z]/g, "")
-  return `${lastName}${year}${firstWord}`
+  const pascalSlug = slugToPascalCase(slug)
+  return `${lastName}${year}${pascalSlug}`
 }
 
 /**
@@ -55,14 +66,16 @@ export function generateBibtexEntry(
   const permalink = frontmatter.permalink as string | undefined
   const url = `https://${baseUrl}/${permalink ?? slug}`
 
-  const citationKey = generateCitationKey(authors, year, title ?? "Untitled")
+  // Use permalink if available, otherwise use slug for citation key
+  const citationSlug = permalink ?? slug
+  const citationKey = generateCitationKey(authors, year, citationSlug)
   const authorString = authors.join(" and ")
 
   return `@misc{${citationKey},
-  author = {${authorString}},
-  title = {${title}},
-  year = {${year}},
-  url = {${url}},
+  author = "${authorString}",
+  title = "${title}",
+  year = ${year},
+  url = "${url}"
 }`
 }
 
