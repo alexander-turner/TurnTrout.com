@@ -165,8 +165,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: file:/tmp/punctilio/punctilio-1.4.0.tgz
-        version: file:../../../tmp/punctilio/punctilio-1.4.0.tgz(unified@11.0.5)
+        specifier: ^1.4.2
+        version: 1.4.2(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -7790,9 +7790,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@file:../../../tmp/punctilio/punctilio-1.4.0.tgz:
-    resolution: {integrity: sha512-7RShoOynJruqTVnCF8kgn75fcCv+aicFv6VjDnL3em+6o2atwfyRKf+dusY08M0sJQhgZv/wBK8VhBnfh/JuwQ==, tarball: file:../../../tmp/punctilio/punctilio-1.4.0.tgz}
-    version: 1.4.0
+  punctilio@1.4.2:
+    resolution: {integrity: sha512-YOsU1TybJ3NYwi6m+qsIypvpTZvKF1HToTiy6i8DyZ66OVvYRwAJzX2xZTZlh8qjRg9VGko8smkJjiogvZiSiA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       unified: ^11.0.0
@@ -18892,7 +18891,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@file:../../../tmp/punctilio/punctilio-1.4.0.tgz(unified@11.0.5):
+  punctilio@1.4.2(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
