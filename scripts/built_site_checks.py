@@ -1783,6 +1783,9 @@ _INLINE_FORMATTING_SELECTORS = (
 )
 
 
+_ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
     """
     Check spacing around transform-produced inline elements.
@@ -1790,17 +1793,25 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
     Catches whitespace-eating bugs from HAST transformers that wrap text in
     inline elements (e.g. "9combinations" from a missing space before a
     smallcaps ``<abbr>``).
+
+    Abbreviations allow a trailing "s" for plurals (e.g. "LLMs" renders as
+    ``<abbr>llm</abbr>s``).
     """
     issues: list[str] = []
-    selector = ", ".join(_INLINE_FORMATTING_SELECTORS)
-    for element in _tags_only(soup.select(selector)):
-        issues.extend(
-            _check_element_spacing(
-                element,
-                ALLOWED_ELT_PRECEDING_CHARS,
-                ALLOWED_ELT_FOLLOWING_CHARS,
-            )
+    for selector in _INLINE_FORMATTING_SELECTORS:
+        following_chars = (
+            _ABBR_FOLLOWING_CHARS
+            if selector == "abbr.small-caps"
+            else ALLOWED_ELT_FOLLOWING_CHARS
         )
+        for element in _tags_only(soup.select(selector)):
+            issues.extend(
+                _check_element_spacing(
+                    element,
+                    ALLOWED_ELT_PRECEDING_CHARS,
+                    following_chars,
+                )
+            )
     return issues
 
 
@@ -2148,12 +2159,40 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     ``get_text()`` for each paragraph (no separator, so adjacent
     child-element text is concatenated — exactly what the browser
     renders).
+
+    Abbreviation text (lowercased by the smallcaps transform) is
+    uppercased so that the spellchecker sees e.g. "LLM" instead of
+    "llm".
     """
     paragraphs: list[str] = []
     for element in _tags_only(soup.find_all("p")):
         if should_skip(element):
             continue
-        text = script_utils.get_non_code_text(element).strip()
+        # Skip paragraphs inside navigation / footer / header
+        if element.find_parent(["nav", "footer", "header"]):
+            continue
+
+        # Work on a copy to avoid mutating the original soup
+        el_copy = copy.copy(element)
+
+        # Uppercase abbreviation text (smallcaps transform lowercases them)
+        for abbr in el_copy.select("abbr.small-caps"):
+            abbr.string = abbr.get_text().upper()
+
+        # Remove footnote reference links to avoid "word1" concatenation
+        for link in el_copy.find_all("a", id=True):
+            link_id = link.get("id", "")
+            if isinstance(link_id, str) and link_id.startswith(
+                "user-content-fnref-"
+            ):
+                # Remove the whole <sup> parent if it only wraps this link
+                parent = link.parent
+                if isinstance(parent, Tag) and parent.name == "sup":
+                    parent.decompose()
+                else:
+                    link.decompose()
+
+        text = script_utils.get_non_code_text(el_copy).strip()
         if text:
             paragraphs.append(text)
     return paragraphs
@@ -2165,9 +2204,9 @@ def _spellcheck_flattened_paragraphs(
     """
     Run ``spellchecker-cli`` on flattened paragraph text.
 
-    Writes all paragraphs to a temp ``.txt`` file (one per line, with
-    ``# <file>`` headers) and invokes the same spellchecker used for
-    source markdown.  Returns a list of human-readable issue strings.
+    Writes all paragraphs to a temp ``.txt`` file (one per line) and
+    invokes the same spellchecker used for source markdown.  Returns a
+    list of human-readable issue strings.
 
     Args:
         paragraph_map: Mapping from HTML file path to list of paragraph texts.
@@ -2182,6 +2221,10 @@ def _spellcheck_flattened_paragraphs(
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
     issues: list[str] = []
 
+    # Build line-number → source-file mapping for error reporting
+    line_to_source: dict[int, str] = {}
+    line_num = 1
+
     with tempfile.NamedTemporaryFile(
         mode="w",
         suffix=".txt",
@@ -2193,10 +2236,9 @@ def _spellcheck_flattened_paragraphs(
         tmp_path = Path(tmp.name)
         for file_path, paragraphs in paragraph_map.items():
             for para in paragraphs:
-                # Write file path as context (spellchecker ignores # lines
-                # in .txt files? No — we need source info for reporting).
-                # Use a tag we can parse later.
-                tmp.write(f"[{file_path}] {para}\n")
+                tmp.write(f"{para}\n")
+                line_to_source[line_num] = file_path
+                line_num += 1
 
     try:
         result = subprocess.run(  # noqa: S603
@@ -2226,7 +2268,14 @@ def _spellcheck_flattened_paragraphs(
                 line = line.strip()
                 if not line or "warning" not in line:
                     continue
-                issues.append(line)
+                # Try to extract line number and prepend source file
+                match = re.match(r".+?:(\d+):\d+", line)
+                if match:
+                    ln = int(match.group(1))
+                    source = line_to_source.get(ln, "unknown")
+                    issues.append(f"[{source}] {line}")
+                else:
+                    issues.append(line)
     finally:
         tmp_path.unlink(missing_ok=True)
 
