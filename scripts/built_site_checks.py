@@ -6,8 +6,10 @@ import copy
 import html
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -2138,6 +2140,99 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
+def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract flattened visible text from ``<p>`` elements.
+
+    Strips code, KaTeX, script, and style content, then returns
+    ``get_text()`` for each paragraph (no separator, so adjacent
+    child-element text is concatenated — exactly what the browser
+    renders).
+    """
+    paragraphs: list[str] = []
+    for element in _tags_only(soup.find_all("p")):
+        if should_skip(element):
+            continue
+        text = script_utils.get_non_code_text(element).strip()
+        if text:
+            paragraphs.append(text)
+    return paragraphs
+
+
+def _spellcheck_flattened_paragraphs(
+    paragraph_map: dict[str, list[str]],
+) -> list[str]:
+    """
+    Run ``spellchecker-cli`` on flattened paragraph text.
+
+    Writes all paragraphs to a temp ``.txt`` file (one per line, with
+    ``# <file>`` headers) and invokes the same spellchecker used for
+    source markdown.  Returns a list of human-readable issue strings.
+
+    Args:
+        paragraph_map: Mapping from HTML file path to list of paragraph texts.
+    """
+    if not paragraph_map:
+        return []
+
+    pnpm = shutil.which("pnpm")
+    if pnpm is None:
+        return ["pnpm not found — skipping rendered-text spellcheck"]
+
+    wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    issues: list[str] = []
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-rendered-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp:
+        tmp_path = Path(tmp.name)
+        for file_path, paragraphs in paragraph_map.items():
+            for para in paragraphs:
+                # Write file path as context (spellchecker ignores # lines
+                # in .txt files? No — we need source info for reporting).
+                # Use a tag we can parse later.
+                tmp.write(f"[{file_path}] {para}\n")
+
+    try:
+        result = subprocess.run(  # noqa: S603
+            [
+                pnpm,
+                "exec",
+                "spellchecker",
+                "--no-suggestions",
+                "--quiet",
+                "--files",
+                str(tmp_path),
+                "--plugins",
+                "spell",
+                *(
+                    ["--dictionaries", str(wordlist)]
+                    if wordlist.exists()
+                    else []
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(_GIT_ROOT),
+        )
+
+        if result.returncode != 0 and result.stdout:
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if not line or "warning" not in line:
+                    continue
+                issues.append(line)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    return issues
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2150,6 +2245,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    paragraph_map: dict[str, list[str]] = {}
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2189,10 +2285,29 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 file_path, public_dir, citation_to_files
             )
 
+            # Collect flattened paragraph text for spellcheck
+            # skipcq: PTC-W6004
+            with open(file_path, encoding="utf-8") as f:
+                soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+            if not script_utils.is_redirect(soup_for_paras):
+                paras = _extract_flat_paragraph_texts(soup_for_paras)
+                if paras:
+                    rel = str(file_path.relative_to(public_dir))
+                    paragraph_map[rel] = paras
+
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
     if citation_issues:
         _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
+    # Spellcheck flattened paragraph text across all pages
+    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
+    if spelling_issues:
+        _print_issues(
+            public_dir,
+            {"rendered_text_spelling": spelling_issues},
+        )
         issues_found_in_html = True
 
     return issues_found_in_html
