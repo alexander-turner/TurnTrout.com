@@ -1561,6 +1561,7 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
+        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -1817,6 +1818,38 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
 WHITELISTED_EMPHASIS = {
     ("Some", ""),  # For e.g. "Some<i>one</i>"
 }
+
+
+_INLINE_FORMATTING_SELECTORS = (
+    "abbr.small-caps",
+    "span.ordinal-num",
+    "sup.ordinal-suffix",
+    "span.fraction",
+    "span.monospace-arrow",
+    "span.right-arrow",
+)
+
+
+def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that transform-produced inline elements (smallcaps, ordinals,
+    fractions, arrows) have proper spacing with surrounding text.
+
+    These elements are created by HAST transformers that wrap text in
+    ``<abbr>``/``<span>``/``<sup>`` tags. If a transformer drops whitespace
+    at the boundary, words get concatenated (e.g. "9combinations").
+    """
+    issues: list[str] = []
+    selector = ", ".join(_INLINE_FORMATTING_SELECTORS)
+    for element in _tags_only(soup.select(selector)):
+        issues.extend(
+            _check_element_spacing(
+                element,
+                ALLOWED_ELT_PRECEDING_CHARS,
+                ALLOWED_ELT_FOLLOWING_CHARS,
+            )
+        )
+    return issues
 
 
 def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
