@@ -28,8 +28,7 @@
     "cnn_com",
     "forum_effectivealtruism_org",
     "substack_com",
-    "google_com",
-    "npmjs_com"
+    "google_com"
   ],
   "faviconSubstringBlacklist": [
     "incompleteideas_net",
