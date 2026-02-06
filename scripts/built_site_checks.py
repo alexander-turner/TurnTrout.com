@@ -2248,7 +2248,7 @@ def _spellcheck_flattened_paragraphs(
     issues: list[str] = []
 
     try:
-        subprocess.run(  # noqa: S603
+        result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
             [
                 pnpm,
                 "exec",
@@ -2267,23 +2267,23 @@ def _spellcheck_flattened_paragraphs(
             ],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
             cwd=str(_GIT_ROOT),
         )
-    except subprocess.CalledProcessError as exc:
-        stdout = exc.stdout or ""
-        for line in stdout.splitlines():
-            line = line.strip()
-            if not line or "warning" not in line:
-                continue
-            # Try to extract line number and prepend source file
-            match = re.match(r".+?:(\d+):\d+", line)
-            if match:
-                ln = int(match.group(1))
-                source = line_to_source.get(ln, "unknown")
-                issues.append(f"[{source}] {line}")
-            else:
-                issues.append(line)
+
+        if result.returncode != 0 and result.stdout:
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if not line or "warning" not in line:
+                    continue
+                # Try to extract line number and prepend source file
+                match = re.match(r".+?:(\d+):\d+", line)
+                if match:
+                    ln = int(match.group(1))
+                    source = line_to_source.get(ln, "unknown")
+                    issues.append(f"[{source}] {line}")
+                else:
+                    issues.append(line)
     finally:
         tmp_path.unlink(missing_ok=True)
 

@@ -2638,8 +2638,8 @@ def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
         patch("shutil.which", return_value="/usr/bin/pnpm"),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd=[], output=stdout, stderr=""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout=stdout, stderr=""
         )
         result = built_site_checks._spellcheck_flattened_paragraphs(
             {"page.html": ["Hello wrold."]}
@@ -2657,8 +2657,8 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
         patch("shutil.which", return_value="/usr/bin/pnpm"),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.side_effect = subprocess.CalledProcessError(
-            returncode=1, cmd=[], output="some warning text", stderr=""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout="some warning text", stderr=""
         )
         result = built_site_checks._spellcheck_flattened_paragraphs(
             {"page.html": ["test"]}
