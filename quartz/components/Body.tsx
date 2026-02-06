@@ -45,7 +45,11 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   )
 }
 
-Body.afterDOMLoaded = clipboardScript + elvishToggleScript + smallCapsCopyScript
+// Each script must be wrapped in its own IIFE to prevent minified variable name
+// collisions when they share a scope (componentResources wraps the whole string in one IIFE)
+Body.afterDOMLoaded = [clipboardScript, elvishToggleScript, smallCapsCopyScript]
+  .map((s) => `(function(){${s}})();`)
+  .join("\n")
 Body.css = clipboardStyle
 
 export default (() => Body) satisfies QuartzComponentConstructor
