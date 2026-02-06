@@ -1,0 +1,195 @@
+name: Monthly Newsletter Draft
+
+on:
+  schedule:
+    # Run on the 28th of each month at 9am UTC
+    - cron: "0 9 28 * *"
+  workflow_dispatch:
+    inputs:
+      since_date:
+        description: "Override start date (YYYY-MM-DD). Leave empty to use last run date."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for git log
+
+      - name: Restore last newsletter date
+        id: cache-date
+        uses: actions/cache/restore@v4
+        with:
+          path: .last-newsletter-date
+          key: newsletter-last-date-
+          restore-keys: |
+            newsletter-last-date-
+
+      - name: Determine date range
+        id: dates
+        run: |
+          # Default start date for first run: January 28, 2026
+          DEFAULT_START="2026-01-28"
+
+          # Check for manual override
+          if [ -n "${{ github.event.inputs.since_date }}" ]; then
+            START_DATE="${{ github.event.inputs.since_date }}"
+          else
+            # Try to get last successful run date from cache
+            if [ -f .last-newsletter-date ]; then
+              START_DATE=$(cat .last-newsletter-date)
+            else
+              START_DATE="$DEFAULT_START"
+            fi
+          fi
+
+          END_DATE=$(date +%Y-%m-%d)
+
+          echo "start_date=$START_DATE" >> $GITHUB_OUTPUT
+          echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
+          echo "Generating newsletter for commits from $START_DATE to $END_DATE"
+
+      - name: Gather commit information
+        id: commits
+        run: |
+          START_DATE="${{ steps.dates.outputs.start_date }}"
+          END_DATE="${{ steps.dates.outputs.end_date }}"
+
+          # Get commit count
+          COMMIT_COUNT=$(git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" --oneline | wc -l)
+          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+          # Get detailed commit log
+          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+            --format="%h %ad %s" --date=short > /tmp/commits.txt
+
+          # Get new/modified content files
+          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+            --name-only --pretty=format: -- "website_content/*.md" | sort -u | grep -v '^$' > /tmp/content_files.txt || true
+
+          # Get feature commits
+          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+            --oneline | grep -iE "^[a-f0-9]+ (feat|feature|add)" > /tmp/features.txt || true
+
+          # Get fix commits
+          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+            --oneline | grep -iE "^[a-f0-9]+ fix" > /tmp/fixes.txt || true
+
+          echo "Gathered $COMMIT_COUNT commits"
+
+      - name: Extract article metadata
+        run: |
+          # For each modified content file, extract frontmatter
+          echo "# Modified Articles" > /tmp/articles.md
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              echo "## $file" >> /tmp/articles.md
+              # Extract title and description from frontmatter
+              head -50 "$file" | grep -E "^(title:|description:|date_published:)" >> /tmp/articles.md || true
+              echo "" >> /tmp/articles.md
+            fi
+          done < /tmp/content_files.txt
+
+      - name: Generate newsletter draft with Claude
+        id: newsletter
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Read gathered data
+          COMMITS=$(cat /tmp/commits.txt | head -200)
+          FEATURES=$(cat /tmp/features.txt 2>/dev/null || echo "None found")
+          FIXES=$(cat /tmp/fixes.txt 2>/dev/null || echo "None found")
+          ARTICLES=$(cat /tmp/articles.md)
+          COMMIT_COUNT="${{ steps.commits.outputs.commit_count }}"
+          START_DATE="${{ steps.dates.outputs.start_date }}"
+          END_DATE="${{ steps.dates.outputs.end_date }}"
+
+          # Read the prompt template
+          PROMPT_TEMPLATE=$(cat .github/prompts/newsletter-prompt.md)
+
+          # Build the full prompt (note: no quotes around PROMPT_END to allow variable expansion)
+          cat > /tmp/full-prompt.md << PROMPT_END
+          ${PROMPT_TEMPLATE}
+
+          ## Data for this newsletter
+
+          **Date range:** ${START_DATE} to ${END_DATE}
+          **Total commits:** ${COMMIT_COUNT}
+
+          ### Recent commits (sample):
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Feature commits:
+          \`\`\`
+          ${FEATURES}
+          \`\`\`
+
+          ### Fix commits:
+          \`\`\`
+          ${FIXES}
+          \`\`\`
+
+          ### Modified/new articles:
+          ${ARTICLES}
+
+          Please generate a newsletter draft based on this information. Focus on the most interesting and notable changes. Use the style from the "after" example.
+          PROMPT_END
+
+          # Escape for JSON
+          ESCAPED_PROMPT=$(cat /tmp/full-prompt.md | jq -Rs .)
+
+          # Call Claude API
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d "{
+              \"model\": \"claude-sonnet-4-20250514\",
+              \"max_tokens\": 8192,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": ${ESCAPED_PROMPT}
+              }]
+            }")
+
+          # Extract the text content
+          NEWSLETTER=$(echo "$RESPONSE" | jq -r '.content[0].text // "Error generating newsletter"')
+
+          # Save to file
+          echo "$NEWSLETTER" > /tmp/newsletter-draft.md
+
+          echo "Newsletter draft generated"
+
+      - name: Create GitHub Issue with draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DRAFT=$(cat /tmp/newsletter-draft.md)
+          gh issue create \
+            --title "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
+            --body "**Commits:** ${{ steps.commits.outputs.commit_count }}
+
+          ---
+
+          $DRAFT"
+
+      - name: Update last run date
+        run: |
+          echo "${{ steps.dates.outputs.end_date }}" > .last-newsletter-date
+          echo "Updated last newsletter date to ${{ steps.dates.outputs.end_date }}"
+
+      - name: Save last newsletter date to cache
+        uses: actions/cache/save@v4
+        with:
+          path: .last-newsletter-date
+          key: newsletter-last-date-${{ steps.dates.outputs.end_date }}
