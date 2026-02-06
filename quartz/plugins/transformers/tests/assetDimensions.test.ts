@@ -355,7 +355,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(unlinkSpy).toHaveBeenCalled()
     })
 
-    it("should silently succeed on ENOENT rename error (race condition)", async () => {
+    it("should handle ENOENT rename error gracefully (race condition)", async () => {
       const cacheData: AssetDimensionMap = {
         "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
       }
@@ -1114,7 +1114,7 @@ describe("Asset Dimensions Plugin", () => {
       const tree: Root = { type: "root", children: [] }
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const mockCtx = { argv: {} } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
