@@ -6,8 +6,10 @@ import copy
 import html
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -1520,6 +1522,7 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
+        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -1768,6 +1771,48 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
         )
 
     return problematic_links
+
+
+_INLINE_FORMATTING_SELECTORS = (
+    "abbr.small-caps",
+    "span.ordinal-num",
+    "sup.ordinal-suffix",
+    "span.fraction",
+    "span.monospace-arrow",
+    "span.right-arrow",
+)
+
+
+_ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
+def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
+    """
+    Check spacing around transform-produced inline elements.
+
+    Catches whitespace-eating bugs from HAST transformers that wrap text in
+    inline elements (e.g. "9combinations" from a missing space before a
+    smallcaps ``<abbr>``).
+
+    Abbreviations allow a trailing "s" for plurals (e.g. "LLMs" renders as
+    ``<abbr>llm</abbr>s``).
+    """
+    issues: list[str] = []
+    for selector in _INLINE_FORMATTING_SELECTORS:
+        following_chars = (
+            _ABBR_FOLLOWING_CHARS
+            if selector == "abbr.small-caps"
+            else ALLOWED_ELT_FOLLOWING_CHARS
+        )
+        for element in _tags_only(soup.select(selector)):
+            issues.extend(
+                _check_element_spacing(
+                    element,
+                    ALLOWED_ELT_PRECEDING_CHARS,
+                    following_chars,
+                )
+            )
+    return issues
 
 
 # Whitelisted emphasis patterns that should be ignored
@@ -2106,6 +2151,151 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
+_SKIP_PARENT_CLASSES = ("sequence-links", "page-listing")
+
+
+def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract flattened visible text from ``<p>`` elements.
+
+    Strips code, KaTeX, script, and style content, then returns
+    ``get_text()`` for each paragraph (no separator, so adjacent
+    child-element text is concatenated — exactly what the browser
+    renders).
+
+    Abbreviation text (lowercased by the smallcaps transform) is
+    uppercased so that the spellchecker sees e.g. "LLM" instead of
+    "llm".
+    """
+    paragraphs: list[str] = []
+    # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
+    for article in _tags_only(soup.find_all("article")):
+        for element in _tags_only(article.find_all("p")):
+            if should_skip(element):
+                continue
+            # Skip paragraphs inside navigation / footer / header
+            if element.find_parent(["nav", "footer", "header"]):
+                continue
+            if any(
+                element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
+            ):
+                continue
+
+            # Work on a copy to avoid mutating the original soup
+            el_copy = copy.copy(element)
+
+            # Uppercase abbreviation text (smallcaps lowercases them)
+            for abbr in el_copy.select("abbr.small-caps"):
+                abbr.string = abbr.get_text().upper()
+
+            # Remove footnote ref links to avoid "word1" concatenation
+            for link in el_copy.find_all("a", id=True):
+                link_id = link.get("id", "")
+                if isinstance(link_id, str) and link_id.startswith(
+                    "user-content-fnref-"
+                ):
+                    parent = link.parent
+                    if isinstance(parent, Tag) and parent.name == "sup":
+                        parent.decompose()
+                    else:
+                        link.decompose()
+
+            text = script_utils.get_non_code_text(el_copy).strip()
+            if text:
+                paragraphs.append(text)
+    return paragraphs
+
+
+def _write_paragraphs_to_tempfile(
+    paragraph_map: dict[str, list[str]],
+) -> tuple[Path, dict[int, str]]:
+    """Write paragraph texts to a temp file and return path + line mapping."""
+    line_to_source: dict[int, str] = {}
+    line_num = 1
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-rendered-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp:
+        for file_path, paragraphs in paragraph_map.items():
+            for para in paragraphs:
+                tmp.write(f"{para}\n")
+                line_to_source[line_num] = file_path
+                line_num += 1
+        return Path(tmp.name), line_to_source
+
+
+def _spellcheck_flattened_paragraphs(
+    paragraph_map: dict[str, list[str]],
+) -> list[str]:
+    """
+    Run ``spellchecker-cli`` on flattened paragraph text.
+
+    Writes all paragraphs to a temp ``.txt`` file (one per line) and
+    invokes the same spellchecker used for source markdown.  Returns a
+    list of human-readable issue strings.
+
+    Args:
+        paragraph_map: Mapping from HTML file path to list of paragraph texts.
+    """
+    if not paragraph_map:
+        return []
+
+    pnpm = shutil.which("pnpm")
+    if pnpm is None:
+        return ["pnpm not found — skipping rendered-text spellcheck"]
+
+    wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
+    issues: list[str] = []
+
+    try:
+        result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
+            [
+                pnpm,
+                "exec",
+                "spellchecker",
+                "--no-suggestions",
+                "--quiet",
+                "--files",
+                str(tmp_path),
+                "--plugins",
+                "spell",
+                *(
+                    ["--dictionaries", str(wordlist)]
+                    if wordlist.exists()
+                    else []
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(_GIT_ROOT),
+        )
+
+        if result.returncode != 0 and result.stdout:
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if not line or "warning" not in line:
+                    continue
+                # Try to extract line number and prepend source file
+                match = re.match(r".+?:(\d+):\d+", line)
+                if match:
+                    ln = int(match.group(1))
+                    source = line_to_source.get(ln, "unknown")
+                    issues.append(f"[{source}] {line}")
+                else:
+                    issues.append(line)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    return issues
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2118,6 +2308,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    paragraph_map: dict[str, list[str]] = {}
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2157,10 +2348,29 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 file_path, public_dir, citation_to_files
             )
 
+            # Collect flattened paragraph text for spellcheck
+            # skipcq: PTC-W6004
+            with open(file_path, encoding="utf-8") as f:
+                soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+            if not script_utils.is_redirect(soup_for_paras):
+                paras = _extract_flat_paragraph_texts(soup_for_paras)
+                if paras:
+                    rel = str(file_path.relative_to(public_dir))
+                    paragraph_map[rel] = paras
+
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
     if citation_issues:
         _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
+    # Spellcheck flattened paragraph text across all pages
+    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
+    if spelling_issues:
+        _print_issues(
+            public_dir,
+            {"rendered_text_spelling": spelling_issues},
+        )
         issues_found_in_html = True
 
     return issues_found_in_html
