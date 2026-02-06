@@ -163,6 +163,20 @@ function normalizeHostname(hostname: string): string {
 }
 
 /**
+ * Normalize a blacklist entry (underscore-separated hostname) through the same
+ * PSL pipeline used for real hostnames, so entries like "playpen_icomtek_csir_co_za"
+ * are automatically reduced to "icomtek_co_za" — matching what getQuartzPath produces.
+ */
+export function normalizeBlacklistEntry(entry: string): string {
+  const hostname = entry.replaceAll("_", ".")
+  const normalized = normalizeHostname(hostname)
+  return normalized.replaceAll(".", "_")
+}
+
+/** Blacklist entries normalized through the same PSL pipeline as hostnames. */
+const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeBlacklistEntry)
+
+/**
  * Normalizes a favicon path for counting by removing format-specific extensions.
  * Counts are format-agnostic (domain-based), so we store paths without extensions.
  *
@@ -352,7 +366,7 @@ export function getFaviconUrl(faviconPath: string): string {
  * @returns The favicon path, or defaultPath if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) =>
+  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
     faviconPath.includes(entry),
   )
   if (isBlacklisted) {
@@ -870,7 +884,9 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: Map<string, number>,
 ): boolean {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) => imgPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+    imgPath.includes(entry),
+  )
   if (isBlacklisted) return false
 
   // Normalize countKey (remove extension) to match format-agnostic counts

@@ -502,7 +502,7 @@ describe("Favicon Utilities", () => {
     describe("favicon blacklist", () => {
       it.each(
         faviconSubstringBlacklist.map((blacklistEntry: string) => [
-          `/static/images/external-favicons/${blacklistEntry}.png`,
+          `/static/images/external-favicons/${linkfavicons.normalizeBlacklistEntry(blacklistEntry)}.png`,
         ]),
       )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
         const faviconCounts = new Map<string, number>()
@@ -515,7 +515,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should exclude favicons with blacklisted substring in middle of path", () => {
-        const blacklistEntry = faviconSubstringBlacklist[0]
+        const blacklistEntry = linkfavicons.normalizeBlacklistEntry(faviconSubstringBlacklist[0])
         const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
         const faviconCounts = new Map<string, number>()
         // Counts are stored without extensions (format-agnostic)
@@ -1671,7 +1671,7 @@ describe("transformUrl", () => {
 
   it.each(
     faviconSubstringBlacklist.map((blacklistEntry: string) => [
-      `/static/images/external-favicons/${blacklistEntry}.png`,
+      `/static/images/external-favicons/${linkfavicons.normalizeBlacklistEntry(blacklistEntry)}.png`,
       defaultPath,
     ]),
   )("should return defaultPath if blacklisted: %s", (input, expected) => {
@@ -1766,6 +1766,17 @@ describe("normalizeHostname", () => {
   it("should handle turntrout.com specially", () => {
     const result = linkfavicons.getQuartzPath("turntrout.com")
     expect(result).toBe(specialFaviconPaths.turntrout)
+  })
+})
+
+describe("normalizeBlacklistEntry", () => {
+  it.each([
+    ["playpen_icomtek_csir_co_za", "csir_co_za", "strips subdomains with multi-part TLD"],
+    ["incompleteideas_net", "incompleteideas_net", "already normalized"],
+    ["blog_example_com", "example_com", "strips subdomain"],
+    ["developer_mozilla_org", "mozilla_org", "strips subdomain"],
+  ])("should normalize %s to %s (%s)", (input, expected) => {
+    expect(linkfavicons.normalizeBlacklistEntry(input)).toBe(expected)
   })
 })
 
@@ -1980,7 +1991,7 @@ describe("maybeSpliceText edge cases", () => {
 
 describe("shouldIncludeFavicon edge cases", () => {
   it("should exclude blacklisted favicon even if whitelisted", () => {
-    const blacklistEntry = faviconSubstringBlacklist[0]
+    const blacklistEntry = linkfavicons.normalizeBlacklistEntry(faviconSubstringBlacklist[0])
     const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
     const faviconCounts = new Map<string, number>()
     // Counts are stored without extensions (format-agnostic)
