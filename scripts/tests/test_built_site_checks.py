@@ -3,7 +3,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import ANY, patch
+from unittest.mock import patch
 
 import pytest
 import requests  # type: ignore[import]
@@ -2528,89 +2528,6 @@ def test_check_inline_formatting_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
-@pytest.fixture()
-def spell_checker():
-    """Create a SpellChecker with a small custom wordlist for tests."""
-    spell = built_site_checks.SpellChecker()
-    # Add words that would appear in the custom wordlist
-    spell.word_frequency.load_words(["turntrout", "nasa"])
-    return spell
-
-
-@pytest.mark.parametrize(
-    "html,expected_fragments",
-    [
-        # Transform concatenation now caught by check_inline_formatting_spacing;
-        # spellcheck uses separator=" " so these become valid separate tokens.
-        (
-            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies.</p>',
-            [],
-        ),
-        (
-            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket.</p>',
-            [],
-        ),
-        # Actual misspelling in article text
-        (
-            "<p>This sentense has a typo.</p>",
-            ["sentense"],
-        ),
-        # Listing page concatenation (dates+titles) — no false positives
-        (
-            "<p><span>12/5/2024</span><span>Gradient Routing</span></p>",
-            [],
-        ),
-        # Code blocks should be ignored
-        (
-            "<p><code>notarealword</code> is fine.</p>",
-            [],
-        ),
-        # KaTeX should be ignored
-        (
-            '<p><span class="katex">xyzfake</span> is fine.</p>',
-            [],
-        ),
-        # Custom wordlist words should pass
-        (
-            "<p>Visit turntrout for more.</p>",
-            [],
-        ),
-        # No spell_checker — returns empty
-    ],
-)
-def test_check_rendered_text_spelling(html, expected_fragments, spell_checker):
-    """Test spellcheck on flattened rendered HTML text."""
-    soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_rendered_text_spelling(soup, spell_checker)
-    if not expected_fragments:
-        assert result == []
-    else:
-        for fragment in expected_fragments:
-            assert any(
-                fragment in issue for issue in result
-            ), f"Expected {fragment!r} in issues, got: {result}"
-
-
-def test_check_rendered_text_spelling_no_checker():
-    """Returns empty list when no spell_checker is provided."""
-    soup = BeautifulSoup("<p>notarealword</p>", "html.parser")
-    assert built_site_checks.check_rendered_text_spelling(soup, None) == []
-
-
-def test_build_spell_checker_with_wordlist(tmp_path):
-    """build_spell_checker loads words from a wordlist file."""
-    wordlist = tmp_path / "wordlist.txt"
-    wordlist.write_text("customterm\nturntrout\n")
-    spell = built_site_checks.build_spell_checker(wordlist)
-    assert not spell.unknown(["customterm", "turntrout"])
-
-
-def test_build_spell_checker_no_wordlist():
-    """build_spell_checker works without a wordlist."""
-    spell = built_site_checks.build_spell_checker(None)
-    assert not spell.unknown(["hello", "world"])
-
-
 @pytest.mark.parametrize(
     "html,expected",
     [
@@ -3612,7 +3529,6 @@ def test_main_handles_markdown_mapping(
             md_file,
             should_check_fonts=False,
             defined_css_variables={"--color-primary", "--color-secondary"},
-            spell_checker=ANY,
         )
 
 
@@ -3671,7 +3587,6 @@ def test_main_command_line_args(
         None,
         should_check_fonts=True,
         defined_css_variables={"--color-primary", "--color-secondary"},
-        spell_checker=ANY,
     )
 
 
