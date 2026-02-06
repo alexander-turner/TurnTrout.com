@@ -1096,6 +1096,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyspellchecker"
+version = "0.8.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/f4/870865239781117f75f788594c98fc3c65836ad9b93779550f369700187a/pyspellchecker-0.8.4.tar.gz", hash = "sha256:48cafa76d65c30ce4d81d0831938f25e8f34ede243c1cc6840014b0eb51ad629", size = 7238678, upload-time = "2025-11-30T00:18:39.415Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8e/79/2a6993dd02c537ae1344a693f20f9b556206a5385c398022fb66cb004b3a/pyspellchecker-0.8.4-py3-none-any.whl", hash = "sha256:20c53d119568011bbaef68608aceb956b888bcd9d563798f7770721a112b8255", size = 7236997, upload-time = "2025-11-30T00:18:37.411Z" },
+]
+
+[[package]]
 name = "pytest"
 version = "9.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1389,6 +1398,7 @@ dependencies = [
     { name = "psutil" },
     { name = "pyasn1" },
     { name = "pylint" },
+    { name = "pyspellchecker" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
@@ -1430,6 +1440,7 @@ requires-dist = [
     { name = "psutil" },
     { name = "pyasn1", specifier = ">=0.6.2" },
     { name = "pylint", specifier = ">=4.0.4" },
+    { name = "pyspellchecker" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
