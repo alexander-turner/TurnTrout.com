@@ -2528,6 +2528,26 @@ def test_check_inline_formatting_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+def test_extract_flat_paragraph_texts():
+    """Test flattened paragraph text extraction."""
+    html = """
+    <p>9<abbr class="small-caps">Combinations</abbr> of strategies.</p>
+    <p><code>skip_this</code> Normal text.</p>
+    <p class="no-formatting">Skip this whole element.</p>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert "9Combinations of strategies." in result[0]
+    assert "Normal text." in result[1]
+    assert "skip_this" not in result[1]
+
+
+def test_spellcheck_flattened_paragraphs_empty():
+    """Empty input returns empty output."""
+    assert built_site_checks._spellcheck_flattened_paragraphs({}) == []
+
+
 @pytest.mark.parametrize(
     "html,expected",
     [
