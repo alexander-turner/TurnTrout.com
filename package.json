@@ -29,7 +29,8 @@
   "lint-staged": {
     "*.{css,scss}": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
-      "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix"
+      "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
     "*.json": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
