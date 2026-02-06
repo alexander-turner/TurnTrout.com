@@ -2,7 +2,7 @@ name: Built site checks
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
       - "website_content/**"
