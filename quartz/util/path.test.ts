@@ -3,7 +3,8 @@ import type { Element, Text } from "hast"
 import { describe, it, expect } from "@jest/globals"
 import { h } from "hastscript"
 
-import { type FullSlug, normalizeHastElement } from "./path"
+import { normalizeHastElement } from "./normalize-hast"
+import { type FullSlug } from "./path"
 
 describe("normalizeHastElement", () => {
   const baseSlug = "test/page" as FullSlug
@@ -87,5 +88,14 @@ describe("normalizeHastElement", () => {
     const paragraph = result.children[0] as Element
     const link = paragraph.children[0] as Element
     expect(link.properties?.href).toBe("../other/page#nested")
+  })
+
+  it("should not modify absolute URLs", () => {
+    const input = h("p", [h("a", { href: "https://example.com" }, "Absolute link")])
+
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const link = result.children[0] as Element
+    expect(link.properties?.href).toBe("https://example.com")
   })
 })

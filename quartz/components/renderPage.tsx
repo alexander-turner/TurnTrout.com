@@ -8,14 +8,8 @@ import { visit } from "unist-util-visit"
 
 import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
-import {
-  clone,
-  type FullSlug,
-  type RelativeURL,
-  joinSegments,
-  normalizeHastElement,
-  simplifySlug,
-} from "../util/path"
+import { normalizeHastElement } from "../util/normalize-hast"
+import { clone, type FullSlug, type RelativeURL, joinSegments, simplifySlug } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
 import { locale } from "./constants"
