@@ -1,15 +1,56 @@
 /**
  * @jest-environment jsdom
  */
+import type { Root } from "hast"
+
 import { describe, it, expect } from "@jest/globals"
-import { h } from "preact"
+import { h } from "hastscript"
+import { h as preactH } from "preact"
 import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-import { type GlobalConfiguration } from "../../cfg"
+import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
-import AuthorsConstructor, { formatAuthors } from "../Authors"
+import { type BuildCtx } from "../../util/ctx"
+import { type FullSlug } from "../../util/path"
+import { formatAuthors } from "../Authors"
+import AuthorsConstructor from "../Authors"
+
+const Authors = AuthorsConstructor()
+
+const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
+  ({
+    slug: "test" as FullSlug,
+    frontmatter: {
+      title: "Test Page",
+    },
+    ...overrides,
+  }) as QuartzPluginData
+
+const createProps = (fileData: QuartzPluginData): QuartzComponentProps => {
+  const cfg = {
+    baseUrl: "http://example.com",
+    analytics: { provider: "google", tagId: "dummy" },
+    configuration: {},
+    plugins: [],
+  } as unknown as GlobalConfiguration
+
+  return {
+    fileData,
+    allFiles: [],
+    cfg,
+    ctx: {
+      cfg: {} as unknown as QuartzConfig,
+      allSlugs: [] as FullSlug[],
+      argv: {} as unknown,
+    } as BuildCtx,
+    externalResources: { css: [], js: [] },
+    children: [],
+    tree: h("root") as unknown as Root,
+    displayClass: undefined,
+  }
+}
 
 describe("formatAuthors", () => {
   it.each([
@@ -46,38 +87,40 @@ describe("formatAuthors", () => {
 })
 
 describe("Authors component", () => {
-  const Component = AuthorsConstructor()
-  const cfg = {} as GlobalConfiguration
-
-  const makeProps = (frontmatter: Record<string, unknown> = {}): QuartzComponentProps =>
-    ({
-      fileData: { frontmatter: { title: "Test", ...frontmatter } } as QuartzPluginData,
-      cfg,
-    }) as QuartzComponentProps
-
-  it("renders default author when no authors specified", () => {
-    const html = render(h(Component, makeProps()))
-    expect(html).toContain("By Alex Turner")
+  it.each([
+    { frontmatter: { title: "Test", hide_metadata: true }, expected: "", name: "hide_metadata" },
+    { frontmatter: { title: "Test", hide_authors: true }, expected: "", name: "hide_authors" },
+  ])("returns empty when $name is true", ({ frontmatter, expected }) => {
+    const html = render(preactH(Authors, createProps(createFileData({ frontmatter }))))
+    expect(html).toBe(expected)
   })
 
-  it("renders custom authors", () => {
-    const html = render(h(Component, makeProps({ authors: ["Alice", "Bob"] })))
-    expect(html).toContain("By Alice and Bob")
-  })
-
-  it("returns null when hide_metadata is set", () => {
-    const html = render(h(Component, makeProps({ hide_metadata: true })))
-    expect(html).toBe("")
-  })
-
-  it("returns null when hide_authors is set", () => {
-    const html = render(h(Component, makeProps({ hide_authors: true })))
-    expect(html).toBe("")
-  })
-
-  it("renders publication info when date_published is set", () => {
-    const html = render(h(Component, makeProps({ date_published: new Date("2024-01-15") })))
-    expect(html).toContain("By Alex Turner")
-    expect(html).toContain("2024")
+  it.each([
+    {
+      frontmatter: { title: "Test" },
+      contains: ["By Alex Turner", 'class="authors"'],
+      notContains: ["Published"],
+      name: "default author, no publication info",
+    },
+    {
+      frontmatter: { title: "Test", authors: ["John Doe", "Jane Smith"] },
+      contains: ["By John Doe and Jane Smith"],
+      notContains: [],
+      name: "custom authors",
+    },
+    {
+      frontmatter: {
+        title: "Test",
+        date_published: new Date("2024-01-15"),
+        original_url: "https://example.com",
+      },
+      contains: ["authors", "Published"],
+      notContains: [],
+      name: "with publication info",
+    },
+  ])("renders $name", ({ frontmatter, contains, notContains }) => {
+    const html = render(preactH(Authors, createProps(createFileData({ frontmatter }))))
+    contains.forEach((text) => expect(html).toContain(text))
+    notContains.forEach((text) => expect(html).not.toContain(text))
   })
 })
