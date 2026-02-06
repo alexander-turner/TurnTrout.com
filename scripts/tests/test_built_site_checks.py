@@ -2535,11 +2535,11 @@ def test_check_inline_formatting_spacing(html, expected):
 
 def test_extract_flat_paragraph_texts():
     """Test flattened paragraph text extraction."""
-    html = """
+    html = """<article>
     <p>9<abbr class="small-caps">combinations</abbr> of strategies.</p>
     <p><code>skip_this</code> Normal text.</p>
     <p class="no-formatting">Skip this whole element.</p>
-    """
+    </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
@@ -2549,15 +2549,29 @@ def test_extract_flat_paragraph_texts():
     assert "skip_this" not in result[1]
 
 
-def test_extract_flat_paragraph_texts_skips_nav_footer():
-    """Paragraphs inside nav/footer/header/sequence-links are skipped."""
+def test_extract_flat_paragraph_texts_skips_non_article():
+    """Paragraphs outside <article> are skipped entirely."""
     html = """
+    <p>Outside article.</p>
+    <article><p>Inside article.</p></article>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Inside article." in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_nav_footer():
+    """Paragraphs inside nav/footer/header/sequence-links/page-listing are
+    skipped."""
+    html = """<article>
     <nav><p>PreviousLessons</p></nav>
     <footer><p>2025Apply</p></footer>
     <header><p>Site header text</p></header>
     <div class="sequence-links"><p><em>Previous</em>Reward is enough</p></div>
+    <div class="page-listing"><p>ListingTitle tags dates</p></div>
     <p>Normal paragraph.</p>
-    """
+    </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1
@@ -2566,9 +2580,9 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
 
 def test_extract_flat_paragraph_texts_strips_footnote_refs():
     """Footnote reference links are removed to avoid 'word1' concatenation."""
-    html = """
+    html = """<article>
     <p>A couple<sup><a id="user-content-fnref-1" href="#fn1">1</a></sup> of things.</p>
-    """
+    </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1
@@ -2578,9 +2592,9 @@ def test_extract_flat_paragraph_texts_strips_footnote_refs():
 
 def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
     """Footnote ref link without <sup> parent is also removed."""
-    html = """
+    html = """<article>
     <p>A word<a id="user-content-fnref-2" href="#fn2">2</a> here.</p>
-    """
+    </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1

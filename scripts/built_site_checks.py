@@ -2193,6 +2193,9 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
+_SKIP_PARENT_CLASSES = ("sequence-links", "page-listing")
+
+
 def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
@@ -2207,38 +2210,41 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     "llm".
     """
     paragraphs: list[str] = []
-    for element in _tags_only(soup.find_all("p")):
-        if should_skip(element):
-            continue
-        # Skip paragraphs inside navigation / footer / header / sequence links
-        if element.find_parent(["nav", "footer", "header"]):
-            continue
-        if element.find_parent(class_="sequence-links"):
-            continue
-
-        # Work on a copy to avoid mutating the original soup
-        el_copy = copy.copy(element)
-
-        # Uppercase abbreviation text (smallcaps transform lowercases them)
-        for abbr in el_copy.select("abbr.small-caps"):
-            abbr.string = abbr.get_text().upper()
-
-        # Remove footnote reference links to avoid "word1" concatenation
-        for link in el_copy.find_all("a", id=True):
-            link_id = link.get("id", "")
-            if isinstance(link_id, str) and link_id.startswith(
-                "user-content-fnref-"
+    # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
+    for article in _tags_only(soup.find_all("article")):
+        for element in _tags_only(article.find_all("p")):
+            if should_skip(element):
+                continue
+            # Skip paragraphs inside navigation / footer / header
+            if element.find_parent(["nav", "footer", "header"]):
+                continue
+            if any(
+                element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
             ):
-                # Remove the whole <sup> parent if it only wraps this link
-                parent = link.parent
-                if isinstance(parent, Tag) and parent.name == "sup":
-                    parent.decompose()
-                else:
-                    link.decompose()
+                continue
 
-        text = script_utils.get_non_code_text(el_copy).strip()
-        if text:
-            paragraphs.append(text)
+            # Work on a copy to avoid mutating the original soup
+            el_copy = copy.copy(element)
+
+            # Uppercase abbreviation text (smallcaps lowercases them)
+            for abbr in el_copy.select("abbr.small-caps"):
+                abbr.string = abbr.get_text().upper()
+
+            # Remove footnote ref links to avoid "word1" concatenation
+            for link in el_copy.find_all("a", id=True):
+                link_id = link.get("id", "")
+                if isinstance(link_id, str) and link_id.startswith(
+                    "user-content-fnref-"
+                ):
+                    parent = link.parent
+                    if isinstance(parent, Tag) and parent.name == "sup":
+                        parent.decompose()
+                    else:
+                        link.decompose()
+
+            text = script_utils.get_non_code_text(el_copy).strip()
+            if text:
+                paragraphs.append(text)
     return paragraphs
 
 
