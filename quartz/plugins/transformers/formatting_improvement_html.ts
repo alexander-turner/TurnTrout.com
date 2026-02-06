@@ -315,13 +315,15 @@ export function formatLNumbers(tree: Root): void {
     const newNodes: (Text | Element)[] = []
 
     while ((match = l_pRegex.exec(node.value)) !== null) {
+      const { prefix, number } = match.groups as { prefix: string; number: string }
+
       // Add text before the match
       if (match.index > lastIndex) {
         newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
       }
 
       // Add the space/start of line
-      newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
+      newNodes.push({ type: "text", value: prefix })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
@@ -331,7 +333,7 @@ export function formatLNumbers(tree: Root): void {
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match.groups?.number ?? "" }],
+        children: [{ type: "text", value: number }],
       })
 
       lastIndex = l_pRegex.lastIndex

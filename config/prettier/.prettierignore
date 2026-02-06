@@ -3,3 +3,7 @@ public
 **.min.*
 node_modules
 .quartz-cache
+coverage
+.venv
+.vale-styles
+.logs

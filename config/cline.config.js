@@ -26,6 +26,6 @@ export default {
   verifyInformation: true,
   // Presentation settings
   professionalTone: true,
-  // Code style settings 
+  // Code style settings
   enforceExplicitTypes: true,
 }

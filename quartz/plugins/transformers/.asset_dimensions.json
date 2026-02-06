@@ -6242,5 +6242,9 @@
   "https://assets.turntrout.com/twemoji/2194.svg": {
     "width": 36,
     "height": 36
+  },
+  "https://assets.turntrout.com/static/images/test.avif": {
+    "width": 200,
+    "height": 150
   }
 }

@@ -1126,6 +1126,9 @@ describe("Asset Dimensions Plugin", () => {
         children: [h("img", { src: cdnImgSrc }) as Element],
       }
 
+      // Ensure empty cache so dimensions aren't loaded from disk
+      assetProcessor.setDirectCache({})
+
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: true } } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
@@ -1138,6 +1141,14 @@ describe("Asset Dimensions Plugin", () => {
       const imgNode = tree.children[0] as Element
       expect(imgNode.properties?.width).toBeUndefined()
       expect(imgNode.properties?.height).toBeUndefined()
+    })
+
+    it("should default to online mode when offline is undefined", () => {
+      const pluginInstance = addAssetDimensionsFromSrc()
+      // When offline is undefined, htmlPlugins should not throw
+      const mockCtx = { argv: {} } as BuildCtx
+      const plugins = pluginInstance.htmlPlugins(mockCtx)
+      expect(plugins).toHaveLength(1)
     })
   })
 

@@ -1,4 +1,9 @@
 #!/bin/bash
+# Pre-commit hook for TurnTrout.com
+#
+# IMPORTANT: This file has project-specific customizations (timestamps, docformatter, pyupgrade).
+# Do NOT replace with the generic template version during template-sync.
+# Future Claudes: Leave this file as-is.
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
