@@ -19,7 +19,6 @@ import AuthorsConstructor from "../Authors"
 
 const Authors = AuthorsConstructor()
 
-// Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
   ({
     slug: "test" as FullSlug,
@@ -29,7 +28,6 @@ const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPlugin
     ...overrides,
   }) as QuartzPluginData
 
-// Helper function to create test props
 const createProps = (fileData: QuartzPluginData): QuartzComponentProps => {
   const cfg = {
     baseUrl: "http://example.com",
@@ -89,70 +87,40 @@ describe("formatAuthors", () => {
 })
 
 describe("Authors component", () => {
-  it("returns null when hide_metadata is true", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", hide_metadata: true },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toBe("")
+  it.each([
+    { frontmatter: { title: "Test", hide_metadata: true }, expected: "", name: "hide_metadata" },
+    { frontmatter: { title: "Test", hide_authors: true }, expected: "", name: "hide_authors" },
+  ])("returns empty when $name is true", ({ frontmatter, expected }) => {
+    const html = render(preactH(Authors, createProps(createFileData({ frontmatter }))))
+    expect(html).toBe(expected)
   })
 
-  it("returns null when hide_authors is true", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", hide_authors: true },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toBe("")
-  })
-
-  it("renders with default author when no authors specified", () => {
-    const fileData = createFileData({
+  it.each([
+    {
       frontmatter: { title: "Test" },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toContain("By Alex Turner")
-    expect(html).toContain('class="authors"')
-  })
-
-  it("renders with custom authors", () => {
-    const fileData = createFileData({
+      contains: ["By Alex Turner", 'class="authors"'],
+      notContains: ["Published"],
+      name: "default author, no publication info",
+    },
+    {
       frontmatter: { title: "Test", authors: ["John Doe", "Jane Smith"] },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toContain("By John Doe and Jane Smith")
-  })
-
-  it("renders publication info when date_published is available", () => {
-    const fileData = createFileData({
+      contains: ["By John Doe and Jane Smith"],
+      notContains: [],
+      name: "custom authors",
+    },
+    {
       frontmatter: {
         title: "Test",
         date_published: new Date("2024-01-15"),
         original_url: "https://example.com",
       },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toContain("authors")
-    expect(html).toContain("Published")
-  })
-
-  it("renders without publication info when date_published is missing", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test" },
-    })
-    const props = createProps(fileData)
-    const element = preactH(Authors, props)
-    const html = render(element)
-    expect(html).toContain("By Alex Turner")
-    expect(html).not.toContain("Published")
+      contains: ["authors", "Published"],
+      notContains: [],
+      name: "with publication info",
+    },
+  ])("renders $name", ({ frontmatter, contains, notContains }) => {
+    const html = render(preactH(Authors, createProps(createFileData({ frontmatter }))))
+    contains.forEach((text) => expect(html).toContain(text))
+    notContains.forEach((text) => expect(html).not.toContain(text))
   })
 })
