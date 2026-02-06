@@ -125,6 +125,7 @@ export default (() => {
     const fontPreloadNames = [
       "EBGaramond/EBGaramond-InitialsF1",
       "EBGaramond/EBGaramond-InitialsF2",
+      "tengwar_artano/TengwarArtano",
     ]
     const fontPreloads = fontPreloadNames.map((font) => {
       return (
