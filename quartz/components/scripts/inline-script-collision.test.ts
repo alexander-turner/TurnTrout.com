@@ -14,7 +14,7 @@ import { describe, expect, it } from "@jest/globals"
 import { execSync } from "child_process"
 import { join } from "path"
 
-const SCRIPTS_DIR = join(__dirname)
+const SCRIPTS_DIR = join(process.cwd(), "quartz", "components", "scripts")
 
 /**
  * Scripts concatenated in Body.tsx's afterDOMLoaded.
