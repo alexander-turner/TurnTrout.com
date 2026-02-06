@@ -3,7 +3,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 import pytest
 import requests  # type: ignore[import]
@@ -2475,105 +2475,82 @@ def test_check_link_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+@pytest.fixture()
+def spell_checker():
+    """Create a SpellChecker with a small custom wordlist for tests."""
+    spell = built_site_checks.SpellChecker()
+    # Add words that would appear in the custom wordlist
+    spell.word_frequency.load_words(["turntrout", "nasa"])
+    return spell
+
+
 @pytest.mark.parametrize(
-    "html,expected",
+    "html,expected_fragments",
     [
         # The original bug: "9combinations" from transform eating whitespace
         (
-            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies</p>',
-            [
-                "Missing space before: 9<abbr>Combinations</abbr>",
-            ],
+            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies.</p>',
+            ["9combinations"],
         ),
-        # Properly spaced smallcaps
+        # Word+word concatenation from transform
         (
-            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket.</p>',
+            ["nasalaunched"],
+        ),
+        # Properly spaced — no issues
+        (
+            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies.</p>',
             [],
         ),
-        # Missing space after smallcaps
+        # Code blocks should be ignored
         (
-            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket</p>',
-            [
-                "Missing space after: <abbr>Nasa</abbr>launched a rocket",
-            ],
-        ),
-        # Allowed punctuation after smallcaps
-        *[
-            (
-                f'<p>The <abbr class="small-caps">Nasa</abbr>{char}s</p>',
-                [],
-            )
-            for char in ("\u2019", ".", ",", "!", "?", ")", "]", ";", ":")
-        ],
-        # Allowed chars before smallcaps (open paren, open bracket, etc.)
-        *[
-            (
-                f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
-                [],
-            )
-            for char in ("(", "[", " ", "-", "—")
-        ],
-        # Ordinal number missing space before
-        (
-            '<p>the3<span class="ordinal-num">rd</span> time</p>',
-            [
-                "Missing space before: the3<span>rd</span>",
-            ],
-        ),
-        # Ordinal suffix: digit before + no space after
-        (
-            '<p>1<sup class="ordinal-suffix">st</sup>place</p>',
-            [
-                "Missing space before: 1<sup>st</sup>",
-                "Missing space after: <sup>st</sup>place",
-            ],
-        ),
-        # Properly spaced ordinal (realistic transform output)
-        (
-            '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
+            "<p><code>notarealword</code> is fine.</p>",
             [],
         ),
-        # Fraction missing space after
+        # KaTeX should be ignored
         (
-            '<p>about <span class="fraction">1/2</span>cup of flour</p>',
-            [
-                "Missing space after: <span>1/2</span>cup of flour",
-            ],
-        ),
-        # Properly spaced fraction
-        (
-            '<p>about <span class="fraction">1/2</span> cup of flour</p>',
+            '<p><span class="katex">xyzfake</span> is fine.</p>',
             [],
         ),
-        # Arrow missing space before
+        # Custom wordlist words should pass
         (
-            '<p>go here<span class="right-arrow">\u2192</span> now</p>',
-            [
-                "Missing space before: go here<span>\u2192</span>",
-            ],
-        ),
-        # Monospace arrow properly spaced
-        (
-            '<p>go <span class="monospace-arrow">\u2190</span> back</p>',
+            "<p>Visit turntrout for more.</p>",
             [],
         ),
-        # No siblings (element is only child) - no issues
-        (
-            '<p><abbr class="small-caps">Nasa</abbr></p>',
-            [],
-        ),
-        # Regular abbr/span without formatting classes - not checked
-        (
-            "<p>9<abbr>combinations</abbr> test</p>",
-            [],
-        ),
+        # No spell_checker — returns empty
     ],
 )
-def test_check_inline_formatting_spacing(html, expected):
-    """Test spacing checks around transform-produced inline elements."""
+def test_check_rendered_text_spelling(html, expected_fragments, spell_checker):
+    """Test spellcheck on flattened rendered HTML text."""
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_inline_formatting_spacing(soup)
-    assert sorted(result) == sorted(expected)
+    result = built_site_checks.check_rendered_text_spelling(soup, spell_checker)
+    if not expected_fragments:
+        assert result == []
+    else:
+        for fragment in expected_fragments:
+            assert any(
+                fragment in issue for issue in result
+            ), f"Expected {fragment!r} in issues, got: {result}"
+
+
+def test_check_rendered_text_spelling_no_checker():
+    """Returns empty list when no spell_checker is provided."""
+    soup = BeautifulSoup("<p>notarealword</p>", "html.parser")
+    assert built_site_checks.check_rendered_text_spelling(soup, None) == []
+
+
+def test_build_spell_checker_with_wordlist(tmp_path):
+    """build_spell_checker loads words from a wordlist file."""
+    wordlist = tmp_path / "wordlist.txt"
+    wordlist.write_text("customterm\nturntrout\n")
+    spell = built_site_checks.build_spell_checker(wordlist)
+    assert not spell.unknown(["customterm", "turntrout"])
+
+
+def test_build_spell_checker_no_wordlist():
+    """build_spell_checker works without a wordlist."""
+    spell = built_site_checks.build_spell_checker(None)
+    assert not spell.unknown(["hello", "world"])
 
 
 @pytest.mark.parametrize(
@@ -3609,6 +3586,7 @@ def test_main_handles_markdown_mapping(
             md_file,
             should_check_fonts=False,
             defined_css_variables={"--color-primary", "--color-secondary"},
+            spell_checker=ANY,
         )
 
 
@@ -3667,6 +3645,7 @@ def test_main_command_line_args(
         None,
         should_check_fonts=True,
         defined_css_variables={"--color-primary", "--color-secondary"},
+        spell_checker=ANY,
     )
 
 

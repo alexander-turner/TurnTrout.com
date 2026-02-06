@@ -18,6 +18,7 @@ import requests  # type: ignore[import]
 import tqdm
 import validators  # type: ignore[import]
 from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
+from spellchecker import SpellChecker
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -1476,6 +1477,7 @@ def check_file_for_issues(
     md_path: Path | None,
     should_check_fonts: bool,
     defined_css_variables: Set[str] | None = None,
+    spell_checker: "SpellChecker | None" = None,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1486,6 +1488,7 @@ def check_file_for_issues(
         md_path: Path to the markdown file that generated the HTML file
         should_check_fonts: Whether to check for preloaded fonts
         defined_css_variables: Set of defined CSS variables
+        spell_checker: Optional SpellChecker instance for rendered text checks
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1520,7 +1523,9 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
-        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "rendered_text_spelling": check_rendered_text_spelling(
+            soup, spell_checker
+        ),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -1771,43 +1776,77 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
     return problematic_links
 
 
+# ── Rendered-text spellcheck ──────────────────────────────────────────
+
+# Tokenizer: sequences of letters/digits/apostrophes that contain at
+# least one letter.  Keeps digit-letter runs together so that
+# "9combinations" is one token (flagged as unknown).
+_WORD_TOKEN_RE = re.compile(r"[a-zA-Z0-9]+(?:['\u2019][a-zA-Z]+)*")
+
+_SPELLCHECK_ELEMENTS = (
+    "p",
+    "dt",
+    "dd",
+    "li",
+    "figcaption",
+    "td",
+    "th",
+    *(f"h{i}" for i in range(1, 7)),
+)
+
+
+def build_spell_checker(wordlist_path: Path | None = None) -> SpellChecker:
+    """Create a SpellChecker loaded with the project wordlist."""
+    spell = SpellChecker()
+    if wordlist_path and wordlist_path.exists():
+        words = wordlist_path.read_text(encoding="utf-8").splitlines()
+        spell.word_frequency.load_words([w.strip() for w in words if w.strip()])
+    return spell
+
+
+def check_rendered_text_spelling(
+    soup: BeautifulSoup,
+    spell_checker: SpellChecker | None = None,
+) -> list[str]:
+    """
+    Spellcheck the visible, flattened text of the rendered HTML.
+
+    Extracts text from paragraph-level elements (excluding code, KaTeX, script,
+    etc.) and checks every word token against the dictionary. This catches
+    transform-induced concatenation (e.g. "9combinations") as well as any other
+    text corruption.
+    """
+    if spell_checker is None:
+        return []
+
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(_SPELLCHECK_ELEMENTS)):
+        if should_skip(element):
+            continue
+
+        text = script_utils.get_non_code_text(element)
+        tokens = _WORD_TOKEN_RE.findall(text)
+
+        # Only check tokens that contain at least one letter
+        words_to_check = [t for t in tokens if any(c.isalpha() for c in t)]
+        unknown = spell_checker.unknown(words_to_check)
+
+        for word in sorted(unknown):
+            _append_to_list(
+                issues,
+                f"Unknown word \u201c{word}\u201d in: {text}",
+                prefix="",
+            )
+
+    return issues
+
+
 # Whitelisted emphasis patterns that should be ignored
 # If both prev and next are in the whitelist, then the emphasis is whitelisted
 WHITELISTED_EMPHASIS = {
     ("Some", ""),  # For e.g. "Some<i>one</i>"
 }
-
-
-_INLINE_FORMATTING_SELECTORS = (
-    "abbr.small-caps",
-    "span.ordinal-num",
-    "sup.ordinal-suffix",
-    "span.fraction",
-    "span.monospace-arrow",
-    "span.right-arrow",
-)
-
-
-def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
-    """
-    Check that transform-produced inline elements (smallcaps, ordinals,
-    fractions, arrows) have proper spacing with surrounding text.
-
-    These elements are created by HAST transformers that wrap text in
-    ``<abbr>``/``<span>``/``<sup>`` tags. If a transformer drops whitespace
-    at the boundary, words get concatenated (e.g. "9combinations").
-    """
-    issues: list[str] = []
-    selector = ", ".join(_INLINE_FORMATTING_SELECTORS)
-    for element in _tags_only(soup.select(selector)):
-        issues.extend(
-            _check_element_spacing(
-                element,
-                ALLOWED_ELT_PRECEDING_CHARS,
-                ALLOWED_ELT_FOLLOWING_CHARS,
-            )
-        )
-    return issues
 
 
 def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
@@ -2151,6 +2190,10 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    wordlist_path = (
+        public_dir.parent / "config" / "spellcheck" / ".wordlist.txt"
+    )
+    spell_checker = build_spell_checker(wordlist_path)
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2180,6 +2223,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 md_path,
                 should_check_fonts=check_fonts,
                 defined_css_variables=defined_css_vars,
+                spell_checker=spell_checker,
             )
 
             if any(lst for lst in issues.values()):
