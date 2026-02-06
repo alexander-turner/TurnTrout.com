@@ -2,7 +2,7 @@ name: Spellcheck
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "website_content/**"
       - "config/spellcheck/**"
