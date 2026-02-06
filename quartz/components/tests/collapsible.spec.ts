@@ -163,11 +163,11 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Set up CLS monitoring before navigation
     await newPage.addInitScript(() => {
-      ;(window as Window & { __cls: number }).__cls = 0
+      ;(window as unknown as { __cls: number }).__cls = 0
       new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (!(entry as PerformanceEntry & { hadRecentInput: boolean }).hadRecentInput) {
-            ;(window as Window & { __cls: number }).__cls += (
+            ;(window as unknown as { __cls: number }).__cls += (
               entry as PerformanceEntry & { value: number }
             ).value
           }
@@ -186,7 +186,7 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(actualState).toBe(savedState)
 
     // Check that CLS is minimal (no layout shift from state restoration)
-    const cls = await newPage.evaluate(() => (window as Window & { __cls: number }).__cls)
+    const cls = await newPage.evaluate(() => (window as unknown as { __cls: number }).__cls)
     expect(cls).toBeLessThan(0.1) // CLS < 0.1 is considered "good"
 
     await context.close()
