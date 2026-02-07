@@ -124,12 +124,12 @@ fi
 
 if ! command -v deepsource &>/dev/null; then
   echo "Installing DeepSource CLI..."
-  BINDIR="$HOME/.local/bin" curl -sSL https://deepsource.io/cli | sh 2>/dev/null || echo "Warning: Failed to install DeepSource CLI"
+  BINDIR="$HOME/.local/bin" curl -sSL https://deepsource.io/cli | sh 2>/dev/null || die "Failed to install DeepSource CLI"
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
   echo "Configuring DeepSource authentication..."
-  deepsource auth login --with-token "$DEEPSOURCE_PAT" 2>&1 || echo "Warning: Failed to authenticate with DeepSource"
+  deepsource auth login --with-token "$DEEPSOURCE_PAT" 2>&1 || die "Failed to authenticate with DeepSource"
 fi
 
 #######################################
