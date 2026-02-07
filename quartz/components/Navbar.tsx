@@ -134,13 +134,20 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   const pages: Page[] = "pages" in cfg.navbar ? (cfg.navbar.pages as Page[]) : []
   const currentSlug = fileData.slug || ("" as FullSlug)
 
-  const links = pages.map((page: Page) => (
-    <li key={page.slug}>
-      <a href={resolveRelative(currentSlug, page.slug as FullSlug)} className="internal">
-        {page.title}
-      </a>
-    </li>
-  ))
+  const links = pages.map((page: Page) => {
+    const isCurrent = currentSlug === (page.slug as FullSlug)
+    return (
+      <li key={page.slug}>
+        <a
+          href={resolveRelative(currentSlug, page.slug as FullSlug)}
+          className="internal"
+          {...(isCurrent ? { "aria-current": "page" } : {})}
+        >
+          {page.title}
+        </a>
+      </li>
+    )
+  })
 
   const title = cfg?.pageTitle ?? defaultTitle
   const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
