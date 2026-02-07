@@ -1,9 +1,8 @@
 import { jest, describe, it, beforeEach, expect, beforeAll } from "@jest/globals"
 import { VFile } from "vfile"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
 import { type QuartzConfig } from "../../cfg"
+import { normalizeNbsp } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"

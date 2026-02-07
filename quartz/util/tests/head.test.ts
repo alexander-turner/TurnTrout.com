@@ -2,12 +2,11 @@ import { describe, it, expect } from "@jest/globals"
 import { type Parent } from "hast"
 import { VFile } from "vfile"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
 import { type GlobalConfiguration } from "../../cfg"
 import {
   defaultCardUrl,
   defaultDescription,
+  normalizeNbsp,
   defaultTitle,
   appleTouchIconUrl,
   faviconUrl,

@@ -28,6 +28,13 @@ sys.path.append(str(Path(__file__).parent.parent))
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 
+# Unicode typography constants
+NBSP = "\u00a0"
+LEFT_SINGLE_QUOTE = "\u2018"
+RIGHT_SINGLE_QUOTE = "\u2019"
+LEFT_DOUBLE_QUOTE = "\u201c"
+RIGHT_DOUBLE_QUOTE = "\u201d"
+
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
 RSS_XSD_PATH = _GIT_ROOT / "scripts" / ".rss-2.0.xsd"
@@ -368,7 +375,7 @@ def _append_to_list(
     lst.append(prefix + to_append)
 
 
-_S = r"[ \u00A0]"  # Space or non-breaking space
+_S = f"[ {NBSP}]"  # Space or non-breaking space
 _CANARY_BAD_ANYWHERE = (
     rf">{_S}\[\![a-zA-Z]+\]",  # Callout syntax
     rf"\[{_S}\]",  # Unrendered checkbox
@@ -1431,11 +1438,10 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    simple_quotes_label = re.sub(
-        "['\u2018\u2019\u201c\u201d]", '"', lower_label
-    )
+    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
+    simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
-    normalized_spaces = unescaped_label.replace("\u00a0", " ")
+    normalized_spaces = unescaped_label.replace(NBSP, " ")
     return normalized_spaces.strip()
 
 

@@ -14,7 +14,16 @@ import {
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
-import { charsToMoveIntoLinkFromRight, markerChar } from "../../../components/constants"
+import {
+  charsToMoveIntoLinkFromRight,
+  markerChar,
+  LEFT_DOUBLE_QUOTE,
+  RIGHT_DOUBLE_QUOTE,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
+  NBSP,
+  normalizeNbsp,
+} from "../../../components/constants"
 import {
   massTransformText,
   improveFormatting,
@@ -31,19 +40,7 @@ import {
 } from "../formatting_improvement_html"
 import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
-// Unicode constants for readable test expectations
-// (punctilio exports these in constants.js but not from the main entry point)
-const LEFT_DOUBLE_QUOTE = "\u201C" // "
-const RIGHT_DOUBLE_QUOTE = "\u201D" // "
-const LEFT_SINGLE_QUOTE = "\u2018" // '
-const RIGHT_SINGLE_QUOTE = "\u2019" // '
 const MULTIPLICATION = "\u00D7" // ×
-const NBSP = "\u00A0" // non-breaking space
-
-/** Normalize non-breaking spaces to regular spaces for comparison in non-nbsp-specific tests */
-function normalizeNbsp(html: string): string {
-  return html.replace(/\u00A0/g, " ")
-}
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
