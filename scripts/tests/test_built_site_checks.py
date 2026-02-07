@@ -1314,6 +1314,27 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: Heading Table: This should also be flagged",
             ],
         ),
+        # Canary patterns with non-breaking space (\u00A0) should still be caught
+        (
+            "<p>Table:\u00a0caption text</p>",
+            ["Problematic paragraph: Table:\u00a0caption text"],
+        ),
+        (
+            "<p>Figure:\u00a0image description</p>",
+            ["Problematic paragraph: Figure:\u00a0image description"],
+        ),
+        (
+            "<p>>\u00a0[!note] Callout with nbsp</p>",
+            ["Problematic paragraph: >\u00a0[!note] Callout with nbsp"],
+        ),
+        (
+            "<li>[\u00a0] Checkbox with nbsp</li>",
+            ["Problematic paragraph: [\u00a0] Checkbox with nbsp"],
+        ),
+        (
+            "<p>:\u00a0Description with nbsp</p>",
+            ["Problematic paragraph: :\u00a0Description with nbsp"],
+        ),
     ],
 )
 def test_check_problematic_paragraphs_comprehensive(html, expected):
@@ -2464,6 +2485,15 @@ def test_check_iframe_embeds(
         ),
         (  # Multiline matching
             "<p>Hi <a href='#'>Test<span>span</span></a> text\n\nTest</p>",
+            [],
+        ),
+        # Non-breaking space before/after links should be accepted
+        (
+            "<p>text\u00a0<a href='#'>link</a> more</p>",
+            [],
+        ),
+        (
+            "<p>text <a href='#'>link</a>\u00a0more</p>",
             [],
         ),
     ],
