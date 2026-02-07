@@ -487,13 +487,13 @@ Per Bringhurst, parentheses, brackets, and braces should be set upright (roman) 
 
 _The Elements of Typographic Style (Hartley & Marks, 2004)_ is a good book.
 
-_Parentheses (like these), brackets [like these], and braces {like these} should all be upright._
+_Parentheses (like these), brackets [like these], and braces \{like these\} should all be upright._
 
 Nested: _**bold italic (parentheses) and [brackets]**_
 
-Deeply nested: _**We need a <span>deep (nesting)</span> test**_
+Deeply nested: _**We need a <span>deep (nesting)</span> test.**_
 
-Mixed: (roman parens) _italic (upright parens)_ (roman parens again)
+Mixed: (roman parentheses) _italic (upright parentheses)_ (roman parentheses again)
 
 _See NASA (the agency) for details on the [shuttle] program._
 

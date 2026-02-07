@@ -615,6 +615,9 @@ Mathematical definitions
 Superscripting ordinal suffixes
 : By default, ordinal numbers look a bit strange: <span class="no-formatting">1st</span>. This HTML transformation allows me to write about what happened on e.g. August 8th.
 
+Upright punctuation in italics
+: Following Bringhurst (§5.3.2), parentheses, brackets, and braces are automatically set upright (roman) even within _italic (text)_ — preventing the awkward slant that these characters inherit from italic context.
+
 ### I paid someone to tweak EB Garamond
 
 While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Garamond did not support slashed zeroes (the `zero` feature). The result: zero looked too similar to "o." Here's a number rendered in the original font: <span style="font-family: 'EBGaramondOriginal'">"100"</span>; in my tweaked font it shows as "100." Furthermore, the italicized font did not support the `cv11` OpenType feature for oldstyle numerals. This meant that the italicized 1 looked like a slanted "<span style="font-family: var(--font-main); font-feature-settings: normal;">1</span>" - too similar to the smallcaps capital I ("<span class="small-caps">I</span>").
