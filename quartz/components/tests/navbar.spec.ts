@@ -447,11 +447,8 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
     return videoElement && !videoElement.paused && videoElement.readyState >= 3
   }, pondVideoId)
 
-  const initialUrl = page.url()
-  // TODO might not be local
-  const localLink = page.locator("a").first()
-  await localLink.click()
-  await page.waitForURL((url) => url.pathname !== initialUrl)
+  await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
+  await page.waitForURL("**/design")
 
   // Setting should persist and video should still be playing
   await expect(isPaused(video)).resolves.toBe(false)
