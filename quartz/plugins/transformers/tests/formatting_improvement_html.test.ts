@@ -38,6 +38,12 @@ const RIGHT_DOUBLE_QUOTE = "\u201D" // "
 const LEFT_SINGLE_QUOTE = "\u2018" // '
 const RIGHT_SINGLE_QUOTE = "\u2019" // '
 const MULTIPLICATION = "\u00D7" // ×
+const NBSP = "\u00A0" // non-breaking space
+
+/** Normalize non-breaking spaces to regular spaces for comparison in non-nbsp-specific tests */
+function normalizeNbsp(html: string): string {
+  return html.replace(/\u00A0/g, " ")
+}
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -110,14 +116,14 @@ describe("HTMLFormattingImprovement", () => {
       ],
     ])("should handle HTML inputs", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it.each([['<p><br>"Unicorn"<br></p>', "<p><br>“Unicorn”<br></p>"]])(
       "should handle quotes in DOM",
       (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       },
     )
 
@@ -129,7 +135,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p><code>'This quote should not change'</code></p>"],
     ])("should not change quotes inside <code>", (input: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     const mathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>`
@@ -139,7 +145,7 @@ describe("HTMLFormattingImprovement", () => {
 
     it("should handle apostrophe right after math mode", () => {
       const processedHtml = testHtmlFormattingImprovement(mathHTML)
-      expect(processedHtml).toBe(targetMathHTML)
+      expect(normalizeNbsp(processedHtml)).toBe(targetMathHTML)
     })
 
     const codeBlocks = [
@@ -148,7 +154,7 @@ describe("HTMLFormattingImprovement", () => {
     ]
     it.each(codeBlocks)("should ignore quotes in code blocks", (input) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     const originalHeader =
@@ -157,7 +163,7 @@ describe("HTMLFormattingImprovement", () => {
       '<h3 id="optimal-policy--reinforcement-maximizing-policy"><del>“Optimal policy”</del> <span class="monospace-arrow">→</span> “Reinforcement-maximizing policy”</h3>'
     it("should handle quotes in headers", () => {
       const processedHtml = testHtmlFormattingImprovement(originalHeader)
-      expect(processedHtml).toBe(targetHeader)
+      expect(normalizeNbsp(processedHtml)).toBe(targetHeader)
     })
   })
 
@@ -173,7 +179,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
     ])("should handle smart quotes and punctuation in definition lists: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -194,14 +200,14 @@ describe("HTMLFormattingImprovement", () => {
 
     it.each(testCases)("should add spaces around '/' in %s", (input: string, expected: string) => {
       const processedHtml = spacesAroundSlashes(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it.each(testCases)(
       "should add spaces around '/' in an HTML context: %s",
       (input: string, expected: string) => {
         const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-        expect(processedHtml).toBe(`<p>${expected}</p>`)
+        expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
       },
     )
 
@@ -218,7 +224,7 @@ describe("HTMLFormattingImprovement", () => {
       "should add spaces around '/' even near other HTML tags: %s",
       (input: string, expected: string) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       },
     )
 
@@ -238,7 +244,7 @@ describe("HTMLFormattingImprovement", () => {
           inputElement = `<p>${inputElement}</p>`
         }
         const processedHtml = testHtmlFormattingImprovement(inputElement)
-        expect(processedHtml).toBe(inputElement)
+        expect(normalizeNbsp(processedHtml)).toBe(inputElement)
       })
     }
 
@@ -247,7 +253,7 @@ describe("HTMLFormattingImprovement", () => {
       (input: string) => {
         const inputElement = `<p><a href="${input}">${input}</a></p>`
         const processedHtml = testHtmlFormattingImprovement(inputElement)
-        expect(processedHtml).toBe(inputElement)
+        expect(normalizeNbsp(processedHtml)).toBe(inputElement)
       },
     )
   })
@@ -328,7 +334,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>9/11</p>", "<p>9/11</p>"],
     ])("should create an element for the fractions in %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -344,12 +350,12 @@ describe("HTMLFormattingImprovement", () => {
     ]
     it.each(timeCases)("should handle time in %s, end-to-end", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-      expect(processedHtml).toBe(`<p>${expected}</p>`)
+      expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
     })
 
     it.each(timeCases)("direct testing of the timeTransform function", (input, expected) => {
       const processedHtml = timeTransform(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("timeTransform is marker-invariant with footnote followed by Am", () => {
@@ -567,7 +573,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p>(<em>eg</em> test)</p>", "<p>(<em>e.g.</em> test)</p>"],
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
   })
@@ -580,7 +586,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p><code>a != b</code></p>", "<p><code>a != b</code></p>"], // Preserved in code
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
 
@@ -595,7 +601,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p><code>5x5</code></p>", "<p><code>5x5</code></p>"], // Preserved in code
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
 
@@ -607,7 +613,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p><code>...</code></p>", "<p><code>...</code></p>"], // Preserved in code
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
 
@@ -619,7 +625,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p><=</p>", "<p>≤</p>"],
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
 
@@ -633,7 +639,7 @@ describe("HTMLFormattingImprovement", () => {
         ["<p>(TM)</p>", "<p>™</p>"],
       ])("transforms '%s' to '%s'", (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       })
     })
   })
@@ -648,7 +654,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p><code>macos</code></p>", "<p><code>macos</code></p>"],
     ])("transforms '%s' to '%s'", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -657,7 +663,7 @@ describe("HTMLFormattingImprovement", () => {
       "should replace + with & in %s",
       (input: string, expected: string) => {
         const result = testHtmlFormattingImprovement(input)
-        expect(result).toBe(expected)
+        expect(normalizeNbsp(result)).toBe(expected)
       },
     )
   })
@@ -684,7 +690,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
   describe("transformParagraph", () => {
@@ -737,7 +743,7 @@ describe("HTMLFormattingImprovement", () => {
       "should replace hyphens with en dashes in number ranges: %s (end-to-end)",
       (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-        expect(processedHtml).toBe(`<p>${expected}</p>`)
+        expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
       },
     )
   })
@@ -786,7 +792,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>No change in word-like</p>", "<p>No change in word-like</p>"], // Should not change hyphens
     ])("should format arrows correctly: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 })
@@ -843,14 +849,14 @@ describe("rearrangeLinkPunctuation", () => {
 
   it.each(linkScenarios)("correctly handles link punctuation", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   describe("Handles footnote links correctly", () => {
     it("should not modify footnote links", () => {
       const input = '<p>Sentence with footnote<a href="#user-content-fn-1">1</a>.</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     it("should modify regular links but not footnote links", () => {
@@ -859,7 +865,7 @@ describe("rearrangeLinkPunctuation", () => {
       const expected =
         '<p><a href="https://example.com">Link.</a> <a href="#user-content-fn-2">2</a>.</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -875,7 +881,7 @@ describe("rearrangeLinkPunctuation", () => {
       ],
     ])("correctly processes links", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -886,7 +892,7 @@ describe("rearrangeLinkPunctuation", () => {
       const expected =
         '<p>Check out <a href="https://example1.com">Link1,</a> and then <a href="https://example2.com">Link2!</a></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -894,7 +900,7 @@ describe("rearrangeLinkPunctuation", () => {
     it("leaves regular text unchanged", () => {
       const input = "<p>This is a regular sentence without any links.</p>"
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
   })
 
@@ -903,7 +909,7 @@ describe("rearrangeLinkPunctuation", () => {
       const input = '<p><a href="https://example.com"><span></span></a>.</p>'
       const expected = '<p><a href="https://example.com"><span></span>.</a></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("should handle when sibling is an element with children but not text-like", () => {
@@ -911,20 +917,20 @@ describe("rearrangeLinkPunctuation", () => {
       const expected =
         '<p><a href="https://example.com">Link</a></p><div>Not text-like</div><p></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("should handle when sibling is text-like element with first child being text", () => {
       const input = '<p><a href="https://example.com">Link</a><em>.</em></p>'
       const expected = '<p><a href="https://example.com">Link.</a><em></em></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("should handle case where textNode has no value", () => {
       const input = '<p><a href="https://example.com">Link</a><em></em></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     it("should return early when index is undefined", () => {
@@ -941,7 +947,7 @@ describe("rearrangeLinkPunctuation", () => {
       const input = '<p><a href="https://example.com">Link<span></span></a>.</p>'
       const expected = '<p><a href="https://example.com">Link<span></span>.</a></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("should handle case where lastChild doesn't have value property - direct test", () => {
@@ -1008,7 +1014,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
   ])('correctly applies nested link punctuation for "%s"', (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1184,7 +1190,7 @@ describe("setFirstLetterAttribute", () => {
     ],
   ])("%s", (_description, input, expected, doNotSetFirstLetterAttribute = false) => {
     const processedHtml = testHtmlFormattingImprovement(input, false, doNotSetFirstLetterAttribute)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it.each([
@@ -1213,7 +1219,7 @@ describe("setFirstLetterAttribute", () => {
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it.each([
@@ -1239,7 +1245,7 @@ describe("setFirstLetterAttribute", () => {
   ])("should NOT set data-first-letter when %s", (_description, input) => {
     // setFirstLetterAttribute only applies to <p> that are direct children of the root
     const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toBe(input)
+    expect(normalizeNbsp(processedHtml)).toBe(input)
   })
 })
 
@@ -1254,14 +1260,14 @@ describe("removeSpaceBeforeSup", () => {
     ["<sup>1</sup>", "<sup>1</sup>"], // First element
   ])('should process "%s" to "%s"', (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-    expect(processedHtml).toBe(`<p>${expected}</p>`)
+    expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
   })
 
   it("should handle multiple sups in complex HTML", () => {
     const input = "<p>First<sup>1</sup> and second <sup>2</sup> and third<sup>3</sup></p>"
     const expected = "<p>First<sup>1</sup> and second<sup>2</sup> and third<sup>3</sup></p>"
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1280,7 +1286,7 @@ describe("minusReplace", () => {
     ["<p>19,999<sup>100,000,000 - 992</sup></p>", "<p>19,999<sup>100,000,000 − 992</sup></p>"],
   ])("transforms '%s' to '%s'", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1354,14 +1360,14 @@ describe("L-number formatting", () => {
     ],
   ])("correctly formats L-numbers in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it("handles L-numbers at start of text", () => {
     const input = "<p>L1</p>"
     const expected = '<p>L<sub style="font-variant-numeric: lining-nums;">1</sub></p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it("handles L-numbers in nested elements", () => {
@@ -1369,7 +1375,7 @@ describe("L-number formatting", () => {
     const expected =
       '<p><em>L<sub style="font-variant-numeric: lining-nums;">1</sub></em> and <strong>L<sub style="font-variant-numeric: lining-nums;">2</sub></strong></p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1387,7 +1393,7 @@ describe("Skip Formatting", () => {
     ],
   ])("should skip formatting when no-formatting class is present: %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   describe("Footnote references", () => {
@@ -1418,7 +1424,7 @@ describe("Skip Formatting", () => {
       ],
     ])("should %s", (_description, input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
 
@@ -1455,7 +1461,7 @@ describe("Date Range", () => {
     const input = "<p>Revenue from Jan-Mar exceeded Apr-Jun.</p>"
     const expected = "<p>Revenue from Jan–Mar exceeded Apr–Jun.</p>"
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1719,7 +1725,7 @@ describe("replaceFractions", () => {
       : ""
     const parentHrefInfo = parent.properties.href ? ` href="${parent.properties.href}"` : ""
     const expectedHtml = `<${parent.tagName}${parentClassInfo}${parentHrefInfo}>${expected}</${parent.tagName}>`
-    expect(processedHtml).toBe(expectedHtml)
+    expect(normalizeNbsp(processedHtml)).toBe(expectedHtml)
   })
 
   it("should preserve surrounding whitespace", () => {
@@ -1727,7 +1733,7 @@ describe("replaceFractions", () => {
     const parent = h("p")
     replaceFractions(node, 0, parent, [])
     const processedHtml = testHtmlFormattingImprovement(`<p>${node.value}</p>`)
-    expect(processedHtml).toBe('<p> <span class="fraction">1/2</span> </p>')
+    expect(normalizeNbsp(processedHtml)).toBe('<p> <span class="fraction">1/2</span> </p>')
   })
 
   it("should handle multiple fractions in complex text", () => {
@@ -1738,7 +1744,7 @@ describe("replaceFractions", () => {
     const parent = h("p")
     replaceFractions(node, 0, parent, [])
     const processedHtml = testHtmlFormattingImprovement(`<p>${node.value}</p>`)
-    expect(processedHtml).toBe(
+    expect(normalizeNbsp(processedHtml)).toBe(
       '<p>Mix <span class="fraction">1/2</span> cup of flour with <span class="fraction">3/4</span> cup of water</p>',
     )
   })
@@ -1778,7 +1784,7 @@ describe("replaceFractions", () => {
 
       const input = `<${tagName}>1/2</${tagName}>`
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     it("should not convert fractions inside <a> elements (to preserve URLs)", () => {
@@ -1896,7 +1902,7 @@ describe("Ordinal Suffixes", () => {
     ["<code>1st place</code>", "<code>1st place</code>"], // Inside code block
   ])("correctly formats ordinal suffixes in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it("handles nested elements correctly", () => {
@@ -1904,13 +1910,13 @@ describe("Ordinal Suffixes", () => {
     const expected =
       '<p><em><span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup></em> and <strong><span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup></strong></p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it("respects no-formatting class", () => {
     const input = '<p class="no-formatting">1st place</p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(input)
+    expect(normalizeNbsp(processedHtml)).toBe(input)
   })
 
   it("handles ordinals at start and end of text", () => {
@@ -1918,7 +1924,7 @@ describe("Ordinal Suffixes", () => {
     const expected =
       '<p><span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>. End with <span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>.</p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
   it("handles ordinals with surrounding punctuation", () => {
@@ -1926,7 +1932,7 @@ describe("Ordinal Suffixes", () => {
     const expected =
       '<p>(<span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>) [<span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>] {<span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup>}</p>'
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(processedHtml).toBe(expected)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 })
 
@@ -1937,14 +1943,14 @@ describe("improveFormatting function with options", () => {
     const input = "<article><p>Test text</p></article>"
 
     const processedHtml = testHtmlFormattingImprovement(input, true)
-    expect(processedHtml).toBe(input)
+    expect(normalizeNbsp(processedHtml)).toBe(input)
   })
 
   it("should accept custom options and skip first letter when requested", () => {
     const input = "<article><p>Test text</p></article>"
 
     const processedHtml = testHtmlFormattingImprovement(input, true)
-    expect(processedHtml).toBe(input) // Should not add data-first-letter
+    expect(normalizeNbsp(processedHtml)).toBe(input) // Should not add data-first-letter
   })
 
   it("should handle undefined options (default parameter branch)", () => {
@@ -2009,7 +2015,7 @@ describe("HTMLFormattingImprovement plugin", () => {
         const input = `<p>Text ${arrow} more text</p>`
         const expected = `<p>Text <span class="monospace-arrow">${arrow}</span> more text</p>`
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       },
     )
 
@@ -2020,7 +2026,7 @@ describe("HTMLFormattingImprovement plugin", () => {
     )("should NOT wrap %s arrow inside <%s> tag", (tag, arrow) => {
       const input = `<${tag}>x ${arrow} y</${tag}>`
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
     })
 
     it.each(arrowsToWrap.map((arrow) => [arrow]))(
@@ -2028,7 +2034,7 @@ describe("HTMLFormattingImprovement plugin", () => {
       (arrow) => {
         const input = `<p><span class="katex">f: X ${arrow} Y</span></p>`
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(input)
+        expect(normalizeNbsp(processedHtml)).toBe(input)
       },
     )
 
@@ -2037,7 +2043,7 @@ describe("HTMLFormattingImprovement plugin", () => {
       (arrow) => {
         const input = `<p><span class="katex"><span class="katex-html"><span class="base">f: X ${arrow} Y</span></span></span></p>`
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(input)
+        expect(normalizeNbsp(processedHtml)).toBe(input)
       },
     )
 
@@ -2047,7 +2053,7 @@ describe("HTMLFormattingImprovement plugin", () => {
         const input = `<p>Consider <span class="katex">f: A ${arrow} B</span> which maps ${arrow} left</p>`
         const expected = `<p>Consider <span class="katex">f: A ${arrow} B</span> which maps <span class="monospace-arrow">${arrow}</span> left</p>`
         const processedHtml = testHtmlFormattingImprovement(input)
-        expect(processedHtml).toBe(expected)
+        expect(normalizeNbsp(processedHtml)).toBe(expected)
       },
     )
 
@@ -2056,7 +2062,7 @@ describe("HTMLFormattingImprovement plugin", () => {
       const expected =
         '<p>First <span class="monospace-arrow">→</span> second <span class="monospace-arrow">←</span> third <span class="monospace-arrow">↑</span> fourth <span class="monospace-arrow">↓</span></p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
     it("should handle mixed content with KaTeX and regular arrows", () => {
@@ -2065,7 +2071,37 @@ describe("HTMLFormattingImprovement plugin", () => {
       const expected =
         '<p>The mapping <span class="katex">π: C → A</span> shows that <span class="monospace-arrow">→</span> arrows work differently</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(expected)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+  })
+})
+
+describe("Non-breaking space insertion", () => {
+  it.each([
+    // After short words (1-2 letters) and before last word (widow prevention)
+    ["<p>I love this</p>", `<p>I${NBSP}love${NBSP}this</p>`],
+    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on${NBSP}a${NBSP}mat</p>`],
+    // Before last word (widow prevention)
+    ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],
+    // Between numbers and units
+    ["<p>Run 5 km daily</p>", `<p>Run 5${NBSP}km${NBSP}daily</p>`],
+    ["<p>It weighs 10 kg</p>", `<p>It${NBSP}weighs 10${NBSP}kg</p>`],
+    // After reference abbreviations
+    ["<p>See Fig. 3 for details</p>", `<p>See Fig.${NBSP}3 for${NBSP}details</p>`],
+    ["<p>Found on p. 42</p>", `<p>Found on${NBSP}p.${NBSP}42</p>`],
+  ])("inserts nbsp in %s", (input, expected) => {
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(processedHtml).toBe(expected)
+  })
+
+  it("does not insert nbsp in code blocks", () => {
+    const input = "<pre><code>I love this</code></pre>"
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(processedHtml).not.toContain(NBSP)
+  })
+
+  it("does not affect applyTextTransforms (titles, TOC, etc.)", () => {
+    const result = applyTextTransforms("I love this thing")
+    expect(result).not.toContain(NBSP)
   })
 })

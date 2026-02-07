@@ -1,7 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
+import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
 import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -135,6 +135,10 @@ const uncheckedTextTransformers = [
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
 ]
+
+// Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
+// Only applied in the HTML pipeline (not in applyTextTransforms for titles/TOC/descriptions)
+const nbspTextTransformer = (text: string) => nbspTransform(text, { separator: markerChar })
 
 // Check for invariance: these are simple find-and-replace transforms that never interact
 // with the marker character, so we verify they produce identical results with or without markers.
@@ -498,7 +502,6 @@ export function timeTransform(text: string): string {
 // Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
 // Use marker-aware word boundaries (wb/wbe) to prevent markers from creating false word boundaries
 const massTransforms: [RegExp, string][] = [
-  [/\u00A0/gu, " "], // Replace non-breaking spaces
   [new RegExp(`${wb}(?:i\\.i\\.d\\.|iid)`, "gi"), "IID"],
   [new RegExp(`${wb}(?<letter>[Ff])rappe${wbe}`, "g"), "$<letter>rappé"],
   [new RegExp(`${wb}(?<letter>[Ll])atte${wbe}`, "g"), "$<letter>atté"],
@@ -673,6 +676,9 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
           for (const transform of checkedTextTransformers) {
             transformElement(elt, transform, toSkip, markerChar, true)
           }
+
+          // Non-breaking spaces after all other text transforms
+          transformElement(elt, nbspTextTransformer, toSkip, markerChar, false)
 
           // Don't replace slashes in fractions, but give breathing room
           // to others

@@ -4,6 +4,9 @@
 import { describe, it, expect } from "@jest/globals"
 import { type Root, type Element } from "hast"
 import { h } from "hastscript"
+
+/** Normalize non-breaking spaces to regular spaces for text content assertions */
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
 // skipcq: JS-W1028
 import React from "react"
 
@@ -184,7 +187,7 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Transcluded block content")
+    expect(normalizeNbsp(html)).toContain("Transcluded block content")
   })
 
   it("handles transclusion when page is not found", () => {
@@ -316,7 +319,7 @@ describe("renderPage", () => {
       } as typeof components,
       pageResources,
     )
-    expectedContain.forEach((text) => expect(html).toContain(text))
+    expectedContain.forEach((text) => expect(normalizeNbsp(html)).toContain(text))
     expectedNotContain.forEach((text) => expect(html).not.toContain(text))
   })
 
@@ -388,7 +391,7 @@ describe("renderPage", () => {
       pageResources,
     )
 
-    expectedContain.forEach((text) => expect(html).toContain(text))
+    expectedContain.forEach((text) => expect(normalizeNbsp(html)).toContain(text))
     expectedNotContain.forEach((text) => expect(html).not.toContain(text))
   })
 
@@ -515,7 +518,7 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Section content")
+    expect(normalizeNbsp(html)).toContain("Section content")
   })
 
   it("handles page transclusion with htmlAst", () => {
@@ -561,8 +564,8 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Full page content")
-    expect(html).toContain("More content")
+    expect(normalizeNbsp(html)).toContain("Full page content")
+    expect(normalizeNbsp(html)).toContain("More content")
   })
 
   it("renders beforeBody components", () => {
