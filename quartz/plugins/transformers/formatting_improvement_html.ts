@@ -126,7 +126,7 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 // Don't check for invariance: these transforms accept a `separator` and intentionally
 // use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
 // Because they behave differently with vs. without markers, the invariance property
-// transform(text_with_markers) ≡ transform(text_without_markers) does not hold.
+// transform(text_with_markers) == transform(text_without_markers) does not hold.
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
   // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
