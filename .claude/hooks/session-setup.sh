@@ -36,7 +36,7 @@ github_url() {
 pip_install_if_missing() {
   local cmd="$1" pkg="${2:-$1}"
   if ! command -v "$cmd" &>/dev/null; then
-    pip3 install --quiet "$pkg" || die "Failed to install $pkg"
+    pip3 install --quiet --no-cache-dir --root-user-action=ignore "$pkg" || die "Failed to install $pkg"
   fi
 }
 
