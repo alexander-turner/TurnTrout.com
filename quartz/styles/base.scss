@@ -11,6 +11,22 @@ html {
   width: 100%;
 }
 
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  z-index: 9999;
+  padding: 0.5em 1em;
+  background: var(--background);
+  color: var(--foreground);
+  text-decoration: underline;
+
+  &:focus {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+  }
+}
+
 body,
 section {
   margin: 0;
@@ -501,4 +517,15 @@ ul {
 // Nested ol and ul should have margin before them
 ol:not(ol > ol, li > ol) {
   margin-top: calc(1.5 * $base-margin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -408,7 +408,7 @@ export function renderPage(
   )
 
   const RightComponent = (
-    <aside id="right-sidebar" className="sidebar" aria-label="Table of contents">
+    <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
       {right.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
@@ -432,6 +432,9 @@ export function renderPage(
 
   const body = (
     <body data-slug={slug}>
+      <a href="#center-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}
