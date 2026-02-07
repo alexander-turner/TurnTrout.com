@@ -152,7 +152,7 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: ^1.0.4
+        specifier: ^1.4.2
         version: 1.4.2(unified@11.0.5)
       react:
         specifier: 19.2.1
