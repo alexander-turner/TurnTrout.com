@@ -42,6 +42,16 @@ Do **NOT** use this skill for:
 - GitHub CLI (`gh`) must be authenticated
 - All changes must be committed to a feature branch (not `main`/`master`)
 
+## Updating an Existing PR
+
+Before updating an existing PR (pushing new commits, editing the description, etc.), you MUST check its current status:
+
+1. Run `gh pr view <pr-number> --json state` to check the PR state
+2. Based on the result:
+   - **Open**: Proceed with the update normally
+   - **Merged**: Do NOT update it. Create a new PR instead with the additional changes
+   - **Closed** (not merged): Ask the user what they'd like to do, if not already clarified
+
 ## Workflow
 
 ### Step 1: Gather Context
@@ -106,11 +116,13 @@ Provide the PR URL and confirm all CI checks have passed.
 5. Fixes the null check, commits: `fix: add null check for empty session token`
 6. Runs `pnpm check && pnpm test && pnpm lint` — all pass
 7. Pushes and creates PR:
-   ```
+
+   ```bash
    gh pr create --title "fix: handle null session token in login flow" --body "..."
    ```
+
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Reports: "PR #47 created and all CI checks pass: https://github.com/org/repo/pull/47"
+9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
 
 ### Example 2: Multi-Commit Feature
 
