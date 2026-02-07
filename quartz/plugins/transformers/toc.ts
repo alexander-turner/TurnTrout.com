@@ -122,7 +122,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                   const plainText = stripHtmlTagsFromString(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
-                  const slug = slugify(plainText)
+                  const slug = slugify(plainText.replace(/\u00A0/g, " "))
 
                   toc.push({
                     depth: heading.depth,

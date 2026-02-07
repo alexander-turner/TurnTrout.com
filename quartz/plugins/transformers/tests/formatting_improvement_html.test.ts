@@ -1828,7 +1828,7 @@ describe("applyTextTransforms function", () => {
     const expected = "The data are IID and it’s −5× larger than GitHub… So naïve!"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    expect(normalizeNbsp(result)).toBe(expected)
   })
 
   it("should handle empty string", () => {
@@ -1841,7 +1841,7 @@ describe("applyTextTransforms function", () => {
     const expected = "dog / cat and h/t John"
 
     const result = applyTextTransforms(input)
-    expect(result).toBe(expected)
+    expect(normalizeNbsp(result)).toBe(expected)
   })
 })
 
@@ -2100,8 +2100,8 @@ describe("Non-breaking space insertion", () => {
     expect(processedHtml).not.toContain(NBSP)
   })
 
-  it("does not affect applyTextTransforms (titles, TOC, etc.)", () => {
+  it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
-    expect(result).not.toContain(NBSP)
+    expect(result).toContain(NBSP)
   })
 })

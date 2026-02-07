@@ -134,11 +134,9 @@ const uncheckedTextTransformers = [
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
+  // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
+  (text: string) => nbspTransform(text, { separator: markerChar }),
 ]
-
-// Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
-// Only applied in the HTML pipeline (not in applyTextTransforms for titles/TOC/descriptions)
-const nbspTextTransformer = (text: string) => nbspTransform(text, { separator: markerChar })
 
 // Check for invariance: these are simple find-and-replace transforms that never interact
 // with the marker character, so we verify they produce identical results with or without markers.
@@ -669,16 +667,13 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       if (node.type === "element") {
         const eltsToTransform = collectTransformableElements(node as Element, toSkip)
         eltsToTransform.forEach((elt) => {
-          for (const transform of uncheckedTextTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, false)
-          }
-
           for (const transform of checkedTextTransformers) {
             transformElement(elt, transform, toSkip, markerChar, true)
           }
 
-          // Non-breaking spaces after all other text transforms
-          transformElement(elt, nbspTextTransformer, toSkip, markerChar, false)
+          for (const transform of uncheckedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, false)
+          }
 
           // Don't replace slashes in fractions, but give breathing room
           // to others

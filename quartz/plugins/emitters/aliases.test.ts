@@ -1,6 +1,8 @@
 import { jest, describe, it, beforeEach, expect, beforeAll } from "@jest/globals"
 import { VFile } from "vfile"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import { type QuartzConfig } from "../../cfg"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
@@ -165,7 +167,7 @@ describe("AliasRedirects", () => {
   it("files should have correct metadata", async () => {
     await plugin.emit(mockCtx, [mockContent[0][1]], mockStaticResources)
     const htmlContent = getLatestHtmlContent(write)
-    expect(htmlContent).toContain("<title>Test Page</title>")
+    expect(normalizeNbsp(htmlContent)).toContain("<title>Test Page</title>")
     expect(htmlContent).toContain('content="Test description"')
   })
 
@@ -339,7 +341,7 @@ describe("AliasRedirects", () => {
 
     await testHtmlMetadata(plugin, mockCtx, content, write, (htmlContent) => {
       // When title is missing, it should use the default title from i18n
-      expect(htmlContent).toContain("<title>The Pond</title>")
+      expect(normalizeNbsp(htmlContent)).toContain("<title>The Pond</title>")
     })
   })
 
@@ -352,7 +354,7 @@ describe("AliasRedirects", () => {
     const content = createMockContent(vfile)
 
     await testHtmlMetadata(plugin, mockCtx, content, write, (htmlContent) => {
-      expect(htmlContent).toContain("<title>Test No Slug</title>")
+      expect(normalizeNbsp(htmlContent)).toContain("<title>Test No Slug</title>")
     })
   })
 })
