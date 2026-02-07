@@ -4,9 +4,6 @@ import { test, expect, type Page } from "@playwright/test"
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
 
 test.beforeEach(async ({ page }) => {
-  // Each test gets a fresh browser context with empty localStorage by default.
-  // Do NOT use addInitScript to clear localStorage — it persists across
-  // navigations/reloads within the test, which breaks persistence tests.
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 })
 
