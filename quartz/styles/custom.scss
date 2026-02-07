@@ -720,7 +720,7 @@ img.emoji {
 
   @media (hover: hover) {
     &::after {
-      content: "Hover to show";
+      content: "Hover or click to show";
     }
   }
 }
