@@ -79,12 +79,6 @@ if is_root; then
   fi
 fi
 
-if ! command -v fish &>/dev/null && is_root; then
-  if ! apt-get install -y -qq fish 2>/dev/null; then
-    die "Failed to install fish (needed for fish_indent in lint-staged)"
-  fi
-fi
-
 #######################################
 # Git setup (required - fail on error)
 #######################################
@@ -115,7 +109,9 @@ git config core.hooksPath .hooks
 
 if [ -n "${GH_TOKEN:-}" ] && command -v gh &>/dev/null; then
   echo "Configuring GitHub authentication..."
-  echo "$GH_TOKEN" | gh auth login --with-token 2>&1 || die "Failed to authenticate with GitHub"
+  if ! echo "$GH_TOKEN" | gh auth login --with-token 2>&1; then
+    echo "WARNING: Failed to authenticate with GitHub (non-fatal)" >&2
+  fi
 fi
 
 #######################################
@@ -124,7 +120,7 @@ fi
 
 if ! command -v deepsource &>/dev/null; then
   echo "Installing DeepSource CLI..."
-  BINDIR="$HOME/.local/bin" curl -sSL https://deepsource.io/cli | sh 2>/dev/null || die "Failed to install DeepSource CLI"
+  curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || die "Failed to install DeepSource CLI"
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
