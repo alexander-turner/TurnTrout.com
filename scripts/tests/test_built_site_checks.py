@@ -4541,6 +4541,11 @@ def test_check_unrendered_emoticons(html, expected):
             "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
             'mix of "quotes", "apostrophes", "regular", and "more"',
         ),
+        # Non-breaking spaces normalized to regular spaces
+        (
+            "title with\u00a0non-breaking\u00a0spaces",
+            "title with non-breaking spaces",
+        ),
     ],
 )
 def test_untransform_text(input_text, expected):

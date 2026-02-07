@@ -1431,9 +1431,12 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
+    simple_quotes_label = re.sub(
+        "['\u2018\u2019\u201c\u201d]", '"', lower_label
+    )
     unescaped_label = html.unescape(simple_quotes_label)
-    return unescaped_label.strip()
+    normalized_spaces = unescaped_label.replace("\u00a0", " ")
+    return normalized_spaces.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
