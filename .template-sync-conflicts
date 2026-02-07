@@ -1,0 +1,1 @@
+Template updates available for: .claude/settings.json .claude/README.md .claude/hooks/verify-ci-on-stop.sh .claude/hooks/session-setup.sh .claude/skills/pr-creation/SKILL.md .hooks/commit-msg .hooks/pre-commit 
