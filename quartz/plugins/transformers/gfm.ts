@@ -281,7 +281,6 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
             behavior: "wrap",
             properties: {
               "data-no-popover": "true",
-              ariaHidden: true,
               tabIndex: -1,
             },
           },
