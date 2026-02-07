@@ -1103,6 +1103,17 @@ describe("Asset Dimensions Plugin", () => {
       expect(mockedFetch).not.toHaveBeenCalled()
     })
 
+    it("should default offline to false when undefined", async () => {
+      const tree: Root = { type: "root", children: [] }
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: {} } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      expect(tree.children).toHaveLength(0)
+    })
+
     it("should handle tree with no images", async () => {
       const tree: Root = {
         type: "root",

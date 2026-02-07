@@ -321,17 +321,21 @@ export function formatLNumbers(tree: Root): void {
       }
 
       // Add the space/start of line
+      // Regex named groups always exist when match succeeds
+      /* istanbul ignore next */
       newNodes.push({ type: "text", value: match.groups?.prefix ?? "" })
 
       // Add "L" text
       newNodes.push({ type: "text", value: "L" })
 
       // Add subscript number
+      /* istanbul ignore next -- regex named groups always exist when match succeeds */
+      const numberText = match.groups?.number ?? ""
       newNodes.push({
         type: "element",
         tagName: "sub",
         properties: { style: "font-variant-numeric: lining-nums;" },
-        children: [{ type: "text", value: match.groups?.number ?? "" }],
+        children: [{ type: "text", value: numberText }],
       })
 
       lastIndex = l_pRegex.lastIndex
