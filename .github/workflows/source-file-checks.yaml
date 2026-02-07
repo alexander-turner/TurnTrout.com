@@ -1,5 +1,9 @@
 name: Source file checks
 
+concurrency:
+  group: source-file-checks-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: ["main", "dev"]
