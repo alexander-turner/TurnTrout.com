@@ -11,3 +11,5 @@ coverage/
 htmlcov/
 .venv/
 .logs/
+test-results/
+**/.asset_dimensions.json

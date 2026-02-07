@@ -10,7 +10,10 @@ This directory contains configuration and skills for Claude Code.
 ├── hooks/
 │   └── session-setup.sh   # Runs on session start (installs tools, configures git)
 └── skills/
-    └── pr-creation.md     # PR creation workflow with self-critique
+    └── pr-creation/       # PR creation workflow with self-critique
+        ├── SKILL.md       # Main skill entrypoint
+        ├── critique-prompt.md  # Self-critique checklist for sub-agent
+        └── pr-templates.md     # PR formatting and validation reference
 ```
 
 ## How It Works
@@ -28,7 +31,7 @@ When Claude Code starts a session, it automatically runs `session-setup.sh` whic
 
 Skills in `skills/` are reusable workflows that guide Claude through complex tasks:
 
-- **pr-creation.md**: Creating pull requests with mandatory self-critique before submission
+- **pr-creation**: Creating pull requests with mandatory self-critique before submission (invoke with `/pr-creation`)
 
 Skills are automatically available to Claude Code when working in this repository.
 
@@ -53,7 +56,7 @@ fi
 
 ### Adding Skills
 
-Create new `.md` files in `skills/` following the pattern in `pr-creation.md`.
+Create new skill directories in `skills/` following the pattern in `pr-creation/SKILL.md`. Each skill should be a directory with a `SKILL.md` entrypoint and optional supporting files.
 
 ### Customizing Hooks
 

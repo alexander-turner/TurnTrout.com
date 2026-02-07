@@ -18,7 +18,6 @@ TIMESTAMPS_REPO="alexander-turner/.timestamps"
 # Helpers
 #######################################
 
-warn() { echo "Warning: $1" >&2; }
 die() {
   echo "ERROR: $1" >&2
   exit 1
@@ -34,20 +33,18 @@ github_url() {
   fi
 }
 
-# Install a command via pip if missing
 pip_install_if_missing() {
   local cmd="$1" pkg="${2:-$1}"
   if ! command -v "$cmd" &>/dev/null; then
-    pip3 install --quiet "$pkg" || warn "Failed to install $pkg"
+    pip3 install --quiet "$pkg" || die "Failed to install $pkg"
   fi
 }
 
-# Install a command via webi if missing
 webi_install_if_missing() {
   local cmd="$1"
   if ! command -v "$cmd" &>/dev/null; then
     echo "Installing $cmd..."
-    curl -sS "https://webi.sh/$cmd" | sh >/dev/null 2>&1 || warn "Failed to install $cmd"
+    curl -sS "https://webi.sh/$cmd" | sh >/dev/null 2>&1 || die "Failed to install $cmd"
   fi
 }
 
@@ -61,7 +58,7 @@ if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
 fi
 
 #######################################
-# Tool installation (optional - warn on failure)
+# Tool installation
 #######################################
 
 echo "Installing tools..."
@@ -77,8 +74,14 @@ if is_root; then
   command -v fish &>/dev/null || apt_pkgs+=(fish)
   if [ ${#apt_pkgs[@]} -gt 0 ]; then
     if ! { apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } 2>/dev/null; then
-      warn "Failed to install ${apt_pkgs[*]}"
+      die "Failed to install ${apt_pkgs[*]}"
     fi
+  fi
+fi
+
+if ! command -v fish &>/dev/null && is_root; then
+  if ! apt-get install -y -qq fish 2>/dev/null; then
+    die "Failed to install fish (needed for fish_indent in lint-staged)"
   fi
 fi
 
@@ -112,7 +115,7 @@ git config core.hooksPath .hooks
 
 if [ -n "${GH_TOKEN:-}" ] && command -v gh &>/dev/null; then
   echo "Configuring GitHub authentication..."
-  echo "$GH_TOKEN" | gh auth login --with-token 2>&1 || warn "Failed to authenticate with GitHub"
+  echo "$GH_TOKEN" | gh auth login --with-token 2>&1 || die "Failed to authenticate with GitHub"
 fi
 
 #######################################
