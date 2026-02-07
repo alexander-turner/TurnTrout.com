@@ -146,6 +146,12 @@ em {
   font-style: italic;
 }
 
+// Bringhurst §5.3.2: Use upright parentheses, brackets, and braces in italic text
+.upright-punctuation {
+  font-style: normal;
+  font-family: var(--font-main);
+}
+
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;

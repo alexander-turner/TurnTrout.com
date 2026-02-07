@@ -298,8 +298,8 @@ This footnote has a table.[^table]
 
 [^table]: | Layer | Coeff | Pos. 0 | 1 | 2 | 3 | 4 |
     | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `hate` |  `you` |  `because` |
-    | 6 | +10 | `<endoftext>` | `Love` |   |   |   |
+    | 0 (Prompt) | +1 | `<endoftext>` | `I` | `hate` | `you` | `because` |
+    | 6 | +10 | `<endoftext>` | `Love` | | | |
 
     Table: Unpaired addition of `Love`.
 
@@ -378,9 +378,9 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-| **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
-| -----------------: | :--------: | :----------: | :--------------------------------- |
-| Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
+| **Tier** | **Time for tier** | **Cost of tier** | **Protection level** |
+| ---------: | :--------: | :----------: | :--- |
+| Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
 
 # Video
 
@@ -480,6 +480,24 @@ This computer has 16GB of RAM and runs at 3.2GHz.
 > Comes before the single quote
 >
 > 'I will take the Ring'
+
+## Upright punctuation in italics
+
+Per Bringhurst, parentheses, brackets, and braces should be set upright (roman) even in italic context.
+
+_The Elements of Typographic Style (Hartley & Marks, 2004)_ is a good book.
+
+_Parentheses (like these), brackets [like these], and braces \{like these\} should all be upright._
+
+Nested: _**bold italic (parentheses) and [brackets]**_
+
+Deeply nested: _**We need a <span>deep (nesting)</span> test.**_
+
+Mixed: (roman parentheses) _italic (upright parentheses)_ (roman parentheses again)
+
+_See NASA (the agency) for details on the [shuttle] program._
+
+_Here's `code(not_wrapped)` but (these are wrapped)._
 
 ## Fractions and math
 

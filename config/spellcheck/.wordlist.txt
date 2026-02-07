@@ -297,6 +297,7 @@ Brahmi
 Branwen's
 Braun's
 Bricken
+Bringhurst
 Broca's
 Bushnaq
 BuzzFeed
@@ -629,6 +630,7 @@ Harmbench's
 HarryHPMOR's
 Harsanyi
 Harsanyi's
+Hartley
 Haxhia
 Heatmap
 Heatmaps

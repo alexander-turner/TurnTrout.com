@@ -14,14 +14,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  pull_request:
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
 
 permissions:
   actions: read
