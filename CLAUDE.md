@@ -104,6 +104,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
 - Visual regression tests use Playwright with `lost-pixel`
+- **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details
 

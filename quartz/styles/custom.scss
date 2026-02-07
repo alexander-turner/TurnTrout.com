@@ -718,12 +718,12 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Hover to show";
+    content: "Tap to show";
   }
 
-  @media (max-width: $tablet-breakpoint) {
+  @media (hover: hover) {
     &::after {
-      content: "Tap to show";
+      content: "Hover to show";
     }
   }
 }
@@ -739,14 +739,25 @@ img.emoji {
   }
 }
 
-.spoiler-container:hover .spoiler-overlay,
+// Only apply hover reveal on devices with real hover (not touch where :hover sticks)
+@media (hover: hover) {
+  .spoiler-container:hover .spoiler-overlay {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .spoiler-container:hover .spoiler-content {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
 .spoiler-container:focus .spoiler-overlay,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:hover .spoiler-content,
 .spoiler-container:focus .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
