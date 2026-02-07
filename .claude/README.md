@@ -4,11 +4,14 @@ This directory contains configuration and skills for Claude Code.
 
 ## Structure
 
-```
+```text
 .claude/
-├── settings.json           # Claude Code hooks configuration
+├── settings.json               # Claude Code hooks configuration
 ├── hooks/
-│   └── session-setup.sh   # Runs on session start (installs tools, configures git)
+│   ├── session-setup.sh       # Runs on session start (installs tools, configures git)
+│   ├── lib-checks.sh          # Shared helpers for hook scripts
+│   ├── pre-push-check.sh     # Runs before git push / gh pr (build, lint, typecheck)
+│   └── verify-ci-on-stop.sh  # Runs on session stop (blocks if checks fail)
 └── skills/
     └── pr-creation/       # PR creation workflow with self-critique
         ├── SKILL.md       # Main skill entrypoint
@@ -22,10 +25,30 @@ This directory contains configuration and skills for Claude Code.
 
 When Claude Code starts a session, it automatically runs `session-setup.sh` which:
 
-1. **Installs tools**: shfmt, gh (GitHub CLI), shellcheck
+1. **Installs tools**: shfmt, gh (GitHub CLI), jq, shellcheck
 2. **Configures git hooks**: Sets `core.hooksPath` to `.hooks/`
-3. **Authenticates GitHub CLI**: Uses `GH_TOKEN` if available
-4. **Installs dependencies**: Node (pnpm/npm) and Python (uv) if applicable
+3. **Validates GitHub CLI auth**: Fails fast if `GH_TOKEN` is missing
+4. **Detects GitHub repo**: Extracts `owner/repo` from proxy remotes in web sessions
+5. **Installs dependencies**: Node (pnpm) and Python (uv) if applicable
+
+### Pre-Push Check Hook
+
+Before `git push` or `gh pr` commands, `pre-push-check.sh` runs any configured checks:
+
+- **build** (`pnpm build`): Catches type errors in TypeScript projects
+- **lint** (`pnpm lint`): Catches code quality issues
+- **typecheck** (`pnpm check`): Additional type checking if configured
+- **ruff**: Python linting if applicable
+
+Only runs scripts that are actually configured in `package.json` — skips placeholder scripts.
+
+### Stop Hook
+
+When Claude finishes a session, `verify-ci-on-stop.sh` blocks completion if any checks fail:
+
+- Runs test, lint, and typecheck (superset of pre-push checks — adds tests)
+- Returns `decision: "block"` with failure details so Claude continues fixing issues
+- Returns `decision: "approve"` if all checks pass
 
 ### Skills
 
