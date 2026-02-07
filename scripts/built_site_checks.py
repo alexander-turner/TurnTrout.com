@@ -368,16 +368,17 @@ def _append_to_list(
     lst.append(prefix + to_append)
 
 
+_S = r"[ \u00A0]"  # Space or non-breaking space
 _CANARY_BAD_ANYWHERE = (
-    r"> \[\![a-zA-Z]+\]",  # Callout syntax
-    r"\[ \]",  # Unrendered checkbox
-    r"Table: ",
-    r"Figure: ",
-    r"Code: ",
-    r"Caption: ",
+    rf">{_S}\[\![a-zA-Z]+\]",  # Callout syntax
+    rf"\[{_S}\]",  # Unrendered checkbox
+    rf"Table:{_S}",
+    rf"Figure:{_S}",
+    rf"Code:{_S}",
+    rf"Caption:{_S}",
 )
 _CANARY_BAD_PREFIXES = (
-    r": ",  # Unrendered description
+    rf":{_S}",  # Unrendered description
     r"#",  # Unrendered heading
     r"\[(\s|\u200B)*\]",  # image alt declaration, may contain 0width space
 )
@@ -1719,8 +1720,8 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r"
+ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×\u201c=+' \n\t\r\u00a0"
+ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+\u201d\u2026=' \n\t\r\u00a0"
 
 
 def _check_element_spacing(
