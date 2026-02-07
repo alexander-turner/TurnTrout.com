@@ -4543,7 +4543,7 @@ def test_check_unrendered_emoticons(html, expected):
         ),
         # Non-breaking spaces normalized to regular spaces
         (
-            "title with\u00a0non-breaking\u00a0spaces",
+            f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
         ),
     ],
@@ -5287,7 +5287,7 @@ def test_check_html_tags_in_text_real_world_katex():
         ('<article data-use-dropcap="false"><p>Alpha</p></article>', True),
         ("<article><p>Alpha</p></article>", False),
         (
-            '<article><p data-first-letter="\u2019">\u2019Twas</p></article>',
+            f'<article><p data-first-letter="{built_site_checks.RIGHT_SINGLE_QUOTE}">{built_site_checks.RIGHT_SINGLE_QUOTE}Twas</p></article>',
             False,
         ),
     ],
@@ -5319,8 +5319,10 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool):
         ),
         # Invalid: non-alphanumeric
         (
-            '<article><p data-first-letter="\u2019">\u2019Twas</p></article>',
-            ["non-alphanumeric data-first-letter: '\u2019'"],
+            f'<article><p data-first-letter="{built_site_checks.RIGHT_SINGLE_QUOTE}">{built_site_checks.RIGHT_SINGLE_QUOTE}Twas</p></article>',
+            [
+                f"non-alphanumeric data-first-letter: '{built_site_checks.RIGHT_SINGLE_QUOTE}'"
+            ],
         ),
         # Invalid: wrong length
         (

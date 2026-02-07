@@ -3,10 +3,9 @@ import type { Root, Text, InlineCode, Code, Link, Emphasis, Blockquote, Paragrap
 
 import { describe, expect, it } from "@jest/globals"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
 import type { BuildCtx } from "../../util/ctx"
 
+import { normalizeNbsp } from "../../components/constants"
 import { customToString, stripHtmlTagsFromString, TableOfContents, type TocEntry } from "./toc"
 
 // Type definitions for test objects

@@ -3,8 +3,7 @@ import type { Root, Element, Text } from "hast"
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
+import { normalizeNbsp } from "../../../components/constants"
 import { type QuartzPluginData } from "../../vfile"
 import {
   renderSequenceTitle,
