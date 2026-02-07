@@ -9,6 +9,8 @@ import type { FunctionComponent } from "preact"
 import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 import { h } from "hastscript"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 
@@ -560,7 +562,7 @@ describe("CreateTableOfContents", () => {
     const button = header.props.children
     expect(button.type).toBe("button")
     expect(button.props.className).toBe("internal same-page-link")
-    expect(button.props.children).toBe("Test Page")
+    expect(normalizeNbsp(button.props.children)).toBe("Test Page")
 
     // Verify content structure
     const content = result?.props.children[1]
@@ -665,7 +667,7 @@ describe("CreateTableOfContents", () => {
       props as unknown as QuartzComponentProps,
     ) as JSX.Element | null
     const button = result?.props.children[0].props.children
-    expect(button.props.children).toBe(expectedTitle)
+    expect(normalizeNbsp(button.props.children)).toBe(expectedTitle)
   })
 
   it("should render complex TOC structure with multiple levels", () => {
@@ -697,7 +699,7 @@ describe("CreateTableOfContents", () => {
     // Verify the title is correct
     const header = result?.props.children[0]
     const button = header.props.children
-    expect(button.props.children).toBe("Complex Document")
+    expect(normalizeNbsp(button.props.children)).toBe("Complex Document")
 
     // Verify TOC content structure exists
     const content = result?.props.children[1]

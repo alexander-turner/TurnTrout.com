@@ -3,6 +3,8 @@ import type { Root, Text, InlineCode, Code, Link, Emphasis, Blockquote, Paragrap
 
 import { describe, expect, it } from "@jest/globals"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import type { BuildCtx } from "../../util/ctx"
 
 import { customToString, stripHtmlTagsFromString, TableOfContents, type TocEntry } from "./toc"
@@ -226,8 +228,8 @@ describe("TableOfContents Plugin", () => {
       // Check results
       expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2)
-      expect(mockFile.data.toc?.[0]?.text).toBe("Main Title")
-      expect(mockFile.data.toc?.[1]?.text).toBe("Section")
+      expect(normalizeNbsp(mockFile.data.toc?.[0]?.text ?? "")).toBe("Main Title")
+      expect(normalizeNbsp(mockFile.data.toc?.[1]?.text ?? "")).toBe("Section")
     })
 
     it("respects showByDefault false", () => {
@@ -449,8 +451,8 @@ describe("TableOfContents Plugin", () => {
 
       expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2) // Only the non-blockquote headings
-      expect(mockFile.data.toc?.[0]?.text).toBe("Normal Heading")
-      expect(mockFile.data.toc?.[1]?.text).toBe("Another Normal Heading")
+      expect(normalizeNbsp(mockFile.data.toc?.[0]?.text ?? "")).toBe("Normal Heading")
+      expect(normalizeNbsp(mockFile.data.toc?.[1]?.text ?? "")).toBe("Another Normal Heading")
     })
 
     it("generates correct slugs for headings", () => {
