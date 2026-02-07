@@ -153,7 +153,7 @@ importers:
         version: 1.15.0
       punctilio:
         specifier: ^1.0.4
-        version: 1.0.4
+        version: 1.4.2(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -281,6 +281,9 @@ importers:
       0x:
         specifier: 4.1.4
         version: 4.1.4
+      "@axe-core/playwright":
+        specifier: ^4.11.1
+        version: 4.11.1(playwright-core@1.55.1)
       "@babel/core":
         specifier: 7.26.9
         version: 7.26.9
@@ -685,6 +688,14 @@ packages:
       {
         integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==,
       }
+
+  "@axe-core/playwright@4.11.1":
+    resolution:
+      {
+        integrity: sha512-mKEfoUIB1MkVTht0BGZFXtSAEKXMJoDkyV5YZ9jbBmZCcWDz71tegNsdTkIN8zc/yMi5Gm2kx7Z5YQ9PfWNAWw==,
+      }
+    peerDependencies:
+      playwright-core: ">= 1.0.0"
 
   "@babel/code-frame@7.27.1":
     resolution:
@@ -4464,6 +4475,13 @@ packages:
     resolution:
       {
         integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==,
+      }
+    engines: { node: ">=4" }
+
+  axe-core@4.11.1:
+    resolution:
+      {
+        integrity: sha512-BASOg+YwO2C+346x3LZOeoovTIoTrRqEsqMa6fmfAV0P+U9mFr9NsyOEpiYvFjbc64NMrSswhV50WdXzdb/Z5A==,
       }
     engines: { node: ">=4" }
 
@@ -12866,12 +12884,17 @@ packages:
         integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==,
       }
 
-  punctilio@1.0.4:
+  punctilio@1.4.2:
     resolution:
       {
-        integrity: sha512-+ZEGEc61c3+Z8OcuqRZwRJ73vu5kAfhBkkfA5ARwHnFi0VI+lS50ZcQGyXV1k4uyP9zSMxe1RIbgxZzFiz/iEg==,
+        integrity: sha512-YOsU1TybJ3NYwi6m+qsIypvpTZvKF1HToTiy6i8DyZ66OVvYRwAJzX2xZTZlh8qjRg9VGko8smkJjiogvZiSiA==,
       }
     engines: { node: ">=18.0.0" }
+    peerDependencies:
+      unified: ^11.0.0
+    peerDependenciesMeta:
+      unified:
+        optional: true
 
   punycode@1.4.1:
     resolution:
@@ -16864,6 +16887,11 @@ snapshots:
       "@csstools/css-tokenizer": 3.0.4
       lru-cache: 10.4.3
 
+  "@axe-core/playwright@4.11.1(playwright-core@1.55.1)":
+    dependencies:
+      axe-core: 4.11.1
+      playwright-core: 1.55.1
+
   "@babel/code-frame@7.27.1":
     dependencies:
       "@babel/helper-validator-identifier": 7.28.5
@@ -19442,6 +19470,8 @@ snapshots:
       possible-typed-array-names: 1.1.0
 
   axe-core@4.10.3: {}
+
+  axe-core@4.11.1: {}
 
   axios@1.12.0:
     dependencies:
@@ -25464,7 +25494,12 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@1.0.4: {}
+  punctilio@1.4.2(unified@11.0.5):
+    dependencies:
+      escape-string-regexp: 5.0.0
+      unist-util-visit-parents: 6.0.1
+    optionalDependencies:
+      unified: 11.0.5
 
   punycode@1.4.1: {}
 

@@ -1,0 +1,31 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "settings": {
+        "onlyCategories": ["accessibility"],
+        "throttling": {
+          "cpuSlowdownMultiplier": 1,
+          "rttMs": 40,
+          "throughputKbps": 10240
+        },
+        "disableStorageReset": false,
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "width": 1440,
+          "height": 900,
+          "deviceScaleFactor": 1,
+          "mobile": false
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 0.9 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
