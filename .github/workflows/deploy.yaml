@@ -1,21 +1,31 @@
 name: Deploy to Cloudflare
 
 concurrency:
-  group: ${{ github.ref == 'refs/heads/main' && 'pages' || 'dev-pages' }}
+  group: deploy-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
   cancel-in-progress: true
 
 on:
   push:
     branches: ["main", "dev"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
   contents: read
   id-token: write
   pages: write
+  pull-requests: write
 
 jobs:
-  prepare-deploy:
+  build:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -25,8 +35,102 @@ jobs:
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
 
-      - name: Build Quartz and generate critical CSS
+      - name: Build Quartz
         run: pnpm build
+
+      - name: Upload build output
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-output
+          path: public/
+
+  # PR preview: deploy without subfont for fast feedback
+  preview:
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Download build output
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build-output
+          path: public/
+
+      - name: Deploy PR preview
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: pr-${{ github.event.pull_request.number }}
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const marker = '<!-- pr-preview-deploy -->';
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const sha = context.sha.substring(0, 7);
+            const deployUrl = `https://pr-${prNumber}.turntrout.pages.dev`;
+
+            const body = [
+              marker,
+              `**Preview deployed** for commit ${sha}:`,
+              deployUrl,
+              '',
+              'This preview updates automatically on each push to this PR.'
+            ].join('\n');
+
+            try {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+              const existing = comments.find(c => c.body?.includes(marker));
+
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body: body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: body,
+                });
+              }
+            } catch (error) {
+              core.setFailed(`Failed to comment on PR: ${error.message}`);
+            }
+
+  # main/dev: run subfont, site checks, then deploy
+  prepare-deploy:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Download build output
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: build-output
+          path: public/
 
       - name: Deploy to Cloudflare Pages (fast feedback for dev)
         if: github.ref_name == 'dev'
@@ -55,7 +159,7 @@ jobs:
           path: public/
 
   verify-tests:
-    if: github.ref_name == 'main'
+    if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -72,12 +176,11 @@ jobs:
 
   deploy:
     needs: [prepare-deploy, verify-tests]
-    if: ${{ (always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success' }}
+    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          # Keep this consistent with prepare-deploy; some build-time stats rely on full git history.
           fetch-depth: 0
 
       - name: Download prepared site
