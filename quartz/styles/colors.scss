@@ -228,3 +228,10 @@ a:hover *,
 #toc-title button:hover {
   color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
 }
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

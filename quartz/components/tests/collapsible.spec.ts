@@ -4,10 +4,6 @@ import { test, expect, type Page } from "@playwright/test"
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
 
 test.beforeEach(async ({ page }) => {
-  // Clear localStorage before each test
-  await page.addInitScript(() => {
-    localStorage.clear()
-  })
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 })
 
@@ -86,7 +82,7 @@ test.describe("Collapsible admonition state persistence", () => {
     const toggledState = !initiallyCollapsed
 
     // Navigate away using SPA navigation (click an internal link)
-    await page.locator('a[href="/about"]').first().click()
+    await page.locator('a[href$="/about"]').first().click()
     await page.waitForURL("**/about")
 
     // Navigate back
@@ -101,8 +97,10 @@ test.describe("Collapsible admonition state persistence", () => {
   })
 
   test("clicking content does not close open collapsible", async ({ page }) => {
-    // The test page has an open collapsible: "[!info]+ This collapsible admonition starts off open"
-    const openCollapsible = page.locator(".admonition.is-collapsible:not(.is-collapsed)").first()
+    // Target the specific "[!info]+ This collapsible admonition starts off open" admonition
+    const openCollapsible = page
+      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+      .filter({ hasText: "starts off open" })
 
     // Verify it exists and is open
     await expect(openCollapsible).toBeVisible()
@@ -121,7 +119,7 @@ test.describe("Collapsible admonition state persistence", () => {
     )
 
     // Navigate away and back
-    await page.locator('a[href="/about"]').first().click()
+    await page.locator('a[href$="/about"]').first().click()
     await page.waitForURL("**/about")
     await page.goBack()
     await page.waitForURL("**/test-page")
