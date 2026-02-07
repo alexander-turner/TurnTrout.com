@@ -16,6 +16,7 @@ on:
       - "Built site checks"
       - "Link checker"
       - "Lighthouse Testing"
+      - "Deploy to Cloudflare"
     types:
       - completed
 
