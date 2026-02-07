@@ -119,6 +119,20 @@ if [ -n "${GH_TOKEN:-}" ] && command -v gh &>/dev/null; then
 fi
 
 #######################################
+# DeepSource CLI
+#######################################
+
+if ! command -v deepsource &>/dev/null; then
+  echo "Installing DeepSource CLI..."
+  BINDIR="$HOME/.local/bin" curl -sSL https://deepsource.io/cli | sh 2>/dev/null || die "Failed to install DeepSource CLI"
+fi
+
+if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
+  echo "Configuring DeepSource authentication..."
+  deepsource auth login --with-token "$DEEPSOURCE_PAT" 2>&1 || die "Failed to authenticate with DeepSource"
+fi
+
+#######################################
 # Project dependencies
 #######################################
 
