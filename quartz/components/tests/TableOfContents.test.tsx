@@ -552,6 +552,7 @@ describe("CreateTableOfContents", () => {
     expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
     expect(result?.props.className).toBe("desktop-only")
+    expect(result?.props["aria-label"]).toBe("Table of contents")
 
     // Verify header structure and content
     const header = result?.props.children[0]

@@ -135,7 +135,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   const currentSlug = fileData.slug || ("" as FullSlug)
 
   const links = pages.map((page: Page) => {
-    const isCurrent = currentSlug === (page.slug as FullSlug)
+    const isCurrent = currentSlug === (page.slug.replace(/^\//, "") as FullSlug)
     return (
       <li key={page.slug}>
         <a

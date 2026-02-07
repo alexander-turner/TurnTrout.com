@@ -408,7 +408,7 @@ export function renderPage(
   )
 
   const RightComponent = (
-    <aside id="right-sidebar" className="sidebar" aria-label="Table of contents">
+    <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
       {right.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
