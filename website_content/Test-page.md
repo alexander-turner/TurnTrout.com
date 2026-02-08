@@ -93,6 +93,20 @@ Header 1
 </dd>
 </dl>
 
+Code block in a `<dl>`
+: To verify that a commit `ABC012` was indeed committed by a given date, run
+
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
+
+Admonition in a description list
+: > [!quote] Test
+
+  > To be or not to be.
+
 # Admonition lists
 
 > [!info] List admonition
@@ -296,8 +310,8 @@ This footnote has a table.[^table]
 
 [^table]: | Layer | Coeff | Pos. 0 | 1 | 2 | 3 | 4 |
     | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `hate` |  `you` |  `because` |
-    | 6 | +10 | `<endoftext>` | `Love` |   |   |   |
+    | 0 (Prompt) | +1 | `<endoftext>` | `I` | `hate` | `you` | `because` |
+    | 6 | +10 | `<endoftext>` | `Love` | | | |
 
     Table: Unpaired addition of `Love`.
 
@@ -376,9 +390,9 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-| **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
+| **Tier** | **Time for tier** | **Cost of tier** | **Protection level** |
 | -----------------: | :--------: | :----------: | :--------------------------------- |
-| Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
+| Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
 
 # Video
 
