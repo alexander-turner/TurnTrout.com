@@ -576,50 +576,27 @@ test.describe("Spoilers", () => {
     })
   }
 
-  test("Tapping spoiler twice re-hides it on mobile", async ({ page }) => {
-    test.skip(isDesktopViewport(page), "Mobile-only test")
-
+  test("Clicking spoiler twice re-hides it", async ({ page }) => {
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
     await expect(spoiler).toBeVisible()
 
     const initialScreenshot = await spoiler.screenshot()
 
-    // Tap to reveal
+    // Click to reveal
     await spoiler.click()
     await expect(spoiler).toHaveClass(/revealed/)
 
     const revealedScreenshot = await spoiler.screenshot()
     expect(revealedScreenshot).not.toEqual(initialScreenshot)
 
-    // Tap again to re-hide
+    // Click again to re-hide
     await spoiler.click()
     await expect(spoiler).not.toHaveClass(/revealed/)
 
-    // Visually verify the spoiler is hidden again without tapping elsewhere
+    // Visually verify the spoiler is hidden again
     const rehiddenScreenshot = await spoiler.screenshot()
     expect(rehiddenScreenshot).not.toEqual(revealedScreenshot)
-  })
-
-  test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
-    // Skip on mobile devices where hover is not a native interaction
-    test.skip(!isDesktopViewport(page), "Desktop-only test")
-
-    const spoiler = page.locator(".spoiler-container").first()
-    await spoiler.scrollIntoViewIfNeeded()
-    await expect(spoiler).toBeVisible()
-
-    const initialScreenshot = await spoiler.screenshot()
-
-    await spoiler.hover()
-    const revealedScreenshot = await spoiler.screenshot()
-    expect(revealedScreenshot).not.toEqual(initialScreenshot)
-
-    await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
-      elementToScreenshot: spoiler,
-      disableHover: false,
-      preserveSiblings: true,
-    })
   })
 })
 
