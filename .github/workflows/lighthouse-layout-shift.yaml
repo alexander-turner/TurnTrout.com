@@ -15,19 +15,9 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
       - ".github/lighthouse-*.json"
-  pull_request:
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
 
 jobs:
   build_and_deploy:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
     permissions:
       actions: read

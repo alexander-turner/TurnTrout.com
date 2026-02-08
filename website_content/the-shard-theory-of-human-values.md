@@ -322,7 +322,7 @@ In this story, the world model is built from the self-supervised loss signal. Re
 
 ## Shards are not full subagents
 
-In our conception, shards vary in their sophistication (e.g. _IF-THEN reflexes_ vs _planning-capable, reflective shards which query the world model in order to steer the future in a certain direction_) and generality of activating contexts (e.g. _only activates when hungry and a lollypop is in the middle of the visual field_ vs _activates whenever you're thinking about a person_). However, we think that shards are not discrete subagents with their own world models and mental workspaces. We currently estimate that most shards are "optimizers" to the extent that a bacterium or a thermostat is an optimizer.
+In our conception, shards vary in their sophistication (e.g. _IF-THEN reflexes_ vs _planning-capable, reflective shards which query the world model in order to steer the future in a certain direction_) and generality of activating contexts (e.g. _only activates when hungry and a lollipop is in the middle of the visual field_ vs _activates whenever you're thinking about a person_). However, we think that shards are not discrete subagents with their own world models and mental workspaces. We currently estimate that most shards are "optimizers" to the extent that a bacterium or a thermostat is an optimizer.
 
 ## “Values”
 

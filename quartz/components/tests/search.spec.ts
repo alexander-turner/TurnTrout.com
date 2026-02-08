@@ -399,7 +399,8 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.goBack({ waitUntil: "load" })
   await expect(page.locator("#search-icon")).toBeVisible()
 
-  await page.keyboard.press("/")
+  // Click search icon instead of "/" shortcut for cross-device reliability
+  await page.locator("#search-icon").click()
   await search(page, "Shrek")
 
   const secondResult = page.locator(".result-card").nth(1)
@@ -783,4 +784,33 @@ navigationMethods.forEach(({ down, description }) => {
     await page.keyboard.press("Enter")
     await page.waitForURL((url) => url.toString() !== initialUrl)
   })
+})
+
+test("Search bar accepts input immediately while index loads", async ({ page }) => {
+  // Close search first (opened by beforeEach)
+  await page.keyboard.press("Escape")
+  const searchContainer = page.locator("#search-container")
+  await expect(searchContainer).not.toHaveClass(/active/)
+
+  // Navigate to a fresh page to reset search initialization state
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+  // Intercept contentIndex.json to add a delay, simulating slow index loading
+  await page.route("**/contentIndex.json", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    await route.continue()
+  })
+
+  // Open search - this triggers index initialization
+  await page.keyboard.press("/")
+  await expect(page.locator("#search-container")).toHaveClass(/active/)
+
+  // Type immediately without waiting - before the fix, this would be ignored
+  // because the search bar was disabled during index loading
+  const searchBar = page.locator("#search-bar")
+  const testText = "hello"
+  await searchBar.pressSequentially(testText, { delay: 20 })
+
+  // The text should appear in the search bar even while loading
+  await expect(searchBar).toHaveValue(testText)
 })

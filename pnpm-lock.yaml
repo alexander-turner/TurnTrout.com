@@ -76,6 +76,9 @@ importers:
       esbuild-sass-plugin:
         specifier: 3.3.1
         version: 3.3.1(esbuild@0.25.1)(sass-embedded@1.88.0)
+      escape-string-regexp:
+        specifier: ^5.0.0
+        version: 5.0.0
       fast-xml-parser:
         specifier: 5.3.4
         version: 5.3.4
@@ -152,8 +155,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^1.7.5
+        version: 1.7.5(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -12866,12 +12869,17 @@ packages:
         integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==,
       }
 
-  punctilio@1.0.4:
+  punctilio@1.7.5:
     resolution:
       {
-        integrity: sha512-+ZEGEc61c3+Z8OcuqRZwRJ73vu5kAfhBkkfA5ARwHnFi0VI+lS50ZcQGyXV1k4uyP9zSMxe1RIbgxZzFiz/iEg==,
+        integrity: sha512-lgp23TG4/nK/dyEN7Pf6Svxwlh8NpbrTt5X6o9zGi2h6AuyoOZsWlc7634+xFhg7K2qiKh9QfxgcxtAfFdJ9GQ==,
       }
     engines: { node: ">=18.0.0" }
+    peerDependencies:
+      unified: ^11.0.0
+    peerDependenciesMeta:
+      unified:
+        optional: true
 
   punycode@1.4.1:
     resolution:
@@ -25464,7 +25472,12 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@1.0.4: {}
+  punctilio@1.7.5(unified@11.0.5):
+    dependencies:
+      escape-string-regexp: 5.0.0
+      unist-util-visit-parents: 6.0.1
+    optionalDependencies:
+      unified: 11.0.5
 
   punycode@1.4.1: {}
 

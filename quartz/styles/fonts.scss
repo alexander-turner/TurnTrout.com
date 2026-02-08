@@ -107,8 +107,14 @@ $fonts-dir: "/static/styles/fonts";
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
-@include font-face("Elvish", "tengwar_annatar/TengwarAnnatar", ".woff2");
-@include font-face("ElvishItalic", "tengwar_annatar/TengwarAnnatar-Italic", ".woff2");
+@include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
+
+// Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F).
+// Content must be encoded with PUA codepoints, NOT Dan Smith encoding (Latin chars).
+// To convert phonetic Quenya/Sindarin text to PUA Tengwar:
+//   pip install glaemscribe
+//   from glaemscribe import transcribe
+//   transcribe("Ai! laurië lantar", mode='quenya')
 
 body {
   --font-dropcap-foreground: "EBGaramondInitialsF2", serif;
@@ -143,37 +149,67 @@ em {
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;
-  position: relative;
-  cursor: text;
+  cursor: pointer;
 
-  & a {
-    cursor: pointer;
-  }
+  // Gentle indicator that text is interactive - subtle dotted underline
+  // Using 50% opacity for WCAG contrast compliance
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 50%, transparent);
+  text-underline-offset: 0.3em;
 
+  // Tengwar Artano only has one style, so use it for em too
   & em,
   em & {
-    font-family: ElvishItalic, serif;
+    font-family: Elvish, serif;
+    font-style: normal; // Tengwar doesn't have italic
   }
 
-  // Show underlying English text
-  transition:
-    opacity 600ms,
-    color 300ms;
-
+  // Hover state - show hint that clicking will reveal translation
   &:hover {
-    color: transparent;
+    text-decoration-color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  }
 
-    &::after {
-      position: absolute;
-      left: 0;
-      width: max-content;
-      content: attr(data-content);
-      color: var(--foreground);
-      font-family: var(--font-main);
-      opacity: 1;
-      text-shadow: 0 0 10px color-mix(in srgb, var(--yellow) 50%, transparent);
+  // Focus state for keyboard users
+  &:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  // When toggled to show translation
+  &.show-translation {
+    font-family: var(--font-main);
+
+    // Keep same line-height to prevent layout shift when toggling
+
+    // Hide the Tengwar text and show translation
+    .elvish-tengwar {
+      display: none;
+    }
+
+    .elvish-translation {
+      display: inline;
     }
   }
+
+  // Default: show Tengwar, hide translation
+  .elvish-translation {
+    display: none;
+  }
+}
+
+// Visually hidden but accessible to screen readers
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .corrupted {
@@ -337,7 +373,9 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// Avoid sidebars
+// Body text ordinals (like "21st place") use lining-nums for visual consistency.
+// Date ordinals (.date-ordinal-num) intentionally have no styling so they
+// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
 article .ordinal-num {
   font-variant-numeric: lining-nums;
 }
