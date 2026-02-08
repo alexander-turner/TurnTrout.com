@@ -1,21 +1,6 @@
 const SCROLL_THRESHOLD = 1
-const OVERLAY_SCROLLBAR_HEIGHT = 8
 let observers: ResizeObserver[] = []
 let abortController: AbortController | null = null
-
-// Detect overlay scrollbars: they don't reduce clientWidth inside a scrollable element
-function hasOverlayScrollbars(): boolean {
-  const outer = document.createElement("div")
-  outer.style.overflow = "scroll"
-  outer.style.width = "50px"
-  outer.style.height = "50px"
-  outer.style.position = "absolute"
-  outer.style.left = "-9999px"
-  document.body.appendChild(outer)
-  const overlay = outer.offsetWidth === outer.clientWidth
-  document.body.removeChild(outer)
-  return overlay
-}
 
 function updateIndicator(wrapper: HTMLElement, scrollable: HTMLElement) {
   const { scrollLeft, scrollWidth, clientWidth } = scrollable
@@ -38,7 +23,6 @@ document.addEventListener("nav", () => {
   const controller = new AbortController()
   abortController = controller
 
-  const overlay = hasOverlayScrollbars()
   const scrollables = document.querySelectorAll<HTMLElement>(".table-container, .katex-display")
 
   for (const el of scrollables) {
@@ -51,21 +35,7 @@ document.addEventListener("nav", () => {
     el.parentNode.insertBefore(wrapper, el)
     wrapper.appendChild(el)
 
-    const update = () => {
-      // Keep fade above scrollbar so the scrollbar stays visible.
-      // Overlay scrollbars (macOS default) don't reduce clientHeight,
-      // so offsetHeight - clientHeight is 0; use a minimum instead.
-      const isScrollable = el.scrollWidth > el.clientWidth
-      const layoutScrollbarHeight = el.offsetHeight - el.clientHeight
-      const scrollbarHeight =
-        layoutScrollbarHeight > 0
-          ? layoutScrollbarHeight
-          : overlay && isScrollable
-            ? OVERLAY_SCROLLBAR_HEIGHT
-            : 0
-      wrapper.style.setProperty("--scrollbar-height", `${scrollbarHeight}px`)
-      updateIndicator(wrapper, el)
-    }
+    const update = () => updateIndicator(wrapper, el)
 
     el.addEventListener("scroll", update, { passive: true, signal: controller.signal })
     const observer = new ResizeObserver(update)
