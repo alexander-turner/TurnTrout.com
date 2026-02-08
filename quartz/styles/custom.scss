@@ -717,13 +717,7 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Tap to show";
-  }
-
-  @media (hover: hover) {
-    &::after {
-      content: "Click to show";
-    }
+    content: "Click to show";
   }
 }
 
