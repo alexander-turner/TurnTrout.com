@@ -91,22 +91,22 @@ function setupDarkMode() {
     toggle.addEventListener("click", rotateTheme)
   }
 
-  document.addEventListener("nav", () => {
-    /**
-     * Handles system color scheme preference changes
-     * @param e - MediaQueryList event containing the new preference
-     */
-    function doSystemPreference(e: MediaQueryListEvent): void {
-      const savedTheme = localStorage.getItem("saved-theme")
-      if (savedTheme === "auto") {
-        const newTheme = e.matches ? "dark" : "light"
-        document.documentElement.setAttribute("data-theme", newTheme)
-      }
+  /**
+   * Handles system color scheme preference changes
+   * @param e - MediaQueryList event containing the new preference
+   */
+  function doSystemPreference(e: MediaQueryListEvent): void {
+    const savedTheme = localStorage.getItem("saved-theme")
+    if (savedTheme === "auto") {
+      const newTheme = e.matches ? "dark" : "light"
+      document.documentElement.setAttribute("data-theme", newTheme)
     }
+  }
 
-    const colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-    colorSchemeMediaQuery.addEventListener("change", doSystemPreference)
+  const colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+  colorSchemeMediaQuery.addEventListener("change", doSystemPreference)
 
+  document.addEventListener("nav", () => {
     // Update theme state after navigation
     const currentTheme = localStorage.getItem("saved-theme") || "auto"
     setThemeClassOnRoot(currentTheme as Theme)

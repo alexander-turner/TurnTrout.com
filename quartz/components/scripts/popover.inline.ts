@@ -10,6 +10,7 @@ import {
 // Module-level state
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
+let linkListenerController: AbortController | null = null
 
 /**
  * Handles the mouse enter event for link elements
@@ -96,6 +97,13 @@ document.addEventListener("nav", () => {
     pendingPopoverTimer = null
   }
 
+  // Abort previous link listeners to prevent accumulation on morphed-in-place elements
+  if (linkListenerController) {
+    linkListenerController.abort()
+  }
+  linkListenerController = new AbortController()
+  const { signal } = linkListenerController
+
   // Re-attach event listeners to all links that can trigger a popover
   const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
   for (const link of links) {
@@ -128,7 +136,7 @@ document.addEventListener("nav", () => {
       }
     }
 
-    link.addEventListener("mouseenter", handleMouseEnter)
-    link.addEventListener("mouseleave", handleMouseLeave)
+    link.addEventListener("mouseenter", handleMouseEnter, { signal })
+    link.addEventListener("mouseleave", handleMouseLeave, { signal })
   }
 })
