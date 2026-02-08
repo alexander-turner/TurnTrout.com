@@ -147,6 +147,10 @@ document.addEventListener("nav", () => {
         "click",
         (e: MouseEvent) => {
           e.preventDefault()
+          // Stop propagation so the SPA router's document-level click handler
+          // doesn't intercept this and navigate to the hash (which scrolls the
+          // page and dispatches a nav event that would clean up the popover).
+          e.stopPropagation()
 
           // Clear any pending hover timer
           if (pendingPopoverTimer) {
