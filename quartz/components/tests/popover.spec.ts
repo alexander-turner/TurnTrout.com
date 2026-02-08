@@ -401,7 +401,7 @@ test.describe("Footnote popovers", () => {
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 
-  test("Clicking footnote link opens popover with close button", async ({ page }) => {
+  test("Clicking footnote link opens pinned popover with close button", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -409,6 +409,7 @@ test.describe("Footnote popovers", () => {
     const popover = page.locator(".popover")
     await expect(popover).toBeVisible()
     await expect(popover).toHaveClass(/footnote-popover/)
+    await expect(popover).toHaveAttribute("data-pinned", "true")
 
     // Close button should be visible
     const closeBtn = popover.locator(".popover-close")
@@ -416,6 +417,32 @@ test.describe("Footnote popovers", () => {
 
     // Clicking X closes the popover
     await closeBtn.click()
+    await expect(popover).toBeHidden()
+  })
+
+  test("Pressing Escape closes pinned footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    await page.keyboard.press("Escape")
+    await expect(popover).toBeHidden()
+  })
+
+  test("Hover-triggered footnote popover closes on mouseleave", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.hover()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    // Hover-triggered: should NOT be pinned
+    await expect(popover).not.toHaveAttribute("data-pinned")
+
+    await page.mouse.move(0, 0)
     await expect(popover).toBeHidden()
   })
 
@@ -445,13 +472,14 @@ base.describe("Footnote popover on mobile", () => {
     await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
   })
 
-  base("Tapping footnote opens popover, close button dismisses it", async ({ page }) => {
+  base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
+    await expect(popover).toHaveAttribute("data-pinned", "true")
 
     // Close via X button
     const closeBtn = popover.locator(".popover-close")

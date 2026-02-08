@@ -138,7 +138,8 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
     closeBtn.setAttribute("aria-label", "Close footnote")
     closeBtn.setAttribute("type", "button")
     closeBtn.textContent = "\u00d7" // × multiplication sign
-    popoverInner.appendChild(closeBtn)
+    // Append to outer .popover so it doesn't scroll with .popover-inner content
+    popoverElement.appendChild(closeBtn)
   } else {
     renderFullPageContent(popoverInner, html, targetUrl)
   }
@@ -291,8 +292,8 @@ export function attachPopoverEventListeners(
     },
     mouseleaveLink: () => {
       isMouseOverLink = false
-      // Footnote popovers persist until explicitly closed via X button
-      if (!popoverElement.classList.contains("footnote-popover")) {
+      // Pinned popovers persist until explicitly closed via X or Escape
+      if (!popoverElement.dataset.pinned) {
         removePopover()
       }
     },
@@ -301,7 +302,7 @@ export function attachPopoverEventListeners(
     },
     mouseleavePopover: () => {
       isMouseOverPopover = false
-      if (!popoverElement.classList.contains("footnote-popover")) {
+      if (!popoverElement.dataset.pinned) {
         removePopover()
       }
     },

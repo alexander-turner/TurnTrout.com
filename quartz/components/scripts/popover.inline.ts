@@ -12,6 +12,9 @@ import {
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
+// When true, the next popover created by mouseEnterHandler will be pinned
+// (persist until explicitly closed via X or Escape). Set by click handlers.
+let nextPopoverPinned = false
 
 /**
  * Handles the mouse enter event for link elements
@@ -40,7 +43,13 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   if (!popoverElement) {
     throw new Error("Failed to create popover")
   }
-  popoverElement.dataset.linkHref = this.href // Mark the popover with its source link TODO why
+  // Used by the click toggle logic to detect "is this popover already open for this link?"
+  popoverElement.dataset.linkHref = this.href
+
+  if (nextPopoverPinned) {
+    popoverElement.dataset.pinned = "true"
+    nextPopoverPinned = false
+  }
 
   parentOfPopover.prepend(popoverElement)
 
@@ -50,10 +59,10 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   updatePosition()
 
-  // Footnote popovers persist through scroll (dismissed only via X button);
-  // regular popovers close on scroll since they're hover-triggered and ephemeral.
+  // Pinned popovers persist through scroll (dismissed only via X or Escape);
+  // unpinned (hover-triggered) popovers close on scroll since they're ephemeral.
   const handleScroll = () => {
-    if (activePopoverRemover && !popoverElement.classList.contains("footnote-popover")) {
+    if (activePopoverRemover && !popoverElement.dataset.pinned) {
       activePopoverRemover()
     }
   }
@@ -117,6 +126,20 @@ document.addEventListener("nav", () => {
   }
   linkListenerController = new AbortController()
   const { signal } = linkListenerController
+
+  // Close pinned popovers on Escape key
+  document.addEventListener(
+    "keydown",
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape" && activePopoverRemover) {
+        const popover = document.querySelector(".popover") as HTMLElement | null
+        if (popover?.dataset.pinned) {
+          activePopoverRemover()
+        }
+      }
+    },
+    { signal },
+  )
 
   // Re-attach event listeners to all links that can trigger a popover
   const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
@@ -184,6 +207,7 @@ document.addEventListener("nav", () => {
           if (activePopoverRemover) {
             activePopoverRemover()
           }
+          nextPopoverPinned = true
           mouseEnterHandler.call(link)
         },
         { signal },

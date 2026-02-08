@@ -147,23 +147,29 @@
   &.footnote-popover {
     cursor: auto;
 
-    .popover-close {
-      position: absolute;
-      top: 0.25rem;
-      right: 0.25rem;
-      z-index: 1;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      line-height: 1;
-      padding: 0 0.3rem;
-      color: var(--foreground);
-      opacity: 0.4;
+    & > .popover-inner {
+      border: 2px solid var(--midground);
+    }
+  }
 
-      &:hover {
-        opacity: 1;
-      }
+  // Close button lives on .popover (not .popover-inner) so it doesn't
+  // scroll with content. Positioned at top-right corner of .popover-inner.
+  .popover-close {
+    position: absolute;
+    top: calc(2 * $base-margin + 0.25rem);
+    right: calc(2 * $base-margin + 0.25rem);
+    z-index: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.3rem;
+    color: var(--foreground);
+    opacity: 0.4;
+
+    &:hover {
+      opacity: 1;
     }
   }
 
@@ -174,6 +180,12 @@
 
     &.footnote-popover > .popover-inner {
       width: min(20rem, calc(100vw - 2rem));
+    }
+
+    // Larger touch target on mobile
+    .popover-close {
+      padding: 0.5rem;
+      font-size: 1.3rem;
     }
   }
 }

@@ -132,10 +132,11 @@ describe("createPopover", () => {
     const popoverInner = popover.querySelector(".popover-inner")
 
     expect(popover.classList.contains("footnote-popover")).toBe(true)
-    // Should contain a close button
-    const closeBtn = popoverInner?.querySelector(".popover-close")
+    // Close button is on the outer .popover (not .popover-inner) so it doesn't scroll
+    const closeBtn = popover.querySelector(".popover-close")
     expect(closeBtn).not.toBeNull()
     expect(closeBtn?.getAttribute("aria-label")).toBe("Close footnote")
+    expect(closeBtn?.parentElement).toBe(popover)
     // Should NOT contain the li wrapper (content is unwrapped)
     expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
     // Should NOT contain the back arrow link
@@ -544,16 +545,16 @@ describe("attachPopoverEventListeners", () => {
     expect(popoverElement.classList.contains("visible")).toBe(false)
   })
 
-  it("should not remove footnote popover on link mouseleave", () => {
-    popoverElement.classList.add("footnote-popover")
+  it("should not remove pinned popover on link mouseleave", () => {
+    popoverElement.dataset.pinned = "true"
     popoverElement.classList.add("popover-visible")
     linkElement.dispatchEvent(new MouseEvent("mouseleave"))
     jest.advanceTimersByTime(300)
     expect(popoverElement.classList.contains("popover-visible")).toBe(true)
   })
 
-  it("should not remove footnote popover on popover mouseleave", () => {
-    popoverElement.classList.add("footnote-popover")
+  it("should not remove pinned popover on popover mouseleave", () => {
+    popoverElement.dataset.pinned = "true"
     popoverElement.classList.add("popover-visible")
     popoverElement.dispatchEvent(new MouseEvent("mouseenter"))
     popoverElement.dispatchEvent(new MouseEvent("mouseleave"))
