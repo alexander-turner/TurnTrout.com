@@ -877,7 +877,7 @@ test.describe("List alignment", () => {
     { prefix: "", suffix: " li" },
     { prefix: "blockquote > ", suffix: "" },
     { prefix: "blockquote > ", suffix: " li" },
-    { prefix: "* > table ", suffix: "" },
+    { prefix: "* table ", suffix: "" },
     { prefix: "", suffix: "> label > .checkbox-toggle" },
   ]) {
     test(`First ol li and first ul li have the same x-position (${prefix}...${suffix})`, async ({

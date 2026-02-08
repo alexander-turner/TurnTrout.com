@@ -386,6 +386,8 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 Wide tables and equations show a fade gradient at the scrollable edges.
 
+<!--spellchecker-disable-->
+
 | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -408,9 +410,13 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 > | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
 > | Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
 
+<!--spellchecker-enable-->
+
 > [!warning] Admonition with scrollable equation
 >
-> $$\nabla \cdot \mathbf{E} =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} =0 \qquad \nabla \times \mathbf{E} =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
+> $$
+> \nabla \cdot \mathbf{E} =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} =0 \qquad \nabla \times \mathbf{E} =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)
+> $$
 
 # Video
 

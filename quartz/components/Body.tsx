@@ -9,10 +9,10 @@ import clipboardScript from "./scripts/clipboard.inline"
 import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
-import smallCapsCopyScript from "./scripts/smallcaps-copy.inline"
+import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
-import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
+import smallCapsCopyScript from "./scripts/smallcaps-copy.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {
   type QuartzComponent,
