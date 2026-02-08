@@ -7,30 +7,8 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "scripts/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/actions/**"
   pull_request:
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "scripts/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/actions/**"
   merge_group:
-  schedule:
-    - cron: "16 12 * * 4"
 
 permissions:
   actions: read
@@ -74,9 +52,14 @@ jobs:
               - 'config/**'
               - '.github/actions/**'
 
-  spellcheck:
+  lint:
     needs: detect-changes
-    if: needs.detect-changes.outputs.content == 'true' && !startsWith(github.head_ref, 'deepsource-')
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.content == 'true' ||
+       needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.source-checks == 'true')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -84,7 +67,27 @@ jobs:
       - name: Setup base environment
         uses: ./.github/actions/setup-base-env
 
+      - name: Install Vale
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
+          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
+          sudo mv vale /usr/local/bin/
+
+      - name: Generate SCSS variables
+        if: >
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Add node_modules/.bin to PATH
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
       - name: Run spellcheck
+        id: spellcheck
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
         run: |
           pnpm exec spellchecker \
             --no-suggestions \
@@ -94,80 +97,42 @@ jobs:
             --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
             --plugins spell indefinite-article repeated-words syntax-urls frontmatter
 
-  vale:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.content == 'true' && !startsWith(github.head_ref, 'deepsource-')
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Install Vale
-        run: |
-          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
-          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
-          sudo mv vale /usr/local/bin/
-
       - name: Run Vale
-        run: |
-          vale --config config/vale/.vale.ini website_content
-
-  eslint:
-    needs: detect-changes
-    if: >
-      always() &&
-      ((needs.detect-changes.outputs.code == 'true' && !startsWith(github.head_ref, 'deepsource-'))
-      || github.event_name == 'schedule')
-    name: Run eslint scanning
-    runs-on: ubuntu-24.04
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
+        id: vale
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: vale --config config/vale/.vale.ini website_content
 
       - name: Run ESLint
-        run: pnpm eslint .
-          --config config/javascript/eslint.config.js
-
-  stylelint:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.styles == 'true' && !startsWith(github.head_ref, 'deepsource-')
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
-
-      - name: Generate SCSS variables
-        run: pnpm exec tsx quartz/styles/generate-variables.ts
+        id: eslint
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint . --config config/javascript/eslint.config.js
 
       - name: Run Stylelint
+        id: stylelint
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
         run: |
           pnpm exec stylelint \
             --config config/stylelint/.stylelintrc.json \
             "quartz/**/*.scss"
 
-  source-file-checks:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.source-checks == 'true' && !startsWith(github.head_ref, 'deepsource-')
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
-
-      - name: Generate SCSS variables
-        run: pnpm exec tsx quartz/styles/generate-variables.ts
-
-      - name: Add node_modules/.bin to PATH
-        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
-
       - name: Run source file checks
+        id: source-checks
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        continue-on-error: true
         run: uv run python scripts/source_file_checks.py --check-publication-dates
+
+      - name: Check results
+        run: |
+          failed=""
+          if [[ "${{ steps.spellcheck.outcome }}" == "failure" ]]; then failed="$failed spellcheck"; fi
+          if [[ "${{ steps.vale.outcome }}" == "failure" ]]; then failed="$failed vale"; fi
+          if [[ "${{ steps.eslint.outcome }}" == "failure" ]]; then failed="$failed eslint"; fi
+          if [[ "${{ steps.stylelint.outcome }}" == "failure" ]]; then failed="$failed stylelint"; fi
+          if [[ "${{ steps.source-checks.outcome }}" == "failure" ]]; then failed="$failed source-file-checks"; fi
+          if [[ -n "$failed" ]]; then
+            echo "The following checks failed:$failed"
+            exit 1
+          fi
