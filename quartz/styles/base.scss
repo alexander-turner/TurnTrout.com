@@ -34,23 +34,13 @@ section {
   box-sizing: border-box;
 }
 
-/* Define the scrollbar style */
+/* Scrollbar styling using the standard property (avoids Chromium repaint
+   bug where ::-webkit-scrollbar pseudo-elements render as white rectangles
+   after a tab switch). scrollbar-color is supported in all modern browsers. */
 body,
 .right {
   scrollbar-color: var(--midground-fainter) var(--background);
-}
-
-.right::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-/* Define the thumb style */
-.right::-webkit-scrollbar-thumb,
-body::-webkit-scrollbar-thumb {
-  background: var(--midground-fainter);
-  border-radius: 5px;
+  scrollbar-width: thin;
 }
 
 .text-highlight {

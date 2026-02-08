@@ -35,12 +35,7 @@ document.addEventListener("nav", () => {
     el.parentNode.insertBefore(wrapper, el)
     wrapper.appendChild(el)
 
-    const update = () => {
-      // Keep fade above scrollbar so the scrollbar stays visible
-      const scrollbarHeight = el.offsetHeight - el.clientHeight
-      wrapper.style.setProperty("--scrollbar-height", `${scrollbarHeight}px`)
-      updateIndicator(wrapper, el)
-    }
+    const update = () => updateIndicator(wrapper, el)
 
     el.addEventListener("scroll", update, { passive: true, signal: controller.signal })
     const observer = new ResizeObserver(update)
