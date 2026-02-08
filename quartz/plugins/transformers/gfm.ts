@@ -114,7 +114,7 @@ function footnoteBacklinkPlugin() {
 export function convertDdToParagraph(ddElement: Element): Element {
   return {
     type: "element",
-    tagName: "p",
+    tagName: "div",
     properties: {},
     children: ddElement.children,
   }
@@ -125,36 +125,37 @@ export function convertDdToParagraph(ddElement: Element): Element {
  * to keep it as-is, convert it, or update state tracking.
  *
  * @param child - The child element to process
- * @param lastWasDt - Whether the previous element was a <dt>
+ * @param inDtDdGroup - Whether we're inside a dt/dd group (after a dt or valid dd)
  * @returns An object containing the processed element and the new state
  */
 export function processDefinitionListChild(
   child: Element["children"][number],
-  lastWasDt: boolean,
-): { element: Element["children"][number]; newLastWasDt: boolean } {
+  inDtDdGroup: boolean,
+): { element: Element["children"][number]; newInDtDdGroup: boolean } {
   // Handle non-element nodes (text, comments, etc.)
   if (child.type !== "element") {
-    return { element: child, newLastWasDt: false }
+    return { element: child, newInDtDdGroup: false }
   }
 
-  // Handle <dt> elements - set state for next <dd>
+  // Handle <dt> elements - start a new dt/dd group
   if (child.tagName === "dt") {
-    return { element: child, newLastWasDt: true }
+    return { element: child, newInDtDdGroup: true }
   }
 
-  // Handle <dd> elements - check if valid or orphaned
+  // Handle <dd> elements - check if valid (in a group) or orphaned
   if (child.tagName === "dd") {
-    if (lastWasDt) {
-      // Valid <dd> following a <dt> - preserve it
-      return { element: child, newLastWasDt: false }
+    if (inDtDdGroup) {
+      // Valid <dd> following a <dt> or another valid <dd> - preserve it
+      return { element: child, newInDtDdGroup: true }
     } else {
-      // Orphaned <dd> without preceding <dt> - convert to paragraph
-      return { element: convertDdToParagraph(child), newLastWasDt: false }
+      // Orphaned <dd> without preceding <dt> - convert to <div>
+      // (<div> is allowed as a direct child of <dl>, unlike <p>)
+      return { element: convertDdToParagraph(child), newInDtDdGroup: false }
     }
   }
 
   // Handle other elements (div, script, template are allowed in <dl>)
-  return { element: child, newLastWasDt: false }
+  return { element: child, newInDtDdGroup: false }
 }
 
 /**
@@ -176,7 +177,7 @@ export function hasValidDtDdPairs(dlElement: Element): boolean {
 }
 
 /**
- * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
+ * Fixes a definition list by converting orphaned <dd> elements to <div> elements.
  * If no valid <dt>/<dd> pairs remain, replaces the <dl> tag with <div> to avoid
  * invalid HTML (a <dl> must only contain <dt>, <dd>, <div>, <script>, <template>).
  *
@@ -189,16 +190,16 @@ export function fixDefinitionList(dlElement: Element): Element {
   }
 
   const fixedChildren: Element["children"] = []
-  let lastWasDt = false
+  let inDtDdGroup = false
 
   for (const child of dlElement.children) {
     // Skip whitespace-only text nodes — remark-definition-list inserts "\n" text
     // nodes as direct children of <dl>, which violates the axe definition-list rule
     if (child.type === "text" && child.value.trim() === "") continue
 
-    const result = processDefinitionListChild(child, lastWasDt)
+    const result = processDefinitionListChild(child, inDtDdGroup)
     fixedChildren.push(result.element)
-    lastWasDt = result.newLastWasDt
+    inDtDdGroup = result.newInDtDdGroup
   }
 
   // Check the FIXED children for valid pairs, not the original
@@ -241,15 +242,16 @@ export function fixDefinitionList(dlElement: Element): Element {
  *
  * SOLUTION:
  * This plugin scans all <dl> elements and converts orphaned <dd> elements (those without
- * a preceding <dt>) into <p> elements. This maintains semantic correctness while preserving
- * the visual presentation and content structure.
+ * a preceding <dt>) into <div> elements. <div> is allowed as a direct child of <dl>,
+ * unlike <p> which would create additional axe violations.
  *
  * The plugin uses a state machine approach:
- * - Tracks whether the last element was a <dt> using the `lastWasDt` flag
+ * - Tracks whether we're inside a dt/dd group using the `inDtDdGroup` flag
+ * - When encountering a <dt>: Enter a group (flag = true)
  * - When encountering a <dd>:
- *   - If lastWasDt is true: Keep as <dd> (valid pair)
- *   - If lastWasDt is false: Convert to <p> (orphaned)
- * - Resets the flag after processing each <dd> or non-<dt> element
+ *   - If inDtDdGroup is true: Keep as <dd> (valid — consecutive dds are allowed)
+ *   - If inDtDdGroup is false: Convert to <div> (orphaned)
+ * - Resets the flag after processing non-dt/dd elements
  *
  * Valid structure (preserved):
  * ```html
@@ -264,8 +266,8 @@ export function fixDefinitionList(dlElement: Element): Element {
  * <!-- Before -->
  * <dl><dd>Orphaned description</dd></dl>
  *
- * <!-- After -->
- * <dl><p>Orphaned description</p></dl>
+ * <!-- After (no valid pairs → converted to div) -->
+ * <div><div>Orphaned description</div></div>
  * ```
  *
  * @returns A rehype plugin function that transforms the HTML tree

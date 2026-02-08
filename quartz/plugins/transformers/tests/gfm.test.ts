@@ -705,15 +705,16 @@ describe("gfmVisitor function", () => {
  *
  * THE FIX:
  * Helper functions process definition list children and convert orphaned <dd> elements
- * (those without a preceding <dt>) into <p> elements, maintaining semantic correctness.
+ * (those without a preceding <dt>) into <div> elements, since <div> is a valid direct
+ * child of <dl> (unlike <p> which would create additional axe violations).
  */
 
 describe("convertDdToParagraph", () => {
-  it("converts dd element to p element preserving children", () => {
+  it("converts dd element to div element preserving children", () => {
     const dd = h("dd", ["Description text"])
     const result = convertDdToParagraph(dd)
 
-    expect(result.tagName).toBe("p")
+    expect(result.tagName).toBe("div")
     expect(result.type).toBe("element")
     expect(result.properties).toEqual({})
     expect(result.children).toEqual(dd.children)
@@ -723,7 +724,7 @@ describe("convertDdToParagraph", () => {
     const dd = h("dd", ["Text with ", h("strong", ["bold"]), " content"])
     const result = convertDdToParagraph(dd)
 
-    expect(result.tagName).toBe("p")
+    expect(result.tagName).toBe("div")
     expect(result.children).toHaveLength(3)
     expect((result.children[1] as Element).tagName).toBe("strong")
   })
@@ -736,25 +737,34 @@ describe("processDefinitionListChild", () => {
       const result = processDefinitionListChild(dt, false)
 
       expect(result.element).toBe(dt)
-      expect(result.newLastWasDt).toBe(true)
+      expect(result.newInDtDdGroup).toBe(true)
     })
   })
 
   describe("dd elements", () => {
-    it("preserves dd when lastWasDt is true", () => {
+    it("preserves dd when in a dt/dd group", () => {
       const dd = h("dd", ["Description"])
       const result = processDefinitionListChild(dd, true)
 
       expect(result.element).toBe(dd)
-      expect(result.newLastWasDt).toBe(false)
+      expect(result.newInDtDdGroup).toBe(true)
     })
 
-    it("converts dd to p when lastWasDt is false", () => {
+    it("converts dd to div when not in a dt/dd group", () => {
       const dd = h("dd", ["Orphaned"])
       const result = processDefinitionListChild(dd, false)
 
-      expect((result.element as Element).tagName).toBe("p")
-      expect(result.newLastWasDt).toBe(false)
+      expect((result.element as Element).tagName).toBe("div")
+      expect(result.newInDtDdGroup).toBe(false)
+    })
+
+    it("preserves consecutive dd after a valid dd (in same group)", () => {
+      const dd = h("dd", ["Second description"])
+      // inDtDdGroup=true simulates being after a previous valid dd
+      const result = processDefinitionListChild(dd, true)
+
+      expect((result.element as Element).tagName).toBe("dd")
+      expect(result.newInDtDdGroup).toBe(true)
     })
   })
 
@@ -767,7 +777,7 @@ describe("processDefinitionListChild", () => {
       const result = processDefinitionListChild(element, true)
 
       expect(result.element).toBe(element)
-      expect(result.newLastWasDt).toBe(false)
+      expect(result.newInDtDdGroup).toBe(false)
     })
   })
 
@@ -777,7 +787,7 @@ describe("processDefinitionListChild", () => {
       const result = processDefinitionListChild(textNode, true)
 
       expect(result.element).toBe(textNode)
-      expect(result.newLastWasDt).toBe(false)
+      expect(result.newInDtDdGroup).toBe(false)
     })
   })
 })
@@ -810,19 +820,19 @@ describe("fixDefinitionList", () => {
   })
 
   it.each([
-    ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["p"]],
+    ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["div"]],
     ["valid dt/dd pair → dl", [h("dt", ["Term"]), h("dd", ["Desc"])], "dl", ["dt", "dd"]],
     [
       "orphaned dd before valid pair → dl",
       [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
       "dl",
-      ["p", "dt", "dd"],
+      ["div", "dt", "dd"],
     ],
     [
-      "multiple consecutive dd after dt → dl",
+      "multiple consecutive dd after dt → dl (all valid)",
       [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
       "dl",
-      ["dt", "dd", "p"],
+      ["dt", "dd", "dd"],
     ],
     [
       "complex mixed structure → dl",
@@ -830,14 +840,19 @@ describe("fixDefinitionList", () => {
         h("dd", ["Orphan 1"]),
         h("dt", ["Term 1"]),
         h("dd", ["Valid 1"]),
-        h("dd", ["Orphan 2"]),
-        h("dt", ["Term 2"]),
         h("dd", ["Valid 2"]),
+        h("dt", ["Term 2"]),
+        h("dd", ["Valid 3"]),
       ],
       "dl",
-      ["p", "dt", "dd", "p", "dt", "dd"],
+      ["div", "dt", "dd", "dd", "dt", "dd"],
     ],
-    ["all orphaned dd → div", [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])], "div", ["p", "p"]],
+    [
+      "all orphaned dd → div",
+      [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])],
+      "div",
+      ["div", "div"],
+    ],
   ])("fixes %s correctly", (_desc, children, expectedTag, expectedChildTags) => {
     const dl = h("dl", children)
     const result = fixDefinitionList(dl)
@@ -885,7 +900,7 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     runPlugin(tree)
 
     expect(dl.tagName).toBe("div")
-    expect((dl.children[0] as Element).tagName).toBe("p")
+    expect((dl.children[0] as Element).tagName).toBe("div")
   })
 
   it("preserves valid dt/dd pairs as dl", () => {
@@ -903,14 +918,14 @@ describe("fixDefinitionListsPlugin (integration)", () => {
       h("dd", ["Orphan"]),
       h("dt", ["Term"]),
       h("dd", ["Valid"]),
-      h("dd", ["Another orphan"]),
+      h("dd", ["Also valid (consecutive dd)"]),
     ])
     const tree: Root = { type: "root", children: [dl] }
     runPlugin(tree)
 
     expect(dl.tagName).toBe("dl")
     const tags = dl.children.map((c) => (c as Element).tagName)
-    expect(tags).toEqual(["p", "dt", "dd", "p"])
+    expect(tags).toEqual(["div", "dt", "dd", "dd"])
   })
 
   it("converts orphaned dd outside dl to p", () => {
