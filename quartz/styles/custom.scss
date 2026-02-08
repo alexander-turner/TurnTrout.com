@@ -761,6 +761,17 @@ img.emoji {
   opacity: 1;
 }
 
+// Override hover/focus when explicitly closed via click toggle
+.spoiler-container.force-hidden .spoiler-overlay {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.spoiler-container.force-hidden .spoiler-content {
+  filter: blur(4px) !important;
+  opacity: 0.5 !important;
+}
+
 // Make sure the bullet points don't feel choked
 #center-content li,
 #search-preview li,
