@@ -850,19 +850,19 @@ Server-side math rendering via $\KaTeX$
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-Table: A table with unbalanced columns.
+  Table: A table with unbalanced columns.
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-{.full-width .center-table-headings}
+  {.full-width .center-table-headings}
 
-Table: A rebalanced table which pleases the eyes.
+  Table: A rebalanced table which pleases the eyes.
 
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
