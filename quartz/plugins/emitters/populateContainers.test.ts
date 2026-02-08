@@ -31,6 +31,26 @@ import { type QuartzEmitterPlugin } from "../types"
 let populateModule: typeof import("./populateContainers")
 let PopulateContainersEmitter: QuartzEmitterPlugin
 
+// Shared test constants for repository statistics
+const MOCK_STATS = {
+  commitCount: 4943,
+  aiCommitCount: 246,
+  jsTestCount: 1234,
+  playwrightTestCount: 158,
+  pytestCount: 1293,
+  linesOfCode: 83635,
+} as const
+
+// Default mock values used in beforeEach
+const DEFAULT_MOCK_STATS = {
+  commitCount: 100,
+  aiCommitCount: 50,
+  jsTestCount: 100,
+  pytestCount: 1293,
+  playwrightTestCount: 10,
+  linesOfCode: 1000,
+} as const
+
 describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
   const mockOutputDir = "/mock/output"
@@ -54,13 +74,16 @@ describe("PopulateContainers", () => {
 
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
-      if (command.includes("git rev-list")) return "100\n"
-      if (command.includes('git log --all --oneline --grep="claude.ai/code/session"')) return "50\n"
-      if (command.includes("pnpm test")) return "Tests:       100 passed, 100 total\n"
-      if (command.includes("pytest --collect-only")) return "1293 tests collected in 0.50s\n"
-      if (command.includes('grep -r "test("')) return "10\n"
-      if (command.includes("find . -type f")) return "1000\n"
-      return "100\n"
+      if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
+      if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
+        return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
+      if (command.includes("pnpm test"))
+        return `Tests:       ${DEFAULT_MOCK_STATS.jsTestCount} passed, ${DEFAULT_MOCK_STATS.jsTestCount} total\n`
+      if (command.includes("pytest --collect-only"))
+        return `${DEFAULT_MOCK_STATS.pytestCount} tests collected in 0.50s\n`
+      if (command.includes('grep -r "test("')) return `${DEFAULT_MOCK_STATS.playwrightTestCount}\n`
+      if (command.includes("find . -type f")) return `${DEFAULT_MOCK_STATS.linesOfCode}\n`
+      return `${DEFAULT_MOCK_STATS.commitCount}\n`
     })
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
@@ -73,10 +96,10 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-container"></div></body></html>'
       }
       if (pathStr.includes("design.html")) {
-        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-ai-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
-      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-ai-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
+      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
     })
 
     if (urlCache) {
@@ -737,11 +760,11 @@ describe("PopulateContainers", () => {
 
     describe("countGitCommits", () => {
       it("should count commits for a specific author", async () => {
-        mockExecSync.mockReturnValue("4943\n")
+        mockExecSync.mockReturnValue(`${MOCK_STATS.commitCount}\n`)
 
         const count = await populateModule.countGitCommits("Alex Turner")
 
-        expect(count).toBe(4943)
+        expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
           'git rev-list --all --count --author="Alex Turner"',
           { encoding: "utf-8" },
@@ -749,21 +772,21 @@ describe("PopulateContainers", () => {
       })
 
       it("should handle whitespace in output", async () => {
-        mockExecSync.mockReturnValue("\n\n  1234  \n\n")
+        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
 
         const count = await populateModule.countGitCommits("Test Author")
 
-        expect(count).toBe(1234)
+        expect(count).toBe(MOCK_STATS.jsTestCount)
       })
     })
 
     describe("countAICommits", () => {
       it("should count commits with claude.ai/code/session in message", async () => {
-        mockExecSync.mockReturnValue("246\n")
+        mockExecSync.mockReturnValue(`${MOCK_STATS.aiCommitCount}\n`)
 
         const count = await populateModule.countAICommits()
 
-        expect(count).toBe(246)
+        expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
           'git log --all --oneline --grep="claude.ai/code/session" | wc -l',
           { encoding: "utf-8" },
@@ -781,11 +804,13 @@ describe("PopulateContainers", () => {
 
     describe("countJsTestFiles", () => {
       it("should count JS/TS tests from pnpm test output", async () => {
-        mockExecSync.mockReturnValue("Tests:       1234 passed, 1234 total\n")
+        mockExecSync.mockReturnValue(
+          `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
+        )
 
         const count = await populateModule.countJsTests()
 
-        expect(count).toBe(1234)
+        expect(count).toBe(MOCK_STATS.jsTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
           "pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1",
           { encoding: "utf-8" },
@@ -811,11 +836,11 @@ describe("PopulateContainers", () => {
 
     describe("countPlaywrightTests", () => {
       it("should count Playwright test cases", async () => {
-        mockExecSync.mockReturnValue("158\n")
+        mockExecSync.mockReturnValue(`${MOCK_STATS.playwrightTestCount}\n`)
 
         const count = await populateModule.countPlaywrightTests()
 
-        expect(count).toBe(158)
+        expect(count).toBe(MOCK_STATS.playwrightTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
           'grep -r "test(" quartz/components/tests/*.spec.ts | wc -l',
           { encoding: "utf-8" },
@@ -833,11 +858,11 @@ describe("PopulateContainers", () => {
 
     describe("countPytestTests", () => {
       it("should count pytest tests via pytest --collect-only", async () => {
-        mockExecSync.mockReturnValue("1293 tests collected in 0.50s\n")
+        mockExecSync.mockReturnValue(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
 
         const count = await populateModule.countPythonTests()
 
-        expect(count).toBe(1293)
+        expect(count).toBe(MOCK_STATS.pytestCount)
         expect(mockExecSync).toHaveBeenCalledWith(populateModule.PYTEST_COUNT_CMD, {
           encoding: "utf-8",
         })
@@ -862,11 +887,11 @@ describe("PopulateContainers", () => {
 
     describe("countLinesOfCode", () => {
       it("should count total lines of code", async () => {
-        mockExecSync.mockReturnValue("83635\n")
+        mockExecSync.mockReturnValue(`${MOCK_STATS.linesOfCode}\n`)
 
         const count = await populateModule.countLinesOfCode()
 
-        expect(count).toBe(83635)
+        expect(count).toBe(MOCK_STATS.linesOfCode)
         expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining("find . -type f"), {
           encoding: "utf-8",
         })
@@ -884,23 +909,18 @@ describe("PopulateContainers", () => {
     describe("computeRepoStats", () => {
       it("should compute all statistics in parallel", async () => {
         mockExecSync
-          .mockReturnValueOnce("4943\n")
-          .mockReturnValueOnce("246\n")
-          .mockReturnValueOnce("Tests:       1234 passed, 1234 total\n")
-          .mockReturnValueOnce("158\n")
-          .mockReturnValueOnce("1293 tests collected in 0.50s\n")
-          .mockReturnValueOnce("83635\n")
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
+          .mockReturnValueOnce(
+            `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
+          )
+          .mockReturnValueOnce(`${MOCK_STATS.playwrightTestCount}\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.linesOfCode}\n`)
 
         const stats = await populateModule.computeRepoStats()
 
-        expect(stats).toEqual({
-          commitCount: 4943,
-          aiCommitCount: 246,
-          jsTestCount: 1234,
-          playwrightTestCount: 158,
-          pytestCount: 1293,
-          linesOfCode: 83635,
-        })
+        expect(stats).toEqual(MOCK_STATS)
       })
     })
 

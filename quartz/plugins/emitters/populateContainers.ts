@@ -365,7 +365,10 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
-    ["populate-ai-commit-count", generateConstantContent(stats.aiCommitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",

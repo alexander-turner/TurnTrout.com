@@ -56,27 +56,18 @@ describe("formatAuthors", () => {
     {
       authors: ["John Doe", "Jane Smith"],
       expected: "John Doe and Jane Smith",
-      name: "two authors with 'and'",
+      name: "two authors",
     },
     {
       authors: ["Alice", "Bob", "Charlie"],
       expected: "Alice, Bob, and Charlie",
-      name: "three authors with Oxford comma",
+      name: "Oxford comma",
     },
-    {
-      authors: ["A", "B", "C", "D"],
-      expected: "A, B, C, and D",
-      name: "four authors with Oxford comma",
-    },
+    { authors: ["A", "B", "C", "D"], expected: "A, B, C, and D", name: "four authors" },
     {
       authors: ["José García", "François Müller"],
       expected: "José García and François Müller",
-      name: "special characters",
-    },
-    {
-      authors: ["Alex Irpan", "Alex Turner", "Mark Kurzeja", "David Elson", "Rohin Shah"],
-      expected: "Alex Irpan, Alex Turner, Mark Kurzeja, David Elson, and Rohin Shah",
-      name: "many authors",
+      name: "special chars",
     },
   ])("$name", ({ authors, expected }) => {
     expect(formatAuthors(authors)).toBe(expected)
@@ -86,70 +77,52 @@ describe("formatAuthors", () => {
 describe("Authors component", () => {
   const AuthorsComponent = Authors()
 
-  it("renders default author when no authors specified", () => {
-    const fileData = createFileData()
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
-
-    expect(html).toContain('class="authors"')
-    expect(html).toContain("By Alex Turner")
-  })
-
-  it("renders custom authors from frontmatter", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", authors: ["John Doe", "Jane Smith"] },
-    })
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
-
-    expect(html).toContain("By John Doe and Jane Smith")
-  })
-
-  it("returns null when hide_metadata is true", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", hide_metadata: true },
-    })
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
-
-    expect(html).toBe("")
-  })
-
-  it("returns null when hide_authors is true", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", hide_authors: true },
-    })
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
-
-    expect(html).toBe("")
-  })
-
-  it("renders publication info when date_published is provided", () => {
-    const fileData = createFileData({
-      frontmatter: { title: "Test", date_published: new Date("2024-01-15") },
-    })
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
-
-    expect(html).toContain("By Alex Turner")
-    expect(html).toContain("Published")
-  })
-
-  it("renders without publication info when date_published is missing", () => {
-    const fileData = createFileData({
+  it.each([
+    {
+      name: "renders default author when no authors specified",
       frontmatter: { title: "Test" },
-    })
-    const props = createProps(fileData)
-    const element = preactH(AuthorsComponent, props)
-    const html = render(element)
+      contains: ["By Alex Turner", 'class="authors"'],
+      notContains: [],
+    },
+    {
+      name: "renders custom authors from frontmatter",
+      frontmatter: { title: "Test", authors: ["John Doe", "Jane Smith"] },
+      contains: ["By John Doe and Jane Smith"],
+      notContains: [],
+    },
+    {
+      name: "renders publication info when date_published is provided",
+      frontmatter: { title: "Test", date_published: new Date("2024-01-15") },
+      contains: ["By Alex Turner", "Published"],
+      notContains: [],
+    },
+    {
+      name: "renders without publication info when date_published is missing",
+      frontmatter: { title: "Test" },
+      contains: ["By Alex Turner"],
+      notContains: ["Published"],
+    },
+  ])("$name", ({ frontmatter, contains, notContains }) => {
+    const fileData = createFileData({ frontmatter })
+    const html = render(preactH(AuthorsComponent, createProps(fileData)))
 
-    expect(html).toContain("By Alex Turner")
-    expect(html).not.toContain("Published")
+    contains.forEach((text) => expect(html).toContain(text))
+    notContains.forEach((text) => expect(html).not.toContain(text))
+  })
+
+  it.each([
+    {
+      name: "returns null when hide_metadata is true",
+      frontmatter: { title: "Test", hide_metadata: true },
+    },
+    {
+      name: "returns null when hide_authors is true",
+      frontmatter: { title: "Test", hide_authors: true },
+    },
+  ])("$name", ({ frontmatter }) => {
+    const fileData = createFileData({ frontmatter })
+    const html = render(preactH(AuthorsComponent, createProps(fileData)))
+
+    expect(html).toBe("")
   })
 })
