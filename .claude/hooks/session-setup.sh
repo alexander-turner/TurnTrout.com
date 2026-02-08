@@ -166,7 +166,17 @@ fi
 echo "Installing Node dependencies..."
 pnpm install --silent || warn "Failed to install Node dependencies"
 
-command -v uv &>/dev/null && uv sync --quiet 2>/dev/null
+if command -v uv &>/dev/null; then
+  uv sync --quiet 2>/dev/null
+  # Add .venv/bin to PATH so Python tools (autoflake, isort, autopep8, etc.)
+  # installed by uv sync are available to lint-staged and other commands
+  if [ -d "$PROJECT_DIR/.venv/bin" ]; then
+    export PATH="$PROJECT_DIR/.venv/bin:$PATH"
+    if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+      echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+    fi
+  fi
+fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then
   echo "Session setup complete with $SETUP_WARNINGS warning(s)" >&2
