@@ -112,10 +112,36 @@ git config core.hooksPath .hooks
 # GitHub CLI auth
 #######################################
 
-if [ -n "${GH_TOKEN:-}" ] && command -v gh &>/dev/null; then
+if ! command -v gh &>/dev/null; then
+  warn "gh CLI not found"
+elif [ -z "${GH_TOKEN:-}" ]; then
+  warn "GH_TOKEN is not set — GitHub CLI requires authentication"
+else
   echo "Configuring GitHub authentication..."
   if ! echo "$GH_TOKEN" | gh auth login --with-token 2>&1; then
     warn "Failed to authenticate with GitHub"
+  fi
+fi
+
+#######################################
+# GitHub repo detection for proxy environments
+#######################################
+
+# In Claude Code web sessions, git remotes use a local proxy URL like:
+#   http://local_proxy@127.0.0.1:18393/git/owner/repo
+# The gh CLI can't detect the GitHub repo from this, so we extract
+# owner/repo and export GH_REPO to make all gh commands work.
+
+if [ -z "${GH_REPO:-}" ]; then
+  remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
+  if [[ "$remote_url" =~ /git/([^/]+/[^/]+)$ ]]; then
+    GH_REPO="${BASH_REMATCH[1]}"
+    GH_REPO="${GH_REPO%.git}"
+    export GH_REPO
+    echo "Detected GitHub repo from proxy remote: $GH_REPO"
+    if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+      echo "export GH_REPO=\"$GH_REPO\"" >>"$CLAUDE_ENV_FILE"
+    fi
   fi
 fi
 
