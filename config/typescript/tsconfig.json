@@ -20,5 +20,5 @@
     "types": []
   },
   "include": ["../../**/*.ts", "../../**/*.tsx", "../../package.json"],
-  "exclude": ["../../build/**/*.d.ts", "../../config/typescript/**/*.ts", "../../public/**/*.ts"]
+  "exclude": ["../../build/**/*.d.ts", "../../config/typescript/**/*.ts", "../../public/**"]
 }

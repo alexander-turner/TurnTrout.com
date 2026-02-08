@@ -25,6 +25,7 @@ on:
       - "pnpm-lock.yaml"
       - "jest.config.js"
       - ".github/actions/**"
+  merge_group:
 
 permissions:
   actions: read

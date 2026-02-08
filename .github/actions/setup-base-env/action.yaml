@@ -54,18 +54,18 @@ runs:
         restore-keys: |
           ${{ runner.os }}-asset-dimensions-refs/heads/main
 
-    - name: Restore Playwright browsers cache
+    - name: Cache Playwright browsers
       if: inputs.cache-playwright == 'true'
-      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/ms-playwright
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
 
-    - name: Restore Puppeteer browsers cache
+    - name: Cache Puppeteer browsers
       if: inputs.cache-puppeteer == 'true'
-      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ~/.cache/puppeteer
         key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
