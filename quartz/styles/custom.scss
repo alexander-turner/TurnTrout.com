@@ -81,7 +81,8 @@ a[id*="fnref-"] {
   scroll-margin-top: calc(2 * $base-margin);
 
   // Footnotes should be a bit easier to see
-  background-color: color-mix(in srgb, gray 10%, transparent);
+  border: 1px solid var(--midground-faint);
+  color: var(--foreground);
   padding: 0 0.1rem;
   border-radius: 5px;
 
