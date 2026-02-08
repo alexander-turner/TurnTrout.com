@@ -476,7 +476,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
 
   const initialUrl = page.url()
-  const localLink = page.locator("a").first()
+  const localLink = page.locator("a:not(.skip-to-content)").first()
   await localLink.click()
   await page.waitForURL((url) => url.pathname !== initialUrl)
 
