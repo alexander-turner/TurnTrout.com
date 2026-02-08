@@ -1358,6 +1358,8 @@ def test_check_problematic_paragraphs_comprehensive(html, expected):
         ),
         # Percentage cases (should be ignored)
         ("<p>Text with ___ % coverage</p>", []),
+        # Percentage with non-breaking space (should also be ignored)
+        ("<p>Text with ___\u00a0% coverage</p>", []),
         # Mixed cases
         (
             "<p>Mixed *emphasis* with _100% value_</p>",
@@ -1867,6 +1869,16 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
         # Test with nested elements - should be ignored since Some is whitelisted
         (
             "<p>Some<i><strong>one</strong></i> else</p>",
+            [],
+        ),
+        # Smart apostrophe possessive after emphasis - should be allowed
+        (
+            "<p>The <em>tl</em>\u2019s value</p>",
+            [],
+        ),
+        # Smart opening quote before emphasis - should be allowed
+        (
+            "<p>He said \u2018<em>hello</em>\u2019 to them</p>",
             [],
         ),
     ],

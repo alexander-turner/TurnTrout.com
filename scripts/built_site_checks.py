@@ -872,7 +872,9 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
-        if stripped_text and (re.search(r"\*|\_(?!\_* +\%)", stripped_text)):
+        if stripped_text and (
+            re.search(r"\*|\_(?!\_*[ \u00a0]+\%)", stripped_text)
+        ):
             _append_to_list(
                 problematic_texts,
                 stripped_text,
@@ -1779,8 +1781,8 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×\u201c=+' \n\t\r\u00a0"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+\u201d\u2026=' \n\t\r\u00a0"
+ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×\u201c\u2018=+' \n\t\r\u00a0"
+ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+\u201d\u2019\u2026=' \n\t\r\u00a0"
 
 
 def _check_element_spacing(
