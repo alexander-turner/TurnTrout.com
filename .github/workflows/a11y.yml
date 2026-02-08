@@ -2,7 +2,7 @@ name: Accessibility
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
       - "website_content/**"
@@ -37,6 +37,5 @@ jobs:
       - name: Serve site and run accessibility checks
         run: |
           pnpm serve public -l 8080 &
-          # Wait for server to be ready
-          timeout 30 bash -c 'until curl -sf http://localhost:8080 > /dev/null; do sleep 1; done'
+          npx wait-on http://localhost:8080 --timeout 420000
           pnpm test:a11y
