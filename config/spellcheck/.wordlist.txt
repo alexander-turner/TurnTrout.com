@@ -740,6 +740,7 @@ Archimedean
 Arditi
 Argmax
 Arora
+Artano
 Asilomar
 Attentional
 Authenticators
@@ -761,6 +762,7 @@ Bensinger
 Bensinger's
 Benson-Tilsen
 Berkson's
+BibTeX
 Bigg
 Bijuu
 Bonde
@@ -1103,6 +1105,7 @@ QK-circuits
 Qiaochu
 Qualia
 Quantilizers
+Quenya
 Quantilizing
 Qwen-14B
 Qwen-14B-Chat

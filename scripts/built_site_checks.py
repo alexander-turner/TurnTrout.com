@@ -156,6 +156,15 @@ def check_top_level_paragraphs_end_with_punctuation(
             ):
                 continue
 
+            # Skip paragraphs that only contain inline styling elements
+            # (e.g. typography examples like <span class="h2">Header 2</span>)
+            if all(
+                (isinstance(c, Tag) and c.name in ("span", "br"))
+                or (isinstance(c, NavigableString) and not c.strip())
+                for c in p.children
+            ):
+                continue
+
             # Remove footnote reference links
             p_copy = copy.copy(p)
             for link in p_copy.find_all("a", id=True):
@@ -1265,7 +1274,17 @@ def _check_populate_commit_count(
 
 
 _SELF_CONTAINED_ELEMENTS = frozenset(
-    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+    {
+        "svg",
+        "img",
+        "video",
+        "audio",
+        "iframe",
+        "object",
+        "embed",
+        "canvas",
+        "picture",
+    }
 )
 
 

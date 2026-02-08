@@ -602,8 +602,9 @@ test.describe("Spoilers", () => {
   })
 
   test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
-    // Skip on mobile devices where hover is not a native interaction
     test.skip(!isDesktopViewport(page), "Desktop-only test")
+    // Headless Firefox doesn't reliably apply CSS :hover pseudo-class
+    test.skip(testInfo.project.use.browserName === "firefox", "Firefox headless :hover unreliable")
 
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
