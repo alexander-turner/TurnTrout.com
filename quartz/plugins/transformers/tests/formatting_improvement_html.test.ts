@@ -718,7 +718,7 @@ describe("HTMLFormattingImprovement", () => {
       ["1.000-2.000", "1.000–2.000"],
       ["1-2 and 3-4", "1–2 and 3–4"],
       ["from 5-10 to 15-20", "from 5–10 to 15–20"],
-      ["1-2-3", "1–2-3"], // Only replace the first hyphen
+      ["1-2-3", "1-2-3"], // Don't replace in multi-part numbers (e.g. version numbers)
       ["a-b", "a-b"], // Don't replace non-numeric ranges
       ["1a-2b", "1a-2b"], // Don't replace if not purely numeric
       ["a1-2b", "a1-2b"], // Don't replace if not purely numeric
