@@ -366,10 +366,12 @@ export function deduplicateSvgIds(tree: Root): void {
 
         // Handle url(#id) in style, clip-path, marker-end, marker-start, fill, mask, filter
         if (value.includes("url(#")) {
-          child.properties[key] = value.replace(/url\(#(?<urlId>[^)]+)\)/g, (...args) => {
-            const { urlId } = args.at(-1) as { urlId: string }
-            return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : args[0]
-          })
+          child.properties[key] = value.replace(
+            /url\(#(?<urlId>[^)]+)\)/g,
+            (match, _urlId, _offset, _str, { urlId }) => {
+              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+            },
+          )
         }
       }
     })
@@ -381,10 +383,12 @@ export function deduplicateSvgIds(tree: Root): void {
         if (textChild.type !== "text") continue
 
         if (textChild.value.includes("url(#")) {
-          textChild.value = textChild.value.replace(/url\(#(?<urlId>[^)]+)\)/g, (...args) => {
-            const { urlId } = args.at(-1) as { urlId: string }
-            return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : args[0]
-          })
+          textChild.value = textChild.value.replace(
+            /url\(#(?<urlId>[^)]+)\)/g,
+            (match, _urlId, _offset, _str, { urlId }) => {
+              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+            },
+          )
         }
 
         // Also handle #id references in CSS selectors
