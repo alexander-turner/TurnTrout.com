@@ -382,6 +382,36 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 | -----------------: | :--------: | :----------: | :--------------------------------- |
 | Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
 
+# Scroll indicators
+
+Wide tables and equations show a fade gradient at the scrollable edges.
+
+| Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+| Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
+| En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+| Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
+| Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+
+> [!note] Admonition with scrollable table
+>
+> The fade gradient should match the admonition tint, not the page background.
+>
+> | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+> | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+> | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+> | Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+> | Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
+> | En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+> | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
+> | Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+
+> [!warning] Admonition with scrollable equation
+>
+> $$\nabla \cdot \mathbf{E} =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} =0 \qquad \nabla \times \mathbf{E} =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
+
 # Video
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
