@@ -246,6 +246,10 @@ def _check_anchor_classes(
     """
     classes = set(script_utils.get_classes(link))
 
+    # Skip accessibility skip-to-content link (not a content link)
+    if "skip-to-content" in classes:
+        return
+
     required_classes = {"internal", "same-page-link"}
     if not required_classes.issubset(classes):
         missing = required_classes - classes

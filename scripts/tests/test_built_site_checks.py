@@ -154,12 +154,14 @@ def sample_html() -> str:
     return """
     <html>
     <body>
+        <a href="#center-content" class="skip-to-content">Skip to main content</a>
         <a href="http://localhost:8000">Localhost Link</a>
         <a href="https://turntrout.com">Turntrout Link</a>
         <a href="/other-page#invalid-anchor">Turntrout Link with Anchor</a>
         <a href="#valid-anchor" class="internal same-page-link">Valid Anchor</a>
         <a href="#invalid-anchor">Invalid Anchor</a>
         <div id="valid-anchor">Valid Anchor Content</div>
+        <main id="center-content">Main content</main>
         <p>Normal paragraph</p>
         <p>Table: This is a table description</p>
         <p>This is a delayed-paragraph Table: </p>
