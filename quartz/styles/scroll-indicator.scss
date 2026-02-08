@@ -16,12 +16,12 @@
 
   &::before {
     left: 0;
-    background: linear-gradient(to right, var(--background), transparent);
+    background: linear-gradient(to right, var(--scroll-fade-color, var(--background)), transparent);
   }
 
   &::after {
     right: 0;
-    background: linear-gradient(to left, var(--background), transparent);
+    background: linear-gradient(to left, var(--scroll-fade-color, var(--background)), transparent);
   }
 
   &.can-scroll-left::before {
@@ -31,4 +31,15 @@
   &.can-scroll-right::after {
     opacity: 1;
   }
+}
+
+// Preserve footnote inline-block table alignment
+li[id^="user-content-fn-"] .scroll-indicator {
+  display: inline-block;
+  vertical-align: top;
+}
+
+// Match admonition background for fade gradient
+.admonition .scroll-indicator {
+  --scroll-fade-color: var(--bg);
 }
