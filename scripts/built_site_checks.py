@@ -134,6 +134,7 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+PRESENTATIONAL_TAGS = ("span", "br")
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -158,7 +159,6 @@ def check_top_level_paragraphs_end_with_punctuation(
 
             # Skip paragraphs that only contain inline styling elements
             # (e.g. typography examples like <span class="h2">Header 2</span>)
-            PRESENTATIONAL_TAGS = ("span", "br")
             if all(
                 (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
                 or (isinstance(c, NavigableString) and not c.strip())
