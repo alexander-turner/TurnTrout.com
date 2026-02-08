@@ -110,7 +110,9 @@ class AssetProcessor {
       try {
         await fs.rename(tempFilePath, paths.assetDimensions)
       } catch (error) {
-        await fs.unlink(tempFilePath).catch(() => {})
+        await fs.unlink(tempFilePath).catch(() => {
+          // Cleanup is best-effort; temp file may already be gone
+        })
         throw error
       }
       this.needToSaveCache = false

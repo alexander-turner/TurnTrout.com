@@ -811,8 +811,8 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         // replace all wikilinks inside a table first
         src = src.replace(tableRegex, (value: string): string => {
           // escape all aliases and headers in wikilinks inside a table
-          return value.replace(tableWikilinkRegex, (_, ...capture: string[]) => {
-            const [raw]: (string | undefined)[] = capture
+          return value.replace(tableWikilinkRegex, (...args) => {
+            const { wikilink: raw } = args.at(-1) as { wikilink: string }
             /* istanbul ignore next -- table wikilink escaping edge case */
             let escaped = raw ?? ""
             escaped = escaped.replace("#", "\\#")
@@ -823,8 +823,16 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         })
 
         // replace all other wikilinks
-        src = src.replace(wikilinkRegex, (value: string, ...capture: string[]): string => {
-          const [rawFp, rawHeader, rawAlias]: (string | undefined)[] = capture
+        src = src.replace(wikilinkRegex, (value: string, ...args): string => {
+          const {
+            page: rawFp,
+            section: rawHeader,
+            alias: rawAlias,
+          } = args.at(-1) as {
+            page?: string
+            section?: string
+            alias?: string
+          }
 
           /* istanbul ignore next -- wikilink parsing edge cases */
           const fp = rawFp ?? ""

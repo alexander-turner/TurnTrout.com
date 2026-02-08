@@ -109,10 +109,19 @@ describe("Static plugin", () => {
   })
 
   describe("getDependencyGraph", () => {
+    let getDependencyGraph: NonNullable<typeof plugin.getDependencyGraph>
+
+    beforeAll(() => {
+      if (!plugin.getDependencyGraph) {
+        throw new Error("getDependencyGraph must be implemented by Static plugin")
+      }
+      getDependencyGraph = plugin.getDependencyGraph
+    })
+
     it("creates edges mapping root files to output root", async () => {
       mockGlob.mockResolvedValue(["robots.txt", "favicon.ico"] as FilePath[])
 
-      const graph = await plugin.getDependencyGraph!(mockCtx, [], { css: [], js: [] })
+      const graph = await getDependencyGraph(mockCtx, [], { css: [], js: [] })
 
       expect(graph.hasEdge("static/robots.txt" as FilePath, "public/robots.txt" as FilePath)).toBe(
         true,
@@ -125,7 +134,7 @@ describe("Static plugin", () => {
     it("creates edges mapping regular files to output/static/", async () => {
       mockGlob.mockResolvedValue(["script.js", "images/logo.png"] as FilePath[])
 
-      const graph = await plugin.getDependencyGraph!(mockCtx, [], { css: [], js: [] })
+      const graph = await getDependencyGraph(mockCtx, [], { css: [], js: [] })
 
       expect(
         graph.hasEdge("static/script.js" as FilePath, "public/static/script.js" as FilePath),
@@ -147,7 +156,7 @@ describe("Static plugin", () => {
         "fonts/font.woff2",
       ] as FilePath[])
 
-      const graph = await plugin.getDependencyGraph!(mockCtx, [], { css: [], js: [] })
+      const graph = await getDependencyGraph(mockCtx, [], { css: [], js: [] })
 
       // Root files -> output root
       expect(graph.hasEdge("static/robots.txt" as FilePath, "public/robots.txt" as FilePath)).toBe(
@@ -173,7 +182,7 @@ describe("Static plugin", () => {
     it("returns empty graph when no files found", async () => {
       mockGlob.mockResolvedValue([] as FilePath[])
 
-      const graph = await plugin.getDependencyGraph!(mockCtx, [], { css: [], js: [] })
+      const graph = await getDependencyGraph(mockCtx, [], { css: [], js: [] })
 
       expect(graph.nodes).toHaveLength(0)
     })
