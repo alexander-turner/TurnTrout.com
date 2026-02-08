@@ -60,6 +60,7 @@
 
   /** Applies saved state immediately when element added to DOM (prevents layout shift). */
   function applyCollapsibleState(element) {
+    if (element.dataset.collapsibleId) return // Already processed
     const slug = document.body?.dataset?.slug
     if (!slug) return
     const title = element.querySelector(".admonition-title")?.textContent?.trim() || ""

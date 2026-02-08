@@ -1,5 +1,3 @@
-// NOTE: Docstrings generated via AI; take with a grain of salt
-
 import { type Element, type ElementContent, type Root } from "hast"
 import { render } from "preact-render-to-string"
 // skipcq: JS-W1028

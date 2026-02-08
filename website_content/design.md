@@ -838,7 +838,7 @@ Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
 Server-side math rendering via $\KaTeX$
-: I initially chose [$\KaTeX$](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
@@ -1125,13 +1125,11 @@ Cryptographic timestamping
 
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
-<!-- TODO: make this part of the <dd>-->
-
-```shell
-git clone https://github.com/alexander-turner/.timestamps
-cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots"
-```
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
 
 # Github Actions
 
