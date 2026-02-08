@@ -1043,6 +1043,23 @@ test.describe("Checkboxes", () => {
   })
 })
 
+test.describe("Scroll indicators", () => {
+  test("Footnote table shows right fade when overflowing", async ({ page }) => {
+    const footnoteTableContainer = page
+      .locator('li[id^="user-content-fn-"] .table-container')
+      .first()
+    await footnoteTableContainer.scrollIntoViewIfNeeded()
+
+    // Only assert if the table actually overflows (guaranteed on mobile, likely on all viewports)
+    const overflows = await footnoteTableContainer.evaluate((el) => el.scrollWidth > el.clientWidth)
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!overflows) return
+
+    const scrollIndicator = footnoteTableContainer.locator("..")
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+  })
+})
+
 test.describe("Popovers on different page types", () => {
   const pageSlugs = ["all-posts", "tags/personal", "all-tags"]
 

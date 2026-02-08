@@ -47,6 +47,7 @@
 li[id^="user-content-fn-"] .scroll-indicator {
   display: inline-block;
   vertical-align: top;
+  max-width: 100%;
 }
 
 // Match admonition background for fade gradient
