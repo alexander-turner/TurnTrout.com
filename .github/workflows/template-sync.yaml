@@ -185,10 +185,8 @@ jobs:
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             # Combine changed and new files, convert newlines to spaces
-            {
-              git diff --name-only
-              git ls-files --others --exclude-standard
-            } | tr '\n' ' ' | { read -r changed_paths; echo "changed_paths=$changed_paths" >> $GITHUB_OUTPUT; }
+            changed_paths=$({ git diff --name-only; git ls-files --others --exclude-standard; } | tr '\n' ' ')
+            echo "changed_paths=$changed_paths" >> $GITHUB_OUTPUT
           fi
 
       - name: Show diff (dry run)
@@ -234,19 +232,13 @@ jobs:
           delete-branch: true
           labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,needs-conflict-resolution' || 'template-sync' }}
 
-      - name: Ask Claude for merge suggestions
+      - name: Request Claude review for conflicts
         if: inputs.dry-run != 'true' && steps.sync.outputs.has_conflicts == 'true' && steps.create-pr.outputs.pull-request-number
-        uses: anthropics/claude-code-action@beta
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          pr_number: ${{ steps.create-pr.outputs.pull-request-number }}
-          prompt: |
-            This template sync PR has conflicts - files that differ between the local repo and template.
-            The local versions have been preserved. Please suggest how to merge each conflicting file,
-            keeping project-specific customizations while adopting template improvements.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ steps.create-pr.outputs.pull-request-number }}" --body "@claude This template sync PR has conflicts - files that differ between the local repo and template. The local versions have been preserved. Please suggest how to merge each conflicting file, keeping project-specific customizations while adopting template improvements.
 
-            Look for header comments indicating intentional customizations (e.g., "IMPORTANT: This file
-            has project-specific customizations" or "Future Claudes: Leave these customizations as-is").
-            When in doubt, preserve local changes - they exist for a reason.
+          Look for header comments indicating intentional customizations (e.g., 'IMPORTANT: This file has project-specific customizations' or 'Future Claudes: Leave these customizations as-is'). When in doubt, preserve local changes - they exist for a reason.
 
-            Be concise. For each file, suggest what to keep from local vs adopt from template.
+          Be concise. For each file, suggest what to keep from local vs adopt from template."

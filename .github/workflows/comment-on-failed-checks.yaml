@@ -16,6 +16,7 @@ on:
       - "Built site checks"
       - "Link checker"
       - "Lighthouse Testing"
+      - "Deploy to Cloudflare"
     types:
       - completed
 
@@ -97,13 +98,15 @@ jobs:
                 return `- **${name}** [failed](${latest.url}) on commit ${latest.sha} (attempt ${runs.length}/${maxAttempts})`;
               }).join('\n');
 
-              const body = `${trackerMarker}
-<!-- failures:${JSON.stringify(failures)} -->
-@claude The following workflows have failed:
-
-${failureLines}
-
-Please investigate and fix the issues.`;
+              const body = [
+                trackerMarker,
+                `<!-- failures:${JSON.stringify(failures)} -->`,
+                '@claude The following workflows have failed:',
+                '',
+                failureLines,
+                '',
+                'Please investigate and fix the issues.'
+              ].join('\n');
 
               if (trackerComment) {
                 await github.rest.issues.updateComment({

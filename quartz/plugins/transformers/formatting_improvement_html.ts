@@ -2,9 +2,12 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
+import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
+
+import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
@@ -12,19 +15,7 @@ import {
   hatTipPlaceholder,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import {
-  replaceRegex,
-  fractionRegex,
-  hasClass,
-  hasAncestor,
-  type ElementMaybeWithParent,
-  urlRegex,
-} from "./utils"
-
-/**
- * @module HTMLFormattingImprovement
- * A plugin that improves text formatting in HTML content by applying various typographic enhancements
- */
+import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex } from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -43,72 +34,22 @@ export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as con
  */
 export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
 
-/**
- * Flattens text nodes in an element tree into a single array
- * @param node - The element or element content to process
- * @param ignoreNode - Function to determine which nodes to skip
- * @returns Array of Text nodes
- */
-export function flattenTextNodes(
-  node: Element | ElementContent,
-  ignoreNode: (n: Element) => boolean,
-): Text[] {
-  if (ignoreNode(node as Element)) {
-    return []
-  }
+export function toSkip(node: Element): boolean {
+  if (node.type === "element") {
+    const elementNode = node as ElementMaybeWithParent
+    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
+    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
+    const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
 
-  if (node.type === "text") {
-    return [node as Text]
+    return skipTag || skipClass || isFootnoteRef
   }
-
-  if (node.type === "element" && "children" in node) {
-    return node.children.flatMap((child) => flattenTextNodes(child, ignoreNode))
-  }
-
-  // For other node types (like comments), return an empty array
-  return []
+  return false
 }
 
 /**
- * Extracts concatenated text content from an element
- * @param node - The element to process
- * @param ignoreNodeFn - Optional function to determine which nodes to skip
- * @returns The combined text content
+ * @module HTMLFormattingImprovement
+ * A plugin that improves text formatting in HTML content by applying various typographic enhancements
  */
-export function getTextContent(
-  node: Element,
-  ignoreNodeFn: (n: Element) => boolean = () => false,
-): string {
-  return flattenTextNodes(node, ignoreNodeFn)
-    .map((n) => n.value)
-    .join("")
-}
-
-/**
- * Validates that smart quotes in a text string are properly matched
- * @param input - The text to validate
- * @throws Error if quotes are mismatched
- */
-export function assertSmartQuotesMatch(input: string): void {
-  if (!input) return
-
-  const quoteMap: Record<string, string> = { "”": "“", "“": "”" }
-  const stack: string[] = []
-
-  for (const char of input) {
-    if (char in quoteMap) {
-      if (stack.length > 0 && quoteMap[stack[stack.length - 1]] === char) {
-        stack.pop()
-      } else {
-        stack.push(char)
-      }
-    }
-  }
-
-  if (stack.length > 0) {
-    throw new Error(`Mismatched quotes in ${input}`)
-  }
-}
 
 /**
  * Marker-aware word boundary patterns.
@@ -128,88 +69,6 @@ export function assertSmartQuotesMatch(input: string): void {
 const wb = `(?<!\\w${markerChar}*)\\b`
 // End of word: word boundary, not followed by marker(s)+word pattern
 const wbe = `\\b(?!${markerChar}*\\w)`
-/* Sometimes I want to transform the text content of a paragraph (e.g.
-by adding smart quotes). But that paragraph might contain multiple child
-elements. If I transform each of the child elements individually, the
-transformation might fail or be mangled. For example, consider the
-literal string "<em>foo</em>" The transformers will see '"', 'foo', and
-'"'. It's then impossible to know how to transform the quotes.
-
-This function allows applying transformations to the text content of a
-paragraph, while preserving the structure of the paragraph. 
-  1. Append a private-use unicode char to end of each child's text content.  
-  2. Take text content of the whole paragraph and apply
-    transform to it
-  3. Split the transformed text content by the unicode char, putting
-    each fragment back into the corresponding child node. 
-  4. Assert that stripChar(transform(textContentWithChar)) =
-    transform(stripChar(textContent)) as a sanity check, ensuring
-    transform is invariant to our choice of character. 
-  
-  NOTE/TODO this function is, in practice, called multiple times on the same
-  node via its parent paragraphs. Beware non-idempotent transforms.
-  */
-/**
- * Applies a transformation to element text content while preserving structure
- * @param node - The element to transform
- * @param transform - The transformation function to apply
- * @param ignoreNodeFn - Optional function to determine which nodes to skip
- * @param checkTransformInvariance - Whether to verify transform consistency
- * @throws Error if node has no children or transformation alters node count
- */
-export function transformElement(
-  node: Element,
-  transform: (input: string) => string,
-  ignoreNodeFn: (input: Element) => boolean = () => false,
-  checkTransformInvariance = true,
-): void {
-  if (!node?.children) {
-    throw new Error("Node has no children")
-  }
-
-  // Append markerChar and concatenate all text nodes
-  const textNodes = flattenTextNodes(node, ignoreNodeFn)
-  const markedContent = textNodes.map((n) => n.value + markerChar).join("")
-
-  const transformedContent: string = transform(markedContent)
-
-  // Split and overwrite. Last fragment is always empty because strings end with markerChar
-  const transformedFragments = transformedContent.split(markerChar).slice(0, -1)
-
-  if (transformedFragments.length !== textNodes.length) {
-    console.error("Text node count mismatch debug info:")
-    console.error("  Before:", JSON.stringify(markedContent))
-    console.error("  After:", JSON.stringify(transformedContent))
-    console.error("  Expected fragments:", textNodes.length)
-    console.error("  Actual fragments:", transformedFragments.length)
-    throw new Error("Transformation altered the number of text nodes")
-  }
-
-  textNodes.forEach((n, index) => {
-    n.value = transformedFragments[index]
-  })
-
-  if (checkTransformInvariance) {
-    const strippedContent = markedContent.replaceAll(markerChar, "")
-    const strippedTransformed = transformedContent.replaceAll(markerChar, "")
-    const expected = transform(strippedContent)
-
-    // istanbul ignore next
-    if (expected !== strippedTransformed) {
-      console.error("Transform invariance check failed!")
-      console.error("=== Original (with markers) ===")
-      console.error(JSON.stringify(markedContent))
-      console.error("=== Expected (transform on stripped) ===")
-      console.error(JSON.stringify(expected))
-      console.error("=== Actual (stripped after transform) ===")
-      console.error(JSON.stringify(strippedTransformed))
-      console.error("=== END ===")
-      throw new Error(
-        `Transform invariance check failed: expected "${expected}" but got "${strippedTransformed}"`,
-      )
-    }
-  }
-}
 
 /**
  * Space out slashes in text
@@ -264,7 +123,10 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
-// Don't check for invariance
+// Don't check for invariance: these transforms accept a `separator` and intentionally
+// use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
+// Because they behave differently with vs. without markers, the invariance property
+// transform(text_with_markers) == transform(text_without_markers) does not hold.
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
   // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
@@ -274,7 +136,8 @@ const uncheckedTextTransformers = [
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
 ]
 
-// Check for invariance
+// Check for invariance: these are simple find-and-replace transforms that never interact
+// with the marker character, so we verify they produce identical results with or without markers.
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
 /**
@@ -452,40 +315,6 @@ export function formatOrdinalSuffixes(tree: Root): void {
 
 const TEXT_LIKE_TAGS = ["p", "em", "strong", "b"]
 const LEFT_QUOTES = ['"', "“", "'", "‘"]
-
-/**
- * Recursively finds the first text node in a tree of HTML elements
- *
- * @param node - The root node to search from
- * @returns The first text node found, or null if no text nodes exist
- *
- * @example
- * // Returns text node with value "Hello"
- * getFirstTextNode(h('div', {}, [h('span', {}, 'Hello')]))
- *
- * // Returns null
- * getFirstTextNode(h('div', {}, []))
- */
-export function getFirstTextNode(node: Parent): Text | null {
-  if (!node) return null
-
-  // Handle direct text nodes
-  if (node.type === "text" && "value" in node) {
-    return node as Text
-  }
-
-  // Recursively search through children
-  if (node.children && node.children.length > 0) {
-    for (const child of node.children) {
-      const textNode = getFirstTextNode(child as Parent)
-      if (textNode) {
-        return textNode
-      }
-    }
-  }
-
-  return null
-}
 
 /**
  * Recursively searches for and identifies the last anchor ('a') element in a node tree.
@@ -753,19 +582,6 @@ export function setFirstLetterAttribute(tree: Root): void {
   }
 }
 
-export function toSkip(node: Element): boolean {
-  if (node.type === "element") {
-    const elementNode = node as ElementMaybeWithParent
-    const skipTag = (SKIP_TAGS as readonly string[]).includes(elementNode.tagName)
-    const skipClass = SKIP_CLASSES.some((cls) => hasClass(elementNode, cls))
-    // Skip footnote references - their number text shouldn't be transformed
-    const isFootnoteRef = elementNode.properties?.["dataFootnoteRef"] !== undefined
-
-    return skipTag || skipClass || isFootnoteRef
-  }
-  return false
-}
-
 function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Parent[]): boolean {
   return (
     hasAncestor(
@@ -818,65 +634,6 @@ interface Options {
   skipFirstLetter?: boolean // Debug flag
 }
 
-const collectNodes = [
-  "p",
-  "em",
-  "strong",
-  "i",
-  "b",
-  "sub",
-  "sup",
-  "small",
-  "del",
-  "center",
-  "td",
-  "dt",
-  "dd",
-  "dl",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "ol",
-  "ul",
-  "li",
-  "tr",
-  "td",
-  "th",
-  "a",
-  "span",
-  "div",
-  "figcaption",
-  "blockquote",
-]
-
-export function collectTransformableElements(node: Element): Element[] {
-  const eltsToTransform: Element[] = []
-
-  if (toSkip(node)) {
-    return []
-  }
-
-  // If this node matches our collection criteria,
-  // add it and do NOT recurse separately for its children.
-  if (collectNodes.includes(node.tagName) && node.children.some((child) => child.type === "text")) {
-    eltsToTransform.push(node)
-  } else {
-    // Otherwise, keep looking through children.
-    if ("children" in node && Array.isArray(node.children)) {
-      for (const child of node.children) {
-        if (child.type === "element") {
-          eltsToTransform.push(...collectTransformableElements(child))
-        }
-      }
-    }
-  }
-
-  return eltsToTransform
-}
-
 /**
  * Main transformer plugin for HTML formatting improvements
  * @param options - Configuration options
@@ -906,25 +663,27 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       rearrangeLinkPunctuation(node as Element, index, parent as Element)
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
-      const eltsToTransform = collectTransformableElements(node as Element)
-      eltsToTransform.forEach((elt) => {
-        for (const transform of uncheckedTextTransformers) {
-          transformElement(elt, transform, toSkip, false)
-        }
+      if (node.type === "element") {
+        const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+        eltsToTransform.forEach((elt) => {
+          for (const transform of uncheckedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, false)
+          }
 
-        for (const transform of checkedTextTransformers) {
-          transformElement(elt, transform, toSkip, true)
-        }
+          for (const transform of checkedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, true)
+          }
 
-        // Don't replace slashes in fractions, but give breathing room
-        // to others
-        const slashPredicate = (n: Element) => {
-          return !hasClass(n, "fraction") && n?.tagName !== "a"
-        }
-        if (slashPredicate(elt)) {
-          transformElement(elt, spacesAroundSlashes, toSkip, true)
-        }
-      })
+          // Don't replace slashes in fractions, but give breathing room
+          // to others
+          const slashPredicate = (n: Element) => {
+            return !hasClass(n, "fraction") && n?.tagName !== "a"
+          }
+          if (slashPredicate(elt)) {
+            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
+          }
+        })
+      }
     })
 
     if (!resolvedOptions.skipFirstLetter) {

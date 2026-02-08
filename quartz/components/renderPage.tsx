@@ -1,5 +1,3 @@
-// NOTE: Docstrings generated via AI; take with a grain of salt
-
 import { type Element, type ElementContent, type Root } from "hast"
 import { render } from "preact-render-to-string"
 // skipcq: JS-W1028
@@ -73,6 +71,8 @@ export function createTranscludeSourceAnchor(href: string): Element {
     properties: {
       href,
       class: ["internal", "transclude-src"],
+      ariaHidden: "true",
+      tabIndex: -1,
     },
     children: [] as ElementContent[],
   }
@@ -398,19 +398,19 @@ export function renderPage(
   const Body = BodyConstructor()
 
   const LeftComponent = (
-    <div id="left-sidebar" className="sidebar">
+    <aside id="left-sidebar" className="sidebar" aria-label="Site navigation">
       {left.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
-    </div>
+    </aside>
   )
 
   const RightComponent = (
-    <div id="right-sidebar" className="sidebar">
+    <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
       {right.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
-    </div>
+    </aside>
   )
 
   const pageHeader = (
@@ -430,14 +430,17 @@ export function renderPage(
 
   const body = (
     <body data-slug={slug}>
+      <a href="#center-content" className="skip-to-content internal same-page-link">
+        Skip to main content
+      </a>
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}
           {RightComponent}
-          <div id="center-content">
+          <main id="center-content">
             {pageHeader}
             <Content {...componentData} />
-          </div>
+          </main>
         </Body>
         <Footer {...componentData} />
       </div>

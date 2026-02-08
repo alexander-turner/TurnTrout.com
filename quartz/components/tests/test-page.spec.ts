@@ -572,11 +572,34 @@ test.describe("Spoilers", () => {
 
       // Click again to close
       await spoiler.click()
-      await page.mouse.click(0, 0) // Click away to remove focus
-
       await expect(spoiler).not.toHaveClass(/revealed/)
     })
   }
+
+  test("Tapping spoiler twice re-hides it on mobile", async ({ page }) => {
+    test.skip(isDesktopViewport(page), "Mobile-only test")
+
+    const spoiler = page.locator(".spoiler-container").first()
+    await spoiler.scrollIntoViewIfNeeded()
+    await expect(spoiler).toBeVisible()
+
+    const initialScreenshot = await spoiler.screenshot()
+
+    // Tap to reveal
+    await spoiler.click()
+    await expect(spoiler).toHaveClass(/revealed/)
+
+    const revealedScreenshot = await spoiler.screenshot()
+    expect(revealedScreenshot).not.toEqual(initialScreenshot)
+
+    // Tap again to re-hide
+    await spoiler.click()
+    await expect(spoiler).not.toHaveClass(/revealed/)
+
+    // Visually verify the spoiler is hidden again without tapping elsewhere
+    const rehiddenScreenshot = await spoiler.screenshot()
+    expect(rehiddenScreenshot).not.toEqual(revealedScreenshot)
+  })
 
   test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
     // Skip on mobile devices where hover is not a native interaction
@@ -613,6 +636,9 @@ test.describe("Elvish toggle", () => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
+
     // Initially should show Tengwar (elvish-tengwar visible, elvish-translation hidden)
     const tengwar = elvishText.locator(".elvish-tengwar")
     const translation = elvishText.locator(".elvish-translation")
@@ -641,6 +667,9 @@ test.describe("Elvish toggle", () => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
 
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
+
     const lowerElt = page.locator(".footnotes").first()
     const lowerEltBoxBefore = await lowerElt.boundingBox()
     expect(lowerEltBoxBefore).not.toBeNull()
@@ -658,6 +687,9 @@ test.describe("Elvish toggle", () => {
   test("elvish text maintains dotted underline when showing translation", async ({ page }) => {
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
+
+    // Wait for elvish toggle script to initialize
+    await expect(elvishText).toHaveAttribute("data-elvish-initialized", "true")
 
     await elvishText.click()
 

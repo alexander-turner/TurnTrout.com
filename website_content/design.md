@@ -144,7 +144,7 @@ Figure: The four Catppuccin palettes.
     </div>
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
   </span>
-  <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+  <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
     <div class="centered">Dark mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
       <span style="color: var(--red);">Red</span>
@@ -577,7 +577,7 @@ How do the following sentences feel to read?
 1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
 2. Signed in the 1990's, NAFTA was a trade deal.
 
-Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI.
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct.
 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
@@ -836,7 +836,7 @@ Spoilers hide text until hovered
 : >! Have you heard? Snape kills Dumbledore.
 
 Server-side math rendering via $\KaTeX$
-: I initially chose [$\KaTeX$](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
@@ -1123,13 +1123,11 @@ Cryptographic timestamping
 
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
-<!-- TODO: make this part of the <dd>-->
-
-```shell
-git clone https://github.com/alexander-turner/.timestamps
-cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots"
-```
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
 
 # Github Actions
 

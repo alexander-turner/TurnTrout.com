@@ -132,9 +132,10 @@ export function processDefinitionListChild(
   child: Element["children"][number],
   lastWasDt: boolean,
 ): { element: Element["children"][number]; newLastWasDt: boolean } {
-  // Handle non-element nodes (text, comments, etc.)
+  // Handle non-element nodes (text, comments, etc.) — preserve state so
+  // whitespace between <dt> and <dd> doesn't break valid groups
   if (child.type !== "element") {
-    return { element: child, newLastWasDt: false }
+    return { element: child, newLastWasDt: lastWasDt }
   }
 
   // Handle <dt> elements - set state for next <dd>
@@ -145,8 +146,9 @@ export function processDefinitionListChild(
   // Handle <dd> elements - check if valid or orphaned
   if (child.tagName === "dd") {
     if (lastWasDt) {
-      // Valid <dd> following a <dt> - preserve it
-      return { element: child, newLastWasDt: false }
+      // Valid <dd> following a <dt> - preserve it. Keep lastWasDt true so
+      // multiple <dd> elements after one <dt> are all preserved (valid HTML).
+      return { element: child, newLastWasDt: true }
     } else {
       // Orphaned <dd> without preceding <dt> - convert to paragraph
       return { element: convertDdToParagraph(child), newLastWasDt: false }
@@ -218,11 +220,11 @@ export function fixDefinitionList(dlElement: Element): Element {
  * the visual presentation and content structure.
  *
  * The plugin uses a state machine approach:
- * - Tracks whether the last element was a <dt> using the `lastWasDt` flag
+ * - Tracks whether we're in a valid dt/dd group using the `lastWasDt` flag
  * - When encountering a <dd>:
- *   - If lastWasDt is true: Keep as <dd> (valid pair)
+ *   - If lastWasDt is true: Keep as <dd> (valid group) and maintain state
  *   - If lastWasDt is false: Convert to <p> (orphaned)
- * - Resets the flag after processing each <dd> or non-<dt> element
+ * - Non-element nodes (whitespace) preserve state; other elements reset it
  *
  * Valid structure (preserved):
  * ```html
@@ -281,7 +283,6 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
             behavior: "wrap",
             properties: {
               "data-no-popover": "true",
-              ariaHidden: true,
               tabIndex: -1,
             },
           },
