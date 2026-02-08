@@ -1105,8 +1105,8 @@ QK-circuits
 Qiaochu
 Qualia
 Quantilizers
-Quenya
 Quantilizing
+Quenya
 Qwen-14B
 Qwen-14B-Chat
 RGB

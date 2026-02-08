@@ -158,8 +158,9 @@ def check_top_level_paragraphs_end_with_punctuation(
 
             # Skip paragraphs that only contain inline styling elements
             # (e.g. typography examples like <span class="h2">Header 2</span>)
+            PRESENTATIONAL_TAGS = ("span", "br")
             if all(
-                (isinstance(c, Tag) and c.name in ("span", "br"))
+                (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
                 or (isinstance(c, NavigableString) and not c.strip())
                 for c in p.children
             ):
